@@ -1,0 +1,70 @@
+{
+  "name": "graasp3",
+  "version": "0.1.0",
+  "description": "Graasp level 3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/react-epfl/graasp3"
+  },
+  "author": "Graasp Association",
+  "scripts": {
+    "start": "npm run serve",
+    "build": "npm run build-ts && npm run lint && npm run copy-static-assets",
+    "serve": "NODE_PATH=./dist node dist/server.js",
+    "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "test": "DISABLE_LOGS=true jest --forceExit --coverage --verbose",
+    "watch-test": "npm run test -- --watchAll",
+    "build-ts": "tsc",
+    "watch-ts": "tsc -w",
+    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
+    "copy-static-assets": "ts-node copyStaticAssets.ts",
+    "debug": "npm run build && npm run watch-debug",
+    "serve-debug": "NODE_PATH=./dist nodemon --inspect dist/server.js",
+    "serve-debug-break": "NODE_PATH=./dist nodemon --inspect-brk dist/server.js",
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\""
+  },
+  "types": "src/types/index.d.ts",
+  "some-comments": [
+    "graasp3-file-item",
+    "file:../graasp3-file-item",
+    "test: tap -J test/*.test.ts test/**/*.test.ts",
+    "test: jest --forceExit --coverage --verbose",
+    "fastify-swagger: github:fastify/fastify-swagger#master"
+  ],
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "fastify": "github:fastify/fastify#master",
+    "fastify-basic-auth": "^1.0.0",
+    "fastify-plugin": "next",
+    "graasp3-file-item": "github:react-epfl/graasp3-file-item#master",
+    "slonik": "^22.4.8",
+    "uuid": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.3",
+    "@types/concurrently": "^4.1.0",
+    "@types/eslint": "^6.8.0",
+    "@types/jest": "^24.0.23",
+    "@types/shelljs": "^0.8.5",
+    "@types/slonik": "^22.1.2",
+    "@types/supertest": "^2.0.8",
+    "@types/tap": "^14.10.0",
+    "@types/uuid": "^7.0.3",
+    "@typescript-eslint/eslint-plugin": "^2.27.0",
+    "@typescript-eslint/parser": "^2.27.0",
+    "chai": "^4.2.0",
+    "concurrently": "^5.0.0",
+    "eslint": "^6.8.0",
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.2",
+    "pino-pretty": "^4.0.0",
+    "shelljs": "^0.8.3",
+    "slonik-interceptor-query-logging": "^1.3.8",
+    "supertest": "^4.0.2",
+    "tap": "^14.10.7",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.8.3"
+  }
+}
