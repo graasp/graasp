@@ -1,10 +1,10 @@
 {
-  "name": "graasp3",
+  "name": "graasp",
   "version": "0.1.0",
-  "description": "Graasp level 3",
+  "description": "Graasp next level",
   "repository": {
     "type": "git",
-    "url": "https://github.com/react-epfl/graasp3"
+    "url": "https://github.com/graasp/graasp"
   },
   "author": "Graasp Association",
   "scripts": {
@@ -26,8 +26,8 @@
   },
   "types": "src/types/index.d.ts",
   "some-comments": [
-    "graasp3-file-item",
-    "file:../graasp3-file-item",
+    "graasp-file-item",
+    "file:../graasp-file-item",
     "test: tap -J test/*.test.ts test/**/*.test.ts",
     "test: jest --forceExit --coverage --verbose",
     "fastify-swagger: github:fastify/fastify-swagger#master"
@@ -37,7 +37,7 @@
     "fastify": "github:fastify/fastify#master",
     "fastify-basic-auth": "^1.0.0",
     "fastify-plugin": "next",
-    "graasp3-file-item": "github:react-epfl/graasp3-file-item#master",
+    "graasp-file-item": "github:graasp/graasp-file-item#master",
     "slonik": "^22.4.8",
     "uuid": "^7.0.0"
   },

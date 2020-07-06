@@ -66,7 +66,7 @@ export const MAX_TARGETS_FOR_MODIFY_REQUEST = 20;
  * Maximun number of targets in a "many" request for which the server
  * will execute the tasks and return the results in the same request's response.
  *
- * A request with more targets than this limit will get an immediate `202` response,
- * and the results will be pushed to the client (websockets, ...) as they happen.
+ * A request with more targets than this limit should get an immediate `202` response,
+ * and the results should be pushed to the client (websockets, ...) as they happen.
  */
 export const MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE = 5;

@@ -1,6 +1,6 @@
 // global
 import { FastifyInstance } from 'fastify';
-import graasp3FileItem from 'graasp3-file-item';
+import graaspFileItem from 'graasp-file-item';
 import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE } from 'util/config';
 import { IdParam, IdsParams, ParentIdParam } from 'interfaces/requests';
 // local
@@ -20,7 +20,7 @@ export default async (fastify: FastifyInstance) => {
 
   fastify.decorate('taskManager', taskManager);
 
-  fastify.register(graasp3FileItem, { storagePath: '/Users/andre/upload_temp' });
+  fastify.register(graaspFileItem, { storagePath: '/Users/andre/upload_temp' });
 
   // schemas
   fastify.addSchema(common);
@@ -149,7 +149,7 @@ export default async (fastify: FastifyInstance) => {
 };
 
 // fastify
-//   .register(graasp3FileItem, { storagePath: '/Users/andre/upload_temp' });
+//   .register(graaspFileItem, { storagePath: '/Users/andre/upload_temp' });
 
 // async function batatas<FastifyRequest<{ Params: IdParam }>>({ params: { id } }) {
 //   return 123;
