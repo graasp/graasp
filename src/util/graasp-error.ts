@@ -1,7 +1,7 @@
 import { FastifyError } from 'fastify';
 
 export interface GraaspErrorDetails {
-  name: string;
+  code: string;
   message: string;
   statusCode: number;
 }
@@ -28,45 +28,47 @@ export enum GraaspErrorCode {
 
 export class GraaspError implements FastifyError {
   static readonly ItemNotFound =
-    { name: GraaspErrorCode.ItemNotFound, statusCode: 404, message: 'Item not found' };
+    { code: GraaspErrorCode.ItemNotFound, statusCode: 404, message: 'Item not found' };
   static readonly UserCannotReadItem =
-    { name: GraaspErrorCode.UserCannotReadItem, statusCode: 403, message: 'User cannot read item' };
+    { code: GraaspErrorCode.UserCannotReadItem, statusCode: 403, message: 'User cannot read item' };
   static readonly UserCannotWriteItem =
-    { name: GraaspErrorCode.UserCannotWriteItem, statusCode: 403, message: 'User cannot write item' };
+    { code: GraaspErrorCode.UserCannotWriteItem, statusCode: 403, message: 'User cannot write item' };
   static readonly UserCannotAdminItem =
-    { name: GraaspErrorCode.UserCannotAdminItem, statusCode: 403, message: 'User cannot admin item' };
+    { code: GraaspErrorCode.UserCannotAdminItem, statusCode: 403, message: 'User cannot admin item' };
   static readonly InvalidMembership =
-    { name: GraaspErrorCode.InvalidMembership, statusCode: 400, message: 'Membership with this permission level cannot be created for this member in this item' };
+    { code: GraaspErrorCode.InvalidMembership, statusCode: 400, message: 'Membership with this permission level cannot be created for this member in this item' };
   static readonly ItemMembershipNotFound =
-    { name: GraaspErrorCode.ItemMembershipNotFound, statusCode: 404, message: 'Item membership not found' };
+    { code: GraaspErrorCode.ItemMembershipNotFound, statusCode: 404, message: 'Item membership not found' };
   static readonly ModifyExisting =
-    { name: GraaspErrorCode.ModifyExisting, statusCode: 400, message: 'Cannot create membership for member in item. Should modify existing one' };
+    { code: GraaspErrorCode.ModifyExisting, statusCode: 400, message: 'Cannot create membership for member in item. Should modify existing one' };
   static readonly InvalidPermissionLevel =
-    { name: GraaspErrorCode.InvalidPermissionLevel, statusCode: 400, message: 'Cannot change to a worse permission level than the one inherited' };
+    { code: GraaspErrorCode.InvalidPermissionLevel, statusCode: 400, message: 'Cannot change to a worse permission level than the one inherited' };
   static readonly HierarchyTooDeep =
-    { name: GraaspErrorCode.HierarchyTooDeep, statusCode: 403, message: 'Hierarchy too deep' };
+    { code: GraaspErrorCode.HierarchyTooDeep, statusCode: 403, message: 'Hierarchy too deep' };
   static readonly TooManyChildren =
-    { name: GraaspErrorCode.TooManyChildren, statusCode: 403, message: 'Too many children' };
+    { code: GraaspErrorCode.TooManyChildren, statusCode: 403, message: 'Too many children' };
   static readonly TooManyDescendants =
-    { name: GraaspErrorCode.TooManyDescendants, statusCode: 403, message: 'Too many descendants' };
+    { code: GraaspErrorCode.TooManyDescendants, statusCode: 403, message: 'Too many descendants' };
   static readonly InvalidMoveTarget =
-    { name: GraaspErrorCode.InvalidMoveTarget, statusCode: 400, message: 'Invalid item to move to' };
+    { code: GraaspErrorCode.InvalidMoveTarget, statusCode: 400, message: 'Invalid item to move to' };
   static readonly MemberNotFound =
-    { name: GraaspErrorCode.MemberNotFound, statusCode: 404, message: 'Member not found' };
+    { code: GraaspErrorCode.MemberNotFound, statusCode: 404, message: 'Member not found' };
 
   // generic
   static readonly DatabaseError =
-    { name: GraaspErrorCode.DatabaseError, statusCode: 500, message: 'Database error' };
+    { code: GraaspErrorCode.DatabaseError, statusCode: 500, message: 'Database error' };
   static readonly UnknownError =
-    { name: GraaspErrorCode.UnknownError, statusCode: 500, message: 'Unknown error' };
+    { code: GraaspErrorCode.UnknownError, statusCode: 500, message: 'Unknown error' };
 
-  statusCode?: number;
   name: string;
+  code: string
   message: string;
+  statusCode?: number;
   data: unknown;
 
-  constructor({ name, statusCode, message }: GraaspErrorDetails, data?: unknown) {
-    this.name = name;
+  constructor({ code, statusCode, message }: GraaspErrorDetails, data?: unknown) {
+    this.name = code;
+    this.code = code;
     this.message = message;
     this.statusCode = statusCode;
     this.data = data;

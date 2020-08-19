@@ -147,15 +147,3 @@ export default async (fastify: FastifyInstance) => {
     }
   );
 };
-
-// fastify
-//   .register(graaspFileItem, { storagePath: '/Users/andre/upload_temp' });
-
-// async function batatas<FastifyRequest<{ Params: IdParam }>>({ params: { id } }) {
-//   return 123;
-// }
-
-// const get: RequestHandler<unknown, unknown, ItemQuery> =
-//   async function ({ query: { id } }) {
-//     return await this.db.knex<Item>('item').whereIn('id', id);
-//   };
