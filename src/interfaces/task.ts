@@ -14,7 +14,7 @@ export interface Task<A, R> {
   data?: Partial<R>;
   readonly status: TaskStatus;
   readonly result: R;
-  readonly error: string;
+  readonly message: string;
   // notify: boolean; // Should notify task's result
   run(handler: DatabaseTransactionHandler): Promise<void | Task<A, R>[]>;
 }

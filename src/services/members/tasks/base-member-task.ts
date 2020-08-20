@@ -11,7 +11,7 @@ export abstract class BaseMemberTask implements Task<Member, Member> {
   protected memberService: MemberService;
   protected _status: TaskStatus;
   protected _result: Member;
-  protected _error: string;
+  protected _message: string;
 
   readonly actor: Member;
 
@@ -26,11 +26,11 @@ export abstract class BaseMemberTask implements Task<Member, Member> {
   abstract get name(): string;
   get status() { return this._status; }
   get result() { return this._result; }
-  get error() { return this._error; }
+  get message() { return this._message; }
 
   protected failWith(error: GraaspError) {
     this._status = TaskStatus.Fail;
-    this._error = error.name;
+    this._message = error.name;
     throw error;
   }
 
