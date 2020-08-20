@@ -10,7 +10,7 @@ export class ItemService {
   // the 'safe' way to dynamically generate the columns names:
   private static allColumns = sql.join(
     [
-      'id', 'name', 'description', 'path', 'extra', 'creator',
+      'id', 'name', 'description', 'type', 'path', 'extra', 'creator',
       ['created_at', 'createdAt'],
       ['updated_at', 'updatedAt'],
     ].map(c =>
@@ -72,12 +72,12 @@ export class ItemService {
    * @param transactionHandler Database transaction handler
    */
   async create(item: Partial<Item>, transactionHandler: TrxHandler) {
-    const { id, name, path, creator, description, extra } = item;
+    const { id, name, description, type, path, extra, creator } = item;
 
     return transactionHandler
       .query<Item>(sql`
-        INSERT INTO item (id, name, description, path, extra, creator)
-        VALUES (${id}, ${name}, ${description}, ${path}, ${sql.json(extra)}, ${creator})
+        INSERT INTO item (id, name, description, type, path, extra, creator)
+        VALUES (${id}, ${name}, ${description}, ${type}, ${path}, ${sql.json(extra)}, ${creator})
         RETURNING ${ItemService.allColumns}
       `)
       .then(({ rows }) => rows[0]);

@@ -54,9 +54,9 @@ export class CreateItemTask extends BaseItemTask {
     }
 
     // create item
-    const { name, description, extra } = this.data;
+    const { name, description, type, extra } = this.data;
     const { id: creator } = this.actor;
-    let item: Item = new BaseItem(name, description, extra, creator, parentItem);
+    let item: Item = new BaseItem(name, description, type, extra, creator, parentItem);
     item = await this.itemService.create(item, handler);
 
     // create 'admin' membership for member+item if it's a 'root' item (no parent item) or

@@ -117,16 +117,16 @@ export class CopyItemTask extends BaseItemTask {
     const old2New = new Map<string, Item>();
 
     for (let i = 0; i < tree.length; i++) {
-      const { name, description, path, extra } = tree[i];
+      const { name, description, type, path, extra } = tree[i];
       const pathSplit = path.split('.');
       const oldId_ = pathSplit.pop();
       let item;
 
       if (i === 0) {
-        item = new BaseItem(name, description, extra, this.actor.id, parentItem);
+        item = new BaseItem(name, description, type, extra, this.actor.id, parentItem);
       } else {
         const oldParentId_ = pathSplit.pop();
-        item = new BaseItem(name, description, extra, this.actor.id, old2New.get(oldParentId_));
+        item = new BaseItem(name, description, type, extra, this.actor.id, old2New.get(oldParentId_));
       }
 
       old2New.set(oldId_, item);

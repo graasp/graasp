@@ -30,6 +30,7 @@ CREATE TABLE "item" (
   "id" uuid PRIMARY KEY, -- generated programatically and passed on insertion
   "name" character varying(500) NOT NULL,
   "description" character varying(5000),
+  "type" character varying(100),
   "path" ltree UNIQUE NOT NULL,
   "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
   "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove item - set creator to NULL

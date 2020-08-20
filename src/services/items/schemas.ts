@@ -13,6 +13,7 @@ export default {
         id: { $ref: 'http://graasp.org/#/definitions/uuid' },
         name: { type: 'string' },
         description: { type: ['string', 'null'] },
+        type: { type: 'string' },
         /**
          * itemPath's 'pattern' not supported in serialization.
          * since 'item' schema is only used for serialization it's safe
@@ -36,6 +37,7 @@ export default {
       type: 'object',
       properties: {
         name: { type: 'string', minLength: 1 },
+        type: { type: 'string', minLength: 1 },
         description: { type: 'string' },
         extra: { type: 'object', additionalProperties: true }
       },
