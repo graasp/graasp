@@ -26,7 +26,8 @@
   },
   "types": "src/types/index.d.ts",
   "some-comments": [
-    "graasp-file-item",
+    "graasp-file-item: file:../graasp-file-item",
+    "graasp-file-item: github:graasp/graasp-file-item#master",
     "file:../graasp-file-item",
     "test: tap -J test/*.test.ts test/**/*.test.ts",
     "test: jest --forceExit --coverage --verbose",

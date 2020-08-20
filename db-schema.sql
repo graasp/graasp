@@ -32,7 +32,7 @@ CREATE TABLE "item" (
   "description" character varying(5000),
   "path" ltree UNIQUE NOT NULL,
   "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
-  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL -- don't remove item - set creator to NULL
+  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove item - set creator to NULL
 
   "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
@@ -47,7 +47,7 @@ CREATE TABLE "item_membership" (
   -- delete permission if item is deleted; update path if item's path is updated.
   "item_path" ltree REFERENCES "item" ("path") ON DELETE CASCADE ON UPDATE CASCADE,
   "permission" permissions_enum NOT NULL,
-  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL -- don't remove item - set creator to NULL
+  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove item - set creator to NULL
 
   "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),

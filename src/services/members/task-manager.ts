@@ -6,8 +6,8 @@ import { Member } from 'services/members/interfaces/member';
 import { BaseTaskManager } from 'services/base-task-manager';
 // local
 import { MemberService } from './db-service';
-import { GetMemberTask } from './tasks/get-item-task';
-import { BaseMemberTask } from './tasks/base-item-task';
+import { GetMemberTask } from './tasks/get-member-task';
+import { BaseMemberTask } from './tasks/base-member-task';
 
 export class MemberTaskManager extends BaseTaskManager<Member> {
   private memberService: MemberService;

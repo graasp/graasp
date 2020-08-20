@@ -5,7 +5,7 @@ import { TaskStatus } from 'interfaces/task';
 // local
 import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
-import { BaseMemberTask } from './base-item-task';
+import { BaseMemberTask } from './base-member-task';
 
 export class GetMemberTask extends BaseMemberTask {
   get name() { return GetMemberTask.name; }
