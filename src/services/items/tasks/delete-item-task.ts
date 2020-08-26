@@ -1,7 +1,7 @@
 // global
 import { GraaspError } from 'util/graasp-error';
 import { DatabaseTransactionHandler } from 'plugins/database';
-import { TaskStatus } from 'interfaces/task';
+import { TaskStatus, PostHookHandlerType } from 'interfaces/task';
 import { MAX_DESCENDANTS_FOR_DELETE } from 'util/config';
 // other services
 import { ItemMembershipService } from 'services/item-memberships/db-service';
@@ -9,19 +9,25 @@ import { Member } from 'services/members/interfaces/member';
 // local
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
+import { Item } from '../interfaces/item';
 
 class DeleteItemSubTask extends BaseItemTask {
   get name() { return DeleteItemSubTask.name; }
 
   constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+    itemService: ItemService, itemMembershipService: ItemMembershipService,
+    postHookHandler?: PostHookHandlerType<Item>) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
+    this.postHookHandler = postHookHandler;
   }
 
   async run(handler: DatabaseTransactionHandler) {
     this._status = TaskStatus.Running;
+
     const item = await this.itemService.delete(this.targetId, handler);
+    this.postHookHandler?.(item);
+
     this._status = TaskStatus.OK;
     this._result = item;
   }
@@ -31,9 +37,11 @@ export class DeleteItemTask extends BaseItemTask {
   get name() { return DeleteItemTask.name; }
 
   constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+    itemService: ItemService, itemMembershipService: ItemMembershipService,
+    postHookHandler?: PostHookHandlerType<Item>) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
+    this.postHookHandler = postHookHandler;
   }
 
   async run(handler: DatabaseTransactionHandler) {
@@ -58,11 +66,12 @@ export class DeleteItemTask extends BaseItemTask {
       // delete item + all descendants, one by one.
       return descendants
         .concat(item)
-        .map(i => new DeleteItemSubTask(this.actor, i.id, this.itemService, this.itemMembershipService));
+        .map(d => new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService, this.postHookHandler));
     }
 
     // item has no descendents - delete item and return it as the result
     await this.itemService.delete(this.targetId, handler);
+    this.postHookHandler?.(item);
 
     this._status = TaskStatus.OK;
     this._result = item;

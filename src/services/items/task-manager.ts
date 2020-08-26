@@ -97,6 +97,14 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     }
   }
 
+  setPostDeleteHandler(handler: Function) {
+    this.setTaskHookHandler(DeleteItemTask.name, 'post', handler);
+  }
+
+  unsetPostDeleteHandler(handler: Function) {
+    this.unsetTaskHookHandler(DeleteItemTask.name, 'post', handler);
+  }
+
   // Tasks
   createGetTask(member: Member, itemId: string) {
     return new GetItemTask(member, itemId, this.itemService, this.itemMembershipService);
@@ -111,7 +119,8 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
   }
 
   createDeleteTask(member: Member, itemId: string) {
-    return new DeleteItemTask(member, itemId, this.itemService, this.itemMembershipService);
+    const postHookHandler = this.tasksHooks.get(DeleteItemTask.name)?.post?.wrapped;
+    return new DeleteItemTask(member, itemId, this.itemService, this.itemMembershipService, postHookHandler);
   }
 
   createMoveTask(member: Member, itemId: string, parentId?: string) {
