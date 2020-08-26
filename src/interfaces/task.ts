@@ -14,7 +14,15 @@ export interface Task<A, R> {
   data?: Partial<R>;
   readonly status: TaskStatus;
   readonly result: R;
-  readonly error: string;
+  readonly message: string;
   // notify: boolean; // Should notify task's result
   run(handler: DatabaseTransactionHandler): Promise<void | Task<A, R>[]>;
+
+  preHookHandler?: PreHookHandlerType<R>;
+  postHookHandler?: PostHookHandlerType<R>;
 }
+
+export type TaskHookMoment = 'pre' | 'post';
+
+export type PreHookHandlerType<R> = (data?: Partial<R>) => Promise<void> | void;
+export type PostHookHandlerType<R> = (data?: R) => void;

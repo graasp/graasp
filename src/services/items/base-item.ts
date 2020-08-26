@@ -11,6 +11,7 @@ export class BaseItem implements Item {
   readonly id: string;
   name: string;
   description: string;
+  type: string;
   path: string;
   extra: { [key: string]: unknown };
   readonly creator: string;
@@ -20,6 +21,7 @@ export class BaseItem implements Item {
   constructor(
     name: string,
     description: string = null,
+    type: string = 'base',
     extra: { [key: string]: unknown } = {},
     creator: string,
     parent?: Item
@@ -27,6 +29,7 @@ export class BaseItem implements Item {
     this.id = uuidv4();
     this.name = name;
     this.description = description;
+    this.type = type;
     this.extra = extra;
     this.creator = creator;
     this.path = parent ?

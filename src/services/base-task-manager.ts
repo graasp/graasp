@@ -9,7 +9,7 @@ import { Member } from './members/interfaces/member';
 
 export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
   private databasePool: DatabasePoolHandler;
-  private logger: FastifyLoggerInstance;
+  protected logger: FastifyLoggerInstance;
 
   constructor(database: Database, logger: FastifyLoggerInstance) {
     this.databasePool = database.pool;
@@ -17,14 +17,14 @@ export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
   }
 
   private handleTaskFinish(task: Task<Member, T>) {
-    const { name, actor: { id: actorId }, targetId: targetId, status, error } = task;
+    const { name, actor: { id: actorId }, targetId, status, message: taskMessage } = task;
 
     let message = `${name}: ` +
       `actor '${actorId}'`;
 
     if (targetId) message += `, target '${targetId}'`;
     message += `, status '${status}'`;
-    if (error) message += `, error '${error}'`;
+    if (taskMessage) message += `, message '${taskMessage}'`;
 
     switch (status) {
       case TaskStatus.OK:

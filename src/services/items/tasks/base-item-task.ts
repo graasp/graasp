@@ -15,12 +15,14 @@ export abstract class BaseItemTask implements ItemTask {
   protected itemMembershipService: ItemMembershipService
   protected _status: TaskStatus;
   protected _result: Item;
-  protected _error: string;
+  protected _message: string;
 
   readonly actor: Member;
 
   targetId: string;
   data: Partial<Item>;
+  preHookHandler: (data: Partial<Item>) => Promise<void> | void;
+  postHookHandler: (item: Item) => void;
 
   parentItemId: string;
 
@@ -34,11 +36,11 @@ export abstract class BaseItemTask implements ItemTask {
   abstract get name(): string;
   get status() { return this._status; }
   get result() { return this._result; }
-  get error() { return this._error; }
+  get message() { return this._message; }
 
   protected failWith(error: GraaspError) {
     this._status = TaskStatus.Fail;
-    this._error = error.name;
+    this._message = error.name;
     throw error;
   }
 
