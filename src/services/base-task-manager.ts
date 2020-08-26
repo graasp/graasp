@@ -9,7 +9,7 @@ import { Member } from './members/interfaces/member';
 
 export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
   private databasePool: DatabasePoolHandler;
-  private logger: FastifyLoggerInstance;
+  protected logger: FastifyLoggerInstance;
 
   constructor(database: Database, logger: FastifyLoggerInstance) {
     this.databasePool = database.pool;

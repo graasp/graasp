@@ -21,6 +21,8 @@ export abstract class BaseItemTask implements ItemTask {
 
   targetId: string;
   data: Partial<Item>;
+  preHookHandler: (data: Partial<Item>) => Promise<void> | void;
+  postHookHandler: (item: Item) => void;
 
   parentItemId: string;
 
