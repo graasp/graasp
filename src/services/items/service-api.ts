@@ -20,7 +20,7 @@ export default async (fastify: FastifyInstance) => {
 
   fastify.decorate('taskManager', taskManager);
 
-  fastify.register(graaspFileItem, { storagePath: '/Users/andre/upload_temp' });
+  fastify.register(graaspFileItem, { storageRootPath: '/Users/andre/upload_temp' });
 
   // schemas
   fastify.addSchema(common);
