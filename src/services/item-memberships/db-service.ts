@@ -197,10 +197,10 @@ export class ItemMembershipService {
    * removed, after moving the item. These are adjustmnents necessary
    * to keep the constraints in the memberships:
    *
-   * * members inherit membership' permissions from memberships in items 'above'
+   * * members inherit membership permissions from memberships in items 'above'
    * * memberships 'down the tree' can only improve on the permission level and cannot repeat: read > write > admin
    *
-   * **Needs to run before the actual item move**
+   * ** Needs to run before the actual item move **
    * @param item Item that will be moved
    * @param member Member used as `creator` for any new memberships
    * @param transactionHandler Database transaction handler

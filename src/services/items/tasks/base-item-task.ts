@@ -24,7 +24,7 @@ export abstract class BaseItemTask implements ItemTask {
   preHookHandler: (data: Partial<Item>) => Promise<void> | void;
   postHookHandler: (item: Item) => void;
 
-  parentItemId: string;
+  parentItemId?: string;
 
   constructor(member: Member,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {

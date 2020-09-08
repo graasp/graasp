@@ -1,3 +1,7 @@
+-- enable necessary extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "ltree";
+
 -- DROP everything in reverse order
 DROP TRIGGER "member_set_timestamp";
 DROP TRIGGER "item_set_timestamp";
@@ -11,15 +15,15 @@ DROP TYPE "permissions_enum";
 DROP INDEX "item_path_idx";
 DROP TABLE "item";
 DROP TABLE "member";
--- DROP TYPE "member_type_enum";
+DROP TYPE "member_type_enum";
 
 -- CREATE everything
 
--- CREATE TYPE "member_type_enum" AS ENUM ('individual', 'group');
+CREATE TYPE "member_type_enum" AS ENUM ('individual', 'group');
 CREATE TABLE "member" (
   "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   "name" character varying(300) NOT NULL,
-  -- "type" member_type_enum DEFAULT 'individual' NOT NULL,
+  "type" member_type_enum DEFAULT 'individual' NOT NULL,
   "email" character varying(150) UNIQUE NOT NULL,
 
   "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),

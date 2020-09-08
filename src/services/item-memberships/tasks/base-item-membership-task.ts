@@ -22,7 +22,7 @@ export abstract class BaseItemMembershipTask implements ItemMembershipTask {
   targetId: string;
   data: Partial<ItemMembership>;
 
-  itemId: string;
+  itemId?: string;
 
   constructor(actor: Member,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
