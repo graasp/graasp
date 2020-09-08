@@ -44,9 +44,9 @@ export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
    * @param task Task to run
    * @returns Task's `result` or, if it has subtasks, the `result` of the last subtask.
    */
-  private async runTransactionally(task: Task<Member, T>): Promise<T> {
+  private async runTransactionally(task: Task<Member, T>): Promise<T | T[]> {
     return this.databasePool.transaction(async (handler) => {
-      let taskResult: T;
+      let taskResult: T | T[];
       let subtasks;
 
       // run task

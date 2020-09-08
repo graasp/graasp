@@ -10,6 +10,7 @@ import { ItemService } from './db-service';
 import { Item } from './interfaces/item';
 import { BaseTaskManager } from 'services/base-task-manager';
 import { GetItemTask } from './tasks/get-item-task';
+import { GetItemChildrenTask } from './tasks/get-item-children-task';
 import { CreateItemTask } from './tasks/create-item-task';
 import { UpdateItemTask } from './tasks/update-item-task';
 import { DeleteItemTask } from './tasks/delete-item-task';
@@ -108,6 +109,10 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
   // Tasks
   createGetTask(member: Member, itemId: string) {
     return new GetItemTask(member, itemId, this.itemService, this.itemMembershipService);
+  }
+
+  createGetChildrenTask(member: Member, itemId: string) {
+    return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 
   createCreateTask(member: Member, data: Partial<Item>, parentId?: string) {

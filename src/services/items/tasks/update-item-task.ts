@@ -69,7 +69,8 @@ export class UpdateItemTask extends BaseItemTask {
     const propagatingChanges: Partial<Item> = this.extractPropagatingChanges();
     if (Object.keys(propagatingChanges).length) {
       // get descendants
-      const descendants = await this.itemService.getDescendants(item, handler, 'DESC', ['id']);
+      const descendants =
+        await this.itemService.getDescendants<Partial<Item>>(item, handler, 'DESC', 'ALL', ['id']);
 
       // check how "big the tree is" below the item
       if (descendants.length > MAX_DESCENDANTS_FOR_UPDATE) {
