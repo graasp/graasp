@@ -88,6 +88,17 @@ const getOne = {
   }
 };
 
+// schema for getting one item's children
+const getChildren = {
+  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  response: {
+    200: {
+      type: 'array',
+      items: { $ref: 'http://graasp.org/items/#/definitions/item' }
+    }
+  }
+};
+
 // schema for getting >1 items
 const getMany = {
   querystring: {
@@ -238,6 +249,7 @@ const copyMany = {
 export {
   create,
   getOne,
+  getChildren,
   getMany,
   updateOne,
   updateMany,

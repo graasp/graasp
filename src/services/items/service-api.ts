@@ -6,6 +6,7 @@ import { IdParam, IdsParams, ParentIdParam } from 'interfaces/requests';
 // local
 import common, {
   getOne,
+  getChildren,
   create,
   updateOne, updateMany,
   deleteOne, deleteMany,
@@ -39,6 +40,15 @@ export default async (fastify: FastifyInstance) => {
     '/:id', { schema: getOne },
     async ({ member, params: { id } }) => {
       const task = taskManager.createGetTask(member, id);
+      return taskManager.run([task]);
+    }
+  );
+
+  // get item's children
+  fastify.get<{ Params: IdParam }>(
+    '/:id/children', { schema: getChildren },
+    async ({ member, params: { id } }) => {
+      const task = taskManager.createGetChildrenTask(member, id);
       return taskManager.run([task]);
     }
   );

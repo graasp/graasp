@@ -56,7 +56,8 @@ export class DeleteItemTask extends BaseItemTask {
     if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotAdminItem, this.targetId));
 
     // get descendants
-    const descendants = await this.itemService.getDescendants(item, handler, 'DESC', ['id']);
+    const descendants =
+      await this.itemService.getDescendants<Partial<Item>>(item, handler, 'DESC', 'ALL', ['id']);
 
     // check how "big the tree is" below the item
     if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {

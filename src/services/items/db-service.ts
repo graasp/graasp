@@ -178,17 +178,23 @@ export class ItemService {
   }
 
   /**
-   * Get item's descendants. Ordered by their depth in the tree with given `direction`:
+   * Get item's descendants, from `levels` below, ordered by their depth/level in the
+   * tree, with the given `direction`.
    *
-   * * `direction = 'ASC'`: items higher in the tree first
-   * * `direction = 'DESC'`: deepest items in the tree first
    * @param item Item whose descendants shoud be considered
    * @param transactionHandler Database transaction handler
-   * @param direction Order direction based on item pdepth in the tree
-   * @param properties List of Item properties to fetch - defaults to 'all'
+   * @param direction Order direction based on item depth in the tree
+   * * `ASC`: items higher in the tree first
+   * * `DESC`: deepest items in the tree first
+   * @param levels Levels down the tree to fetch - positive integer or `ALL`; defaults to `ALL`
+   * * `1`: children
+   * * `2`: children + grandchildren
+   * * `3`: children + grandchildren + great-grandchildren
+   * @param properties List of Item properties to fetch - returns all if not defined. When defined,
+   * the function should be called with `R` as `<Partial<Item>>`: `getDescendants<Partial<Item>>()`
    */
-  async getDescendants(item: Item, transactionHandler: TrxHandler,
-    direction: ('ASC' | 'DESC') = 'ASC', properties?: (keyof Item)[]) {
+  async getDescendants<R = Item>(item: Item, transactionHandler: TrxHandler,
+    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof Item)[]) {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -198,14 +204,20 @@ export class ItemService {
       );
     }
 
+    const levelLimit = levels !== 'ALL' && levels > 0 ?
+      sql`AND nlevel(path) <= nlevel(${item.path}) + ${levels}` : sql``;
+
     return transactionHandler
-      .query<Partial<Item>>(sql`
+      .query<R>(sql`
         SELECT ${selectColumns || ItemService.allColumns} FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}
+          ${levelLimit}
         ORDER BY nlevel(path) ${direction === 'DESC' ? sql`DESC` : sql`ASC`}
       `) // `AND id != ${item.id}` because <@ includes the item's path
-      .then(({ rows }) => rows);
+      // TODO: is there a better way to avoid the error of assigning
+      // this result to a mutable property? (.slice(0))
+      .then(({ rows }) => rows.slice(0));
   }
 
   /**

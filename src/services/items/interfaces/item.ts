@@ -1,4 +1,6 @@
-export interface Item<T = { [key: string]: unknown }> {
+interface UnknownExtra { [key: string]: unknown };
+
+export interface Item<T = UnknownExtra> {
   id: string;
   name: string;
   description: string;
