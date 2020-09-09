@@ -69,6 +69,24 @@ const create = {
   }
 };
 
+// schema for getting an item's memberships
+const getItems = {
+  querystring: {
+    type: 'object',
+    required: ['itemId'],
+    properties: {
+      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+    },
+    additionalProperties: false
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' }
+    }
+  }
+};
+
 // schema for updating an item membership
 const updateOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
@@ -87,6 +105,7 @@ const deleteOne = {
 };
 
 export {
+  getItems,
   create,
   updateOne,
   deleteOne
