@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { IdParam } from 'interfaces/requests';
 // local
 import common, {
+  getItems,
   create,
   updateOne,
   deleteOne
@@ -15,6 +16,15 @@ export default async (fastify: FastifyInstance) => {
 
   // schemas
   fastify.addSchema(common);
+
+  // get item's memberships
+  fastify.get<{ Querystring: { itemId: string } }>(
+    '/', { schema: getItems },
+    async ({ member, query: { itemId } }) => {
+      const task = taskManager.createGetItemsItemMembershipsTask(member, itemId);
+      return taskManager.run([task]);
+    }
+  );
 
   // create item membership
   fastify.post<{ Querystring: { itemId: string } }>(
