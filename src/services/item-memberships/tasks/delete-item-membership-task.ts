@@ -9,13 +9,36 @@ import { Member } from 'services/members/interfaces/member';
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 
+class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
+  get name() { return DeleteItemMembershipSubTask.name; }
+
+  constructor(member: Member, itemId: string,
+    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+    super(member, itemService, itemMembershipService);
+    this.targetId = itemId;
+  }
+
+  async run(handler: DatabaseTransactionHandler) {
+    this._status = TaskStatus.Running;
+
+    const itemMembership = await this.itemMembershipService.delete(this.targetId, handler);
+
+    this._status = TaskStatus.OK;
+    this._result = itemMembership;
+  }
+}
+
 export class DeleteItemMembershipTask extends BaseItemMembershipTask {
   get name() { return DeleteItemMembershipTask.name; }
 
+  private purgeBelow: boolean;
+
   constructor(member: Member, itemMembershipId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+    itemService: ItemService, itemMembershipService: ItemMembershipService,
+    purgeBelow?: boolean) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemMembershipId;
+    this.purgeBelow = purgeBelow;
   }
 
   async run(handler: DatabaseTransactionHandler) {
@@ -33,6 +56,19 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
       // verify if member deleting the membership has rights for that
       const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
       if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotAdminItem, item.id));
+    }
+
+    if (this.purgeBelow) {
+      const itemMembershipsBelow =
+        await this.itemMembershipService.getAllBelow(itemMembership, handler);
+
+      if (itemMembershipsBelow.length > 0) {
+        // return list of subtasks for task manager to execute and
+        // delete item + all descendants, one by one.
+        return itemMembershipsBelow
+          .concat(itemMembership)
+          .map(im => new DeleteItemMembershipSubTask(this.actor, im.id, this.itemService, this.itemMembershipService));
+      }
     }
 
     // delete membership

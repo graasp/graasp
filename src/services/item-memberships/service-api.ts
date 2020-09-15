@@ -8,6 +8,7 @@ import common, {
   updateOne,
   deleteOne
 } from './schemas';
+import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './task-manager';
 
 export default async (fastify: FastifyInstance) => {
@@ -45,10 +46,10 @@ export default async (fastify: FastifyInstance) => {
   );
 
   // delete item membership
-  fastify.delete<{ Params: IdParam }>(
+  fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
     '/:id', { schema: deleteOne },
-    async ({ member, params: { id } }) => {
-      const task = taskManager.createDeleteTask(member, id);
+    async ({ member, params: { id }, query: { purgeBelow } }) => {
+      const task = taskManager.createDeleteTask(member, id, purgeBelow);
       return taskManager.run([task]);
     }
   );
