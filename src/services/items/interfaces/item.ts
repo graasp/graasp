@@ -1,4 +1,4 @@
-interface UnknownExtra { [key: string]: unknown };
+export interface UnknownExtra { [key: string]: unknown };
 
 export interface Item<T = UnknownExtra> {
   id: string;

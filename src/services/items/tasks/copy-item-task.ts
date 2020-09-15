@@ -95,7 +95,7 @@ export class CopyItemTask extends BaseItemTask {
     // copy (memberships from origin are not copied/kept)
     // get the whole tree
     const descendants = await this.itemService.getDescendants(item, handler, 'ASC');
-    const treeItems = [item].concat(descendants as Item[]);
+    const treeItems = [item].concat(descendants);
     const treeItemsCopy = this.copy(treeItems, parentItem);
 
     // return list of subtasks for task manager to copy item + all descendants, one by one.
