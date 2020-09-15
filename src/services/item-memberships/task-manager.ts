@@ -45,10 +45,11 @@ export class ItemMembershipTaskManager extends BaseTaskManager<ItemMembership> {
     );
   }
 
-  createDeleteTask(member: Member, itemMembershipId: string): ItemMembershipTask {
+  createDeleteTask(member: Member, itemMembershipId: string, purgeBelow?: boolean): ItemMembershipTask {
     return new DeleteItemMembershipTask(
       member, itemMembershipId,
-      this.itemService, this.itemMembershipService
+      this.itemService, this.itemMembershipService,
+      purgeBelow
     );
   }
 

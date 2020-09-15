@@ -1,7 +1,7 @@
 // global
 import { v4 as uuidv4 } from 'uuid';
 // local
-import { Item } from './interfaces/item';
+import { Item, UnknownExtra } from './interfaces/item';
 
 const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
 
@@ -13,7 +13,7 @@ export class BaseItem implements Item {
   description: string;
   type: string;
   path: string;
-  extra: { [key: string]: unknown };
+  extra: UnknownExtra;
   readonly creator: string;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -22,7 +22,7 @@ export class BaseItem implements Item {
     name: string,
     description: string = null,
     type: string = 'base',
-    extra: { [key: string]: unknown } = {},
+    extra: UnknownExtra = {},
     creator: string,
     parent?: Item
   ) {

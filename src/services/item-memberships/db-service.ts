@@ -64,6 +64,24 @@ export class ItemMembershipService {
   }
 
   /**
+   * Get all memberships "below" the given `membership`, ordered by longest to shortest
+   * path - lowest in the (sub)tree to highest in the (sub)tree.
+   * @param membership Membership
+   * @param transactionHandler Database transaction handler
+   */
+  async getAllBelow(membership: ItemMembership, transactionHandler: TrxHandler) {
+    return transactionHandler.query<Partial<ItemMembership>>(sql`
+        SELECT id
+        FROM item_membership
+        WHERE member_id = ${membership.memberId}
+          AND ${membership.itemPath} @> item_path
+          AND id != ${membership.id}
+        ORDER BY nlevel(item_path) DESC
+      `)
+      .then(({ rows }) => rows.slice(0));
+  }
+
+  /**
    * Get all the 'best/nearest' memberships for the given `item` for each member
    * with access to it.
    * @param item Item whose path should be considered

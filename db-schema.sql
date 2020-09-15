@@ -3,19 +3,18 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "ltree";
 
 -- DROP everything in reverse order
-DROP TRIGGER "member_set_timestamp";
-DROP TRIGGER "item_set_timestamp";
-DROP TRIGGER "item_membership_set_timestamp";
-DROP TRIGGER "members_relation_set_timestamp";
-DROP FUNCTION "trigger_set_timestamp";
+DROP TRIGGER IF EXISTS "member_set_timestamp" ON "member";
+DROP TRIGGER IF EXISTS "item_set_timestamp" ON "item";
+DROP TRIGGER IF EXISTS "item_membership_set_timestamp" ON "item_membership";
+-- DROP TRIGGER "members_relation_set_timestamp";
+DROP FUNCTION IF EXISTS "trigger_set_timestamp";
 -- DROP TABLE "members_relation";
 -- DROP TYPE "relations_enum";
-DROP TABLE "item_membership";
-DROP TYPE "permissions_enum";
-DROP INDEX "item_path_idx";
-DROP TABLE "item";
-DROP TABLE "member";
-DROP TYPE "member_type_enum";
+DROP TABLE IF EXISTS "item_membership";
+DROP TYPE IF EXISTS "permissions_enum";
+DROP TABLE IF EXISTS "item";
+DROP TABLE IF EXISTS "member";
+DROP TYPE IF EXISTS "member_type_enum";
 
 -- CREATE everything
 
