@@ -24,7 +24,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
   async run(handler: DatabaseTransactionHandler) {
     this._status = TaskStatus.Running;
 
-    // get item to which the new membership will be added
+    // get item that the new membership will target
     const item = await this.itemService.get(this.itemId, handler);
     if (!item) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.itemId));
 
@@ -36,9 +36,9 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
       new BaseItemMembership(this.data.memberId, item.path, this.data.permission, this.actor.id);
     const newMember = { id: itemMembership.memberId } as Member;
 
-    // check new member's inherited memberships
+    // check member's membership "at" item
     const inheritedMembership =
-      await this.itemMembershipService.getInherited(newMember, item, handler);
+      await this.itemMembershipService.getInherited(newMember, item, handler, true);
 
     if (inheritedMembership) {
       const { itemPath, permission: inheritedPermission } = inheritedMembership;
@@ -51,7 +51,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
       const { permission: newPermission } = itemMembership;
 
       if (PermissionLevelCompare.lte(newPermission, inheritedPermission)) {
-        // trying to add a membership with the same or "worse" permission lvl than
+        // trying to add a membership with the same or "worse" permission level than
         // the one inherited from the membership "above"
         this.failWith(new GraaspError(GraaspError.InvalidMembership, this.data));
       }

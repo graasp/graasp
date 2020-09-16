@@ -44,19 +44,19 @@ export class ItemMembershipService {
 
   /**
    * Get the 'best/nearest' membership to the given `item` for `member`.
-   * If `excludeOwn`, ignores membership targeting this `member`+`item`.
+   * If `includeOwn`, also include membership targeting this `member`+`item`.
    * @param member Member in membership
    * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler
-   * @param excludeOwn Exclude membership targeting the given pair member+item
+   * @param includeOwn Also include membership targeting the given member+item
    */
-  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, excludeOwn = false) {
+  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, includeOwn = false) {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
         WHERE member_id = ${member.id}
           AND item_path @> ${item.path}
-          ${ excludeOwn ? sql`AND item_path != ${item.path}` : sql``}
+          ${ includeOwn ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
       `)

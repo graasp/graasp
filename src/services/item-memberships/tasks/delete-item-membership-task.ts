@@ -12,10 +12,10 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
   get name() { return DeleteItemMembershipSubTask.name; }
 
-  constructor(member: Member, itemId: string,
+  constructor(member: Member, itemMembershipId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
     super(member, itemService, itemMembershipService);
-    this.targetId = itemId;
+    this.targetId = itemMembershipId;
   }
 
   async run(handler: DatabaseTransactionHandler) {
