@@ -32,7 +32,7 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
     const hasRights = itemMemberships.some(m => m.memberId === this.actor.id);
     if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotReadItem, this.itemId));
 
-    // create membership
+    // return item's memberships
     this._result = itemMemberships;
     this._status = TaskStatus.OK;
   }

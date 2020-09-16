@@ -48,15 +48,15 @@ export class ItemMembershipService {
    * @param member Member in membership
    * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler
-   * @param includeOwn Also include membership targeting the given member+item
+   * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, includeOwn = false) {
+  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false) {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
         WHERE member_id = ${member.id}
           AND item_path @> ${item.path}
-          ${ includeOwn ? sql`` : sql`AND item_path != ${item.path}`}
+          ${ considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
       `)
@@ -64,18 +64,20 @@ export class ItemMembershipService {
   }
 
   /**
-   * Get all memberships "below" the given `membership`, ordered by longest to shortest
-   * path - lowest in the (sub)tree to highest in the (sub)tree.
-   * @param membership Membership
+   * Get all memberships "below" the given `item`'s path, for the given `member`, ordered by
+   * longest to shortest path - lowest in the (sub)tree to highest in the (sub)tree.
+   * @param member Member in membership
+   * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler
+   * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getAllBelow(membership: ItemMembership, transactionHandler: TrxHandler) {
-    return transactionHandler.query<Partial<ItemMembership>>(sql`
-        SELECT id
+  async getAllBelow(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false) {
+    return transactionHandler.query<ItemMembership>(sql`
+        SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
-        WHERE member_id = ${membership.memberId}
-          AND ${membership.itemPath} @> item_path
-          AND id != ${membership.id}
+        WHERE member_id = ${member.id}
+          AND ${item.path} @> item_path
+          ${ considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
       `)
       .then(({ rows }) => rows.slice(0));

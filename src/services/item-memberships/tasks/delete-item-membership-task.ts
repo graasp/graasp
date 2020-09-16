@@ -4,6 +4,7 @@ import { DatabaseTransactionHandler } from 'plugins/database';
 import { TaskStatus } from 'interfaces/task';
 // other services
 import { ItemService } from 'services/items/db-service';
+import { Item } from 'services/items/interfaces/item';
 import { Member } from 'services/members/interfaces/member';
 // local
 import { ItemMembershipService } from '../db-service';
@@ -59,12 +60,15 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
     }
 
     if (this.purgeBelow) {
+      const member = { id: itemMembership.memberId } as Member;
+      const item = { path: itemMembership.itemPath } as Item;
+
       const itemMembershipsBelow =
-        await this.itemMembershipService.getAllBelow(itemMembership, handler);
+        await this.itemMembershipService.getAllBelow(member, item, handler);
 
       if (itemMembershipsBelow.length > 0) {
         // return list of subtasks for task manager to execute and
-        // delete item + all descendants, one by one.
+        // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
         return itemMembershipsBelow
           .concat(itemMembership)
           .map(im => new DeleteItemMembershipSubTask(this.actor, im.id, this.itemService, this.itemMembershipService));
