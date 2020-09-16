@@ -9,7 +9,7 @@ import { Member } from 'services/members/interfaces/member';
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 
-class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
+export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
   get name() { return DeleteItemMembershipSubTask.name; }
 
   constructor(member: Member, itemMembershipId: string,

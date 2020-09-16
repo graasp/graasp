@@ -9,6 +9,7 @@ import { Member } from 'services/members/interfaces/member';
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
+import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
 export class UpdateItemMembershipTask extends BaseItemMembershipTask {
   get name() { return UpdateItemMembershipTask.name; }
@@ -46,12 +47,10 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask {
 
       if (permission === inheritedPermission) {
         // downgrading to same as the inherited, delete current membership
-        await this.itemMembershipService.delete(this.targetId, handler);
+        const deleteSubtask =
+          new DeleteItemMembershipSubTask(this.actor, this.targetId, this.itemService, this.itemMembershipService);
 
-        this._result = inheritedMembership;
-        this._status = TaskStatus.OK;
-
-        return;
+        return [deleteSubtask];
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
         // if downgrading to "worse" than inherited
         this.failWith(new GraaspError(GraaspError.InvalidPermissionLevel, this.targetId));
