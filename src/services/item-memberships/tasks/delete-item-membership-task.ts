@@ -67,6 +67,8 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
         await this.itemMembershipService.getAllBelow(member, item, handler);
 
       if (itemMembershipsBelow.length > 0) {
+        this._status = TaskStatus.Delegated;
+
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
         return itemMembershipsBelow

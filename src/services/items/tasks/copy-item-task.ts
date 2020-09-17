@@ -15,8 +15,8 @@ import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
 class CopyItemSubTask extends BaseItemTask {
-  private createMembership: boolean;
   get name() { return CopyItemSubTask.name; }
+  private createMembership: boolean;
 
   constructor(member: Member, data: Partial<Item>,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
@@ -101,6 +101,7 @@ export class CopyItemTask extends BaseItemTask {
     // return list of subtasks for task manager to copy item + all descendants, one by one.
     const createAdminMembership = !parentItem || parentItemPermissionLevel === pl.Write;
 
+    this._status = TaskStatus.Delegated;
     return treeItemsCopy
       .map((item, index) => index === 0 ? // create 'admin' membership for 1st item if necessary
         new CopyItemSubTask(this.actor, item, this.itemService, this.itemMembershipService, createAdminMembership) :

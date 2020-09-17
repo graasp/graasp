@@ -71,6 +71,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask {
         const deleteSubtask =
           new DeleteItemMembershipSubTask(this.actor, this.targetId, this.itemService, this.itemMembershipService);
 
+        this._status = TaskStatus.Delegated;
         return [deleteSubtask];
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
         // if downgrading to "worse" than inherited
@@ -88,6 +89,8 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask {
         membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, permission));
 
       if (membershipsBelowToDiscard.length > 0) {
+        this._status = TaskStatus.Delegated;
+
         // return subtasks to remove redundant existing memberships and to update the existing one
         return membershipsBelowToDiscard
           .map(m => new DeleteItemMembershipSubTask(

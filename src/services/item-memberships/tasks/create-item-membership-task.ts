@@ -90,6 +90,8 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
         membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, newPermission));
 
       if (membershipsBelowToDiscard.length > 0) {
+        this._status = TaskStatus.Delegated;
+
         // return subtasks to remove redundant existing memberships and to create the new one
         return membershipsBelowToDiscard
           .map(m => new DeleteItemMembershipSubTask(
