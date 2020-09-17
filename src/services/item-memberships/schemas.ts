@@ -99,6 +99,13 @@ const updateOne = {
 // schema for deleting an item membership
 const deleteOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  querystring: {
+    type: 'object',
+    properties: {
+      purgeBelow: { type: 'boolean' }
+    },
+    additionalProperties: false
+  },
   response: {
     200: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' }
   }
