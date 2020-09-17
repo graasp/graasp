@@ -8,8 +8,29 @@ import { Member } from 'services/members/interfaces/member';
 // local
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
-import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
+import { ItemMembership, PermissionLevelCompare, PermissionLevel } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
+
+class UpdateItemMembershipSubTask extends BaseItemMembershipTask {
+  get name() { return UpdateItemMembershipSubTask.name; }
+  private permission: PermissionLevel;
+
+  constructor(member: Member, itemMembershipId: string, permission: PermissionLevel,
+    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+    super(member, itemService, itemMembershipService);
+    this.permission = permission;
+    this.targetId = itemMembershipId;
+  }
+
+  async run(handler: DatabaseTransactionHandler) {
+    this._status = TaskStatus.Running;
+
+    const itemMembership = await this.itemMembershipService.update(this.targetId, this.permission, handler);
+
+    this._status = TaskStatus.OK;
+    this._result = itemMembership;
+  }
+}
 
 export class UpdateItemMembershipTask extends BaseItemMembershipTask {
   get name() { return UpdateItemMembershipTask.name; }
@@ -54,6 +75,27 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask {
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
         // if downgrading to "worse" than inherited
         this.failWith(new GraaspError(GraaspError.InvalidPermissionLevel, this.targetId));
+      }
+    }
+
+    // check existing memberships lower in the tree
+    const membershipsBelow =
+      await this.itemMembershipService.getAllBelow(member, item, handler);
+
+    if (membershipsBelow.length > 0) {
+      // check if any have the same or a worse permission level
+      const membershipsBelowToDiscard =
+        membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, permission));
+
+      if (membershipsBelowToDiscard.length > 0) {
+        // return subtasks to remove redundant existing memberships and to update the existing one
+        return membershipsBelowToDiscard
+          .map(m => new DeleteItemMembershipSubTask(
+            this.actor, m.id, this.itemService, this.itemMembershipService
+          ))
+          .concat(new UpdateItemMembershipSubTask(
+            this.actor, this.targetId, permission, this.itemService, this.itemMembershipService
+          ));
       }
     }
 
