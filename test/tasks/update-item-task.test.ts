@@ -14,9 +14,9 @@ const member = {} as Member;
 
 describe('UpdateItemTask', () => {
   const itemId = 'item-id';
-  const extra = {data: 'somedata'}
-  const fakeItem = ({ id: itemId, extra } as Item<typeof extra>);
-  const updatedItemData = {description: 'item-description'}
+  const extra = { data: 'somedata' };
+  const fakeItem = { id: itemId, extra } as Item<typeof extra>;
+  const updatedItemData = { description: 'item-description' };
   const itemService = new ItemService();
   const itemMembershipService = new ItemMembershipService();
   const dbHandler = {} as DatabaseTransactionConnectionType;
@@ -75,30 +75,30 @@ describe('UpdateItemTask', () => {
 
   test('Should update item when `member` can write it', async () => {
     itemService.get = jest.fn(async () => fakeItem);
-    itemMembershipService.canWrite = jest.fn(async () =>  true);
-    const updatedItem = ({id: itemId, extra, ...updatedItemData} as Item<typeof extra>)
+    itemMembershipService.canWrite = jest.fn(async () => true);
+    const updatedItem = { id: itemId, extra, ...updatedItemData } as Item<typeof extra>;
     itemService.update = jest.fn(async () => updatedItem);
 
     const task = new UpdateItemTask(member, itemId, updatedItemData, itemService, itemMembershipService);
     await task.run(dbHandler);
 
     expect(itemService.update).toHaveBeenCalled();
-    expect(task.result).toBe(updatedItem)
+    expect(task.result).toBe(updatedItem);
   });
 
   test('Should update item with extra data when `member` can write it', async () => {
-    const updatedExtra =  {p1: 123, data: 'someotherdata'};
-    const updatedItem = ({id: itemId, extra: updatedExtra} as Item<typeof updatedExtra>)
+    const updatedExtra = { p1: 123, data: 'someotherdata' };
+    const updatedItem = { id: itemId, extra: updatedExtra } as Item<typeof updatedExtra>;
     itemService.get = jest.fn(async () => fakeItem);
-    itemMembershipService.canWrite = jest.fn(async () =>  true);
+    itemMembershipService.canWrite = jest.fn(async () => true);
     itemService.update = jest.fn(async () => updatedItem);
 
-    const task = new UpdateItemTask(member, itemId, {extra: updatedExtra}, itemService, itemMembershipService);
+    const task = new UpdateItemTask(member, itemId, { extra: updatedExtra }, itemService, itemMembershipService);
     await task.run(dbHandler);
 
     expect(itemService.update).toHaveBeenCalled();
-    expect(task.result).toBe(updatedItem)
+    expect(task.result).toBe(updatedItem);
     // extra is correctly updated with new values
-    expect(task.data.extra).toStrictEqual(updatedExtra)
+    expect(task.data.extra).toStrictEqual(updatedExtra);
   });
 });
