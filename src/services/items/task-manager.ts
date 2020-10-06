@@ -11,6 +11,8 @@ import { Item } from './interfaces/item';
 import { BaseTaskManager } from 'services/base-task-manager';
 import { GetItemTask } from './tasks/get-item-task';
 import { GetItemChildrenTask } from './tasks/get-item-children-task';
+import { GetOwnItemsTask } from './tasks/get-own-items';
+import { GetItemsSharedWithTask } from './tasks/get-items-shared-with';
 import { CreateItemTask } from './tasks/create-item-task';
 import { UpdateItemTask } from './tasks/update-item-task';
 import { DeleteItemTask } from './tasks/delete-item-task';
@@ -113,6 +115,14 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
 
   createGetChildrenTask(member: Member, itemId: string) {
     return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService);
+  }
+
+  createGetOwnTask(member: Member) {
+    return new GetOwnItemsTask(member, this.itemService, this.itemMembershipService);
+  }
+
+  createGetSharedWithTask(member: Member) {
+    return new GetItemsSharedWithTask(member, this.itemService, this.itemMembershipService);
   }
 
   createCreateTask(member: Member, data: Partial<Item>, parentId?: string) {

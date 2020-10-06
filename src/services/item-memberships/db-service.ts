@@ -44,23 +44,65 @@ export class ItemMembershipService {
 
   /**
    * Get the 'best/nearest' membership to the given `item` for `member`.
-   * If `excludeOwn`, ignore permission targeting exactly this `member`+`item`.
+   * If `includeOwn`, also include membership targeting this `member`+`item`.
    * @param member Member in membership
    * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler
-   * @param excludeOwn Exclude permission targeting the given pair member+item
+   * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, excludeOwn = false) {
+  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false) {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
         WHERE member_id = ${member.id}
           AND item_path @> ${item.path}
-          ${ excludeOwn ? sql`AND item_path != ${item.path}` : sql``}
+          ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
       `)
       .then(({ rows }) => rows[0] || null);
+  }
+
+  /**
+   * Get all memberships "below" the given `item`'s path, for the given `member`, ordered by
+   * longest to shortest path - lowest in the (sub)tree to highest in the (sub)tree.
+   * @param member Member in membership
+   * @param item Item whose path should be considered
+   * @param transactionHandler Database transaction handler
+   * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
+   */
+  async getAllBelow(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false) {
+    return transactionHandler.query<ItemMembership>(sql`
+        SELECT ${ItemMembershipService.allColumns}
+        FROM item_membership
+        WHERE member_id = ${member.id}
+          AND ${item.path} @> item_path
+          ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
+        ORDER BY nlevel(item_path) DESC
+      `)
+      // TODO: is there a better way?
+      .then(({ rows }) => rows.slice(0));
+  }
+
+  /**
+   * Get all the 'best/nearest' memberships for the given `item` for each member
+   * with access to it.
+   * @param item Item whose path should be considered
+   * @param transactionHandler Database transaction handler
+   */
+  async getInheritedForAll(item: Item, transactionHandler: TrxHandler) {
+    return transactionHandler.query<ItemMembership>(sql`
+        SELECT ${ItemMembershipService.allColumns}
+        FROM (
+          SELECT *,
+            RANK() OVER (PARTITION BY member_id ORDER BY nlevel(item_path) DESC) AS membership_rank
+          FROM item_membership
+          WHERE item_path @> ${item.path}
+        ) AS t1
+        WHERE membership_rank = 1
+      `)
+      // TODO: is there a better way?
+      .then(({ rows }) => rows.slice(0));
   }
 
   /**

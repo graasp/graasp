@@ -11,7 +11,7 @@ import common, {
   updateOne, updateMany,
   deleteOne, deleteMany,
   moveOne, moveMany,
-  copyOne, copyMany
+  copyOne, copyMany, getOwnAndShared
 } from './schemas';
 import { ItemTaskManager } from './task-manager';
 
@@ -40,6 +40,24 @@ export default async (fastify: FastifyInstance) => {
     '/:id', { schema: getOne },
     async ({ member, params: { id } }) => {
       const task = taskManager.createGetTask(member, id);
+      return taskManager.run([task]);
+    }
+  );
+
+  // get own
+  fastify.get(
+    '/own', { schema: getOwnAndShared },
+    async ({ member }) => {
+      const task = taskManager.createGetOwnTask(member);
+      return taskManager.run([task]);
+    }
+  );
+
+  // get shared with
+  fastify.get(
+    '/shared-with', { schema: getOwnAndShared },
+    async ({ member }) => {
+      const task = taskManager.createGetSharedWithTask(member);
       return taskManager.run([task]);
     }
   );

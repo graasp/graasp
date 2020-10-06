@@ -12,6 +12,7 @@ import { CreateItemMembershipTask } from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
 import { ItemMembershipTask } from './interfaces/item-membership-task';
+import { GetItemsItemMembershipsTask } from './tasks/get-items-item-membership-task';
 
 export class ItemMembershipTaskManager extends BaseTaskManager<ItemMembership> {
   private itemService: ItemService;
@@ -44,9 +45,17 @@ export class ItemMembershipTaskManager extends BaseTaskManager<ItemMembership> {
     );
   }
 
-  createDeleteTask(member: Member, itemMembershipId: string): ItemMembershipTask {
+  createDeleteTask(member: Member, itemMembershipId: string, purgeBelow?: boolean): ItemMembershipTask {
     return new DeleteItemMembershipTask(
       member, itemMembershipId,
+      this.itemService, this.itemMembershipService,
+      purgeBelow
+    );
+  }
+
+  createGetItemsItemMembershipsTask(actor: Member, itemId: string): ItemMembershipTask {
+    return new GetItemsItemMembershipsTask(
+      actor, itemId,
       this.itemService, this.itemMembershipService
     );
   }

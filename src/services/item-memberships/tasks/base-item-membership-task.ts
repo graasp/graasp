@@ -14,7 +14,7 @@ export abstract class BaseItemMembershipTask implements ItemMembershipTask {
   protected itemService: ItemService;
   protected itemMembershipService: ItemMembershipService
   protected _status: TaskStatus;
-  protected _result: ItemMembership;
+  protected _result: ItemMembership | ItemMembership[];
   protected _message: string;
 
   readonly actor: Member;

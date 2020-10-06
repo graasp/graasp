@@ -4,7 +4,8 @@ export enum TaskStatus {
   Running = 'RUNNING',
   OK = 'OK',
   Fail = 'FAIL',
-  Partial = 'PARTIAL' // no 100% OK, but acceptable
+  Partial = 'PARTIAL', // no 100% OK, but acceptable
+  Delegated = 'DELEGATED'
 }
 
 export interface Task<A, T> {

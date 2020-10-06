@@ -3,10 +3,12 @@ import { FastifyInstance } from 'fastify';
 import { IdParam } from 'interfaces/requests';
 // local
 import common, {
+  getItems,
   create,
   updateOne,
   deleteOne
 } from './schemas';
+import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './task-manager';
 
 export default async (fastify: FastifyInstance) => {
@@ -15,6 +17,15 @@ export default async (fastify: FastifyInstance) => {
 
   // schemas
   fastify.addSchema(common);
+
+  // get item's memberships
+  fastify.get<{ Querystring: { itemId: string } }>(
+    '/', { schema: getItems },
+    async ({ member, query: { itemId } }) => {
+      const task = taskManager.createGetItemsItemMembershipsTask(member, itemId);
+      return taskManager.run([task]);
+    }
+  );
 
   // create item membership
   fastify.post<{ Querystring: { itemId: string } }>(
@@ -35,10 +46,10 @@ export default async (fastify: FastifyInstance) => {
   );
 
   // delete item membership
-  fastify.delete<{ Params: IdParam }>(
+  fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
     '/:id', { schema: deleteOne },
-    async ({ member, params: { id } }) => {
-      const task = taskManager.createDeleteTask(member, id);
+    async ({ member, params: { id }, query: { purgeBelow } }) => {
+      const task = taskManager.createDeleteTask(member, id, purgeBelow);
       return taskManager.run([task]);
     }
   );

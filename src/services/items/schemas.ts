@@ -120,6 +120,16 @@ const getMany = {
   }
 };
 
+// schema for getting member's own items and items shared with him/her
+const getOwnAndShared = {
+  response: {
+    200: {
+      type: 'array',
+      items: { $ref: 'http://graasp.org/items/#/definitions/item' }
+    }
+  }
+};
+
 // schema for updating an item
 const updateOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
@@ -251,6 +261,7 @@ export {
   getOne,
   getChildren,
   getMany,
+  getOwnAndShared,
   updateOne,
   updateMany,
   deleteOne,

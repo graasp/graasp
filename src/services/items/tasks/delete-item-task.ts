@@ -63,6 +63,8 @@ export class DeleteItemTask extends BaseItemTask {
     if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
       this.failWith(new GraaspError(GraaspError.TooManyDescendants, this.targetId));
     } else if (descendants.length > 0) {
+      this._status = TaskStatus.Delegated;
+
       // return list of subtasks for task manager to execute and
       // delete item + all descendants, one by one.
       return descendants

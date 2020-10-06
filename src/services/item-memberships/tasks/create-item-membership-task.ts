@@ -10,6 +10,27 @@ import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import { BaseItemMembership } from '../base-item-membership';
 import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
+import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
+
+class CreateItemMembershipSubTask extends BaseItemMembershipTask {
+  get name() { return CreateItemMembershipSubTask.name; }
+  private membership: ItemMembership;
+
+  constructor(member: Member, membership: ItemMembership,
+    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+    super(member, itemService, itemMembershipService);
+    this.membership = membership;
+  }
+
+  async run(handler: DatabaseTransactionHandler) {
+    this._status = TaskStatus.Running;
+
+    const itemMembership = await this.itemMembershipService.create(this.membership, handler);
+
+    this._status = TaskStatus.OK;
+    this._result = itemMembership;
+  }
+}
 
 export class CreateItemMembershipTask extends BaseItemMembershipTask {
   get name() { return CreateItemMembershipTask.name; }
@@ -24,7 +45,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
   async run(handler: DatabaseTransactionHandler) {
     this._status = TaskStatus.Running;
 
-    // get item to which the new membership will be added
+    // get item that the new membership will target
     const item = await this.itemService.get(this.itemId, handler);
     if (!item) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.itemId));
 
@@ -36,9 +57,9 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
       new BaseItemMembership(this.data.memberId, item.path, this.data.permission, this.actor.id);
     const newMember = { id: itemMembership.memberId } as Member;
 
-    // check new member's inherited memberships
+    // check member's membership "at" item
     const inheritedMembership =
-      await this.itemMembershipService.getInherited(newMember, item, handler);
+      await this.itemMembershipService.getInherited(newMember, item, handler, true);
 
     if (inheritedMembership) {
       const { itemPath, permission: inheritedPermission } = inheritedMembership;
@@ -51,9 +72,35 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
       const { permission: newPermission } = itemMembership;
 
       if (PermissionLevelCompare.lte(newPermission, inheritedPermission)) {
-        // trying to add a membership with the same or "worse" permission lvl than
+        // trying to add a membership with the same or "worse" permission level than
         // the one inherited from the membership "above"
         this.failWith(new GraaspError(GraaspError.InvalidMembership, this.data));
+      }
+    }
+
+    // check existing memberships lower in the tree
+    const membershipsBelow =
+      await this.itemMembershipService.getAllBelow(newMember, item, handler);
+
+    if (membershipsBelow.length > 0) {
+      // check if any have the same or a worse permission level
+      const { permission: newPermission } = itemMembership;
+
+      const membershipsBelowToDiscard =
+        membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, newPermission));
+
+      if (membershipsBelowToDiscard.length > 0) {
+        this._status = TaskStatus.Delegated;
+
+        // return subtasks to remove redundant existing memberships and to create the new one
+        return membershipsBelowToDiscard
+          .map(m => new DeleteItemMembershipSubTask(
+            this.actor, m.id, this.itemService, this.itemMembershipService
+          ))
+          .concat(new CreateItemMembershipSubTask(
+            this.actor, itemMembership, this.itemService, this.itemMembershipService
+          ));
+
       }
     }
 
