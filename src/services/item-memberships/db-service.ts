@@ -56,7 +56,7 @@ export class ItemMembershipService {
         FROM item_membership
         WHERE member_id = ${member.id}
           AND item_path @> ${item.path}
-          ${ considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
+          ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
       `)
@@ -77,7 +77,7 @@ export class ItemMembershipService {
         FROM item_membership
         WHERE member_id = ${member.id}
           AND ${item.path} @> item_path
-          ${ considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
+          ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
       `)
       // TODO: is there a better way?
