@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Item, UnknownExtra } from './interfaces/item';
 
 const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
+const underscoreToDash = (value: string) => value.replace(/_/g, '-');
 
 export class BaseItem implements Item {
   static propagatingProperties: (keyof Item)[] = []; // TODO: incomplete
@@ -44,5 +45,10 @@ export class BaseItem implements Item {
   static parentPath(item: Item) {
     const index = item.path.lastIndexOf('.');
     return index === -1 ? null : item.path.slice(0, index);
+  }
+
+  static pathToId(path: string) {
+    const index = path.lastIndexOf('.');
+    return underscoreToDash(index === -1 ? path : path.slice(index + 1));
   }
 }

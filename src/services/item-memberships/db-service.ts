@@ -80,6 +80,7 @@ export class ItemMembershipService {
           ${ considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
       `)
+      // TODO: is there a better way?
       .then(({ rows }) => rows.slice(0));
   }
 
@@ -100,6 +101,7 @@ export class ItemMembershipService {
         ) AS t1
         WHERE membership_rank = 1
       `)
+      // TODO: is there a better way?
       .then(({ rows }) => rows.slice(0));
   }
 

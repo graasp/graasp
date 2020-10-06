@@ -9,6 +9,7 @@ import { Member } from 'services/members/interfaces/member';
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 
+// TODO: does this make sense here? Should this be part of different (micro)service??
 export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
   get name() { return GetItemsItemMembershipsTask.name; }
 
