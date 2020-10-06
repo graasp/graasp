@@ -120,8 +120,8 @@ const getMany = {
   }
 };
 
-// schema for getting member's own items
-const getOwn = {
+// schema for getting member's own items and items shared with him/her
+const getOwnAndShared = {
   response: {
     200: {
       type: 'array',
@@ -261,7 +261,7 @@ export {
   getOne,
   getChildren,
   getMany,
-  getOwn,
+  getOwnAndShared,
   updateOne,
   updateMany,
   deleteOne,

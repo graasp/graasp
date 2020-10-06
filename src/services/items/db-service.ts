@@ -267,10 +267,35 @@ export class ItemService {
         SELECT ${ItemService.allColumnsForJoins}
         FROM item
         INNER JOIN item_membership
-          ON path = item_path
+          ON item.path = item_membership.item_path
         WHERE item_membership.member_id = ${memberId}
           AND item_membership.permission = ${PermissionLevel.Admin}
-          AND	item.creator = ${memberId}
+          AND item.creator = ${memberId}
+      `)
+      // TODO: is there a better way?
+      .then(({ rows }) => rows.slice(0));
+  }
+
+  /**
+   * Get items "shared with" `member` - "highest" items in the membership tree where `member`
+   * is not the creator of the item
+   * @param memberId Member's id
+   * @param transactionHandler Database transaction handler
+   * TODO: does this make sense here? Should this be part of different (micro)service??
+   */
+  async getSharedWith(memberId: string, transactionHandler: TrxHandler) {
+    return transactionHandler.query<Item>(sql`
+      SELECT ${ItemService.allColumnsForJoins}
+      FROM (
+        SELECT item_path,
+          RANK() OVER (PARTITION BY subpath(item_path, 0, 1) ORDER BY item_path ASC) AS membership_rank
+        FROM item_membership
+        WHERE member_id = ${memberId}
+      ) AS t1
+      INNER JOIN item
+        ON item.path = t1.item_path
+      WHERE t1.membership_rank = 1
+        AND item.creator != ${memberId}
       `)
       // TODO: is there a better way?
       .then(({ rows }) => rows.slice(0));
