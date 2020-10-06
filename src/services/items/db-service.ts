@@ -1,5 +1,7 @@
 // global
 import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
+// other services
+import { PermissionLevel } from 'services/item-memberships/interfaces/item-membership';
 // local
 import { Item } from './interfaces/item';
 
@@ -18,6 +20,21 @@ export class ItemService {
         sql.identifier([c]) :
         sql.join(c.map(cwa => sql.identifier([cwa])), sql` AS `)
     ),
+    sql`, `
+  );
+
+  private static allColumnsForJoins = sql.join(
+    [
+      [['item', 'id'], ['id']],
+      [['item', 'name'], ['name']],
+      [['item', 'description'], ['description']],
+      [['item', 'type'], ['type']],
+      [['item', 'path'], ['path']],
+      [['item', 'extra'], ['extra']],
+      [['item', 'creator'], ['creator']],
+      [['item', 'created_at'], ['createdAt']],
+      [['item', 'updated_at'], ['updatedAt']],
+    ].map(c => sql.join(c.map(cwa => sql.identifier(cwa)), sql` AS `)),
     sql`, `
   );
 
@@ -236,6 +253,27 @@ export class ItemService {
         LIMIT 1
       `) // `AND id != ${item.id}` because <@ includes the item's path
       .then((n: string) => parseInt(n || '0', 10)); // TODO: improve?
+  }
+
+  /**
+   * Get `member`'s own items (created by member and where member is `admin`)
+   * @param memberId Member's id
+   * @param transactionHandler Database transaction handler
+   * TODO: does this make sense here? Should this be part of different (micro)service??
+   */
+  async getOwn(memberId: string, transactionHandler: TrxHandler) {
+    return transactionHandler
+      .query<Item>(sql`
+        SELECT ${ItemService.allColumnsForJoins}
+        FROM item
+        INNER JOIN item_membership
+          ON path = item_path
+        WHERE item_membership.member_id = ${memberId}
+          AND item_membership.permission = ${PermissionLevel.Admin}
+          AND	item.creator = ${memberId}
+      `)
+      // TODO: is there a better way?
+      .then(({ rows }) => rows.slice(0));
   }
 
   /**
