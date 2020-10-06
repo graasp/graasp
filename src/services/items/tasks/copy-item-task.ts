@@ -79,7 +79,7 @@ export class CopyItemTask extends BaseItemTask {
 
       // verify membership rights over parent item
       parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, parentItem, handler);
-      if (parentItemPermissionLevel === pl.Read) {
+      if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
         this.failWith(new GraaspError(GraaspError.UserCannotWriteItem, this.parentItemId));
       }
 
