@@ -210,7 +210,7 @@ export class ItemService {
    * @param properties List of Item properties to fetch - returns all if not defined. When defined,
    * the function should be called with `R` as `<Partial<Item>>`: `getDescendants<Partial<Item>>()`
    */
-  async getDescendants<R = Item>(item: Item, transactionHandler: TrxHandler,
+  async getDescendants(item: Item, transactionHandler: TrxHandler,
     direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof Item)[]) {
     let selectColumns;
 
@@ -225,7 +225,7 @@ export class ItemService {
       sql`AND nlevel(path) <= nlevel(${item.path}) + ${levels}` : sql``;
 
     return transactionHandler
-      .query<R>(sql`
+      .query<Partial<Item>>(sql`
         SELECT ${selectColumns || ItemService.allColumns} FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}

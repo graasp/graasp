@@ -94,7 +94,7 @@ export class CopyItemTask extends BaseItemTask {
 
     // copy (memberships from origin are not copied/kept)
     // get the whole tree
-    const descendants = await this.itemService.getDescendants(item, handler, 'ASC');
+    const descendants = await this.itemService.getDescendants(item, handler, 'ASC') as Item[];
     const treeItems = [item].concat(descendants);
     const treeItemsCopy = this.copy(treeItems, parentItem);
 
