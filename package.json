@@ -35,9 +35,10 @@
   ],
   "dependencies": {
     "dotenv": "^8.2.0",
-    "fastify": "3.2.1",
-    "fastify-basic-auth": "1.0.1",
-    "fastify-plugin": "2.3.0",
+    "fastify": "3.6.0",
+    "fastify-jwt": "^2.1.3",
+    "fastify-plugin": "2.3.4",
+    "fastify-secure-session": "^2.3.0",
     "graasp-file-item": "github:graasp/graasp-file-item#master",
     "slonik": "^22.4.8",
     "uuid": "^7.0.0"
