@@ -5,9 +5,9 @@ import { Database, DatabasePoolHandler } from 'plugins/database';
 
 import { TaskManager } from 'interfaces/task-manager';
 import { Task, TaskStatus } from 'interfaces/task';
-import { Member } from './members/interfaces/member';
+import { Actor } from 'interfaces/actor';
 
-export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
+export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
   private databasePool: DatabasePoolHandler;
   protected logger: FastifyLoggerInstance;
 
@@ -16,7 +16,7 @@ export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
     this.logger = logger;
   }
 
-  private handleTaskFinish(task: Task<Member, T>) {
+  private handleTaskFinish(task: Task<Actor, T>) {
     const { name, actor: { id: actorId }, targetId, status, message: taskMessage } = task;
 
     let message = `${name}: ` +
@@ -44,7 +44,7 @@ export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
    * @param task Task to run
    * @returns Task's `result` or, if it has subtasks, the `result` of the last subtask.
    */
-  private async runTransactionally(task: Task<Member, T>): Promise<T | T[]> {
+  private async runTransactionally(task: Task<Actor, T>): Promise<T | T[]> {
     return this.databasePool.transaction(async (handler) => {
       let taskResult: T | T[];
       let subtasks;
@@ -76,7 +76,7 @@ export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
           await subtask.run(handler);
         }
 
-        subtasks.forEach((st: Task<Member, T>) => this.handleTaskFinish(st)); // TODO: *1
+        subtasks.forEach((st: Task<Actor, T>) => this.handleTaskFinish(st)); // TODO: *1
 
         // set the last subtask result as the result of the task
         taskResult = subtasks[subtasks.length - 1].result;
@@ -98,7 +98,7 @@ export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
    *
    * @param tasks List of tasks to run.
    */
-  async run(tasks: Task<Member, T>[]): Promise<void | T | T[]> {
+  async run(tasks: Task<Actor, T>[]): Promise<void | T | T[]> {
     if (tasks.length === 1) {
       return this.runTransactionally(tasks[0]);
     }
@@ -122,8 +122,8 @@ export abstract class BaseTaskManager<T> implements TaskManager<Member, T> {
     return result;
   }
 
-  abstract createCreateTask(actor: Member, object: T, extra?: unknown): Task<Member, T>;
-  abstract createGetTask(actor: Member, objectId: string): Task<Member, T>;
-  abstract createUpdateTask(actor: Member, objectId: string, object: Partial<T>): Task<Member, T>;
-  abstract createDeleteTask(actor: Member, objectId: string): Task<Member, T>;
+  abstract createCreateTask(actor: Actor, object: T, extra?: unknown): Task<Actor, T>;
+  abstract createGetTask(actor: Actor, objectId: string): Task<Actor, T>;
+  abstract createUpdateTask(actor: Actor, objectId: string, object: Partial<T>): Task<Actor, T>;
+  abstract createDeleteTask(actor: Actor, objectId: string): Task<Actor, T>;
 }

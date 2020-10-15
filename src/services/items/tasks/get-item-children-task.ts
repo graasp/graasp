@@ -8,6 +8,7 @@ import { Member } from 'services/members/interfaces/member';
 // local
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
+import { Item } from '../interfaces/item';
 
 export class GetItemChildrenTask extends BaseItemTask {
   get name() { return GetItemChildrenTask.name; }
@@ -30,7 +31,7 @@ export class GetItemChildrenTask extends BaseItemTask {
     if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotReadItem, this.targetId));
 
     // get item's children
-    const children = await this.itemService.getDescendants(item, handler, 'ASC', 1);
+    const children = await this.itemService.getDescendants(item, handler, 'ASC', 1) as Item[];
 
     this._status = TaskStatus.OK;
     this._result = children;

@@ -13,6 +13,7 @@ declare module 'fastify' {
     itemService: ItemService;
     itemMembershipService: ItemMembershipService;
     taskManager: BaseTaskManager<Item /*| Member*/>;
+    validateSession: any; // authPlugin
   }
 
   interface FastifyRequest {

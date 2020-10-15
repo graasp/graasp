@@ -1,5 +1,4 @@
 // global
-import { GraaspError } from 'util/graasp-error';
 import { DatabaseTransactionHandler } from 'plugins/database';
 import { TaskStatus } from 'interfaces/task';
 import { Actor } from 'interfaces/actor';
@@ -8,22 +7,21 @@ import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 
-export class GetMemberTask extends BaseMemberTask {
-  get name() { return GetMemberTask.name; }
+export class GetMembersByTask extends BaseMemberTask {
+  get name() { return GetMembersByTask.name; }
 
-  constructor(actor: Actor, memberId: string, memberService: MemberService) {
+  constructor(actor: Actor, data: Partial<Member>, memberService: MemberService) {
     super(actor, memberService);
-    this.targetId = memberId;
+    this.data = data;
   }
 
   async run(handler: DatabaseTransactionHandler) {
     this._status = TaskStatus.Running;
 
-    // get member
-    const member = await this.memberService.get(this.targetId, handler, ['id', 'name']) as Member;
-    if (!member) this.failWith(new GraaspError(GraaspError.MemberNotFound, this.targetId));
+    // get member(s) by a set of properties
+    const members = await this.memberService.getMatching(this.data, handler) as Member[];
 
     this._status = TaskStatus.OK;
-    this._result = member;
+    this._result = members;
   }
 }

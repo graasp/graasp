@@ -1,6 +1,7 @@
+import { Actor } from './actor';
 import { Task } from './task';
 
-export interface TaskManager<A, R> {
+export interface TaskManager<A extends Actor, R> {
   /**
    * Run given tasks
    * @param tasks Tasks to run

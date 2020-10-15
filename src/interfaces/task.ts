@@ -1,4 +1,5 @@
 import { DatabaseTransactionHandler } from 'plugins/database';
+import { Actor } from './actor';
 
 export enum TaskStatus {
   Running = 'RUNNING',
@@ -8,7 +9,7 @@ export enum TaskStatus {
   Delegated = 'DELEGATED'
 }
 
-export interface Task<A, T> {
+export interface Task<A extends Actor, T> {
   readonly name: string;
   readonly actor: A;
   targetId?: string;
