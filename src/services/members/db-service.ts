@@ -26,19 +26,40 @@ export class MemberService {
   );
 
   /**
-   * Get member matching the given `name` or `null`, if not found.
-   * @param name Member's name
+   * Get member(s) matching the properties of the given (partial) member.
+   * @param member Partial member
    * @param dbHandler Database handler
+   * @param properties List of Member properties to fetch - defaults to 'all'
    */
-  async getMatchingName(name: string, dbHandler: DbHandler) {
+  async getMatching(member: Partial<Member>, dbHandler: TrxHandler, properties?: (keyof Member)[]) {
+    let selectColumns;
+
+    if (properties && properties.length) {
+      selectColumns = sql.join(
+        properties.map(p => sql.identifier([p])),
+        sql`, `
+      );
+    }
+
+    // TODO: 'createdAt' and 'updatedAt' are not handled properly - will not match any column.
+    const whereConditions = sql.join(
+      Object.keys(member)
+        .map((key: keyof Partial<Member>) =>
+          sql.join([sql.identifier([key]), sql`${member[key]}`], sql` = `)
+        ),
+      sql` AND `
+    );
+
     return dbHandler
-      .query<Member>(sql`
-        SELECT ${MemberService.allColumns}
+      .query<Partial<Member>>(sql`
+        SELECT ${selectColumns || MemberService.allColumns}
         FROM member
-        WHERE name = ${name}
+        WHERE ${whereConditions}
       `)
-      .then(({ rows }) => rows[0] || null);
+      // TODO: is there a better way?
+      .then(({ rows }) => rows.slice(0));
   }
+
 
   /**
    * Get member matching the given `id` or `null`, if not found.
@@ -57,11 +78,28 @@ export class MemberService {
     }
 
     return dbHandler
-      .query<Member>(sql`
+      .query<Partial<Member>>(sql`
         SELECT ${selectColumns || MemberService.allColumns}
         FROM member
         WHERE id = ${id}
       `)
       .then(({ rows }) => rows[0] || null);
+  }
+
+  /**
+   * Create member and return it.
+   * @param member Member to create
+   * @param transactionHandler Database transaction handler
+   */
+  async create(member: Partial<Member>, transactionHandler: TrxHandler) {
+    const { name, email } = member;
+
+    return transactionHandler
+      .query<Member>(sql`
+        INSERT INTO member (name, email)
+        VALUES (${name}, ${email})
+        RETURNING ${MemberService.allColumns}
+      `)
+      .then(({ rows }) => rows[0]);
   }
 }
