@@ -28,149 +28,160 @@ describe('CopyItemTask', () => {
     jest.clearAllMocks();
   });
 
-  // test(`Task's \`name\` property should contain the classname: ${CopyItemTask.name}`, () => {
-  //   const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
-  //   expect(task.name).toBe(CopyItemTask.name);
-  // });
+  test(`Task's \`name\` property should contain the classname: ${CopyItemTask.name}`, () => {
+    const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+    expect(task.name).toBe(CopyItemTask.name);
+  });
 
-  // test('Should fail if no item corresponds to `itemId``', async () => {
-  //    expect.assertions(2);
-    // itemService.get =
-  //     jest.fn(async () => null);
+  test('Should fail if no item corresponds to `itemId``', async () => {
+     expect.assertions(2);
+    itemService.get =
+      jest.fn(async () => null);
 
-  //     try {
-  //   const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
-  //   await task.run(dbHandler);
-  // } catch (error) {
-  //   expect(error).toBeInstanceOf(GraaspError);
-  //   expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
-  // }
-  // });
+      try {
+    const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+    await task.run(dbHandler);
+  } catch (error) {
+    expect(error).toBeInstanceOf(GraaspError);
+    expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
+  }
+  });
 
-  // test('Should fail when `member` can not \'read\' permission over item', async () => {
-  //   expect.assertions(2);
-  //   itemService.get =
-  //   jest.fn(async () => fakeItem);
-  //   itemMembershipService.getPermissionLevel = jest.fn(async () => null);
+  test('Should fail when `member` can not \'read\' permission over item', async () => {
+    expect.assertions(2);
+    itemService.get =
+    jest.fn(async () => fakeItem);
+    itemMembershipService.getPermissionLevel = jest.fn(async () => null);
 
-  //   try {
-  //     const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
-  //     await task.run(dbHandler);
-  //   } catch (error) {
-  //     expect(error).toBeInstanceOf(GraaspError);
-  //     expect(error.name).toBe(GraaspErrorCode.UserCannotReadItem);
-  //   }
-  // });
+    try {
+      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+      await task.run(dbHandler);
+    } catch (error) {
+      expect(error).toBeInstanceOf(GraaspError);
+      expect(error.name).toBe(GraaspErrorCode.UserCannotReadItem);
+    }
+  });
 
-  // test('Should fail when number of descendants exceeds `MAX_DESCENDANTS_FOR_COPY`', async () => {
-  //   expect.assertions(2);
-  //   itemService.get = jest.fn(async () => fakeItem);
-  //   itemService.getNumberOfDescendants = jest.fn(async() => MAX_DESCENDANTS_FOR_COPY+1)
-  //   itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
+  test('Should fail when number of descendants exceeds `MAX_DESCENDANTS_FOR_COPY`', async () => {
+    expect.assertions(2);
+    itemService.get = jest.fn(async () => fakeItem);
+    itemService.getNumberOfDescendants = jest.fn(async() => MAX_DESCENDANTS_FOR_COPY+1)
+    itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
 
-  //   try {
-  //     const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
-  //     await task.run(dbHandler);
-  //   } catch (error) {
-  //     expect(error).toBeInstanceOf(GraaspError);
-  //     expect(error.name).toBe(GraaspErrorCode.TooManyDescendants);
-  //   }
-  // });
+    try {
+      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+      await task.run(dbHandler);
+    } catch (error) {
+      expect(error).toBeInstanceOf(GraaspError);
+      expect(error.name).toBe(GraaspErrorCode.TooManyDescendants);
+    }
+  });
 
-  // test('Should fail if no item corresponds to `parentItemId`', async () => {
-  //   expect.assertions(2);
-  //   itemService.get = jest.fn(async (id) => {
-  //     switch(id) {
-  //       case itemId:
-  //         return fakeItem;
-  //       case parentItemId:
-  //       default:
-  //         return null
-  //     }
-  //   });
-  //   itemService.getNumberOfDescendants = jest.fn(async() => 0)
-  //   itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
-
-  //   try {
-  //     const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
-  //     await task.run(dbHandler);
-  //   } catch (error) {
-  //     expect(error).toBeInstanceOf(GraaspError);
-  //     expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
-  //   }
-  // });
-
-  // test('Should fail when `member` has no permission over parent-item', async () => {
-  //   expect.assertions(2);
-  //   itemService.get = jest.fn(async (id) => {
-  //     switch(id) {
-  //       case itemId:
-  //         return fakeItem;
-  //       case parentItemId:
-  //         return fakeParentItem
-  //       default:
-  //         return null
-  //     }
-  //   });
-  //   itemService.getNumberOfDescendants = jest.fn(async() => 0)
-  //   itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
-
-  //   try {
-  //     const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
-  //     await task.run(dbHandler);
-  //   } catch (error) {
-  //     expect(error).toBeInstanceOf(GraaspError);
-  //     expect(error.name).toBe(GraaspErrorCode.UserCannotWriteItem);
-  //   }
-  // });
-
-  // test('Should fail when resulting tree number of levels exceeds `MAX_TREE_LEVELS`', async () => {
-  //   expect.assertions(2);
-  //   itemService.get = jest.fn(async (id) => {
-  //     switch(id) {
-  //       case itemId:
-  //         return fakeItem;
-  //       case parentItemId:
-  //         return fakeParentItem
-  //       default:
-  //         return null
-  //     }
-  //   });
-  //   itemService.getNumberOfDescendants = jest.fn(async() => 0)
-  //   itemService.getNumberOfLevelsToFarthestChild = jest.fn(async() => MAX_TREE_LEVELS)
-  //   itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
-
-  //   try {
-  //     const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
-  //     await task.run(dbHandler);
-  //   } catch (error) {
-  //     expect(error).toBeInstanceOf(GraaspError);
-  //     expect(error.name).toBe(GraaspErrorCode.HierarchyTooDeep);
-  //   }
-  // });
-
-  test('Should copy item and its descendants', async () => {
-    const fakeItem1 = {id: 'fakeItem1'} as Partial<Item>;
-    const fakeItem2 = {id: 'fakeItem2'} as Partial<Item>;
+  test('Should fail if no item corresponds to `parentItemId`', async () => {
+    expect.assertions(2);
     itemService.get = jest.fn(async (id) => {
       switch(id) {
         case itemId:
           return fakeItem;
+        case parentItemId:
+        default:
+          return null
+      }
+    });
+    itemService.getNumberOfDescendants = jest.fn(async() => 0)
+    itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
+
+    try {
+      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+      await task.run(dbHandler);
+    } catch (error) {
+      expect(error).toBeInstanceOf(GraaspError);
+      expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
+    }
+  });
+
+  test('Should fail when `member` has no permission over parent-item', async () => {
+    expect.assertions(2);
+    itemService.get = jest.fn(async (id) => {
+      switch(id) {
+        case itemId:
+          return fakeItem;
+        case parentItemId:
+          return fakeParentItem
+        default:
+          return null
+      }
+    });
+    itemService.getNumberOfDescendants = jest.fn(async() => 0)
+    itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
+
+    try {
+      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+      await task.run(dbHandler);
+    } catch (error) {
+      expect(error).toBeInstanceOf(GraaspError);
+      expect(error.name).toBe(GraaspErrorCode.UserCannotWriteItem);
+    }
+  });
+
+  test('Should fail when resulting tree number of levels exceeds `MAX_TREE_LEVELS`', async () => {
+    expect.assertions(2);
+    itemService.get = jest.fn(async (id) => {
+      switch(id) {
+        case itemId:
+          return fakeItem;
+        case parentItemId:
+          return fakeParentItem
+        default:
+          return null
+      }
+    });
+    itemService.getNumberOfDescendants = jest.fn(async() => 0)
+    itemService.getNumberOfLevelsToFarthestChild = jest.fn(async() => MAX_TREE_LEVELS)
+    itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
+
+    try {
+      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+      await task.run(dbHandler);
+    } catch (error) {
+      expect(error).toBeInstanceOf(GraaspError);
+      expect(error.name).toBe(GraaspErrorCode.HierarchyTooDeep);
+    }
+  });
+
+  test('Should copy item and its descendants', async () => {
+    // items need paths to avoid error
+    type Extra = {id: string, path: string}
+    const fakeItem1 = {id: 'fakeItem1', path:'some.path1'} as Item<Extra>;
+    const fakeItem2 = {id: 'fakeItem2', path: 'some.path2'} as Partial<Item<Extra>>;
+    const fakeItem3 = {id: 'fakeItem3', path: 'some.path3'} as Partial<Item<Extra>>;
+    itemService.get = jest.fn(async (id) => {
+      switch(id) {
+        case itemId:
+          return fakeItem1;
         case parentItemId:
           return fakeParentItem;
         default:
           return null;
       }
     });
-    itemService.getNumberOfDescendants = jest.fn(async() => 0);
-    itemService.getDescendants = jest.fn(() => [fakeItem1, fakeItem2])
-    itemService.getNumberOfLevelsToFarthestChild = jest.fn(async() => 0);
+    itemService.getNumberOfDescendants = jest.fn(async () => 0);
+    itemService.getDescendants = jest.fn(async () => [fakeItem2, fakeItem3])
+    itemService.getNumberOfLevelsToFarthestChild = jest.fn(async () => 0);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
+    itemService.create = jest.fn(async (data) => data as Item)
+
+      const itemTree = [fakeItem1, fakeItem2, fakeItem3]
 
       const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
-      await task.run(dbHandler);
-      console.log(task);
+      const subTasks =await task.run(dbHandler);
 
-      expect(itemService.create).toHaveBeenCalled();
+      for(const [i, subTask] of subTasks.entries()) {
+        await subTask.run(dbHandler)
+        // item should be different
+        expect(subTask.result).not.toEqual(itemTree[i])
+      }
+
+      expect(itemService.create).toHaveBeenCalledTimes(itemTree.length);
   });
 });
