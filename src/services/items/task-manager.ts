@@ -108,6 +108,14 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     this.unsetTaskHookHandler(DeleteItemTask.name, 'post', handler);
   }
 
+  setPreCopyHandler(handler: Function) {
+    this.setTaskHookHandler(CopyItemTask.name, 'pre', handler);
+  }
+
+  unsetPreCopyHandler(handler: Function) {
+    this.unsetTaskHookHandler(CopyItemTask.name, 'pre', handler);
+  }
+
   // Tasks
   createGetTask(member: Member, itemId: string) {
     return new GetItemTask(member, itemId, this.itemService, this.itemMembershipService);
@@ -143,6 +151,7 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
   }
 
   createCopyTask(member: Member, itemId: string, parentId?: string) {
-    return new CopyItemTask(member, itemId, this.itemService, this.itemMembershipService, parentId);
+    const preHookHandler = this.tasksHooks.get(CopyItemTask.name)?.pre?.wrapped;
+    return new CopyItemTask(member, itemId, this.itemService, this.itemMembershipService, parentId, preHookHandler);
   }
 }

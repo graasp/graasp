@@ -28,6 +28,7 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
 
     switch (status) {
       case TaskStatus.OK:
+      case TaskStatus.Delegated:
       case TaskStatus.Running: log.info(message); break;
       case TaskStatus.Partial: log.warn(message); break;
       case TaskStatus.Fail: log.error(message); break;

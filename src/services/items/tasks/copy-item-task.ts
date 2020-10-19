@@ -1,7 +1,7 @@
 // global
 import { GraaspError } from 'util/graasp-error';
 import { DatabaseTransactionHandler } from 'plugins/database';
-import { TaskStatus } from 'interfaces/task';
+import { PreHookHandlerType, TaskStatus } from 'interfaces/task';
 import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from 'util/config';
 // other services
 import { ItemMembershipService } from 'services/item-memberships/db-service';
@@ -20,15 +20,17 @@ class CopyItemSubTask extends BaseItemTask {
 
   constructor(member: Member, data: Partial<Item>,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
-    createMembership?: boolean) {
+    createMembership?: boolean, preHookHandler?: PreHookHandlerType<Item>) {
     super(member, itemService, itemMembershipService);
     this.data = data;
     this.createMembership = createMembership;
+    this.preHookHandler = preHookHandler;
   }
 
   async run(handler: DatabaseTransactionHandler) {
     this._status = TaskStatus.Running;
 
+    await this.preHookHandler?.(this.data);
     const item = await this.itemService.create(this.data, handler);
 
     if (this.createMembership) {
@@ -46,10 +48,11 @@ export class CopyItemTask extends BaseItemTask {
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
-    parentItemId?: string) {
+    parentItemId?: string, preHookHandler?: PreHookHandlerType<Item>) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
     this.parentItemId = parentItemId;
+    this.preHookHandler = preHookHandler;
   }
 
   async run(handler: DatabaseTransactionHandler) {
@@ -104,8 +107,8 @@ export class CopyItemTask extends BaseItemTask {
     this._status = TaskStatus.Delegated;
     return treeItemsCopy
       .map((item, index) => index === 0 ? // create 'admin' membership for 1st item if necessary
-        new CopyItemSubTask(this.actor, item, this.itemService, this.itemMembershipService, createAdminMembership) :
-        new CopyItemSubTask(this.actor, item, this.itemService, this.itemMembershipService)
+        new CopyItemSubTask(this.actor, item, this.itemService, this.itemMembershipService, createAdminMembership, this.preHookHandler) :
+        new CopyItemSubTask(this.actor, item, this.itemService, this.itemMembershipService, false, this.preHookHandler)
       );
   }
 
