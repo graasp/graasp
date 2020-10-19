@@ -16,7 +16,7 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
     this.logger = logger;
   }
 
-  private handleTaskFinish(task: Task<Actor, T>) {
+  private handleTaskFinish(task: Task<Actor, T>, log: FastifyLoggerInstance) {
     const { name, actor: { id: actorId }, targetId, status, message: taskMessage } = task;
 
     let message = `${name}: ` +
@@ -28,10 +28,10 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
 
     switch (status) {
       case TaskStatus.OK:
-      case TaskStatus.Running: this.logger.info(message); break;
-      case TaskStatus.Partial: this.logger.warn(message); break;
-      case TaskStatus.Fail: this.logger.error(message); break;
-      default: this.logger.debug(message);
+      case TaskStatus.Running: log.info(message); break;
+      case TaskStatus.Partial: log.warn(message); break;
+      case TaskStatus.Fail: log.error(message); break;
+      default: log.debug(message);
     }
 
     // TODO: push notification to client in case the task signals it.
@@ -44,22 +44,22 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
    * @param task Task to run
    * @returns Task's `result` or, if it has subtasks, the `result` of the last subtask.
    */
-  private async runTransactionally(task: Task<Actor, T>): Promise<T | T[]> {
+  private async runTransactionally(task: Task<Actor, T>, log: FastifyLoggerInstance): Promise<T | T[]> {
     return this.databasePool.transaction(async (handler) => {
       let taskResult: T | T[];
       let subtasks;
 
       // run task
       try {
-        subtasks = await task.run(handler);
+        subtasks = await task.run(handler, log);
         taskResult = task.result;
         // TODO: should these logger calls, and future pushes to the client,
         // be done in the middle of the transaction logic?
         // Maybe the whole logging should be done afterwards. *1
-        this.handleTaskFinish(task);
+        this.handleTaskFinish(task, log);
       } catch (error) {
         if (error instanceof GraaspError) {
-          this.handleTaskFinish(task);
+          this.handleTaskFinish(task, log);
         }
         throw error;
       }
@@ -73,16 +73,16 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
       try {
         for (let i = 0; i < subtasks.length; i++) {
           subtask = subtasks[i];
-          await subtask.run(handler);
+          await subtask.run(handler, log);
         }
 
-        subtasks.forEach((st: Task<Actor, T>) => this.handleTaskFinish(st)); // TODO: *1
+        subtasks.forEach((st: Task<Actor, T>) => this.handleTaskFinish(st, log)); // TODO: *1
 
         // set the last subtask result as the result of the task
         taskResult = subtasks[subtasks.length - 1].result;
       } catch (error) {
         if (error instanceof GraaspError) {
-          this.handleTaskFinish(subtask);
+          this.handleTaskFinish(subtask, log);
         }
         throw error;
       }
@@ -97,10 +97,11 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
    * * If >1 task, run tasks, collect results (values or errors) and return an array with everything.
    *
    * @param tasks List of tasks to run.
+   * @param log Logger instance to use. Defaults to `this.logger`.
    */
-  async run(tasks: Task<Actor, T>[]): Promise<void | T | T[]> {
+  async run(tasks: Task<Actor, T>[], log = this.logger): Promise<void | T | T[]> {
     if (tasks.length === 1) {
-      return this.runTransactionally(tasks[0]);
+      return this.runTransactionally(tasks[0], log);
     }
 
     const result = [];
@@ -108,12 +109,12 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
     for (let i = 0; i < tasks.length; i++) {
       const task = tasks[i];
       try {
-        const taskResult = await this.runTransactionally(task);
+        const taskResult = await this.runTransactionally(task, log);
         result.push(taskResult);
       } catch (error) {
         // log unexpected errors and continue
         if (!(error instanceof GraaspError)) {
-          this.logger.error(error.message || error); // TODO: improve?
+          log.error(error.message || error); // TODO: improve?
         }
         result.push(error);
       }

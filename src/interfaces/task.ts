@@ -1,3 +1,4 @@
+import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from 'plugins/database';
 import { Actor } from './actor';
 
@@ -18,7 +19,7 @@ export interface Task<A extends Actor, T> {
   readonly result: T | T[];
   readonly message: string;
   // notify: boolean; // Should notify task's result
-  run(handler: DatabaseTransactionHandler): Promise<void | Task<A, T>[]>;
+  run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | Task<A, T>[]>;
 
   preHookHandler?: PreHookHandlerType<T>;
   postHookHandler?: PostHookHandlerType<T>;

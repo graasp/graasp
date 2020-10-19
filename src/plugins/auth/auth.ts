@@ -68,14 +68,14 @@ async function plugin(fastify: FastifyInstance) {
   fastify.post<{ Body: { name: string; email: string } }>(
     '/register',
     { schema: register },
-    async ({ body }, reply) => {
+    async ({ body, log }, reply) => {
       // create member
       const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
       // TODO: how to handle "unique integrity constraint" when email already exists?
       // don't bubble up error to client, log something, and
       // send an email with a new link to login and mention that someone
       // tried to (re)register in the platform with this same email.
-      const member = await memberTaskManager.run([task]) as Member;
+      const member = await memberTaskManager.run([task], log) as Member;
 
       // generate token with member info and expiration
       const token = await reply.jwtSign({ sub: member.id },
@@ -94,11 +94,11 @@ async function plugin(fastify: FastifyInstance) {
   fastify.post<{ Body: { email: string } }>(
     '/login',
     { schema: login },
-    async ({ body }, reply) => {
+    async ({ body, log }, reply) => {
       // get member
       const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
       // TODO: same as in '/register'
-      const members = await memberTaskManager.run([task]) as Member[];
+      const members = await memberTaskManager.run([task], log) as Member[];
 
       if (members.length) {
         const member = members[0];
