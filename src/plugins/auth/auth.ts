@@ -10,7 +10,7 @@ import fastifySecureSession from 'fastify-secure-session';
 import fastifyJwt from 'fastify-jwt';
 
 import {
-  GRAASP_ACTOR, JWT_SECRET, HOST,
+  GRAASP_ACTOR, JWT_SECRET, HOST, PROTOCOL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES
 } from 'util/config';
@@ -81,8 +81,10 @@ async function plugin(fastify: FastifyInstance) {
       const token = await reply.jwtSign({ sub: member.id },
         { expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m` });
 
-      // TODO: send email
-      log.info(`${HOST}/auth?t=${token}`);
+      const link = `${PROTOCOL}://${HOST}/auth?t=${token}`;
+      // don't wait for mailer's response; log error and link if it fails.
+      fastify.mailer.sendRegisterEmail(member, link)
+        .catch(err => log.warn(err, `mailer failed. link: ${link}`));
 
       reply.status(204);
     }
@@ -104,22 +106,14 @@ async function plugin(fastify: FastifyInstance) {
         const token = await reply.jwtSign({ sub: member.id },
           { expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m` });
 
-        // TODO: send email
-        log.info(`${HOST}/auth?t=${token}`);
+        const link = `${PROTOCOL}://${HOST}/auth?t=${token}`;
+        // don't wait for mailer's response; log error and link if it fails.
+        fastify.mailer.sendLoginEmail(member, link)
+          .catch(err => log.warn(err, `mailer failed. link: ${link}`));
       } else {
         // TODO: log login try with non existing email
       }
 
-      reply.status(204);
-    }
-  );
-
-  // logout
-  fastify.get(
-    '/logout',
-    async ({ session }, reply) => {
-      // remove session
-      session.delete();
       reply.status(204);
     }
   );
@@ -147,6 +141,16 @@ async function plugin(fastify: FastifyInstance) {
 
         throw error;
       }
+    }
+  );
+
+  // logout
+  fastify.get(
+    '/logout',
+    async ({ session }, reply) => {
+      // remove session
+      session.delete();
+      reply.status(204);
     }
   );
 }
