@@ -16,6 +16,7 @@ if (!port) {
   process.exit(1);
 }
 
+export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
 export const PORT = !prod ? port :
@@ -30,6 +31,12 @@ if (!PG_CONNECTION_URI) {
   console.error('PG_CONNECTION_URI environment variable missing.');
   process.exit(1);
 }
+
+// Mailer config
+export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
+export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
+export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
+export const MAILER_CONFIG_FROM_EMAIL = 'no-reply@graasp.org';
 
 // Graasp constants
 

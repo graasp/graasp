@@ -40,6 +40,7 @@
     "fastify-plugin": "2.3.4",
     "fastify-secure-session": "^2.3.0",
     "graasp-file-item": "github:graasp/graasp-file-item#master",
+    "graasp-mailer": "github:graasp/graasp-mailer#master",
     "slonik": "^22.4.8",
     "uuid": "^7.0.0"
   },
