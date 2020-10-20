@@ -41,10 +41,10 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     if (moment === 'pre') {
       // 'pre' handlers executions '(a)wait', and if one fails, the task execution
       // is interrupted - throws exception.
-      return async (data: Partial<Item>) => {
+      return async (data: Partial<Item>, log?: FastifyLoggerInstance) => {
         try {
           for (let i = 0; i < handlers.length; i++) {
-            await handlers[i](data);
+            await handlers[i](data, log);
           }
         } catch (error) {
           const { id, type, extra } = data;
@@ -56,10 +56,10 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     } else if (moment === 'post') {
       // 'post' handlers executions do not '(a)wait', and if any fails, execution
       // continues with a warning
-      return (item: Item) => {
+      return (item: Item, log?: FastifyLoggerInstance) => {
         for (let i = 0; i < handlers.length; i++) {
           try {
-            handlers[i](item);
+            handlers[i](item, log);
           } catch (error) {
             const { id, type, extra } = item;
             this.logger.warn(error,

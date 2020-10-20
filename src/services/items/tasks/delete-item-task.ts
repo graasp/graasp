@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from 'util/graasp-error';
 import { DatabaseTransactionHandler } from 'plugins/database';
 import { TaskStatus, PostHookHandlerType } from 'interfaces/task';
@@ -22,11 +23,11 @@ class DeleteItemSubTask extends BaseItemTask {
     this.postHookHandler = postHookHandler;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this._status = TaskStatus.Running;
 
     const item = await this.itemService.delete(this.targetId, handler);
-    this.postHookHandler?.(item);
+    this.postHookHandler?.(item, log);
 
     this._status = TaskStatus.OK;
     this._result = item;
@@ -44,7 +45,7 @@ export class DeleteItemTask extends BaseItemTask {
     this.postHookHandler = postHookHandler;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this._status = TaskStatus.Running;
 
     // get item
@@ -74,7 +75,7 @@ export class DeleteItemTask extends BaseItemTask {
 
     // item has no descendents - delete item and return it as the result
     await this.itemService.delete(this.targetId, handler);
-    this.postHookHandler?.(item);
+    this.postHookHandler?.(item, log);
 
     this._status = TaskStatus.OK;
     this._result = item;

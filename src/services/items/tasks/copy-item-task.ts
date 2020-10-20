@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from 'util/graasp-error';
 import { DatabaseTransactionHandler } from 'plugins/database';
 import { PreHookHandlerType, TaskStatus } from 'interfaces/task';
@@ -27,10 +28,10 @@ class CopyItemSubTask extends BaseItemTask {
     this.preHookHandler = preHookHandler;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this._status = TaskStatus.Running;
 
-    await this.preHookHandler?.(this.data);
+    await this.preHookHandler?.(this.data, log);
     const item = await this.itemService.create(this.data, handler);
 
     if (this.createMembership) {
