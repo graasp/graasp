@@ -7,29 +7,25 @@ describe('Items API', () => {
     fastifyServerInstance.close();
   });
 
-  test('GET /itemssss should return 401', async () => {
+  test('GET /itemssss should return 404', async () => {
     const { statusCode } =
       await fastifyServerInstance.inject({ method: 'GET', url: '/itemssss' });
-    expect(statusCode).toBe(401);
+    expect(statusCode).toBe(404);
   });
 
-  test('GET /items w/o user should return 401', async () => {
+  test('GET /items w/o user should return 404', async () => {
     const { statusCode } =
       await fastifyServerInstance.inject({ method: 'GET', url: '/items' });
-    expect(statusCode).toBe(401);
+    expect(statusCode).toBe(404);
   });
 
-  test('GET /items w/ user should return 404', async () => {
+  test('GET /items/<fake-id> w/o user should return 401', async () => {
     const { statusCode } =
       await fastifyServerInstance.inject({
         method: 'GET',
-        url: '/items',
-        headers: {
-          // TODO: this matches a fake user in a local dev env.
-          // It's just an example test - to be changed.
-          Authorization: 'Basic VTI6bm90dXNlZG5vdw=='
-        }
+        url: '/items/bec986c2-37f5-4cfd-b168-5a23a47b69a3',
+        headers: { }
       });
-    expect(statusCode).toBe(404);
+    expect(statusCode).toBe(401);
   });
 });

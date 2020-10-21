@@ -3,23 +3,24 @@ import { GraaspError } from 'util/graasp-error';
 import { DatabaseTransactionHandler } from 'plugins/database';
 import { TaskStatus } from 'interfaces/task';
 import { Task } from 'interfaces/task';
+import { Actor } from 'interfaces/actor';
 // local
 import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
 
-export abstract class BaseMemberTask implements Task<Member, Member> {
+export abstract class BaseMemberTask implements Task<Actor, Member> {
   protected memberService: MemberService;
   protected _status: TaskStatus;
-  protected _result: Member;
+  protected _result: Member | Member[];
   protected _message: string;
 
-  readonly actor: Member;
+  readonly actor: Actor;
 
   targetId: string;
   data: Partial<Member>;
 
-  constructor(member: Member, memberService: MemberService) {
-    this.actor = member;
+  constructor(actor: Actor, memberService: MemberService) {
+    this.actor = actor;
     this.memberService = memberService;
   }
 

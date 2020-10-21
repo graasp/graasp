@@ -16,9 +16,14 @@ if (!port) {
   process.exit(1);
 }
 
+export const PROTOCOL = process.env.PROTOCOL || 'http';
+export const HOSTNAME = process.env.HOSTNAME || 'localhost';
+
 export const PORT = !prod ? port :
-  // if launched using pm2 (multiple instances), get the intance number
-  (port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
+// if launched using pm2 (multiple instances), get the intance number
+(port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
+
+export const HOST = prod ? HOSTNAME : `${HOSTNAME}:${PORT}`;
 
 export const { PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS } = process.env;
 
@@ -26,6 +31,31 @@ if (!PG_CONNECTION_URI) {
   console.error('PG_CONNECTION_URI environment variable missing.');
   process.exit(1);
 }
+
+// Mailer config
+export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
+export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
+export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
+export const MAILER_CONFIG_FROM_EMAIL = 'no-reply@graasp.org';
+
+// Graasp constants
+
+/**
+ * Graasp's "internal" actor
+ */
+export const GRAASP_ACTOR = { id: '12345678-1234-1234-1234-123456789012' };
+/**
+ * JWT secret
+ */
+export const JWT_SECRET = process.env.JWT_SECRET;
+/**
+ * Register (JWT) token expiration, in minutes
+ */
+export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
+/**
+ * Login (JWT) token expiration, in minutes
+ */
+export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
 
 // Graasp limits
 

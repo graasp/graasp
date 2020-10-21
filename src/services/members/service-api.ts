@@ -14,12 +14,12 @@ export default async (fastify: FastifyInstance) => {
   // schemas
   fastify.addSchema(common);
 
-  // get item
+  // get member
   fastify.get<{ Params: IdParam }>(
     '/:id', { schema: getOne },
-    async ({ member, params: { id } }) => {
+    async ({ member, params: { id }, log }) => {
       const task = taskManager.createGetTask(member, id);
-      return taskManager.run([task]);
+      return taskManager.run([task], log);
     }
   );
 };
