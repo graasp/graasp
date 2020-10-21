@@ -1,10 +1,10 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from 'util/graasp-error';
-import { Database, DatabasePoolHandler } from 'plugins/database';
+import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from 'plugins/database';
 
 import { TaskManager } from 'interfaces/task-manager';
-import { Task, TaskStatus } from 'interfaces/task';
+import { Task, TaskStatus, TaskHookMoment, PreHookHandlerType, PostHookHandlerType } from 'interfaces/task';
 import { Actor } from 'interfaces/actor';
 
 export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
@@ -43,6 +43,7 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
    * If something goes wrong the whole task is canceled/reverted.
    *
    * @param task Task to run
+   * @param log Logger instance
    * @returns Task's `result` or, if it has subtasks, the `result` of the last subtask.
    */
   private async runTransactionally(task: Task<Actor, T>, log: FastifyLoggerInstance): Promise<T | T[]> {
@@ -54,9 +55,6 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
       try {
         subtasks = await task.run(handler, log);
         taskResult = task.result;
-        // TODO: should these logger calls, and future pushes to the client,
-        // be done in the middle of the transaction logic?
-        // Maybe the whole logging should be done afterwards. *1
         this.handleTaskFinish(task, log);
       } catch (error) {
         if (error instanceof GraaspError) {
@@ -68,7 +66,10 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
       // if there's no subtasks, "register" the task finishing
       if (!subtasks) return taskResult;
 
-      // run subtasks
+      // if task's subtasks can "partially" execute
+      if (task.partialSubtasks) return this.runTransactionallyNested(subtasks, handler, log);
+
+      // run subtasks as "a whole"
       let subtask;
 
       try {
@@ -77,15 +78,50 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
           await subtask.run(handler, log);
         }
 
-        subtasks.forEach((st: Task<Actor, T>) => this.handleTaskFinish(st, log)); // TODO: *1
+        subtasks.forEach((st: Task<Actor, T>) => this.handleTaskFinish(st, log));
 
         // set the last subtask result as the result of the task
+        // TODO: does this make sense?
         taskResult = subtasks[subtasks.length - 1].result;
       } catch (error) {
         if (error instanceof GraaspError) {
           this.handleTaskFinish(subtask, log);
         }
         throw error;
+      }
+
+      return taskResult;
+    });
+  }
+
+  /**
+   * Run each subtask in a nested transaction.
+   * If something goes wrong the execution stops at that point and returns.
+   * Subtasks that ran successfully are not reverted/rolledback.
+   *
+   * @param subtasks Subtasks to run
+   * @param handler Task's transactional handler
+   * @param log Logger instance
+   */
+  private async runTransactionallyNested(subtasks: Task<Actor, T>[], handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<T | T[]> {
+    return handler.transaction(async (nestedHandler) => {
+      let subtask;
+      let taskResult;
+
+      try {
+        for (let i = 0; i < subtasks.length; i++) {
+          subtask = subtasks[i];
+
+          await subtask.run(nestedHandler, log);
+          taskResult = subtask.result;
+
+          this.handleTaskFinish(subtask, log);
+        }
+      } catch (error) {
+        if (error instanceof GraaspError) {
+          this.handleTaskFinish(subtask, log);
+        }
+        log.error(error);
       }
 
       return taskResult;
@@ -128,4 +164,67 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
   abstract createGetTask(actor: Actor, objectId: string): Task<Actor, T>;
   abstract createUpdateTask(actor: Actor, objectId: string, object: Partial<T>): Task<Actor, T>;
   abstract createDeleteTask(actor: Actor, objectId: string): Task<Actor, T>;
+
+  // Hooks
+  protected tasksHooks = new Map<string, {
+    pre?: { handlers: Function[]; wrapped: PreHookHandlerType<T> };
+    post?: { handlers: Function[]; wrapped: PostHookHandlerType<T> };
+  }>();
+
+  private wrapTaskHookHandlers(taskName: string, moment: TaskHookMoment, handlers: Function[]) {
+    if (moment === 'pre') {
+      // 'pre' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
+      return async (data: Partial<T>, log = this.logger) => {
+        try {
+          for (let i = 0; i < handlers.length; i++) {
+            await handlers[i](data, log);
+          }
+        } catch (error) {
+          log.error(error, `${taskName}: ${moment} hook fail, object ${JSON.stringify(data)}`);
+          throw error;
+        }
+      };
+    } else if (moment === 'post') {
+      // 'post' handlers executions do not '(a)wait', and if any fails, execution continues with a warning
+      return (object: T, log = this.logger) => {
+        for (let i = 0; i < handlers.length; i++) {
+          try {
+            handlers[i](object, log);
+          } catch (error) {
+            log.warn(error, `${taskName}: ${moment} hook fail, object ${JSON.stringify(object)}`);
+          }
+        }
+      };
+    }
+  }
+
+  protected setTaskHookHandler(taskName: string, moment: TaskHookMoment, handler: Function) {
+    let hooks = this.tasksHooks.get(taskName);
+
+    if (!hooks || !hooks[moment]) {
+      if (!hooks) {
+        hooks = {};
+        this.tasksHooks.set(taskName, hooks);
+      }
+
+      const handlers: Function[] = [];
+      // generated fn keeps a ref to the list of `handlers`;
+      // only one fn generated per type of task, per hook moment.
+      const wrapped = this.wrapTaskHookHandlers(taskName, moment, handlers);
+
+      hooks[moment] = { handlers, wrapped };
+    }
+
+    hooks[moment].handlers.push(handler);
+  }
+
+  protected unsetTaskHookHandler(taskName: string, moment: TaskHookMoment, handler: Function) {
+    const handlers = this.tasksHooks.get(taskName)?.[moment]?.handlers;
+
+    if (handlers) {
+      const handlerIndex = handlers.indexOf(handler);
+
+      if (handlerIndex >= 0) handlers.splice(handlerIndex, 1);
+    }
+  }
 }

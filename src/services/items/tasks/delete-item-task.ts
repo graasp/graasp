@@ -40,7 +40,7 @@ export class DeleteItemTask extends BaseItemTask {
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
     postHookHandler?: PostHookHandlerType<Item>) {
-    super(member, itemService, itemMembershipService);
+    super(member, itemService, itemMembershipService, true); // partial execution of subtasks
     this.targetId = itemId;
     this.postHookHandler = postHookHandler;
   }

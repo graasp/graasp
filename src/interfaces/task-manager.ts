@@ -6,6 +6,7 @@ export interface TaskManager<A extends Actor, R> {
   /**
    * Run given tasks
    * @param tasks Tasks to run
+   * @param log Logger instance to use during execution
    */
   run(tasks: Task<A, R>[], log?: FastifyLoggerInstance): Promise<void | R | R[]>;
 

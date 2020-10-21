@@ -18,6 +18,7 @@ export interface Task<A extends Actor, T> {
   readonly status: TaskStatus;
   readonly result: T | T[];
   readonly message: string;
+  readonly partialSubtasks?: boolean;
   // notify: boolean; // Should notify task's result
   run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | Task<A, T>[]>;
 

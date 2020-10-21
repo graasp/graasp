@@ -19,6 +19,7 @@ export abstract class BaseItemTask implements ItemTask {
   protected _message: string;
 
   readonly actor: Member;
+  readonly partialSubtasks: boolean;
 
   targetId: string;
   data: Partial<Item>;
@@ -28,10 +29,11 @@ export abstract class BaseItemTask implements ItemTask {
   parentItemId?: string;
 
   constructor(member: Member,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+    itemService: ItemService, itemMembershipService: ItemMembershipService, partialSubtasks?: boolean) {
     this.actor = member;
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
+    this.partialSubtasks = partialSubtasks;
   }
 
   abstract get name(): string;

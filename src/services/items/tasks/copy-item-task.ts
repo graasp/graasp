@@ -50,7 +50,7 @@ export class CopyItemTask extends BaseItemTask {
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
     parentItemId?: string, preHookHandler?: PreHookHandlerType<Item>) {
-    super(member, itemService, itemMembershipService);
+    super(member, itemService, itemMembershipService, true); // partial execution of subtasks
     this.targetId = itemId;
     this.parentItemId = parentItemId;
     this.preHookHandler = preHookHandler;
