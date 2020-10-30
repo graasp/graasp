@@ -1,7 +1,7 @@
 // global
 import { FastifyInstance } from 'fastify';
 import graaspFileItem from 'graasp-file-item';
-import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE } from 'util/config';
+import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE, FILE_STORAGE_ROOT_PATH } from 'util/config';
 import { IdParam, IdsParams, ParentIdParam } from 'interfaces/requests';
 // local
 import common, {
@@ -21,7 +21,7 @@ export default async (fastify: FastifyInstance) => {
 
   fastify.decorate('taskManager', taskManager);
 
-  fastify.register(graaspFileItem, { storageRootPath: '/Users/andre/upload_temp' });
+  fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
 
   // schemas
   fastify.addSchema(common);

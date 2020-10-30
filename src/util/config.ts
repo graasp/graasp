@@ -100,3 +100,8 @@ export const MAX_TARGETS_FOR_MODIFY_REQUEST = 20;
  * and the results should be pushed to the client (websockets, ...) as they happen.
  */
 export const MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE = 5;
+
+
+// Graasp file item
+// TODO: should this be here?
+export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
