@@ -1,23 +1,8 @@
--- enable necessary extensions
+-- CREATE necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "ltree";
 
--- DROP everything in reverse order
-DROP TRIGGER IF EXISTS "member_set_timestamp" ON "member";
-DROP TRIGGER IF EXISTS "item_set_timestamp" ON "item";
-DROP TRIGGER IF EXISTS "item_membership_set_timestamp" ON "item_membership";
--- DROP TRIGGER "members_relation_set_timestamp";
-DROP FUNCTION IF EXISTS "trigger_set_timestamp";
--- DROP TABLE "members_relation";
--- DROP TYPE "relations_enum";
-DROP TABLE IF EXISTS "item_membership";
-DROP TYPE IF EXISTS "permissions_enum";
-DROP TABLE IF EXISTS "item";
-DROP TABLE IF EXISTS "member";
-DROP TYPE IF EXISTS "member_type_enum";
-
 -- CREATE everything
-
 CREATE TYPE "member_type_enum" AS ENUM ('individual', 'group');
 CREATE TABLE "member" (
   "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,

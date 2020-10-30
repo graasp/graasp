@@ -4,7 +4,7 @@ import fs from 'fs';
 if (fs.existsSync('.env')) {
   dotenv.config({ path: '.env' });
 } else {
-  dotenv.config({ path: '.env.development' });
+  dotenv.config({ path: 'development.env' });
 }
 
 export const ENVIRONMENT = process.env.NODE_ENV || 'develoment';
