@@ -176,10 +176,10 @@ export abstract class BaseTaskManager<T extends Result> implements TaskManager<A
   private wrapTaskHookHandlers(taskName: string, moment: TaskHookMoment, handlers: Function[]) {
     if (moment === 'pre') {
       // 'pre' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
-      return async (data: Partial<T>, log = this.logger) => {
+      return async (data: Partial<T>, actor: Actor, log = this.logger) => {
         try {
           for (let i = 0; i < handlers.length; i++) {
-            await handlers[i](data, log);
+            await handlers[i](data, actor, log);
           }
         } catch (error) {
           log.error(error, `${taskName}: ${moment} hook fail, object ${JSON.stringify(data)}`);
@@ -188,10 +188,10 @@ export abstract class BaseTaskManager<T extends Result> implements TaskManager<A
       };
     } else if (moment === 'post') {
       // 'post' handlers executions do not '(a)wait', and if any fails, execution continues with a warning
-      return (object: T, log = this.logger) => {
+      return (object: T, actor: Actor, log = this.logger) => {
         for (let i = 0; i < handlers.length; i++) {
           try {
-            handlers[i](object, log);
+            handlers[i](object, actor, log);
           } catch (error) {
             log.warn(error, `${taskName}: ${moment} hook fail, object ${JSON.stringify(object)}`);
           }

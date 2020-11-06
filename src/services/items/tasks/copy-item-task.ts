@@ -32,7 +32,7 @@ class CopyItemSubTask extends BaseItemTask {
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
     this._status = TaskStatus.Running;
 
-    await this.preHookHandler?.(this.data, log);
+    await this.preHookHandler?.(this.data, this.actor, log);
     const item = await this.itemService.create(this.data, handler);
 
     if (this.createMembership) {
