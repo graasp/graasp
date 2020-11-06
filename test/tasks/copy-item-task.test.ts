@@ -216,7 +216,7 @@ describe('CopyItemTask', () => {
   test('Should copy item and its descendants into a separate tree', async () => {
     itemService.get = jest.fn(async (id) => {
       switch (id) {
-        case itemId:
+        case fakeItem1.id:
           return fakeItem1;
         default:
           return null;
@@ -230,7 +230,7 @@ describe('CopyItemTask', () => {
 
     const itemTree = [fakeItem1, fakeItem2, fakeItem3];
 
-    const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+    const task = new CopyItemTask(member, fakeItem1.id, itemService, itemMembershipService);
     const subTasks = await task.run(dbHandler);
     const idMapping = new Map();
 
@@ -251,7 +251,7 @@ describe('CopyItemTask', () => {
   test('Should copy item and its descendants into parentItem with membership', async () => {
     itemService.get = jest.fn(async (id) => {
       switch (id) {
-        case itemId:
+        case fakeItem1.id:
           return fakeItem1;
         case parentItemId:
           return fakeParentItem;
@@ -267,7 +267,7 @@ describe('CopyItemTask', () => {
 
     const itemTree = [fakeItem1, fakeItem2, fakeItem3];
 
-    const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+    const task = new CopyItemTask(member, fakeItem1.id, itemService, itemMembershipService, parentItemId);
     const subTasks = await task.run(dbHandler);
     const idMapping = new Map();
 

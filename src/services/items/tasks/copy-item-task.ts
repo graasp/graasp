@@ -19,16 +19,17 @@ class CopyItemSubTask extends BaseItemTask {
   get name() { return CopyItemSubTask.name; }
   private createMembership: boolean;
 
-  constructor(member: Member, data: Partial<Item>,
+  constructor(member: Member, itemId: string, data: Partial<Item>,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
     createMembership?: boolean, preHookHandler?: PreHookHandlerType<Item>) {
     super(member, itemService, itemMembershipService);
+    this.targetId = itemId;
     this.data = data;
     this.createMembership = createMembership;
     this.preHookHandler = preHookHandler;
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
+  async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
     this._status = TaskStatus.Running;
 
     await this.preHookHandler?.(this.data, log);
@@ -105,12 +106,19 @@ export class CopyItemTask extends BaseItemTask {
     // return list of subtasks for task manager to copy item + all descendants, one by one.
     const createAdminMembership = !parentItem || parentItemPermissionLevel === pl.Write;
 
+    const subtasks: CopyItemSubTask[] = [];
+    treeItemsCopy.forEach((itemCopy, oldId) => {
+      const subtask = (oldId === this.targetId) ?
+        // create 'admin' membership for "top" parent item if necessary
+        new CopyItemSubTask(this.actor, oldId, itemCopy, this.itemService,
+          this.itemMembershipService, createAdminMembership, this.preHookHandler) :
+        new CopyItemSubTask(this.actor, oldId, itemCopy, this.itemService,
+          this.itemMembershipService, false, this.preHookHandler);
+      subtasks.push(subtask);
+    });
+
     this._status = TaskStatus.Delegated;
-    return treeItemsCopy
-      .map((item, index) => index === 0 ? // create 'admin' membership for 1st item if necessary
-        new CopyItemSubTask(this.actor, item, this.itemService, this.itemMembershipService, createAdminMembership, this.preHookHandler) :
-        new CopyItemSubTask(this.actor, item, this.itemService, this.itemMembershipService, false, this.preHookHandler)
-      );
+    return subtasks;
   }
 
   /**
@@ -124,19 +132,19 @@ export class CopyItemTask extends BaseItemTask {
     for (let i = 0; i < tree.length; i++) {
       const { name, description, type, path, extra } = tree[i];
       const pathSplit = path.split('.');
-      const oldId_ = pathSplit.pop();
+      const oldId_ = BaseItem.pathToId(pathSplit.pop());
       let item;
 
       if (i === 0) {
         item = new BaseItem(name, description, type, extra, this.actor.id, parentItem);
       } else {
-        const oldParentId_ = pathSplit.pop();
+        const oldParentId_ = BaseItem.pathToId(pathSplit.pop());
         item = new BaseItem(name, description, type, extra, this.actor.id, old2New.get(oldParentId_));
       }
 
       old2New.set(oldId_, item);
     }
 
-    return Array.from(old2New.values());
+    return old2New;
   }
 }

@@ -68,6 +68,9 @@ export class MoveItemTask extends BaseItemTask {
       if (BaseItem.itemDepth(parentItem) + 1 + levelsToFarthestChild > MAX_TREE_LEVELS) {
         this.failWith(new GraaspError(GraaspError.HierarchyTooDeep));
       }
+
+      // TODO: should this info go into 'message'? (it's the only exception to the rule)
+      this._message = `new parent ${this.parentItemId}`;
     } else if (!BaseItem.parentPath(item)) { // moving from "no-parent" to "no-parent" ("not moving")
       this.failWith(new GraaspError(GraaspError.InvalidMoveTarget));
     }

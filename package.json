@@ -18,7 +18,7 @@
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
-    "copy-static-assets": "ts-node copyStaticAssets.ts",
+    "copy-static-assets": "node copyStaticAssets.mjs",
     "debug": "npm run build && npm run watch-debug",
     "serve-debug": "NODE_PATH=./dist nodemon --inspect dist/server.js",
     "serve-debug-break": "NODE_PATH=./dist nodemon --inspect-brk dist/server.js",
@@ -41,7 +41,7 @@
     "fastify-secure-session": "^2.3.0",
     "graasp-file-item": "github:graasp/graasp-file-item#master",
     "graasp-mailer": "github:graasp/graasp-mailer#master",
-    "slonik": "^22.4.8",
+    "slonik": "^23.0.1",
     "uuid": "^7.0.0"
   },
   "devDependencies": {
@@ -49,8 +49,6 @@
     "@types/concurrently": "^4.1.0",
     "@types/eslint": "^6.8.0",
     "@types/jest": "^24.0.23",
-    "@types/shelljs": "^0.8.5",
-    "@types/slonik": "^22.1.2",
     "@types/supertest": "^2.0.8",
     "@types/tap": "^14.10.0",
     "@types/uuid": "^7.0.3",

@@ -1,4 +1,12 @@
-export interface UnknownExtra { [key: string]: unknown };
+type Anything =
+  | string
+  | number
+  | boolean
+  | null
+  | Anything[]
+  | { [key: string]: Anything };
+
+export interface UnknownExtra { [key: string]: Anything };
 
 export interface Item<T = UnknownExtra> {
   id: string;

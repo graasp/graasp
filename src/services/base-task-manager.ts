@@ -6,8 +6,9 @@ import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from 'plugi
 import { TaskManager } from 'interfaces/task-manager';
 import { Task, TaskStatus, TaskHookMoment, PreHookHandlerType, PostHookHandlerType } from 'interfaces/task';
 import { Actor } from 'interfaces/actor';
+import { Result } from 'interfaces/result';
 
-export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
+export abstract class BaseTaskManager<T extends Result> implements TaskManager<Actor, T> {
   private databasePool: DatabasePoolHandler;
   protected logger: FastifyLoggerInstance;
 
@@ -17,13 +18,14 @@ export abstract class BaseTaskManager<T> implements TaskManager<Actor, T> {
   }
 
   private handleTaskFinish(task: Task<Actor, T>, log: FastifyLoggerInstance) {
-    const { name, actor: { id: actorId }, targetId, status, message: taskMessage } = task;
+    const { name, actor: { id: actorId }, targetId, status, message: taskMessage, result } = task;
 
     let message = `${name}: ` +
       `actor '${actorId}'`;
 
     if (targetId) message += `, target '${targetId}'`;
     message += `, status '${status}'`;
+    if (result) message += `, result '${Array.isArray(result) ? result.map(({ id }) => id) : result.id}'`;
     if (taskMessage) message += `, message '${taskMessage}'`;
 
     switch (status) {

@@ -23,7 +23,7 @@ class DeleteItemSubTask extends BaseItemTask {
     this.postHookHandler = postHookHandler;
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
+  async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
     this._status = TaskStatus.Running;
 
     const item = await this.itemService.delete(this.targetId, handler);

@@ -7,6 +7,7 @@ export enum MemberType {
 }
 
 export interface Member extends Actor {
+  id: string;
   name: string;
   email: string;
   type: MemberType;
