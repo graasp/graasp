@@ -10,7 +10,7 @@ import fastifySecureSession from 'fastify-secure-session';
 import fastifyJwt from 'fastify-jwt';
 
 import {
-  GRAASP_ACTOR, JWT_SECRET, HOST, PROTOCOL,
+  GRAASP_ACTOR, JWT_SECRET, EMAIL_LINKS_HOST, PROTOCOL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES
 } from 'util/config';
@@ -81,7 +81,7 @@ async function plugin(fastify: FastifyInstance) {
       const token = await reply.jwtSign({ sub: member.id },
         { expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m` });
 
-      const link = `${PROTOCOL}://${HOST}/auth?t=${token}`;
+      const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
       // don't wait for mailer's response; log error and link if it fails.
       fastify.mailer.sendRegisterEmail(member, link)
         .catch(err => log.warn(err, `mailer failed. link: ${link}`));
@@ -106,7 +106,7 @@ async function plugin(fastify: FastifyInstance) {
         const token = await reply.jwtSign({ sub: member.id },
           { expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m` });
 
-        const link = `${PROTOCOL}://${HOST}/auth?t=${token}`;
+        const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
         // don't wait for mailer's response; log error and link if it fails.
         fastify.mailer.sendLoginEmail(member, link)
           .catch(err => log.warn(err, `mailer failed. link: ${link}`));

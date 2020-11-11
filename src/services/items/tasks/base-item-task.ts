@@ -23,8 +23,8 @@ export abstract class BaseItemTask implements ItemTask {
 
   targetId: string;
   data: Partial<Item>;
-  preHookHandler: (data: Partial<Item>, log?: FastifyLoggerInstance) => Promise<void> | void;
-  postHookHandler: (item: Item, log?: FastifyLoggerInstance) => void;
+  preHookHandler: (data: Partial<Item>, actor: Member, log?: FastifyLoggerInstance) => Promise<void> | void;
+  postHookHandler: (item: Item, actor: Member, log?: FastifyLoggerInstance) => void;
 
   parentItemId?: string;
 

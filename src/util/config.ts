@@ -1,10 +1,12 @@
 import dotenv from 'dotenv';
 import fs from 'fs';
 
-if (fs.existsSync('.env')) {
-  dotenv.config({ path: '.env' });
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: 'production.env' });
+} else if (process.env.NODE_ENV === 'staging') {
+  dotenv.config({ path: 'staging.env' });
 } else {
-  dotenv.config({ path: '.env.development' });
+  dotenv.config({ path: 'development.env' });
 }
 
 export const ENVIRONMENT = process.env.NODE_ENV || 'develoment';
@@ -18,6 +20,7 @@ if (!port) {
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
+export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOSTNAME;
 
 export const PORT = !prod ? port :
 // if launched using pm2 (multiple instances), get the intance number
@@ -100,3 +103,8 @@ export const MAX_TARGETS_FOR_MODIFY_REQUEST = 20;
  * and the results should be pushed to the client (websockets, ...) as they happen.
  */
 export const MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE = 5;
+
+
+// Graasp file item
+// TODO: should this be here?
+export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
