@@ -39,7 +39,7 @@
     "fastify-jwt": "^2.1.3",
     "fastify-plugin": "2.3.4",
     "fastify-secure-session": "^2.3.0",
-    "graasp-file-item": "github:graasp/graasp-file-item#master",
+    "graasp-file-item": "github:graasp/graasp-file-item#v0.1-beta.0",
     "graasp-mailer": "github:graasp/graasp-mailer#master",
     "slonik": "^23.0.1",
     "uuid": "^7.0.0"
