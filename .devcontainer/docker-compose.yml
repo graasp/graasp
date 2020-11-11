@@ -12,8 +12,8 @@ services:
         USER_UID: 1000
         USER_GID: 1000
 
-    env_file: ../development.env
     environment:
+      HOSTNAME: localhost
       PG_CONNECTION_URI: "postgresql://docker:docker@localhost:5432/docker"
       FILE_STORAGE_ROOT_PATH: "/tmp/graasp-file-item-storage"
 

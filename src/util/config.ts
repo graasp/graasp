@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
 import fs from 'fs';
 
-if (fs.existsSync('.env')) {
-  dotenv.config({ path: '.env' });
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: 'production.env' });
+} else if (process.env.NODE_ENV === 'staging') {
+  dotenv.config({ path: 'staging.env' });
 } else {
   dotenv.config({ path: 'development.env' });
 }
@@ -18,6 +20,7 @@ if (!port) {
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
+export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOSTNAME;
 
 export const PORT = !prod ? port :
 // if launched using pm2 (multiple instances), get the intance number
