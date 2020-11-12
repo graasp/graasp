@@ -1,16 +1,30 @@
 import dotenv from 'dotenv';
-import fs from 'fs';
 
-if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: 'production.env' });
-} else if (process.env.NODE_ENV === 'staging') {
-  dotenv.config({ path: 'staging.env' });
-} else {
-  dotenv.config({ path: 'development.env' });
+enum Environment {
+  production = 'production',
+  staging = 'staging',
+  development = 'development'
 }
 
-export const ENVIRONMENT = process.env.NODE_ENV || 'develoment';
-const prod = ENVIRONMENT === 'production';
+export let ENVIRONMENT: Environment;
+
+switch (process.env.NODE_ENV) {
+  case Environment.production:
+    dotenv.config({ path: 'production.env' });
+    ENVIRONMENT = Environment.production;
+    break;
+  case Environment.staging:
+    dotenv.config({ path: 'staging.env' });
+    ENVIRONMENT = Environment.staging;
+    break;
+  // case Environment.development:
+  default:
+    dotenv.config({ path: 'development.env' });
+    ENVIRONMENT = Environment.development;
+    break;
+}
+
+const prod = ENVIRONMENT === Environment.production;
 const { PORT: port } = process.env;
 
 if (!port) {
@@ -23,8 +37,8 @@ export const HOSTNAME = process.env.HOSTNAME || 'localhost';
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOSTNAME;
 
 export const PORT = !prod ? port :
-// if launched using pm2 (multiple instances), get the intance number
-(port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
+  // if launched using pm2 (multiple instances), get the intance number
+  (port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
 
 export const HOST = prod ? HOSTNAME : `${HOSTNAME}:${PORT}`;
 
