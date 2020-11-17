@@ -1,1 +1,1 @@
-export interface PurgeBelowParam { purgeBelow?: boolean };
+export interface PurgeBelowParam { purgeBelow?: boolean }

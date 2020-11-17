@@ -15,7 +15,7 @@ import common, {
 } from './schemas';
 import { ItemTaskManager } from './task-manager';
 
-export default async (fastify: FastifyInstance) => {
+export default async (fastify: FastifyInstance): Promise<void> => {
   const { db, log, itemService: iS, itemMembershipService: iMS } = fastify;
   const taskManager = new ItemTaskManager(iS, iMS, db, log);
 

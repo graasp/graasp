@@ -1,7 +1,6 @@
 // global
 import {
   sql,
-  DatabasePoolType as DbHandler,
   DatabaseTransactionConnectionType as TrxHandler
 } from 'slonik';
 // local
@@ -31,7 +30,7 @@ export class MemberService {
    * @param dbHandler Database handler
    * @param properties List of Member properties to fetch - defaults to 'all'
    */
-  async getMatching(member: Partial<Member>, dbHandler: TrxHandler, properties?: (keyof Member)[]) {
+  async getMatching(member: Partial<Member>, dbHandler: TrxHandler, properties?: (keyof Member)[]): Promise<Partial<Member>[]> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -67,7 +66,7 @@ export class MemberService {
    * @param dbHandler Database handler
    * @param properties List of Member properties to fetch - defaults to 'all'
    */
-  async get(id: string, dbHandler: TrxHandler, properties?: (keyof Member)[]) {
+  async get(id: string, dbHandler: TrxHandler, properties?: (keyof Member)[]): Promise<Partial<Member>> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -91,7 +90,7 @@ export class MemberService {
    * @param member Member to create
    * @param transactionHandler Database transaction handler
    */
-  async create(member: Partial<Member>, transactionHandler: TrxHandler) {
+  async create(member: Partial<Member>, transactionHandler: TrxHandler): Promise<Member> {
     const { name, email } = member;
 
     return transactionHandler

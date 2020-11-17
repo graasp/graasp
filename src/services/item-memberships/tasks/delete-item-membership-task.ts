@@ -11,7 +11,7 @@ import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 
 export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
-  get name() { return DeleteItemMembershipSubTask.name; }
+  get name(): string { return DeleteItemMembershipSubTask.name; }
 
   constructor(member: Member, itemMembershipId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -19,7 +19,7 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
     this.targetId = itemMembershipId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     const itemMembership = await this.itemMembershipService.delete(this.targetId, handler);
@@ -30,7 +30,7 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
 }
 
 export class DeleteItemMembershipTask extends BaseItemMembershipTask {
-  get name() { return DeleteItemMembershipTask.name; }
+  get name(): string { return DeleteItemMembershipTask.name; }
 
   private purgeBelow: boolean;
 
@@ -42,7 +42,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
     this.purgeBelow = purgeBelow;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
     this._status = TaskStatus.Running;
 
     // get item membership

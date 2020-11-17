@@ -11,7 +11,7 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
 export class GetItemChildrenTask extends BaseItemTask {
-  get name() { return GetItemChildrenTask.name; }
+  get name(): string { return GetItemChildrenTask.name; }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -19,7 +19,7 @@ export class GetItemChildrenTask extends BaseItemTask {
     this.targetId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     // get item

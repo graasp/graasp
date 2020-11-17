@@ -11,7 +11,7 @@ import common, {
 import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './task-manager';
 
-export default async (fastify: FastifyInstance) => {
+export default async (fastify: FastifyInstance): Promise<void> => {
   const { db, log, itemService: iS, itemMembershipService: iMS } = fastify;
   const taskManager = new ItemMembershipTaskManager(iS, iMS, db, log);
 

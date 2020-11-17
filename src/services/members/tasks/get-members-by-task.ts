@@ -8,14 +8,14 @@ import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 
 export class GetMembersByTask extends BaseMemberTask {
-  get name() { return GetMembersByTask.name; }
+  get name(): string { return GetMembersByTask.name; }
 
   constructor(actor: Actor, data: Partial<Member>, memberService: MemberService) {
     super(actor, memberService);
     this.data = data;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     // get member(s) by a set of properties

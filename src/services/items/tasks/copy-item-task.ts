@@ -46,7 +46,7 @@ class CopyItemSubTask extends BaseItemTask {
 }
 
 export class CopyItemTask extends BaseItemTask {
-  get name() { return CopyItemTask.name; }
+  get name(): string { return CopyItemTask.name; }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
@@ -57,7 +57,7 @@ export class CopyItemTask extends BaseItemTask {
     this.preHookHandler = preHookHandler;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
     this._status = TaskStatus.Running;
 
     // get item

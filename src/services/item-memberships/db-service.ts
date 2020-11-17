@@ -31,7 +31,7 @@ export class ItemMembershipService {
    * @param item Item whose path is referenced in membership
    * @param transactionHandler Database transaction handler
    */
-  async getPermissionLevel(member: Member, item: Item, transactionHandler: TrxHandler) {
+  async getPermissionLevel(member: Member, item: Item, transactionHandler: TrxHandler): Promise<PermissionLevel> {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT permission FROM item_membership
         WHERE member_id = ${member.id}
@@ -50,7 +50,7 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false) {
+  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership> {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
@@ -71,7 +71,7 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getAllBelow(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false) {
+  async getAllBelow(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership[]> {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
@@ -90,7 +90,7 @@ export class ItemMembershipService {
    * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler
    */
-  async getInheritedForAll(item: Item, transactionHandler: TrxHandler) {
+  async getInheritedForAll(item: Item, transactionHandler: TrxHandler): Promise<ItemMembership[]> {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM (
@@ -111,7 +111,7 @@ export class ItemMembershipService {
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async canRead(member: Member, item: Item, transactionHandler: TrxHandler) {
+  async canRead(member: Member, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
     return this.getPermissionLevel(member, item, transactionHandler)
       .then(Boolean);  // if any permission exists it means the member can read the item
   }
@@ -122,7 +122,7 @@ export class ItemMembershipService {
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async canWrite(member: Member, item: Item, transactionHandler: TrxHandler) {
+  async canWrite(member: Member, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
     return this.getPermissionLevel(member, item, transactionHandler)
       .then(p => p === PermissionLevel.Write || p === PermissionLevel.Admin);
   }
@@ -133,7 +133,7 @@ export class ItemMembershipService {
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async canAdmin(member: Member, item: Item, transactionHandler: TrxHandler) {
+  async canAdmin(member: Member, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
     return this.getPermissionLevel(member, item, transactionHandler)
       .then(p => p === PermissionLevel.Admin);
   }
@@ -143,7 +143,7 @@ export class ItemMembershipService {
    * @param id Membership unique id
    * @param transactionHandler Database transaction handler
    */
-  async get(id: string, transactionHandler: TrxHandler) {
+  async get(id: string, transactionHandler: TrxHandler): Promise<ItemMembership> {
     return transactionHandler.query<ItemMembership>(sql`
       SELECT ${ItemMembershipService.allColumns}
       FROM item_membership
@@ -157,7 +157,7 @@ export class ItemMembershipService {
    * @param membership Partial membership object with `memberId`, `itemPath`, `permission`, `creator`.
    * @param transactionHandler Database transaction handler
    */
-  async create(membership: Partial<ItemMembership>, transactionHandler: TrxHandler) {
+  async create(membership: Partial<ItemMembership>, transactionHandler: TrxHandler): Promise<ItemMembership> {
     const { memberId, itemPath, permission, creator } = membership;
     return transactionHandler.query<ItemMembership>(sql`
         INSERT INTO item_membership (member_id, item_path, permission, creator)
@@ -172,7 +172,7 @@ export class ItemMembershipService {
    * @param memberships Array of objects with properties: `memberId`, `itemPath`, `permission`, `creator`
    * @param transactionHandler Database transaction handler
    */
-  async createMany(memberships: Partial<ItemMembership>[], transactionHandler: TrxHandler) {
+  async createMany(memberships: Partial<ItemMembership>[], transactionHandler: TrxHandler): Promise<readonly ItemMembership[]> {
     const newRows = memberships.map(
       ({ memberId, itemPath, permission, creator }) => [memberId, itemPath, permission, creator]
     );
@@ -192,7 +192,7 @@ export class ItemMembershipService {
    * @param permission New permission value
    * @param transactionHandler Database transaction handler
    */
-  async update(id: string, permission: PermissionLevel, transactionHandler: TrxHandler) {
+  async update(id: string, permission: PermissionLevel, transactionHandler: TrxHandler): Promise<ItemMembership> {
     return transactionHandler.query<ItemMembership>(sql`
         UPDATE item_membership
         SET permission = ${permission}
@@ -207,7 +207,7 @@ export class ItemMembershipService {
    * @param id Membership id
    * @param transactionHandler Database transaction handler
    */
-  async delete(id: string, transactionHandler: TrxHandler) {
+  async delete(id: string, transactionHandler: TrxHandler): Promise<ItemMembership> {
     return transactionHandler.query<ItemMembership>(sql`
         DELETE FROM item_membership
         WHERE id = ${id}
@@ -222,7 +222,7 @@ export class ItemMembershipService {
    * @param memberships List of objects with: `memberId`, `itemPath`
    * @param transactionHandler Database transaction handler
    */
-  async deleteManyMatching(memberships: Partial<ItemMembership>[], transactionHandler: TrxHandler) {
+  async deleteManyMatching(memberships: Partial<ItemMembership>[], transactionHandler: TrxHandler): Promise<readonly ItemMembership[]> {
     const conditions =
       memberships.map(({ memberId, itemPath }) => sql`(member_id = ${memberId} AND item_path = ${itemPath})`);
 
@@ -248,7 +248,10 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    * @param newParentItem Parent item to where `item` will be moved to
    */
-  async moveHousekeeping(item: Item, member: Member, transactionHandler: TrxHandler, newParentItem?: Item) {
+  async moveHousekeeping(item: Item, member: Member, transactionHandler: TrxHandler, newParentItem?: Item): Promise<{
+    inserts: Partial<ItemMembership>[];
+    deletes: Partial<ItemMembership>[];
+  }> {
     if (!newParentItem) return this.detachedMoveHousekeeping(item, member, transactionHandler);
 
     const { path: newParentItemPath } = newParentItem;

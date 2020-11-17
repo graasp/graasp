@@ -27,25 +27,26 @@ export class ItemMembershipTaskManager extends BaseTaskManager<ItemMembership> {
     this.itemMembershipService = itemMembershipService;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createGetTask(actor: Member, objectId: string): ItemMembershipTask {
     throw new Error('Method not implemented.');
   }
 
-  createCreateTask(member: Member, data: Partial<ItemMembership>, itemId: string) {
+  createCreateTask(member: Member, data: Partial<ItemMembership>, itemId: string): CreateItemMembershipTask {
     return new CreateItemMembershipTask(
       member, data, itemId,
       this.itemService, this.itemMembershipService
     );
   }
 
-  createUpdateTask(member: Member, itemMembershipId: string, data: Partial<ItemMembership>) {
+  createUpdateTask(member: Member, itemMembershipId: string, data: Partial<ItemMembership>): UpdateItemMembershipTask {
     return new UpdateItemMembershipTask(
       member, itemMembershipId, data,
       this.itemService, this.itemMembershipService
     );
   }
 
-  createDeleteTask(member: Member, itemMembershipId: string, purgeBelow?: boolean): ItemMembershipTask {
+  createDeleteTask(member: Member, itemMembershipId: string, purgeBelow?: boolean): DeleteItemMembershipTask {
     return new DeleteItemMembershipTask(
       member, itemMembershipId,
       this.itemService, this.itemMembershipService,
@@ -53,7 +54,7 @@ export class ItemMembershipTaskManager extends BaseTaskManager<ItemMembership> {
     );
   }
 
-  createGetItemsItemMembershipsTask(actor: Member, itemId: string): ItemMembershipTask {
+  createGetItemsItemMembershipsTask(actor: Member, itemId: string): GetItemsItemMembershipsTask {
     return new GetItemsItemMembershipsTask(
       actor, itemId,
       this.itemService, this.itemMembershipService

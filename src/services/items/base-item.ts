@@ -38,16 +38,16 @@ export class BaseItem implements Item {
       dashToUnderscore(this.id);
   }
 
-  static itemDepth(item: Item) {
+  static itemDepth(item: Item): number {
     return item.path.split('.').length;
   }
 
-  static parentPath(item: Item) {
+  static parentPath(item: Item): string {
     const index = item.path.lastIndexOf('.');
     return index === -1 ? null : item.path.slice(0, index);
   }
 
-  static pathToId(path: string) {
+  static pathToId(path: string): string {
     const index = path.lastIndexOf('.');
     return underscoreToDash(index === -1 ? path : path.slice(index + 1));
   }

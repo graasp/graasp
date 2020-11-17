@@ -10,7 +10,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 
 export class GetItemTask extends BaseItemTask {
-  get name() { return GetItemTask.name; }
+  get name(): string { return GetItemTask.name; }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -18,7 +18,7 @@ export class GetItemTask extends BaseItemTask {
     this.targetId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     // get item

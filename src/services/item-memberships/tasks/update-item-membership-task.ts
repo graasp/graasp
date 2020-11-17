@@ -33,7 +33,7 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask {
 }
 
 export class UpdateItemMembershipTask extends BaseItemMembershipTask {
-  get name() { return UpdateItemMembershipTask.name; }
+  get name(): string { return UpdateItemMembershipTask.name; }
 
   constructor(member: Member, itemMembershipId: string, data: Partial<ItemMembership>,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -42,7 +42,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask {
     this.targetId = itemMembershipId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
     this._status = TaskStatus.Running;
 
     // get item membership

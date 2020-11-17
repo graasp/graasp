@@ -9,14 +9,14 @@ import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 
 export class GetMemberTask extends BaseMemberTask {
-  get name() { return GetMemberTask.name; }
+  get name(): string { return GetMemberTask.name; }
 
   constructor(actor: Actor, memberId: string, memberService: MemberService) {
     super(actor, memberService);
     this.targetId = memberId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     // get member

@@ -7,7 +7,7 @@ import common, {
 } from './schemas';
 import { MemberTaskManager } from './task-manager';
 
-export default async (fastify: FastifyInstance) => {
+export default async (fastify: FastifyInstance): Promise<void> => {
   const { db, log, memberService: iS } = fastify;
   const taskManager = new MemberTaskManager(iS, db, log);
 

@@ -4,7 +4,7 @@ import { GraaspError } from 'util/graasp-error';
 import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from 'plugins/database';
 
 import { TaskManager } from 'interfaces/task-manager';
-import { Task, TaskStatus, TaskHookMoment, PreHookHandlerType, PostHookHandlerType } from 'interfaces/task';
+import { Task, TaskStatus, PreHookHandlerType, PostHookHandlerType } from 'interfaces/task';
 import { Actor } from 'interfaces/actor';
 import { Result } from 'interfaces/result';
 
@@ -169,63 +169,87 @@ export abstract class BaseTaskManager<T extends Result> implements TaskManager<A
 
   // Hooks
   protected tasksHooks = new Map<string, {
-    pre?: { handlers: Function[]; wrapped: PreHookHandlerType<T> };
-    post?: { handlers: Function[]; wrapped: PostHookHandlerType<T> };
+    pre?: { handlers: PreHookHandlerType<T>[]; wrapped: PreHookHandlerType<T> };
+    post?: { handlers: PostHookHandlerType<T>[]; wrapped: PostHookHandlerType<T> };
   }>();
 
-  private wrapTaskHookHandlers(taskName: string, moment: TaskHookMoment, handlers: Function[]) {
-    if (moment === 'pre') {
-      // 'pre' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
-      return async (data: Partial<T>, actor: Actor, log = this.logger) => {
-        try {
-          for (let i = 0; i < handlers.length; i++) {
-            await handlers[i](data, actor, log);
-          }
-        } catch (error) {
-          log.error(error, `${taskName}: ${moment} hook fail, object ${JSON.stringify(data)}`);
-          throw error;
-        }
-      };
-    } else if (moment === 'post') {
-      // 'post' handlers executions do not '(a)wait', and if any fails, execution continues with a warning
-      return (object: T, actor: Actor, log = this.logger) => {
+  private wrapTaskPreHookHandlers(taskName: string, handlers: PreHookHandlerType<T>[]) {
+    // 'pre' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
+    return async (data: Partial<T>, actor: Actor, log = this.logger) => {
+      try {
         for (let i = 0; i < handlers.length; i++) {
-          try {
-            handlers[i](object, actor, log);
-          } catch (error) {
-            log.warn(error, `${taskName}: ${moment} hook fail, object ${JSON.stringify(object)}`);
-          }
+          await handlers[i](data, actor, log);
         }
-      };
-    }
+      } catch (error) {
+        log.error(error, `${taskName}: pre hook fail, object ${JSON.stringify(data)}`);
+        throw error;
+      }
+    };
   }
 
-  protected setTaskHookHandler(taskName: string, moment: TaskHookMoment, handler: Function) {
+  private wrapTaskPostHookHandlers(taskName: string, handlers: PostHookHandlerType<T>[]) {
+    // 'post' handlers executions do not '(a)wait', and if any fails, execution continues with a warning
+    return (object: T, actor: Actor, log = this.logger) => {
+      for (let i = 0; i < handlers.length; i++) {
+        try {
+          handlers[i](object, actor, log);
+        } catch (error) {
+          log.warn(error, `${taskName}: post hook fail, object ${JSON.stringify(object)}`);
+        }
+      }
+    };
+  }
+
+  protected setTaskPreHookHandler(taskName: string, handler: PreHookHandlerType<T>): void {
     let hooks = this.tasksHooks.get(taskName);
 
-    if (!hooks || !hooks[moment]) {
+    if (!hooks || !hooks.pre) {
       if (!hooks) {
         hooks = {};
         this.tasksHooks.set(taskName, hooks);
       }
-
-      const handlers: Function[] = [];
-      // generated fn keeps a ref to the list of `handlers`;
-      // only one fn generated per type of task, per hook moment.
-      const wrapped = this.wrapTaskHookHandlers(taskName, moment, handlers);
-
-      hooks[moment] = { handlers, wrapped };
+      // generated "wrapped" fn keeps a ref to the list of `handlers`;
+      // only one "wrapped" fn generated per type of task, per hook moment.
+      const handlers: PreHookHandlerType<T>[] = [];
+      const wrapped = this.wrapTaskPreHookHandlers(taskName, handlers);
+      hooks.pre = { handlers, wrapped };
     }
 
-    hooks[moment].handlers.push(handler);
+    hooks.pre.handlers.push(handler as PreHookHandlerType<T>);
   }
 
-  protected unsetTaskHookHandler(taskName: string, moment: TaskHookMoment, handler: Function) {
-    const handlers = this.tasksHooks.get(taskName)?.[moment]?.handlers;
+  protected setTaskPostHookHandler(taskName: string, handler: PostHookHandlerType<T>): void {
+    let hooks = this.tasksHooks.get(taskName);
+
+    if (!hooks || !hooks.post) {
+      if (!hooks) {
+        hooks = {};
+        this.tasksHooks.set(taskName, hooks);
+      }
+      // generated "wrapped" fn keeps a ref to the list of `handlers`;
+      // only one "wrapped" fn generated per type of task, per hook moment.
+      const handlers: PostHookHandlerType<T>[] = [];
+      const wrapped = this.wrapTaskPostHookHandlers(taskName, handlers);
+      hooks.post = { handlers, wrapped };
+    }
+
+    hooks.post.handlers.push(handler as PostHookHandlerType<T>);
+  }
+
+  protected unsetTaskPreHookHandler(taskName: string, handler: PreHookHandlerType<T>): void {
+    const handlers = this.tasksHooks.get(taskName)?.pre?.handlers;
 
     if (handlers) {
       const handlerIndex = handlers.indexOf(handler);
+      if (handlerIndex >= 0) handlers.splice(handlerIndex, 1);
+    }
+  }
 
+  protected unsetTaskPostHookHandler(taskName: string, handler: PostHookHandlerType<T>): void {
+    const handlers = this.tasksHooks.get(taskName)?.post?.handlers;
+
+    if (handlers) {
+      const handlerIndex = handlers.indexOf(handler);
       if (handlerIndex >= 0) handlers.splice(handlerIndex, 1);
     }
   }

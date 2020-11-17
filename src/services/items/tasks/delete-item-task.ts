@@ -35,7 +35,7 @@ class DeleteItemSubTask extends BaseItemTask {
 }
 
 export class DeleteItemTask extends BaseItemTask {
-  get name() { return DeleteItemTask.name; }
+  get name(): string { return DeleteItemTask.name; }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
@@ -45,7 +45,7 @@ export class DeleteItemTask extends BaseItemTask {
     this.postHookHandler = postHookHandler;
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<DeleteItemSubTask[]> {
     this._status = TaskStatus.Running;
 
     // get item

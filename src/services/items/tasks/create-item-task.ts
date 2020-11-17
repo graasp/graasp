@@ -15,7 +15,7 @@ import { Item } from '../interfaces/item';
 import { BaseItem } from '../base-item';
 
 export class CreateItemTask extends BaseItemTask {
-  get name() { return CreateItemTask.name; }
+  get name(): string { return CreateItemTask.name; }
 
   constructor(member: Member, data: Partial<Item>,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
@@ -25,7 +25,7 @@ export class CreateItemTask extends BaseItemTask {
     this.parentItemId = parentItemId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
     let parentItem;
     let parentItemPermissionLevel;

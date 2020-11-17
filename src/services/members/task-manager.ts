@@ -23,15 +23,15 @@ export class MemberTaskManager extends BaseTaskManager<Member> {
     this.memberService = itemService;
   }
 
-  createGetTask(actor: Actor, memberId: string) {
+  createGetTask(actor: Actor, memberId: string): GetMemberTask {
     return new GetMemberTask(actor, memberId, this.memberService);
   }
 
-  createGetByTask(actor: Actor, data: Partial<Member>) {
+  createGetByTask(actor: Actor, data: Partial<Member>): GetMembersByTask {
     return new GetMembersByTask(actor, data, this.memberService);
   }
 
-  createCreateTask(actor: Actor, data: Partial<Member>) {
+  createCreateTask(actor: Actor, data: Partial<Member>): CreateMemberTask {
     return new CreateMemberTask(actor, data, this.memberService);
   }
 

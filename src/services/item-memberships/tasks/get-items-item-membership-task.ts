@@ -11,7 +11,7 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 
 // TODO: does this make sense here? Should this be part of different (micro)service??
 export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
-  get name() { return GetItemsItemMembershipsTask.name; }
+  get name(): string { return GetItemsItemMembershipsTask.name; }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -19,7 +19,7 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
     this.itemId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     // get item for which we're fetching its memberships

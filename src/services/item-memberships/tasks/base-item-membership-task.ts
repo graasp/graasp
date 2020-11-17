@@ -32,11 +32,11 @@ export abstract class BaseItemMembershipTask implements ItemMembershipTask {
   }
 
   abstract get name(): string;
-  get status() { return this._status; }
-  get result() { return this._result; }
-  get message() { return this._message; }
+  get status(): TaskStatus { return this._status; }
+  get result(): ItemMembership | ItemMembership[] { return this._result; }
+  get message(): string { return this._message; }
 
-  protected failWith(error: GraaspError) {
+  protected failWith(error: GraaspError): void {
     this._status = TaskStatus.Fail;
     this._message = error.name;
     throw error;

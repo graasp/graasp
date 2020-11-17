@@ -8,7 +8,7 @@ export interface Database {
   pool: DatabasePoolHandler;
 }
 
-export default async (fastify: FastifyInstance, { uri, logs }: { uri: string; logs: string }) => {
+export default async (fastify: FastifyInstance, { uri, logs }: { uri: string; logs: string }): Promise<void> => {
   const options = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeParsers: [] as any[]
@@ -16,6 +16,7 @@ export default async (fastify: FastifyInstance, { uri, logs }: { uri: string; lo
 
   if (logs) {
     const queryLoggingInterceptor =
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       require('slonik-interceptor-query-logging').createQueryLoggingInterceptor();
     Object.assign(options, { interceptors: [queryLoggingInterceptor] });
   }

@@ -9,14 +9,14 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 
 export class GetItemsSharedWithTask extends BaseItemTask {
-  get name() { return GetItemsSharedWithTask.name; }
+  get name(): string { return GetItemsSharedWithTask.name; }
 
   constructor(member: Member,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
     super(member, itemService, itemMembershipService);
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     const memberId = this.actor.id;

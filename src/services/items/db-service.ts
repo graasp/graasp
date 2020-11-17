@@ -43,7 +43,7 @@ export class ItemService {
    * @param id Item id
    * @param transactionHandler Database transaction handler
    */
-  async get(id: string, transactionHandler: TrxHandler) {
+  async get(id: string, transactionHandler: TrxHandler): Promise<Item> {
     return transactionHandler
       .query<Item>(sql`
         SELECT ${ItemService.allColumns}
@@ -58,7 +58,7 @@ export class ItemService {
    * @param path Item path
    * @param transactionHandler Database transaction handler
    */
-  async getMatchingPath(path: string, transactionHandler: TrxHandler) {
+  async getMatchingPath(path: string, transactionHandler: TrxHandler): Promise<Item> {
     return transactionHandler
       .query<Item>(sql`
         SELECT ${ItemService.allColumns}
@@ -73,7 +73,7 @@ export class ItemService {
    * @param ids Item ids
    * @param transactionHandler Database transaction handler
    */
-  async getMany(ids: string[], transactionHandler: TrxHandler) {
+  async getMany(ids: string[], transactionHandler: TrxHandler): Promise<readonly Item[]> {
     return transactionHandler
       .query<Item>(sql`
         SELECT ${ItemService.allColumns}
@@ -88,7 +88,7 @@ export class ItemService {
    * @param item Item to create
    * @param transactionHandler Database transaction handler
    */
-  async create(item: Partial<Item>, transactionHandler: TrxHandler) {
+  async create(item: Partial<Item>, transactionHandler: TrxHandler): Promise<Item> {
     const { id, name, description, type, path, extra, creator } = item;
 
     return transactionHandler
@@ -106,7 +106,7 @@ export class ItemService {
    * @param data Item changes
    * @param transactionHandler Database transaction handler
    */
-  async update(id: string, data: Partial<Item>, transactionHandler: TrxHandler) {
+  async update(id: string, data: Partial<Item>, transactionHandler: TrxHandler): Promise<Item> {
     // dynamically build "column1 = value1, column2 = value2, ..." based on the
     // properties present in data
     const setValues = sql.join(
@@ -141,7 +141,7 @@ export class ItemService {
    * @param id Item id
    * @param transactionHandler Database transaction handler
    */
-  async delete(id: string, transactionHandler: TrxHandler) {
+  async delete(id: string, transactionHandler: TrxHandler): Promise<Item> {
     return transactionHandler
       .query<Item>(sql`
         DELETE FROM item
@@ -156,7 +156,7 @@ export class ItemService {
    * @param item Item's children to count
    * @param transactionHandler Database transaction handler
    */
-  async getNumberOfChildren(item: Item, transactionHandler: TrxHandler) {
+  async getNumberOfChildren(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
       .oneFirst(sql`
         SELECT count(*) FROM item
@@ -170,7 +170,7 @@ export class ItemService {
    * @param item Item's children to fetch
    * @param transactionHandler Database transaction handler
    */
-  async getChildren(item: Item, transactionHandler: TrxHandler) {
+  async getChildren(item: Item, transactionHandler: TrxHandler): Promise<readonly Item[]> {
     return transactionHandler
       .query<Item>(sql`
         SELECT ${ItemService.allColumns} FROM item
@@ -184,7 +184,7 @@ export class ItemService {
    * @param item Item whose descendants are to count
    * @param transactionHandler Database transaction handler
    */
-  async getNumberOfDescendants(item: Item, transactionHandler: TrxHandler) {
+  async getNumberOfDescendants(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
       .oneFirst(sql`
         SELECT count(*) FROM item
@@ -211,7 +211,7 @@ export class ItemService {
    * the function should be called with `R` as `<Partial<Item>>`: `getDescendants<Partial<Item>>()`
    */
   async getDescendants(item: Item, transactionHandler: TrxHandler,
-    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof Item)[]) {
+    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof Item)[]): Promise<Partial<Item>[]> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -242,7 +242,7 @@ export class ItemService {
    * @param item Item from where to start
    * @param transactionHandler Database transaction handler
    */
-  async getNumberOfLevelsToFarthestChild(item: Item, transactionHandler: TrxHandler) {
+  async getNumberOfLevelsToFarthestChild(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
       .maybeOneFirst(sql`
         SELECT nlevel(path) - nlevel(${item.path})
@@ -261,7 +261,7 @@ export class ItemService {
    * @param transactionHandler Database transaction handler
    * TODO: does this make sense here? Should this be part of different (micro)service??
    */
-  async getOwn(memberId: string, transactionHandler: TrxHandler) {
+  async getOwn(memberId: string, transactionHandler: TrxHandler): Promise<Item[]> {
     return transactionHandler
       .query<Item>(sql`
         SELECT ${ItemService.allColumnsForJoins}
@@ -283,7 +283,7 @@ export class ItemService {
    * @param transactionHandler Database transaction handler
    * TODO: does this make sense here? Should this be part of different (micro)service??
    */
-  async getSharedWith(memberId: string, transactionHandler: TrxHandler) {
+  async getSharedWith(memberId: string, transactionHandler: TrxHandler): Promise<Item[]> {
     return transactionHandler.query<Item>(sql`
       SELECT ${ItemService.allColumnsForJoins}
       FROM (
@@ -311,12 +311,12 @@ export class ItemService {
    * @param transactionHandler Database transaction handler
    * @param parentItem Destination item
    */
-  async move(item: Item, transactionHandler: TrxHandler, parentItem?: Item) {
+  async move(item: Item, transactionHandler: TrxHandler, parentItem?: Item): Promise<void> {
     const pathSql = parentItem ?
       sql`${parentItem.path} || subpath(path, nlevel(${item.path}) - 1)` :
       sql`subpath(path, nlevel(${item.path}) - 1)`;
 
-    return transactionHandler
+    await transactionHandler
       .query(sql`
         UPDATE item
         SET path = ${pathSql}

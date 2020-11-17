@@ -13,7 +13,7 @@ import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
 export class MoveItemTask extends BaseItemTask {
-  get name() { return MoveItemTask.name; }
+  get name(): string { return MoveItemTask.name; }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
@@ -23,7 +23,7 @@ export class MoveItemTask extends BaseItemTask {
     this.parentItemId = parentItemId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler): Promise<void> {
     this._status = TaskStatus.Running;
 
     // get item
