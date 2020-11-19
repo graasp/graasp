@@ -44,7 +44,7 @@ instance
     password: MAILER_CONFIG_PASSWORD,
     fromEmail: MAILER_CONFIG_FROM_EMAIL
   })
-  .register(authPlugin, { sameSite: (ENVIRONMENT !== 'staging' ? true : 'lax' )});
+  .register(authPlugin, { sessionCookieDomain: (ENVIRONMENT === 'staging' ? 'graasp.org' : null )});
 
 instance.register(async (instance) => {
   // authPlugin's session validation (only in this scope)

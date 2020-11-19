@@ -9,7 +9,7 @@ const start = async () => {
 
     if (ENVIRONMENT === 'staging') {
       fastifyApp.register(fastifyCors, {
-        origin: /localhost:[1-9][0-9]{3}$/,
+        origin: new RegExp(`\.graasp\.org:${PORT}$`),
         credentials: true, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
         maxAge: 7200 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
       });

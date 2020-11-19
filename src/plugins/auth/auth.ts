@@ -22,8 +22,8 @@ import { Member } from 'services/members/interfaces/member';
 // local
 import { register, login, auth } from './schemas';
 
-const plugin: FastifyPluginAsync<{ sameSite: boolean | 'lax' | 'strict' | 'none' }> = async (fastify, options) => {
-  const { sameSite = true } = options;
+const plugin: FastifyPluginAsync<{ sessionCookieDomain: string }> = async (fastify, options) => {
+  const { sessionCookieDomain: domain } = options;
   const { log, db, memberService: mS } = fastify;
   const memberTaskManager = new MemberTaskManager(mS, db, log);
 
@@ -31,10 +31,7 @@ const plugin: FastifyPluginAsync<{ sameSite: boolean | 'lax' | 'strict' | 'none'
     // TODO: maybe change to 'secret', which is just a string (makes the boot slower).
     // Production needs its own key: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key
     key: fs.readFileSync(path.join(process.cwd(), 'secure-session-secret-key')),
-    cookie: {
-      // domain: ''
-      sameSite
-    }
+    cookie: { domain }
   });
 
   // function to validate if the request has a valid session for an existing member
