@@ -37,10 +37,11 @@ export const HOSTNAME = process.env.HOSTNAME || 'localhost';
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOSTNAME;
 
 export const PORT = !prod ? port :
-  // if launched using pm2 (multiple instances), get the intance number
-  (port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
+// if launched using pm2 (multiple instances), get the intance number
+(port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
 
 export const HOST = prod ? HOSTNAME : `${HOSTNAME}:${PORT}`;
+export const CLIENT_HOST = process.env.CLIENT_HOST;
 
 export const { PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS } = process.env;
 

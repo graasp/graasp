@@ -12,7 +12,7 @@ import fastifyJwt from 'fastify-jwt';
 import {
   GRAASP_ACTOR, JWT_SECRET, EMAIL_LINKS_HOST, PROTOCOL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
-  LOGIN_TOKEN_EXPIRATION_IN_MINUTES
+  LOGIN_TOKEN_EXPIRATION_IN_MINUTES, CLIENT_HOST
 } from 'util/config';
 
 // other services
@@ -131,7 +131,11 @@ const plugin: FastifyPluginAsync<{ sessionCookieDomain: string }> = async (fasti
         // add member id to session
         session.set('member', memberId);
 
-        reply.status(204);
+        if (CLIENT_HOST) {
+          reply.redirect(303, `//${CLIENT_HOST}`);
+        } else {
+          reply.status(204);
+        }
       } catch (error) {
         if (error instanceof JsonWebTokenError) {
           session.delete();
