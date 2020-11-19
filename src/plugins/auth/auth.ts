@@ -22,7 +22,8 @@ import { Member } from 'services/members/interfaces/member';
 // local
 import { register, login, auth } from './schemas';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsync<{ sameSite: boolean | 'lax' | 'strict' | 'none' }> = async (fastify, options) => {
+  const { sameSite = true } = options;
   const { log, db, memberService: mS } = fastify;
   const memberTaskManager = new MemberTaskManager(mS, db, log);
 
@@ -32,6 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     key: fs.readFileSync(path.join(process.cwd(), 'secure-session-secret-key')),
     cookie: {
       // domain: ''
+      sameSite
     }
   });
 
