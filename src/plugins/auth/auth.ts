@@ -4,7 +4,7 @@ import path from 'path';
 import { promisify } from 'util';
 import { JsonWebTokenError } from 'jsonwebtoken';
 
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyJwt from 'fastify-jwt';
@@ -22,7 +22,7 @@ import { Member } from 'services/members/interfaces/member';
 // local
 import { register, login, auth } from './schemas';
 
-async function plugin(fastify: FastifyInstance) {
+const plugin: FastifyPluginAsync = async (fastify) => {
   const { log, db, memberService: mS } = fastify;
   const memberTaskManager = new MemberTaskManager(mS, db, log);
 
@@ -153,6 +153,6 @@ async function plugin(fastify: FastifyInstance) {
       reply.status(204);
     }
   );
-}
+};
 
 export default fp(plugin);

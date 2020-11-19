@@ -34,7 +34,7 @@ COPY --chown=$USER_UID:$USER_GID . /home/node/app
 
 WORKDIR /home/node/app
 
-RUN npm i shelljs typescript@`node -p "require('./package.json').devDependencies.typescript"` \
+RUN npm i shelljs @types/uuid typescript@`node -p "require('./package.json').devDependencies.typescript"` \
   && npm i --production
 
 RUN npm run build-ts \
