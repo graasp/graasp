@@ -1,10 +1,10 @@
-import { Database } from 'plugins/database';
-import { ItemService } from 'services/items/db-service';
-import { ItemMembershipService } from 'services/item-memberships/db-service';
-import { MemberService } from 'services/members/db-service';
-import { Member } from 'services/members/interfaces/member';
-import { BaseTaskManager } from 'services/base-task-manager';
-import { Item } from 'services/items/interfaces/item';
+import fastify from 'fastify';
+
+import { Database } from '../plugins/database';
+import { ItemService } from '../services/items/db-service';
+import { ItemMembershipService } from '../services/item-memberships/db-service';
+import { MemberService } from '../services/members/db-service';
+import { Member } from '../services/members/interfaces/member';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -12,7 +12,6 @@ declare module 'fastify' {
     memberService: MemberService;
     itemService: ItemService;
     itemMembershipService: ItemMembershipService;
-    taskManager: BaseTaskManager<Item /*| Member*/>;
     validateSession: any; // authPlugin
   }
 
@@ -20,3 +19,8 @@ declare module 'fastify' {
     member: Member;
   }
 }
+
+export { Item } from '../services/items/interfaces/item';
+export { ItemTaskManager } from '../services/items/task-manager';
+
+export { Member } from '../services/members/interfaces/member'
