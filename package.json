@@ -22,7 +22,8 @@
     "debug": "npm run build && npm run watch-debug",
     "serve-debug": "NODE_PATH=./dist nodemon --inspect dist/server.js",
     "serve-debug-break": "NODE_PATH=./dist nodemon --inspect-brk dist/server.js",
-    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\""
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\"",
+    "prepare": "npm run build"
   },
   "types": "dist/types/index.d.ts",
   "some-comments": [
