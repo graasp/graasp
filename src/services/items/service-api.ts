@@ -1,5 +1,5 @@
 // global
-import { FastifyInstance } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
 import graaspFileItem from 'graasp-file-item';
 import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE, FILE_STORAGE_ROOT_PATH } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
@@ -15,7 +15,7 @@ import common, {
 } from './schemas';
 import { ItemTaskManager } from './task-manager';
 
-export default async (fastify: FastifyInstance): Promise<void> => {
+const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, log, itemService: iS, itemMembershipService: iMS } = fastify;
   const taskManager = new ItemTaskManager(iS, iMS, db, log);
 
@@ -175,3 +175,5 @@ export default async (fastify: FastifyInstance): Promise<void> => {
     }
   );
 };
+
+export default plugin;

@@ -1,14 +1,26 @@
 import { createPool, DatabasePoolType, DatabaseTransactionConnectionType } from 'slonik';
-import { FastifyInstance } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
 
 export type DatabasePoolHandler = DatabasePoolType;
 export type DatabaseTransactionHandler = DatabaseTransactionConnectionType;
+
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    db: Database;
+  }
+}
 
 export interface Database {
   pool: DatabasePoolHandler;
 }
 
-export default async (fastify: FastifyInstance, { uri, logs }: { uri: string; logs: string }): Promise<void> => {
+interface DatabasePluginOptions {
+  uri: string;
+  logs: string;
+}
+
+const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify, { uri, logs }) => {
   const options = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeParsers: [] as any[]
@@ -24,3 +36,5 @@ export default async (fastify: FastifyInstance, { uri, logs }: { uri: string; lo
   const pool = createPool(uri, options);
   fastify.decorate('db', { pool } as Database);
 };
+
+export default plugin;

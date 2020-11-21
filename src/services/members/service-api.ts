@@ -1,5 +1,5 @@
 // global
-import { FastifyInstance } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
 import { IdParam } from '../../interfaces/requests';
 // local
 import common, {
@@ -7,7 +7,7 @@ import common, {
 } from './schemas';
 import { MemberTaskManager } from './task-manager';
 
-export default async (fastify: FastifyInstance): Promise<void> => {
+const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, log, memberService: iS } = fastify;
   const taskManager = new MemberTaskManager(iS, db, log);
 
@@ -23,3 +23,5 @@ export default async (fastify: FastifyInstance): Promise<void> => {
     }
   );
 };
+
+export default plugin;

@@ -22,6 +22,13 @@ import { Member } from '../../services/members/interfaces/member';
 // local
 import { register, login, auth } from './schemas';
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    validateSession: any;
+  }
+}
+
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { log, db, memberService: mS } = fastify;
   const memberTaskManager = new MemberTaskManager(mS, db, log);

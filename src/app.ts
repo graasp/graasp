@@ -1,4 +1,4 @@
-import fastify, { FastifyInstance } from 'fastify';
+import fastify, { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import {
   PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS,
@@ -21,13 +21,25 @@ import ItemMembershipsServiceApi from './services/item-memberships/service-api';
 import MemberServiceApi from './services/members/service-api';
 import { Member } from './services/members/interfaces/member';
 
-async function decorateFastifyInstance(fastify: FastifyInstance) {
-  fastify.decorateRequest('member', null);
+declare module 'fastify' {
+  interface FastifyInstance {
+    memberService: MemberService;
+    itemService: ItemService;
+    itemMembershipService: ItemMembershipService;
+  }
 
+  interface FastifyRequest {
+    member: Member;
+  }
+}
+
+const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('memberService', new MemberService());
   fastify.decorate('itemService', new ItemService());
   fastify.decorate('itemMembershipService', new ItemMembershipService());
-}
+
+  fastify.decorateRequest('member', null);
+};
 
 const instance = fastify({ logger: !DISABLE_LOGS });
 // const instance = fastify({ logger: { prettyPrint: true, level: 'debug' } });
