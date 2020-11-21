@@ -13,11 +13,11 @@ import {
   GRAASP_ACTOR, JWT_SECRET, EMAIL_LINKS_HOST, PROTOCOL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES
-} from 'util/config';
+} from '../../util/config';
 
 // other services
-import { MemberTaskManager } from 'services/members/task-manager';
-import { Member } from 'services/members/interfaces/member';
+import { MemberTaskManager } from '../../services/members/task-manager';
+import { Member } from '../../services/members/interfaces/member';
 
 // local
 import { register, login, auth } from './schemas';

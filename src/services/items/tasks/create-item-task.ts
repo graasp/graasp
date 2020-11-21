@@ -1,13 +1,13 @@
 // global
-import { GraaspError } from 'util/graasp-error';
-import { DatabaseTransactionHandler } from 'plugins/database';
-import { TaskStatus } from 'interfaces/task';
-import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from 'util/config';
+import { GraaspError } from '../../../util/graasp-error';
+import { DatabaseTransactionHandler } from '../../../plugins/database';
+import { TaskStatus } from '../../../interfaces/task';
+import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../../util/config';
 // other services
-import { ItemMembershipService } from 'services/item-memberships/db-service';
-import { Member } from 'services/members/interfaces/member';
-import { PermissionLevel as pl } from 'services/item-memberships/interfaces/item-membership';
-import { BaseItemMembership } from 'services/item-memberships/base-item-membership';
+import { ItemMembershipService } from '../../../services/item-memberships/db-service';
+import { Member } from '../../../services/members/interfaces/member';
+import { PermissionLevel as pl } from '../../../services/item-memberships/interfaces/item-membership';
+import { BaseItemMembership } from '../../../services/item-memberships/base-item-membership';
 // local
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';

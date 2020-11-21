@@ -1,7 +1,7 @@
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST
-} from 'util/config';
+} from '../../util/config';
 
 export default {
   $id: 'http://graasp.org/items/',

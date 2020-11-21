@@ -1,5 +1,5 @@
 // global
-import { Actor } from 'interfaces/actor';
+import { Actor } from '../../../interfaces/actor';
 
 export enum MemberType {
   Individual = 'individual',

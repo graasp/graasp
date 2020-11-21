@@ -1,12 +1,12 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { GraaspError } from 'util/graasp-error';
-import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from 'plugins/database';
+import { GraaspError } from '../util/graasp-error';
+import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from '../plugins/database';
 
-import { TaskManager } from 'interfaces/task-manager';
-import { Task, TaskStatus, PreHookHandlerType, PostHookHandlerType } from 'interfaces/task';
-import { Actor } from 'interfaces/actor';
-import { Result } from 'interfaces/result';
+import { TaskManager } from '../interfaces/task-manager';
+import { Task, TaskStatus, PreHookHandlerType, PostHookHandlerType } from '../interfaces/task';
+import { Actor } from '../interfaces/actor';
+import { Result } from '../interfaces/result';
 
 export abstract class BaseTaskManager<T extends Result> implements TaskManager<Actor, T> {
   private databasePool: DatabasePoolHandler;

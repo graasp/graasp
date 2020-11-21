@@ -1,10 +1,10 @@
 // global
-import { GraaspError } from 'util/graasp-error';
-import { DatabaseTransactionHandler } from 'plugins/database';
-import { TaskStatus } from 'interfaces/task';
+import { GraaspError } from '../../../util/graasp-error';
+import { DatabaseTransactionHandler } from '../../../plugins/database';
+import { TaskStatus } from '../../../interfaces/task';
 // other services
-import { ItemService } from 'services/items/db-service';
-import { Member } from 'services/members/interfaces/member';
+import { ItemService } from '../../../services/items/db-service';
+import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemMembershipTask } from '../interfaces/item-membership-task';
 import { ItemMembership } from '../interfaces/item-membership';

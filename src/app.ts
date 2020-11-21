@@ -6,19 +6,20 @@ import {
   MAILER_CONFIG_USERNAME,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_FROM_EMAIL
-} from 'util/config';
-import globalDefinitions from 'schemas/global';
+} from './util/config';
+import globalDefinitions from './schemas/global';
 
-import databasePlugin from 'plugins/database';
-import authPlugin from 'plugins/auth/auth';
+import databasePlugin from './plugins/database';
+import authPlugin from './plugins/auth/auth';
 import mailerPlugin from 'graasp-mailer';
 
-import { ItemService } from 'services/items/db-service';
-import { ItemMembershipService } from 'services/item-memberships/db-service';
-import { MemberService } from 'services/members/db-service';
-import ItemsServiceApi from 'services/items/service-api';
-import ItemMembershipsServiceApi from 'services/item-memberships/service-api';
-import MemberServiceApi from 'services/members/service-api';
+import { ItemService } from './services/items/db-service';
+import { ItemMembershipService } from './services/item-memberships/db-service';
+import { MemberService } from './services/members/db-service';
+import ItemsServiceApi from './services/items/service-api';
+import ItemMembershipsServiceApi from './services/item-memberships/service-api';
+import MemberServiceApi from './services/members/service-api';
+import { Member } from './services/members/interfaces/member';
 
 async function decorateFastifyInstance(fastify: FastifyInstance) {
   fastify.decorateRequest('member', null);

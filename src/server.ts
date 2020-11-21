@@ -1,7 +1,7 @@
-import fastifyApp from 'app';
+import fastifyApp from './app';
 import fastifyCors from 'fastify-cors';
 // import swagger from 'fastify-swagger';
-import { PORT, ENVIRONMENT, HOSTNAME } from 'util/config';
+import { PORT, ENVIRONMENT, HOSTNAME } from './util/config';
 
 const start = async () => {
   try {

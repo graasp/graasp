@@ -1,5 +1,5 @@
 import { FastifyLoggerInstance } from 'fastify';
-import { DatabaseTransactionHandler } from 'plugins/database';
+import { DatabaseTransactionHandler } from '../plugins/database';
 import { Actor } from './actor';
 
 export enum TaskStatus {

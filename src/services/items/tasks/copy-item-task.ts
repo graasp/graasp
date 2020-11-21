@@ -1,14 +1,14 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { GraaspError } from 'util/graasp-error';
-import { DatabaseTransactionHandler } from 'plugins/database';
-import { PreHookHandlerType, TaskStatus } from 'interfaces/task';
-import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from 'util/config';
+import { GraaspError } from '../../../util/graasp-error';
+import { DatabaseTransactionHandler } from '../../../plugins/database';
+import { PreHookHandlerType, TaskStatus } from '../../../interfaces/task';
+import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from '../../../util/config';
 // other services
-import { ItemMembershipService } from 'services/item-memberships/db-service';
-import { PermissionLevel as pl } from 'services/item-memberships/interfaces/item-membership';
-import { BaseItemMembership } from 'services/item-memberships/base-item-membership';
-import { Member } from 'services/members/interfaces/member';
+import { ItemMembershipService } from '../../../services/item-memberships/db-service';
+import { PermissionLevel as pl } from '../../../services/item-memberships/interfaces/item-membership';
+import { BaseItemMembership } from '../../../services/item-memberships/base-item-membership';
+import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';

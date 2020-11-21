@@ -1,7 +1,7 @@
 // global
-import { DatabaseTransactionHandler } from 'plugins/database';
-import { TaskStatus } from 'interfaces/task';
-import { Actor } from 'interfaces/actor';
+import { DatabaseTransactionHandler } from '../../../plugins/database';
+import { TaskStatus } from '../../../interfaces/task';
+import { Actor } from '../../../interfaces/actor';
 // local
 import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';

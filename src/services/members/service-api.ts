@@ -1,6 +1,6 @@
 // global
 import { FastifyInstance } from 'fastify';
-import { IdParam } from 'interfaces/requests';
+import { IdParam } from '../../interfaces/requests';
 // local
 import common, {
   getOne,

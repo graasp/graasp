@@ -1,7 +1,7 @@
 // global
 import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
 // other services
-import { PermissionLevel } from 'services/item-memberships/interfaces/item-membership';
+import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
 // local
 import { Item } from './interfaces/item';
 

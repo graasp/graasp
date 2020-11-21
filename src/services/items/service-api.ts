@@ -1,8 +1,8 @@
 // global
 import { FastifyInstance } from 'fastify';
 import graaspFileItem from 'graasp-file-item';
-import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE, FILE_STORAGE_ROOT_PATH } from 'util/config';
-import { IdParam, IdsParams, ParentIdParam } from 'interfaces/requests';
+import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE, FILE_STORAGE_ROOT_PATH } from '../../util/config';
+import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
 import common, {
   getOne,

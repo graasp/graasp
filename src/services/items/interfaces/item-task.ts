@@ -1,7 +1,7 @@
 // global
-import { Task } from 'interfaces/task';
+import { Task } from '../../../interfaces/task';
 // other services
-import { Member } from 'services/members/interfaces/member';
+import { Member } from '../../../services/members/interfaces/member';
 // local
 import { Item } from './item';
 

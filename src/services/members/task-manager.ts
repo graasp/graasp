@@ -1,9 +1,9 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { Database } from 'plugins/database';
-import { Actor } from 'interfaces/actor';
+import { Database } from '../../plugins/database';
+import { Actor } from '../../interfaces/actor';
 // other services
-import { BaseTaskManager } from 'services/base-task-manager';
+import { BaseTaskManager } from '../../services/base-task-manager';
 // local
 import { Member } from './interfaces/member';
 import { MemberService } from './db-service';

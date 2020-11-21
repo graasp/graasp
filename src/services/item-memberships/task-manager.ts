@@ -1,13 +1,13 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { Database } from 'plugins/database';
+import { Database } from '../../plugins/database';
 // other services
-import { Member } from 'services/members/interfaces/member';
-import { ItemService } from 'services/items/db-service';
+import { Member } from '../../services/members/interfaces/member';
+import { ItemService } from '../../services/items/db-service';
+import { BaseTaskManager } from '../../services/base-task-manager';
 // local
 import { ItemMembershipService } from './db-service';
 import { ItemMembership } from './interfaces/item-membership';
-import { BaseTaskManager } from 'services/base-task-manager';
 import { CreateItemMembershipTask } from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
