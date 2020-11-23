@@ -1,0 +1,35 @@
+import { FastifyLoggerInstance } from 'fastify';
+import { Database } from '../../plugins/database';
+import { PostHookHandlerType, PreHookHandlerType } from '../../interfaces/task';
+import { Member } from '../../services/members/interfaces/member';
+import { ItemMembershipService } from '../../services/item-memberships/db-service';
+import { ItemService } from './db-service';
+import { Item } from './interfaces/item';
+import { BaseTaskManager } from '../../services/base-task-manager';
+import { GetItemTask } from './tasks/get-item-task';
+import { GetItemChildrenTask } from './tasks/get-item-children-task';
+import { GetOwnItemsTask } from './tasks/get-own-items-task';
+import { GetItemsSharedWithTask } from './tasks/get-items-shared-with-task';
+import { CreateItemTask } from './tasks/create-item-task';
+import { UpdateItemTask } from './tasks/update-item-task';
+import { DeleteItemTask } from './tasks/delete-item-task';
+import { MoveItemTask } from './tasks/move-item-task';
+import { CopyItemTask } from './tasks/copy-item-task';
+export declare class ItemTaskManager extends BaseTaskManager<Item> {
+    private itemService;
+    private itemMembershipService;
+    constructor(itemService: ItemService, itemMembershipService: ItemMembershipService, database: Database, logger: FastifyLoggerInstance);
+    setPreCopyHandler(handler: PreHookHandlerType<Item>): void;
+    unsetPreCopyHandler(handler: PreHookHandlerType<Item>): void;
+    setPostDeleteHandler(handler: PostHookHandlerType<Item>): void;
+    unsetPostDeleteHandler(handler: PostHookHandlerType<Item>): void;
+    createGetTask(member: Member, itemId: string): GetItemTask;
+    createGetChildrenTask(member: Member, itemId: string): GetItemChildrenTask;
+    createGetOwnTask(member: Member): GetOwnItemsTask;
+    createGetSharedWithTask(member: Member): GetItemsSharedWithTask;
+    createCreateTask(member: Member, data: Partial<Item>, parentId?: string): CreateItemTask;
+    createUpdateTask(member: Member, itemId: string, data: Partial<Item>): UpdateItemTask;
+    createDeleteTask(member: Member, itemId: string): DeleteItemTask;
+    createMoveTask(member: Member, itemId: string, parentId?: string): MoveItemTask;
+    createCopyTask(member: Member, itemId: string, parentId?: string): CopyItemTask;
+}
