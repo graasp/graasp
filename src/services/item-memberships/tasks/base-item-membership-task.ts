@@ -42,5 +42,5 @@ export abstract class BaseItemMembershipTask implements ItemMembershipTask {
     throw error;
   }
 
-  abstract async run(handler: DatabaseTransactionHandler): Promise<void | BaseItemMembershipTask[]>;
+  abstract run(handler: DatabaseTransactionHandler): Promise<void | BaseItemMembershipTask[]>;
 }

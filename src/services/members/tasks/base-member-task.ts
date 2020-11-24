@@ -35,5 +35,5 @@ export abstract class BaseMemberTask implements Task<Actor, Member> {
     throw error;
   }
 
-  abstract async run(handler: DatabaseTransactionHandler): Promise<void | BaseMemberTask[]>;
+  abstract run(handler: DatabaseTransactionHandler): Promise<void | BaseMemberTask[]>;
 }

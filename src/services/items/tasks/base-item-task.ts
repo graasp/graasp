@@ -47,5 +47,5 @@ export abstract class BaseItemTask implements ItemTask {
     throw error;
   }
 
-  abstract async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseItemTask[]>;
+  abstract run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseItemTask[]>;
 }
