@@ -4,8 +4,10 @@
     "module": "commonjs",
     // "strict": true,
     "declaration": true,
+    "declarationDir": "types",
     "outDir": "dist",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"

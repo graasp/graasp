@@ -1,6 +1,7 @@
 import fastify, { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import {
+  ENVIRONMENT,
   PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS,
   MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
@@ -56,7 +57,7 @@ instance
     password: MAILER_CONFIG_PASSWORD,
     fromEmail: MAILER_CONFIG_FROM_EMAIL
   })
-  .register(authPlugin);
+  .register(authPlugin, { sessionCookieDomain: (ENVIRONMENT === 'staging' ? 'graasp.org' : null )});
 
 instance.register(async (instance) => {
   // authPlugin's session validation (only in this scope)

@@ -12,7 +12,7 @@ import fastifyJwt from 'fastify-jwt';
 import {
   GRAASP_ACTOR, JWT_SECRET, EMAIL_LINKS_HOST, PROTOCOL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
-  LOGIN_TOKEN_EXPIRATION_IN_MINUTES
+  LOGIN_TOKEN_EXPIRATION_IN_MINUTES, CLIENT_HOST
 } from '../../util/config';
 
 // other services
@@ -29,7 +29,8 @@ declare module 'fastify' {
   }
 }
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsync<{ sessionCookieDomain: string }> = async (fastify, options) => {
+  const { sessionCookieDomain: domain } = options;
   const { log, db, memberService: mS } = fastify;
   const memberTaskManager = new MemberTaskManager(mS, db, log);
 
@@ -37,9 +38,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // TODO: maybe change to 'secret', which is just a string (makes the boot slower).
     // Production needs its own key: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key
     key: fs.readFileSync(path.join(process.cwd(), 'secure-session-secret-key')),
-    cookie: {
-      // domain: ''
-    }
+    cookie: { domain }
   });
 
   // function to validate if the request has a valid session for an existing member
@@ -139,7 +138,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // add member id to session
         session.set('member', memberId);
 
-        reply.status(204);
+        if (CLIENT_HOST) {
+          reply.redirect(303, `//${CLIENT_HOST}`);
+        } else {
+          reply.status(204);
+        }
       } catch (error) {
         if (error instanceof JsonWebTokenError) {
           session.delete();

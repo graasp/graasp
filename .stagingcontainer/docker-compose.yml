@@ -23,7 +23,7 @@ services:
       - /opt/graasp/file-storage:/home/node/file-storage
       # - ${TMPDIR}:/home/node/file-storage
     ports:
-      - 80:3000
+      - 3111:3111
 
     # Uncomment the next line to use a non-root user for all processes.
     # user: node
