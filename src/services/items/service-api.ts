@@ -19,9 +19,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, log, itemService: iS, itemMembershipService: iMS } = fastify;
   const taskManager = new ItemTaskManager(iS, iMS, db, log);
 
-  fastify.decorate('taskManager', taskManager);
-
-  fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
+  fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH, taskManager });
 
   // schemas
   fastify.addSchema(common);
