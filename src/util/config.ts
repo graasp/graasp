@@ -41,6 +41,7 @@ export const PORT = !prod ? port :
   (port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
 
 export const HOST = prod ? HOSTNAME : `${HOSTNAME}:${PORT}`;
+export const CLIENT_HOST = process.env.CLIENT_HOST;
 
 export const { PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS } = process.env;
 
