@@ -105,15 +105,7 @@ export const MAX_DESCENDANTS_FOR_COPY = 20;
 /**
  * Maximun number of targets in a "many" request that only reads data (`get`)
  */
-export const MAX_TARGETS_FOR_READ_REQUEST = 50;
-/**
- * Maximun number of targets in a "many" request for which the server
- * will execute the tasks and return the results in the same request's response.
- *
- * A request with more targets than this limit should get an immediate `202` response,
- * and the results should be pushed to the client (websockets, ...) as they happen.
- */
-export const MAX_TARGETS_FOR_READ_REQUEST_W_RESPONSE = 15;
+export const MAX_TARGETS_FOR_READ_REQUEST = MAX_TREE_LEVELS;
 /**
  * Maximun number of targets in a "many" request that modifies data (`update`, `delete`)
  */

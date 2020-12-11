@@ -123,10 +123,6 @@ const getMany = {
           { $ref: 'http://graasp.org/items/#/definitions/item' },
         ]
       }
-    },
-    202: { // ids > MAX_TARGETS_FOR_READ_REQUEST_W_RESPONSE
-      type: 'array',
-      items: { $ref: 'http://graasp.org/#/definitions/uuid' }
     }
   }
 };

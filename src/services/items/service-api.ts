@@ -5,7 +5,7 @@ import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE, FILE_STORAGE_ROOT_PATH } fro
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
 import common, {
-  getOne,
+  getOne, getMany,
   getChildren,
   create,
   updateOne, updateMany,
@@ -39,6 +39,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async ({ member, params: { id }, log }) => {
       const task = taskManager.createGetTask(member, id);
       return taskManager.run([task], log);
+    }
+  );
+
+  fastify.get<{ Querystring: IdsParams }>(
+    '/', { schema: getMany },
+    async ({ member, query: { id: ids }, log }) => {
+      const tasks = ids.map(id => taskManager.createGetTask(member, id));
+      return taskManager.run(tasks, log);
     }
   );
 
