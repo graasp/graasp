@@ -34,10 +34,11 @@ export default {
       type: 'object',
       properties: {
         name: { type: 'string' },
+        code: { type: 'string' },
         message: { type: 'string' },
         statusCode: { type: 'number' },
-        error: { type: 'string' },
-        data: {}
+        data: {},
+        stack: {}
       },
       additionalProperties: false
     }

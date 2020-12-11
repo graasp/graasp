@@ -26,8 +26,15 @@ export default {
           additionalProperties: true
         },
         creator: { $ref: 'http://graasp.org/#/definitions/uuid' },
-        createdAt: { type: 'string' },
-        updatedAt: { type: 'string' }
+        /**
+         * for some reason setting these date fields as "type: 'string'"
+         * makes the serialization fail using the anyOf. Following the same
+         * logic from above, here it's also safe to just remove that specification.
+         */
+        // createdAt: { type: 'string' },
+        // updatedAt: { type: 'string' }
+        createdAt: { },
+        updatedAt: { }
       },
       additionalProperties: false
     },
@@ -112,10 +119,14 @@ const getMany = {
       type: 'array',
       items: {
         anyOf: [
+          { $ref: 'http://graasp.org/#/definitions/error' },
           { $ref: 'http://graasp.org/items/#/definitions/item' },
-          { $ref: 'http://graasp.org/#/definitions/error' }
         ]
       }
+    },
+    202: { // ids > MAX_TARGETS_FOR_READ_REQUEST_W_RESPONSE
+      type: 'array',
+      items: { $ref: 'http://graasp.org/#/definitions/uuid' }
     }
   }
 };
@@ -153,12 +164,12 @@ const updateMany = {
       type: 'array',
       items: {
         anyOf: [
-          { $ref: 'http://graasp.org/items/#/definitions/item' },
-          { $ref: 'http://graasp.org/#/definitions/error' }
+          { $ref: 'http://graasp.org/#/definitions/error' },
+          { $ref: 'http://graasp.org/items/#/definitions/item' }
         ]
       }
     },
-    202: { // ids > MAX_TARGETS_FOR_CHANGING_REQUEST_W_RESPONSE
+    202: { // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
       items: { $ref: 'http://graasp.org/#/definitions/uuid' }
     }
@@ -186,12 +197,12 @@ const deleteMany = {
       type: 'array',
       items: {
         anyOf: [
-          { $ref: 'http://graasp.org/items/#/definitions/item' },
-          { $ref: 'http://graasp.org/#/definitions/error' }
+          { $ref: 'http://graasp.org/#/definitions/error' },
+          { $ref: 'http://graasp.org/items/#/definitions/item' }
         ]
       }
     },
-    202: { // ids > MAX_TARGETS_FOR_CHANGING_REQUEST_W_RESPONSE
+    202: { // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
       items: { $ref: 'http://graasp.org/#/definitions/uuid' }
     }
