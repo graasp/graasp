@@ -29,7 +29,9 @@ declare module 'fastify' {
   }
 }
 
-const plugin: FastifyPluginAsync<{ sessionCookieDomain: string }> = async (fastify, options) => {
+interface AuthPluginOptions { sessionCookieDomain: string }
+
+const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   const { sessionCookieDomain: domain } = options;
   const { log, db, memberService: mS } = fastify;
   const memberTaskManager = new MemberTaskManager(mS, db, log);

@@ -162,7 +162,7 @@ export abstract class BaseTaskManager<T extends Result> implements TaskManager<A
     return result;
   }
 
-  abstract createCreateTask(actor: Actor, object: T, extra?: unknown): Task<Actor, T>;
+  abstract createCreateTask(actor: Actor, object: Partial<T>, extra?: unknown): Task<Actor, T>;
   abstract createGetTask(actor: Actor, objectId: string): Task<Actor, T>;
   abstract createUpdateTask(actor: Actor, objectId: string, object: Partial<T>): Task<Actor, T>;
   abstract createDeleteTask(actor: Actor, objectId: string): Task<Actor, T>;

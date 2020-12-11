@@ -3,6 +3,7 @@ type Anything =
   | number
   | boolean
   | null
+  | undefined
   | Anything[]
   | { [key: string]: Anything };
 

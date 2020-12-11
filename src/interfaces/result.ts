@@ -1,3 +1,1 @@
-export interface Result {
-  id: string;
-}
+export interface Result { id: string }

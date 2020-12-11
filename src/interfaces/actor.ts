@@ -1,3 +1,1 @@
-export interface Actor {
-  id: string;
-}
+export interface Actor { id: string }

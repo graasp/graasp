@@ -53,18 +53,6 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     return new GetItemTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 
-  createGetChildrenTask(member: Member, itemId: string): GetItemChildrenTask {
-    return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService);
-  }
-
-  createGetOwnTask(member: Member): GetOwnItemsTask {
-    return new GetOwnItemsTask(member, this.itemService, this.itemMembershipService);
-  }
-
-  createGetSharedWithTask(member: Member): GetItemsSharedWithTask {
-    return new GetItemsSharedWithTask(member, this.itemService, this.itemMembershipService);
-  }
-
   createCreateTask(member: Member, data: Partial<Item>, parentId?: string): CreateItemTask {
     return new CreateItemTask(member, data, this.itemService, this.itemMembershipService, parentId);
   }
@@ -85,5 +73,17 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
   createCopyTask(member: Member, itemId: string, parentId?: string): CopyItemTask {
     const preHookHandler = this.tasksHooks.get(CopyItemTask.name)?.pre?.wrapped;
     return new CopyItemTask(member, itemId, this.itemService, this.itemMembershipService, parentId, preHookHandler);
+  }
+
+  createGetChildrenTask(member: Member, itemId: string): GetItemChildrenTask {
+    return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService);
+  }
+
+  createGetOwnTask(member: Member): GetOwnItemsTask {
+    return new GetOwnItemsTask(member, this.itemService, this.itemMembershipService);
+  }
+
+  createGetSharedWithTask(member: Member): GetItemsSharedWithTask {
+    return new GetItemsSharedWithTask(member, this.itemService, this.itemMembershipService);
   }
 }
