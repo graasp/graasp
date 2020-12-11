@@ -19,6 +19,7 @@
     "test": "DISABLE_LOGS=true jest --forceExit --coverage --verbose",
     "watch-test": "npm run test -- --watchAll",
     "build-ts": "tsc",
+    "build-ts-declaration": "tsc --declaration --declarationDir ./types",
     "watch-ts": "tsc -w",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
     "copy-static-assets": "node copyStaticAssets.mjs",

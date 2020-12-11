@@ -2,6 +2,7 @@
 import { FastifyLoggerInstance } from 'fastify';
 import { Database } from '../../plugins/database';
 import { PostHookHandlerType, PreHookHandlerType } from '../../interfaces/task';
+import { TaskManagerHookHandlers } from '../../interfaces/task-manager-hook-handlers';
 // other services
 import { Member } from '../../services/members/interfaces/member';
 import { ItemMembershipService } from '../../services/item-memberships/db-service';
@@ -19,7 +20,7 @@ import { DeleteItemTask } from './tasks/delete-item-task';
 import { MoveItemTask } from './tasks/move-item-task';
 import { CopyItemTask } from './tasks/copy-item-task';
 
-export class ItemTaskManager extends BaseTaskManager<Item> {
+export class ItemTaskManager extends BaseTaskManager<Item> implements TaskManagerHookHandlers<Item> {
   private itemService: ItemService;
   private itemMembershipService: ItemMembershipService;
 
@@ -32,6 +33,11 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     this.itemMembershipService = itemMembershipService;
   }
 
+  /**
+   * Methods for setting handlers to be executed when certain tasks run.
+   */
+
+  // copy
   setPreCopyHandler(handler: PreHookHandlerType<Item>): void {
     this.setTaskPreHookHandler(CopyItemTask.name, handler);
   }
@@ -40,6 +46,7 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     this.unsetTaskPreHookHandler(CopyItemTask.name, handler);
   }
 
+  // delete
   setPostDeleteHandler(handler: PostHookHandlerType<Item>): void {
     this.setTaskPostHookHandler(DeleteItemTask.name, handler);
   }
@@ -48,7 +55,7 @@ export class ItemTaskManager extends BaseTaskManager<Item> {
     this.unsetTaskPostHookHandler(DeleteItemTask.name, handler);
   }
 
-  // Tasks
+  // tasks creation
   createGetTask(member: Member, itemId: string): GetItemTask {
     return new GetItemTask(member, itemId, this.itemService, this.itemMembershipService);
   }

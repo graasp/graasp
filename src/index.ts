@@ -1,4 +1,7 @@
+import { Item } from './services/items/interfaces/item';
 import { Member } from './services/members/interfaces/member';
+import { TaskManager } from './interfaces/task-manager';
+import { TaskManagerHookHandlers } from './interfaces/task-manager-hook-handlers';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -11,7 +14,9 @@ declare module 'fastify' {
  * adding '@types/graasp' as a (dev) dependency
  */
 
-export { Item } from './services/items/interfaces/item';
-export { ItemTaskManager } from './services/items/task-manager';
+// Items
+export * from './services/items/interfaces/item';
+export type ItemTaskManager = TaskManager<Member, Item> & TaskManagerHookHandlers<Item>;
 
-export { Member } from './services/members/interfaces/member';
+// Members
+export * from './services/members/interfaces/member';

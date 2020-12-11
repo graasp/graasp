@@ -26,5 +26,5 @@ export interface Task<A extends Actor, T> {
   postHookHandler?: PostHookHandlerType<T>;
 }
 
-export type PreHookHandlerType<T> = (data?: Partial<T>, actor?: Actor, log?: FastifyLoggerInstance) => Promise<void> | void;
-export type PostHookHandlerType<T> = (data?: T | T[], actor?: Actor, log?: FastifyLoggerInstance) => void;
+export type PreHookHandlerType<T> = (data: Partial<T>, actor: Actor, log?: FastifyLoggerInstance) => Promise<void> | void;
+export type PostHookHandlerType<T> = (data: T | T[], actor: Actor, log?: FastifyLoggerInstance) => void;
