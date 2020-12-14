@@ -13,10 +13,10 @@ describe('Items API', () => {
     expect(statusCode).toBe(404);
   });
 
-  test('GET /items w/o user should return 404', async () => {
+  test('GET /items w/o multiple &id=<> parameters should return 400', async () => {
     const { statusCode } =
       await fastifyServerInstance.inject({ method: 'GET', url: '/items' });
-    expect(statusCode).toBe(404);
+    expect(statusCode).toBe(400);
   });
 
   test('GET /items/<fake-id> w/o user should return 401', async () => {
