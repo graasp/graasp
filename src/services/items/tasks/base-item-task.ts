@@ -34,6 +34,8 @@ export abstract class BaseItemTask implements ItemTask {
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
     this.partialSubtasks = partialSubtasks;
+
+    this._status = TaskStatus.New;
   }
 
   abstract get name(): string;

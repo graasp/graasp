@@ -3,6 +3,7 @@ import { DatabaseTransactionHandler } from '../plugins/database';
 import { Actor } from './actor';
 
 export enum TaskStatus {
+  New = 'NEW', // new. did not run yet
   Running = 'RUNNING',
   OK = 'OK',
   Fail = 'FAIL',

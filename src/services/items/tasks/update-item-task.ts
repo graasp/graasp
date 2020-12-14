@@ -32,6 +32,7 @@ class UpdateItemSubTask extends BaseItemTask {
 
 export class UpdateItemTask extends BaseItemTask {
   get name(): string { return UpdateItemTask.name; }
+  private subtasks: UpdateItemSubTask[];
 
   constructor(member: Member, itemId: string, data: Partial<Item>,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -45,6 +46,15 @@ export class UpdateItemTask extends BaseItemTask {
       (acc, key) => this.data[key] != null ? { ...acc, [key]: this.data[key] } : acc,
       {}
     );
+  }
+
+  get result(): Item | Item[] {
+    // if item has no descendants or subtasks are still 'New'
+    if (!this.subtasks || this.subtasks.some(st => st.status === TaskStatus.New)) return this._result;
+
+    // return the result of the last subtask that executed successfully,
+    // in other words, the last updated item
+    return this.subtasks.filter(st => st.status === TaskStatus.OK).pop().result;
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<UpdateItemSubTask[]> {
@@ -80,11 +90,13 @@ export class UpdateItemTask extends BaseItemTask {
 
         // return list of subtasks for task manager to execute and
         // update item + all descendants, one by one.
-        return descendants
+        this.subtasks = descendants
           // for all the descendants only pass the propagating changes
           .map(d => new UpdateItemSubTask(this.actor, d.id, propagatingChanges, this.itemService, this.itemMembershipService))
           // for the target item, pass all the changes
           .concat(new UpdateItemSubTask(this.actor, this.targetId, this.data, this.itemService, this.itemMembershipService));
+
+        return this.subtasks;
       }
     }
 

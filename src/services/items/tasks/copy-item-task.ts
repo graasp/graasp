@@ -47,6 +47,7 @@ class CopyItemSubTask extends BaseItemTask {
 
 export class CopyItemTask extends BaseItemTask {
   get name(): string { return CopyItemTask.name; }
+  private subtasks: CopyItemSubTask[];
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
@@ -56,7 +57,10 @@ export class CopyItemTask extends BaseItemTask {
     this.targetId = itemId;
     this.parentItemId = parentItemId;
     this.preHookHandler = preHookHandler;
+    this.subtasks = [];
   }
+
+  get result(): Item | Item[] { return this.subtasks[0]?.result; }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
     this._status = TaskStatus.Running;
@@ -107,7 +111,6 @@ export class CopyItemTask extends BaseItemTask {
     // return list of subtasks for task manager to copy item + all descendants, one by one.
     const createAdminMembership = !parentItem || parentItemPermissionLevel === pl.Write;
 
-    const subtasks: CopyItemSubTask[] = [];
     treeItemsCopy.forEach((itemCopy, oldId) => {
       const subtask = (oldId === this.targetId) ?
         // create 'admin' membership for "top" parent item if necessary
@@ -115,11 +118,11 @@ export class CopyItemTask extends BaseItemTask {
           this.itemMembershipService, createAdminMembership, this.preHookHandler) :
         new CopyItemSubTask(this.actor, oldId, itemCopy, this.itemService,
           this.itemMembershipService, false, this.preHookHandler);
-      subtasks.push(subtask);
+      this.subtasks.push(subtask);
     });
 
     this._status = TaskStatus.Delegated;
-    return subtasks;
+    return this.subtasks;
   }
 
   /**

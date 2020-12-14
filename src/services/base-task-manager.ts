@@ -1,7 +1,7 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from '../util/graasp-error';
-import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from '../plugins/database';
+import { Database, DatabasePoolHandler } from '../plugins/database';
 
 import { TaskManager } from '../interfaces/task-manager';
 import { Task, TaskStatus, PreHookHandlerType, PostHookHandlerType } from '../interfaces/task';
@@ -42,21 +42,20 @@ export abstract class BaseTaskManager<T extends Result> implements TaskManager<A
 
   /**
    * Run each task, and any subtasks, in a transaction.
-   * If something goes wrong the whole task is canceled/reverted.
+   * Depending on the task, if something goes wrong, the whole task is might canceled/reverted.
    *
    * @param task Task to run
    * @param log Logger instance
-   * @returns Task's `result` or, if it has subtasks, the `result` of the last subtask.
+   * @returns The task's `result`. If it has subtasks, whatever (task/subtask) result that
+   * should represent the "global" result (dependant on task implementation).
    */
   private async runTransactionally(task: Task<Actor, T>, log: FastifyLoggerInstance): Promise<T | T[]> {
     return this.databasePool.transaction(async (handler) => {
-      let taskResult: T | T[];
       let subtasks;
 
       // run task
       try {
         subtasks = await task.run(handler, log);
-        taskResult = task.result;
         this.handleTaskFinish(task, log);
       } catch (error) {
         if (error instanceof GraaspError) {
@@ -65,68 +64,44 @@ export abstract class BaseTaskManager<T extends Result> implements TaskManager<A
         throw error;
       }
 
-      // if there's no subtasks, "register" the task finishing
-      if (!subtasks) return taskResult;
+      // if there's no subtasks, return task result
+      if (!subtasks) return task.result;
 
-      // if task's subtasks can "partially" execute
-      if (task.partialSubtasks) return this.runTransactionallyNested(subtasks, handler, log);
+      let subtask: Task<Actor, T>;
 
-      // run subtasks as "a whole"
-      let subtask;
-
-      try {
-        for (let i = 0; i < subtasks.length; i++) {
-          subtask = subtasks[i];
-          await subtask.run(handler, log);
+      // run subtasks
+      if (task.partialSubtasks) {
+        // if a subtask fails, stop. finished (sub)tasks are not reverted/rolledback.
+        try {
+          for (let i = 0; i < subtasks.length; i++) {
+            subtask = subtasks[i];
+            await handler.transaction(async nestedHandler => subtask.run(nestedHandler, log));
+            this.handleTaskFinish(subtask, log);
+          }
+        } catch (error) {
+          if (error instanceof GraaspError) {
+            this.handleTaskFinish(subtask, log);
+          } else {
+            log.error(error);
+          }
         }
-
-        subtasks.forEach((st: Task<Actor, T>) => this.handleTaskFinish(st, log));
-
-        // set the last subtask result as the result of the task
-        // TODO: does this make sense?
-        taskResult = subtasks[subtasks.length - 1].result;
-      } catch (error) {
-        if (error instanceof GraaspError) {
-          this.handleTaskFinish(subtask, log);
+      } else {
+        // if a subtask fails, stop and all is reverted/rolledback.
+        try {
+          for (let i = 0; i < subtasks.length; i++) {
+            subtask = subtasks[i];
+            await subtask.run(handler, log);
+          }
+          subtasks.forEach(st => this.handleTaskFinish(st, log));
+        } catch (error) {
+          if (error instanceof GraaspError) {
+            this.handleTaskFinish(subtask, log);
+          }
+          throw error;
         }
-        throw error;
       }
 
-      return taskResult;
-    });
-  }
-
-  /**
-   * Run each subtask in a nested transaction.
-   * If something goes wrong the execution stops at that point and returns.
-   * Subtasks that ran successfully are not reverted/rolledback.
-   *
-   * @param subtasks Subtasks to run
-   * @param handler Task's transactional handler
-   * @param log Logger instance
-   */
-  private async runTransactionallyNested(subtasks: Task<Actor, T>[], handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<T | T[]> {
-    return handler.transaction(async (nestedHandler) => {
-      let subtask;
-      let taskResult;
-
-      try {
-        for (let i = 0; i < subtasks.length; i++) {
-          subtask = subtasks[i];
-
-          await subtask.run(nestedHandler, log);
-          taskResult = subtask.result;
-
-          this.handleTaskFinish(subtask, log);
-        }
-      } catch (error) {
-        if (error instanceof GraaspError) {
-          this.handleTaskFinish(subtask, log);
-        }
-        log.error(error);
-      }
-
-      return taskResult;
+      return task.result;
     });
   }
 

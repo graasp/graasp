@@ -175,10 +175,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // copy items
   fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
     '/:id/copy', { schema: copyOne },
-    async ({ member, params: { id }, body: { parentId }, log }, reply) => {
+    async ({ member, params: { id }, body: { parentId }, log }) => {
       const task = taskManager.createCopyTask(member, id, parentId);
-      await taskManager.run([task], log);
-      reply.status(204);
+      return taskManager.run([task], log);
     }
   );
 
@@ -194,8 +193,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         return ids;
       }
 
-      await taskManager.run(tasks, log);
-      reply.status(204);
+      return taskManager.run(tasks, log);
     }
   );
 };

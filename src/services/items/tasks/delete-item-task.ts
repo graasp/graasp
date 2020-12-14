@@ -36,6 +36,7 @@ class DeleteItemSubTask extends BaseItemTask {
 
 export class DeleteItemTask extends BaseItemTask {
   get name(): string { return DeleteItemTask.name; }
+  private subtasks: DeleteItemSubTask[];
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
@@ -44,6 +45,15 @@ export class DeleteItemTask extends BaseItemTask {
     super(member, itemService, itemMembershipService, partialSubtasks); // partial execution of subtasks
     this.targetId = itemId;
     this.postHookHandler = postHookHandler;
+  }
+
+  get result(): Item | Item[] {
+    // if item has no descendants or subtasks are still 'New'
+    if (!this.subtasks || this.subtasks.some(st => st.status === TaskStatus.New)) return this._result;
+
+    // return the result of the last subtask that executed successfully,
+    // in other words, the last deleted item
+    return this.subtasks.filter(st => st.status === TaskStatus.OK).pop().result;
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<DeleteItemSubTask[]> {
@@ -69,9 +79,11 @@ export class DeleteItemTask extends BaseItemTask {
 
       // return list of subtasks for task manager to execute and
       // delete item + all descendants, one by one.
-      return descendants
+      this.subtasks = descendants
         .concat(item)
         .map(d => new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService, this.postHookHandler));
+
+      return this.subtasks;
     }
 
     // item has no descendents - delete item and return it as the result
