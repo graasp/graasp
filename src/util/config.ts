@@ -50,12 +50,6 @@ if (!PG_CONNECTION_URI) {
   process.exit(1);
 }
 
-// Mailer config
-export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
-export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
-export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
-export const MAILER_CONFIG_FROM_EMAIL = 'no-reply@graasp.org';
-
 // Graasp constants
 
 /**
@@ -119,7 +113,20 @@ export const MAX_TARGETS_FOR_MODIFY_REQUEST = 20;
  */
 export const MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE = 5;
 
+// Graasp mailer config
+export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
+export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
+export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
+export const MAILER_CONFIG_FROM_EMAIL = 'no-reply@graasp.org';
 
 // Graasp file item
 // TODO: should this be here?
 export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
+
+// Graasp S3 file item
+// TODO: should this be here?
+export const S3_FILE_ITEM_PLUGIN = process.env.S3_FILE_ITEM_PLUGIN === 'true';
+export const S3_FILE_ITEM_REGION = process.env.S3_FILE_ITEM_REGION;
+export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
+export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
+export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;

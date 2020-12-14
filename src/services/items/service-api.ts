@@ -1,7 +1,16 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
 import graaspFileItem from 'graasp-file-item';
-import { MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE, FILE_STORAGE_ROOT_PATH } from '../../util/config';
+import graaspS3FileItem from 'graasp-s3-file-item';
+import {
+  MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
+  FILE_STORAGE_ROOT_PATH,
+  S3_FILE_ITEM_PLUGIN,
+  S3_FILE_ITEM_REGION,
+  S3_FILE_ITEM_BUCKET,
+  S3_FILE_ITEM_ACCESS_KEY_ID,
+  S3_FILE_ITEM_SECRET_ACCESS_KEY,
+} from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
 import common, {
@@ -20,6 +29,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const taskManager = new ItemTaskManager(iS, iMS, db, log);
 
   fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH, taskManager });
+  if (S3_FILE_ITEM_PLUGIN) {
+    fastify.register(graaspS3FileItem, {
+      s3Region: S3_FILE_ITEM_REGION,
+      s3Bucket: S3_FILE_ITEM_BUCKET,
+      s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
+      s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
+      taskManager
+    });
+  }
 
   // schemas
   fastify.addSchema(common);
