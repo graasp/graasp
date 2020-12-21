@@ -7,7 +7,7 @@ export default {
         id: { type: 'string' },
         name: { type: 'string' },
         email: { type: 'string' },
-        type: { type: 'string' }
+        // type: { type: 'string' },
       },
       additionalProperties: false
     },
@@ -26,11 +26,28 @@ export default {
   }
 };
 
-// schema for getting a item
+// schema for getting a member
 const getOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   response: {
     200: { $ref: 'http://graasp.org/members/#/definitions/member' }
+  }
+};
+
+// schema for getting members by
+const getBy = {
+  querystring: {
+    type: 'object',
+    properties: {
+      email: { type: 'string', format: 'email' }
+    },
+    additionalProperties: false
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: { $ref: 'http://graasp.org/members/#/definitions/member' }
+    }
   }
 };
 
@@ -49,5 +66,6 @@ const create = {
 
 export {
   getOne,
-  create
+  create,
+  getBy
 };
