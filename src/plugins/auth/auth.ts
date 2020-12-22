@@ -29,10 +29,16 @@ declare module 'fastify' {
   }
 }
 
-interface AuthPluginOptions { sessionCookieDomain: string }
+interface AuthPluginOptions {
+  sessionCookieDomain: string;
+  uniqueViolationErrorName?: string;
+}
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
-  const { sessionCookieDomain: domain } = options;
+  const {
+    sessionCookieDomain: domain,
+    uniqueViolationErrorName = 'UniqueIntegrityConstraintViolationError' // TODO: can we improve this?
+  } = options;
   const { log, db, memberService: mS } = fastify;
   const memberTaskManager = new MemberTaskManager(mS, db, log);
 
@@ -70,56 +76,74 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   await fastify.register(fastifyJwt, { secret: JWT_SECRET });
 
-  const promisifiedJwtVerify = promisify(fastify.jwt.verify);
+  const promisifiedJwtVerify = promisify<string, { sub: string }>(fastify.jwt.verify);
+  const promisifiedJwtSign = promisify<{ sub: string }, { expiresIn: string }, string>(fastify.jwt.sign);
 
   // register
   fastify.post<{ Body: { name: string; email: string } }>(
     '/register',
     { schema: register },
     async ({ body, log }, reply) => {
-      // create member
-      const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
-      // TODO: how to handle "unique integrity constraint" when email already exists?
-      // don't bubble up error to client, log something, and
-      // send an email with a new link to login and mention that someone
-      // tried to (re)register in the platform with this same email.
-      const member = await memberTaskManager.run([task], log) as Member;
+      let member, task;
 
-      // generate token with member info and expiration
-      const token = await reply.jwtSign({ sub: member.id },
-        { expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m` });
+      try {
+        // create member
+        task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
+        member = await memberTaskManager.run([task], log) as Member;
 
-      const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
-      // don't wait for mailer's response; log error and link if it fails.
-      fastify.mailer.sendRegisterEmail(member, link)
-        .catch(err => log.warn(err, `mailer failed. link: ${link}`));
+        // generate token with member info and expiration
+        const token = await promisifiedJwtSign({ sub: member.id },
+          { expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m` });
+
+        const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
+        // don't wait for mailer's response; log error and link if it fails.
+        fastify.mailer.sendRegisterEmail(member, link)
+          .catch(err => log.warn(err, `mailer failed. link: ${link}`));
+
+
+      } catch (error) {
+        if ((error as Error).name !== uniqueViolationErrorName) throw error;
+
+        const { email } = body;
+        log.warn(`Member re-registration attempt for email '${email}'`);
+
+        // member already exists - get member and send a login email
+        task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const members = await memberTaskManager.run([task], log) as Member[];
+        member = members[0];
+
+        await generateLoginLinkAndEmailIt(member, true);
+      }
 
       reply.status(204);
     }
   );
+
+  async function generateLoginLinkAndEmailIt(member, reRegistrationAttempt?) {
+    // generate token with member info and expiration
+    const token = await promisifiedJwtSign({ sub: member.id },
+      { expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m` });
+
+    const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
+    // don't wait for mailer's response; log error and link if it fails.
+    fastify.mailer.sendLoginEmail(member, link, reRegistrationAttempt)
+      .catch(err => log.warn(err, `mailer failed. link: ${link}`));
+  }
 
   // login
   fastify.post<{ Body: { email: string } }>(
     '/login',
     { schema: login },
     async ({ body, log }, reply) => {
-      // get member
       const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
-      // TODO: same as in '/register'
       const members = await memberTaskManager.run([task], log) as Member[];
 
       if (members.length) {
         const member = members[0];
-        // generate token with member info and expiration
-        const token = await reply.jwtSign({ sub: member.id },
-          { expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m` });
-
-        const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
-        // don't wait for mailer's response; log error and link if it fails.
-        fastify.mailer.sendLoginEmail(member, link)
-          .catch(err => log.warn(err, `mailer failed. link: ${link}`));
+        await generateLoginLinkAndEmailIt(member);
       } else {
-        // TODO: log login try with non existing email
+        const { email } = body;
+        log.warn(`Login attempt with non-existent email '${email}'`);
       }
 
       reply.status(204);
@@ -135,7 +159,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
       try {
         // verify and extract member info
-        const { sub: memberId } = await promisifiedJwtVerify(token) as { sub: string };
+        const { sub: memberId } = await promisifiedJwtVerify(token);
 
         // add member id to session
         session.set('member', memberId);
