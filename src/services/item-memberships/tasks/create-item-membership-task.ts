@@ -42,7 +42,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
     this.itemId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
+  async run(handler: DatabaseTransactionHandler): Promise<BaseItemMembershipTask[]> {
     this._status = TaskStatus.Running;
 
     // get item that the new membership will target

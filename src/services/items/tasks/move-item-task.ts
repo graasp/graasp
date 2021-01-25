@@ -98,7 +98,7 @@ export class MoveItemTask extends BaseItemTask {
     const { inserts, deletes } =
       await this.itemMembershipService.moveHousekeeping(item, this.actor, handler, parentItem);
 
-    // move item (and subtree)
+    // move item (and subtree) - update paths of all items
     await this.itemService.move(item, handler, parentItem);
 
     // adjust memberships to keep the constraints

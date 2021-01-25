@@ -30,13 +30,13 @@ CREATE INDEX "item_path_idx" ON "item" USING gist ("path");
 
 CREATE TYPE "permissions_enum" AS ENUM ('read', 'write', 'admin');
 CREATE TABLE "item_membership" (
-  "id" uuid UNIQUE DEFAULT uuid_generate_v4(),
-  -- delete permission if member is deleted
+  "id" uuid UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
+  -- delete row if member is deleted
   "member_id" uuid REFERENCES "member" ("id") ON DELETE CASCADE,
-  -- delete permission if item is deleted; update path if item's path is updated.
+  -- delete row if item is deleted; update path if item's path is updated.
   "item_path" ltree REFERENCES "item" ("path") ON DELETE CASCADE ON UPDATE CASCADE,
   "permission" permissions_enum NOT NULL,
-  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove item - set creator to NULL
+  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove - set creator to NULL
 
   "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),

@@ -82,7 +82,7 @@ export class MemberService {
         FROM member
         WHERE id = ${id}
       `)
-      .then(({ rows }) => rows[0] || null);
+      .then(({ rows }) => rows[0]);
   }
 
   /**
