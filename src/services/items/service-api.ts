@@ -25,19 +25,20 @@ import common, {
 import { ItemTaskManager } from './task-manager';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, log, itemService: iS, itemMembershipService: iMS } = fastify;
-  const taskManager = new ItemTaskManager(iS, iMS, db, log);
+  const { itemService: iS, itemMembershipService: iMS, taskRunner: runner } = fastify;
+  const taskManager = new ItemTaskManager(iS, iMS);
 
-  fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH, taskManager });
-  if (S3_FILE_ITEM_PLUGIN) {
-    fastify.register(graaspS3FileItem, {
-      s3Region: S3_FILE_ITEM_REGION,
-      s3Bucket: S3_FILE_ITEM_BUCKET,
-      s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
-      s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
-      taskManager
-    });
-  }
+  // TODO: add plugins after migrating them
+  // fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH, taskManager });
+  // if (S3_FILE_ITEM_PLUGIN) {
+  //   fastify.register(graaspS3FileItem, {
+  //     s3Region: S3_FILE_ITEM_REGION,
+  //     s3Bucket: S3_FILE_ITEM_BUCKET,
+  //     s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
+  //     s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
+  //     taskManager
+  //   });
+  // }
 
   // schemas
   fastify.addSchema(common);
@@ -47,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/', { schema: create },
     async ({ member, query: { parentId }, body, log }) => {
       const task = taskManager.createCreateTask(member, body, parentId);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -56,7 +57,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id', { schema: getOne },
     async ({ member, params: { id }, log }) => {
       const task = taskManager.createGetTask(member, id);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -64,7 +65,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/', { schema: getMany },
     async ({ member, query: { id: ids }, log }) => {
       const tasks = ids.map(id => taskManager.createGetTask(member, id));
-      return taskManager.run(tasks, log);
+      return runner.run(tasks, log);
     }
   );
 
@@ -73,7 +74,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/own', { schema: getOwnAndShared },
     async ({ member, log }) => {
       const task = taskManager.createGetOwnTask(member);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -82,7 +83,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/shared-with', { schema: getOwnAndShared },
     async ({ member, log }) => {
       const task = taskManager.createGetSharedWithTask(member);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -91,7 +92,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/children', { schema: getChildren },
     async ({ member, params: { id }, log }) => {
       const task = taskManager.createGetChildrenTask(member, id);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -100,7 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id', { schema: updateOne },
     async ({ member, params: { id }, body, log }) => {
       const task = taskManager.createUpdateTask(member, id, body);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -111,12 +112,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // too many items to update: start execution and return '202'.
       if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-        taskManager.run(tasks, log);
+        runner.run(tasks, log);
         reply.status(202);
         return ids;
       }
 
-      return taskManager.run(tasks, log);
+      return runner.run(tasks, log);
     }
   );
 
@@ -125,7 +126,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id', { schema: deleteOne },
     async ({ member, params: { id }, log }) => {
       const task = taskManager.createDeleteTask(member, id);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -136,12 +137,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // too many items to delete: start execution and return '202'.
       if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-        taskManager.run(tasks, log);
+        runner.run(tasks, log);
         reply.status(202);
         return ids;
       }
 
-      return taskManager.run(tasks, log);
+      return runner.run(tasks, log);
     }
   );
 
@@ -150,7 +151,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/move', { schema: moveOne },
     async ({ member, params: { id }, body: { parentId }, log }, reply) => {
       const task = taskManager.createMoveTask(member, id, parentId);
-      await taskManager.run([task], log);
+      await runner.run([task], log);
       reply.status(204);
     }
   );
@@ -162,12 +163,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // too many items to move: start execution and return '202'.
       if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-        taskManager.run(tasks, log);
+        runner.run(tasks, log);
         reply.status(202);
         return ids;
       }
 
-      await taskManager.run(tasks, log);
+      await runner.run(tasks, log);
       reply.status(204);
     }
   );
@@ -177,7 +178,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/copy', { schema: copyOne },
     async ({ member, params: { id }, body: { parentId }, log }) => {
       const task = taskManager.createCopyTask(member, id, parentId);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -188,12 +189,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // too many items to copy: start execution and return '202'.
       if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-        taskManager.run(tasks, log);
+        runner.run(tasks, log);
         reply.status(202);
         return ids;
       }
 
-      return taskManager.run(tasks, log);
+      return runner.run(tasks, log);
     }
   );
 };

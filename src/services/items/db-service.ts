@@ -5,6 +5,12 @@ import { PermissionLevel } from '../../services/item-memberships/interfaces/item
 // local
 import { Item } from './interfaces/item';
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    itemService: ItemService;
+  }
+}
+
 /**
  * Database's first layer of abstraction for Items
  */

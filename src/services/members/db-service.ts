@@ -6,6 +6,12 @@ import {
 // local
 import { Member } from './interfaces/member';
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    memberService: MemberService;
+  }
+}
+
 /**
  * Database's first layer of abstraction for Members
  */

@@ -2,7 +2,7 @@
 import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { PreHookHandlerType, TaskStatus } from '../../../interfaces/task';
+import { TaskStatus } from '../../../interfaces/task';
 import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from '../../../util/config';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -21,12 +21,11 @@ class CopyItemSubTask extends BaseItemTask {
 
   constructor(member: Member, itemId: string, data: Partial<Item>,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
-    createMembership?: boolean, preHookHandler?: PreHookHandlerType<Item>) {
+    createMembership?: boolean) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
     this.data = data;
     this.createMembership = createMembership;
-    this.preHookHandler = preHookHandler;
   }
 
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
@@ -51,12 +50,11 @@ export class CopyItemTask extends BaseItemTask {
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
-    parentItemId?: string, preHookHandler?: PreHookHandlerType<Item>) {
+    parentItemId?: string) {
     const partialSubtasks = true;
     super(member, itemService, itemMembershipService, partialSubtasks); // partial execution of subtasks
     this.targetId = itemId;
     this.parentItemId = parentItemId;
-    this.preHookHandler = preHookHandler;
     this.subtasks = [];
   }
 
@@ -115,9 +113,9 @@ export class CopyItemTask extends BaseItemTask {
       const subtask = (oldId === this.targetId) ?
         // create 'admin' membership for "top" parent item if necessary
         new CopyItemSubTask(this.actor, oldId, itemCopy, this.itemService,
-          this.itemMembershipService, createAdminMembership, this.preHookHandler) :
+          this.itemMembershipService, createAdminMembership) :
         new CopyItemSubTask(this.actor, oldId, itemCopy, this.itemService,
-          this.itemMembershipService, false, this.preHookHandler);
+          this.itemMembershipService, false);
       this.subtasks.push(subtask);
     });
 

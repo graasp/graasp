@@ -1,6 +1,7 @@
 import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../plugins/database';
 import { Actor } from './actor';
+import { Result } from './result';
 
 export enum TaskStatus {
   New = 'NEW', // new. did not run yet
@@ -11,7 +12,7 @@ export enum TaskStatus {
   Delegated = 'DELEGATED'
 }
 
-export interface Task<A extends Actor, T> {
+export interface Task<A extends Actor, T extends Result> {
   readonly name: string;
   readonly actor: A;
   targetId?: string;
@@ -27,5 +28,5 @@ export interface Task<A extends Actor, T> {
   postHookHandler?: PostHookHandlerType<T>;
 }
 
-export type PreHookHandlerType<T> = (data: Partial<T>, actor: Actor, log?: FastifyLoggerInstance) => Promise<void> | void;
-export type PostHookHandlerType<T> = (data: T | T[], actor: Actor, log?: FastifyLoggerInstance) => void;
+export type PreHookHandlerType<T extends Result> = (data: Partial<T>, actor: Actor, log?: FastifyLoggerInstance) => Promise<void> | void;
+export type PostHookHandlerType<T extends Result> = (data: T | T[], actor: Actor, log?: FastifyLoggerInstance) => void;

@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { TaskStatus } from '../../../interfaces/task';
@@ -8,20 +9,22 @@ import { Actor } from '../../../interfaces/actor';
 import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
 
-export abstract class BaseMemberTask implements Task<Actor, Member> {
+export abstract class BaseMemberTask<T extends Actor> implements Task<T, Member> {
   protected memberService: MemberService;
   protected _status: TaskStatus;
   protected _result: Member | Member[];
   protected _message: string;
 
-  readonly actor: Actor;
+  readonly actor: T;
 
   targetId: string;
   data: Partial<Member>;
 
-  constructor(actor: Actor, memberService: MemberService) {
+  constructor(actor: T, memberService: MemberService) {
     this.actor = actor;
     this.memberService = memberService;
+
+    this._status = TaskStatus.New;
   }
 
   abstract get name(): string;
@@ -35,5 +38,5 @@ export abstract class BaseMemberTask implements Task<Actor, Member> {
     throw error;
   }
 
-  abstract run(handler: DatabaseTransactionHandler): Promise<void | BaseMemberTask[]>;
+  abstract run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseMemberTask<T>[]>;
 }

@@ -20,21 +20,11 @@ import { MemberService } from './services/members/db-service';
 import ItemsServiceApi from './services/items/service-api';
 import ItemMembershipsServiceApi from './services/item-memberships/service-api';
 import MemberServiceApi from './services/members/service-api';
-import { Member } from './services/members/interfaces/member';
-
-declare module 'fastify' {
-  interface FastifyInstance {
-    memberService: MemberService;
-    itemService: ItemService;
-    itemMembershipService: ItemMembershipService;
-  }
-
-  interface FastifyRequest {
-    member: Member;
-  }
-}
+import { GlobalTaskRunner } from './services/global-task-runner';
 
 const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
+  const { db, log } = fastify;
+  fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
   fastify.decorate('memberService', new MemberService());
   fastify.decorate('itemService', new ItemService());
   fastify.decorate('itemMembershipService', new ItemMembershipService());

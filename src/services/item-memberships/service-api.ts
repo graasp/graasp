@@ -12,8 +12,8 @@ import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './task-manager';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, log, itemService: iS, itemMembershipService: iMS } = fastify;
-  const taskManager = new ItemMembershipTaskManager(iS, iMS, db, log);
+  const { itemService: iS, itemMembershipService: iMS, taskRunner: runner } = fastify;
+  const taskManager = new ItemMembershipTaskManager(iS, iMS);
 
   // schemas
   fastify.addSchema(common);
@@ -23,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/', { schema: getItems },
     async ({ member, query: { itemId }, log }) => {
       const task = taskManager.createGetItemsItemMembershipsTask(member, itemId);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/', { schema: create },
     async ({ member, query: { itemId }, body, log }) => {
       const task = taskManager.createCreateTask(member, body, itemId);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -41,7 +41,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id', { schema: updateOne },
     async ({ member, params: { id }, body, log }) => {
       const task = taskManager.createUpdateTask(member, id, body);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -50,7 +50,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id', { schema: deleteOne },
     async ({ member, params: { id }, query: { purgeBelow }, log }) => {
       const task = taskManager.createDeleteTask(member, id, purgeBelow);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 };

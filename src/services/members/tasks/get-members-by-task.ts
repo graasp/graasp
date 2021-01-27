@@ -7,7 +7,7 @@ import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 
-export class GetMembersByTask extends BaseMemberTask {
+export class GetMembersByTask extends BaseMemberTask<Actor> {
   get name(): string { return GetMembersByTask.name; }
 
   constructor(actor: Actor, data: Partial<Member>, memberService: MemberService) {

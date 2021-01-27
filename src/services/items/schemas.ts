@@ -33,8 +33,8 @@ export default {
          */
         // createdAt: { type: 'string' },
         // updatedAt: { type: 'string' }
-        createdAt: { },
-        updatedAt: { }
+        createdAt: {},
+        updatedAt: {}
       },
       additionalProperties: false
     },

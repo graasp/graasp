@@ -7,8 +7,8 @@ import common, { getOne, getBy } from './schemas';
 import { MemberTaskManager } from './task-manager';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, log, memberService: iS } = fastify;
-  const taskManager = new MemberTaskManager(iS, db, log);
+  const { memberService: iS, taskRunner: runner } = fastify;
+  const taskManager = new MemberTaskManager(iS);
 
   // schemas
   fastify.addSchema(common);
@@ -18,7 +18,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id', { schema: getOne },
     async ({ member, params: { id }, log }) => {
       const task = taskManager.createGetTask(member, id);
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 
@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/', { schema: getBy },
     async ({ member, query: { email }, log }) => {
       const task = taskManager.createGetByTask(member, { email });
-      return taskManager.run([task], log);
+      return runner.run([task], log);
     }
   );
 };

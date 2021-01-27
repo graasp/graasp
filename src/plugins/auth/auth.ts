@@ -39,8 +39,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     sessionCookieDomain: domain,
     uniqueViolationErrorName = 'UniqueIntegrityConstraintViolationError' // TODO: can we improve this?
   } = options;
-  const { log, db, memberService: mS } = fastify;
-  const memberTaskManager = new MemberTaskManager(mS, db, log);
+  const { log, db, memberService: mS, taskRunner: runner } = fastify;
+  const memberTaskManager = new MemberTaskManager(mS);
 
   fastify.register(fastifySecureSession, {
     // TODO: maybe change to 'secret', which is just a string (makes the boot slower).
@@ -89,7 +89,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       try {
         // create member
         task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
-        member = await memberTaskManager.run([task], log) as Member;
+        member = await runner.run([task], log) as Member;
 
         // generate token with member info and expiration
         const token = await promisifiedJwtSign({ sub: member.id },
@@ -109,7 +109,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
         // member already exists - get member and send a login email
         task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-        const members = await memberTaskManager.run([task], log) as Member[];
+        const members = await runner.run([task], log) as Member[];
         member = members[0];
 
         await generateLoginLinkAndEmailIt(member, true);
@@ -136,7 +136,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     { schema: login },
     async ({ body, log }, reply) => {
       const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
-      const members = await memberTaskManager.run([task], log) as Member[];
+      const members = await runner.run([task], log) as Member[];
 
       if (members.length) {
         const member = members[0];

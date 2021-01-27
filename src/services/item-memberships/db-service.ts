@@ -6,6 +6,12 @@ import { Member } from '../../services/members/interfaces/member';
 // local
 import { ItemMembership, PermissionLevel, PermissionLevelCompare } from './interfaces/item-membership';
 
+declare module 'fastify' {
+  interface FastifyInstance {
+    itemMembershipService: ItemMembershipService;
+  }
+}
+
 export class ItemMembershipService {
   // the 'safe' way to dynamically generate the columns names:
   private static allColumns = sql.join(

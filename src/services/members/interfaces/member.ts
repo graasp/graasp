@@ -1,6 +1,12 @@
 // global
 import { Actor } from '../../../interfaces/actor';
 
+declare module 'fastify' {
+  interface FastifyRequest {
+    member: Member;
+  }
+}
+
 export enum MemberType {
   Individual = 'individual',
   Group = 'group'

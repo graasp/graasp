@@ -2,7 +2,7 @@
 import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus, PostHookHandlerType } from '../../../interfaces/task';
+import { TaskStatus } from '../../../interfaces/task';
 import { MAX_DESCENDANTS_FOR_DELETE } from '../../../util/config';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -16,11 +16,9 @@ class DeleteItemSubTask extends BaseItemTask {
   get name() { return DeleteItemSubTask.name; }
 
   constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    postHookHandler?: PostHookHandlerType<Item>) {
+    itemService: ItemService, itemMembershipService: ItemMembershipService) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
-    this.postHookHandler = postHookHandler;
   }
 
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
@@ -39,12 +37,10 @@ export class DeleteItemTask extends BaseItemTask {
   private subtasks: DeleteItemSubTask[];
 
   constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    postHookHandler?: PostHookHandlerType<Item>) {
+    itemService: ItemService, itemMembershipService: ItemMembershipService) {
     const partialSubtasks = true;
     super(member, itemService, itemMembershipService, partialSubtasks); // partial execution of subtasks
     this.targetId = itemId;
-    this.postHookHandler = postHookHandler;
   }
 
   get result(): Item | Item[] {
@@ -81,7 +77,7 @@ export class DeleteItemTask extends BaseItemTask {
       // delete item + all descendants, one by one.
       this.subtasks = descendants
         .concat(item)
-        .map(d => new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService, this.postHookHandler));
+        .map(d => new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService));
 
       return this.subtasks;
     }
