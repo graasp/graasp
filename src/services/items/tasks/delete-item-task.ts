@@ -76,7 +76,11 @@ export class DeleteItemTask extends BaseItemTask {
       // delete item + all descendants, one by one.
       this.subtasks = descendants
         .concat(item)
-        .map(d => new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService));
+        .map(d => {
+          const st = new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService);
+          st.postHookHandler = this.postHookHandler;
+          return st;
+        });
 
       return this.subtasks;
     }

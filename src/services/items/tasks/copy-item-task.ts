@@ -109,12 +109,12 @@ export class CopyItemTask extends BaseItemTask {
     const createAdminMembership = !parentItem || parentItemPermissionLevel === pl.Write;
 
     treeItemsCopy.forEach((itemCopy, oldId) => {
-      const subtask = (oldId === this.targetId) ?
-        // create 'admin' membership for "top" parent item if necessary
-        new CopyItemSubTask(this.actor, oldId, itemCopy, this.itemService,
-          this.itemMembershipService, createAdminMembership) :
-        new CopyItemSubTask(this.actor, oldId, itemCopy, this.itemService,
-          this.itemMembershipService, false);
+      // create 'admin' membership for "top" parent item if necessary
+      const createMembership = oldId === this.targetId ? createAdminMembership : false;
+      const subtask = new CopyItemSubTask(this.actor, oldId, itemCopy,
+        this.itemService, this.itemMembershipService, createMembership);
+      subtask.preHookHandler = this.preHookHandler;
+
       this.subtasks.push(subtask);
     });
 

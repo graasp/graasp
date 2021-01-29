@@ -51,7 +51,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
    */
   private async runTransactionally<T extends Result>(task: Task<Actor, T>, log: FastifyLoggerInstance): Promise<T | T[]> {
     // set task's hook handlers before execution
-    this.setTasksHooksHandlers(task);
+    this.injectTaskHooksHandlers(task);
 
     return this.databasePool.transaction(async (handler) => {
       let subtasks;
@@ -69,9 +69,6 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
 
       // if there's no subtasks, return task result
       if (!subtasks) return task.result;
-
-      // set subtasks' hook handlers before execution
-      subtasks.forEach(this.setTasksHooksHandlers, this);
 
       let subtask: Task<Actor, T>;
 
@@ -203,7 +200,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     post?: { handlers: PostHookHandlerType<Result>[]; wrapped: PostHookHandlerType<Result> };
   }>();
 
-  private setTasksHooksHandlers<T extends Result>(task: Task<Actor, T>) {
+  private injectTaskHooksHandlers<T extends Result>(task: Task<Actor, T>) {
     const { name } = task;
     task.preHookHandler = this.tasksHooks.get(name)?.pre?.wrapped;
     task.postHookHandler = this.tasksHooks.get(name)?.post?.wrapped;
