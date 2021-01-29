@@ -21,6 +21,11 @@ export class ItemMembershipTaskManager implements TaskManager<Member, ItemMember
     this.itemMembershipService = itemMembershipService;
   }
 
+  getCreateTaskName(): string { return CreateItemMembershipTask.name; }
+  getGetTaskName(): string { throw new Error('Method not implemented.'); }
+  getUpdateTaskName(): string { return UpdateItemMembershipTask.name; }
+  getDeleteTaskName(): string { return DeleteItemMembershipTask.name; }
+
   // CRUD
   createCreateTask(member: Member, data: Partial<ItemMembership>, itemId: string): CreateItemMembershipTask {
     return new CreateItemMembershipTask(member, data, itemId, this.itemService, this.itemMembershipService);

@@ -17,6 +17,11 @@ export class MemberTaskManager implements TaskManager<Actor, Member> {
     this.memberService = memberService;
   }
 
+  getCreateTaskName(): string { return CreateMemberTask.name; }
+  getGetTaskName(): string { return GetMemberTask.name; }
+  getUpdateTaskName(): string { throw new Error('Method not implemented.'); }
+  getDeleteTaskName(): string { throw new Error('Method not implemented.'); }
+
   // CRUD
   createCreateTask(actor: Actor, data: Partial<Member>): CreateMemberTask {
     return new CreateMemberTask(actor, data, this.memberService);

@@ -1,5 +1,4 @@
 // global
-import { TaskManager } from '../../interfaces/task-manager';
 // other services
 import { Member } from '../../services/members/interfaces/member';
 import { ItemMembershipService } from '../../services/item-memberships/db-service';
@@ -15,8 +14,9 @@ import { UpdateItemTask } from './tasks/update-item-task';
 import { DeleteItemTask } from './tasks/delete-item-task';
 import { MoveItemTask } from './tasks/move-item-task';
 import { CopyItemTask } from './tasks/copy-item-task';
+import { ItemCustomTaskManager } from './interfaces/item-custom-task-manager';
 
-export class ItemTaskManager implements TaskManager<Member, Item> {
+export class ItemTaskManager implements ItemCustomTaskManager {
   private itemService: ItemService;
   private itemMembershipService: ItemMembershipService;
 
@@ -24,6 +24,13 @@ export class ItemTaskManager implements TaskManager<Member, Item> {
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
   }
+
+  getCreateTaskName(): string { return CreateItemTask.name; }
+  getGetTaskName(): string { return GetItemTask.name; }
+  getUpdateTaskName(): string { return UpdateItemTask.name; }
+  getDeleteTaskName(): string { return DeleteItemTask.name; }
+
+  getCopyItemTaskName(): string { return CopyItemTask.name; }
 
   // CRUD
   createCreateTask(member: Member, data: Partial<Item>, parentId?: string): CreateItemTask {

@@ -44,8 +44,9 @@
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.0",
     "graasp-file-item": "github:graasp/graasp-file-item#master",
-    "graasp-s3-file-item": "github:graasp/graasp-s3-file-item#master",
+    "graasp-item-tags": "github:graasp/graasp-item-tags#master",
     "graasp-mailer": "github:graasp/graasp-mailer#master",
+    "graasp-s3-file-item": "github:graasp/graasp-s3-file-item#master",
     "slonik": "^23.0.2",
     "uuid": "^8.3.1"
   },
