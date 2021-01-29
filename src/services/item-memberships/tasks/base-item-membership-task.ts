@@ -37,7 +37,7 @@ export abstract class BaseItemMembershipTask implements ItemMembershipTask {
   get message(): string { return this._message; }
 
   protected failWith(error: GraaspError): void {
-    this._status = TaskStatus.Fail;
+    this._status = 'FAIL';
     this._message = error.name;
     throw error;
   }

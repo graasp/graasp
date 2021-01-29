@@ -4,7 +4,7 @@ import { GraaspError } from '../util/graasp-error';
 import { Database, DatabasePoolHandler } from '../plugins/database';
 
 import { TaskRunner } from '../interfaces/task-runner';
-import { Task, TaskStatus, PreHookHandlerType, PostHookHandlerType } from '../interfaces/task';
+import { Task, PreHookHandlerType, PostHookHandlerType } from '../interfaces/task';
 import { Actor } from '../interfaces/actor';
 import { Result } from '../interfaces/result';
 
@@ -29,11 +29,11 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     if (taskMessage) message += `, message '${taskMessage}'`;
 
     switch (status) {
-      case TaskStatus.OK:
-      case TaskStatus.Delegated:
-      case TaskStatus.Running: log.info(message); break;
-      case TaskStatus.Partial: log.warn(message); break;
-      case TaskStatus.Fail: log.error(message); break;
+      case 'OK':
+      case 'DELEGATED':
+      case 'RUNNING': log.info(message); break;
+      case 'PARTIAL': log.warn(message); break;
+      case 'FAIL': log.error(message); break;
       default: log.debug(message);
     }
 

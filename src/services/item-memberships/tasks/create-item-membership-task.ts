@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemService } from '../../../services/items/db-service';
 import { Member } from '../../../services/members/interfaces/member';
@@ -23,11 +22,11 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler) {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     const itemMembership = await this.itemMembershipService.create(this.membership, handler);
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = itemMembership;
   }
 }
@@ -43,7 +42,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<BaseItemMembershipTask[]> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item that the new membership will target
     const item = await this.itemService.get(this.itemId, handler);
@@ -90,7 +89,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
         membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, newPermission));
 
       if (membershipsBelowToDiscard.length > 0) {
-        this._status = TaskStatus.Delegated;
+        this._status = 'DELEGATED';
 
         // return subtasks to remove redundant existing memberships and to create the new one
         return membershipsBelowToDiscard
@@ -106,6 +105,6 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
 
     // create membership
     this._result = await this.itemMembershipService.create(itemMembership, handler);
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
   }
 }

@@ -35,7 +35,7 @@ export abstract class BaseItemTask implements ItemTask {
     this.itemMembershipService = itemMembershipService;
     this.partialSubtasks = partialSubtasks;
 
-    this._status = TaskStatus.New;
+    this._status = 'NEW';
   }
 
   abstract get name(): string;
@@ -44,7 +44,7 @@ export abstract class BaseItemTask implements ItemTask {
   get message(): string { return this._message; }
 
   protected failWith(error: GraaspError): void {
-    this._status = TaskStatus.Fail;
+    this._status = 'FAIL';
     this._message = error.name;
     throw error;
   }

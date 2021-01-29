@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../../util/config';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -26,7 +25,7 @@ export class CreateItemTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
     let parentItem;
     let parentItemPermissionLevel;
 
@@ -66,7 +65,7 @@ export class CreateItemTask extends BaseItemTask {
       await this.itemMembershipService.create(membership, handler);
     }
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = item;
   }
 }

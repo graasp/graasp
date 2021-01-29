@@ -2,7 +2,6 @@
 import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from '../../../util/config';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -29,7 +28,7 @@ class CopyItemSubTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     await this.preHookHandler?.(this.data, this.actor, log);
     const item = await this.itemService.create(this.data, handler);
@@ -39,7 +38,7 @@ class CopyItemSubTask extends BaseItemTask {
       await this.itemMembershipService.create(membership, handler);
     }
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = item;
   }
 }
@@ -61,7 +60,7 @@ export class CopyItemTask extends BaseItemTask {
   get result(): Item | Item[] { return this.subtasks[0]?.result; }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -119,7 +118,7 @@ export class CopyItemTask extends BaseItemTask {
       this.subtasks.push(subtask);
     });
 
-    this._status = TaskStatus.Delegated;
+    this._status = 'DELEGATED';
     return this.subtasks;
   }
 

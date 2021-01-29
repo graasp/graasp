@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 import { MAX_DESCENDANTS_FOR_MOVE, MAX_TREE_LEVELS } from '../../../util/config';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -24,7 +23,7 @@ export class MoveItemTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -78,7 +77,7 @@ export class MoveItemTask extends BaseItemTask {
     // move item
     await this.moveItem(item, handler, parentItem);
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
   }
 
   /**

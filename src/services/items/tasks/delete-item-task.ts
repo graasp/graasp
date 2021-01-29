@@ -2,7 +2,6 @@
 import { FastifyLoggerInstance } from 'fastify';
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 import { MAX_DESCENDANTS_FOR_DELETE } from '../../../util/config';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -22,12 +21,12 @@ class DeleteItemSubTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     const item = await this.itemService.delete(this.targetId, handler);
     this.postHookHandler?.(item, this.actor, log);
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = item;
   }
 }
@@ -45,15 +44,15 @@ export class DeleteItemTask extends BaseItemTask {
 
   get result(): Item | Item[] {
     // if item has no descendants or subtasks are still 'New'
-    if (!this.subtasks || this.subtasks.some(st => st.status === TaskStatus.New)) return this._result;
+    if (!this.subtasks || this.subtasks.some(st => st.status === 'NEW')) return this._result;
 
     // return the result of the last subtask that executed successfully,
     // in other words, the last deleted item
-    return this.subtasks.filter(st => st.status === TaskStatus.OK).pop().result;
+    return this.subtasks.filter(st => st.status === 'OK').pop().result;
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<DeleteItemSubTask[]> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -71,7 +70,7 @@ export class DeleteItemTask extends BaseItemTask {
     if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
       this.failWith(new GraaspError(GraaspError.TooManyDescendants, this.targetId));
     } else if (descendants.length > 0) {
-      this._status = TaskStatus.Delegated;
+      this._status = 'DELEGATED';
 
       // return list of subtasks for task manager to execute and
       // delete item + all descendants, one by one.
@@ -86,7 +85,7 @@ export class DeleteItemTask extends BaseItemTask {
     await this.itemService.delete(this.targetId, handler);
     this.postHookHandler?.(item, this.actor, log);
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = item;
   }
 }

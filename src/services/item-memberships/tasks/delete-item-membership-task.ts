@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemService } from '../../../services/items/db-service';
 import { Item } from '../../../services/items/interfaces/item';
@@ -20,11 +19,11 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     const itemMembership = await this.itemMembershipService.delete(this.targetId, handler);
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = itemMembership;
   }
 }
@@ -43,7 +42,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item membership
     const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
@@ -67,7 +66,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
         await this.itemMembershipService.getAllBelow(member, item, handler);
 
       if (itemMembershipsBelow.length > 0) {
-        this._status = TaskStatus.Delegated;
+        this._status = 'DELEGATED';
 
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
@@ -79,7 +78,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
 
     // delete membership
     await this.itemMembershipService.delete(this.targetId, handler);
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = itemMembership;
   }
 }

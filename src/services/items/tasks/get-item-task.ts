@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
@@ -19,7 +18,7 @@ export class GetItemTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -29,7 +28,7 @@ export class GetItemTask extends BaseItemTask {
     const hasRights = await this.itemMembershipService.canRead(this.actor, item, handler);
     if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotReadItem, this.targetId));
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = item;
   }
 }

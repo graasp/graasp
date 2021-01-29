@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemService } from '../../../services/items/db-service';
 import { Member } from '../../../services/members/interfaces/member';
@@ -20,7 +19,7 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item for which we're fetching its memberships
     const item = await this.itemService.get(this.itemId, handler);
@@ -35,6 +34,6 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
 
     // return item's memberships
     this._result = itemMemberships;
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
   }
 }

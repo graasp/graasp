@@ -1,6 +1,5 @@
 // global
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 import { Actor } from '../../../interfaces/actor';
 // local
 import { Member } from '../interfaces/member';
@@ -16,12 +15,12 @@ export class GetMembersByTask extends BaseMemberTask<Actor> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get member(s) by a set of properties
     const members = await this.memberService.getMatching(this.data, handler) as Member[];
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = members;
   }
 }

@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 import { MAX_DESCENDANTS_FOR_UPDATE } from '../../../util/config';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -23,9 +22,9 @@ class UpdateItemSubTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler) {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
     const item = await this.itemService.update(this.targetId, this.data, handler);
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = item;
   }
 }
@@ -50,15 +49,15 @@ export class UpdateItemTask extends BaseItemTask {
 
   get result(): Item | Item[] {
     // if item has no descendants or subtasks are still 'New'
-    if (!this.subtasks || this.subtasks.some(st => st.status === TaskStatus.New)) return this._result;
+    if (!this.subtasks || this.subtasks.some(st => st.status === 'NEW')) return this._result;
 
     // return the result of the last subtask that executed successfully,
     // in other words, the last updated item
-    return this.subtasks.filter(st => st.status === TaskStatus.OK).pop().result;
+    return this.subtasks.filter(st => st.status === 'OK').pop().result;
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<UpdateItemSubTask[]> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -86,7 +85,7 @@ export class UpdateItemTask extends BaseItemTask {
       if (descendants.length > MAX_DESCENDANTS_FOR_UPDATE) {
         this.failWith(new GraaspError(GraaspError.TooManyDescendants, this.targetId));
       } else if (descendants.length > 0) {
-        this._status = TaskStatus.Delegated;
+        this._status = 'DELEGATED';
 
         // return list of subtasks for task manager to execute and
         // update item + all descendants, one by one.
@@ -102,6 +101,6 @@ export class UpdateItemTask extends BaseItemTask {
 
     // no propagating changes: just update target item
     this._result = await this.itemService.update(this.targetId, this.data, handler);
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
   }
 }

@@ -1,7 +1,6 @@
 // global
 import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
@@ -20,7 +19,7 @@ export class GetItemChildrenTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -33,7 +32,7 @@ export class GetItemChildrenTask extends BaseItemTask {
     // get item's children
     const children = await this.itemService.getDescendants(item, handler, 'ASC', 1) as Item[];
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = children;
   }
 }

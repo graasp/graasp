@@ -1,6 +1,5 @@
 // global
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
@@ -17,14 +16,14 @@ export class GetOwnItemsTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = TaskStatus.Running;
+    this._status = 'RUNNING';
 
     const memberId = this.actor.id;
 
     // get member's "own" items (created by member and where member is admin)
     const items = await this.itemService.getOwn(memberId, handler);
 
-    this._status = TaskStatus.OK;
+    this._status = 'OK';
     this._result = items;
   }
 }

@@ -24,7 +24,7 @@ export abstract class BaseMemberTask<T extends Actor> implements Task<T, Member>
     this.actor = actor;
     this.memberService = memberService;
 
-    this._status = TaskStatus.New;
+    this._status = 'NEW';
   }
 
   abstract get name(): string;
@@ -33,7 +33,7 @@ export abstract class BaseMemberTask<T extends Actor> implements Task<T, Member>
   get message(): string { return this._message; }
 
   protected failWith(error: GraaspError): void {
-    this._status = TaskStatus.Fail;
+    this._status = 'FAIL';
     this._message = error.name;
     throw error;
   }

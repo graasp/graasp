@@ -3,14 +3,7 @@ import { DatabaseTransactionHandler } from '../plugins/database';
 import { Actor } from './actor';
 import { Result } from './result';
 
-export enum TaskStatus {
-  New = 'NEW', // new. did not run yet
-  Running = 'RUNNING',
-  OK = 'OK',
-  Fail = 'FAIL',
-  Partial = 'PARTIAL', // no 100% OK, but acceptable
-  Delegated = 'DELEGATED'
-}
+export type TaskStatus = 'NEW' | 'RUNNING' | 'OK' | 'FAIL' | 'PARTIAL' | 'DELEGATED';
 
 export interface Task<A extends Actor, T extends Result> {
   readonly name: string;
