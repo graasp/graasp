@@ -1,5 +1,5 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import { ItemNotFound, TooManyDescendants, UserCannotWriteItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_DESCENDANTS_FOR_UPDATE } from '../../../util/config';
 // other services
@@ -61,11 +61,11 @@ export class UpdateItemTask extends BaseItemTask {
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
-    if (!item) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.targetId));
+    if (!item) this.failWith(new ItemNotFound(this.targetId));
 
     // verify membership rights over item - write
     const hasRights = await this.itemMembershipService.canWrite(this.actor, item, handler);
-    if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotWriteItem, this.targetId));
+    if (!hasRights) this.failWith(new UserCannotWriteItem(this.targetId));
 
     // prepare changes
     // allow for individual changes in extra's own properties except if 'extra' is {};
@@ -83,7 +83,7 @@ export class UpdateItemTask extends BaseItemTask {
 
       // check how "big the tree is" below the item
       if (descendants.length > MAX_DESCENDANTS_FOR_UPDATE) {
-        this.failWith(new GraaspError(GraaspError.TooManyDescendants, this.targetId));
+        this.failWith(new TooManyDescendants(this.targetId));
       } else if (descendants.length > 0) {
         this._status = 'DELEGATED';
 

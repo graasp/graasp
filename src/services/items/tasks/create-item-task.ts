@@ -1,5 +1,8 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import {
+  ItemNotFound, UserCannotWriteItem,
+  HierarchyTooDeep, TooManyChildren
+} from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../../util/config';
 // other services
@@ -32,23 +35,23 @@ export class CreateItemTask extends BaseItemTask {
     if (this.parentItemId) {
       // get parent item
       parentItem = await this.itemService.get(this.parentItemId, handler);
-      if (!parentItem) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.parentItemId));
+      if (!parentItem) this.failWith(new ItemNotFound(this.parentItemId));
 
       // verify membership rights over parent item
       parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, parentItem, handler);
       if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
-        this.failWith(new GraaspError(GraaspError.UserCannotWriteItem, this.parentItemId));
+        this.failWith(new UserCannotWriteItem(this.parentItemId));
       }
 
       // check if hierarchy it too deep
       if (BaseItem.itemDepth(parentItem) + 1 > MAX_TREE_LEVELS) {
-        this.failWith(new GraaspError(GraaspError.HierarchyTooDeep));
+        this.failWith(new HierarchyTooDeep());
       }
 
       // check if there's too many children under the same parent
       const numberOfChildren = await this.itemService.getNumberOfChildren(parentItem, handler);
       if (numberOfChildren + 1 > MAX_NUMBER_OF_CHILDREN) {
-        this.failWith(new GraaspError(GraaspError.TooManyChildren));
+        this.failWith(new TooManyChildren());
       }
     }
 

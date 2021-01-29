@@ -1,5 +1,8 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import {
+  InvalidMembership, ItemNotFound,
+  ModifyExisting, UserCannotAdminItem
+} from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
@@ -46,11 +49,11 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
 
     // get item that the new membership will target
     const item = await this.itemService.get(this.itemId, handler);
-    if (!item) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.itemId));
+    if (!item) this.failWith(new ItemNotFound(this.itemId));
 
     // verify if member adding the new membership has rights for that
     const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
-    if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotAdminItem, this.itemId));
+    if (!hasRights) this.failWith(new UserCannotAdminItem(this.itemId));
 
     const itemMembership =
       new BaseItemMembership(this.data.memberId, item.path, this.data.permission, this.actor.id);
@@ -65,7 +68,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
 
       // fail if trying to add a new membership for the same member and item
       if (itemPath === item.path) {
-        this.failWith(new GraaspError(GraaspError.ModifyExisting, inheritedMembership.id));
+        this.failWith(new ModifyExisting(inheritedMembership.id));
       }
 
       const { permission: newPermission } = itemMembership;
@@ -73,7 +76,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
       if (PermissionLevelCompare.lte(newPermission, inheritedPermission)) {
         // trying to add a membership with the same or "worse" permission level than
         // the one inherited from the membership "above"
-        this.failWith(new GraaspError(GraaspError.InvalidMembership, this.data));
+        this.failWith(new InvalidMembership(this.data));
       }
     }
 

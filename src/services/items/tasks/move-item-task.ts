@@ -1,5 +1,8 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import {
+  HierarchyTooDeep, InvalidMoveTarget, ItemNotFound,
+  TooManyDescendants, UserCannotAdminItem, UserCannotWriteItem
+} from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_DESCENDANTS_FOR_MOVE, MAX_TREE_LEVELS } from '../../../util/config';
 // other services
@@ -27,16 +30,16 @@ export class MoveItemTask extends BaseItemTask {
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
-    if (!item) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.targetId));
+    if (!item) this.failWith(new ItemNotFound(this.targetId));
 
     // verify membership rights over item
     const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
-    if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotAdminItem, this.targetId));
+    if (!hasRights) this.failWith(new UserCannotAdminItem(this.targetId));
 
     // check how "big the tree is" below the item
     const numberOfDescendants = await this.itemService.getNumberOfDescendants(item, handler);
     if (numberOfDescendants > MAX_DESCENDANTS_FOR_MOVE) {
-      this.failWith(new GraaspError(GraaspError.TooManyDescendants, this.targetId));
+      this.failWith(new TooManyDescendants(this.targetId));
     }
 
     let parentItem;
@@ -44,7 +47,7 @@ export class MoveItemTask extends BaseItemTask {
     if (this.parentItemId) { // attaching tree to new parent item
       // get new parent item
       parentItem = await this.itemService.get(this.parentItemId, handler);
-      if (!parentItem) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.parentItemId));
+      if (!parentItem) this.failWith(new ItemNotFound(this.parentItemId));
 
       const { path: parentItemPath } = parentItem;
 
@@ -53,25 +56,25 @@ export class MoveItemTask extends BaseItemTask {
         parentItemPath.startsWith(item.path) || // moving into itself or "below" itself
         BaseItem.parentPath(item) === parentItemPath // moving to the same parent ("not moving")
       ) {
-        this.failWith(new GraaspError(GraaspError.InvalidMoveTarget, this.parentItemId));
+        this.failWith(new InvalidMoveTarget(this.parentItemId));
       }
 
       // verify membership rights over new parent item
       const hasRightsOverParentItem = await this.itemMembershipService.canWrite(this.actor, parentItem, handler);
-      if (!hasRightsOverParentItem) this.failWith(new GraaspError(GraaspError.UserCannotWriteItem, this.parentItemId));
+      if (!hasRightsOverParentItem) this.failWith(new UserCannotWriteItem(this.parentItemId));
 
       // check how deep (number of levels) the resulting tree will be
       const levelsToFarthestChild =
         await this.itemService.getNumberOfLevelsToFarthestChild(item, handler);
 
       if (BaseItem.itemDepth(parentItem) + 1 + levelsToFarthestChild > MAX_TREE_LEVELS) {
-        this.failWith(new GraaspError(GraaspError.HierarchyTooDeep));
+        this.failWith(new HierarchyTooDeep());
       }
 
       // TODO: should this info go into 'message'? (it's the only exception to the rule)
       this._message = `new parent ${this.parentItemId}`;
     } else if (!BaseItem.parentPath(item)) { // moving from "no-parent" to "no-parent" ("not moving")
-      this.failWith(new GraaspError(GraaspError.InvalidMoveTarget));
+      this.failWith(new InvalidMoveTarget());
     }
 
     // move item

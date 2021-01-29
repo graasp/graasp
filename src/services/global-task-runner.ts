@@ -40,6 +40,11 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     // TODO: push notification to client in case the task signals it.
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private isGraaspError(object: any): object is GraaspError {
+    return 'origin' in object;
+  }
+
   /**
    * Run each task, and any subtasks, in a transaction.
    * Depending on the task, if something goes wrong, the whole task is might canceled/reverted.
@@ -61,7 +66,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
         subtasks = await task.run(handler, log);
         this.handleTaskFinish(task, log);
       } catch (error) {
-        if (error instanceof GraaspError) {
+        if (this.isGraaspError(error)) {
           this.handleTaskFinish(task, log);
         }
         throw error;
@@ -82,7 +87,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
             this.handleTaskFinish(subtask, log);
           }
         } catch (error) {
-          if (error instanceof GraaspError) {
+          if (this.isGraaspError(error)) {
             this.handleTaskFinish(subtask, log);
           } else {
             log.error(error);
@@ -97,7 +102,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
           }
           subtasks.forEach(st => this.handleTaskFinish(st, log));
         } catch (error) {
-          if (error instanceof GraaspError) {
+          if (this.isGraaspError(error)) {
             this.handleTaskFinish(subtask, log);
           }
           throw error;
@@ -130,7 +135,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
         result.push(taskResult);
       } catch (error) {
         // log unexpected errors and continue
-        if (!(error instanceof GraaspError)) {
+        if (!(this.isGraaspError(error))) {
           log.error(error.message || error); // TODO: improve?
         }
         result.push(error);

@@ -1,76 +1,108 @@
 import { FastifyError } from 'fastify';
 
+type ErrorOrigin = 'core' | 'plugin';
+
+export interface GraaspError extends FastifyError {
+  data?: unknown;
+  origin: ErrorOrigin
+}
+
 export interface GraaspErrorDetails {
   code: string;
   message: string;
   statusCode: number;
 }
 
-export enum GraaspErrorCode {
-  ItemNotFound = 'GERR001',
-  UserCannotReadItem = 'GERR002',
-  UserCannotWriteItem = 'GERR003',
-  UserCannotAdminItem = 'GERR004',
-  InvalidMembership = 'GERR005',
-  ItemMembershipNotFound = 'GERR006',
-  ModifyExisting = 'GERR007',
-  InvalidPermissionLevel = 'GERR008',
-  HierarchyTooDeep = 'GERR009',
-  TooManyChildren = 'GERR010',
-  TooManyDescendants = 'GERR011',
-  InvalidMoveTarget = 'GERR012',
-  MemberNotFound = 'GERR013',
-
-  // generic
-  DatabaseError = 'GERR998',
-  UnknownError = 'GERR999'
-}
-
-export class GraaspError implements FastifyError {
-  static readonly ItemNotFound =
-    { code: GraaspErrorCode.ItemNotFound, statusCode: 404, message: 'Item not found' };
-  static readonly UserCannotReadItem =
-    { code: GraaspErrorCode.UserCannotReadItem, statusCode: 403, message: 'User cannot read item' };
-  static readonly UserCannotWriteItem =
-    { code: GraaspErrorCode.UserCannotWriteItem, statusCode: 403, message: 'User cannot write item' };
-  static readonly UserCannotAdminItem =
-    { code: GraaspErrorCode.UserCannotAdminItem, statusCode: 403, message: 'User cannot admin item' };
-  static readonly InvalidMembership =
-    { code: GraaspErrorCode.InvalidMembership, statusCode: 400, message: 'Membership with this permission level cannot be created for this member in this item' };
-  static readonly ItemMembershipNotFound =
-    { code: GraaspErrorCode.ItemMembershipNotFound, statusCode: 404, message: 'Item membership not found' };
-  static readonly ModifyExisting =
-    { code: GraaspErrorCode.ModifyExisting, statusCode: 400, message: 'Cannot create membership for member in item. Should modify existing one' };
-  static readonly InvalidPermissionLevel =
-    { code: GraaspErrorCode.InvalidPermissionLevel, statusCode: 400, message: 'Cannot change to a worse permission level than the one inherited' };
-  static readonly HierarchyTooDeep =
-    { code: GraaspErrorCode.HierarchyTooDeep, statusCode: 403, message: 'Hierarchy too deep' };
-  static readonly TooManyChildren =
-    { code: GraaspErrorCode.TooManyChildren, statusCode: 403, message: 'Too many children' };
-  static readonly TooManyDescendants =
-    { code: GraaspErrorCode.TooManyDescendants, statusCode: 403, message: 'Too many descendants' };
-  static readonly InvalidMoveTarget =
-    { code: GraaspErrorCode.InvalidMoveTarget, statusCode: 400, message: 'Invalid item to move to' };
-  static readonly MemberNotFound =
-    { code: GraaspErrorCode.MemberNotFound, statusCode: 404, message: 'Member not found' };
-
-  // generic
-  static readonly DatabaseError =
-    { code: GraaspErrorCode.DatabaseError, statusCode: 500, message: 'Database error' };
-  static readonly UnknownError =
-    { code: GraaspErrorCode.UnknownError, statusCode: 500, message: 'Unknown error' };
-
+export abstract class BaseGraaspError implements GraaspError {
   name: string;
   code: string
-  message: string;
   statusCode?: number;
-  data: unknown;
+  message: string;
+  data?: unknown;
+  origin: ErrorOrigin;
 
   constructor({ code, statusCode, message }: GraaspErrorDetails, data?: unknown) {
     this.name = code;
     this.code = code;
     this.message = message;
     this.statusCode = statusCode;
+    this.origin = 'core';
     this.data = data;
+  }
+}
+
+export class ItemNotFound extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR001', statusCode: 404, message: 'Item not found' }, data);
+  }
+}
+export class UserCannotReadItem extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR002', statusCode: 403, message: 'User cannot read item' }, data);
+  }
+}
+export class UserCannotWriteItem extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR003', statusCode: 403, message: 'User cannot write item' }, data);
+  }
+}
+export class UserCannotAdminItem extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR004', statusCode: 403, message: 'User cannot admin item' }, data);
+  }
+}
+export class InvalidMembership extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR005', statusCode: 400, message: 'Membership with this permission level cannot be created for this member in this item' }, data);
+  }
+}
+export class ItemMembershipNotFound extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR006', statusCode: 404, message: 'Item membership not found' }, data);
+  }
+}
+export class ModifyExisting extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR007', statusCode: 400, message: 'Cannot create membership for member in item. Should modify existing one' }, data);
+  }
+}
+export class InvalidPermissionLevel extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR008', statusCode: 400, message: 'Cannot change to a worse permission level than the one inherited' }, data);
+  }
+}
+export class HierarchyTooDeep extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR009', statusCode: 403, message: 'Hierarchy too deep' }, data);
+  }
+}
+export class TooManyChildren extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR010', statusCode: 403, message: 'Too many children' }, data);
+  }
+}
+export class TooManyDescendants extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR011', statusCode: 403, message: 'Too many descendants' }, data);
+  }
+}
+export class InvalidMoveTarget extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR012', statusCode: 400, message: 'Invalid item to move to' }, data);
+  }
+}
+export class MemberNotFound extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR013', statusCode: 404, message: 'Member not found' }, data);
+  }
+}
+export class DatabaseError extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR998', statusCode: 500, message: 'Database error' }, data);
+  }
+}
+export class UnknownError extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR999', statusCode: 500, message: 'Unknown error' }, data);
   }
 }

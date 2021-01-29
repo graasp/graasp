@@ -1,5 +1,5 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import { InvalidPermissionLevel, ItemMembershipNotFound, UserCannotAdminItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
@@ -46,14 +46,14 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask {
 
     // get item membership
     const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
-    if (!itemMembership) this.failWith(new GraaspError(GraaspError.ItemMembershipNotFound, this.targetId));
+    if (!itemMembership) this.failWith(new ItemMembershipNotFound(this.targetId));
 
     // get item that membership is targeting
     const item = await this.itemService.getMatchingPath(itemMembership.itemPath, handler);
 
     // verify if member updating the membership has rights for that
     const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
-    if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotAdminItem, item.id));
+    if (!hasRights) this.failWith(new UserCannotAdminItem(item.id));
 
     // check member's inherited membership
     const member = { id: itemMembership.memberId } as Member;
@@ -74,7 +74,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask {
         return [deleteSubtask];
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
         // if downgrading to "worse" than inherited
-        this.failWith(new GraaspError(GraaspError.InvalidPermissionLevel, this.targetId));
+        this.failWith(new InvalidPermissionLevel(this.targetId));
       }
     }
 

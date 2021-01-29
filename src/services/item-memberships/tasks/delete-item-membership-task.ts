@@ -1,5 +1,5 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import { ItemMembershipNotFound, UserCannotAdminItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
@@ -46,7 +46,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
 
     // get item membership
     const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
-    if (!itemMembership) this.failWith(new GraaspError(GraaspError.ItemMembershipNotFound, this.targetId));
+    if (!itemMembership) this.failWith(new ItemMembershipNotFound(this.targetId));
 
     // skip if trying to remove member's own membership
     if (itemMembership.memberId !== this.actor.id) {
@@ -55,7 +55,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
 
       // verify if member deleting the membership has rights for that
       const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
-      if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotAdminItem, item.id));
+      if (!hasRights) this.failWith(new UserCannotAdminItem(item.id));
     }
 
     if (this.purgeBelow) {

@@ -1,7 +1,7 @@
 import { DatabaseTransactionConnectionType } from 'slonik';
 
 import { MAX_TREE_LEVELS, MAX_DESCENDANTS_FOR_COPY } from '../../src/util/config';
-import { GraaspError, GraaspErrorCode } from '../../src/util/graasp-error';
+import { HierarchyTooDeep, ItemNotFound, TooManyDescendants, UserCannotReadItem, UserCannotWriteItem } from '../../src/util/graasp-error';
 import { Member, MemberType } from '../../src/services/members/interfaces/member';
 import { Item } from '../../src/services/items/interfaces/item';
 import { ItemService } from '../../src/services/items/db-service';
@@ -100,20 +100,19 @@ describe('CopyItemTask', () => {
   });
 
   test('Should fail if no item corresponds to `itemId``', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => null);
 
     try {
       const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
+      expect(error).toBeInstanceOf(ItemNotFound);
     }
   });
 
   test('Should fail when `member` can\'t read item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => fakeItem);
     itemMembershipService.getPermissionLevel = jest.fn(async () => null);
 
@@ -121,13 +120,12 @@ describe('CopyItemTask', () => {
       const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.UserCannotReadItem);
+      expect(error).toBeInstanceOf(UserCannotReadItem);
     }
   });
 
   test('Should fail when number of descendants exceeds `MAX_DESCENDANTS_FOR_COPY`', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => fakeItem);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
     itemService.getNumberOfDescendants = jest.fn(async () => MAX_DESCENDANTS_FOR_COPY + 1);
@@ -136,13 +134,12 @@ describe('CopyItemTask', () => {
       const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.TooManyDescendants);
+      expect(error).toBeInstanceOf(TooManyDescendants);
     }
   });
 
   test('Should fail if no item corresponds to `parentItemId`', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async (id) => {
       switch (id) {
         case itemId:
@@ -159,13 +156,12 @@ describe('CopyItemTask', () => {
       const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
+      expect(error).toBeInstanceOf(ItemNotFound);
     }
   });
 
   test('Should fail when `member` cannot write in parent item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async (id) => {
       switch (id) {
         case itemId:
@@ -183,13 +179,12 @@ describe('CopyItemTask', () => {
       const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.UserCannotWriteItem);
+      expect(error).toBeInstanceOf(UserCannotWriteItem);
     }
   });
 
   test('Should fail when resulting tree depth levels exceeds `MAX_TREE_LEVELS`', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async (id) => {
       switch (id) {
         case itemId:
@@ -208,8 +203,7 @@ describe('CopyItemTask', () => {
       const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.HierarchyTooDeep);
+      expect(error).toBeInstanceOf(HierarchyTooDeep);
     }
   });
 

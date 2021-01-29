@@ -2,7 +2,7 @@ import { DatabaseTransactionConnectionType } from 'slonik';
 
 import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../src/util/config';
 
-import { GraaspError, GraaspErrorCode } from '../../src/util/graasp-error';
+import { HierarchyTooDeep, ItemNotFound, TooManyChildren, UserCannotWriteItem } from '../../src/util/graasp-error';
 import { Member } from '../../src/services/members/interfaces/member';
 import { Item } from '../../src/services/items/interfaces/item';
 import { ItemService } from '../../src/services/items/db-service';
@@ -42,7 +42,7 @@ describe('CreateItemTask', () => {
   });
 
   test('Should fail if `parentItemId` does not match any existing item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => null);
 
     try {
@@ -51,13 +51,13 @@ describe('CreateItemTask', () => {
       await task.run(dbHandler);
 
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
+      expect(error).toBeInstanceOf(ItemNotFound);
+
     }
   });
 
   test('Should fail when `member` has no permission over parent-item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => ({ id: 'parent-item-id' } as Item));
     itemMembershipService.getPermissionLevel = jest.fn(async () => null);
 
@@ -66,13 +66,12 @@ describe('CreateItemTask', () => {
       const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.UserCannotWriteItem);
+      expect(error).toBeInstanceOf(UserCannotWriteItem);
     }
   });
 
   test('Should fail when `member` has only \'read\' permission over parent-item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => ({ id: 'parent-item-id' } as Item));
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
 
@@ -81,13 +80,12 @@ describe('CreateItemTask', () => {
       const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.UserCannotWriteItem);
+      expect(error).toBeInstanceOf(UserCannotWriteItem);
     }
   });
 
   test('Should fail if by creating item, `MAX_TREE_LEVELS` is crossed', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
 
     // make a parent-item's path as big as `MAX_TREE_LEVELS`
     const parentPath = [...Array(MAX_TREE_LEVELS).keys()].join('.');
@@ -100,13 +98,12 @@ describe('CreateItemTask', () => {
       const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.HierarchyTooDeep);
+      expect(error).toBeInstanceOf(HierarchyTooDeep);
     }
   });
 
   test('Should fail if by creating item, the parent-item\'s children count crosses `MAX_NUMBER_OF_CHILDREN`', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => ({ id: 'parent-item-id', path: 'parent_item_id' } as Item));
     itemService.getNumberOfChildren = jest.fn(async () => MAX_NUMBER_OF_CHILDREN);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
@@ -116,8 +113,7 @@ describe('CreateItemTask', () => {
       const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.TooManyChildren);
+      expect(error).toBeInstanceOf(TooManyChildren);
     }
   });
 

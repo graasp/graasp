@@ -1,6 +1,6 @@
 import { DatabaseTransactionConnectionType } from 'slonik';
 
-import { GraaspError, GraaspErrorCode } from '../../src/util/graasp-error';
+import { ItemNotFound, UserCannotWriteItem } from '../../src/util/graasp-error';
 import { Member } from '../../src/services/members/interfaces/member';
 import { Item } from '../../src/services/items/interfaces/item';
 import { ItemService } from '../../src/services/items/db-service';
@@ -31,20 +31,19 @@ describe('UpdateItemTask', () => {
   });
 
   test('Should fail if no item corresponds to `itemId`', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => null);
 
     try {
       const task = new UpdateItemTask(member, itemId, updatedItemData, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
+      expect(error).toBeInstanceOf(ItemNotFound);
     }
   });
 
   test('Should fail when `member` can not \'write\' permission over item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => fakeItem);
     itemMembershipService.canWrite = jest.fn(async () => false);
 
@@ -52,14 +51,13 @@ describe('UpdateItemTask', () => {
       const task = new UpdateItemTask(member, itemId, updatedItemData, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.UserCannotWriteItem);
+      expect(error).toBeInstanceOf(UserCannotWriteItem);
     }
   });
 
   // add this test once propagating changes are defined
   // test('Should fail if when updating item, it has too many descendants to propagate changes', async () => {
-  //   expect.assertions(2);
+  //   expect.assertions(1);
   //   itemService.get = jest.fn(async () => fakeItem);
   //   itemMembershipService.canWrite = jest.fn(async () => true);
   //   itemService.getDescendants = jest.fn(async () => new Array(MAX_DESCENDANTS_FOR_UPDATE+1));
@@ -68,8 +66,7 @@ describe('UpdateItemTask', () => {
   //     const task = new UpdateItemTask(member, itemId, itemData, itemService, itemMembershipService);
   //     await task.run(dbHandler);
   //   } catch (error) {
-  //     expect(error).toBeInstanceOf(GraaspError);
-  //     expect(error.name).toBe(GraaspErrorCode.TooManyDescendants);
+  //     expect(error).toBeInstanceOf(TooManyDescendants);
   //   }
   // });
 

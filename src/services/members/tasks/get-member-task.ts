@@ -1,5 +1,5 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import { MemberNotFound } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { Actor } from '../../../interfaces/actor';
 // local
@@ -20,7 +20,7 @@ export class GetMemberTask extends BaseMemberTask<Actor> {
 
     // get member
     const member = await this.memberService.get(this.targetId, handler, ['id', 'name']) as Member;
-    if (!member) this.failWith(new GraaspError(GraaspError.MemberNotFound, this.targetId));
+    if (!member) this.failWith(new MemberNotFound(this.targetId));
 
     this._status = 'OK';
     this._result = member;

@@ -16,7 +16,12 @@ export * from './services/item-memberships/interfaces/item-membership';
 export * from './services/item-memberships/db-service';
 
 // Other
-export * from './util/graasp-error';
+export * from './interfaces/actor';
 export * from './interfaces/requests';
+export * from './interfaces/result';
 export * from './interfaces/task-manager';
 export * from './interfaces/task-runner';
+export * from './interfaces/task';
+
+export { GraaspError, GraaspErrorDetails } from './util/graasp-error';
+export { DatabaseTransactionHandler, Database } from './plugins/database';

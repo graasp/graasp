@@ -1,5 +1,5 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
+import { ItemNotFound, UserCannotReadItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
@@ -23,14 +23,14 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
 
     // get item for which we're fetching its memberships
     const item = await this.itemService.get(this.itemId, handler);
-    if (!item) this.failWith(new GraaspError(GraaspError.ItemNotFound, this.itemId));
+    if (!item) this.failWith(new ItemNotFound(this.itemId));
 
     // get memberships
     const itemMemberships = await this.itemMembershipService.getInheritedForAll(item, handler);
 
     // verify if member has rights to view the item by checking if member is in the list
     const hasRights = itemMemberships.some(m => m.memberId === this.actor.id);
-    if (!hasRights) this.failWith(new GraaspError(GraaspError.UserCannotReadItem, this.itemId));
+    if (!hasRights) this.failWith(new UserCannotReadItem(this.itemId));
 
     // return item's memberships
     this._result = itemMemberships;

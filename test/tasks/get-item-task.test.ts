@@ -1,6 +1,6 @@
 import { DatabaseTransactionConnectionType } from 'slonik';
 
-import { GraaspError, GraaspErrorCode } from '../../src/util/graasp-error';
+import { ItemNotFound, UserCannotReadItem } from '../../src/util/graasp-error';
 import { Member } from '../../src/services/members/interfaces/member';
 import { Item } from '../../src/services/items/interfaces/item';
 import { ItemService } from '../../src/services/items/db-service';
@@ -29,20 +29,19 @@ describe('GetItemTask', () => {
   });
 
   test('Should fail when `itemId` does not match any existing item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => null);
 
     try {
       const task = new GetItemTask(member, itemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.ItemNotFound);
+      expect(error).toBeInstanceOf(ItemNotFound);
     }
   });
 
   test('Should fail when `member` can\'t read item', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     itemService.get = jest.fn(async () => fakeItem);
     itemMembershipService.canRead = jest.fn(async () => false);
 
@@ -50,8 +49,7 @@ describe('GetItemTask', () => {
       const task = new GetItemTask(member, itemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
-      expect(error).toBeInstanceOf(GraaspError);
-      expect(error.name).toBe(GraaspErrorCode.UserCannotReadItem);
+      expect(error).toBeInstanceOf(UserCannotReadItem);
     }
   });
 
