@@ -16,14 +16,14 @@ export class GetItemsSharedWithTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     const memberId = this.actor.id;
 
     // get items "shared with" member
     const items = await this.itemService.getSharedWith(memberId, handler);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = items;
   }
 }

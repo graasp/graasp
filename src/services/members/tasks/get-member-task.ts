@@ -16,13 +16,13 @@ export class GetMemberTask extends BaseMemberTask<Actor> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get member
     const member = await this.memberService.get(this.targetId, handler, ['id', 'name']) as Member;
-    if (!member) this.failWith(new MemberNotFound(this.targetId));
+    if (!member) throw new MemberNotFound(this.targetId);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = member;
   }
 }

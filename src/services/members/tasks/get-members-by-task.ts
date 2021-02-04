@@ -15,12 +15,12 @@ export class GetMembersByTask extends BaseMemberTask<Actor> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get member(s) by a set of properties
     const members = await this.memberService.getMatching(this.data, handler) as Member[];
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = members;
   }
 }

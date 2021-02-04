@@ -1,6 +1,5 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { TaskStatus } from '../../../interfaces/task';
 // other services
@@ -14,13 +13,13 @@ import { ItemService } from '../db-service';
 export abstract class BaseItemTask implements ItemTask {
   protected itemService: ItemService;
   protected itemMembershipService: ItemMembershipService
-  protected _status: TaskStatus;
   protected _result: Item | Item[];
   protected _message: string;
 
   readonly actor: Member;
   readonly partialSubtasks: boolean;
 
+  status: TaskStatus;
   targetId: string;
   data: Partial<Item>;
   preHookHandler: (data: Partial<Item>, actor: Member, log?: FastifyLoggerInstance) => Promise<void> | void;
@@ -34,20 +33,12 @@ export abstract class BaseItemTask implements ItemTask {
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
     this.partialSubtasks = partialSubtasks;
-
-    this._status = 'NEW';
+    this.status = 'NEW';
   }
 
   abstract get name(): string;
-  get status(): TaskStatus { return this._status; }
   get result(): Item | Item[] { return this._result; }
   get message(): string { return this._message; }
-
-  protected failWith(error: GraaspError): void {
-    this._status = 'FAIL';
-    this._message = error.name;
-    throw error;
-  }
 
   abstract run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseItemTask[]>;
 }

@@ -28,30 +28,30 @@ export class CreateItemTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
     let parentItem;
     let parentItemPermissionLevel;
 
     if (this.parentItemId) {
       // get parent item
       parentItem = await this.itemService.get(this.parentItemId, handler);
-      if (!parentItem) this.failWith(new ItemNotFound(this.parentItemId));
+      if (!parentItem) throw new ItemNotFound(this.parentItemId);
 
       // verify membership rights over parent item
       parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, parentItem, handler);
       if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
-        this.failWith(new UserCannotWriteItem(this.parentItemId));
+        throw new UserCannotWriteItem(this.parentItemId);
       }
 
       // check if hierarchy it too deep
       if (BaseItem.itemDepth(parentItem) + 1 > MAX_TREE_LEVELS) {
-        this.failWith(new HierarchyTooDeep());
+        throw new HierarchyTooDeep();
       }
 
       // check if there's too many children under the same parent
       const numberOfChildren = await this.itemService.getNumberOfChildren(parentItem, handler);
       if (numberOfChildren + 1 > MAX_NUMBER_OF_CHILDREN) {
-        this.failWith(new TooManyChildren());
+        throw new TooManyChildren();
       }
     }
 
@@ -68,7 +68,7 @@ export class CreateItemTask extends BaseItemTask {
       await this.itemMembershipService.create(membership, handler);
     }
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = item;
   }
 }

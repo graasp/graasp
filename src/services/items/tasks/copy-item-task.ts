@@ -31,7 +31,7 @@ class CopyItemSubTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     await this.preHookHandler?.(this.data, this.actor, log);
     const item = await this.itemService.create(this.data, handler);
@@ -41,7 +41,7 @@ class CopyItemSubTask extends BaseItemTask {
       await this.itemMembershipService.create(membership, handler);
     }
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = item;
   }
 }
@@ -63,20 +63,20 @@ export class CopyItemTask extends BaseItemTask {
   get result(): Item | Item[] { return this.subtasks[0]?.result; }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
-    if (!item) this.failWith(new ItemNotFound(this.targetId));
+    if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
     const itemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, item, handler);
-    if (!itemPermissionLevel) this.failWith(new UserCannotReadItem(this.targetId));
+    if (!itemPermissionLevel) throw new UserCannotReadItem(this.targetId);
 
     // check how "big the tree is" below the item
     const numberOfDescendants = await this.itemService.getNumberOfDescendants(item, handler);
     if (numberOfDescendants > MAX_DESCENDANTS_FOR_COPY) {
-      this.failWith(new TooManyDescendants(this.targetId));
+      throw new TooManyDescendants(this.targetId);
     }
 
     let parentItem;
@@ -85,12 +85,12 @@ export class CopyItemTask extends BaseItemTask {
     if (this.parentItemId) { // attaching copy to some item
       // get parent item
       parentItem = await this.itemService.get(this.parentItemId, handler);
-      if (!parentItem) this.failWith(new ItemNotFound(this.parentItemId));
+      if (!parentItem) throw new ItemNotFound(this.parentItemId);
 
       // verify membership rights over parent item
       parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, parentItem, handler);
       if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
-        this.failWith(new UserCannotWriteItem(this.parentItemId));
+        throw new UserCannotWriteItem(this.parentItemId);
       }
 
       // check how deep (number of levels) the resulting tree will be
@@ -98,7 +98,7 @@ export class CopyItemTask extends BaseItemTask {
         await this.itemService.getNumberOfLevelsToFarthestChild(item, handler);
 
       if (BaseItem.itemDepth(parentItem) + 1 + levelsToFarthestChild > MAX_TREE_LEVELS) {
-        this.failWith(new HierarchyTooDeep());
+        throw new HierarchyTooDeep();
       }
     }
 
@@ -121,7 +121,7 @@ export class CopyItemTask extends BaseItemTask {
       this.subtasks.push(subtask);
     });
 
-    this._status = 'DELEGATED';
+    this.status = 'DELEGATED';
     return this.subtasks;
   }
 

@@ -21,12 +21,12 @@ class DeleteItemSubTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     const item = await this.itemService.delete(this.targetId, handler);
     this.postHookHandler?.(item, this.actor, log);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = item;
   }
 }
@@ -52,15 +52,15 @@ export class DeleteItemTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<DeleteItemSubTask[]> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
-    if (!item) this.failWith(new ItemNotFound(this.targetId));
+    if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
     const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
-    if (!hasRights) this.failWith(new UserCannotAdminItem(this.targetId));
+    if (!hasRights) throw new UserCannotAdminItem(this.targetId);
 
     // get descendants
     const descendants =
@@ -68,9 +68,9 @@ export class DeleteItemTask extends BaseItemTask {
 
     // check how "big the tree is" below the item
     if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
-      this.failWith(new TooManyDescendants(this.targetId));
+      throw new TooManyDescendants(this.targetId);
     } else if (descendants.length > 0) {
-      this._status = 'DELEGATED';
+      this.status = 'DELEGATED';
 
       // return list of subtasks for task manager to execute and
       // delete item + all descendants, one by one.
@@ -89,7 +89,7 @@ export class DeleteItemTask extends BaseItemTask {
     await this.itemService.delete(this.targetId, handler);
     this.postHookHandler?.(item, this.actor, log);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = item;
   }
 }

@@ -3,14 +3,14 @@ import { DatabaseTransactionHandler } from '../plugins/database';
 import { Actor } from './actor';
 import { Result } from './result';
 
-export type TaskStatus = 'NEW' | 'RUNNING' | 'OK' | 'FAIL' | 'PARTIAL' | 'DELEGATED';
+export type TaskStatus = 'NEW' | 'RUNNING' | 'OK' | 'FAIL' | 'DELEGATED';
 
 export interface Task<A extends Actor, T extends Result> {
   readonly name: string;
   readonly actor: A;
   targetId?: string;
   data?: Partial<T>;
-  readonly status: TaskStatus;
+  status: TaskStatus;
   readonly result: T | T[];
   readonly message: string;
   readonly partialSubtasks?: boolean;

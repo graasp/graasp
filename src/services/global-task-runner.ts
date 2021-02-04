@@ -1,6 +1,6 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { GraaspError } from '../util/graasp-error';
+import { GraaspError, UnexpectedError } from '../util/graasp-error';
 import { Database, DatabasePoolHandler } from '../plugins/database';
 
 import { TaskRunner } from '../interfaces/task-runner';
@@ -17,7 +17,9 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     this.logger = logger;
   }
 
-  private handleTaskFinish<T extends Result>(task: Task<Actor, T>, log: FastifyLoggerInstance) {
+  private handleTaskFinish<T extends Result>(task: Task<Actor, T>, log: FastifyLoggerInstance, error?: Error) {
+    if (error) task.status = 'FAIL';
+
     const { name, actor: { id: actorId }, targetId, status, message: taskMessage, result } = task;
 
     let message = `${name}: ` +
@@ -27,17 +29,15 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     message += `, status '${status}'`;
     if (result) message += `, result '${Array.isArray(result) ? result.map(({ id }) => id) : result.id}'`;
     if (taskMessage) message += `, message '${taskMessage}'`;
+    if (error) message += `, error '${error}'`;
 
     switch (status) {
       case 'OK':
       case 'DELEGATED':
       case 'RUNNING': log.info(message); break;
-      case 'PARTIAL': log.warn(message); break;
       case 'FAIL': log.error(message); break;
       default: log.debug(message);
     }
-
-    // TODO: push notification to client in case the task signals it.
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,9 +66,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
         subtasks = await task.run(handler, log);
         this.handleTaskFinish(task, log);
       } catch (error) {
-        if (this.isGraaspError(error)) {
-          this.handleTaskFinish(task, log);
-        }
+        this.handleTaskFinish(task, log, error);
         throw error;
       }
 
@@ -87,11 +85,8 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
             this.handleTaskFinish(subtask, log);
           }
         } catch (error) {
-          if (this.isGraaspError(error)) {
-            this.handleTaskFinish(subtask, log);
-          } else {
-            log.error(error);
-          }
+          this.handleTaskFinish(subtask, log, error);
+          log.error(error);
         }
       } else {
         // if a subtask fails, stop and all is reverted/rolledback.
@@ -102,9 +97,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
           }
           subtasks.forEach(st => this.handleTaskFinish(st, log));
         } catch (error) {
-          if (this.isGraaspError(error)) {
-            this.handleTaskFinish(subtask, log);
-          }
+          this.handleTaskFinish(subtask, log, error);
           throw error;
         }
       }
@@ -123,7 +116,15 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
    */
   async run<T extends Result>(tasks: Task<Actor, T>[], log = this.logger): Promise<void | T | T[]> {
     if (tasks.length === 1) {
-      return this.runTransactionally(tasks[0], log);
+      try {
+        return await this.runTransactionally(tasks[0], log);
+      } catch (error) {
+        if (this.isGraaspError(error)) throw error;
+
+        // if not graasp error, log error details and return generic error to client
+        log.error(error);
+        throw new UnexpectedError();
+      }
     }
 
     const result = [];
@@ -134,17 +135,19 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
         const taskResult = await this.runTransactionally(task, log);
         result.push(taskResult);
       } catch (error) {
-        // log unexpected errors and continue
-        if (!(this.isGraaspError(error))) {
-          log.error(error.message || error); // TODO: improve?
+        if (this.isGraaspError(error)) {
+          result.push(error);
+        } else { // if not graasp error, log error details and keep generic error to client
+          log.error(error);
+          result.push(new UnexpectedError());
         }
-        result.push(error);
       }
     }
 
     return result;
   }
 
+  // Hooks
   setTaskPreHookHandler<T extends Result>(taskName: string, handler: PreHookHandlerType<T>): void {
     let hooks = this.tasksHooks.get(taskName);
 
@@ -199,7 +202,6 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     }
   }
 
-  // Hooks
   private tasksHooks = new Map<string, {
     pre?: { handlers: PreHookHandlerType<Result>[]; wrapped: PreHookHandlerType<Result> };
     post?: { handlers: PostHookHandlerType<Result>[]; wrapped: PostHookHandlerType<Result> };
