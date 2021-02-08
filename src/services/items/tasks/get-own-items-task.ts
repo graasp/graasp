@@ -16,14 +16,14 @@ export class GetOwnItemsTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     const memberId = this.actor.id;
 
     // get member's "own" items (created by member and where member is admin)
     const items = await this.itemService.getOwn(memberId, handler);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = items;
   }
 }

@@ -19,21 +19,21 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get item for which we're fetching its memberships
     const item = await this.itemService.get(this.itemId, handler);
-    if (!item) this.failWith(new ItemNotFound(this.itemId));
+    if (!item) throw new ItemNotFound(this.itemId);
 
     // get memberships
     const itemMemberships = await this.itemMembershipService.getInheritedForAll(item, handler);
 
     // verify if member has rights to view the item by checking if member is in the list
     const hasRights = itemMemberships.some(m => m.memberId === this.actor.id);
-    if (!hasRights) this.failWith(new UserCannotReadItem(this.itemId));
+    if (!hasRights) throw new UserCannotReadItem(this.itemId);
 
     // return item's memberships
     this._result = itemMemberships;
-    this._status = 'OK';
+    this.status = 'OK';
   }
 }

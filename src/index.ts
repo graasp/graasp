@@ -5,6 +5,7 @@
 
 // Items
 export * from './services/items/interfaces/item';
+export * from './services/items/interfaces/item-task';
 export * from './services/items/interfaces/item-custom-task-manager';
 export * from './services/items/db-service';
 

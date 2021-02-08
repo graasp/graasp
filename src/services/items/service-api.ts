@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // schemas
   fastify.addSchema(common);
 
-  fastify.register(graaspItemTags);
+  fastify.register(graaspItemTags, { itemTaskManager: taskManager });
 
   // create item
   fastify.post<{ Querystring: ParentIdParam }>(

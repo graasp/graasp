@@ -22,9 +22,9 @@ class UpdateItemSubTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler) {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
     const item = await this.itemService.update(this.targetId, this.data, handler);
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = item;
   }
 }
@@ -57,15 +57,15 @@ export class UpdateItemTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<UpdateItemSubTask[]> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
-    if (!item) this.failWith(new ItemNotFound(this.targetId));
+    if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item - write
     const hasRights = await this.itemMembershipService.canWrite(this.actor, item, handler);
-    if (!hasRights) this.failWith(new UserCannotWriteItem(this.targetId));
+    if (!hasRights) throw new UserCannotWriteItem(this.targetId);
 
     // prepare changes
     // allow for individual changes in extra's own properties except if 'extra' is {};
@@ -83,9 +83,9 @@ export class UpdateItemTask extends BaseItemTask {
 
       // check how "big the tree is" below the item
       if (descendants.length > MAX_DESCENDANTS_FOR_UPDATE) {
-        this.failWith(new TooManyDescendants(this.targetId));
+        throw new TooManyDescendants(this.targetId);
       } else if (descendants.length > 0) {
-        this._status = 'DELEGATED';
+        this.status = 'DELEGATED';
 
         // return list of subtasks for task manager to execute and
         // update item + all descendants, one by one.
@@ -101,6 +101,6 @@ export class UpdateItemTask extends BaseItemTask {
 
     // no propagating changes: just update target item
     this._result = await this.itemService.update(this.targetId, this.data, handler);
-    this._status = 'OK';
+    this.status = 'OK';
   }
 }

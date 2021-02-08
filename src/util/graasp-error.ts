@@ -101,8 +101,8 @@ export class DatabaseError extends BaseGraaspError {
     super({ code: 'GERR998', statusCode: 500, message: 'Database error' }, data);
   }
 }
-export class UnknownError extends BaseGraaspError {
+export class UnexpectedError extends BaseGraaspError {
   constructor(data?: unknown) {
-    super({ code: 'GERR999', statusCode: 500, message: 'Unknown error' }, data);
+    super({ code: 'GERR999', statusCode: 500, message: 'Unexpected error' }, data);
   }
 }

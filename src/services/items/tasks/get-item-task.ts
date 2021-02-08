@@ -18,17 +18,17 @@ export class GetItemTask extends BaseItemTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
-    if (!item) this.failWith(new ItemNotFound(this.targetId));
+    if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
     const hasRights = await this.itemMembershipService.canRead(this.actor, item, handler);
-    if (!hasRights) this.failWith(new UserCannotReadItem(this.targetId));
+    if (!hasRights) throw new UserCannotReadItem(this.targetId);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = item;
   }
 }

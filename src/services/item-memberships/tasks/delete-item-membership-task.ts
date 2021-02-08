@@ -19,11 +19,11 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     const itemMembership = await this.itemMembershipService.delete(this.targetId, handler);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = itemMembership;
   }
 }
@@ -42,11 +42,11 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // get item membership
     const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
-    if (!itemMembership) this.failWith(new ItemMembershipNotFound(this.targetId));
+    if (!itemMembership) throw new ItemMembershipNotFound(this.targetId);
 
     // skip if trying to remove member's own membership
     if (itemMembership.memberId !== this.actor.id) {
@@ -55,7 +55,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
 
       // verify if member deleting the membership has rights for that
       const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
-      if (!hasRights) this.failWith(new UserCannotAdminItem(item.id));
+      if (!hasRights) throw new UserCannotAdminItem(item.id);
     }
 
     if (this.purgeBelow) {
@@ -66,7 +66,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
         await this.itemMembershipService.getAllBelow(member, item, handler);
 
       if (itemMembershipsBelow.length > 0) {
-        this._status = 'DELEGATED';
+        this.status = 'DELEGATED';
 
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
@@ -78,7 +78,7 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask {
 
     // delete membership
     await this.itemMembershipService.delete(this.targetId, handler);
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = itemMembership;
   }
 }

@@ -15,12 +15,12 @@ export class CreateMemberTask extends BaseMemberTask<Actor> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this._status = 'RUNNING';
+    this.status = 'RUNNING';
 
     // create member
     const member = await this.memberService.create(this.data, handler);
 
-    this._status = 'OK';
+    this.status = 'OK';
     this._result = member;
   }
 }

@@ -164,11 +164,11 @@ export class ItemService {
    */
   async getNumberOfChildren(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
-      .oneFirst(sql`
+      .oneFirst<string>(sql`
         SELECT count(*) FROM item
         WHERE path ~ ${item.path + '.*{1}'}
       `)
-      .then((count: string) => parseInt(count, 10));
+      .then(count => parseInt(count, 10));
   }
 
   /**
@@ -192,12 +192,12 @@ export class ItemService {
    */
   async getNumberOfDescendants(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
-      .oneFirst(sql`
+      .oneFirst<string>(sql`
         SELECT count(*) FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}
       `) // `AND id != ${item.id}` because <@ includes the item's path
-      .then((count: string) => parseInt(count, 10));
+      .then(count => parseInt(count, 10));
   }
 
   /**

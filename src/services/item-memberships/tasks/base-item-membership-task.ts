@@ -1,5 +1,4 @@
 // global
-import { GraaspError } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { TaskStatus } from '../../../interfaces/task';
 // other services
@@ -13,12 +12,12 @@ import { ItemMembershipService } from '../db-service';
 export abstract class BaseItemMembershipTask implements ItemMembershipTask {
   protected itemService: ItemService;
   protected itemMembershipService: ItemMembershipService
-  protected _status: TaskStatus;
   protected _result: ItemMembership | ItemMembership[];
   protected _message: string;
 
   readonly actor: Member;
 
+  status: TaskStatus;
   targetId: string;
   data: Partial<ItemMembership>;
 
@@ -29,18 +28,12 @@ export abstract class BaseItemMembershipTask implements ItemMembershipTask {
     this.actor = actor;
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
+    this.status = 'NEW';
   }
 
   abstract get name(): string;
-  get status(): TaskStatus { return this._status; }
   get result(): ItemMembership | ItemMembership[] { return this._result; }
   get message(): string { return this._message; }
-
-  protected failWith(error: GraaspError): void {
-    this._status = 'FAIL';
-    this._message = error.name;
-    throw error;
-  }
 
   abstract run(handler: DatabaseTransactionHandler): Promise<void | BaseItemMembershipTask[]>;
 }

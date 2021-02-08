@@ -31,6 +31,7 @@ export class ItemTaskManager implements ItemCustomTaskManager {
   getDeleteTaskName(): string { return DeleteItemTask.name; }
 
   getCopyItemTaskName(): string { return CopyItemTask.name; }
+  getMoveItemTaskName(): string { return MoveItemTask.name; }
 
   // CRUD
   createCreateTask(member: Member, data: Partial<Item>, parentId?: string): CreateItemTask {

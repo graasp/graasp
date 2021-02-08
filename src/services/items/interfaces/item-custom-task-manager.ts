@@ -4,4 +4,5 @@ import { Item } from './item';
 
 export interface ItemCustomTaskManager extends TaskManager<Member, Item> {
   getCopyItemTaskName(): string;
+  getMoveItemTaskName(): string;
 }
