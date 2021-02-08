@@ -24,7 +24,7 @@ class DeleteItemSubTask extends BaseItemTask {
     this.status = 'RUNNING';
 
     const item = await this.itemService.delete(this.targetId, handler);
-    this.postHookHandler?.(item, this.actor, log);
+    this.postHookHandler?.(item, this.actor, { log });
 
     this.status = 'OK';
     this._result = item;
@@ -87,7 +87,7 @@ export class DeleteItemTask extends BaseItemTask {
 
     // item has no descendents - delete item and return it as the result
     await this.itemService.delete(this.targetId, handler);
-    this.postHookHandler?.(item, this.actor, log);
+    this.postHookHandler?.(item, this.actor, { log });
 
     this.status = 'OK';
     this._result = item;

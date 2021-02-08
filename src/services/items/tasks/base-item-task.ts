@@ -1,7 +1,7 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { TaskStatus } from '../../../interfaces/task';
+import { PostHookHandlerType, PreHookHandlerType, TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
@@ -22,8 +22,8 @@ export abstract class BaseItemTask implements ItemTask {
   status: TaskStatus;
   targetId: string;
   data: Partial<Item>;
-  preHookHandler: (data: Partial<Item>, actor: Member, log?: FastifyLoggerInstance) => Promise<void> | void;
-  postHookHandler: (item: Item, actor: Member, log?: FastifyLoggerInstance) => void;
+  preHookHandler: PreHookHandlerType<Item>;
+  postHookHandler: PostHookHandlerType<Item>;
 
   parentItemId?: string;
 

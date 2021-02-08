@@ -20,26 +20,29 @@ import { Item } from '../interfaces/item';
 class CopyItemSubTask extends BaseItemTask {
   get name() { return CopyItemSubTask.name; }
   private createMembership: boolean;
+  private original: Item;
 
-  constructor(member: Member, itemId: string, data: Partial<Item>,
+  constructor(member: Member, original: Item, copy: Partial<Item>,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
     createMembership?: boolean) {
     super(member, itemService, itemMembershipService);
-    this.targetId = itemId;
-    this.data = data;
+    this.targetId = original.id;
+    this.data = copy;
     this.createMembership = createMembership;
+    this.original = original;
   }
 
   async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.(this.data, this.actor, log);
+    await this.preHookHandler?.(this.data, this.actor, { log, handler }, { original: this.original });
     const item = await this.itemService.create(this.data, handler);
 
     if (this.createMembership) {
       const membership = new BaseItemMembership(this.actor.id, item.path, pl.Admin, this.actor.id);
       await this.itemMembershipService.create(membership, handler);
     }
+    await this.postHookHandler?.(item, this.actor, { log, handler }, { original: this.original });
 
     this.status = 'OK';
     this._result = item;
@@ -60,7 +63,7 @@ export class CopyItemTask extends BaseItemTask {
     this.subtasks = [];
   }
 
-  get result(): Item | Item[] { return this.subtasks[0]?.result; }
+  get result(): Item | Item[] { return this.subtasks[0].result; }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
     this.status = 'RUNNING';
@@ -111,12 +114,13 @@ export class CopyItemTask extends BaseItemTask {
     // return list of subtasks for task manager to copy item + all descendants, one by one.
     const createAdminMembership = !parentItem || parentItemPermissionLevel === pl.Write;
 
-    treeItemsCopy.forEach((itemCopy, oldId) => {
+    treeItemsCopy.forEach(({ copy, original }, originalId) => {
       // create 'admin' membership for "top" parent item if necessary
-      const createMembership = oldId === this.targetId ? createAdminMembership : false;
-      const subtask = new CopyItemSubTask(this.actor, oldId, itemCopy,
+      const createMembership = originalId === this.targetId ? createAdminMembership : false;
+      const subtask = new CopyItemSubTask(this.actor, original, copy,
         this.itemService, this.itemMembershipService, createMembership);
       subtask.preHookHandler = this.preHookHandler;
+      subtask.postHookHandler = this.postHookHandler;
 
       this.subtasks.push(subtask);
     });
@@ -131,22 +135,23 @@ export class CopyItemTask extends BaseItemTask {
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
   private copy(tree: Item[], parentItem?: Item) {
-    const old2New = new Map<string, Item>();
+    const old2New = new Map<string, { copy: Item, original: Item }>();
 
     for (let i = 0; i < tree.length; i++) {
-      const { name, description, type, path, extra } = tree[i];
+      const original = tree[i];
+      const { name, description, type, path, extra } = original;
       const pathSplit = path.split('.');
       const oldId_ = BaseItem.pathToId(pathSplit.pop());
-      let item;
+      let copy: Item;
 
       if (i === 0) {
-        item = new BaseItem(name, description, type, extra, this.actor.id, parentItem);
+        copy = new BaseItem(name, description, type, extra, this.actor.id, parentItem);
       } else {
         const oldParentId_ = BaseItem.pathToId(pathSplit.pop());
-        item = new BaseItem(name, description, type, extra, this.actor.id, old2New.get(oldParentId_));
+        copy = new BaseItem(name, description, type, extra, this.actor.id, old2New.get(oldParentId_).copy);
       }
 
-      old2New.set(oldId_, item);
+      old2New.set(oldId_, { copy, original });
     }
 
     return old2New;

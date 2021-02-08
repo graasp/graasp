@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import {
   HierarchyTooDeep, InvalidMoveTarget, ItemNotFound,
   TooManyDescendants, UserCannotAdminItem, UserCannotWriteItem
@@ -25,7 +26,7 @@ export class MoveItemTask extends BaseItemTask {
     this.parentItemId = parentItemId;
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<void> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
     // get item
@@ -77,8 +78,12 @@ export class MoveItemTask extends BaseItemTask {
       throw new InvalidMoveTarget();
     }
 
+    await this.preHookHandler?.(item, this.actor, { log, handler }, { destination: parentItem });
     // move item
     await this.moveItem(item, handler, parentItem);
+
+    const movedItem = await this.itemService.get(this.targetId, handler);
+    await this.postHookHandler?.(movedItem, this.actor, { log, handler }, { destination: parentItem });
 
     this.status = 'OK';
   }

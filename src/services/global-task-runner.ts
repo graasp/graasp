@@ -4,7 +4,7 @@ import { GraaspError, UnexpectedError } from '../util/graasp-error';
 import { Database, DatabasePoolHandler } from '../plugins/database';
 
 import { TaskRunner } from '../interfaces/task-runner';
-import { Task, PreHookHandlerType, PostHookHandlerType } from '../interfaces/task';
+import { Task, PreHookHandlerType, PostHookHandlerType, TaskHookHandlerHelpers } from '../interfaces/task';
 import { Actor } from '../interfaces/actor';
 import { Result } from '../interfaces/result';
 
@@ -17,7 +17,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     this.logger = logger;
   }
 
-  private handleTaskFinish<T extends Result>(task: Task<Actor, T>, log: FastifyLoggerInstance, error?: Error) {
+  private handleTaskFinish<T extends Result>(task: Task<Actor, T>, log: FastifyLoggerInstance, error?: Record<string, unknown>) {
     if (error) task.status = 'FAIL';
 
     const { name, actor: { id: actorId }, targetId, status, message: taskMessage, result } = task;
@@ -29,13 +29,12 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     message += `, status '${status}'`;
     if (result) message += `, result '${Array.isArray(result) ? result.map(({ id }) => id) : result.id}'`;
     if (taskMessage) message += `, message '${taskMessage}'`;
-    if (error) message += `, error '${error}'`;
 
     switch (status) {
       case 'OK':
       case 'DELEGATED':
       case 'RUNNING': log.info(message); break;
-      case 'FAIL': log.error(message); break;
+      case 'FAIL': log.error(error); break;
       default: log.debug(message);
     }
   }
@@ -74,24 +73,30 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       if (!subtasks) return task.result;
 
       let subtask: Task<Actor, T>;
+      let i: number;
 
       // run subtasks
       if (task.partialSubtasks) {
         // if a subtask fails, stop. finished (sub)tasks are not reverted/rolledback.
         try {
-          for (let i = 0; i < subtasks.length; i++) {
+          for (i = 0; i < subtasks.length; i++) {
             subtask = subtasks[i];
             await handler.transaction(async nestedHandler => subtask.run(nestedHandler, log));
             this.handleTaskFinish(subtask, log);
           }
         } catch (error) {
           this.handleTaskFinish(subtask, log, error);
-          log.error(error);
+
+          if (i === 0) {
+            throw error; // abort anyway if 1st subtask fails
+          } else {
+            log.error(error);
+          }
         }
       } else {
         // if a subtask fails, stop and all is reverted/rolledback.
         try {
-          for (let i = 0; i < subtasks.length; i++) {
+          for (i = 0; i < subtasks.length; i++) {
             subtask = subtasks[i];
             await subtask.run(handler, log);
           }
@@ -215,27 +220,28 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
 
   private wrapTaskPreHookHandlers<T extends Result>(taskName: string, handlers: PreHookHandlerType<T>[]) {
     // 'pre' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
-    return async (data: Partial<T>, actor: Actor, log = this.logger) => {
+    return async (data: T | Partial<T>, actor: Actor, { log, handler }: TaskHookHandlerHelpers, extraData?: unknown) => {
       try {
         for (let i = 0; i < handlers.length; i++) {
-          await handlers[i](data, actor, log);
+          await handlers[i](data, actor, { log, handler }, extraData);
         }
       } catch (error) {
-        log.error(error, `${taskName}: pre hook fail, object ${JSON.stringify(data)}`);
+        log.error(`${taskName}: pre hook fail, object ${JSON.stringify(data)}`);
         throw error;
       }
     };
   }
 
   private wrapTaskPostHookHandlers<T extends Result>(taskName: string, handlers: PostHookHandlerType<T>[]) {
-    // 'post' handlers executions do not '(a)wait', and if any fails, execution continues with a warning
-    return (object: T, actor: Actor, log = this.logger) => {
-      for (let i = 0; i < handlers.length; i++) {
-        try {
-          handlers[i](object, actor, log);
-        } catch (error) {
-          log.warn(error, `${taskName}: post hook fail, object ${JSON.stringify(object)}`);
+    // 'post' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
+    return async (data: T | T[], actor: Actor, { log, handler }: TaskHookHandlerHelpers, extraData?: unknown) => {
+      try {
+        for (let i = 0; i < handlers.length; i++) {
+          await handlers[i](data, actor, { log, handler }, extraData);
         }
+      } catch (error) {
+        log.error(`${taskName}: post hook fail, object ${JSON.stringify(data)}`);
+        throw error;
       }
     };
   }

@@ -1,5 +1,4 @@
 // global
-import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { TaskStatus } from '../../../interfaces/task';
 import { Task } from '../../../interfaces/task';
@@ -29,5 +28,5 @@ export abstract class BaseMemberTask<T extends Actor> implements Task<T, Member>
   get result(): Member | Member[] { return this._result; }
   get message(): string { return this._message; }
 
-  abstract run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseMemberTask<T>[]>;
+  abstract run(handler: DatabaseTransactionHandler): Promise<void | BaseMemberTask<T>[]>;
 }

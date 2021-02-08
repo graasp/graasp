@@ -8,3 +8,11 @@ import { Item } from './item';
 export interface ItemTask extends Task<Member, Item> {
   parentItemId?: string;
 }
+
+export interface ItemMoveHookHandlerExtraData {
+  destination: Item
+}
+
+export interface ItemCopyHookHandlerExtraData {
+  original: Item
+}
