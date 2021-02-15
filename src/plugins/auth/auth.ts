@@ -24,8 +24,16 @@ import { register, login, auth } from './schemas';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    validateSession: any;
+    /**
+     * Validate session, extract member from it, and set it on `request`.
+     * Throws exception if it fails.
+     */
+    validateSession: (request: FastifyRequest, reply: FastifyReply) => void;
+    /**
+     * Tries to validate session and extract member from it.
+     * Does not fail - simply does not set the `member` decorator on `request`.
+     */
+    fetchSession: (request: FastifyRequest) => void;
   }
 }
 
@@ -49,7 +57,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     cookie: { domain }
   });
 
-  // function to validate if the request has a valid session for an existing member
   async function validateSession(request: FastifyRequest, reply: FastifyReply) {
     const { session } = request;
     const memberId = session.get('member');
@@ -71,8 +78,19 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     request.member = member;
   }
-
   fastify.decorate('validateSession', validateSession);
+
+  async function fetchSession(request: FastifyRequest) {
+    const { session } = request;
+    const memberId = session.get('member');
+
+    if (!memberId) return;
+
+    // TODO: do we really need to get the user from the DB? (or actor: { id } is enough?)
+    // maybe when the groups are implemented it will be necessary.
+    request.member = await mS.get(memberId, db.pool) as Member;
+  }
+  fastify.decorate('fetchSession', fetchSession);
 
   await fastify.register(fastifyJwt, { secret: JWT_SECRET });
 

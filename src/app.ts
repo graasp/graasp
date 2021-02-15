@@ -50,7 +50,7 @@ instance
   .register(authPlugin, { sessionCookieDomain: (ENVIRONMENT === 'staging' ? 'graasp.org' : null) });
 
 instance.register(async (instance) => {
-  // authPlugin's session validation (only in this scope)
+  // authPlugin's session validation (only in this context/scope)
   instance.addHook('preHandler', instance.validateSession);
 
   // API modules

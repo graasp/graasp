@@ -250,7 +250,7 @@ export class ItemService {
    */
   async getNumberOfLevelsToFarthestChild(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
-      .maybeOneFirst(sql`
+      .maybeOneFirst<string>(sql`
         SELECT nlevel(path) - nlevel(${item.path})
         FROM item
         WHERE path <@ ${item.path}
@@ -258,7 +258,7 @@ export class ItemService {
         ORDER BY nlevel(path) DESC
         LIMIT 1
       `) // `AND id != ${item.id}` because <@ includes the item's path
-      .then((n: string) => parseInt(n || '0', 10)); // TODO: improve?
+      .then(n => parseInt(n || '0', 10)); // TODO: improve?
   }
 
   /**

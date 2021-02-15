@@ -44,10 +44,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     });
   }
 
+  fastify.register(graaspItemTags, { itemTaskManager: taskManager });
+
   // schemas
   fastify.addSchema(common);
-
-  fastify.register(graaspItemTags, { itemTaskManager: taskManager });
 
   // create item
   fastify.post<{ Querystring: ParentIdParam }>(

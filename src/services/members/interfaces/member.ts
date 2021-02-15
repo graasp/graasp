@@ -3,7 +3,7 @@ import { Actor } from '../../../interfaces/actor';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    member: Member;
+    member?: Member;
   }
 }
 
