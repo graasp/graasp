@@ -30,11 +30,11 @@
   },
   "some-comments": [
     "graasp-file-item: file:../graasp-file-item",
-    "graasp-file-item: github:graasp/graasp-file-item#master",
+    "graasp-file-item: git://github.com/graasp/graasp-file-item#master",
     "file:../graasp-file-item",
     "test: tap -J test/*.test.ts test/**/*.test.ts",
     "test: jest --forceExit --coverage --verbose",
-    "fastify-swagger: github:fastify/fastify-swagger#master"
+    "fastify-swagger: ^4.3.1"
   ],
   "dependencies": {
     "dotenv": "^8.2.0",
@@ -43,10 +43,10 @@
     "fastify-jwt": "^2.3.0",
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.1",
-    "graasp-file-item": "github:graasp/graasp-file-item#master",
-    "graasp-item-tags": "github:graasp/graasp-item-tags#master",
-    "graasp-mailer": "github:graasp/graasp-mailer#master",
-    "graasp-s3-file-item": "github:graasp/graasp-s3-file-item#master",
+    "graasp-file-item": "git://github.com/graasp/graasp-file-item#master",
+    "graasp-item-tags": "git://github.com/graasp/graasp-item-tags#master",
+    "graasp-mailer": "git://github.com/graasp/graasp-mailer#master",
+    "graasp-s3-file-item": "git://github.com/graasp/graasp-s3-file-item#master",
     "slonik": "^23.5.5",
     "uuid": "^8.3.2"
   },
