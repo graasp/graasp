@@ -19,7 +19,7 @@ export class MemberService {
   // the 'safe' way to dynamically generate the columns names:
   private static allColumns = sql.join(
     [
-      'id', 'name', 'email', 'type',
+      'id', 'name', 'email', 'type', 'extra',
       ['created_at', 'createdAt'],
       ['updated_at', 'updatedAt'],
     ].map(c =>
@@ -32,6 +32,7 @@ export class MemberService {
 
   /**
    * Get member(s) matching the properties of the given (partial) member.
+   * Excludes `extra`, `created_at`, and `updated_at`.
    * @param member Partial member
    * @param dbHandler Database handler
    * @param properties List of Member properties to fetch - defaults to 'all'
@@ -49,9 +50,10 @@ export class MemberService {
     // TODO: 'createdAt' and 'updatedAt' are not handled properly - will not match any column.
     const whereConditions = sql.join(
       Object.keys(member)
-        .map((key: keyof Partial<Member>) =>
-          sql.join([sql.identifier([key]), sql`${member[key]}`], sql` = `)
-        ),
+        .reduce((acc, key: keyof Member) =>
+          (key === 'extra' || key === 'createdAt' || key === 'updatedAt') ? acc :
+          acc.concat(sql.join([sql.identifier([key]), sql`${member[key]}`], sql` = `)),
+          []),
       sql` AND `
     );
 
@@ -97,12 +99,22 @@ export class MemberService {
    * @param transactionHandler Database transaction handler
    */
   async create(member: Partial<Member>, transactionHandler: TrxHandler): Promise<Member> {
-    const { name, email } = member;
+    // dynamically build a [{column1, value1}, {column2, value2}, ...] based on the
+    // properties present in member
+    const columnsAndValues = Object.keys(member)
+      .map((key: keyof Member) => {
+        const column = sql.identifier([key]);
+        const value = key !== 'extra' ? sql`${member[key]}` : sql.json(member[key]);
+        return { column, value };
+      });
+
+    const columns = columnsAndValues.map(({ column: c }) => c);
+    const values = columnsAndValues.map(({ value: v }) => v);
 
     return transactionHandler
       .query<Member>(sql`
-        INSERT INTO member (name, email)
-        VALUES (${name}, ${email})
+        INSERT INTO member (${sql.join(columns, sql`, `)})
+        VALUES (${sql.join(values, sql`, `)})
         RETURNING ${MemberService.allColumns}
       `)
       .then(({ rows }) => rows[0]);

@@ -1,13 +1,4 @@
-type Anything =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | Anything[]
-  | { [key: string]: Anything };
-
-export interface UnknownExtra { [key: string]: Anything }
+import { UnknownExtra } from '../../../interfaces/extra';
 
 export interface Item<T = UnknownExtra> {
   id: string;

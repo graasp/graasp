@@ -117,7 +117,7 @@ export class ItemService {
     // properties present in data
     const setValues = sql.join(
       Object.keys(data)
-        .map((key: keyof Partial<Item>) =>
+        .map((key: keyof Item) =>
           sql.join(
             [
               sql.identifier([key]),

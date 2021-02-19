@@ -1,5 +1,6 @@
 // global
 import { Actor } from '../../../interfaces/actor';
+import { UnknownExtra } from '../../../interfaces/extra';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -12,11 +13,12 @@ export enum MemberType {
   Group = 'group'
 }
 
-export interface Member extends Actor {
+export interface Member<T = UnknownExtra> extends Actor {
   id: string;
   name: string;
   email: string;
   type: MemberType;
+  extra: T;
   createdAt: string;
   updatedAt: string;
 }

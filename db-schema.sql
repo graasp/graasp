@@ -7,8 +7,9 @@ CREATE TYPE "member_type_enum" AS ENUM ('individual', 'group');
 CREATE TABLE "member" (
   "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   "name" character varying(300) NOT NULL,
-  "type" member_type_enum DEFAULT 'individual' NOT NULL,
   "email" character varying(150) UNIQUE NOT NULL,
+  "type" member_type_enum DEFAULT 'individual' NOT NULL,
+  "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
 
   "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
