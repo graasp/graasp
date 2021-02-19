@@ -18,7 +18,7 @@ const start = async () => {
     await fastifyApp.listen(+PORT, HOSTNAME);
     fastifyApp.log.info('App is running %s mode', ENVIRONMENT);
 
-    // application.swagger();
+    // fastifyApp.swagger();
   } catch (err) {
     fastifyApp.log.error(err);
     process.exit(1);

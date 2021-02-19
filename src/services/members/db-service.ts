@@ -52,7 +52,7 @@ export class MemberService {
       Object.keys(member)
         .reduce((acc, key: keyof Member) =>
           (key === 'extra' || key === 'createdAt' || key === 'updatedAt') ? acc :
-          acc.concat(sql.join([sql.identifier([key]), sql`${member[key]}`], sql` = `)),
+            acc.concat(sql.join([sql.identifier([key]), sql`${member[key]}`], sql` = `)),
           []),
       sql` AND `
     );

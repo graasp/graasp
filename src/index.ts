@@ -19,6 +19,7 @@ export * from './services/item-memberships/db-service';
 
 // Other
 export * from './interfaces/actor';
+export * from './interfaces/extra';
 export * from './interfaces/requests';
 export * from './interfaces/result';
 export * from './interfaces/task-manager';
