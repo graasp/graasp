@@ -1,5 +1,4 @@
 // global
-import { TaskManager } from '../../interfaces/task-manager';
 // other services
 import { Member } from '../../services/members/interfaces/member';
 import { ItemService } from '../../services/items/db-service';
@@ -11,8 +10,9 @@ import { CreateItemMembershipTask } from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
 import { GetItemsItemMembershipsTask } from './tasks/get-items-item-membership-task';
+import { ItemMembershipCustomTaskManager } from './interfaces/item-membership-custom-task-manager';
 
-export class ItemMembershipTaskManager implements TaskManager<Member, ItemMembership> {
+export class ItemMembershipTaskManager implements ItemMembershipCustomTaskManager {
   private itemService: ItemService;
   private itemMembershipService: ItemMembershipService;
 
@@ -25,6 +25,8 @@ export class ItemMembershipTaskManager implements TaskManager<Member, ItemMember
   getGetTaskName(): string { throw new Error('Method not implemented.'); }
   getUpdateTaskName(): string { return UpdateItemMembershipTask.name; }
   getDeleteTaskName(): string { return DeleteItemMembershipTask.name; }
+
+  getGetItemsItemMembershipsTaskName(): string { return GetItemsItemMembershipsTask.name; }
 
   // CRUD
   createCreateTask(member: Member, data: Partial<ItemMembership>, itemId: string): CreateItemMembershipTask {

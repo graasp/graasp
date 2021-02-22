@@ -5,10 +5,14 @@ import {
 } from 'slonik';
 // local
 import { Member } from './interfaces/member';
+import { MemberCustomTaskManager } from './interfaces/member-custom-task-manager';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    memberService: MemberService;
+    members: {
+      taskManager: MemberCustomTaskManager,
+      dbService: MemberService
+    };
   }
 }
 

@@ -8,9 +8,9 @@ import { GetMemberTask } from './tasks/get-member-task';
 import { BaseMemberTask } from './tasks/base-member-task';
 import { CreateMemberTask } from './tasks/create-member-task';
 import { GetMembersByTask } from './tasks/get-members-by-task';
-import { TaskManager } from '../../interfaces/task-manager';
+import { MemberCustomTaskManager } from './interfaces/member-custom-task-manager';
 
-export class MemberTaskManager implements TaskManager<Actor, Member> {
+export class MemberTaskManager implements MemberCustomTaskManager {
   private memberService: MemberService;
 
   constructor(memberService: MemberService) {
@@ -21,6 +21,8 @@ export class MemberTaskManager implements TaskManager<Actor, Member> {
   getGetTaskName(): string { return GetMemberTask.name; }
   getUpdateTaskName(): string { throw new Error('Method not implemented.'); }
   getDeleteTaskName(): string { throw new Error('Method not implemented.'); }
+
+  getGetMembersByTaskName(): string { return GetMembersByTask.name; }
 
   // CRUD
   createCreateTask(actor: Actor, data: Partial<Member>): CreateMemberTask {
@@ -42,7 +44,7 @@ export class MemberTaskManager implements TaskManager<Actor, Member> {
   }
 
   // Other
-  createGetByTask(actor: Actor, data: Partial<Member>): GetMembersByTask {
+  createGetMembersByTask(actor: Actor, data: Partial<Member>): GetMembersByTask {
     return new GetMembersByTask(actor, data, this.memberService);
   }
 }

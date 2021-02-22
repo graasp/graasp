@@ -47,14 +47,14 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     sessionCookieDomain: domain,
     uniqueViolationErrorName = 'UniqueIntegrityConstraintViolationError' // TODO: can we improve this?
   } = options;
-  const { log, db, memberService: mS, taskRunner: runner } = fastify;
+  const { log, db, members: { dbService: mS }, taskRunner: runner } = fastify;
   const memberTaskManager = new MemberTaskManager(mS);
 
   fastify.register(fastifySecureSession, {
     // TODO: maybe change to 'secret', which is just a string (makes the boot slower).
     // Production needs its own key: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key
     key: fs.readFileSync(path.join(process.cwd(), 'secure-session-secret-key')),
-    cookie: { domain }
+    cookie: { domain, path: '/' }
   });
 
   async function validateSession(request: FastifyRequest, reply: FastifyReply) {
@@ -126,7 +126,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         log.warn(`Member re-registration attempt for email '${email}'`);
 
         // member already exists - get member and send a login email
-        task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        task = memberTaskManager.createGetMembersByTask(GRAASP_ACTOR, { email });
         const members = await runner.run([task], log) as Member[];
         member = members[0];
 
@@ -153,7 +153,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     '/login',
     { schema: login },
     async ({ body, log }, reply) => {
-      const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
+      const task = memberTaskManager.createGetMembersByTask(GRAASP_ACTOR, body);
       const members = await runner.run([task], log) as Member[];
 
       if (members.length) {

@@ -4,10 +4,14 @@ import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
 import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
 // local
 import { Item } from './interfaces/item';
+import { ItemCustomTaskManager } from './interfaces/item-custom-task-manager';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    itemService: ItemService;
+    items: {
+      taskManager: ItemCustomTaskManager,
+      dbService: ItemService
+    };
   }
 }
 

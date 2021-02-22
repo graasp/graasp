@@ -11,10 +11,12 @@ export * from './services/items/db-service';
 
 // Members
 export * from './services/members/interfaces/member';
+export * from './services/members/interfaces/member-custom-task-manager';
 export * from './services/members/db-service';
 
 // Item Memberships
 export * from './services/item-memberships/interfaces/item-membership';
+export * from './services/item-memberships/interfaces/item-membership-custom-task-manager';
 export * from './services/item-memberships/db-service';
 
 // Other

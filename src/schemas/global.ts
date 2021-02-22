@@ -38,7 +38,8 @@ export default {
         message: { type: 'string' },
         statusCode: { type: 'number' },
         data: {},
-        stack: {}
+        origin: { type: 'string' }
+        // stack: {}
       },
       additionalProperties: false
     }
