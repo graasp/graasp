@@ -21,7 +21,8 @@ export interface Task<A extends Actor, T extends Result> {
 }
 
 export interface TaskHookHandlerHelpers {
-  log: FastifyLoggerInstance, handler?: DatabaseTransactionHandler
+  log: FastifyLoggerInstance;
+  handler?: DatabaseTransactionHandler;
 }
 
 export type PreHookHandlerType<T extends Result, K = unknown> =

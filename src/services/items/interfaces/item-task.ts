@@ -10,9 +10,9 @@ export interface ItemTask extends Task<Member, Item> {
 }
 
 export interface ItemMoveHookHandlerExtraData {
-  destination: Item
+  destination: Item;
 }
 
 export interface ItemCopyHookHandlerExtraData {
-  original: Item
+  original: Item;
 }
