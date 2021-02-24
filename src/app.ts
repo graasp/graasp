@@ -33,8 +33,8 @@ const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('member', null);
 };
 
-// const instance = fastify({ logger: !DISABLE_LOGS });
-const instance = fastify({ logger: { prettyPrint: true, level: 'debug' } });
+const instance = fastify({ logger: !DISABLE_LOGS });
+// const instance = fastify({ logger: { prettyPrint: true, level: 'debug' } });
 
 // load global schema definitions
 instance.addSchema(globalDefinitions);
