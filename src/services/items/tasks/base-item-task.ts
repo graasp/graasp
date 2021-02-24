@@ -1,19 +1,21 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { PostHookHandlerType, PreHookHandlerType, TaskStatus } from '../../../interfaces/task';
+import {
+  IndividualResultType, PostHookHandlerType,
+  PreHookHandlerType, Task, TaskStatus
+} from '../../../interfaces/task';
+import { Actor } from '../../../interfaces/actor';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
 // local
-import { ItemTask } from '../interfaces/item-task';
-import { Item } from '../interfaces/item';
 import { ItemService } from '../db-service';
 
-export abstract class BaseItemTask implements ItemTask {
+export abstract class BaseItemTask<T> implements Task<Actor, T> {
   protected itemService: ItemService;
   protected itemMembershipService: ItemMembershipService
-  protected _result: Item | Item[];
+  protected _result: T;
   protected _message: string;
 
   readonly actor: Member;
@@ -21,10 +23,11 @@ export abstract class BaseItemTask implements ItemTask {
 
   status: TaskStatus;
   targetId: string;
-  data: Partial<Item>;
-  preHookHandler: PreHookHandlerType<Item>;
-  postHookHandler: PostHookHandlerType<Item>;
+  data: Partial<IndividualResultType<T>>;
+  preHookHandler?: PreHookHandlerType<T>;
+  postHookHandler?: PostHookHandlerType<T>;
 
+  /** id of the item to which some tasks will append the item being processed */
   parentItemId?: string;
 
   constructor(member: Member,
@@ -37,8 +40,8 @@ export abstract class BaseItemTask implements ItemTask {
   }
 
   abstract get name(): string;
-  get result(): Item | Item[] { return this._result; }
+  get result(): T { return this._result; }
   get message(): string { return this._message; }
 
-  abstract run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseItemTask[]>;
+  abstract run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseItemTask<T>[]>;
 }

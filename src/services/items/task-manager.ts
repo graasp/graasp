@@ -2,6 +2,7 @@
 // other services
 import { Member } from '../../services/members/interfaces/member';
 import { ItemMembershipService } from '../../services/item-memberships/db-service';
+import { UnknownExtra } from '../../interfaces/extra';
 // local
 import { ItemService } from './db-service';
 import { Item } from './interfaces/item';
@@ -14,9 +15,9 @@ import { UpdateItemTask } from './tasks/update-item-task';
 import { DeleteItemTask } from './tasks/delete-item-task';
 import { MoveItemTask } from './tasks/move-item-task';
 import { CopyItemTask } from './tasks/copy-item-task';
-import { ItemCustomTaskManager } from './interfaces/item-custom-task-manager';
+import { ItemTaskManager } from './interfaces/item-task-manager';
 
-export class ItemTaskManager implements ItemCustomTaskManager {
+export class TaskManager implements ItemTaskManager<Member> {
   private itemService: ItemService;
   private itemMembershipService: ItemMembershipService;
 
@@ -30,22 +31,22 @@ export class ItemTaskManager implements ItemCustomTaskManager {
   getUpdateTaskName(): string { return UpdateItemTask.name; }
   getDeleteTaskName(): string { return DeleteItemTask.name; }
 
-  getMoveItemTaskName(): string { return MoveItemTask.name; }
-  getCopyItemTaskName(): string { return CopyItemTask.name; }
-  getGetItemChildrenTaskName(): string { return GetItemChildrenTask.name; }
-  getGetOwnItemsTaskName(): string { return GetOwnItemsTask.name; }
-  getGetItemsSharedWithTaskName(): string { return GetItemsSharedWithTask.name; }
+  getMoveTaskName(): string { return MoveItemTask.name; }
+  getCopyTaskName(): string { return CopyItemTask.name; }
+  getGetChildrenTaskName(): string { return GetItemChildrenTask.name; }
+  getGetOwnTaskName(): string { return GetOwnItemsTask.name; }
+  getGetSharedWithTaskName(): string { return GetItemsSharedWithTask.name; }
 
   // CRUD
-  createCreateTask(member: Member, data: Partial<Item>, parentId?: string): CreateItemTask {
-    return new CreateItemTask(member, data, this.itemService, this.itemMembershipService, parentId);
+  createCreateTask<E extends UnknownExtra>(member: Member, data: Partial<Item<E>>, parentId?: string): CreateItemTask<E> {
+    return new CreateItemTask<E>(member, data, this.itemService, this.itemMembershipService, parentId);
   }
 
-  createGetTask(member: Member, itemId: string): GetItemTask {
+  createGetTask<E extends UnknownExtra>(member: Member, itemId: string): GetItemTask<E> {
     return new GetItemTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 
-  createUpdateTask(member: Member, itemId: string, data: Partial<Item>): UpdateItemTask {
+  createUpdateTask<E extends UnknownExtra>(member: Member, itemId: string, data: Partial<Item<E>>): UpdateItemTask<E> {
     return new UpdateItemTask(member, itemId, data, this.itemService, this.itemMembershipService);
   }
 
@@ -54,23 +55,23 @@ export class ItemTaskManager implements ItemCustomTaskManager {
   }
 
   // Other
-  createMoveItemTask(member: Member, itemId: string, parentId?: string): MoveItemTask {
+  createMoveTask(member: Member, itemId: string, parentId?: string): MoveItemTask {
     return new MoveItemTask(member, itemId, this.itemService, this.itemMembershipService, parentId);
   }
 
-  createCopyItemTask(member: Member, itemId: string, parentId?: string): CopyItemTask {
+  createCopyTask(member: Member, itemId: string, parentId?: string): CopyItemTask {
     return new CopyItemTask(member, itemId, this.itemService, this.itemMembershipService, parentId);
   }
 
-  createGetItemChildrenTask(member: Member, itemId: string): GetItemChildrenTask {
+  createGetChildrenTask(member: Member, itemId: string): GetItemChildrenTask {
     return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 
-  createGetOwnItemsTask(member: Member): GetOwnItemsTask {
+  createGetOwnTask(member: Member): GetOwnItemsTask {
     return new GetOwnItemsTask(member, this.itemService, this.itemMembershipService);
   }
 
-  createGetItemsSharedWithTask(member: Member): GetItemsSharedWithTask {
+  createGetSharedWithTask(member: Member): GetItemsSharedWithTask {
     return new GetItemsSharedWithTask(member, this.itemService, this.itemMembershipService);
   }
 }

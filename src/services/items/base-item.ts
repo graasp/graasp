@@ -7,15 +7,15 @@ import { Item } from './interfaces/item';
 const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
 const underscoreToDash = (value: string) => value.replace(/_/g, '-');
 
-export class BaseItem implements Item {
-  static propagatingProperties: (keyof Item)[] = []; // TODO: incomplete
+export class BaseItem<E extends UnknownExtra> implements Item<E> {
+  // static propagatingProperties: (keyof Item)[] = []; // TODO: incomplete
 
   readonly id: string;
   name: string;
   description: string;
   type: string;
   path: string;
-  extra: UnknownExtra;
+  extra: E;
   readonly creator: string;
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -24,7 +24,7 @@ export class BaseItem implements Item {
     name: string,
     description: string = null,
     type: string = 'base',
-    extra: UnknownExtra = {},
+    extra: E,
     creator: string,
     parent?: Item
   ) {

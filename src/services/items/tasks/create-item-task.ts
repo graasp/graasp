@@ -5,6 +5,7 @@ import {
 } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../../util/config';
+import { UnknownExtra } from '../../../interfaces/extra';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
@@ -16,10 +17,10 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { BaseItem } from '../base-item';
 
-export class CreateItemTask extends BaseItemTask {
+export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
   get name(): string { return CreateItemTask.name; }
 
-  constructor(member: Member, data: Partial<Item>,
+  constructor(member: Member, data: Partial<Item<E>>,
     itemService: ItemService, itemMembershipService: ItemMembershipService,
     parentItemId?: string) {
     super(member, itemService, itemMembershipService);
@@ -58,7 +59,7 @@ export class CreateItemTask extends BaseItemTask {
     // create item
     const { name, description, type, extra } = this.data;
     const { id: creator } = this.actor;
-    let item: Item = new BaseItem(name, description, type, extra, creator, parentItem);
+    let item = new BaseItem(name, description, type, extra, creator, parentItem);
     item = await this.itemService.create(item, handler);
 
     // create 'admin' membership for member+item if it's a 'root' item (no parent item) or

@@ -5,9 +5,10 @@ import { ItemMembershipService } from '../../../services/item-memberships/db-ser
 import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemService } from '../db-service';
+import { Item } from '../interfaces/item';
 import { BaseItemTask } from './base-item-task';
 
-export class GetOwnItemsTask extends BaseItemTask {
+export class GetOwnItemsTask extends BaseItemTask<Item[]> {
   get name(): string { return GetOwnItemsTask.name; }
 
   constructor(member: Member,

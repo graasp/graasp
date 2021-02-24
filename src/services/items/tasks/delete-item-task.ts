@@ -11,7 +11,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
-class DeleteItemSubTask extends BaseItemTask {
+class DeleteItemSubTask extends BaseItemTask<Item> {
   get name() { return DeleteItemSubTask.name; }
 
   constructor(member: Member, itemId: string,
@@ -31,7 +31,7 @@ class DeleteItemSubTask extends BaseItemTask {
   }
 }
 
-export class DeleteItemTask extends BaseItemTask {
+export class DeleteItemTask extends BaseItemTask<Item> {
   get name(): string { return DeleteItemTask.name; }
   private subtasks: DeleteItemSubTask[];
 
@@ -42,7 +42,7 @@ export class DeleteItemTask extends BaseItemTask {
     this.targetId = itemId;
   }
 
-  get result(): Item | Item[] {
+  get result(): Item {
     // if item has no descendants or subtasks are still 'New'
     if (!this.subtasks || this.subtasks.some(st => st.status === 'NEW')) return this._result;
 

@@ -23,7 +23,8 @@ import common, {
   moveOne, moveMany,
   copyOne, copyMany, getOwnAndShared
 } from './schemas';
-import { ItemTaskManager } from './task-manager';
+import { TaskManager } from './task-manager';
+import { ItemTaskManager } from './interfaces/item-task-manager';
 
 const ROUTES_PREFIX = '/items';
 
@@ -34,7 +35,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     taskRunner: runner
   } = fastify;
   const { dbService } = items;
-  const taskManager = new ItemTaskManager(dbService, itemMembershipsDbService);
+  const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
   items.taskManager = taskManager;
 
   // // TODO: add plugins after migrating them
@@ -67,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/', { schema: create },
       async ({ member, query: { parentId }, body, log }) => {
         const task = taskManager.createCreateTask(member, body, parentId);
-        return runner.run([task], log);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -76,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id', { schema: getOne },
       async ({ member, params: { id }, log }) => {
         const task = taskManager.createGetTask(member, id);
-        return runner.run([task], log);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -84,7 +85,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/', { schema: getMany },
       async ({ member, query: { id: ids }, log }) => {
         const tasks = ids.map(id => taskManager.createGetTask(member, id));
-        return runner.run(tasks, log);
+        return runner.runMultiple(tasks, log);
       }
     );
 
@@ -92,8 +93,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get(
       '/own', { schema: getOwnAndShared },
       async ({ member, log }) => {
-        const task = taskManager.createGetOwnItemsTask(member);
-        return runner.run([task], log);
+        const task = taskManager.createGetOwnTask(member);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -101,8 +102,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get(
       '/shared-with', { schema: getOwnAndShared },
       async ({ member, log }) => {
-        const task = taskManager.createGetItemsSharedWithTask(member);
-        return runner.run([task], log);
+        const task = taskManager.createGetSharedWithTask(member);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -110,8 +111,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Params: IdParam }>(
       '/:id/children', { schema: getChildren },
       async ({ member, params: { id }, log }) => {
-        const task = taskManager.createGetItemChildrenTask(member, id);
-        return runner.run([task], log);
+        const task = taskManager.createGetChildrenTask(member, id);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -120,7 +121,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id', { schema: updateOne },
       async ({ member, params: { id }, body, log }) => {
         const task = taskManager.createUpdateTask(member, id, body);
-        return runner.run([task], log);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -131,12 +132,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         // too many items to update: start execution and return '202'.
         if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-          runner.run(tasks, log);
+          runner.runMultiple(tasks, log);
           reply.status(202);
           return ids;
         }
 
-        return runner.run(tasks, log);
+        return runner.runMultiple(tasks, log);
       }
     );
 
@@ -145,7 +146,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id', { schema: deleteOne },
       async ({ member, params: { id }, log }) => {
         const task = taskManager.createDeleteTask(member, id);
-        return runner.run([task], log);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -156,12 +157,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         // too many items to delete: start execution and return '202'.
         if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-          runner.run(tasks, log);
+          runner.runMultiple(tasks, log);
           reply.status(202);
           return ids;
         }
 
-        return runner.run(tasks, log);
+        return runner.runMultiple(tasks, log);
       }
     );
 
@@ -169,8 +170,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
       '/:id/move', { schema: moveOne },
       async ({ member, params: { id }, body: { parentId }, log }, reply) => {
-        const task = taskManager.createMoveItemTask(member, id, parentId);
-        await runner.run([task], log);
+        const task = taskManager.createMoveTask(member, id, parentId);
+        await runner.runSingle(task, log);
         reply.status(204);
       }
     );
@@ -178,16 +179,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
       '/move', { schema: moveMany },
       async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
-        const tasks = ids.map(id => taskManager.createMoveItemTask(member, id, parentId));
+        const tasks = ids.map(id => taskManager.createMoveTask(member, id, parentId));
 
         // too many items to move: start execution and return '202'.
         if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-          runner.run(tasks, log);
+          runner.runMultiple(tasks, log);
           reply.status(202);
           return ids;
         }
 
-        await runner.run(tasks, log);
+        await runner.runMultiple(tasks, log);
         reply.status(204);
       }
     );
@@ -196,24 +197,24 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
       '/:id/copy', { schema: copyOne },
       async ({ member, params: { id }, body: { parentId }, log }) => {
-        const task = taskManager.createCopyItemTask(member, id, parentId);
-        return runner.run([task], log);
+        const task = taskManager.createCopyTask(member, id, parentId);
+        return runner.runSingle(task, log);
       }
     );
 
     fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
       '/copy', { schema: copyMany },
       async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
-        const tasks = ids.map(id => taskManager.createCopyItemTask(member, id, parentId));
+        const tasks = ids.map(id => taskManager.createCopyTask(member, id, parentId));
 
         // too many items to copy: start execution and return '202'.
         if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-          runner.run(tasks, log);
+          runner.runMultiple(tasks, log);
           reply.status(202);
           return ids;
         }
 
-        return runner.run(tasks, log);
+        return runner.runMultiple(tasks, log);
       }
     );
 

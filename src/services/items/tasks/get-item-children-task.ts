@@ -9,7 +9,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
-export class GetItemChildrenTask extends BaseItemTask {
+export class GetItemChildrenTask extends BaseItemTask<Item[]> {
   get name(): string { return GetItemChildrenTask.name; }
 
   constructor(member: Member, itemId: string,
@@ -30,7 +30,7 @@ export class GetItemChildrenTask extends BaseItemTask {
     if (!hasRights) throw new UserCannotReadItem(this.targetId);
 
     // get item's children
-    const children = await this.itemService.getDescendants(item, handler, 'ASC', 1) as Item[];
+    const children = await this.itemService.getDescendants<Item>(item, handler, 'ASC', 1);
 
     this.status = 'OK';
     this._result = children;
