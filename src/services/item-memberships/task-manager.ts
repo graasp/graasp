@@ -1,5 +1,4 @@
 // global
-import { TaskManager } from '../../interfaces/task-manager';
 // other services
 import { Member } from '../../services/members/interfaces/member';
 import { ItemService } from '../../services/items/db-service';
@@ -11,8 +10,9 @@ import { CreateItemMembershipTask } from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
 import { GetItemsItemMembershipsTask } from './tasks/get-items-item-membership-task';
+import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 
-export class ItemMembershipTaskManager implements TaskManager<Member, ItemMembership> {
+export class TaskManager implements ItemMembershipTaskManager<Member> {
   private itemService: ItemService;
   private itemMembershipService: ItemMembershipService;
 
@@ -26,12 +26,14 @@ export class ItemMembershipTaskManager implements TaskManager<Member, ItemMember
   getUpdateTaskName(): string { return UpdateItemMembershipTask.name; }
   getDeleteTaskName(): string { return DeleteItemMembershipTask.name; }
 
+  getGetOfItemTaskName(): string { return GetItemsItemMembershipsTask.name; }
+
   // CRUD
   createCreateTask(member: Member, data: Partial<ItemMembership>, itemId: string): CreateItemMembershipTask {
     return new CreateItemMembershipTask(member, data, itemId, this.itemService, this.itemMembershipService);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createGetTask(actor: Member, objectId: string): BaseItemMembershipTask {
+  createGetTask(member: Member, objectId: string): BaseItemMembershipTask<ItemMembership> {
     throw new Error('Method not implemented.');
   }
 
@@ -44,7 +46,7 @@ export class ItemMembershipTaskManager implements TaskManager<Member, ItemMember
   }
 
   // Other
-  createGetItemsItemMembershipsTask(actor: Member, itemId: string): GetItemsItemMembershipsTask {
-    return new GetItemsItemMembershipsTask(actor, itemId, this.itemService, this.itemMembershipService);
+  createGetOfItemTask(member: Member, itemId: string): GetItemsItemMembershipsTask {
+    return new GetItemsItemMembershipsTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 }

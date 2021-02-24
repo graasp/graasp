@@ -17,7 +17,7 @@ import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
-class CopyItemSubTask extends BaseItemTask {
+class CopyItemSubTask extends BaseItemTask<Item> {
   get name() { return CopyItemSubTask.name; }
   private createMembership: boolean;
   private original: Item;
@@ -32,7 +32,7 @@ class CopyItemSubTask extends BaseItemTask {
     this.original = original;
   }
 
-  async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
     await this.preHookHandler?.(this.data, this.actor, { log, handler }, { original: this.original });
@@ -49,7 +49,7 @@ class CopyItemSubTask extends BaseItemTask {
   }
 }
 
-export class CopyItemTask extends BaseItemTask {
+export class CopyItemTask extends BaseItemTask<Item> {
   get name(): string { return CopyItemTask.name; }
   private subtasks: CopyItemSubTask[];
 
@@ -63,7 +63,7 @@ export class CopyItemTask extends BaseItemTask {
     this.subtasks = [];
   }
 
-  get result(): Item | Item[] { return this.subtasks[0].result; }
+  get result(): Item { return this.subtasks[0].result; }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
     this.status = 'RUNNING';
@@ -107,7 +107,7 @@ export class CopyItemTask extends BaseItemTask {
 
     // copy (memberships from origin are not copied/kept)
     // get the whole tree
-    const descendants = await this.itemService.getDescendants(item, handler, 'ASC') as Item[];
+    const descendants = await this.itemService.getDescendants<Item>(item, handler, 'ASC');
     const treeItems = [item].concat(descendants);
     const treeItemsCopy = this.copy(treeItems, parentItem);
 

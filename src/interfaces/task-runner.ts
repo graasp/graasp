@@ -1,6 +1,5 @@
 import { FastifyLoggerInstance } from 'fastify';
 import { Actor } from './actor';
-import { Result } from './result';
 import { PostHookHandlerType, PreHookHandlerType, Task } from './task';
 
 declare module 'fastify' {
@@ -15,10 +14,11 @@ export interface TaskRunner<A extends Actor> {
    * @param tasks Tasks to run
    * @param log Logger instance to use during execution
    */
-  run<R extends Result>(tasks: Task<A, R>[], log?: FastifyLoggerInstance): Promise<void | R | R[]>;
+  runSingle<T>(task: Task<A, T>, log?: FastifyLoggerInstance): Promise<T>;
+  runMultiple(tasks: Task<A, unknown>[], log?: FastifyLoggerInstance): Promise<unknown[]>;
 
-  setTaskPreHookHandler<R extends Result>(taskName: string, handler: PreHookHandlerType<R>): void;
-  setTaskPostHookHandler<R extends Result>(taskName: string, handler: PostHookHandlerType<R>): void;
-  unsetTaskPreHookHandler<R extends Result>(taskName: string, handler: PreHookHandlerType<R>): void;
-  unsetTaskPostHookHandler<R extends Result>(taskName: string, handler: PostHookHandlerType<R>): void;
+  setTaskPreHookHandler<T>(taskName: string, handler: PreHookHandlerType<T>): void;
+  setTaskPostHookHandler<T>(taskName: string, handler: PostHookHandlerType<T>): void;
+  unsetTaskPreHookHandler<T>(taskName: string, handler: PreHookHandlerType<T>): void;
+  unsetTaskPostHookHandler<T>(taskName: string, handler: PostHookHandlerType<T>): void;
 }

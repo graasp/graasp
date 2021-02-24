@@ -25,9 +25,10 @@ import { GlobalTaskRunner } from './services/global-task-runner';
 const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
   const { db, log } = fastify;
   fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
-  fastify.decorate('memberService', new MemberService());
-  fastify.decorate('itemService', new ItemService());
-  fastify.decorate('itemMembershipService', new ItemMembershipService());
+
+  fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
+  fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
+  fastify.decorate('itemMemberships', { dbService: new ItemMembershipService(), taskManager: null });
 
   fastify.decorateRequest('member', null);
 };
@@ -50,14 +51,11 @@ instance
   .register(authPlugin, { sessionCookieDomain: (ENVIRONMENT === 'staging' ? 'graasp.org' : null) });
 
 instance.register(async (instance) => {
-  // authPlugin's session validation (only in this context/scope)
-  instance.addHook('preHandler', instance.validateSession);
-
-  // API modules
+  // core API modules
   instance
-    .register(ItemsServiceApi, { prefix: '/items' })
-    .register(ItemMembershipsServiceApi, { prefix: '/item-memberships' })
-    .register(MemberServiceApi, { prefix: '/members' });
+    .register(fp(MemberServiceApi))
+    .register(fp(ItemsServiceApi))
+    .register(fp(ItemMembershipsServiceApi));
 });
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...

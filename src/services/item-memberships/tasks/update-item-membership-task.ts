@@ -10,7 +10,7 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership, PermissionLevelCompare, PermissionLevel } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
-class UpdateItemMembershipSubTask extends BaseItemMembershipTask {
+class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name() { return UpdateItemMembershipSubTask.name; }
   private permission: PermissionLevel;
 
@@ -31,7 +31,7 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask {
   }
 }
 
-export class UpdateItemMembershipTask extends BaseItemMembershipTask {
+export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string { return UpdateItemMembershipTask.name; }
 
   constructor(member: Member, itemMembershipId: string, data: Partial<ItemMembership>,

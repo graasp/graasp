@@ -15,7 +15,7 @@ import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
-export class MoveItemTask extends BaseItemTask {
+export class MoveItemTask extends BaseItemTask<Item> {
   get name(): string { return MoveItemTask.name; }
 
   constructor(member: Member, itemId: string,

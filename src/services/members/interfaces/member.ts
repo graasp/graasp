@@ -4,7 +4,7 @@ import { UnknownExtra } from '../../../interfaces/extra';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    member?: Member;
+    member: Member;
   }
 }
 
@@ -13,12 +13,11 @@ export enum MemberType {
   Group = 'group'
 }
 
-export interface Member<T = UnknownExtra> extends Actor {
-  id: string;
+export interface Member<E extends UnknownExtra = UnknownExtra> extends Actor {
   name: string;
   email: string;
   type: MemberType;
-  extra: T;
+  extra: E;
   createdAt: string;
   updatedAt: string;
 }

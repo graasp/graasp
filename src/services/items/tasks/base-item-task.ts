@@ -1,44 +1,24 @@
 // global
-import { FastifyLoggerInstance } from 'fastify';
+import { BaseTask } from '../../base-task';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { PostHookHandlerType, PreHookHandlerType, TaskStatus } from '../../../interfaces/task';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
 // local
-import { ItemTask } from '../interfaces/item-task';
-import { Item } from '../interfaces/item';
 import { ItemService } from '../db-service';
 
-export abstract class BaseItemTask implements ItemTask {
+export abstract class BaseItemTask<R> extends BaseTask<Member, R> {
   protected itemService: ItemService;
   protected itemMembershipService: ItemMembershipService
-  protected _result: Item | Item[];
-  protected _message: string;
 
-  readonly actor: Member;
-  readonly partialSubtasks: boolean;
-
-  status: TaskStatus;
-  targetId: string;
-  data: Partial<Item>;
-  preHookHandler: PreHookHandlerType<Item>;
-  postHookHandler: PostHookHandlerType<Item>;
-
+  /** id of the item to which some tasks will append the item being processed */
   parentItemId?: string;
 
   constructor(member: Member,
     itemService: ItemService, itemMembershipService: ItemMembershipService, partialSubtasks?: boolean) {
-    this.actor = member;
+    super(member);
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
-    this.partialSubtasks = partialSubtasks;
-    this.status = 'NEW';
+    this._partialSubtasks = partialSubtasks;
   }
-
-  abstract get name(): string;
-  get result(): Item | Item[] { return this._result; }
-  get message(): string { return this._message; }
-
-  abstract run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | BaseItemTask[]>;
 }

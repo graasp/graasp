@@ -4,7 +4,6 @@ import { FastifyPluginAsync } from 'fastify';
 export type DatabasePoolHandler = DatabasePoolType;
 export type DatabaseTransactionHandler = DatabaseTransactionConnectionType;
 
-
 declare module 'fastify' {
   interface FastifyInstance {
     db: Database;

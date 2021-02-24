@@ -19,7 +19,7 @@
     "test": "DISABLE_LOGS=true jest --forceExit --coverage --verbose",
     "watch-test": "npm run test -- --watchAll",
     "build-ts": "tsc",
-    "build-ts-declaration": "tsc --project tsconfig.declaration.json --declaration --declarationDir ./types",
+    "build-ts-declaration": "rm -rf ./types && tsc --project tsconfig.declaration.json --declaration --declarationDir ./types",
     "watch-ts": "tsc -w",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
     "copy-static-assets": "node copyStaticAssets.mjs",
@@ -39,6 +39,7 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "fastify": "^3.12.0",
+    "fastify-compress": "^3.4.0",
     "fastify-cors": "^4.1.0",
     "fastify-jwt": "^2.3.0",
     "fastify-plugin": "^3.0.0",

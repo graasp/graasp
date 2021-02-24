@@ -8,8 +8,9 @@ import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
+import { ItemMembership } from '../interfaces/item-membership';
 
-export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
+export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string { return DeleteItemMembershipSubTask.name; }
 
   constructor(member: Member, itemMembershipId: string,
@@ -28,7 +29,7 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask {
   }
 }
 
-export class DeleteItemMembershipTask extends BaseItemMembershipTask {
+export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string { return DeleteItemMembershipTask.name; }
 
   private purgeBelow: boolean;

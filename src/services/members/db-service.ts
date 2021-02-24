@@ -5,10 +5,14 @@ import {
 } from 'slonik';
 // local
 import { Member } from './interfaces/member';
+import { MemberTaskManager } from './interfaces/member-task-manager';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    memberService: MemberService;
+    members: {
+      taskManager: MemberTaskManager,
+      dbService: MemberService
+    };
   }
 }
 
@@ -30,6 +34,14 @@ export class MemberService {
     sql`, `
   );
 
+  // private static propertyToColumnMapping = (propertyName: string) => {
+  //   switch (propertyName) {
+  //     case 'createdAt': return 'created_at';
+  //     case 'updatedAt': return 'updated_at';
+  //     default: return propertyName;
+  //   }
+  // }
+
   /**
    * Get member(s) matching the properties of the given (partial) member.
    * Excludes `extra`, `created_at`, and `updated_at`.
@@ -37,7 +49,7 @@ export class MemberService {
    * @param dbHandler Database handler
    * @param properties List of Member properties to fetch - defaults to 'all'
    */
-  async getMatching(member: Partial<Member>, dbHandler: TrxHandler, properties?: (keyof Member)[]): Promise<Partial<Member>[]> {
+  async getMatching<T extends Partial<Member>>(member: Partial<Member>, dbHandler: TrxHandler, properties?: (keyof T & string)[]): Promise<T[]> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -58,7 +70,7 @@ export class MemberService {
     );
 
     return dbHandler
-      .query<Partial<Member>>(sql`
+      .query<T>(sql`
         SELECT ${selectColumns || MemberService.allColumns}
         FROM member
         WHERE ${whereConditions}
@@ -74,7 +86,7 @@ export class MemberService {
    * @param dbHandler Database handler
    * @param properties List of Member properties to fetch - defaults to 'all'
    */
-  async get(id: string, dbHandler: TrxHandler, properties?: (keyof Member)[]): Promise<Partial<Member>> {
+  async get<T extends Partial<Member>>(id: string, dbHandler: TrxHandler, properties?: (keyof T & string)[]): Promise<T> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -85,7 +97,7 @@ export class MemberService {
     }
 
     return dbHandler
-      .query<Partial<Member>>(sql`
+      .query<T>(sql`
         SELECT ${selectColumns || MemberService.allColumns}
         FROM member
         WHERE id = ${id}
@@ -98,13 +110,13 @@ export class MemberService {
    * @param member Member to create
    * @param transactionHandler Database transaction handler
    */
-  async create(member: Partial<Member>, transactionHandler: TrxHandler): Promise<Member> {
+  async create<T extends Member>(member: Partial<Member>, transactionHandler: TrxHandler): Promise<T> {
     // dynamically build a [{column1, value1}, {column2, value2}, ...] based on the
     // properties present in member
     const columnsAndValues = Object.keys(member)
       .map((key: keyof Member) => {
         const column = sql.identifier([key]);
-        const value = key !== 'extra' ? sql`${member[key]}` : sql.json(member[key]);
+        const value = (key !== 'extra') ? sql`${member[key]}` : sql.json(member[key]);
         return { column, value };
       });
 
@@ -112,7 +124,7 @@ export class MemberService {
     const values = columnsAndValues.map(({ value: v }) => v);
 
     return transactionHandler
-      .query<Member>(sql`
+      .query<T>(sql`
         INSERT INTO member (${sql.join(columns, sql`, `)})
         VALUES (${sql.join(values, sql`, `)})
         RETURNING ${MemberService.allColumns}

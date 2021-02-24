@@ -4,10 +4,14 @@ import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
 import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
 // local
 import { Item } from './interfaces/item';
+import { ItemTaskManager } from './interfaces/item-task-manager';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    itemService: ItemService;
+    items: {
+      taskManager: ItemTaskManager,
+      dbService: ItemService
+    };
   }
 }
 
@@ -49,9 +53,9 @@ export class ItemService {
    * @param id Item id
    * @param transactionHandler Database transaction handler
    */
-  async get(id: string, transactionHandler: TrxHandler): Promise<Item> {
+  async get<T extends Item>(id: string, transactionHandler: TrxHandler): Promise<T> {
     return transactionHandler
-      .query<Item>(sql`
+      .query<T>(sql`
         SELECT ${ItemService.allColumns}
         FROM item
         WHERE id = ${id}
@@ -94,11 +98,11 @@ export class ItemService {
    * @param item Item to create
    * @param transactionHandler Database transaction handler
    */
-  async create(item: Partial<Item>, transactionHandler: TrxHandler): Promise<Item> {
+  async create<T extends Item>(item: Partial<Item>, transactionHandler: TrxHandler): Promise<T> {
     const { id, name, description, type, path, extra, creator } = item;
 
     return transactionHandler
-      .query<Item>(sql`
+      .query<T>(sql`
         INSERT INTO item (id, name, description, type, path, extra, creator)
         VALUES (${id}, ${name}, ${description}, ${type}, ${path}, ${sql.json(extra)}, ${creator})
         RETURNING ${ItemService.allColumns}
@@ -112,7 +116,7 @@ export class ItemService {
    * @param data Item changes
    * @param transactionHandler Database transaction handler
    */
-  async update(id: string, data: Partial<Item>, transactionHandler: TrxHandler): Promise<Item> {
+  async update<T extends Item>(id: string, data: Partial<T>, transactionHandler: TrxHandler): Promise<T> {
     // dynamically build "column1 = value1, column2 = value2, ..." based on the
     // properties present in data
     const setValues = sql.join(
@@ -130,7 +134,7 @@ export class ItemService {
     );
 
     return transactionHandler
-      .query<Item>(sql`
+      .query<T>(sql`
         UPDATE item
         SET ${setValues}
         WHERE id = ${id}
@@ -213,11 +217,10 @@ export class ItemService {
    * * `1`: children
    * * `2`: children + grandchildren
    * * `3`: children + grandchildren + great-grandchildren
-   * @param properties List of Item properties to fetch - returns all if not defined. When defined,
-   * the function should be called with `R` as `<Partial<Item>>`: `getDescendants<Partial<Item>>()`
+   * @param properties List of Item properties to fetch - returns all if not defined.
    */
-  async getDescendants(item: Item, transactionHandler: TrxHandler,
-    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof Item)[]): Promise<Partial<Item>[]> {
+  async getDescendants<T extends Partial<Item>>(item: Item, transactionHandler: TrxHandler,
+    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof T & string)[]): Promise<T[]> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -231,7 +234,7 @@ export class ItemService {
       sql`AND nlevel(path) <= nlevel(${item.path}) + ${levels}` : sql``;
 
     return transactionHandler
-      .query<Partial<Item>>(sql`
+      .query<T>(sql`
         SELECT ${selectColumns || ItemService.allColumns} FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}

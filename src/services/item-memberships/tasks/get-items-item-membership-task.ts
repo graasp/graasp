@@ -7,9 +7,10 @@ import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
+import { ItemMembership } from '../interfaces/item-membership';
 
 // TODO: does this make sense here? Should this be part of different (micro)service??
-export class GetItemsItemMembershipsTask extends BaseItemMembershipTask {
+export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMembership[]> {
   get name(): string { return GetItemsItemMembershipsTask.name; }
 
   constructor(member: Member, itemId: string,
