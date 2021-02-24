@@ -1,6 +1,6 @@
 // global
 import { Actor } from '../../interfaces/actor';
-// other services
+import { UnknownExtra } from '../../interfaces/extra';
 // local
 import { Member } from './interfaces/member';
 import { MemberService } from './db-service';
@@ -8,9 +8,9 @@ import { GetMemberTask } from './tasks/get-member-task';
 import { BaseMemberTask } from './tasks/base-member-task';
 import { CreateMemberTask } from './tasks/create-member-task';
 import { GetMembersByTask } from './tasks/get-members-by-task';
-import { MemberCustomTaskManager } from './interfaces/member-custom-task-manager';
+import { MemberTaskManager } from './interfaces/member-task-manager';
 
-export class MemberTaskManager implements MemberCustomTaskManager {
+export class TaskManager implements MemberTaskManager {
   private memberService: MemberService;
 
   constructor(memberService: MemberService) {
@@ -22,29 +22,29 @@ export class MemberTaskManager implements MemberCustomTaskManager {
   getUpdateTaskName(): string { throw new Error('Method not implemented.'); }
   getDeleteTaskName(): string { throw new Error('Method not implemented.'); }
 
-  getGetMembersByTaskName(): string { return GetMembersByTask.name; }
+  getGetByTaskName(): string { return GetMembersByTask.name; }
 
   // CRUD
-  createCreateTask(actor: Actor, data: Partial<Member>): CreateMemberTask {
-    return new CreateMemberTask(actor, data, this.memberService);
+  createCreateTask<E extends UnknownExtra>(actor: Actor, data: Partial<Member<E>>): CreateMemberTask<E> {
+    return new CreateMemberTask<E>(actor, data, this.memberService);
   }
 
-  createGetTask(actor: Actor, memberId: string): GetMemberTask {
-    return new GetMemberTask(actor, memberId, this.memberService);
+  createGetTask<E extends UnknownExtra>(actor: Actor, memberId: string): GetMemberTask<E> {
+    return new GetMemberTask<E>(actor, memberId, this.memberService);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createUpdateTask(actor: Actor, objectId: string, object: Partial<Member>): BaseMemberTask<Actor> {
+  createUpdateTask<E extends UnknownExtra>(actor: Actor, objectId: string, object: Partial<Member<E>>): BaseMemberTask<Member<E>> {
     throw new Error('Method not implemented.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createDeleteTask(actor: Actor, objectId: string): BaseMemberTask<Actor> {
+  createDeleteTask<E extends UnknownExtra>(actor: Actor, objectId: string): BaseMemberTask<Member<E>> {
     throw new Error('Method not implemented.');
   }
 
   // Other
-  createGetMembersByTask(actor: Actor, data: Partial<Member>): GetMembersByTask {
-    return new GetMembersByTask(actor, data, this.memberService);
+  createGetByTask<E extends UnknownExtra>(actor: Actor, data: Partial<Member<E>>): GetMembersByTask<E> {
+    return new GetMembersByTask<E>(actor, data, this.memberService);
   }
 }

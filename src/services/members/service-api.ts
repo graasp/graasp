@@ -2,16 +2,17 @@
 import { FastifyPluginAsync } from 'fastify';
 import { IdParam } from '../../interfaces/requests';
 // local
+import { MemberTaskManager } from './interfaces/member-task-manager';
 import { EmailParam } from './interfaces/requests';
 import common, { getOne, getBy } from './schemas';
-import { MemberTaskManager } from './task-manager';
+import { TaskManager } from './task-manager';
 
 const ROUTES_PREFIX = '/members';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { members, taskRunner: runner } = fastify;
   const { dbService } = members;
-  const taskManager = new MemberTaskManager(dbService);
+  const taskManager: MemberTaskManager = new TaskManager(dbService);
   members.taskManager = taskManager;
 
   // schemas
@@ -27,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id', { schema: getOne },
       async ({ member, params: { id }, log }) => {
         const task = taskManager.createGetTask(member, id);
-        return runner.run([task], log);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -35,8 +36,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Querystring: EmailParam }>(
       '/', { schema: getBy },
       async ({ member, query: { email }, log }) => {
-        const task = taskManager.createGetMembersByTask(member, { email });
-        return runner.run([task], log);
+        const task = taskManager.createGetByTask(member, { email });
+        return runner.runSingle(task, log);
       }
     );
 
