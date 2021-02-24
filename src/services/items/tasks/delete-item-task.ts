@@ -20,7 +20,7 @@ class DeleteItemSubTask extends BaseItemTask<Item> {
     this.targetId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
     const item = await this.itemService.delete(this.targetId, handler);

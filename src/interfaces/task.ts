@@ -15,7 +15,7 @@ export interface Task<A extends Actor, T> {
   readonly result: T;
   readonly message?: string;
   readonly partialSubtasks?: boolean;
-  run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance): Promise<void | Task<A, T>[]>;
+  run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void | Task<A, T>[]>;
 
   preHookHandler?: PreHookHandlerType<T>;
   postHookHandler?: PostHookHandlerType<T>;

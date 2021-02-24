@@ -1,38 +1,22 @@
 // global
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { IndividualResultType, Task, TaskStatus } from '../../../interfaces/task';
+import { BaseTask } from '../../base-task';
 // other services
-import { ItemService } from '../../../services/items/db-service';
 import { Member } from '../../../services/members/interfaces/member';
+import { ItemService } from '../../items/db-service';
 // local
 import { ItemMembershipService } from '../db-service';
 
-export abstract class BaseItemMembershipTask<T> implements Task<Member, T> {
+export abstract class BaseItemMembershipTask<R> extends BaseTask<Member, R> {
   protected itemService: ItemService;
   protected itemMembershipService: ItemMembershipService
-  protected _result: T;
-  protected _message: string;
 
-  readonly actor: Member;
-
-  status: TaskStatus;
-  targetId: string;
-  data: Partial<IndividualResultType<T>>;
-
-  /** Id of the item to which the ItemMembership is linked to */
+  /** id of the item to which the ItemMembership is linked to */
   itemId?: string;
 
-  constructor(actor: Member,
+  constructor(member: Member,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
-    this.actor = actor;
+    super(member);
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
-    this.status = 'NEW';
   }
-
-  abstract get name(): string;
-  get result(): T { return this._result; }
-  get message(): string { return this._message; }
-
-  abstract run(handler: DatabaseTransactionHandler): Promise<void | BaseItemMembershipTask<T>[]>;
 }

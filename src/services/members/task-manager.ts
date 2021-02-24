@@ -39,12 +39,12 @@ export class TaskManager implements MemberTaskManager {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createDeleteTask<E extends UnknownExtra>(actor: Actor, objectId: string): BaseMemberTask<Member<E>> {
+  createDeleteTask(actor: Actor, objectId: string): BaseMemberTask<Member> {
     throw new Error('Method not implemented.');
   }
 
   // Other
-  createGetByTask<E extends UnknownExtra>(actor: Actor, data: Partial<Member<E>>): GetMembersByTask<E> {
-    return new GetMembersByTask<E>(actor, data, this.memberService);
+  createGetByTask(actor: Actor, data: Partial<Member>): GetMembersByTask {
+    return new GetMembersByTask(actor, data, this.memberService);
   }
 }

@@ -4,7 +4,7 @@ import { UnknownExtra } from '../../../interfaces/extra';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    member?: Member;
+    member: Member;
   }
 }
 

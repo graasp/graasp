@@ -146,7 +146,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
    * @param tasks List of tasks to run.
    * @param log Logger instance to use. Defaults to `this.logger`.
    */
-  async runMultiple(tasks: Task<Actor, unknown>[], log: FastifyLoggerInstance): Promise<unknown[]> {
+  async runMultiple(tasks: Task<Actor, unknown>[], log = this.logger): Promise<unknown[]> {
     const result = [];
 
     for (let i = 0; i < tasks.length; i++) {

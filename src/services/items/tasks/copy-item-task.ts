@@ -32,7 +32,7 @@ class CopyItemSubTask extends BaseItemTask<Item> {
     this.original = original;
   }
 
-  async run(handler: DatabaseTransactionHandler, log?: FastifyLoggerInstance) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
     await this.preHookHandler?.(this.data, this.actor, { log, handler }, { original: this.original });
