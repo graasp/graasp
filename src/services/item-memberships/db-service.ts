@@ -5,12 +5,12 @@ import { Item } from '../../services/items/interfaces/item';
 import { Member } from '../../services/members/interfaces/member';
 // local
 import { ItemMembership, PermissionLevel, PermissionLevelCompare } from './interfaces/item-membership';
-import { ItemMembershipCustomTaskManager } from './interfaces/item-membership-custom-task-manager';
+import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 
 declare module 'fastify' {
   interface FastifyInstance {
     itemMemberships: {
-      taskManager: ItemMembershipCustomTaskManager,
+      taskManager: ItemMembershipTaskManager,
       dbService: ItemMembershipService
     };
   }

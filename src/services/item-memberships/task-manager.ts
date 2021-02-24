@@ -10,9 +10,9 @@ import { CreateItemMembershipTask } from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
 import { GetItemsItemMembershipsTask } from './tasks/get-items-item-membership-task';
-import { ItemMembershipCustomTaskManager } from './interfaces/item-membership-custom-task-manager';
+import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 
-export class ItemMembershipTaskManager implements ItemMembershipCustomTaskManager {
+export class TaskManager implements ItemMembershipTaskManager<Member> {
   private itemService: ItemService;
   private itemMembershipService: ItemMembershipService;
 
@@ -26,14 +26,14 @@ export class ItemMembershipTaskManager implements ItemMembershipCustomTaskManage
   getUpdateTaskName(): string { return UpdateItemMembershipTask.name; }
   getDeleteTaskName(): string { return DeleteItemMembershipTask.name; }
 
-  getGetItemsItemMembershipsTaskName(): string { return GetItemsItemMembershipsTask.name; }
+  getGetOfItemTaskName(): string { return GetItemsItemMembershipsTask.name; }
 
   // CRUD
   createCreateTask(member: Member, data: Partial<ItemMembership>, itemId: string): CreateItemMembershipTask {
     return new CreateItemMembershipTask(member, data, itemId, this.itemService, this.itemMembershipService);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createGetTask(actor: Member, objectId: string): BaseItemMembershipTask {
+  createGetTask(actor: Member, objectId: string): BaseItemMembershipTask<ItemMembership> {
     throw new Error('Method not implemented.');
   }
 
@@ -46,7 +46,7 @@ export class ItemMembershipTaskManager implements ItemMembershipCustomTaskManage
   }
 
   // Other
-  createGetItemsItemMembershipsTask(actor: Member, itemId: string): GetItemsItemMembershipsTask {
-    return new GetItemsItemMembershipsTask(actor, itemId, this.itemService, this.itemMembershipService);
+  createGetOfItemTask(member: Member, itemId: string): GetItemsItemMembershipsTask {
+    return new GetItemsItemMembershipsTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 }

@@ -3,6 +3,7 @@ import {
   InvalidMembership, ItemNotFound,
   ModifyExisting, UserCannotAdminItem
 } from '../../../util/graasp-error';
+import { GRAASP_ACTOR } from '../../../util/config';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
@@ -14,7 +15,7 @@ import { BaseItemMembership } from '../base-item-membership';
 import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
-class CreateItemMembershipSubTask extends BaseItemMembershipTask {
+class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name() { return CreateItemMembershipSubTask.name; }
   private membership: ItemMembership;
 
@@ -34,7 +35,7 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask {
   }
 }
 
-export class CreateItemMembershipTask extends BaseItemMembershipTask {
+export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string { return CreateItemMembershipTask.name; }
 
   constructor(member: Member, data: Partial<ItemMembership>, itemId: string,
@@ -44,7 +45,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
     this.itemId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<BaseItemMembershipTask[]> {
+  async run(handler: DatabaseTransactionHandler): Promise<BaseItemMembershipTask<ItemMembership>[]> {
     this.status = 'RUNNING';
 
     // get item that the new membership will target
@@ -52,8 +53,11 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask {
     if (!item) throw new ItemNotFound(this.itemId);
 
     // verify if member adding the new membership has rights for that
-    const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
-    if (!hasRights) throw new UserCannotAdminItem(this.itemId);
+    // TODO: how about a parameter in run() or on task creation to skip these verification (it could be helpful for 'public')
+    if (this.actor.id !== GRAASP_ACTOR.id) {
+      const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
+      if (!hasRights) throw new UserCannotAdminItem(this.itemId);
+    }
 
     const itemMembership =
       new BaseItemMembership(this.data.memberId, item.path, this.data.permission, this.actor.id);
