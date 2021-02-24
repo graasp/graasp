@@ -16,7 +16,7 @@ import {
 } from '../../util/config';
 
 // other services
-import { MemberTaskManager } from '../../services/members/task-manager';
+import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
 import { Member } from '../../services/members/interfaces/member';
 
 // local
@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // TODO: do we really need to get the user from the DB? (or actor: { id } is enough?)
     // maybe when the groups are implemented it will be necessary.
-    const member = await mS.get(memberId, db.pool) as Member;
+    const member = await mS.get<Member>(memberId, db.pool);
 
     if (!member) {
       reply.status(401);
@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // TODO: do we really need to get the user from the DB? (or actor: { id } is enough?)
     // maybe when the groups are implemented it will be necessary.
-    request.member = await mS.get(memberId, db.pool) as Member;
+    request.member = await mS.get<Member>(memberId, db.pool);
   }
   fastify.decorate('fetchSession', fetchSession);
 
@@ -102,12 +102,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     '/register',
     { schema: register },
     async ({ body, log }, reply) => {
-      let member, task;
+      let member: Member;
 
       try {
         // create member
-        task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
-        member = await runner.run([task], log) as Member;
+        const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
+        member = await runner.runSingle(task, log);
 
         // generate token with member info and expiration
         const token = await promisifiedJwtSign({ sub: member.id },
@@ -126,8 +126,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         log.warn(`Member re-registration attempt for email '${email}'`);
 
         // member already exists - get member and send a login email
-        task = memberTaskManager.createGetMembersByTask(GRAASP_ACTOR, { email });
-        const members = await runner.run([task], log) as Member[];
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const members = await runner.runSingle(task, log);
         member = members[0];
 
         await generateLoginLinkAndEmailIt(member, true);
@@ -153,8 +153,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     '/login',
     { schema: login },
     async ({ body, log }, reply) => {
-      const task = memberTaskManager.createGetMembersByTask(GRAASP_ACTOR, body);
-      const members = await runner.run([task], log) as Member[];
+      const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
+      const members = await runner.runSingle(task, log);
 
       if (members.length) {
         const member = members[0];
