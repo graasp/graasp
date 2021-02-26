@@ -39,7 +39,7 @@ export class TaskManager implements MemberTaskManager {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createDeleteTask(actor: Actor, objectId: string): BaseMemberTask<Member> {
+  createDeleteTask<E extends UnknownExtra>(actor: Actor, objectId: string): BaseMemberTask<Member<E>> {
     throw new Error('Method not implemented.');
   }
 

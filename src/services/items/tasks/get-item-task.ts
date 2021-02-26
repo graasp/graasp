@@ -23,7 +23,7 @@ export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
     this.status = 'RUNNING';
 
     // get item
-    const item = await this.itemService.get<Item<E>>(this.targetId, handler);
+    const item = await this.itemService.get<E>(this.targetId, handler);
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item

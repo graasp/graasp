@@ -18,7 +18,7 @@ export class GetMembersByTask extends BaseMemberTask<Member[]> {
     this.status = 'RUNNING';
 
     // get member(s) matching a set of properties
-    const members = await this.memberService.getMatching<Member>(this.data, handler);
+    const members = await this.memberService.getMatching(this.data, handler);
 
     this.status = 'OK';
     this._result = members;

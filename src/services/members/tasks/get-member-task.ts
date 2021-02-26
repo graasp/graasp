@@ -20,7 +20,7 @@ export class GetMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member
     this.status = 'RUNNING';
 
     // get member
-    const member = await this.memberService.get<Member<E>>(this.targetId, handler);
+    const member = await this.memberService.get<E>(this.targetId, handler);
     if (!member) throw new MemberNotFound(this.targetId);
 
     this.status = 'OK';

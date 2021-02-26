@@ -1,6 +1,6 @@
 import { FastifyError } from 'fastify';
 
-type ErrorOrigin = 'core' | 'plugin';
+type ErrorOrigin = 'core' | 'plugin' | string;
 
 export interface GraaspError extends FastifyError {
   data?: unknown;

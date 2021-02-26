@@ -1,5 +1,6 @@
 // global
 import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
+import { UnknownExtra } from '../../interfaces/extra';
 // other services
 import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
 // local
@@ -53,9 +54,9 @@ export class ItemService {
    * @param id Item id
    * @param transactionHandler Database transaction handler
    */
-  async get<T extends Item>(id: string, transactionHandler: TrxHandler): Promise<T> {
+  async get<E extends UnknownExtra>(id: string, transactionHandler: TrxHandler): Promise<Item<E>> {
     return transactionHandler
-      .query<T>(sql`
+      .query<Item<E>>(sql`
         SELECT ${ItemService.allColumns}
         FROM item
         WHERE id = ${id}
@@ -68,9 +69,9 @@ export class ItemService {
    * @param path Item path
    * @param transactionHandler Database transaction handler
    */
-  async getMatchingPath(path: string, transactionHandler: TrxHandler): Promise<Item> {
+  async getMatchingPath<E extends UnknownExtra>(path: string, transactionHandler: TrxHandler): Promise<Item<E>> {
     return transactionHandler
-      .query<Item>(sql`
+      .query<Item<E>>(sql`
         SELECT ${ItemService.allColumns}
         FROM item
         WHERE path = ${path}
@@ -98,11 +99,11 @@ export class ItemService {
    * @param item Item to create
    * @param transactionHandler Database transaction handler
    */
-  async create<T extends Item>(item: Partial<Item>, transactionHandler: TrxHandler): Promise<T> {
+  async create<E extends UnknownExtra>(item: Partial<Item<E>>, transactionHandler: TrxHandler): Promise<Item<E>> {
     const { id, name, description, type, path, extra, creator } = item;
 
     return transactionHandler
-      .query<T>(sql`
+      .query<Item<E>>(sql`
         INSERT INTO item (id, name, description, type, path, extra, creator)
         VALUES (${id}, ${name}, ${description}, ${type}, ${path}, ${sql.json(extra)}, ${creator})
         RETURNING ${ItemService.allColumns}
@@ -116,7 +117,7 @@ export class ItemService {
    * @param data Item changes
    * @param transactionHandler Database transaction handler
    */
-  async update<T extends Item>(id: string, data: Partial<T>, transactionHandler: TrxHandler): Promise<T> {
+  async update<E extends UnknownExtra>(id: string, data: Partial<Item<E>>, transactionHandler: TrxHandler): Promise<Item<E>> {
     // dynamically build "column1 = value1, column2 = value2, ..." based on the
     // properties present in data
     const setValues = sql.join(
@@ -134,7 +135,7 @@ export class ItemService {
     );
 
     return transactionHandler
-      .query<T>(sql`
+      .query<Item<E>>(sql`
         UPDATE item
         SET ${setValues}
         WHERE id = ${id}
@@ -151,9 +152,9 @@ export class ItemService {
    * @param id Item id
    * @param transactionHandler Database transaction handler
    */
-  async delete(id: string, transactionHandler: TrxHandler): Promise<Item> {
+  async delete<E extends UnknownExtra>(id: string, transactionHandler: TrxHandler): Promise<Item<E>> {
     return transactionHandler
-      .query<Item>(sql`
+      .query<Item<E>>(sql`
         DELETE FROM item
         WHERE id = ${id}
         RETURNING ${ItemService.allColumns}
@@ -219,8 +220,8 @@ export class ItemService {
    * * `3`: children + grandchildren + great-grandchildren
    * @param properties List of Item properties to fetch - returns all if not defined.
    */
-  async getDescendants<T extends Partial<Item>>(item: Item, transactionHandler: TrxHandler,
-    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof T & string)[]): Promise<T[]> {
+  async getDescendants(item: Item, transactionHandler: TrxHandler,
+    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof Item)[]): Promise<Item[]> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -234,7 +235,7 @@ export class ItemService {
       sql`AND nlevel(path) <= nlevel(${item.path}) + ${levels}` : sql``;
 
     return transactionHandler
-      .query<T>(sql`
+      .query<Item>(sql`
         SELECT ${selectColumns || ItemService.allColumns} FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}

@@ -3,6 +3,7 @@ import {
   sql,
   DatabaseTransactionConnectionType as TrxHandler
 } from 'slonik';
+import { UnknownExtra } from '../../interfaces/extra';
 // local
 import { Member } from './interfaces/member';
 import { MemberTaskManager } from './interfaces/member-task-manager';
@@ -44,17 +45,17 @@ export class MemberService {
 
   /**
    * Get member(s) matching the properties of the given (partial) member.
-   * Excludes `extra`, `created_at`, and `updated_at`.
+   * Ignores `extra`, `created_at`, and `updated_at`.
    * @param member Partial member
    * @param dbHandler Database handler
    * @param properties List of Member properties to fetch - defaults to 'all'
    */
-  async getMatching<T extends Partial<Member>>(member: Partial<Member>, dbHandler: TrxHandler, properties?: (keyof T & string)[]): Promise<T[]> {
+  async getMatching(member: Partial<Member>, dbHandler: TrxHandler, properties?: (keyof Member)[]): Promise<Member[]> {
     let selectColumns;
 
     if (properties && properties.length) {
       selectColumns = sql.join(
-        properties.map(p => sql.identifier([p])),
+        properties.map(p => sql.identifier([p])), // TODO: does not work for createdAt and updatedAt
         sql`, `
       );
     }
@@ -70,7 +71,7 @@ export class MemberService {
     );
 
     return dbHandler
-      .query<T>(sql`
+      .query<Member>(sql`
         SELECT ${selectColumns || MemberService.allColumns}
         FROM member
         WHERE ${whereConditions}
@@ -86,7 +87,7 @@ export class MemberService {
    * @param dbHandler Database handler
    * @param properties List of Member properties to fetch - defaults to 'all'
    */
-  async get<T extends Partial<Member>>(id: string, dbHandler: TrxHandler, properties?: (keyof T & string)[]): Promise<T> {
+  async get<E extends UnknownExtra>(id: string, dbHandler: TrxHandler, properties?: (keyof Member)[]): Promise<Member<E>> {
     let selectColumns;
 
     if (properties && properties.length) {
@@ -97,7 +98,7 @@ export class MemberService {
     }
 
     return dbHandler
-      .query<T>(sql`
+      .query<Member<E>>(sql`
         SELECT ${selectColumns || MemberService.allColumns}
         FROM member
         WHERE id = ${id}
@@ -110,7 +111,7 @@ export class MemberService {
    * @param member Member to create
    * @param transactionHandler Database transaction handler
    */
-  async create<T extends Member>(member: Partial<Member>, transactionHandler: TrxHandler): Promise<T> {
+  async create<E extends UnknownExtra>(member: Partial<Member<E>>, transactionHandler: TrxHandler): Promise<Member<E>> {
     // dynamically build a [{column1, value1}, {column2, value2}, ...] based on the
     // properties present in member
     const columnsAndValues = Object.keys(member)
@@ -124,7 +125,7 @@ export class MemberService {
     const values = columnsAndValues.map(({ value: v }) => v);
 
     return transactionHandler
-      .query<T>(sql`
+      .query<Member<E>>(sql`
         INSERT INTO member (${sql.join(columns, sql`, `)})
         VALUES (${sql.join(values, sql`, `)})
         RETURNING ${MemberService.allColumns}

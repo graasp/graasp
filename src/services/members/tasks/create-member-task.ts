@@ -19,7 +19,7 @@ export class CreateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
     this.status = 'RUNNING';
 
     // create member
-    const member = await this.memberService.create<Member<E>>(this.data, handler);
+    const member = await this.memberService.create<E>(this.data, handler);
 
     this.status = 'OK';
     this._result = member;

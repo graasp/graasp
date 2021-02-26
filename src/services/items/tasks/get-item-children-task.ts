@@ -30,7 +30,7 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
     if (!hasRights) throw new UserCannotReadItem(this.targetId);
 
     // get item's children
-    const children = await this.itemService.getDescendants<Item>(item, handler, 'ASC', 1);
+    const children = await this.itemService.getDescendants(item, handler, 'ASC', 1);
 
     this.status = 'OK';
     this._result = children;

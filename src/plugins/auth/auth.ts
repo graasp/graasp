@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // TODO: do we really need to get the user from the DB? (or actor: { id } is enough?)
     // maybe when the groups are implemented it will be necessary.
-    const member = await mS.get<Member>(memberId, db.pool);
+    const member = await mS.get(memberId, db.pool);
 
     if (!member) {
       reply.status(401);
@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // TODO: do we really need to get the user from the DB? (or actor: { id } is enough?)
     // maybe when the groups are implemented it will be necessary.
-    request.member = await mS.get<Member>(memberId, db.pool);
+    request.member = await mS.get(memberId, db.pool);
   }
   fastify.decorate('fetchSession', fetchSession);
 
