@@ -51,18 +51,16 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     const item = await this.itemService.get(this.itemId, handler);
     if (!item) throw new ItemNotFound(this.itemId);
 
-    const { id: memberId } = this.actor;
-
     // verify if member adding the new membership has rights for that
     // TODO: how about a parameter in run() or on task creation to skip these verification (it could be helpful for 'public')
     if (!this.skipActorChecks) {
-      const hasRights = await this.itemMembershipService.canAdmin(memberId, item, handler);
+      const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
       if (!hasRights) throw new UserCannotAdminItem(this.itemId);
     }
 
     const itemMembership =
       new BaseItemMembership(this.data.memberId, item.path, this.data.permission, this.actor.id);
-    const newMember = { id: itemMembership.memberId } as Member;
+    const { memberId } = itemMembership;
 
     // check member's membership "at" item
     const inheritedMembership =

@@ -58,7 +58,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     // check member's inherited membership
     const { memberId } = itemMembership;
     const inheritedMembership =
-      await this.itemMembershipService.getInherited(itemMembership.memberId, item, handler);
+      await this.itemMembershipService.getInherited(memberId, item, handler);
 
     const { permission } = this.data;
 

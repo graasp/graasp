@@ -49,8 +49,8 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
     if (!itemMembership) throw new ItemMembershipNotFound(this.targetId);
 
-    // skip if trying to remove member's own membership
-    if (!this.skipActorChecks && itemMembership.memberId !== this.actor.id) {
+    // if trying to remove someone else's membership
+    if (itemMembership.memberId !== this.actor.id && !this.skipActorChecks) {
       // get item to which the membership is bound to
       const item = await this.itemService.getMatchingPath(itemMembership.itemPath, handler);
 
