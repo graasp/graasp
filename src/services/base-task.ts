@@ -18,6 +18,9 @@ export abstract class BaseTask<A extends Actor, R> implements Task<A, R> {
   preHookHandler?: PreHookHandlerType<R>;
   postHookHandler?: PostHookHandlerType<R>;
 
+  skipActorChecks?: boolean;
+  skipTargetChecks?: boolean;
+
   constructor(actor: A) {
     this.actor = actor;
     this.status = 'NEW';

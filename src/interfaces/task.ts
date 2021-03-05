@@ -19,6 +19,18 @@ export interface Task<A extends Actor, T> {
 
   preHookHandler?: PreHookHandlerType<T>;
   postHookHandler?: PostHookHandlerType<T>;
+
+  /**
+   * Skip `actor` checks (ex.: if it has permissions to execute the task).
+   * Sometimes not applicable. Vary from task to task.
+   */
+  skipActorChecks?: boolean;
+
+  /**
+   * Skip target checks (ex.: if the target w/ `targetId` exists)
+   * Sometimes not applicable. Vary from task to task.
+   * */
+  skipTargetChecks?: boolean;
 }
 
 export interface TaskHookHandlerHelpers {
