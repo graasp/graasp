@@ -39,7 +39,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
       if (!parentItem) throw new ItemNotFound(this.parentItemId);
 
       // verify membership rights over parent item
-      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, parentItem, handler);
+      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor.id, parentItem, handler);
       if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
         throw new UserCannotWriteItem(this.parentItemId);
       }

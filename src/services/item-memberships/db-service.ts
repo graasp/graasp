@@ -36,15 +36,15 @@ export class ItemMembershipService {
   );
 
   /**
-   * Get the permission level of a membership given the `member` and `item`.
-   * @param member Member in membership
+   * Get the permission level of a membership given the `memberId` and `item`.
+   * @param memberId Id of member in membership
    * @param item Item whose path is referenced in membership
    * @param transactionHandler Database transaction handler
    */
-  async getPermissionLevel(member: Member, item: Item, transactionHandler: TrxHandler): Promise<PermissionLevel> {
+  async getPermissionLevel(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<PermissionLevel> {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT permission FROM item_membership
-        WHERE member_id = ${member.id}
+        WHERE member_id = ${memberId}
           AND item_path @> ${item.path}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
@@ -53,18 +53,18 @@ export class ItemMembershipService {
   }
 
   /**
-   * Get the 'best/nearest' membership to the given `item` for `member`.
+   * Get the 'best/nearest' membership to the given `item` for `memberId`.
    * If `includeOwn`, also include membership targeting this `member`+`item`.
-   * @param member Member in membership
+   * @param memberId Id of member in membership
    * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler
    * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getInherited(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership> {
+  async getInherited(memberId: string, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership> {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
-        WHERE member_id = ${member.id}
+        WHERE member_id = ${memberId}
           AND item_path @> ${item.path}
           ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
@@ -74,18 +74,18 @@ export class ItemMembershipService {
   }
 
   /**
-   * Get all memberships "below" the given `item`'s path, for the given `member`, ordered by
+   * Get all memberships "below" the given `item`'s path, for the member with the given `memberId`, ordered by
    * longest to shortest path - lowest in the (sub)tree to highest in the (sub)tree.
-   * @param member Member in membership
+   * @param memberId Id of member in membership
    * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler
    * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getAllBelow(member: Member, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership[]> {
+  async getAllBelow(memberId: string, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership[]> {
     return transactionHandler.query<ItemMembership>(sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
-        WHERE member_id = ${member.id}
+        WHERE member_id = ${memberId}
           AND ${item.path} @> item_path
           ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
@@ -116,35 +116,35 @@ export class ItemMembershipService {
   }
 
   /**
-   * Check if given `member` can `read` given `item`.
-   * @param member Member
+   * Check if member w/ given `memberId` can `read` given `item`.
+   * @param memberId Id of member in membership
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async canRead(member: Member, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
-    return this.getPermissionLevel(member, item, transactionHandler)
+  async canRead(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
+    return this.getPermissionLevel(memberId, item, transactionHandler)
       .then(Boolean);  // if any permission exists it means the member can read the item
   }
 
   /**
-   * Check if given `member` can `write` given `item`.
-   * @param member Member
+   * Check if member w/ given `memberId` can `write` given `item`.
+   * @param memberId Id of member in membership
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async canWrite(member: Member, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
-    return this.getPermissionLevel(member, item, transactionHandler)
+  async canWrite(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
+    return this.getPermissionLevel(memberId, item, transactionHandler)
       .then(p => p === PermissionLevel.Write || p === PermissionLevel.Admin);
   }
 
   /**
-   * Check if given `member` can `admin` given `item`.
-   * @param member Member
+   * Check if member w/ given `memberId` can `admin` given `item`.
+   * @param memberId Id of member in membership
    * @param item Item
    * @param transactionHandler Database transaction handler
    */
-  async canAdmin(member: Member, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
-    return this.getPermissionLevel(member, item, transactionHandler)
+  async canAdmin(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
+    return this.getPermissionLevel(memberId, item, transactionHandler)
       .then(p => p === PermissionLevel.Admin);
   }
 

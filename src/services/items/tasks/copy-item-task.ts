@@ -73,7 +73,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
-    const itemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, item, handler);
+    const itemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor.id, item, handler);
     if (!itemPermissionLevel) throw new UserCannotReadItem(this.targetId);
 
     // check how "big the tree is" below the item
@@ -91,7 +91,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
       if (!parentItem) throw new ItemNotFound(this.parentItemId);
 
       // verify membership rights over parent item
-      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor, parentItem, handler);
+      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor.id, parentItem, handler);
       if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
         throw new UserCannotWriteItem(this.parentItemId);
       }

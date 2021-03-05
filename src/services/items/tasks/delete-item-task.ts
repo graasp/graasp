@@ -59,7 +59,7 @@ export class DeleteItemTask extends BaseItemTask<Item> {
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
-    const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
+    const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
     if (!hasRights) throw new UserCannotAdminItem(this.targetId);
 
     // get descendants

@@ -34,7 +34,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
-    const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
+    const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
     if (!hasRights) throw new UserCannotAdminItem(this.targetId);
 
     // check how "big the tree is" below the item
@@ -61,7 +61,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
       }
 
       // verify membership rights over new parent item
-      const hasRightsOverParentItem = await this.itemMembershipService.canWrite(this.actor, parentItem, handler);
+      const hasRightsOverParentItem = await this.itemMembershipService.canWrite(this.actor.id, parentItem, handler);
       if (!hasRightsOverParentItem) throw new UserCannotWriteItem(this.parentItemId);
 
       // check how deep (number of levels) the resulting tree will be

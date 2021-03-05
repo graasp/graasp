@@ -3,7 +3,6 @@ import {
   InvalidMembership, ItemNotFound,
   ModifyExisting, UserCannotAdminItem
 } from '../../../util/graasp-error';
-import { GRAASP_ACTOR } from '../../../util/config';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
@@ -52,10 +51,12 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     const item = await this.itemService.get(this.itemId, handler);
     if (!item) throw new ItemNotFound(this.itemId);
 
+    const { id: memberId } = this.actor;
+
     // verify if member adding the new membership has rights for that
     // TODO: how about a parameter in run() or on task creation to skip these verification (it could be helpful for 'public')
-    if (this.actor.id !== GRAASP_ACTOR.id) {
-      const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
+    if (!this.skipActorChecks) {
+      const hasRights = await this.itemMembershipService.canAdmin(memberId, item, handler);
       if (!hasRights) throw new UserCannotAdminItem(this.itemId);
     }
 
@@ -65,7 +66,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // check member's membership "at" item
     const inheritedMembership =
-      await this.itemMembershipService.getInherited(newMember, item, handler, true);
+      await this.itemMembershipService.getInherited(memberId, item, handler, true);
 
     if (inheritedMembership) {
       const { itemPath, permission: inheritedPermission } = inheritedMembership;
@@ -86,7 +87,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // check existing memberships lower in the tree
     const membershipsBelow =
-      await this.itemMembershipService.getAllBelow(newMember, item, handler);
+      await this.itemMembershipService.getAllBelow(memberId, item, handler);
 
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level

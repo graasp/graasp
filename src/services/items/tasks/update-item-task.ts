@@ -63,7 +63,7 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item - write
-    const hasRights = await this.itemMembershipService.canWrite(this.actor, item, handler);
+    const hasRights = await this.itemMembershipService.canWrite(this.actor.id, item, handler);
     if (!hasRights) throw new UserCannotWriteItem(this.targetId);
 
     // prepare changes

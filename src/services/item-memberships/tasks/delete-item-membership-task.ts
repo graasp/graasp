@@ -50,21 +50,20 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     if (!itemMembership) throw new ItemMembershipNotFound(this.targetId);
 
     // skip if trying to remove member's own membership
-    if (itemMembership.memberId !== this.actor.id) {
+    if (!this.skipActorChecks && itemMembership.memberId !== this.actor.id) {
       // get item to which the membership is bound to
       const item = await this.itemService.getMatchingPath(itemMembership.itemPath, handler);
 
       // verify if member deleting the membership has rights for that
-      const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
+      const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
       if (!hasRights) throw new UserCannotAdminItem(item.id);
     }
 
     if (this.purgeBelow) {
-      const member = { id: itemMembership.memberId } as Member;
       const item = { path: itemMembership.itemPath } as Item;
 
       const itemMembershipsBelow =
-        await this.itemMembershipService.getAllBelow(member, item, handler);
+        await this.itemMembershipService.getAllBelow(itemMembership.memberId, item, handler);
 
       if (itemMembershipsBelow.length > 0) {
         this.status = 'DELEGATED';

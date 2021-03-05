@@ -52,13 +52,13 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     const item = await this.itemService.getMatchingPath(itemMembership.itemPath, handler);
 
     // verify if member updating the membership has rights for that
-    const hasRights = await this.itemMembershipService.canAdmin(this.actor, item, handler);
+    const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
     if (!hasRights) throw new UserCannotAdminItem(item.id);
 
     // check member's inherited membership
-    const member = { id: itemMembership.memberId } as Member;
+    const { memberId } = itemMembership;
     const inheritedMembership =
-      await this.itemMembershipService.getInherited(member, item, handler);
+      await this.itemMembershipService.getInherited(itemMembership.memberId, item, handler);
 
     const { permission } = this.data;
 
@@ -80,7 +80,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // check existing memberships lower in the tree
     const membershipsBelow =
-      await this.itemMembershipService.getAllBelow(member, item, handler);
+      await this.itemMembershipService.getAllBelow(memberId, item, handler);
 
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
