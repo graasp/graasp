@@ -125,7 +125,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
   }
 
   /**
-   * Run given task and return the task's result (or throws error).
+   * Run given task (transactionally) and return the task's result (or throws error).
    * @param task Task to run.
    * @param log Logger instance to use. Defaults to `this.logger`.
    */
@@ -142,7 +142,8 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
   }
 
   /**
-   * Run given tasks, collect results (values or errors), and return an array with everything.
+   * Run given tasks (one by one, each in a separate transaction),
+   * collect results (values or errors), and return an array with everything.
    * @param tasks List of tasks to run.
    * @param log Logger instance to use. Defaults to `this.logger`.
    */

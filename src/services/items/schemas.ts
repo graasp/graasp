@@ -43,8 +43,8 @@ export default {
     partialItem: {
       type: 'object',
       properties: {
-        name: { type: 'string', minLength: 1 },
-        type: { type: 'string', minLength: 1 },
+        name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
+        type: { type: 'string', minLength: 3, pattern: '^\\S+( \\S+)*$' },
         description: { type: 'string' },
         extra: { type: 'object', additionalProperties: true }
       },

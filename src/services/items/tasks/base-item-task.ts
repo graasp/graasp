@@ -1,6 +1,5 @@
 // global
 import { BaseTask } from '../../base-task';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';

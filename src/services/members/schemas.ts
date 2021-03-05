@@ -6,20 +6,17 @@ export default {
       properties: {
         id: { type: 'string' },
         name: { type: 'string' },
-        email: { type: 'string' },
-        // type: { type: 'string' },
+        email: { type: 'string' }
       },
       additionalProperties: false
     },
+
+    // member properties that can be modified with user input
     partialMember: {
       type: 'object',
       properties: {
-        name: { type: 'string' },
-        email: { type: 'string', format: 'email' },
-        type: {
-          type: 'string',
-          enum: ['individual', 'group']
-        }
+        name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
+        extra: { type: 'object', additionalProperties: true }
       },
       additionalProperties: false
     }
