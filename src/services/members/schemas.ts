@@ -19,6 +19,19 @@ export default {
         extra: { type: 'object', additionalProperties: true }
       },
       additionalProperties: false
+    },
+
+    // partialMember requiring one property to be defined
+    partialMemberRequireOne: {
+      allOf: [
+        { $ref: '#/definitions/partialMember' },
+        {
+          anyOf: [
+            { required: ['name'] },
+            { required: ['extra'] }
+          ]
+        }
+      ]
     }
   }
 };
@@ -48,14 +61,10 @@ const getBy = {
   }
 };
 
-// schema for creating a member
-const create = {
-  body: {
-    allOf: [
-      { $ref: 'http://graasp.org/members/#/definitions/partialMember' },
-      { required: ['name', 'email'] }
-    ]
-  },
+// schema for updating a member
+const updateOne = {
+  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  body: { $ref: 'http://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
     200: { $ref: 'http://graasp.org/members/#/definitions/member' }
   }
@@ -63,6 +72,6 @@ const create = {
 
 export {
   getOne,
-  create,
+  updateOne,
   getBy
 };

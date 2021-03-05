@@ -4,7 +4,7 @@ import { IdParam } from '../../interfaces/requests';
 // local
 import { MemberTaskManager } from './interfaces/member-task-manager';
 import { EmailParam } from './interfaces/requests';
-import common, { getOne, getBy } from './schemas';
+import common, { getOne, getBy, updateOne } from './schemas';
 import { TaskManager } from './task-manager';
 
 const ROUTES_PREFIX = '/members';
@@ -37,6 +37,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/', { schema: getBy },
       async ({ member, query: { email }, log }) => {
         const task = taskManager.createGetByTask(member, { email });
+        return runner.runSingle(task, log);
+      }
+    );
+
+    // update member
+    fastify.patch<{ Params: IdParam }>(
+      '/:id', { schema: updateOne },
+      async ({ member, params: { id }, body, log }) => {
+        const task = taskManager.createUpdateTask(member, id, body);
         return runner.runSingle(task, log);
       }
     );

@@ -9,6 +9,7 @@ import { BaseMemberTask } from './tasks/base-member-task';
 import { CreateMemberTask } from './tasks/create-member-task';
 import { GetMembersByTask } from './tasks/get-members-by-task';
 import { MemberTaskManager } from './interfaces/member-task-manager';
+import { UpdateMemberTask } from './tasks/update-member-task';
 
 export class TaskManager implements MemberTaskManager {
   private memberService: MemberService;
@@ -33,9 +34,8 @@ export class TaskManager implements MemberTaskManager {
     return new GetMemberTask<E>(actor, memberId, this.memberService);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createUpdateTask<E extends UnknownExtra>(actor: Actor, objectId: string, object: Partial<Member<E>>): BaseMemberTask<Member<E>> {
-    throw new Error('Method not implemented.');
+  createUpdateTask<E extends UnknownExtra>(actor: Actor, memberId: string, object: Partial<Member<E>>): UpdateMemberTask<E> {
+    return new UpdateMemberTask<E>(actor, memberId, object, this.memberService);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

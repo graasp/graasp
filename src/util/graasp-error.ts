@@ -96,6 +96,11 @@ export class MemberNotFound extends BaseGraaspError {
     super({ code: 'GERR013', statusCode: 404, message: 'Member not found' }, data);
   }
 }
+export class CannotModifyOtherMembers extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR014', statusCode: 403, message: 'Member cannot modify other member' }, data);
+  }
+}
 export class DatabaseError extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: 'Database error' }, data);

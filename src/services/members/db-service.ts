@@ -132,4 +132,37 @@ export class MemberService {
       `)
       .then(({ rows }) => rows[0]);
   }
+
+  /**
+   * Update member with given changes and return it.
+   * @param id Member id
+   * @param data Member changes
+   * @param transactionHandler Database transaction handler
+   */
+  async update<E extends UnknownExtra>(id: string, data: Partial<Member<E>>, transactionHandler: TrxHandler): Promise<Member<E>> {
+    // dynamically build "column1 = value1, column2 = value2, ..." based on the
+    // properties present in data
+    const setValues = sql.join(
+      Object.keys(data)
+        .map((key: keyof Member) =>
+          sql.join(
+            [
+              sql.identifier([key]),
+              key !== 'extra' ? sql`${data[key]}` : sql.json(data[key])
+            ],
+            sql` = `
+          )
+        ),
+      sql`, `
+    );
+
+    return transactionHandler
+      .query<Member<E>>(sql`
+        UPDATE member
+        SET ${setValues}
+        WHERE id = ${id}
+        RETURNING ${MemberService.allColumns}
+      `)
+      .then(({ rows }) => rows[0]);
+  }
 }
