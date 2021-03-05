@@ -23,6 +23,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // auth plugin session validation
     fastify.addHook('preHandler', fastify.validateSession);
 
+    // get current
+    fastify.get('/current', async ({ member }) => member);
+
     // get member
     fastify.get<{ Params: IdParam }>(
       '/:id', { schema: getOne },
