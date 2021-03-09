@@ -48,7 +48,7 @@ instance
     password: MAILER_CONFIG_PASSWORD,
     fromEmail: MAILER_CONFIG_FROM_EMAIL
   })
-  .register(authPlugin, { sessionCookieDomain: (ENVIRONMENT === 'staging' ? 'graasp.org' : null) });
+  .register(authPlugin, { sessionCookieDomain: (ENVIRONMENT === 'staging' ? 'ielsrv7.epfl.ch' : null) });
 
 instance.register(async (instance) => {
   // core API modules

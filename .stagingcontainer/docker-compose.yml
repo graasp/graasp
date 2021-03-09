@@ -44,5 +44,10 @@ services:
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
 
+  web:
+    image: graasp/compose
+    ports:
+      - '3000:80'
+
 volumes:
   postgres-data:
