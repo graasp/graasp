@@ -35,7 +35,8 @@
     "file:../graasp-file-item",
     "test: tap -J test/*.test.ts test/**/*.test.ts",
     "test: jest --forceExit --coverage --verbose",
-    "fastify-swagger: ^4.3.1"
+    "fastify-swagger: ^4.3.1",
+    "fastify-compress: ^3.4.0"
   ],
   "dependencies": {
     "dotenv": "^8.2.0",
@@ -46,6 +47,7 @@
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.1",
     "graasp-file-item": "git://github.com/graasp/graasp-file-item#master",
+    "graasp-item-login": "git://github.com/graasp/graasp-item-login#master",
     "graasp-item-tags": "git://github.com/graasp/graasp-item-tags#master",
     "graasp-mailer": "git://github.com/graasp/graasp-mailer#master",
     "graasp-s3-file-item": "git://github.com/graasp/graasp-s3-file-item#master",

@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import graaspFileItem from 'graasp-file-item';
 import graaspS3FileItem from 'graasp-s3-file-item';
 import graaspItemTags from 'graasp-item-tags';
+import graaspItemLogin from 'graasp-item-login';
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
   FILE_STORAGE_ROOT_PATH,
@@ -10,7 +11,8 @@ import {
   S3_FILE_ITEM_REGION,
   S3_FILE_ITEM_BUCKET,
   S3_FILE_ITEM_ACCESS_KEY_ID,
-  S3_FILE_ITEM_SECRET_ACCESS_KEY
+  S3_FILE_ITEM_SECRET_ACCESS_KEY,
+  GRAASP_ACTOR
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -214,6 +216,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
     );
 
+  }, { prefix: ROUTES_PREFIX });
+
+  fastify.register(async (fastify) => {
+    // auth plugin session fetching
+    fastify.addHook('preHandler', fastify.fetchSession);
+
+    fastify.register(graaspItemLogin, {
+      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b',
+      graaspActor: GRAASP_ACTOR
+    });
   }, { prefix: ROUTES_PREFIX });
 };
 
