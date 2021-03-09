@@ -46,6 +46,10 @@ services:
 
   web:
     image: graasp/compose
+    environment:
+      HOST: "ielsrv7.epfl.ch"
+      PORT: 80
+      REACT_APP_API_HOST: "ielsrv7.epfl.ch:3111"
     ports:
       - '3000:80'
 
