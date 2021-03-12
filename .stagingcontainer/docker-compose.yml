@@ -44,5 +44,12 @@ services:
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
 
+  web:
+    image: graasp/compose:latest
+    environment:
+      API_HOST: "//ielsrv7.epfl.ch:3111"
+    ports:
+      - '80:80'
+
 volumes:
   postgres-data:

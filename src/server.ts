@@ -1,17 +1,17 @@
 import fastifyApp from './app';
 import fastifyCors from 'fastify-cors';
-import fastifyCompress from 'fastify-compress';
+// import fastifyCompress from 'fastify-compress';
 // import swagger from 'fastify-swagger';
 import { PORT, ENVIRONMENT, HOSTNAME } from './util/config';
 
 const start = async () => {
   try {
     // fastifyApp.register(swagger, { exposeRoute: true });
-    fastifyApp.register(fastifyCompress);
+    // fastifyApp.register(fastifyCompress);
 
     if (ENVIRONMENT === 'staging') {
       fastifyApp.register(fastifyCors, {
-        origin: new RegExp(`\.graasp\.org:${PORT}$`),
+        origin: /ielsrv7\.epfl\.ch/,
         credentials: true, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
         maxAge: 7200 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
       });
