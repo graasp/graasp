@@ -8,7 +8,7 @@ const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
 const underscoreToDash = (value: string) => value.replace(/_/g, '-');
 
 export class BaseItem<E extends UnknownExtra> implements Item<E> {
-  // static propagatingProperties: (keyof Item)[] = []; // TODO: incomplete
+  // static propagatingProperties: (keyof Item)[] = []; // TODO: incomplete. remove?
 
   readonly id: string;
   name: string;
@@ -32,7 +32,7 @@ export class BaseItem<E extends UnknownExtra> implements Item<E> {
     this.name = name;
     this.description = description;
     this.type = type;
-    this.extra = extra;
+    this.extra = extra ? extra : {} as E;
     this.creator = creator;
     this.path = parent ?
       `${parent.path}.${dashToUnderscore(this.id)}` :
