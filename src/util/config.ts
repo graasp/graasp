@@ -130,3 +130,8 @@ export const S3_FILE_ITEM_REGION = process.env.S3_FILE_ITEM_REGION;
 export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
+
+// Graasp embedded link item
+// TODO: should this be here?
+export const EMBEDDED_LINK_ITEM_PLUGIN = process.env.EMBEDDED_LINK_ITEM_PLUGIN === 'true';
+export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;

@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import {
   ItemNotFound, UserCannotWriteItem,
   HierarchyTooDeep, TooManyChildren
@@ -28,7 +29,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     this.parentItemId = parentItemId;
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<void> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
     let parentItem;
     let parentItemPermissionLevel;
@@ -60,6 +61,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     const { name, description, type, extra } = this.data;
     const { id: creator } = this.actor;
     let item = new BaseItem(name, description, type, extra, creator, parentItem);
+    await this.preHookHandler?.(item, this.actor, { log });
     item = await this.itemService.create(item, handler);
 
     // create 'admin' membership for member+item if it's a 'root' item (no parent item) or

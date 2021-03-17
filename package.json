@@ -46,6 +46,7 @@
     "fastify-jwt": "^2.3.0",
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.1",
+    "graasp-embedded-link-item": "git://github.com/graasp/graasp-embedded-link-item#main",
     "graasp-file-item": "git://github.com/graasp/graasp-file-item#master",
     "graasp-item-login": "git://github.com/graasp/graasp-item-login#master",
     "graasp-item-tags": "git://github.com/graasp/graasp-item-tags#master",

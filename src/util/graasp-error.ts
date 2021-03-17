@@ -1,6 +1,6 @@
 import { FastifyError } from 'fastify';
 
-type ErrorOrigin = 'core' | 'plugin' | string;
+type ErrorOrigin = 'core' | 'plugin' | 'unknown' | string;
 
 export interface GraaspError extends FastifyError {
   data?: unknown;
@@ -109,5 +109,6 @@ export class DatabaseError extends BaseGraaspError {
 export class UnexpectedError extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR999', statusCode: 500, message: 'Unexpected error' }, data);
+    this.origin = 'unknown';
   }
 }

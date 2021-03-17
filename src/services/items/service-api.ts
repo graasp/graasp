@@ -2,6 +2,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import graaspFileItem from 'graasp-file-item';
 import graaspS3FileItem from 'graasp-s3-file-item';
+import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemLogin from 'graasp-item-login';
 import {
@@ -12,6 +13,8 @@ import {
   S3_FILE_ITEM_BUCKET,
   S3_FILE_ITEM_ACCESS_KEY_ID,
   S3_FILE_ITEM_SECRET_ACCESS_KEY,
+  EMBEDDED_LINK_ITEM_PLUGIN,
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   GRAASP_ACTOR
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
@@ -49,6 +52,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.addHook('preHandler', fastify.validateSession);
 
     fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
+
+    if (EMBEDDED_LINK_ITEM_PLUGIN) {
+      fastify.register(graaspEmbeddedLinkItem, {
+        iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN
+      });
+    }
 
     if (S3_FILE_ITEM_PLUGIN) {
       fastify.register(graaspS3FileItem, {

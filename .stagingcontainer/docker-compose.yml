@@ -49,7 +49,14 @@ services:
     environment:
       API_HOST: "//ielsrv7.epfl.ch:3111"
     ports:
-      - '80:80'
+      - 80:80
+
+  iframely:
+    image: graasp/iframely:latest
+    environment:
+      NODE_ENV: staging
+    ports:
+      - 8061:8061
 
 volumes:
   postgres-data:
