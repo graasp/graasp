@@ -51,20 +51,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // auth plugin session validation
     fastify.addHook('preHandler', fastify.validateSession);
 
-    fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
-
-    if (EMBEDDED_LINK_ITEM_PLUGIN) {
-      fastify.register(graaspEmbeddedLinkItem, {
-        iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN
-      });
-    }
-
     if (S3_FILE_ITEM_PLUGIN) {
       fastify.register(graaspS3FileItem, {
         s3Region: S3_FILE_ITEM_REGION,
         s3Bucket: S3_FILE_ITEM_BUCKET,
         s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
         s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY
+      });
+    } else {
+      fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
+    }
+
+    if (EMBEDDED_LINK_ITEM_PLUGIN) {
+      fastify.register(graaspEmbeddedLinkItem, {
+        iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN
       });
     }
 
@@ -232,7 +232,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.addHook('preHandler', fastify.fetchSession);
 
     fastify.register(graaspItemLogin, {
-      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b',
+      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
       graaspActor: GRAASP_ACTOR
     });
   }, { prefix: ROUTES_PREFIX });

@@ -51,6 +51,7 @@ services:
     ports:
       - 80:80
 
+  # necessary for graasp-embedded-link-item
   iframely:
     image: graasp/iframely:latest
     environment:
