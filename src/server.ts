@@ -2,14 +2,12 @@ import fastifyApp from './app';
 import fastifyCors from 'fastify-cors';
 import fastifyHelmet from 'fastify-helmet';
 // import fastifyCompress from 'fastify-compress';
-// import swagger from 'fastify-swagger';
 import { PORT, ENVIRONMENT, HOSTNAME } from './util/config';
 
 const start = async () => {
   try {
-    // fastifyApp.register(swagger, { exposeRoute: true });
-    // fastifyApp.register(fastifyCompress);
     fastifyApp.register(fastifyHelmet);
+    // fastifyApp.register(fastifyCompress);
 
     if (ENVIRONMENT === 'staging') {
       fastifyApp.register(fastifyCors, {
@@ -22,7 +20,6 @@ const start = async () => {
     await fastifyApp.listen(+PORT, HOSTNAME);
     fastifyApp.log.info('App is running %s mode', ENVIRONMENT);
 
-    // fastifyApp.swagger();
   } catch (err) {
     fastifyApp.log.error(err);
     process.exit(1);

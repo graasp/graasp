@@ -8,7 +8,7 @@ import {
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_FROM_EMAIL
 } from './util/config';
-import globalDefinitions from './schemas/global';
+import shared from './schemas/fluent-schema';
 
 import databasePlugin from './plugins/database';
 import authPlugin from './plugins/auth/auth';
@@ -36,8 +36,8 @@ const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
 const instance = fastify({ logger: !DISABLE_LOGS });
 // const instance = fastify({ logger: { prettyPrint: true, level: 'debug' } });
 
-// load global schema definitions
-instance.addSchema(globalDefinitions);
+// load some shared schema definitions
+instance.addSchema(shared);
 
 instance
   .register(fp(databasePlugin), { uri: PG_CONNECTION_URI, logs: DATABASE_LOGS })

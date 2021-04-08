@@ -19,15 +19,15 @@ import {
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
-import common, {
+import {
   getOne, getMany,
   getChildren,
   create,
   updateOne, updateMany,
   deleteOne, deleteMany,
   moveOne, moveMany,
-  copyOne, copyMany, getOwnAndShared
-} from './schemas';
+  copyOne, copyMany, getOwnGetShared
+} from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 
@@ -42,9 +42,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { dbService } = items;
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
   items.taskManager = taskManager;
-
-  // schemas
-  fastify.addSchema(common);
 
   // routes
   fastify.register(async function (fastify) {
@@ -72,7 +69,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // create item
     fastify.post<{ Querystring: ParentIdParam }>(
-      '/', { schema: create },
+      '/', { schema: create() }, // TODO: inject here other item schemas
       async ({ member, query: { parentId }, body, log }) => {
         const task = taskManager.createCreateTask(member, body, parentId);
         return runner.runSingle(task, log);
@@ -98,7 +95,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // get own
     fastify.get(
-      '/own', { schema: getOwnAndShared },
+      '/own', { schema: getOwnGetShared },
       async ({ member, log }) => {
         const task = taskManager.createGetOwnTask(member);
         return runner.runSingle(task, log);
@@ -107,7 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // get shared with
     fastify.get(
-      '/shared-with', { schema: getOwnAndShared },
+      '/shared-with', { schema: getOwnGetShared },
       async ({ member, log }) => {
         const task = taskManager.createGetSharedWithTask(member);
         return runner.runSingle(task, log);

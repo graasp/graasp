@@ -35,8 +35,9 @@
     "file:../graasp-file-item",
     "test: tap -J test/*.test.ts test/**/*.test.ts",
     "test: jest --forceExit --coverage --verbose",
-    "fastify-swagger: ^4.3.1",
-    "fastify-compress: ^3.4.0"
+    "fastify-swagger: ^4.5.0",
+    "fastify-compress: ^3.4.0",
+    "fastify-routes: ^3.0.1"
   ],
   "dependencies": {
     "dotenv": "^8.2.0",
@@ -44,9 +45,10 @@
     "fastify-compress": "^3.4.0",
     "fastify-cors": "^4.1.0",
     "fastify-helmet": "^5.3.0",
-    "fastify-jwt": "^2.3.0",
+    "fastify-jwt": "^2.4.0",
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.1",
+    "fluent-json-schema": "^2.0.4",
     "graasp-embedded-link-item": "git://github.com/graasp/graasp-embedded-link-item#main",
     "graasp-file-item": "git://github.com/graasp/graasp-file-item#master",
     "graasp-item-login": "git://github.com/graasp/graasp-item-login#master",
