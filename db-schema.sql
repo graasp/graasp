@@ -88,3 +88,7 @@ BEFORE UPDATE ON "members_relation"
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 */
+
+-- Graasp member
+INSERT INTO "member" ("id", "name", "email")
+VALUES ('12345678-1234-1234-1234-123456789012', 'Graasp', 'graasp@graasp.org');
