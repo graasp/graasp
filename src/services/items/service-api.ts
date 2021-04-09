@@ -122,7 +122,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // update items
     fastify.patch<{ Params: IdParam }>(
-      '/:id', { schema: updateOne },
+      '/:id', { schema: updateOne() }, // TODO: inject here other item schemas
       async ({ member, params: { id }, body, log }) => {
         const task = taskManager.createUpdateTask(member, id, body);
         return runner.runSingle(task, log);
@@ -130,7 +130,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     );
 
     fastify.patch<{ Querystring: IdsParams }>(
-      '/', { schema: updateMany },
+      '/', { schema: updateMany() }, // TODO: inject here other item schemas
       async ({ member, query: { id: ids }, body, log }, reply) => {
         const tasks = ids.map(id => taskManager.createUpdateTask(member, id, body));
 

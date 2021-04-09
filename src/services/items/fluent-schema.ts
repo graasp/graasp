@@ -8,7 +8,9 @@ import {
 
 import { uuid, idParam, idsQuery, error } from '../../schemas/fluent-schema';
 
-// for serialization 
+/**
+ * for serialization
+ */
 const item = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
@@ -27,35 +29,42 @@ const item = S.object()
 
 /**
  * for validation on create
- * - `type` needs to be 'base'
- * - all `extra` properties will be discarded - empty object
  */
-const partialItem = S.object()
+
+// type 'base', empty extra {}
+const partialBaseItem = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
-  .required(['name', 'type', 'extra']);
+  .required(['name', 'type']);
+
+// type 'folder', empty extra {}
+const partialFolderItem = S.object()
+  .prop('type', S.const('folder'))
+  .extend(partialBaseItem);
 
 /**
  * for validation on update
- * - at least on of 'name' or 'description' needs to exist
  */
 const partialItemRequireOne = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
+  .prop('extra', S.object())
   .anyOf([
     S.required(['name']),
-    S.required(['description'])
+    S.required(['description']),
+    S.required(['extra'])
   ]);
 
 const create = (...otherItemSchemas: ObjectSchema[]) => {
   return {
     querystring: S.object().additionalProperties(false).prop('parentId', uuid),
     body: S.oneOf([
-      partialItem,
+      partialBaseItem,
+      partialFolderItem,
       ...otherItemSchemas
     ]),
     response: { 201: item, '4xx': error }
@@ -92,22 +101,30 @@ const getOwnGetShared = {
   }
 };
 
-const updateOne = {
-  params: idParam,
-  body: partialItemRequireOne,
-  response: { 200: item, '4xx': error }
+const updateOne = (...otherItemExtraSchemas: ObjectSchema[]) => {
+  return {
+    params: idParam,
+    body: S.object()
+      .prop('extra', S.oneOf(otherItemExtraSchemas))
+      .extend(partialItemRequireOne),
+    response: { 200: item, '4xx': error }
+  };
 };
 
-const updateMany = {
-  querystring: S.object()
-    .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
-    .extend(idsQuery),
-  body: partialItemRequireOne,
-  response: {
-    200: S.array().items(S.anyOf([error, item])),
-    202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-    '4xx': error
-  }
+const updateMany = (...otherItemExtraSchemas: ObjectSchema[]) => {
+  return {
+    querystring: S.object()
+      .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
+      .extend(idsQuery),
+    body: S.object()
+      .prop('extra', S.oneOf(otherItemExtraSchemas))
+      .extend(partialItemRequireOne),
+    response: {
+      200: S.array().items(S.anyOf([error, item])),
+      202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
+      '4xx': error
+    }
+  };
 };
 
 const deleteOne = {
