@@ -54,8 +54,8 @@ instance.register(async (instance) => {
   // core API modules
   instance
     .register(fp(MemberServiceApi))
-    .register(fp(ItemsServiceApi))
-    .register(fp(ItemMembershipsServiceApi));
+    .register(fp(ItemMembershipsServiceApi))
+    .register(fp(ItemsServiceApi));
 });
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...
