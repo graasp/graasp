@@ -8,7 +8,8 @@ import { PermissionLevel } from '../../services/item-memberships/interfaces/item
 import { Item } from './interfaces/item';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 
-// TODO: this module declaration should be placed somewhere else
+// TODO: this module declaration should be placed somewhere else,
+// specially because of 'extendCreateSchema' - that seems very out of place in this file.
 declare module 'fastify' {
   interface FastifyInstance {
     items: {

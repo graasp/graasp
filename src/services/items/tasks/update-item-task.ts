@@ -67,10 +67,10 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     if (!hasRights) throw new UserCannotWriteItem(this.targetId);
 
     // prepare changes
-    // allow for individual changes in extra's own properties except if 'extra' is {};
-    // in that case 'extra' is fully replace by {} (empty object).
-    if (this.data.extra && Object.keys(this.data.extra).length > 0) {
-      this.data.extra = Object.assign({}, item.extra, this.data.extra);
+    // allow for item type specific changes in extra
+    const extraChanges = this.data.extra;
+    if (extraChanges && Object.keys(extraChanges).length === 1 && extraChanges[item.type]) {
+      this.data.extra = Object.assign({}, item.extra, extraChanges);
     }
 
     // check if there's any propagating changes
