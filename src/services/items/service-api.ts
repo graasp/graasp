@@ -19,15 +19,15 @@ import {
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
-import common, {
+import {
   getOne, getMany,
   getChildren,
   create,
   updateOne, updateMany,
   deleteOne, deleteMany,
   moveOne, moveMany,
-  copyOne, copyMany, getOwnAndShared
-} from './schemas';
+  copyOne, copyMany, getOwnGetShared
+} from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 
@@ -42,22 +42,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { dbService } = items;
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
   items.taskManager = taskManager;
-
-  // schemas
-  fastify.addSchema(common);
+  items.extendCreateSchema = create;
 
   // routes
   fastify.register(async function (fastify) {
     // auth plugin session validation
     fastify.addHook('preHandler', fastify.validateSession);
-
-    fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
-
-    if (EMBEDDED_LINK_ITEM_PLUGIN) {
-      fastify.register(graaspEmbeddedLinkItem, {
-        iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN
-      });
-    }
 
     if (S3_FILE_ITEM_PLUGIN) {
       fastify.register(graaspS3FileItem, {
@@ -66,13 +56,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
         s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY
       });
+    } else {
+      fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
+    }
+
+    if (EMBEDDED_LINK_ITEM_PLUGIN) {
+      // 'await' necessary because internally it uses 'extendCreateSchema'
+      await fastify.register(graaspEmbeddedLinkItem, {
+        iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN
+      });
     }
 
     fastify.register(graaspItemTags);
 
     // create item
     fastify.post<{ Querystring: ParentIdParam }>(
-      '/', { schema: create },
+      '/', { schema: create() },
       async ({ member, query: { parentId }, body, log }) => {
         const task = taskManager.createCreateTask(member, body, parentId);
         return runner.runSingle(task, log);
@@ -98,7 +97,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // get own
     fastify.get(
-      '/own', { schema: getOwnAndShared },
+      '/own', { schema: getOwnGetShared },
       async ({ member, log }) => {
         const task = taskManager.createGetOwnTask(member);
         return runner.runSingle(task, log);
@@ -107,7 +106,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // get shared with
     fastify.get(
-      '/shared-with', { schema: getOwnAndShared },
+      '/shared-with', { schema: getOwnGetShared },
       async ({ member, log }) => {
         const task = taskManager.createGetSharedWithTask(member);
         return runner.runSingle(task, log);
@@ -125,7 +124,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // update items
     fastify.patch<{ Params: IdParam }>(
-      '/:id', { schema: updateOne },
+      '/:id', { schema: updateOne() }, // TODO: inject here other item schemas
       async ({ member, params: { id }, body, log }) => {
         const task = taskManager.createUpdateTask(member, id, body);
         return runner.runSingle(task, log);
@@ -133,7 +132,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     );
 
     fastify.patch<{ Querystring: IdsParams }>(
-      '/', { schema: updateMany },
+      '/', { schema: updateMany() }, // TODO: inject here other item schemas
       async ({ member, query: { id: ids }, body, log }, reply) => {
         const tasks = ids.map(id => taskManager.createUpdateTask(member, id, body));
 
@@ -232,7 +231,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.addHook('preHandler', fastify.fetchSession);
 
     fastify.register(graaspItemLogin, {
-      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b',
+      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
       graaspActor: GRAASP_ACTOR
     });
   }, { prefix: ROUTES_PREFIX });

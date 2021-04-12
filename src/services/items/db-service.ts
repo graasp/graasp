@@ -1,4 +1,5 @@
 // global
+import { ObjectSchema } from 'fluent-json-schema';
 import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
 import { UnknownExtra } from '../../interfaces/extra';
 // other services
@@ -7,11 +8,14 @@ import { PermissionLevel } from '../../services/item-memberships/interfaces/item
 import { Item } from './interfaces/item';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 
+// TODO: this module declaration should be placed somewhere else,
+// specially because of 'extendCreateSchema' - that seems very out of place in this file.
 declare module 'fastify' {
   interface FastifyInstance {
     items: {
       taskManager: ItemTaskManager,
-      dbService: ItemService
+      dbService: ItemService,
+      extendCreateSchema: (itemTypeSchema?: ObjectSchema) => void
     };
   }
 }
