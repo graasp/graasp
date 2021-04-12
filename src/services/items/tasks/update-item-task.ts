@@ -69,8 +69,13 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     // prepare changes
     // allow for item type specific changes in extra
     const extraChanges = this.data.extra;
-    if (extraChanges && Object.keys(extraChanges).length === 1 && extraChanges[item.type]) {
-      this.data.extra = Object.assign({}, item.extra, extraChanges);
+
+    if (extraChanges) {
+      if (Object.keys(extraChanges).length === 1 && extraChanges[item.type]) {
+        this.data.extra = Object.assign({}, item.extra, extraChanges);
+      } else {
+        delete this.data.extra;
+      }
     }
 
     // check if there's any propagating changes
