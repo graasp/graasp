@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import S, { ObjectSchema } from 'fluent-json-schema';
+import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST,
@@ -59,17 +59,16 @@ const partialItemRequireOne = S.object()
     S.required(['extra'])
   ]);
 
-const create = (...otherItemSchemas: ObjectSchema[]) => {
+const create = (...itemSchemas: JSONSchema[]) => (itemTypeSchema?: ObjectSchema) => {
+  if (itemTypeSchema) itemSchemas.push(itemTypeSchema.extend(partialBaseItem));
+
   return {
     querystring: S.object().additionalProperties(false).prop('parentId', uuid),
-    body: S.oneOf([
-      partialBaseItem,
-      partialFolderItem,
-      ...otherItemSchemas
-    ]),
+    body: S.object().oneOf(itemSchemas),
     response: { 201: item, '4xx': error }
   };
 };
+const initializedCreate = create(partialBaseItem, partialFolderItem);
 
 const getOne = {
   params: idParam,
@@ -176,7 +175,7 @@ const copyMany = {
 };
 
 export {
-  create,
+  initializedCreate as create,
   getOne,
   getChildren,
   getMany,

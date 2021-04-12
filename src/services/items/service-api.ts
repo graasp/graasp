@@ -42,6 +42,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { dbService } = items;
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
   items.taskManager = taskManager;
+  items.extendCreateSchema = create;
 
   // routes
   fastify.register(async function (fastify) {
@@ -60,7 +61,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }
 
     if (EMBEDDED_LINK_ITEM_PLUGIN) {
-      fastify.register(graaspEmbeddedLinkItem, {
+      // 'await' necessary because internally it uses 'extendCreateSchema'
+      await fastify.register(graaspEmbeddedLinkItem, {
         iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN
       });
     }
@@ -69,7 +71,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // create item
     fastify.post<{ Querystring: ParentIdParam }>(
-      '/', { schema: create() }, // TODO: inject here other item schemas
+      '/', { schema: create() },
       async ({ member, query: { parentId }, body, log }) => {
         const task = taskManager.createCreateTask(member, body, parentId);
         return runner.runSingle(task, log);
