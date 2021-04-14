@@ -21,26 +21,7 @@ import { Member } from '../../services/members/interfaces/member';
 
 // local
 import { register, login, auth } from './schemas';
-
-declare module 'fastify' {
-  interface FastifyInstance {
-    /**
-     * Validate session, extract member from it, and set it on `request`.
-     * Throws exception if it fails.
-     */
-    validateSession: (request: FastifyRequest, reply: FastifyReply) => void;
-    /**
-     * Tries to validate session and extract member from it.
-     * Does not fail - simply does not set the `member` decorator on `request`.
-     */
-    fetchSession: (request: FastifyRequest) => void;
-  }
-}
-
-interface AuthPluginOptions {
-  sessionCookieDomain: string;
-  uniqueViolationErrorName?: string;
-}
+import { AuthPluginOptions } from './interfaces/auth';
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   const {

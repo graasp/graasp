@@ -31,8 +31,8 @@ const item = S.object()
  * for validation on create
  */
 
-// type 'base', empty extra {}
-const partialBaseItem = S.object()
+// type 'base' (empty extra {})
+const baseItemCreate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
@@ -40,15 +40,33 @@ const partialBaseItem = S.object()
   .prop('extra', S.object().additionalProperties(false))
   .required(['name', 'type']);
 
-// type 'folder', empty extra {}
-const partialFolderItem = S.object()
+// type 'folder' (empty extra {})
+const folderItemCreate = S.object()
   .prop('type', S.const('folder'))
-  .extend(partialBaseItem);
+  .extend(baseItemCreate);
+
+// type 'shortcut' (specific extra)
+const shortcutItemExtra = S.object()
+  .additionalProperties(false)
+  .prop(
+    'shortcut',
+    S.object()
+      .additionalProperties(false)
+      .prop('target', uuid)
+      .required(['target'])
+  )
+  .required(['shortcut']);
+
+const shortcutItemCreate = S.object()
+  .prop('type', S.const('shortcut'))
+  .prop('extra', shortcutItemExtra)
+  .required(['extra'])
+  .extend(baseItemCreate);
 
 /**
  * for validation on update
  */
-const partialItemRequireOne = S.object()
+const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
@@ -60,7 +78,7 @@ const partialItemRequireOne = S.object()
   ]);
 
 const create = (...itemSchemas: JSONSchema[]) => (itemTypeSchema?: ObjectSchema) => {
-  if (itemTypeSchema) itemSchemas.push(itemTypeSchema.extend(partialBaseItem));
+  if (itemTypeSchema) itemSchemas.push(itemTypeSchema.extend(baseItemCreate));
 
   return {
     querystring: S.object().additionalProperties(false).prop('parentId', uuid),
@@ -68,7 +86,11 @@ const create = (...itemSchemas: JSONSchema[]) => (itemTypeSchema?: ObjectSchema)
     response: { 201: item, '4xx': error }
   };
 };
-const initializedCreate = create(partialBaseItem, partialFolderItem);
+const initializedCreate = create(
+  baseItemCreate,
+  folderItemCreate,
+  shortcutItemCreate
+);
 
 const getOne = {
   params: idParam,
@@ -105,7 +127,7 @@ const updateOne = (...otherItemExtraSchemas: ObjectSchema[]) => {
     params: idParam,
     body: S.object()
       .prop('extra', S.oneOf(otherItemExtraSchemas))
-      .extend(partialItemRequireOne),
+      .extend(itemUpdate),
     response: { 200: item, '4xx': error }
   };
 };
@@ -117,7 +139,7 @@ const updateMany = (...otherItemExtraSchemas: ObjectSchema[]) => {
       .extend(idsQuery),
     body: S.object()
       .prop('extra', S.oneOf(otherItemExtraSchemas))
-      .extend(partialItemRequireOne),
+      .extend(itemUpdate),
     response: {
       200: S.array().items(S.anyOf([error, item])),
       202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE

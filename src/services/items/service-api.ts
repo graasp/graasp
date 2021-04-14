@@ -227,13 +227,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }, { prefix: ROUTES_PREFIX });
 
   fastify.register(async (fastify) => {
-    // auth plugin session fetching
-    fastify.addHook('preHandler', fastify.fetchSession);
 
     fastify.register(graaspItemLogin, {
       tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
       graaspActor: GRAASP_ACTOR
     });
+
   }, { prefix: ROUTES_PREFIX });
 };
 
