@@ -43,6 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
   items.taskManager = taskManager;
   items.extendCreateSchema = create;
+  items.extendExtrasUpdateSchema = updateOne;
 
   // routes
   fastify.register(async function (fastify) {
@@ -124,7 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // update items
     fastify.patch<{ Params: IdParam }>(
-      '/:id', { schema: updateOne() }, // TODO: inject here other item schemas
+      '/:id', { schema: updateOne() },
       async ({ member, params: { id }, body, log }) => {
         const task = taskManager.createUpdateTask(member, id, body);
         return runner.runSingle(task, log);
@@ -132,7 +133,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     );
 
     fastify.patch<{ Querystring: IdsParams }>(
-      '/', { schema: updateMany() }, // TODO: inject here other item schemas
+      '/', { schema: updateMany() },
       async ({ member, query: { id: ids }, body, log }, reply) => {
         const tasks = ids.map(id => taskManager.createUpdateTask(member, id, body));
 
@@ -227,13 +228,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }, { prefix: ROUTES_PREFIX });
 
   fastify.register(async (fastify) => {
-    // auth plugin session fetching
-    fastify.addHook('preHandler', fastify.fetchSession);
 
     fastify.register(graaspItemLogin, {
       tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
       graaspActor: GRAASP_ACTOR
     });
+
   }, { prefix: ROUTES_PREFIX });
 };
 

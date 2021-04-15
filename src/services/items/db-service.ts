@@ -16,6 +16,7 @@ declare module 'fastify' {
       taskManager: ItemTaskManager,
       dbService: ItemService,
       extendCreateSchema: (itemTypeSchema?: ObjectSchema) => void
+      extendExtrasUpdateSchema: (itemTypeSchema?: ObjectSchema) => void
     };
   }
 }
