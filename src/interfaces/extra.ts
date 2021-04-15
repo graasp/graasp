@@ -1,4 +1,4 @@
-type Anything =
+export type Anything =
   | string
   | number
   | boolean

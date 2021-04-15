@@ -3,6 +3,7 @@ import {
   MAX_TARGETS_FOR_READ_REQUEST
 } from '../../util/config';
 
+// TODO: this file can be removed. confirm if not referenced somewhere
 export default {
   $id: 'http://graasp.org/items/',
   definitions: {

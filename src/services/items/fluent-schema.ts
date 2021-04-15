@@ -66,15 +66,14 @@ const shortcutItemCreate = S.object()
 /**
  * for validation on update
  */
+
 const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
-  .prop('extra', S.object())
   .anyOf([
     S.required(['name']),
-    S.required(['description']),
-    S.required(['extra'])
+    S.required(['description'])
   ]);
 
 const create = (...itemSchemas: JSONSchema[]) => (itemTypeSchema?: ObjectSchema) => {
@@ -122,24 +121,48 @@ const getOwnGetShared = {
   }
 };
 
-const updateOne = (...otherItemExtraSchemas: ObjectSchema[]) => {
+const updateOne = (...itemExtraSchemas: JSONSchema[]) => (itemExtraSchema?: ObjectSchema) => {
+  if (itemExtraSchema) itemExtraSchemas.push(itemExtraSchema);
+
+  const body = itemExtraSchemas.length === 0 ?
+    itemUpdate :
+    S.object()
+      .prop('extra', S.oneOf(itemExtraSchemas))
+      .extend(itemUpdate.anyOf([
+        S.required(['name']),
+        S.required(['description']),
+        S.required(['extra'])
+      ]));
+
   return {
     params: idParam,
-    body: S.object()
-      .prop('extra', S.oneOf(otherItemExtraSchemas))
-      .extend(itemUpdate),
+    body,
     response: { 200: item, '4xx': error }
   };
 };
 
-const updateMany = (...otherItemExtraSchemas: ObjectSchema[]) => {
+// TODO: add here 'folder' extra, if a 'folder's children can have custom order
+// const folderExtra = S.object()
+//   .additionalProperties(false)
+//   .prop(
+//     'folder',
+//     S.object()
+//       .additionalProperties(false)
+//       .prop('childrenOrder', S.array().items(uuid))
+//       .required(['childrenOrder'])
+//   )
+//   .required(['folder']);
+
+const initializedUpdate = updateOne();
+
+const updateMany = () => {
+  const { body } = initializedUpdate();
+
   return {
     querystring: S.object()
       .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
       .extend(idsQuery),
-    body: S.object()
-      .prop('extra', S.oneOf(otherItemExtraSchemas))
-      .extend(itemUpdate),
+    body,
     response: {
       200: S.array().items(S.anyOf([error, item])),
       202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
@@ -202,7 +225,7 @@ export {
   getChildren,
   getMany,
   getOwnGetShared,
-  updateOne,
+  initializedUpdate as updateOne,
   updateMany,
   deleteOne,
   deleteMany,
