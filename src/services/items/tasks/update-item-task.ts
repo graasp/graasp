@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import { ItemNotFound, UserCannotWriteItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { UnknownExtra } from '../../../interfaces/extra';
@@ -55,11 +56,11 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
   //   return this.subtasks.filter(st => st.status === 'OK').pop().result;
   // }
 
-  async run(handler: DatabaseTransactionHandler): Promise<void> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
     // get item
-    const item = await this.itemService.get(this.targetId, handler);
+    const item = await this.itemService.get<E>(this.targetId, handler);
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item - write
@@ -104,7 +105,13 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     // }
 
     // no propagating changes: just update target item
-    this._result = await this.itemService.update(this.targetId, this.data, handler);
+    await this.preHookHandler?.(item, this.actor, { log });
+    const resultItem = Object.keys(this.data).length ?
+      await this.itemService.update(this.targetId, this.data, handler) :
+      item;
+    await this.postHookHandler?.(resultItem, this.actor, { log });
+
     this.status = 'OK';
+    this._result = resultItem;
   }
 }

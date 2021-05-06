@@ -70,6 +70,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
       const membership = new BaseItemMembership(this.actor.id, item.path, pl.Admin, this.actor.id);
       await this.itemMembershipService.create(membership, handler);
     }
+    await this.postHookHandler?.(item, this.actor, { log });
 
     this.status = 'OK';
     this._result = item;

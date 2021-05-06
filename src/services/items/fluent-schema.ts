@@ -63,6 +63,20 @@ const shortcutItemCreate = S.object()
   .required(['extra'])
   .extend(baseItemCreate);
 
+// type 'folder' (specific extra for update)
+const folderExtra = S.object()
+  // TODO: .additionalProperties(false) in schemas don't seem to work properly and
+  // are very counter-intuitive. We should change to JTD format (as soon as it is supported)
+  // .additionalProperties(false)
+  .prop(
+    'folder',
+    S.object()
+      // .additionalProperties(false)
+      .prop('childrenOrder', S.array().items(uuid))
+      .required(['childrenOrder'])
+  )
+  .required(['folder']);
+
 /**
  * for validation on update
  */
@@ -141,19 +155,7 @@ const updateOne = (...itemExtraSchemas: JSONSchema[]) => (itemExtraSchema?: Obje
   };
 };
 
-// TODO: add here 'folder' extra, if a 'folder's children can have custom order
-// const folderExtra = S.object()
-//   .additionalProperties(false)
-//   .prop(
-//     'folder',
-//     S.object()
-//       .additionalProperties(false)
-//       .prop('childrenOrder', S.array().items(uuid))
-//       .required(['childrenOrder'])
-//   )
-//   .required(['folder']);
-
-const initializedUpdate = updateOne();
+const initializedUpdate = updateOne(folderExtra);
 
 const updateMany = () => {
   const { body } = initializedUpdate();
