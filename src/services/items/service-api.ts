@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import graaspFileItem from 'graasp-file-item';
 import graaspS3FileItem from 'graasp-s3-file-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
+import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemLogin from 'graasp-item-login';
 import {
@@ -67,6 +68,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN
       });
     }
+
+    await fastify.register(graaspDocumentItem);
 
     fastify.register(graaspItemTags);
 
