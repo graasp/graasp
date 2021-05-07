@@ -6,6 +6,8 @@ import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemLogin from 'graasp-item-login';
+import graaspApps from 'graasp-apps';
+
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
   FILE_STORAGE_ROOT_PATH,
@@ -16,7 +18,9 @@ import {
   S3_FILE_ITEM_SECRET_ACCESS_KEY,
   EMBEDDED_LINK_ITEM_PLUGIN,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-  GRAASP_ACTOR
+  GRAASP_ACTOR,
+  APPS_PLUGIN,
+  APPS_JWT_SECRET
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -46,8 +50,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
 
-  // routes
+  // core routes - require authentication
   fastify.register(async function (fastify) {
+
     // auth plugin session validation
     fastify.addHook('preHandler', fastify.validateSession);
 
@@ -230,12 +235,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   }, { prefix: ROUTES_PREFIX });
 
+  // plugins that don't require a authenticated request
   fastify.register(async (fastify) => {
 
     fastify.register(graaspItemLogin, {
       tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
       graaspActor: GRAASP_ACTOR
     });
+
+    if (APPS_PLUGIN) {
+      fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+    }
 
   }, { prefix: ROUTES_PREFIX });
 };

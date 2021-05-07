@@ -49,6 +49,7 @@
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.1",
     "fluent-json-schema": "^2.0.4",
+    "graasp-apps": "git://github.com/graasp/graasp-apps#main",
     "graasp-document-item": "git://github.com/graasp/graasp-document-item#main",
     "graasp-embedded-link-item": "git://github.com/graasp/graasp-embedded-link-item#main",
     "graasp-file-item": "git://github.com/graasp/graasp-file-item#master",

@@ -135,3 +135,7 @@ export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_AC
 // TODO: should this be here?
 export const EMBEDDED_LINK_ITEM_PLUGIN = process.env.EMBEDDED_LINK_ITEM_PLUGIN === 'true';
 export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
+
+// Graasp apps
+export const APPS_PLUGIN = process.env.APPS_PLUGIN;
+export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
