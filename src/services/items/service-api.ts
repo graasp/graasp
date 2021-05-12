@@ -50,6 +50,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
 
+  // plugins that don't require authentication
+  fastify.register(async (fastify) => {
+
+    fastify.register(graaspItemLogin, {
+      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
+      graaspActor: GRAASP_ACTOR
+    });
+
+    if (APPS_PLUGIN) {
+      await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+    }
+
+  }, { prefix: ROUTES_PREFIX });
+
   // core routes - require authentication
   fastify.register(async function (fastify) {
 
@@ -232,20 +246,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         return runner.runMultiple(tasks, log);
       }
     );
-
-  }, { prefix: ROUTES_PREFIX });
-
-  // plugins that don't require a authenticated request
-  fastify.register(async (fastify) => {
-
-    fastify.register(graaspItemLogin, {
-      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
-      graaspActor: GRAASP_ACTOR
-    });
-
-    if (APPS_PLUGIN) {
-      fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
-    }
 
   }, { prefix: ROUTES_PREFIX });
 };

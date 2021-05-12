@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   const memberTaskManager = new MemberTaskManager(mS);
 
   fastify.register(fastifySecureSession, {
-    // TODO: maybe change to 'secret', which is just a string (makes the boot slower).
+    // TODO: maybe change to the 'secret' option, which is just a string (makes the boot slower).
     // Production needs its own key: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key
     key: fs.readFileSync(path.join(process.cwd(), 'secure-session-secret-key')),
     cookie: { domain, path: '/' }
