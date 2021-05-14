@@ -8,6 +8,8 @@ import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
 import { CopyItemTask } from '../../src/services/items/tasks/copy-item-task';
 import { PermissionLevel } from '../../src/services/item-memberships/interfaces/item-membership';
+import { getDummyItem } from './utils';
+import { UnknownExtra } from '../../src/interfaces/extra';
 
 jest.mock('../../src/services/items/db-service');
 jest.mock('../../src/services/item-memberships/db-service');
@@ -22,7 +24,7 @@ const member = {
 } as Member;
 
 const compareItemtoItemCopy =
-  (item: Item, itemCopy: Item, idMapping: Map<string, string>, parentItemId?: string) => {
+  (item: Item, itemCopy: Item, pathMapping: Map<string, string>, parentItemId?: string) => {
     const {
       id: newId,
       name: newName,
@@ -32,8 +34,8 @@ const compareItemtoItemCopy =
       path: newPath
     } = itemCopy;
     const { id, name, description, extra, path } = item;
-    // path uses _ instead of -
-    idMapping.set(id, newId.split('-').join('_'));
+
+    pathMapping.set(id.replace(/-/g, '_'), newId.replace(/-/g, '_'));
 
     expect(itemCopy).not.toEqual(item);
 
@@ -44,9 +46,9 @@ const compareItemtoItemCopy =
     expect(newPath).not.toEqual(path);
     const parsedPath = path
       .split('.')
-      .map((id) => (idMapping.has(id) ? idMapping.get(id) : id))
+      .map(id => pathMapping.has(id) ? pathMapping.get(id) : id)
       .join('.');
-    const withParentId = parentItemId ? `${parentItemId}.` : '';
+    const withParentId = parentItemId ? `${parentItemId.replace(/-/g, '_')}.` : '';
     expect(newPath).toEqual(`${withParentId}${parsedPath}`);
 
     // should be same
@@ -59,33 +61,15 @@ const compareItemtoItemCopy =
   };
 
 describe('CopyItemTask', () => {
-  const itemId = 'someid';
-  const parentItemId = 'parentid';
-  const fakeItem = { id: itemId, path: `${parentItemId}.${itemId}` } as Item;
-  const fakeParentItem = { id: parentItemId, path: `${parentItemId}` } as Item;
-  // items need paths to avoid error
-  type SomeExtra = { some: string }
-  const fakeItem1 = {
-    id: 'fakeItem1',
-    path: 'fakeItem1',
-    name: 'name1',
-    description: 'description1',
-    extra: { some: 'extra1' }
-  } as Item<SomeExtra>;
-  const fakeItem2 = {
-    id: 'fakeItem2',
-    path: 'fakeItem1.fakeItem2',
-    name: 'name2',
-    description: 'description2',
-    extra: { some: 'extra2' }
-  } as Item<SomeExtra>;
-  const fakeItem3 = {
-    id: 'fakeItem3',
-    path: 'fakeItem1.fakeItem3',
-    name: 'name3',
-    description: 'description3',
-    extra: { some: 'extra3' }
-  } as Item<SomeExtra>;
+  const fakeTargetParentItem = getDummyItem();
+  const fakeTargetParentItemId = fakeTargetParentItem.id;
+  const fakeItem = getDummyItem();
+  const fakeItemId = fakeItem.id;
+
+  const fakeItem1 = getDummyItem({}, { prop1: 123 });
+  const fakeItem2 = getDummyItem({ parentPath: fakeItem1.path }, { prop2: 123 });
+  const fakeItem3 = getDummyItem({ parentPath: fakeItem1.path }, { prop3: 123 });
+
   const itemService = new ItemService();
   const itemMembershipService = new ItemMembershipService();
   const dbHandler = {} as DatabaseTransactionConnectionType;
@@ -95,7 +79,7 @@ describe('CopyItemTask', () => {
   });
 
   test(`CopyItemTask's \`name\` property should contain the classname: ${CopyItemTask.name}`, () => {
-    const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+    const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService);
     expect(task.name).toBe(CopyItemTask.name);
   });
 
@@ -104,7 +88,7 @@ describe('CopyItemTask', () => {
     itemService.get = jest.fn(async () => null);
 
     try {
-      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+      const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
       expect(error).toBeInstanceOf(ItemNotFound);
@@ -117,7 +101,7 @@ describe('CopyItemTask', () => {
     itemMembershipService.getPermissionLevel = jest.fn(async () => null);
 
     try {
-      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+      const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
       expect(error).toBeInstanceOf(UserCannotReadItem);
@@ -131,7 +115,7 @@ describe('CopyItemTask', () => {
     itemService.getNumberOfDescendants = jest.fn(async () => MAX_DESCENDANTS_FOR_COPY + 1);
 
     try {
-      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService);
+      const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService);
       await task.run(dbHandler);
     } catch (error) {
       expect(error).toBeInstanceOf(TooManyDescendants);
@@ -142,9 +126,9 @@ describe('CopyItemTask', () => {
     expect.assertions(1);
     itemService.get = jest.fn(async (id) => {
       switch (id) {
-        case itemId:
+        case fakeItemId:
           return fakeItem;
-        case parentItemId:
+        case fakeTargetParentItemId:
         default:
           return null;
       }
@@ -153,7 +137,7 @@ describe('CopyItemTask', () => {
     itemService.getNumberOfDescendants = jest.fn(async () => 0);
 
     try {
-      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+      const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService, fakeTargetParentItemId);
       await task.run(dbHandler);
     } catch (error) {
       expect(error).toBeInstanceOf(ItemNotFound);
@@ -164,10 +148,10 @@ describe('CopyItemTask', () => {
     expect.assertions(1);
     itemService.get = jest.fn(async (id) => {
       switch (id) {
-        case itemId:
+        case fakeItemId:
           return fakeItem;
-        case parentItemId:
-          return fakeParentItem;
+        case fakeTargetParentItemId:
+          return fakeTargetParentItem;
         default:
           return null;
       }
@@ -176,7 +160,7 @@ describe('CopyItemTask', () => {
     itemService.getNumberOfDescendants = jest.fn(async () => 0);
 
     try {
-      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+      const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService, fakeTargetParentItemId);
       await task.run(dbHandler);
     } catch (error) {
       expect(error).toBeInstanceOf(UserCannotWriteItem);
@@ -187,10 +171,10 @@ describe('CopyItemTask', () => {
     expect.assertions(1);
     itemService.get = jest.fn(async (id) => {
       switch (id) {
-        case itemId:
+        case fakeItemId:
           return fakeItem;
-        case parentItemId:
-          return fakeParentItem;
+        case fakeTargetParentItemId:
+          return fakeTargetParentItem;
         default:
           return null;
       }
@@ -200,7 +184,7 @@ describe('CopyItemTask', () => {
     itemService.getNumberOfLevelsToFarthestChild = jest.fn(async () => MAX_TREE_LEVELS - 1);
 
     try {
-      const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+      const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService, fakeTargetParentItemId);
       await task.run(dbHandler);
     } catch (error) {
       expect(error).toBeInstanceOf(HierarchyTooDeep);
@@ -208,32 +192,25 @@ describe('CopyItemTask', () => {
   });
 
   test('Should copy item and its descendants into a separate tree', async () => {
-    itemService.get = jest.fn(async (id) => {
-      switch (id) {
-        case fakeItem1.id:
-          return fakeItem1;
-        default:
-          return null;
-      }
-    });
-    itemService.getNumberOfDescendants = jest.fn(async () => 0);
+    itemService.get = jest.fn(async () => fakeItem1);
+    itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
+    itemService.getNumberOfDescendants = jest.fn(async () => 2);
     itemService.getDescendants = jest.fn(async () => [fakeItem2, fakeItem3]);
-    itemService.getNumberOfLevelsToFarthestChild = jest.fn(async () => 0);
-    itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
-    itemService.create = jest.fn(async (data) => data as Item);
+    itemService.create =
+      jest.fn(async <T extends UnknownExtra>(i: Partial<Item<T>>) => i as Item<T>);
 
     const itemTree = [fakeItem1, fakeItem2, fakeItem3];
 
     const task = new CopyItemTask(member, fakeItem1.id, itemService, itemMembershipService);
     const subTasks = await task.run(dbHandler);
-    const idMapping = new Map();
+    const pathMapping = new Map();
 
     expect(subTasks.length).toBe(itemTree.length);
 
     for (const [i, subTask] of subTasks.entries()) {
-      await subTask.run(dbHandler);
+      await subTask.run(dbHandler, null);
 
-      compareItemtoItemCopy(itemTree[i], subTask.result as Item, idMapping);
+      compareItemtoItemCopy(itemTree[i], subTask.result as Item, pathMapping);
     }
 
     expect(itemService.create).toHaveBeenCalledTimes(itemTree.length);
@@ -247,30 +224,31 @@ describe('CopyItemTask', () => {
       switch (id) {
         case fakeItem1.id:
           return fakeItem1;
-        case parentItemId:
-          return fakeParentItem;
+        case fakeTargetParentItemId:
+          return fakeTargetParentItem;
         default:
           return null;
       }
     });
     itemService.getNumberOfDescendants = jest.fn(async () => 0);
     itemService.getDescendants = jest.fn(async () => [fakeItem2, fakeItem3]);
-    itemService.getNumberOfLevelsToFarthestChild = jest.fn(async () => 0);
+    itemService.getNumberOfLevelsToFarthestChild = jest.fn(async () => 2);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
-    itemService.create = jest.fn(async (data) => data as Item);
+    itemService.create =
+      jest.fn(async <T extends UnknownExtra>(i: Partial<Item<T>>) => i as Item<T>);
 
     const itemTree = [fakeItem1, fakeItem2, fakeItem3];
 
-    const task = new CopyItemTask(member, fakeItem1.id, itemService, itemMembershipService, parentItemId);
+    const task = new CopyItemTask(member, fakeItem1.id, itemService, itemMembershipService, fakeTargetParentItemId);
     const subTasks = await task.run(dbHandler);
-    const idMapping = new Map();
+    const pathMapping = new Map();
 
     expect(subTasks.length).toBe(itemTree.length);
 
     for (const [i, subTask] of subTasks.entries()) {
-      await subTask.run(dbHandler);
+      await subTask.run(dbHandler, null);
 
-      compareItemtoItemCopy(itemTree[i], subTask.result as Item, idMapping, parentItemId);
+      compareItemtoItemCopy(itemTree[i], subTask.result as Item, pathMapping, fakeTargetParentItemId);
     }
 
     expect(itemService.create).toHaveBeenCalledTimes(itemTree.length);
@@ -280,10 +258,10 @@ describe('CopyItemTask', () => {
   test('Should copy item and its descendants into parentItem without membership', async () => {
     itemService.get = jest.fn(async (id) => {
       switch (id) {
-        case itemId:
+        case fakeItemId:
           return fakeItem1;
-        case parentItemId:
-          return fakeParentItem;
+        case fakeTargetParentItemId:
+          return fakeTargetParentItem;
         default:
           return null;
       }
@@ -292,19 +270,20 @@ describe('CopyItemTask', () => {
     itemService.getDescendants = jest.fn(async () => [fakeItem2, fakeItem3]);
     itemService.getNumberOfLevelsToFarthestChild = jest.fn(async () => 0);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Admin);
-    itemService.create = jest.fn(async (data) => data as Item);
+    itemService.create =
+      jest.fn(async <T extends UnknownExtra>(i: Partial<Item<T>>) => i as Item<T>);
 
     const itemTree = [fakeItem1, fakeItem2, fakeItem3];
 
-    const task = new CopyItemTask(member, itemId, itemService, itemMembershipService, parentItemId);
+    const task = new CopyItemTask(member, fakeItemId, itemService, itemMembershipService, fakeTargetParentItemId);
     const subTasks = await task.run(dbHandler);
-    const idMapping = new Map();
+    const pathMapping = new Map();
 
     expect(subTasks.length).toBe(itemTree.length);
     for (const [i, subTask] of subTasks.entries()) {
-      await subTask.run(dbHandler);
+      await subTask.run(dbHandler, null);
 
-      compareItemtoItemCopy(itemTree[i], subTask.result as Item, idMapping, parentItemId);
+      compareItemtoItemCopy(itemTree[i], subTask.result as Item, pathMapping, fakeTargetParentItemId);
     }
 
     expect(itemService.create).toHaveBeenCalledTimes(itemTree.length);
