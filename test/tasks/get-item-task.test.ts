@@ -2,10 +2,11 @@ import { DatabaseTransactionConnectionType } from 'slonik';
 
 import { ItemNotFound, UserCannotReadItem } from '../../src/util/graasp-error';
 import { Member } from '../../src/services/members/interfaces/member';
-import { Item } from '../../src/services/items/interfaces/item';
 import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
 import { GetItemTask } from '../../src/services/items/tasks/get-item-task';
+
+import { getDummyItem } from './utils';
 
 jest.mock('../../src/services/items/db-service');
 jest.mock('../../src/services/item-memberships/db-service');
@@ -13,8 +14,9 @@ jest.mock('../../src/services/item-memberships/db-service');
 const member = {} as Member;
 
 describe('GetItemTask', () => {
-  const itemId = 'item-id';
-  const fakeItem = { id: itemId } as Item;
+  const item = getDummyItem();
+  const itemId = item.id;
+
   const itemService = new ItemService();
   const itemMembershipService = new ItemMembershipService();
   const dbHandler = {} as DatabaseTransactionConnectionType;
@@ -42,7 +44,7 @@ describe('GetItemTask', () => {
 
   test('Should fail when `member` can\'t read item', async () => {
     expect.assertions(1);
-    itemService.get = jest.fn(async () => fakeItem);
+    itemService.get = jest.fn(async () => getDummyItem());
     itemMembershipService.canRead = jest.fn(async () => false);
 
     try {
@@ -54,12 +56,13 @@ describe('GetItemTask', () => {
   });
 
   test('Should return item when `member` can read it', async () => {
-    itemService.get = jest.fn(async () => fakeItem);
+    const item = getDummyItem();
+    itemService.get = jest.fn(async () => item);
     itemMembershipService.canRead = jest.fn(async () => true);
 
     const task = new GetItemTask(member, itemId, itemService, itemMembershipService);
     await task.run(dbHandler);
 
-    expect(task.result).toMatchObject(fakeItem);
+    expect(task.result).toMatchObject(item);
   });
 });
