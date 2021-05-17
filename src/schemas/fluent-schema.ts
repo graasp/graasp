@@ -11,7 +11,6 @@ export const itemPath =
 
 export const idParam =
   S.object()
-    .additionalProperties(false)
     .prop('id', uuid)
     .required(['id']);
 
