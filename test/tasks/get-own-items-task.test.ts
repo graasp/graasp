@@ -1,10 +1,10 @@
 import { DatabaseTransactionConnectionType } from 'slonik';
 
 import { Member } from '../../src/services/members/interfaces/member';
-import { Item } from '../../src/services/items/interfaces/item';
 import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
 import { GetOwnItemsTask } from '../../src/services/items/tasks/get-own-items-task';
+import { getDummyItem } from './utils';
 
 jest.mock('../../src/services/items/db-service');
 jest.mock('../../src/services/item-memberships/db-service');
@@ -12,7 +12,6 @@ jest.mock('../../src/services/item-memberships/db-service');
 const member = {} as Member;
 
 describe('GetOwnItemsTask', () => {
-  const fakeItems = [{ id: '1' }, { id: '2' }] as Item[];
   const itemService = new ItemService();
   const itemMembershipService = new ItemMembershipService();
   const dbHandler = {} as DatabaseTransactionConnectionType;
@@ -27,11 +26,12 @@ describe('GetOwnItemsTask', () => {
   });
 
   test('Should return `member`\'s "own" items', async () => {
-    itemService.getOwn = jest.fn(async () => fakeItems);
+    const items = [...Array(3).keys()].map(() => getDummyItem());
+    itemService.getOwn = jest.fn(async () => items);
 
     const task = new GetOwnItemsTask(member, itemService, itemMembershipService);
     await task.run(dbHandler);
 
-    expect(task.result).toMatchObject(fakeItems);
+    expect(task.result).toMatchObject(items);
   });
 });

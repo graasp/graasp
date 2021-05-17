@@ -2,10 +2,10 @@ import { DatabaseTransactionConnectionType } from 'slonik';
 
 import { ItemNotFound, UserCannotReadItem } from '../../src/util/graasp-error';
 import { Member } from '../../src/services/members/interfaces/member';
-import { Item } from '../../src/services/items/interfaces/item';
 import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
 import { GetItemChildrenTask } from '../../src/services/items/tasks/get-item-children-task';
+import { getDummyItem } from './utils';
 
 jest.mock('../../src/services/items/db-service');
 jest.mock('../../src/services/item-memberships/db-service');
@@ -13,8 +13,9 @@ jest.mock('../../src/services/item-memberships/db-service');
 const member = {} as Member;
 
 describe('GetItemChildrenTask', () => {
-  const itemId = 'item-id';
-  const fakeItem = { id: itemId } as Item;
+  const item = getDummyItem();
+  const itemId = item.id;
+
   const itemService = new ItemService();
   const itemMembershipService = new ItemMembershipService();
   const dbHandler = {} as DatabaseTransactionConnectionType;
@@ -42,7 +43,7 @@ describe('GetItemChildrenTask', () => {
 
   test('Should fail when `member` can\'t read item', async () => {
     expect.assertions(1);
-    itemService.get = jest.fn(async () => fakeItem);
+    itemService.get = jest.fn(async () => getDummyItem());
     itemMembershipService.canRead = jest.fn(async () => false);
 
     try {
@@ -54,15 +55,14 @@ describe('GetItemChildrenTask', () => {
   });
 
   test('Should return item\'s children when `member` can read item', async () => {
-    const fakeItemChildren = [{ id: '1' }, { id: '2' }, { id: '2' }] as Item[];
-
-    itemService.get = jest.fn(async () => fakeItem);
+    const childrenItems = [...Array(3).keys()].map(() => getDummyItem());
+    itemService.get = jest.fn(async () => getDummyItem());
     itemMembershipService.canRead = jest.fn(async () => true);
-    itemService.getDescendants = jest.fn(async () => fakeItemChildren);
+    itemService.getDescendants = jest.fn(async () => childrenItems);
 
     const task = new GetItemChildrenTask(member, itemId, itemService, itemMembershipService);
     await task.run(dbHandler);
 
-    expect(task.result).toMatchObject(fakeItemChildren);
+    expect(task.result).toMatchObject(childrenItems);
   });
 });
