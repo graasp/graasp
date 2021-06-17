@@ -57,17 +57,22 @@ if (!PG_CONNECTION_URI) {
  */
 export const GRAASP_ACTOR = { id: '12345678-1234-1234-1234-123456789012' };
 /**
- * JWT secret
+ * JWT
  */
 export const JWT_SECRET = process.env.JWT_SECRET;
-/**
- * Register (JWT) token expiration, in minutes
- */
+/** Register token expiration, in minutes */
 export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
-/**
- * Login (JWT) token expiration, in minutes
- */
+/** Login token expiration, in minutes */
 export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
+
+// Token based auth
+export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH;
+export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
+export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
+/** Auth token expiration, in minutes */
+export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = +process.env. AUTH_TOKEN_EXPIRATION_IN_MINUTES;
+/** Refresh token expiration, in minutes */
+export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = +process.env. REFRESH_TOKEN_EXPIRATION_IN_MINUTES;
 
 // Graasp limits
 

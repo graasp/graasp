@@ -1,4 +1,8 @@
 declare module 'fastify' {
+  interface FastifyRequest {
+    /** member id extracted from auth token when auth is token based (app) */
+    memberId: string;
+  }
   interface FastifyInstance {
     /**
      * Validate session, extract member from it, and set `request.member`.
@@ -10,6 +14,8 @@ declare module 'fastify' {
      * Does not fail/throw - simply does not set `request.member`.
      */
     fetchSession: (request: FastifyRequest) => void;
+
+    verifyMemberInSessionOrAuthToken:  (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
 

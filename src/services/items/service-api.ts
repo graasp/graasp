@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(async function (fastify) {
 
     // auth plugin session validation
-    fastify.addHook('preHandler', fastify.validateSession);
+    fastify.addHook('preHandler', fastify.verifyMemberInSessionOrAuthToken);
 
     if (S3_FILE_ITEM_PLUGIN) {
       fastify.register(graaspS3FileItem, {
