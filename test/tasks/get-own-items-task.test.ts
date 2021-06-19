@@ -4,7 +4,7 @@ import { Member } from '../../src/services/members/interfaces/member';
 import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
 import { GetOwnItemsTask } from '../../src/services/items/tasks/get-own-items-task';
-import { getDummyItem } from './utils';
+import { getDummyItem } from '../utils';
 
 jest.mock('../../src/services/items/db-service');
 jest.mock('../../src/services/item-memberships/db-service');

@@ -8,7 +8,7 @@ import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
 import { CopyItemTask } from '../../src/services/items/tasks/copy-item-task';
 import { PermissionLevel } from '../../src/services/item-memberships/interfaces/item-membership';
-import { getDummyItem } from './utils';
+import { getDummyItem } from '../utils';
 import { UnknownExtra } from '../../src/interfaces/extra';
 
 jest.mock('../../src/services/items/db-service');

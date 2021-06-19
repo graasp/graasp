@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     });
 
     if (APPS_PLUGIN) {
-      await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+      fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
     }
 
   }, { prefix: ROUTES_PREFIX });
@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(async function (fastify) {
 
     // auth plugin session validation
-    fastify.addHook('preHandler', fastify.validateSession);
+    fastify.addHook('preHandler', fastify.verifyAuthentication);
 
     if (S3_FILE_ITEM_PLUGIN) {
       fastify.register(graaspS3FileItem, {

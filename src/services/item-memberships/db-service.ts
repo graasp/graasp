@@ -37,6 +37,7 @@ export class ItemMembershipService {
 
   /**
    * Get the permission level of a membership given the `memberId` and `item`.
+   * `null` if non-existing.
    * @param memberId Id of member in membership
    * @param item Item whose path is referenced in membership
    * @param transactionHandler Database transaction handler

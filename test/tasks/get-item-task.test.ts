@@ -6,7 +6,7 @@ import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
 import { GetItemTask } from '../../src/services/items/tasks/get-item-task';
 
-import { getDummyItem } from './utils';
+import { getDummyItem } from '../utils';
 
 jest.mock('../../src/services/items/db-service');
 jest.mock('../../src/services/item-memberships/db-service');

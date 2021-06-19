@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import {
   InvalidMembership, ItemNotFound,
   ModifyExisting, UserCannotAdminItem
@@ -24,10 +25,12 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
     this.membership = membership;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
+    await this.preHookHandler?.(this.membership, this.actor, { log });
     const itemMembership = await this.itemMembershipService.create(this.membership, handler);
+    await this.postHookHandler?.(itemMembership, this.actor, { log });
 
     this.status = 'OK';
     this._result = itemMembership;
@@ -44,7 +47,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     this.itemId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<BaseItemMembershipTask<ItemMembership>[]> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<BaseItemMembershipTask<ItemMembership>[]> {
     this.status = 'RUNNING';
 
     // get item that the new membership will target
@@ -97,20 +100,28 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
       if (membershipsBelowToDiscard.length > 0) {
         this.status = 'DELEGATED';
 
+        const createSubTask = new CreateItemMembershipSubTask(
+          this.actor, itemMembership, this.itemService, this.itemMembershipService
+        );
+        createSubTask.preHookHandler = this.preHookHandler;
+        createSubTask.postHookHandler = this.postHookHandler;
+
         // return subtasks to remove redundant existing memberships and to create the new one
         return membershipsBelowToDiscard
-          .map(m => new DeleteItemMembershipSubTask(
+          .map(m => new DeleteItemMembershipSubTask( // TODO: how set the hook handlers for this delete subtask?
             this.actor, m.id, this.itemService, this.itemMembershipService
           ))
-          .concat(new CreateItemMembershipSubTask(
-            this.actor, itemMembership, this.itemService, this.itemMembershipService
-          ));
+          .concat(createSubTask);
 
       }
     }
 
     // create membership
-    this._result = await this.itemMembershipService.create(itemMembership, handler);
+    await this.preHookHandler?.(itemMembership, this.actor, { log });
+    const resultItemMembership = await this.itemMembershipService.create(itemMembership, handler);
+    await this.postHookHandler?.(resultItemMembership, this.actor, { log });
+
+    this._result = resultItemMembership;
     this.status = 'OK';
   }
 }
