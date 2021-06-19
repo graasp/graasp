@@ -14,10 +14,8 @@ import fastifyBearerAuth from 'fastify-bearer-auth';
 import {
   GRAASP_ACTOR, EMAIL_LINKS_HOST, PROTOCOL, CLIENT_HOST,
   JWT_SECRET, REGISTER_TOKEN_EXPIRATION_IN_MINUTES, LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
-
-  TOKEN_BASED_AUTH,
   AUTH_TOKEN_JWT_SECRET, AUTH_TOKEN_EXPIRATION_IN_MINUTES,
-  REFRESH_TOKEN_JWT_SECRET, REFRESH_TOKEN_EXPIRATION_IN_MINUTES
+  TOKEN_BASED_AUTH, REFRESH_TOKEN_JWT_SECRET, REFRESH_TOKEN_EXPIRATION_IN_MINUTES
 } from '../../util/config';
 
 // other services
@@ -68,10 +66,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     request.member = member;
   }
-  fastify.decorate('validateSession', verifyMemberInSession);
-  fastify.decorate('verifyMemberInSession', verifyMemberInSession);
 
-  // TODO: how to cover this case (used in apps) with token base auth???
   async function fetchMemberInSession(request: FastifyRequest) {
     const { session } = request;
     const memberId = session.get('member');
@@ -82,8 +77,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     // maybe when the groups are implemented it will be necessary.
     request.member = await mS.get(memberId, db.pool);
   }
-  fastify.decorate('fetchSession', fetchMemberInSession);
-  fastify.decorate('fetchMemberInSession', fetchMemberInSession);
+
+  fastify.decorate('validateSession', verifyMemberInSession);
 
   // for token based auth
   async function verifyMemberInAuthToken(jwtToken: string, request: FastifyRequest) {
@@ -109,19 +104,48 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       return false;
     }
   }
-  fastify.register(fastifyBearerAuth,
-    { addHook: false, keys: new Set<string>(), auth: verifyMemberInAuthToken });
 
-  fastify.decorate('verifyMemberInAuthToken', fastify.verifyBearerAuth);
+  await fastify
+    .register(fastifyAuth)
+    .register(fastifyBearerAuth, {
+      addHook: false,
+      keys: new Set<string>(),
+      auth: verifyMemberInAuthToken
+    });
 
-  await fastify.register(fastifyAuth);
+  fastify.decorate('attemptVerifyAuthentication',
+    TOKEN_BASED_AUTH ?
+      fastify.auth([
+        verifyMemberInSession,
+        fastify.verifyBearerAuth,
+        // this will make the chain of auth schemas to never fail,
+        // which is what we want to happen with this auth hook
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        async () => { }
+      ]) :
+      fetchMemberInSession // this hook, by itself, will also never fail
+  );
 
-  fastify.decorate('verifyMemberInSessionOrAuthToken', fastify.auth([
-    verifyMemberInSession,
-    // TODO: verifyBearerAuth can only be placed as the last option:
-    // https://github.com/fastify/fastify-bearer-auth/issues/90
-    fastify.verifyBearerAuth
-  ]));
+  const verifyAuthentication = TOKEN_BASED_AUTH ?
+    fastify.auth([verifyMemberInSession, fastify.verifyBearerAuth]) :
+    verifyMemberInSession;
+
+  fastify.decorate('verifyAuthentication', verifyAuthentication);
+
+  async function generateAuthTokensPair(memberId: string): Promise<{ authToken: string, refreshToken: string }> {
+    const [authToken, refreshToken] = await Promise.all([
+      promisifiedJwtSign(
+        { sub: memberId }, AUTH_TOKEN_JWT_SECRET,
+        { expiresIn: `${AUTH_TOKEN_EXPIRATION_IN_MINUTES}m` }
+      ),
+      promisifiedJwtSign(
+        { sub: memberId }, REFRESH_TOKEN_JWT_SECRET,
+        { expiresIn: `${REFRESH_TOKEN_EXPIRATION_IN_MINUTES}m` }
+      )
+    ]);
+    return { authToken, refreshToken };
+  }
+  fastify.decorate('generateAuthTokensPair', generateAuthTokensPair);
 
   // cookie based auth and api endpoints
   fastify.register(async function (fastify) {
@@ -240,40 +264,10 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     );
   });
 
-  // token based auth and api endpoints
+  // token based auth and endpoints
   fastify.register(async function (fastify) {
 
     fastify.decorateRequest('memberId', null);
-
-    async function generateTokensPair(memberId: string): Promise<{ authToken: string, refreshToken: string }> {
-      const [authToken, refreshToken] = await Promise.all([
-        promisifiedJwtSign(
-          { sub: memberId }, AUTH_TOKEN_JWT_SECRET,
-          { expiresIn: `${AUTH_TOKEN_EXPIRATION_IN_MINUTES}m` }
-        ),
-        promisifiedJwtSign(
-          { sub: memberId }, REFRESH_TOKEN_JWT_SECRET,
-          { expiresIn: `${REFRESH_TOKEN_EXPIRATION_IN_MINUTES}m` }
-        )
-      ]);
-      return { authToken, refreshToken };
-    }
-
-    // async function validateRefreshToken(jwtToken: string, request: FastifyRequest) {
-    //   try {
-    //     // verify token and extract its data
-    //     const { sub: memberId } = await promisifiedJwtVerify(jwtToken, REFRESH_TOKEN_JWT_SECRET, {});
-    //     // TODO: should we fetch the member from the DB?
-    //     request.memberId = memberId;
-
-    //     return true;
-    //   } catch (error) {
-    //     const { log } = request;
-    //     console.log('BUM2!!!');
-    //     log.warn('Invalid refresh token');
-    //     return false;
-    //   }
-    // }
 
     fastify.get<{ Querystring: { t: string } }>(
       '/auth',
@@ -284,7 +278,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         try {
           const { sub: memberId } = await promisifiedJwtVerify(token, JWT_SECRET, {});
           // TODO: should we fetch/test the member from the DB?
-          return generateTokensPair(memberId);
+          return generateAuthTokensPair(memberId);
         } catch (error) {
           if (error instanceof JsonWebTokenError) {
             reply.status(401);
@@ -294,13 +288,10 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       }
     );
 
-    // fastify.register(fastifyBearerAuth,
-    //   { addHook: false, keys: new Set<string>(), auth: validateRefreshToken });
-
     fastify.get(
       '/auth/refresh',
       { preHandler: fastify.verifyBearerAuth },
-      async ({ memberId }) => generateTokensPair(memberId)
+      async ({ memberId }) => generateAuthTokensPair(memberId)
     );
 
   }, { prefix: '/m' });

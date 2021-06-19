@@ -21,7 +21,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // routes
   fastify.register(async function (fastify) {
     // auth plugin session validation
-    fastify.addHook('preHandler', fastify.verifyMemberInSessionOrAuthToken);
+    fastify.addHook('preHandler', fastify.verifyAuthentication);
 
     // get current
     fastify.get('/current', async ({ member }) => member);

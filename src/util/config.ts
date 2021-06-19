@@ -66,7 +66,7 @@ export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
 export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
 
 // Token based auth
-export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH;
+export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
