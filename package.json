@@ -60,6 +60,7 @@
     "graasp-item-tags": "git://github.com/graasp/graasp-item-tags#master",
     "graasp-mailer": "git://github.com/graasp/graasp-mailer#master",
     "graasp-s3-file-item": "git://github.com/graasp/graasp-s3-file-item#master",
+    "graasp-websockets": "git://github.com/graasp/graasp-websockets.git#master",
     "jsonwebtoken": "^8.5.1",
     "slonik": "^23.5.5",
     "uuid": "^8.3.2"

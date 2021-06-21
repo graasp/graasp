@@ -1,5 +1,7 @@
 import fastify, { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
+import graaspWebSockets from 'graasp-websockets';
+
 import {
   ENVIRONMENT,
   PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS,
@@ -55,7 +57,8 @@ instance.register(async (instance) => {
   instance
     .register(fp(MemberServiceApi))
     .register(fp(ItemMembershipsServiceApi))
-    .register(fp(ItemsServiceApi));
+    .register(fp(ItemsServiceApi))
+    .register(graaspWebSockets);
 });
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...
