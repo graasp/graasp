@@ -320,6 +320,29 @@ export class ItemService {
   }
 
   /**
+   * Get list of members (ids) that *might* have item with given `itemPath` in their shared items.
+   * @param itemPath Item path
+   * @param transactionHandler Database transaction handler
+   * @returns Array of memberIds (empty or w/ memberIds/strings)
+   */
+  async membersWithSharedItem(itemPath: string, transactionHandler: TrxHandler): Promise<readonly string[]> {
+    const pathLevels = itemPath.split('.').length;
+
+    return transactionHandler.anyFirst<string>(sql`
+        SELECT member_id AS memberId
+        FROM (
+          SELECT member_id,
+            count(*) AS num_memberships_till_item_path,
+            max(nlevel(item_path)) AS levels
+          FROM item_membership
+          WHERE item_path @> ${itemPath}
+          GROUP BY member_id
+        ) AS t1
+        WHERE levels = ${pathLevels} AND num_memberships_till_item_path = 1
+      `);
+  }
+
+  /**
    * Move item, and its underlying tree, below another item.
    * Or make it a "new" tree if `parentItem` is not provided.
    *
