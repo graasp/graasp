@@ -293,7 +293,7 @@ export class ItemService {
 
   /**
    * Get items "shared with" `member` - "highest" items in the membership tree where `member`
-   * is not the creator of the item
+   * is not admin or `member` is admin but not the item creator
    * @param memberId Member's id
    * @param transactionHandler Database transaction handler
    * TODO: does this make sense here? Should this be part of different (micro)service??
@@ -302,7 +302,7 @@ export class ItemService {
     return transactionHandler.query<Item>(sql`
       SELECT ${ItemService.allColumnsForJoins}
       FROM (
-        SELECT item_path,
+        SELECT item_path, permission,
           RANK() OVER (PARTITION BY subpath(item_path, 0, 1) ORDER BY item_path ASC) AS membership_rank
         FROM item_membership
         WHERE member_id = ${memberId}
@@ -310,7 +310,10 @@ export class ItemService {
       INNER JOIN item
         ON item.path = t1.item_path
       WHERE t1.membership_rank = 1
-        AND item.creator != ${memberId}
+        AND (
+          t1.permission != 'admin'
+          OR item.creator != ${memberId}
+        )
       `)
       // TODO: is there a better way?
       .then(({ rows }) => rows.slice(0));
