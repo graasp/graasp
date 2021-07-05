@@ -21,6 +21,18 @@ const login = {
   },
 };
 
+const mlogin = {
+  body: {
+    type: 'object',
+    required: ['email', 'challenge'],
+    properties: {
+      email: { type: 'string', format: 'email' },
+      challenge: { type: 'string' }
+    },
+    additionalProperties: false
+  },
+};
+
 const auth = {
   querystring: {
     type: 'object',
@@ -32,8 +44,22 @@ const auth = {
   }
 };
 
+const mauth = {
+  body: {
+    type: 'object',
+    required: ['t', 'verifier'],
+    properties: {
+      t: { type: 'string' },
+      verifier: { type: 'string' }
+    },
+    additionalProperties: false
+  }
+};
+
 export {
   register,
   login,
-  auth
+  mlogin,
+  auth,
+  mauth
 };

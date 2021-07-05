@@ -1,6 +1,7 @@
 // global
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import jwt, { Secret, VerifyOptions, SignOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { JsonWebTokenError } from 'jsonwebtoken';
@@ -23,11 +24,11 @@ import { TaskManager as MemberTaskManager } from '../../services/members/task-ma
 import { Member } from '../../services/members/interfaces/member';
 
 // local
-import { register, login, auth } from './schemas';
+import { register, login, auth, mlogin, mauth } from './schemas';
 import { AuthPluginOptions } from './interfaces/auth';
 
-const promisifiedJwtVerify = promisify<string, Secret, VerifyOptions, { sub: string }>(jwt.verify);
-const promisifiedJwtSign = promisify<{ sub: string }, Secret, SignOptions, string>(jwt.sign);
+const promisifiedJwtVerify = promisify<string, Secret, VerifyOptions, { sub: string, challenge?: string }>(jwt.verify);
+const promisifiedJwtSign = promisify<{ sub: string, challenge?: string }, Secret, SignOptions, string>(jwt.sign);
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   const {
@@ -147,6 +148,19 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   }
   fastify.decorate('generateAuthTokensPair', generateAuthTokensPair);
 
+  async function generateLoginLinkAndEmailIt(member, reRegistrationAttempt?, challenge?) {
+    // generate token with member info and expiration
+    const token = await promisifiedJwtSign({
+      sub: member.id,
+      challenge,
+    }, JWT_SECRET, { expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m` });
+
+    const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${challenge ? '/m' : ''}/auth?t=${token}`;
+    // don't wait for mailer's response; log error and link if it fails.
+    fastify.mailer.sendLoginEmail(member, link, reRegistrationAttempt)
+      .catch(err => log.warn(err, `mailer failed. link: ${link}`));
+  }
+
   // cookie based auth and api endpoints
   fastify.register(async function (fastify) {
 
@@ -190,17 +204,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         reply.status(204);
       }
     );
-
-    async function generateLoginLinkAndEmailIt(member, reRegistrationAttempt?) {
-      // generate token with member info and expiration
-      const token = await promisifiedJwtSign({ sub: member.id }, JWT_SECRET,
-        { expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m` });
-
-      const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
-      // don't wait for mailer's response; log error and link if it fails.
-      fastify.mailer.sendLoginEmail(member, link, reRegistrationAttempt)
-        .catch(err => log.warn(err, `mailer failed. link: ${link}`));
-    }
 
     // login
     fastify.post<{ Body: { email: string } }>(
@@ -269,14 +272,39 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     fastify.decorateRequest('memberId', null);
 
-    fastify.get<{ Querystring: { t: string } }>(
-      '/auth',
-      { schema: auth },
-      async (request, reply) => {
-        const { query: { t: token } } = request;
+    fastify.post<{ Body: { email: string, challenge: string } }>(
+      '/login',
+      { schema: mlogin },
+      async ({ body, log }, reply) => {
+        const { email, challenge } = body;
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        task.skipActorChecks = true;
+        const members = await runner.runSingle(task, log);
 
+        if (members.length) {
+          const member = members[0];
+          await generateLoginLinkAndEmailIt(member, false, challenge);
+        } else {
+          log.warn(`Login attempt with non-existent email '${email}'`);
+        }
+
+        reply.status(204);
+      }
+    );
+
+    fastify.post<{ Body: { t: string, verifier: string } }>(
+      '/auth',
+      { schema: mauth },
+      async ({ body: { t: token, verifier } }, reply) => {
         try {
-          const { sub: memberId } = await promisifiedJwtVerify(token, JWT_SECRET, {});
+          const { sub: memberId, challenge } = await promisifiedJwtVerify(token, JWT_SECRET, {});
+
+          const verifierHash = crypto.createHash('sha256').update(verifier).digest('hex');
+          if (challenge !== verifierHash) {
+            reply.status(401);
+            throw new Error('challenge fail');
+          }
+
           // TODO: should we fetch/test the member from the DB?
           return generateAuthTokensPair(memberId);
         } catch (error) {
@@ -289,7 +317,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     );
 
     fastify.get(
-      '/auth/refresh',
+      '/auth/refresh', // there's a hardcoded reference to this path above: "verifyMemberInAuthToken()"
       { preHandler: fastify.verifyBearerAuth },
       async ({ memberId }) => generateAuthTokensPair(memberId)
     );
