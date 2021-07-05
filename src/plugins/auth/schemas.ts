@@ -10,6 +10,19 @@ const register = {
   }
 };
 
+const mregister = {
+  body: {
+    type: 'object',
+    required: ['name', 'email', 'challenge'],
+    properties: {
+      name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
+      email: { type: 'string', format: 'email' },
+      challenge: { type: 'string', format: 'email' }
+    },
+    additionalProperties: false
+  }
+};
+
 const login = {
   body: {
     type: 'object',
@@ -69,6 +82,7 @@ const mdeepLink = {
 
 export {
   register,
+  mregister,
   login,
   mlogin,
   auth,
