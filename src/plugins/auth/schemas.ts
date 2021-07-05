@@ -56,10 +56,22 @@ const mauth = {
   }
 };
 
+const mdeepLink = {
+  querystring: {
+    type: 'object',
+    required: ['t'],
+    properties: {
+      t: { type: 'string' }
+    },
+    additionalProperties: false
+  }
+};
+
 export {
   register,
   login,
   mlogin,
   auth,
-  mauth
+  mauth,
+  mdeepLink
 };

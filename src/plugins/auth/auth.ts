@@ -24,7 +24,7 @@ import { TaskManager as MemberTaskManager } from '../../services/members/task-ma
 import { Member } from '../../services/members/interfaces/member';
 
 // local
-import { register, login, auth, mlogin, mauth } from './schemas';
+import { register, login, auth, mlogin, mauth, mdeepLink } from './schemas';
 import { AuthPluginOptions } from './interfaces/auth';
 
 const promisifiedJwtVerify = promisify<string, Secret, VerifyOptions, { sub: string, challenge?: string }>(jwt.verify);
@@ -155,7 +155,13 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       challenge,
     }, JWT_SECRET, { expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m` });
 
-    const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${challenge ? '/m' : ''}/auth?t=${token}`;
+    let link;
+    if (challenge) {
+      link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/m/deep-link?t=${token}`;
+    } else {
+      link = `${PROTOCOL}://${EMAIL_LINKS_HOST}/auth?t=${token}`;
+    }
+
     // don't wait for mailer's response; log error and link if it fails.
     fastify.mailer.sendLoginEmail(member, link, reRegistrationAttempt)
       .catch(err => log.warn(err, `mailer failed. link: ${link}`));
@@ -320,6 +326,28 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       '/auth/refresh', // there's a hardcoded reference to this path above: "verifyMemberInAuthToken()"
       { preHandler: fastify.verifyBearerAuth },
       async ({ memberId }) => generateAuthTokensPair(memberId)
+    );
+
+    fastify.get<{ Querystring: { t: string } }>(
+      '/deep-link',
+      { schema: mdeepLink },
+      async ({ query: { t } }, reply) => {
+        reply.type('text/html');
+        // TODO: this can be improved
+        return `
+          <!DOCTYPE html>
+          <html>
+            <body style="display: flex; justify-content: center; align-items: center; height: 100vh;
+              font-family: sans-serif;">
+              <a style="background-color: #5050d2;
+                color: white;
+                padding: 1em 1.5em;
+                text-decoration: none;"
+                href="graasp://auth?t=${t}">Open with Graasp app</>
+            </body>
+          </html>
+        `;
+      }
     );
 
   }, { prefix: '/m' });
