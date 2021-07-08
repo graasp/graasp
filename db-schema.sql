@@ -28,6 +28,8 @@ CREATE TABLE "item" (
   "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );
 CREATE INDEX "item_path_idx" ON "item" USING gist ("path");
+CREATE INDEX "item_creator_idx" ON item("creator");
+CREATE INDEX "item_type_idx" ON item("type");
 
 CREATE TYPE "permissions_enum" AS ENUM ('read', 'write', 'admin');
 CREATE TABLE "item_membership" (

@@ -30,7 +30,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     if (result) {
       const resultText = Array.isArray(result) ?
         result.map(this.getIdIfExists) : this.getIdIfExists(result);
-      message += `, result '${resultText}'`;
+      if (resultText) message += `, result '${resultText}'`;
     }
     if (taskMessage) message += `, message '${taskMessage}'`;
 
