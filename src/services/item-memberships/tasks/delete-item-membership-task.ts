@@ -12,7 +12,10 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership } from '../interfaces/item-membership';
 
 export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return DeleteItemMembershipSubTask.name; }
+  get name(): string {
+    // return main task's name so it is injected with the same hook handlers
+    return DeleteItemMembershipTask.name;
+  }
 
   constructor(member: Member, itemMembershipId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {

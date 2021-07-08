@@ -16,7 +16,10 @@ import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membe
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
 class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
-  get name() { return CreateItemMembershipSubTask.name; }
+  get name() {
+    // return main task's name so it is injected with the same hook handlers
+    return CreateItemMembershipTask.name;
+  }
   private membership: ItemMembership;
 
   constructor(member: Member, membership: ItemMembership,

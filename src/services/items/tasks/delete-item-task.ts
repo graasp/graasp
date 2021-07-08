@@ -12,7 +12,10 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
 class DeleteItemSubTask extends BaseItemTask<Item> {
-  get name() { return DeleteItemSubTask.name; }
+  get name() {
+    // return main task's name so it is injected with the same hook handlers
+    return DeleteItemTask.name;
+  }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
