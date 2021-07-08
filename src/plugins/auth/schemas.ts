@@ -17,7 +17,7 @@ const mregister = {
     properties: {
       name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
       email: { type: 'string', format: 'email' },
-      challenge: { type: 'string', format: 'email' }
+      challenge: { type: 'string' }
     },
     additionalProperties: false
   }
