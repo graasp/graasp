@@ -122,8 +122,6 @@ export class CopyItemTask extends BaseItemTask<Item> {
       const createMembership = originalId === this.targetId ? createAdminMembership : false;
       const subtask = new CopyItemSubTask(this.actor, original, copy,
         this.itemService, this.itemMembershipService, createMembership);
-      subtask.preHookHandler = this.preHookHandler;
-      subtask.postHookHandler = this.postHookHandler;
 
       this.subtasks.push(subtask);
     });
