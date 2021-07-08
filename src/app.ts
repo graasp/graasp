@@ -14,6 +14,7 @@ import shared from './schemas/fluent-schema';
 
 import databasePlugin from './plugins/database';
 import authPlugin from './plugins/auth/auth';
+import metaPlugin from './plugins/meta';
 import mailerPlugin from 'graasp-mailer';
 
 import { ItemService } from './services/items/db-service';
@@ -44,6 +45,7 @@ instance.addSchema(shared);
 instance
   .register(fp(databasePlugin), { uri: PG_CONNECTION_URI, logs: DATABASE_LOGS })
   .register(fp(decorateFastifyInstance))
+  .register(metaPlugin)
   .register(mailerPlugin, {
     host: MAILER_CONFIG_SMTP_HOST,
     username: MAILER_CONFIG_USERNAME,

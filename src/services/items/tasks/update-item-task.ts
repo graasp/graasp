@@ -105,11 +105,11 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     // }
 
     // no propagating changes: just update target item
-    await this.preHookHandler?.(item, this.actor, { log });
+    await this.preHookHandler?.(item, this.actor, { log, handler });
     const resultItem = Object.keys(this.data).length ?
       await this.itemService.update(this.targetId, this.data, handler) :
       item;
-    await this.postHookHandler?.(resultItem, this.actor, { log });
+    await this.postHookHandler?.(resultItem, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = resultItem;

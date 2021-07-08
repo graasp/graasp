@@ -16,7 +16,10 @@ import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membe
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
 class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
-  get name() { return CreateItemMembershipSubTask.name; }
+  get name() {
+    // return main task's name so it is injected with the same hook handlers
+    return CreateItemMembershipTask.name;
+  }
   private membership: ItemMembership;
 
   constructor(member: Member, membership: ItemMembership,
@@ -100,18 +103,12 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
       if (membershipsBelowToDiscard.length > 0) {
         this.status = 'DELEGATED';
 
-        const createSubTask = new CreateItemMembershipSubTask(
-          this.actor, itemMembership, this.itemService, this.itemMembershipService
-        );
-        createSubTask.preHookHandler = this.preHookHandler;
-        createSubTask.postHookHandler = this.postHookHandler;
-
         // return subtasks to remove redundant existing memberships and to create the new one
         return membershipsBelowToDiscard
-          .map(m => new DeleteItemMembershipSubTask( // TODO: how set the hook handlers for this delete subtask?
+          .map(m => new DeleteItemMembershipSubTask(
             this.actor, m.id, this.itemService, this.itemMembershipService
           ))
-          .concat(createSubTask);
+          .concat(new CreateItemMembershipSubTask(this.actor, itemMembership, this.itemService, this.itemMembershipService));
 
       }
     }

@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import { InvalidPermissionLevel, ItemMembershipNotFound, UserCannotAdminItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
@@ -11,7 +12,10 @@ import { ItemMembership, PermissionLevelCompare, PermissionLevel } from '../inte
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
 class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
-  get name() { return UpdateItemMembershipSubTask.name; }
+  get name() {
+    // return main task's name so it is injected with the same hook handlers
+    return UpdateItemMembershipTask.name;
+  }
   private permission: PermissionLevel;
 
   constructor(member: Member, itemMembershipId: string, permission: PermissionLevel,
@@ -21,10 +25,12 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
     this.targetId = itemMembershipId;
   }
 
-  async run(handler: DatabaseTransactionHandler) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
+    await this.preHookHandler?.({ id: this.targetId, permission: this.permission }, this.actor, { log, handler });
     const itemMembership = await this.itemMembershipService.update(this.targetId, this.permission, handler);
+    await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = itemMembership;
