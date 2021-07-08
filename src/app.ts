@@ -1,6 +1,5 @@
 import fastify, { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
-import graaspWebSockets from 'graasp-websockets';
 
 import {
   ENVIRONMENT,
@@ -21,6 +20,7 @@ import databasePlugin from './plugins/database';
 import authPlugin from './plugins/auth/auth';
 import metaPlugin from './plugins/meta';
 import mailerPlugin from 'graasp-mailer';
+import graaspWebSockets from 'graasp-websockets';
 
 import { ItemService } from './services/items/db-service';
 import { ItemMembershipService } from './services/item-memberships/db-service';
