@@ -61,7 +61,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     const { name, description, type, extra } = this.data;
     const { id: creator } = this.actor;
     let item = new BaseItem(name, description, type, extra, creator, parentItem);
-    await this.preHookHandler?.(item, this.actor, { log });
+    await this.preHookHandler?.(item, this.actor, { log, handler });
     item = await this.itemService.create(item, handler);
 
     // create 'admin' membership for member+item if it's a 'root' item (no parent item) or
@@ -70,7 +70,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
       const membership = new BaseItemMembership(this.actor.id, item.path, pl.Admin, this.actor.id);
       await this.itemMembershipService.create(membership, handler);
     }
-    await this.postHookHandler?.(item, this.actor, { log });
+    await this.postHookHandler?.(item, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = item;

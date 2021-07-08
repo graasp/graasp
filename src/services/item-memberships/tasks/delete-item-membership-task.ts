@@ -12,7 +12,10 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership } from '../interfaces/item-membership';
 
 export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return DeleteItemMembershipSubTask.name; }
+  get name(): string {
+    // return main task's name so it is injected with the same hook handlers
+    return DeleteItemMembershipTask.name;
+  }
 
   constructor(member: Member, itemMembershipId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -23,9 +26,9 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log });
+    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log, handler });
     const itemMembership = await this.itemMembershipService.delete(this.targetId, handler);
-    await this.postHookHandler?.(itemMembership, this.actor, { log });
+    await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = itemMembership;
@@ -75,19 +78,14 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
         return itemMembershipsBelow
           .concat(itemMembership)
-          .map(im => {
-            const t = new DeleteItemMembershipSubTask(this.actor, im.id, this.itemService, this.itemMembershipService);
-            t.preHookHandler = this.preHookHandler;
-            t.postHookHandler = this.postHookHandler;
-            return t;
-          });
+          .map(im => new DeleteItemMembershipSubTask(this.actor, im.id, this.itemService, this.itemMembershipService));
       }
     }
 
     // delete membership
-    await this.preHookHandler?.(itemMembership, this.actor, { log });
+    await this.preHookHandler?.(itemMembership, this.actor, { log, handler });
     await this.itemMembershipService.delete(this.targetId, handler);
-    await this.postHookHandler?.(itemMembership, this.actor, { log });
+    await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = itemMembership;

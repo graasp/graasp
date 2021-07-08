@@ -12,7 +12,10 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
 class DeleteItemSubTask extends BaseItemTask<Item> {
-  get name() { return DeleteItemSubTask.name; }
+  get name() {
+    // return main task's name so it is injected with the same hook handlers
+    return DeleteItemTask.name;
+  }
 
   constructor(member: Member, itemId: string,
     itemService: ItemService, itemMembershipService: ItemMembershipService) {
@@ -23,9 +26,9 @@ class DeleteItemSubTask extends BaseItemTask<Item> {
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log });
+    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log, handler });
     const item = await this.itemService.delete(this.targetId, handler);
-    await this.postHookHandler?.(item, this.actor, { log });
+    await this.postHookHandler?.(item, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = item;
@@ -77,20 +80,15 @@ export class DeleteItemTask extends BaseItemTask<Item> {
       // delete item + all descendants, one by one.
       this.subtasks = descendants
         .concat(item)
-        .map(d => {
-          const st = new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService);
-          st.preHookHandler = this.preHookHandler;
-          st.postHookHandler = this.postHookHandler;
-          return st;
-        });
+        .map(d => new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService));
 
       return this.subtasks;
     }
 
-    await this.preHookHandler?.(item, this.actor, { log });
+    await this.preHookHandler?.(item, this.actor, { log, handler });
     // item has no descendents - delete item and return it as the result
     await this.itemService.delete(this.targetId, handler);
-    await this.postHookHandler?.(item, this.actor, { log });
+    await this.postHookHandler?.(item, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = item;
