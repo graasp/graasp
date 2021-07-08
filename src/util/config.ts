@@ -24,7 +24,6 @@ switch (process.env.NODE_ENV) {
     break;
 }
 
-const prod = ENVIRONMENT === Environment.production;
 const { PORT: port } = process.env;
 
 if (!port) {
@@ -34,14 +33,12 @@ if (!port) {
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
-export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOSTNAME;
 
-export const PORT = !prod ? port :
-  // if launched using pm2 (multiple instances), get the intance number
-  (port + (parseInt(process.env['NODE_APP_INSTANCE'], 10) || 0));
+export const PORT = port;
+export const HOST = `${HOSTNAME}:${PORT}`;
 
-export const HOST = prod ? HOSTNAME : `${HOSTNAME}:${PORT}`;
 export const CLIENT_HOST = process.env.CLIENT_HOST;
+export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
 export const { PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS } = process.env;
 
@@ -122,7 +119,7 @@ export const MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE = 5;
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
-export const MAILER_CONFIG_FROM_EMAIL = 'no-reply@graasp.org';
+export const MAILER_CONFIG_FROM_EMAIL = 'no-reply@graasp.com';
 
 // Graasp file item
 // TODO: should this be here?
