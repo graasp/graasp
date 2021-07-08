@@ -119,7 +119,7 @@ export const MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE = 5;
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
-export const MAILER_CONFIG_FROM_EMAIL = 'no-reply@graasp.com';
+export const MAILER_CONFIG_FROM_EMAIL = process.env.MAILER_CONFIG_FROM_EMAIL || 'no-reply@graasp.org';
 
 // Graasp file item
 // TODO: should this be here?
