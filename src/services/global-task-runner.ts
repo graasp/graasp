@@ -59,8 +59,6 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
    */
   private async runTransactionally<T>(
     task: Task<Actor, T>, log: FastifyLoggerInstance, handler?: DatabaseTransactionHandler): Promise<T> {
-    // set task's hook handlers before execution
-    this.injectTaskHooksHandlers(task);
 
     if (handler) {
       return this.runWithTransactionHandler(task, handler, log);
@@ -73,6 +71,9 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
   private async runWithTransactionHandler<T>(task: Task<Actor, T>, handler: DatabaseTransactionHandler,
     log: FastifyLoggerInstance): Promise<T> {
     let subtasks;
+
+    // set task's hook handlers before execution
+    this.injectTaskHooksHandlers(task);
 
     // run task
     try {
@@ -95,6 +96,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       try {
         for (i = 0; i < subtasks.length; i++) {
           subtask = subtasks[i];
+          this.injectTaskHooksHandlers(subtask); // set task's hook handlers before execution
           await handler.transaction(async nestedHandler => subtask.run(nestedHandler, log));
           this.handleTaskFinish(subtask, log);
         }
@@ -112,6 +114,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       try {
         for (i = 0; i < subtasks.length; i++) {
           subtask = subtasks[i];
+          this.injectTaskHooksHandlers(subtask); // set task's hook handlers before execution
           await subtask.run(handler, log);
         }
         subtasks.forEach(st => this.handleTaskFinish(st, log));
