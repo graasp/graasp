@@ -144,3 +144,10 @@ export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = process.env.EMBEDDED_LINK
 // Graasp apps
 export const APPS_PLUGIN = process.env.APPS_PLUGIN;
 export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
+
+// Graasp websockets
+export const WEBSOCKETS_PLUGIN = process.env.WEBSOCKETS_PLUGIN === 'true';
+export const REDIS_HOST = process.env.REDIS_HOST;
+export const REDIS_PORT = process.env.REDIS_PORT;
+export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+export const REDIS_USERNAME = process.env.REDIS_USERNAME;

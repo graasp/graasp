@@ -8,7 +8,12 @@ import {
   MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
   MAILER_CONFIG_PASSWORD,
-  MAILER_CONFIG_FROM_EMAIL
+  MAILER_CONFIG_FROM_EMAIL,
+  WEBSOCKETS_PLUGIN,
+  REDIS_HOST,
+  REDIS_PORT,
+  REDIS_USERNAME,
+  REDIS_PASSWORD
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -59,8 +64,21 @@ instance.register(async (instance) => {
   instance
     .register(fp(MemberServiceApi))
     .register(fp(ItemMembershipsServiceApi))
-    .register(fp(ItemsServiceApi))
-    .register(graaspWebSockets);
+    .register(fp(ItemsServiceApi));
+
+  if (WEBSOCKETS_PLUGIN) {
+    instance.register(graaspWebSockets, {
+      prefix: '/ws',
+      redis: {
+        config: {
+          host: REDIS_HOST,
+          port: +REDIS_PORT,
+          username: REDIS_USERNAME,
+          password: REDIS_PASSWORD,
+        }
+      }
+    });
+  }
 });
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...
