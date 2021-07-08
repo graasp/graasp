@@ -48,7 +48,10 @@ if (!PG_CONNECTION_URI) {
 }
 
 // Graasp constants
-
+/**
+ * Session cookie key
+ */
+export const SECURE_SESSION_SECRET_KEY = process.env.SECURE_SESSION_SECRET_KEY;
 /**
  * Graasp's "internal" actor
  */

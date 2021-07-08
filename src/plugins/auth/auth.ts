@@ -1,6 +1,4 @@
 // global
-import fs from 'fs';
-import path from 'path';
 import crypto from 'crypto';
 import jwt, { Secret, VerifyOptions, SignOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
@@ -13,7 +11,7 @@ import fastifySecureSession from 'fastify-secure-session';
 import fastifyBearerAuth from 'fastify-bearer-auth';
 
 import {
-  GRAASP_ACTOR, EMAIL_LINKS_HOST, PROTOCOL, CLIENT_HOST,
+  SECURE_SESSION_SECRET_KEY, GRAASP_ACTOR, EMAIL_LINKS_HOST, PROTOCOL, CLIENT_HOST,
   JWT_SECRET, REGISTER_TOKEN_EXPIRATION_IN_MINUTES, LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_TOKEN_JWT_SECRET, AUTH_TOKEN_EXPIRATION_IN_MINUTES,
   TOKEN_BASED_AUTH, REFRESH_TOKEN_JWT_SECRET, REFRESH_TOKEN_EXPIRATION_IN_MINUTES
@@ -40,9 +38,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   // cookie based auth
   fastify.register(fastifySecureSession, {
-    // TODO: maybe change to the 'secret' option, which is just a string (makes the boot slower).
-    // Production needs its own key: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key
-    key: fs.readFileSync(path.join(process.cwd(), 'secure-session-secret-key')),
+    key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
     cookie: { domain, path: '/' }
   });
 
