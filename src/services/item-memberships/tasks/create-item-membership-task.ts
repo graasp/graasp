@@ -28,9 +28,9 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.(this.membership, this.actor, { log });
+    await this.preHookHandler?.(this.membership, this.actor, { log, handler });
     const itemMembership = await this.itemMembershipService.create(this.membership, handler);
-    await this.postHookHandler?.(itemMembership, this.actor, { log });
+    await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = itemMembership;
@@ -117,9 +117,9 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     }
 
     // create membership
-    await this.preHookHandler?.(itemMembership, this.actor, { log });
+    await this.preHookHandler?.(itemMembership, this.actor, { log, handler });
     const resultItemMembership = await this.itemMembershipService.create(itemMembership, handler);
-    await this.postHookHandler?.(resultItemMembership, this.actor, { log });
+    await this.postHookHandler?.(resultItemMembership, this.actor, { log, handler });
 
     this._result = resultItemMembership;
     this.status = 'OK';

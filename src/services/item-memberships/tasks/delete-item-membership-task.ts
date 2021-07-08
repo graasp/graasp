@@ -23,9 +23,9 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log });
+    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log, handler });
     const itemMembership = await this.itemMembershipService.delete(this.targetId, handler);
-    await this.postHookHandler?.(itemMembership, this.actor, { log });
+    await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = itemMembership;
@@ -85,9 +85,9 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     }
 
     // delete membership
-    await this.preHookHandler?.(itemMembership, this.actor, { log });
+    await this.preHookHandler?.(itemMembership, this.actor, { log, handler });
     await this.itemMembershipService.delete(this.targetId, handler);
-    await this.postHookHandler?.(itemMembership, this.actor, { log });
+    await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = itemMembership;

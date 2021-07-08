@@ -23,9 +23,9 @@ class DeleteItemSubTask extends BaseItemTask<Item> {
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log });
+    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log, handler });
     const item = await this.itemService.delete(this.targetId, handler);
-    await this.postHookHandler?.(item, this.actor, { log });
+    await this.postHookHandler?.(item, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = item;
@@ -87,10 +87,10 @@ export class DeleteItemTask extends BaseItemTask<Item> {
       return this.subtasks;
     }
 
-    await this.preHookHandler?.(item, this.actor, { log });
+    await this.preHookHandler?.(item, this.actor, { log, handler });
     // item has no descendents - delete item and return it as the result
     await this.itemService.delete(this.targetId, handler);
-    await this.postHookHandler?.(item, this.actor, { log });
+    await this.postHookHandler?.(item, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = item;
