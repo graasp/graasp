@@ -9,9 +9,9 @@ const start = async () => {
     fastifyApp.register(fastifyHelmet);
     // fastifyApp.register(fastifyCompress);
 
-    if (ENVIRONMENT === 'staging') {
+    if (ENVIRONMENT !== 'development') {
       fastifyApp.register(fastifyCors, {
-        origin: /ielsrv7\.epfl\.ch/,
+        origin: '*',
         credentials: true, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
         maxAge: 7200 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
       });
