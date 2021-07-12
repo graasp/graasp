@@ -24,6 +24,10 @@ switch (process.env.NODE_ENV) {
     break;
 }
 
+export const PROD = ENVIRONMENT === Environment.production;
+export const STAGING = ENVIRONMENT === Environment.staging;
+export const DEV = ENVIRONMENT === Environment.development;
+
 const { PORT: port } = process.env;
 
 if (!port) {
@@ -142,7 +146,7 @@ export const EMBEDDED_LINK_ITEM_PLUGIN = process.env.EMBEDDED_LINK_ITEM_PLUGIN =
 export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
 
 // Graasp apps
-export const APPS_PLUGIN = process.env.APPS_PLUGIN;
+export const APPS_PLUGIN = process.env.APPS_PLUGIN === 'true';
 export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets

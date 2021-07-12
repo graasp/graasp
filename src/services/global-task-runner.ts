@@ -39,7 +39,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       case 'DELEGATED':
       case 'RUNNING': log.info(message); break;
       case 'FAIL': log.error(error); break;
-      default: log.debug(message);
+      default: log.warn(message);
     }
   }
 
