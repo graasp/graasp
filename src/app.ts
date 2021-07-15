@@ -3,6 +3,7 @@ import fp from 'fastify-plugin';
 
 import {
   ENVIRONMENT,
+  COOKIE_DOMAIN,
   PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS,
   MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
@@ -57,7 +58,7 @@ instance
     password: MAILER_CONFIG_PASSWORD,
     fromEmail: MAILER_CONFIG_FROM_EMAIL
   })
-  .register(authPlugin, { sessionCookieDomain: (ENVIRONMENT === 'staging' ? 'ielsrv7.epfl.ch' : null) });
+  .register(authPlugin, { sessionCookieDomain: COOKIE_DOMAIN ?? null });
 
 instance.register(async (instance) => {
   // core API modules

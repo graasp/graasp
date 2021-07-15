@@ -41,6 +41,7 @@ export const HOSTNAME = process.env.HOSTNAME || 'localhost';
 export const PORT = port;
 export const HOST = `${HOSTNAME}:${PORT}`;
 
+export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CLIENT_HOST = process.env.CLIENT_HOST;
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
