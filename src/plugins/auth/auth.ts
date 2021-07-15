@@ -207,10 +207,9 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       async ({ body, log }, reply) => {
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
         task.skipActorChecks = true;
-        const members = await runner.runSingle(task, log);
+        const [member] = await runner.runSingle(task, log);
 
-        if (members.length) {
-          const member = members[0];
+        if (member) {
           await generateLoginLinkAndEmailIt(member);
         } else {
           const { email } = body;
@@ -271,24 +270,19 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       '/register',
       { schema: mregister },
       async ({ body: { name, email, challenge }, log }, reply) => {
-        let member: Member;
-        try {
-          // create member
+        // check if member w/ email already exists
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        task.skipActorChecks = true;
+        const [member] = await runner.runSingle(task, log);
+
+        if (!member) {
           const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, { name, email });
           task.skipActorChecks = true;
-          member = await runner.runSingle(task, log);
+          const member = await runner.runSingle(task, log);
 
           await generateRegisterLinkAndEmailIt(member, challenge);
-        } catch (error) {
-          if ((error as Error).name !== uniqueViolationErrorName) throw error;
-
+        } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
-
-          // member already exists - get member and send a login email
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          task.skipActorChecks = true;
-          const [member] = await runner.runSingle(task, log);
-
           await generateLoginLinkAndEmailIt(member, true, challenge);
         }
 
@@ -303,10 +297,9 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         const { email, challenge } = body;
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         task.skipActorChecks = true;
-        const members = await runner.runSingle(task, log);
+        const [member] = await runner.runSingle(task, log);
 
-        if (members.length) {
-          const member = members[0];
+        if (member) {
           await generateLoginLinkAndEmailIt(member, false, challenge);
         } else {
           log.warn(`Login attempt with non-existent email '${email}'`);
