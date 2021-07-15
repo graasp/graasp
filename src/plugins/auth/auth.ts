@@ -173,30 +173,26 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   // cookie based auth and api endpoints
   fastify.register(async function (fastify) {
 
+    // register
     fastify.post<{ Body: { name: string; email: string } }>(
       '/register',
       { schema: register },
       async ({ body, log }, reply) => {
-        let member: Member;
+        const { email } = body;
 
-        try {
-          // create member
+        // check if member w/ email already exists
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        task.skipActorChecks = true;
+        const [member] = await runner.runSingle(task, log);
+
+        if (!member) {
           const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
           task.skipActorChecks = true;
-          member = await runner.runSingle(task, log);
+          const member = await runner.runSingle(task, log);
 
           await generateRegisterLinkAndEmailIt(member);
-        } catch (error) {
-          if ((error as Error).name !== uniqueViolationErrorName) throw error;
-
-          const { email } = body;
+        } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
-
-          // member already exists - get member and send a login email
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          task.skipActorChecks = true;
-          const [member] = await runner.runSingle(task, log);
-
           await generateLoginLinkAndEmailIt(member, true);
         }
 
