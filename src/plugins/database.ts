@@ -16,7 +16,7 @@ export interface Database {
 
 interface DatabasePluginOptions {
   uri: string;
-  logs: string;
+  logs: boolean;
 }
 
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify, { uri, logs }) => {

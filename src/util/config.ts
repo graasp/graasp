@@ -47,7 +47,9 @@ export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 export const CLIENT_HOST = process.env.CLIENT_HOST;
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
-export const { PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS } = process.env;
+export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;
+export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
+export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 
 if (!PG_CONNECTION_URI) {
   console.error('PG_CONNECTION_URI environment variable missing.');
