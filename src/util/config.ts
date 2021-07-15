@@ -42,6 +42,8 @@ export const PORT = port;
 export const HOST = `${HOSTNAME}:${PORT}`;
 
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
+
 export const CLIENT_HOST = process.env.CLIENT_HOST;
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
