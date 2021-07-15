@@ -19,7 +19,6 @@ import {
 
 // other services
 import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
-import { Member } from '../../services/members/interfaces/member';
 
 // local
 import { register, login, auth, mlogin, mauth, mdeepLink, mregister } from './schemas';
@@ -29,10 +28,7 @@ const promisifiedJwtVerify = promisify<string, Secret, VerifyOptions, { sub: str
 const promisifiedJwtSign = promisify<{ sub: string, challenge?: string }, Secret, SignOptions, string>(jwt.sign);
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
-  const {
-    sessionCookieDomain: domain,
-    uniqueViolationErrorName = 'UniqueIntegrityConstraintViolationError' // TODO: can we improve this?
-  } = options;
+  const { sessionCookieDomain: domain } = options;
   const { log, db, members: { dbService: mS }, taskRunner: runner } = fastify;
   const memberTaskManager = new MemberTaskManager(mS);
 

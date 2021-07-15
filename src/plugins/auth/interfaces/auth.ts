@@ -32,6 +32,5 @@ declare module 'fastify' {
 }
 
 export interface AuthPluginOptions {
-  sessionCookieDomain: string;
-  uniqueViolationErrorName?: string;
+  sessionCookieDomain: string
 }
