@@ -36,6 +36,7 @@ import {
 } from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
+import { Ordered } from './interfaces/requests';
 
 const ROUTES_PREFIX = '/items';
 
@@ -136,10 +137,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // get item's children
-      fastify.get<{ Params: IdParam }>(
+      fastify.get<{ Params: IdParam; Querystring: Ordered }>(
         '/:id/children', { schema: getChildren },
-        async ({ member, params: { id }, log }) => {
-          const task = taskManager.createGetChildrenTask(member, id);
+        async ({ member, params: { id }, query: { ordered }, log }) => {
+          const task = taskManager.createGetChildrenTask(member, id, ordered);
           return runner.runSingle(task, log);
         }
       );

@@ -63,8 +63,8 @@ export class TaskManager implements ItemTaskManager<Member> {
     return new CopyItemTask(member, itemId, this.itemService, this.itemMembershipService, parentId);
   }
 
-  createGetChildrenTask(member: Member, itemId: string): GetItemChildrenTask {
-    return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService);
+  createGetChildrenTask(member: Member, itemId: string, ordered?: boolean): GetItemChildrenTask {
+    return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService, ordered);
   }
 
   createGetOwnTask(member: Member): GetOwnItemsTask {
