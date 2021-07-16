@@ -1,5 +1,6 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
+import fastifyCors from 'fastify-cors';
 import { IdParam } from '../../interfaces/requests';
 // local
 import { MemberTaskManager } from './interfaces/member-task-manager';
@@ -20,6 +21,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // routes
   fastify.register(async function (fastify) {
+    // add CORS support
+    if (fastify.corsPluginOptions) {
+      fastify.register(fastifyCors, fastify.corsPluginOptions);
+    }
+
     // auth plugin session validation
     fastify.addHook('preHandler', fastify.verifyAuthentication);
 

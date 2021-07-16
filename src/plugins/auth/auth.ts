@@ -9,6 +9,7 @@ import fp from 'fastify-plugin';
 import fastifyAuth from 'fastify-auth';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyBearerAuth from 'fastify-bearer-auth';
+import fastifyCors from 'fastify-cors';
 
 import {
   SECURE_SESSION_SECRET_KEY, GRAASP_ACTOR, EMAIL_LINKS_HOST, PROTOCOL, CLIENT_HOST,
@@ -168,6 +169,10 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   // cookie based auth and api endpoints
   fastify.register(async function (fastify) {
+    // add CORS support
+    if (fastify.corsPluginOptions) {
+      fastify.register(fastifyCors, fastify.corsPluginOptions);
+    }
 
     // register
     fastify.post<{ Body: { name: string; email: string } }>(
@@ -259,6 +264,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   // token based auth and endpoints
   fastify.register(async function (fastify) {
+    // no need to add CORS support here - only used by mobile app
 
     fastify.decorateRequest('memberId', null);
 

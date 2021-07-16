@@ -4,6 +4,7 @@ declare module 'fastify' {
     memberId: string;
   }
   interface FastifyInstance {
+    corsPluginOptions: { origin: (string | RegExp)[]; credentials: boolean; maxAge: number };
     /**
      * Verify authentication based on session cookie or auth token,
      * extract member from it, and set `request.member`.
