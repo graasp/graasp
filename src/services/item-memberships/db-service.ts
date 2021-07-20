@@ -96,6 +96,23 @@ export class ItemMembershipService {
   }
 
   /**
+   * Get all memberships in given `item`'s subtree, ordered by
+   * longest to shortest path - lowest in the (sub)tree to highest in the (sub)tree.
+   * @param item Item whose path should be considered
+   * @param transactionHandler Database transaction handler
+   */
+  async getAllInSubtree(item: Item, transactionHandler: TrxHandler): Promise<ItemMembership[]> {
+    return transactionHandler.query<ItemMembership>(sql`
+        SELECT ${ItemMembershipService.allColumns}
+        FROM item_membership
+        WHERE ${item.path} @> item_path
+        ORDER BY nlevel(item_path) DESC
+      `)
+      // TODO: is there a better way?
+      .then(({ rows }) => rows.slice(0));
+  }
+
+  /**
    * Get all the 'best/nearest' memberships for the given `item` for each member
    * with access to it.
    * @param item Item whose path should be considered

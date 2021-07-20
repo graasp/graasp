@@ -111,6 +111,11 @@ export const MAX_DESCENDANTS_FOR_MOVE = 15;
 export const MAX_DESCENDANTS_FOR_COPY = 20;
 
 /**
+ * Maximun number of item memberships when deleting all "under" an item
+ */
+ export const MAX_ITEM_MEMBERSHIPS_FOR_DELETE = 25;
+
+/**
  * Maximun number of targets in a "many" request that only reads data (`get`)
  */
 export const MAX_TARGETS_FOR_READ_REQUEST = MAX_TREE_LEVELS;
