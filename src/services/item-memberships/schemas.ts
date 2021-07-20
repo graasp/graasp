@@ -111,9 +111,22 @@ const deleteOne = {
   }
 };
 
+// schema for deleting all item's tree item memberships
+const deleteAll = {
+  querystring: {
+    type: 'object',
+    required: ['itemId'],
+    properties: {
+      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+    },
+    additionalProperties: false
+  }
+};
+
 export {
   getItems,
   create,
   updateOne,
-  deleteOne
+  deleteOne,
+  deleteAll
 };
