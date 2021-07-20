@@ -36,6 +36,7 @@ import {
 } from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
+import { Ordered } from './interfaces/requests';
 
 const ROUTES_PREFIX = '/items';
 
@@ -50,6 +51,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.taskManager = taskManager;
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
+
+
+  // deployed w/o the '/items' prefix and w/o auth pre-handler
+  if (APPS_PLUGIN) {
+    // this needs to execute before 'create()' and 'updateOne()' are called
+    // because graaspApps extends the schemas
+    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+  }
 
   fastify.register(async function (fastify) {
     // add CORS support
@@ -136,10 +145,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // get item's children
-      fastify.get<{ Params: IdParam }>(
+      fastify.get<{ Params: IdParam; Querystring: Ordered }>(
         '/:id/children', { schema: getChildren },
-        async ({ member, params: { id }, log }) => {
-          const task = taskManager.createGetChildrenTask(member, id);
+        async ({ member, params: { id }, query: { ordered }, log }) => {
+          const task = taskManager.createGetChildrenTask(member, id, ordered);
           return runner.runSingle(task, log);
         }
       );
@@ -248,11 +257,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     });
   }, { prefix: ROUTES_PREFIX });
-
-  // deployed w/o the '/items' prefix and w/o auth pre-handler
-  if (APPS_PLUGIN) {
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
-  }
 };
 
 export default plugin;
