@@ -52,6 +52,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
 
+
+  // deployed w/o the '/items' prefix and w/o auth pre-handler
+  if (APPS_PLUGIN) {
+    // this needs to execute before 'create()' and 'updateOne()' are called
+    // because graaspApps extends the schemas
+    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+  }
+
   fastify.register(async function (fastify) {
     // add CORS support
     if (fastify.corsPluginOptions) {
@@ -249,11 +257,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     });
   }, { prefix: ROUTES_PREFIX });
-
-  // deployed w/o the '/items' prefix and w/o auth pre-handler
-  if (APPS_PLUGIN) {
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
-  }
 };
 
 export default plugin;
