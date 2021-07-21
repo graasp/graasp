@@ -5,6 +5,7 @@ import graaspS3FileItem from 'graasp-s3-file-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
+import graaspPublicItems from 'graasp-public-items';
 import graaspItemLogin from 'graasp-item-login';
 import graaspApps from 'graasp-apps';
 import fastifyCors from 'fastify-cors';
@@ -21,7 +22,8 @@ import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   GRAASP_ACTOR,
   APPS_PLUGIN,
-  APPS_JWT_SECRET
+  APPS_JWT_SECRET,
+  PUBLIC_ITEMS_PLUGIN
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -58,6 +60,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
     await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+  }
+
+  if (PUBLIC_ITEMS_PLUGIN) {
+    fastify.register(graaspPublicItems, {
+      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+      graaspActor: GRAASP_ACTOR,
+      // native fastify option
+      prefix: '/p'
+    });
   }
 
   fastify.register(async function (fastify) {
