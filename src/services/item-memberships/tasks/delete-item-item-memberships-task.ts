@@ -11,7 +11,7 @@ import { ItemMembership } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask, DeleteItemMembershipTask } from './delete-item-membership-task';
 import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../../../util/config';
 
-export class DeleteItemItemMembershipsTask extends BaseItemMembershipTask<ItemMembership> {
+export class DeleteItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMembership> {
   // return main task's name so it is injected with the same hook handlers
   get name(): string { return DeleteItemMembershipTask.name; }
 

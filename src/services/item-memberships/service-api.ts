@@ -75,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.delete<{ Querystring: { itemId: string } }>(
       '/', { schema: deleteAll },
       async ({ member, query: { itemId }, log }, reply) => {
-        const task = taskManager.createDeleteAllOfItemTask(member, itemId);
+        const task = taskManager.createDeleteAllOnAndBelowItemTask(member, itemId);
         await runner.runSingle(task, log);
         reply.status(204);
       }

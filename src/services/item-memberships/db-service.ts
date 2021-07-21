@@ -96,7 +96,7 @@ export class ItemMembershipService {
   }
 
   /**
-   * Get all memberships in given `item`'s subtree, ordered by
+   * Get all memberships on given `item`'s subtree, ordered by
    * longest to shortest path - lowest in the (sub)tree to highest in the (sub)tree.
    * @param item Item whose path should be considered
    * @param transactionHandler Database transaction handler

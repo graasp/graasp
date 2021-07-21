@@ -19,5 +19,5 @@ export interface ItemMembershipTaskManager<A extends Actor = Actor> {
   createDeleteTask(actor: A, objectId: string, extra?: unknown): Task<A, ItemMembership>;
 
   createGetOfItemTask(actor: A, itemId: string): Task<A, ItemMembership[]>;
-  createDeleteAllOfItemTask(actor: A, itemId: string): Task<A, ItemMembership>;
+  createDeleteAllOnAndBelowItemTask(actor: A, itemId: string): Task<A, ItemMembership>;
 }
