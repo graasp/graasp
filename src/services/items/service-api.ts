@@ -24,7 +24,8 @@ import {
   GRAASP_ACTOR,
   APPS_PLUGIN,
   APPS_JWT_SECRET,
-  PUBLIC_ITEMS_PLUGIN
+  PUBLIC_ITEMS_PLUGIN,
+  CHATBOX_PLUGIN
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -112,7 +113,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspItemTags);
 
-      fastify.register(graaspChatbox);
+      if (CHATBOX_PLUGIN) {
+        fastify.register(graaspChatbox);
+      }
 
       // create item
       fastify.post<{ Querystring: ParentIdParam }>(
