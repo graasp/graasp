@@ -8,6 +8,7 @@ import graaspItemTags from 'graasp-item-tags';
 import graaspPublicItems from 'graasp-public-items';
 import graaspItemLogin from 'graasp-item-login';
 import graaspApps from 'graasp-apps';
+import graaspChatbox from 'graasp-plugin-chatbox';
 import fastifyCors from 'fastify-cors';
 
 import {
@@ -110,6 +111,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       await fastify.register(graaspDocumentItem);
 
       fastify.register(graaspItemTags);
+
+      fastify.register(graaspChatbox);
 
       // create item
       fastify.post<{ Querystring: ParentIdParam }>(
