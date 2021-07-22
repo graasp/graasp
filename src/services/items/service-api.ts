@@ -5,6 +5,7 @@ import graaspS3FileItem from 'graasp-s3-file-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
+import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-item-login';
 import graaspApps from 'graasp-apps';
 import fastifyCors from 'fastify-cors';
@@ -88,6 +89,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
 
       await fastify.register(graaspDocumentItem);
+
+      fastify.register(graaspItemFlags);
 
       fastify.register(graaspItemTags);
 
