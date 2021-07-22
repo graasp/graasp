@@ -56,7 +56,7 @@
     "graasp-document-item": "git://github.com/graasp/graasp-document-item.git#main",
     "graasp-embedded-link-item": "git://github.com/graasp/graasp-embedded-link-item.git#main",
     "graasp-file-item": "git://github.com/graasp/graasp-file-item.git#master",
-    "graasp-item-flagging": "git://github.com/graasp/graasp-item-flagging.git",
+    "graasp-item-flagging": "git://github.com/graasp/graasp-item-flagging.git#master",
     "graasp-item-login": "git://github.com/graasp/graasp-item-login.git#master",
     "graasp-item-tags": "git://github.com/graasp/graasp-item-tags.git#master",
     "graasp-mailer": "git://github.com/graasp/graasp-mailer.git#master",
