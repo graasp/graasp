@@ -6,8 +6,10 @@ import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
+import graaspPublicItems from 'graasp-public-items';
 import graaspItemLogin from 'graasp-item-login';
 import graaspApps from 'graasp-apps';
+import graaspChatbox from 'graasp-plugin-chatbox';
 import fastifyCors from 'fastify-cors';
 
 import {
@@ -22,7 +24,9 @@ import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   GRAASP_ACTOR,
   APPS_PLUGIN,
-  APPS_JWT_SECRET
+  APPS_JWT_SECRET,
+  PUBLIC_ITEMS_PLUGIN,
+  CHATBOX_PLUGIN
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -37,6 +41,7 @@ import {
 } from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
+import { Ordered } from './interfaces/requests';
 
 const ROUTES_PREFIX = '/items';
 
@@ -51,6 +56,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.taskManager = taskManager;
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
+
+
+  // deployed w/o the '/items' prefix and w/o auth pre-handler
+  if (APPS_PLUGIN) {
+    // this needs to execute before 'create()' and 'updateOne()' are called
+    // because graaspApps extends the schemas
+    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+  }
+
+  if (PUBLIC_ITEMS_PLUGIN) {
+    fastify.register(graaspPublicItems, {
+      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+      graaspActor: GRAASP_ACTOR,
+      // native fastify option
+      prefix: '/p'
+    });
+  }
 
   fastify.register(async function (fastify) {
     // add CORS support
@@ -93,6 +115,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemFlags);
 
       fastify.register(graaspItemTags);
+
+      if (CHATBOX_PLUGIN) {
+        fastify.register(graaspChatbox);
+      }
 
       // create item
       fastify.post<{ Querystring: ParentIdParam }>(
@@ -139,10 +165,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // get item's children
-      fastify.get<{ Params: IdParam }>(
+      fastify.get<{ Params: IdParam; Querystring: Ordered }>(
         '/:id/children', { schema: getChildren },
-        async ({ member, params: { id }, log }) => {
-          const task = taskManager.createGetChildrenTask(member, id);
+        async ({ member, params: { id }, query: { ordered }, log }) => {
+          const task = taskManager.createGetChildrenTask(member, id, ordered);
           return runner.runSingle(task, log);
         }
       );
@@ -251,11 +277,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     });
   }, { prefix: ROUTES_PREFIX });
-
-  // deployed w/o the '/items' prefix and w/o auth pre-handler
-  if (APPS_PLUGIN) {
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
-  }
 };
 
 export default plugin;

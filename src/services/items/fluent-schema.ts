@@ -122,6 +122,9 @@ const getMany = {
 
 const getChildren = {
   params: idParam,
+  querystring: S.object()
+    .additionalProperties(false)
+    .prop('ordered', S.boolean()),
   response: {
     200: S.array().items(item),
     '4xx': error

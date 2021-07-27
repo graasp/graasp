@@ -1,11 +1,9 @@
-import fastify, { FastifyPluginAsync } from 'fastify';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import {
-  ENVIRONMENT,
   COOKIE_DOMAIN,
-  PG_CONNECTION_URI, DATABASE_LOGS, DISABLE_LOGS,
-  MAILER_CONFIG_SMTP_HOST,
+  PG_CONNECTION_URI, DATABASE_LOGS, MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_FROM_EMAIL,
@@ -42,45 +40,44 @@ const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('member', null);
 };
 
-const instance = fastify({ logger: !DISABLE_LOGS });
-// const instance = fastify({ logger: { prettyPrint: true, level: 'debug' } });
+export default async function (instance: FastifyInstance): Promise<void> {
+  // load some shared schema definitions
+  instance.addSchema(shared);
 
-// load some shared schema definitions
-instance.addSchema(shared);
-
-instance
-  .register(fp(databasePlugin), { uri: PG_CONNECTION_URI, logs: DATABASE_LOGS })
-  .register(fp(decorateFastifyInstance))
-  .register(metaPlugin)
-  .register(mailerPlugin, {
-    host: MAILER_CONFIG_SMTP_HOST,
-    username: MAILER_CONFIG_USERNAME,
-    password: MAILER_CONFIG_PASSWORD,
-    fromEmail: MAILER_CONFIG_FROM_EMAIL
-  })
-  .register(authPlugin, { sessionCookieDomain: COOKIE_DOMAIN ?? null });
-
-instance.register(async (instance) => {
-  // core API modules
   instance
-    .register(fp(MemberServiceApi))
-    .register(fp(ItemMembershipsServiceApi))
-    .register(fp(ItemsServiceApi));
-
-  if (WEBSOCKETS_PLUGIN) {
-    instance.register(graaspWebSockets, {
-      prefix: '/ws',
-      redis: {
-        config: {
-          host: REDIS_HOST,
-          port: +REDIS_PORT,
-          username: REDIS_USERNAME,
-          password: REDIS_PASSWORD,
-        }
-      }
+    .register(fp(databasePlugin), { uri: PG_CONNECTION_URI, logs: DATABASE_LOGS })
+    .register(fp(decorateFastifyInstance))
+    .register(metaPlugin)
+    .register(mailerPlugin, {
+      host: MAILER_CONFIG_SMTP_HOST,
+      username: MAILER_CONFIG_USERNAME,
+      password: MAILER_CONFIG_PASSWORD,
+      fromEmail: MAILER_CONFIG_FROM_EMAIL
     });
-  }
-});
+
+  await instance.register(authPlugin, { sessionCookieDomain: COOKIE_DOMAIN ?? null });
+
+  instance.register(async (instance) => {
+    // core API modules
+    instance
+      .register(fp(MemberServiceApi))
+      .register(fp(ItemMembershipsServiceApi))
+      .register(fp(ItemsServiceApi));
+
+    if (WEBSOCKETS_PLUGIN) {
+      instance.register(graaspWebSockets, {
+        prefix: '/ws',
+        redis: {
+          config: {
+            host: REDIS_HOST,
+            port: +REDIS_PORT,
+            username: REDIS_USERNAME,
+            password: REDIS_PASSWORD,
+          }
+        }
+      });
+    }
+  });
+}
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...
-export default instance;

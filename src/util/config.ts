@@ -111,6 +111,11 @@ export const MAX_DESCENDANTS_FOR_MOVE = 15;
 export const MAX_DESCENDANTS_FOR_COPY = 20;
 
 /**
+ * Maximun number of item memberships when deleting all "under" an item
+ */
+ export const MAX_ITEM_MEMBERSHIPS_FOR_DELETE = 25;
+
+/**
  * Maximun number of targets in a "many" request that only reads data (`get`)
  */
 export const MAX_TARGETS_FOR_READ_REQUEST = MAX_TREE_LEVELS;
@@ -160,3 +165,9 @@ export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = process.env.REDIS_PORT;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
+
+// Graasp public items
+export const PUBLIC_ITEMS_PLUGIN = process.env.PUBLIC_ITEMS_PLUGIN === 'true';
+
+// Graasp chatbox plugin
+export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';

@@ -11,6 +11,7 @@ import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
 import { GetItemsItemMembershipsTask } from './tasks/get-items-item-membership-task';
 import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
+import { DeleteItemsItemMembershipsTask } from './tasks/delete-item-item-memberships-task';
 
 export class TaskManager implements ItemMembershipTaskManager<Member> {
   private itemService: ItemService;
@@ -48,5 +49,9 @@ export class TaskManager implements ItemMembershipTaskManager<Member> {
   // Other
   createGetOfItemTask(member: Member, itemId: string): GetItemsItemMembershipsTask {
     return new GetItemsItemMembershipsTask(member, itemId, this.itemService, this.itemMembershipService);
+  }
+
+  createDeleteAllOnAndBelowItemTask(member: Member, itemId: string): DeleteItemsItemMembershipsTask {
+    return new DeleteItemsItemMembershipsTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 }

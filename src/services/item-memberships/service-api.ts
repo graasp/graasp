@@ -7,7 +7,8 @@ import common, {
   getItems,
   create,
   updateOne,
-  deleteOne
+  deleteOne,
+  deleteAll
 } from './schemas';
 import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
@@ -70,6 +71,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
     );
 
+    // delete item's item memberships
+    fastify.delete<{ Querystring: { itemId: string } }>(
+      '/', { schema: deleteAll },
+      async ({ member, query: { itemId }, log }, reply) => {
+        const task = taskManager.createDeleteAllOnAndBelowItemTask(member, itemId);
+        await runner.runSingle(task, log);
+        reply.status(204);
+      }
+    );
   }, { prefix: ROUTES_PREFIX });
 };
 

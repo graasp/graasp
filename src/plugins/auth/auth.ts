@@ -34,7 +34,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   const memberTaskManager = new MemberTaskManager(mS);
 
   // cookie based auth
-  fastify.register(fastifySecureSession, {
+  await fastify.register(fastifySecureSession, {
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
     cookie: { domain, path: '/' }
   });
@@ -99,13 +99,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     }
   }
 
-  await fastify
-    .register(fastifyAuth)
-    .register(fastifyBearerAuth, {
-      addHook: false,
-      keys: new Set<string>(),
-      auth: verifyMemberInAuthToken
-    });
+  await fastify.register(fastifyAuth);
+  await fastify.register(fastifyBearerAuth, {
+    addHook: false,
+    keys: new Set<string>(),
+    auth: verifyMemberInAuthToken
+  });
 
   fastify.decorate('attemptVerifyAuthentication',
     TOKEN_BASED_AUTH ?
@@ -168,10 +167,10 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   }
 
   // cookie based auth and api endpoints
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     // add CORS support
     if (fastify.corsPluginOptions) {
-      fastify.register(fastifyCors, fastify.corsPluginOptions);
+      await fastify.register(fastifyCors, fastify.corsPluginOptions);
     }
 
     // register
@@ -263,7 +262,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   });
 
   // token based auth and endpoints
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     // no need to add CORS support here - only used by mobile app
 
     fastify.decorateRequest('memberId', null);

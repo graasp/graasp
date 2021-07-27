@@ -101,6 +101,11 @@ export class CannotModifyOtherMembers extends BaseGraaspError {
     super({ code: 'GERR014', statusCode: 403, message: 'Member cannot modify other member' }, data);
   }
 }
+export class TooManyMemberships extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR015', statusCode: 403, message: 'Too many memberships' }, data);
+  }
+}
 export class DatabaseError extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: 'Database error' }, data);
