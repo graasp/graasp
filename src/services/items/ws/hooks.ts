@@ -21,13 +21,9 @@ function getParentId(itemPath: string): string | undefined {
   return tokens.length >= 2 ? tokens[tokens.length - 2].replace(/_/g, "-") : undefined;
 }
 
-// helper function to extract child ID from item path
-function extractChildId(itemPath: string): string {
-  const tokens = itemPath.split(".");
-  return tokens[tokens.length - 1].replace(/_/g, "-");
-}
-
-// helper to register item topic
+/**
+ * helper to register item topic
+ */
 function registerItemTopic(
   websockets: WebSocketService,
   runner: TaskRunner<Actor>,
@@ -121,7 +117,9 @@ function registerItemTopic(
   });
 }
 
-// helper to register items of member topic
+/**
+ * helper to register items of member topic
+ */
 function registerMemberItemsTopic(
   websockets: WebSocketService,
   runner: TaskRunner<Actor>,
