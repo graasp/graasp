@@ -43,7 +43,7 @@ import {
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
-import { registerWsHooks } from './ws/hooks';
+import { registerItemWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/items';
 
@@ -126,7 +126,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
 
       if (WEBSOCKETS_PLUGIN && websockets) {
-        registerWsHooks(
+        registerItemWsHooks(
           websockets,
           runner,
           dbService,
