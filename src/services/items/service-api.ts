@@ -26,7 +26,8 @@ import {
   APPS_PLUGIN,
   APPS_JWT_SECRET,
   PUBLIC_ITEMS_PLUGIN,
-  CHATBOX_PLUGIN
+  CHATBOX_PLUGIN,
+  WEBSOCKETS_PLUGIN
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -42,6 +43,7 @@ import {
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
+import { registerWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/items';
 
@@ -49,7 +51,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items,
     itemMemberships: { dbService: itemMembershipsDbService },
-    taskRunner: runner
+    taskRunner: runner,
+    websockets,
+    db,
+    log,
   } = fastify;
   const { dbService } = items;
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
@@ -118,6 +123,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       if (CHATBOX_PLUGIN) {
         fastify.register(graaspChatbox);
+      }
+
+      if (WEBSOCKETS_PLUGIN && websockets) {
+        registerWsHooks(
+          websockets,
+          runner,
+          dbService,
+          itemMembershipsDbService,
+          taskManager,
+          db.pool
+        );
       }
 
       // create item
