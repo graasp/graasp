@@ -1,18 +1,18 @@
-import { AccessDenied, NotFound, WebSocketService } from "graasp-websockets";
-import { Actor } from "../../../interfaces/actor";
-import { TaskRunner } from "../../../interfaces/task-runner";
-import { DatabaseTransactionHandler } from "../../../plugins/database";
-import { ItemService } from "../../items/db-service";
-import { memberItemsTopic, SharedItemsEvent } from "../../items/ws/events";
-import { ItemMembershipService } from "../db-service";
-import { ItemMembership } from "../interfaces/item-membership";
-import { ItemMembershipTaskManager } from "../interfaces/item-membership-task-manager";
-import { ItemMembershipEvent, itemMembershipsTopic } from "./events";
+import { AccessDenied, NotFound, WebSocketService } from 'graasp-websockets';
+import { Actor } from '../../../interfaces/actor';
+import { TaskRunner } from '../../../interfaces/task-runner';
+import { DatabaseTransactionHandler } from '../../../plugins/database';
+import { ItemService } from '../../items/db-service';
+import { memberItemsTopic, SharedItemsEvent } from '../../items/ws/events';
+import { ItemMembershipService } from '../db-service';
+import { ItemMembership } from '../interfaces/item-membership';
+import { ItemMembershipTaskManager } from '../interfaces/item-membership-task-manager';
+import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 
 // helper function to extract child ID from item path
 function extractChildId(itemPath: string): string {
-  const tokens = itemPath.split(".");
-  return tokens[tokens.length - 1].replace(/_/g, "-");
+  const tokens = itemPath.split('.');
+  return tokens[tokens.length - 1].replace(/_/g, '-');
 }
 
 /**
@@ -59,9 +59,9 @@ export function registerItemMembershipWsHooks(
         return;
       }
       if (membership.memberId !== item.creator) {
-        websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent("create", item));
+        websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent('create', item));
       }
-      websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent("create", membership));
+      websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('create', membership));
     }
   );
 
@@ -75,7 +75,7 @@ export function registerItemMembershipWsHooks(
       if (!item) {
         return;
       }
-      websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent("update", membership));
+      websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('update', membership));
     }
   );
 
@@ -91,8 +91,8 @@ export function registerItemMembershipWsHooks(
       if (!item) {
         return;
       }
-      websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent("delete", item));
-      websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent("delete", membership));
+      websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent('delete', item));
+      websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('delete', membership));
     }
   );
 }

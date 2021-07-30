@@ -1,11 +1,11 @@
-import { AccessDenied, NotFound, WebSocketService } from "graasp-websockets";
-import { Actor } from "../../../interfaces/actor";
-import { TaskRunner } from "../../../interfaces/task-runner";
-import { DatabaseTransactionHandler } from "../../../plugins/database";
-import { ItemMembershipService } from "../../item-memberships/db-service";
-import { ItemService } from "../db-service";
-import { Item } from "../interfaces/item";
-import { ItemTaskManager } from "../interfaces/item-task-manager";
+import { AccessDenied, NotFound, WebSocketService } from 'graasp-websockets';
+import { Actor } from '../../../interfaces/actor';
+import { TaskRunner } from '../../../interfaces/task-runner';
+import { DatabaseTransactionHandler } from '../../../plugins/database';
+import { ItemMembershipService } from '../../item-memberships/db-service';
+import { ItemService } from '../db-service';
+import { Item } from '../interfaces/item';
+import { ItemTaskManager } from '../interfaces/item-task-manager';
 import {
   ChildItemEvent,
   itemTopic,
@@ -13,12 +13,12 @@ import {
   OwnItemsEvent,
   SelfItemEvent,
   SharedItemsEvent,
-} from "./events";
+} from './events';
 
 // helper function to find parent of item given path
 function getParentId(itemPath: string): string | undefined {
-  const tokens = itemPath.split(".");
-  return tokens.length >= 2 ? tokens[tokens.length - 2].replace(/_/g, "-") : undefined;
+  const tokens = itemPath.split('.');
+  return tokens.length >= 2 ? tokens[tokens.length - 2].replace(/_/g, '-') : undefined;
 }
 
 /**
@@ -51,7 +51,7 @@ function registerItemTopic(
   runner.setTaskPostHookHandler<Item>(createItemTaskName, async (item) => {
     const parentId = getParentId(item.path);
     if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent("create", item));
+      websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
     }
   });
 
@@ -60,12 +60,12 @@ function registerItemTopic(
   // - notify parent of updated child
   const updateItemTaskName = itemTaskManager.getUpdateTaskName();
   runner.setTaskPostHookHandler<Item>(updateItemTaskName, async (item) => {
-    websockets.publish(itemTopic, item.id, SelfItemEvent("update", item));
+    websockets.publish(itemTopic, item.id, SelfItemEvent('update', item));
   });
   runner.setTaskPostHookHandler<Item>(updateItemTaskName, async (item) => {
     const parentId = getParentId(item.path);
     if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent("update", item));
+      websockets.publish(itemTopic, parentId, ChildItemEvent('update', item));
     }
   });
 
@@ -74,12 +74,12 @@ function registerItemTopic(
   // - notify parent of deleted child
   const deleteItemTaskName = itemTaskManager.getDeleteTaskName();
   runner.setTaskPostHookHandler<Item>(deleteItemTaskName, async (item) => {
-    websockets.publish(itemTopic, item.id, SelfItemEvent("delete", item));
+    websockets.publish(itemTopic, item.id, SelfItemEvent('delete', item));
   });
   runner.setTaskPostHookHandler<Item>(deleteItemTaskName, async (item) => {
     const parentId = getParentId(item.path);
     if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent("delete", item));
+      websockets.publish(itemTopic, parentId, ChildItemEvent('delete', item));
     }
   });
 
@@ -88,7 +88,7 @@ function registerItemTopic(
   runner.setTaskPostHookHandler<Item>(copyItemTaskName, async (item) => {
     const parentId = getParentId(item.path);
     if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent("create", item));
+      websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
     }
   });
 
@@ -106,13 +106,13 @@ function registerItemTopic(
     }
     const parentId = getParentId(item.path);
     if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent("delete", item));
+      websockets.publish(itemTopic, parentId, ChildItemEvent('delete', item));
     }
   });
   runner.setTaskPostHookHandler<Item>(moveItemTaskName, async (item) => {
     const parentId = getParentId(item.path);
     if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent("create", item));
+      websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
     }
   });
 }
@@ -140,7 +140,7 @@ function registerMemberItemsTopic(
     const parentId = getParentId(item.path);
     if (parentId === undefined) {
       // root item, notify creator
-      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent("create", item));
+      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('create', item));
     }
   });
 
@@ -152,7 +152,7 @@ function registerMemberItemsTopic(
     const parentId = getParentId(item.path);
     if (parentId === undefined) {
       // root item, notify creator
-      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent("update", item));
+      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('update', item));
     }
   });
   runner.setTaskPostHookHandler<Item>(updateItemTaskName, async (item, actor, { handler }) => {
@@ -161,7 +161,7 @@ function registerMemberItemsTopic(
       return;
     }
     members.forEach((memberId) => {
-      websockets.publish(memberItemsTopic, memberId, SharedItemsEvent("update", item));
+      websockets.publish(memberItemsTopic, memberId, SharedItemsEvent('update', item));
     });
   });
 
@@ -174,7 +174,7 @@ function registerMemberItemsTopic(
     const parentId = getParentId(item.path);
     if (parentId === undefined) {
       // root item, notify creator
-      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent("delete", item));
+      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('delete', item));
     }
   });
   runner.setTaskPreHookHandler<Item>(
@@ -192,7 +192,7 @@ function registerMemberItemsTopic(
         return;
       }
       members.forEach((memberId) => {
-        websockets.publish(memberItemsTopic, memberId, SharedItemsEvent("delete", item));
+        websockets.publish(memberItemsTopic, memberId, SharedItemsEvent('delete', item));
       });
     }
   );
@@ -203,7 +203,7 @@ function registerMemberItemsTopic(
     const parentId = getParentId(item.path);
     if (parentId === undefined) {
       // root item, notify creator
-      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent("create", item));
+      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('create', item));
     }
   });
 
@@ -222,14 +222,14 @@ function registerMemberItemsTopic(
     const parentId = getParentId(item.path);
     if (parentId === undefined) {
       // root item, notify creator
-      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent("delete", item));
+      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('delete', item));
     }
   });
   runner.setTaskPostHookHandler<Item>(moveItemTaskName, async (item) => {
     const parentId = getParentId(item.path);
     if (parentId === undefined) {
       // root item, notify creator
-      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent("create", item));
+      websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('create', item));
     }
   });
 }

@@ -1,12 +1,12 @@
-import { Item } from "../interfaces/item";
+import { Item } from '../interfaces/item';
 
 /**
  * Item websocket events are registered under these topics
  */
 // changes on item entities
-export const itemTopic = "item";
+export const itemTopic = 'item';
 // changes on items of given user
-export const memberItemsTopic = "item/member";
+export const memberItemsTopic = 'item/member';
 
 /**
  * All websocket events for items will have this shape
@@ -21,8 +21,8 @@ interface ItemEvent {
  * Events that affect each item itself
  */
 interface SelfItemEvent extends ItemEvent {
-  kind: "self";
-  op: "update" | "delete";
+  kind: 'self';
+  op: 'update' | 'delete';
   item: Item;
 }
 
@@ -32,8 +32,8 @@ interface SelfItemEvent extends ItemEvent {
  * @param item value of the item for this event
  * @returns instance of self item event
  */
-export const SelfItemEvent = (op: SelfItemEvent["op"], item: Item): SelfItemEvent => ({
-  kind: "self",
+export const SelfItemEvent = (op: SelfItemEvent['op'], item: Item): SelfItemEvent => ({
+  kind: 'self',
   op,
   item,
 });
@@ -42,8 +42,8 @@ export const SelfItemEvent = (op: SelfItemEvent["op"], item: Item): SelfItemEven
  * Events that affect parents on their children
  */
 interface ChildItemEvent extends ItemEvent {
-  kind: "child";
-  op: "create" | "delete" | "update";
+  kind: 'child';
+  op: 'create' | 'delete' | 'update';
   item: Item;
 }
 
@@ -53,8 +53,8 @@ interface ChildItemEvent extends ItemEvent {
  * @param item value of the item for this event
  * @returns instance of child item event
  */
-export const ChildItemEvent = (op: ChildItemEvent["op"], item: Item): ChildItemEvent => ({
-  kind: "child",
+export const ChildItemEvent = (op: ChildItemEvent['op'], item: Item): ChildItemEvent => ({
+  kind: 'child',
   op,
   item,
 });
@@ -63,8 +63,8 @@ export const ChildItemEvent = (op: ChildItemEvent["op"], item: Item): ChildItemE
  * Events that affect own items of given user
  */
 interface OwnItemsEvent extends ItemEvent {
-  kind: "own";
-  op: "create" | "delete" | "update";
+  kind: 'own';
+  op: 'create' | 'delete' | 'update';
   item: Item;
 }
 
@@ -74,8 +74,8 @@ interface OwnItemsEvent extends ItemEvent {
  * @param item  value of the item for this event
  * @returns instnace of own items event
  */
-export const OwnItemsEvent = (op: OwnItemsEvent["op"], item: Item): OwnItemsEvent => ({
-  kind: "own",
+export const OwnItemsEvent = (op: OwnItemsEvent['op'], item: Item): OwnItemsEvent => ({
+  kind: 'own',
   op,
   item,
 });
@@ -84,8 +84,8 @@ export const OwnItemsEvent = (op: OwnItemsEvent["op"], item: Item): OwnItemsEven
  * Events that affect shared items of given user
  */
 interface SharedItemsEvent extends ItemEvent {
-  kind: "shared";
-  op: "create" | "delete" | "update";
+  kind: 'shared';
+  op: 'create' | 'delete' | 'update';
   item: Item;
 }
 
@@ -95,8 +95,8 @@ interface SharedItemsEvent extends ItemEvent {
  * @param item  value of the item for this event
  * @returns instnace of shared items event
  */
-export const SharedItemsEvent = (op: SharedItemsEvent["op"], item: Item): SharedItemsEvent => ({
-  kind: "shared",
+export const SharedItemsEvent = (op: SharedItemsEvent['op'], item: Item): SharedItemsEvent => ({
+  kind: 'shared',
   op,
   item,
 });

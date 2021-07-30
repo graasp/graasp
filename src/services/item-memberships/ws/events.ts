@@ -2,10 +2,10 @@
  * Membership websocket events are registered under these topics
  */
 
-import { ItemMembership } from "../interfaces/item-membership";
+import { ItemMembership } from '../interfaces/item-membership';
 
 // memberships of a given item
-export const itemMembershipsTopic = "memberships/item";
+export const itemMembershipsTopic = 'memberships/item';
 
 /**
  * All websocket events for memberships will have this shape
@@ -20,8 +20,8 @@ interface MembershipEvent {
  * Events that affect memberships on items
  */
 interface ItemMembershipEvent extends MembershipEvent {
-  kind: "item";
-  op: "create" | "update" | "delete";
+  kind: 'item';
+  op: 'create' | 'update' | 'delete';
   membership: ItemMembership;
 }
 
@@ -32,10 +32,10 @@ interface ItemMembershipEvent extends MembershipEvent {
  * @returns instance of item membership event
  */
 export const ItemMembershipEvent = (
-  op: ItemMembershipEvent["op"],
+  op: ItemMembershipEvent['op'],
   membership: ItemMembership
 ): ItemMembershipEvent => ({
-  kind: "item",
+  kind: 'item',
   op,
   membership,
 });
