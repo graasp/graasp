@@ -54,7 +54,7 @@ export default {
 };
 
 // schema for creating an item membership
-const create = {
+const  create = {
   querystring: {
     type: 'object',
     required: ['itemId'],

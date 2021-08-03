@@ -8,6 +8,7 @@ import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspPublicItems from 'graasp-public-items';
 import graaspItemLogin from 'graasp-item-login';
+import graaspRecycleBin from 'graasp-recycle-bin';
 import graaspApps from 'graasp-apps';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fastifyCors from 'fastify-cors';
@@ -42,6 +43,8 @@ import {
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
+import {GroupExtra} from '../../interfaces/group-extra';
+import {Group, Member} from '../members/interfaces/member';
 
 const ROUTES_PREFIX = '/items';
 
@@ -49,6 +52,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items,
     itemMemberships: { dbService: itemMembershipsDbService },
+    groups: { taskManager: groupTaskManager },
     taskRunner: runner
   } = fastify;
   const { dbService } = items;
@@ -116,9 +120,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspItemTags);
 
+      fastify.register(graaspRecycleBin);
+
       if (CHATBOX_PLUGIN) {
         fastify.register(graaspChatbox);
       }
+
 
       // create item
       fastify.post<{ Querystring: ParentIdParam }>(
@@ -146,6 +153,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }
       );
 
+      // fastify.get<{ Params: IdParam }> (
+      //   '/:groupId/group/own',
+      //   async ({ member, params: {id}, log}) => {
+      //     const task = groupTaskManager.createGetTask(member,id);
+      //     const group = await runner.runSingle<Group>(task,log);
+      //     const { extra: { rootFolder: { itemId } } } = group;
+      //     const itemTask = taskManager.createGetGroupItemsTask(member,itemId);
+      //     return runner.runSingle(itemTask,log);
+      //   }
+      // );
       // get own
       fastify.get(
         '/own', { schema: getOwnGetShared },

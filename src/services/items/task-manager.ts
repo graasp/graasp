@@ -16,6 +16,7 @@ import { DeleteItemTask } from './tasks/delete-item-task';
 import { MoveItemTask } from './tasks/move-item-task';
 import { CopyItemTask } from './tasks/copy-item-task';
 import { ItemTaskManager } from './interfaces/item-task-manager';
+import {GetGroupItemsTask} from './tasks/get-group-items-task';
 
 export class TaskManager implements ItemTaskManager<Member> {
   private itemService: ItemService;
@@ -65,6 +66,10 @@ export class TaskManager implements ItemTaskManager<Member> {
 
   createGetChildrenTask(member: Member, itemId: string, ordered?: boolean): GetItemChildrenTask {
     return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService, ordered);
+  }
+
+  createGetGroupItemsTask(member: Member, itemId: string): GetGroupItemsTask {
+    return new GetGroupItemsTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 
   createGetOwnTask(member: Member): GetOwnItemsTask {

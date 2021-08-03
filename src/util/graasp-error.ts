@@ -106,6 +106,26 @@ export class TooManyMemberships extends BaseGraaspError {
     super({ code: 'GERR015', statusCode: 403, message: 'Too many memberships' }, data);
   }
 }
+export class GroupNotFound extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR016', statusCode: 404, message: 'Group not found' }, data);
+  }
+}
+export class MemberIsNotAGroup extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR017', statusCode: 403, message: 'Member is not a group' }, data);
+  }
+}
+export class CannotAccessGroup extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR018', statusCode: 403, message: 'Member cannot access the group' }, data);
+  }
+}
+export class GroupMembershipExists extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR019', statusCode: 400, message: 'Cannot create membership for member in group. Membership already exists' }, data);
+  }
+}
 export class DatabaseError extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: 'Database error' }, data);

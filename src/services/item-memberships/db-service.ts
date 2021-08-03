@@ -44,11 +44,23 @@ export class ItemMembershipService {
    */
   async getPermissionLevel(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<PermissionLevel> {
     return transactionHandler.query<ItemMembership>(sql`
-        SELECT permission FROM item_membership
-        WHERE member_id = ${memberId}
+          SELECT * FROM item_membership
+          WHERE member_id IN  (
+              WITH RECURSIVE grpRecursion AS (
+                  SELECT * from group_membership
+                  WHERE member = ${memberId}
+
+                  UNION
+                      SELECT
+                          gm.* from group_membership gm
+                      INNER JOIN grpRecursion s ON s."group" = gm.member
+
+
+                  ) SELECT member FROM grpRecursion UNION SELECT "group" FROM grpRecursion
+              )
           AND item_path @> ${item.path}
-        ORDER BY nlevel(item_path) DESC
-        LIMIT 1
+          ORDER BY  permission DESC
+          LIMIT 1
       `)
       .then(({ rows, rowCount }) => rowCount ? rows[0].permission : null);
   }

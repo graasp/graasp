@@ -24,19 +24,22 @@ import graaspWebSockets from 'graasp-websockets';
 import { ItemService } from './services/items/db-service';
 import { ItemMembershipService } from './services/item-memberships/db-service';
 import { MemberService } from './services/members/db-service';
+import { GroupMembershipService } from './services/group-memberships/db-service';
 import ItemsServiceApi from './services/items/service-api';
 import ItemMembershipsServiceApi from './services/item-memberships/service-api';
 import MemberServiceApi from './services/members/service-api';
+import GroupServiceApi from './services/groups/service-api';
+import GroupMembershipsServiceApi from './services/group-memberships/service-api';
 import { GlobalTaskRunner } from './services/global-task-runner';
 
 const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
   const { db, log } = fastify;
   fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
-
   fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
   fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
+  fastify.decorate('groups', { taskManager: null });
+  fastify.decorate('groupMemberships', { dbService: new GroupMembershipService(), taskManager: null });
   fastify.decorate('itemMemberships', { dbService: new ItemMembershipService(), taskManager: null });
-
   fastify.decorateRequest('member', null);
 };
 
@@ -62,7 +65,9 @@ export default async function (instance: FastifyInstance): Promise<void> {
     instance
       .register(fp(MemberServiceApi))
       .register(fp(ItemMembershipsServiceApi))
-      .register(fp(ItemsServiceApi));
+      .register(fp(ItemsServiceApi))
+      .register(fp(GroupServiceApi))
+      .register(fp(GroupMembershipsServiceApi));
 
     if (WEBSOCKETS_PLUGIN) {
       instance.register(graaspWebSockets, {

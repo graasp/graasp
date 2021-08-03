@@ -314,6 +314,7 @@ export class ItemService {
           t1.permission != 'admin'
           OR item.creator != ${memberId}
         )
+        AND item.type != 'rootFolder'
       `)
       // TODO: is there a better way?
       .then(({ rows }) => rows.slice(0));
