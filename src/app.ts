@@ -31,13 +31,14 @@ import MemberServiceApi from './services/members/service-api';
 import GroupServiceApi from './services/groups/service-api';
 import GroupMembershipsServiceApi from './services/group-memberships/service-api';
 import { GlobalTaskRunner } from './services/global-task-runner';
+import {GroupService} from './services/groups/db-service';
 
 const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
   const { db, log } = fastify;
   fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
   fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
+  fastify.decorate('groups', { dbService: new GroupService(),taskManager: null });
   fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
-  fastify.decorate('groups', { taskManager: null });
   fastify.decorate('groupMemberships', { dbService: new GroupMembershipService(), taskManager: null });
   fastify.decorate('itemMemberships', { dbService: new ItemMembershipService(), taskManager: null });
   fastify.decorateRequest('member', null);
@@ -65,8 +66,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
     instance
       .register(fp(MemberServiceApi))
       .register(fp(ItemMembershipsServiceApi))
-      .register(fp(ItemsServiceApi))
       .register(fp(GroupServiceApi))
+      .register(fp(ItemsServiceApi))
       .register(fp(GroupMembershipsServiceApi));
 
     if (WEBSOCKETS_PLUGIN) {

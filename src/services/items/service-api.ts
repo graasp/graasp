@@ -29,7 +29,7 @@ import {
   PUBLIC_ITEMS_PLUGIN,
   CHATBOX_PLUGIN
 } from '../../util/config';
-import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
+import {GroupIdParam, IdParam, IdsParams, ParentIdParam} from '../../interfaces/requests';
 // local
 import {
   getOne, getMany,
@@ -43,8 +43,7 @@ import {
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
-import {GroupExtra} from '../../interfaces/group-extra';
-import {Group, Member} from '../members/interfaces/member';
+import {Group} from '../members/interfaces/member';
 
 const ROUTES_PREFIX = '/items';
 
@@ -61,7 +60,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
 
-
+  console.log(groupTaskManager);
   // deployed w/o the '/items' prefix and w/o auth pre-handler
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
@@ -153,16 +152,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }
       );
 
-      // fastify.get<{ Params: IdParam }> (
-      //   '/:groupId/group/own',
-      //   async ({ member, params: {id}, log}) => {
-      //     const task = groupTaskManager.createGetTask(member,id);
-      //     const group = await runner.runSingle<Group>(task,log);
-      //     const { extra: { rootFolder: { itemId } } } = group;
-      //     const itemTask = taskManager.createGetGroupItemsTask(member,itemId);
-      //     return runner.runSingle(itemTask,log);
-      //   }
-      // );
+      fastify.get<{ Params: GroupIdParam }> (
+        '/group/:groupId/own',
+        async ({ member, params: {groupId}, log}) => {
+          const task = groupTaskManager.createGetTask(member,groupId);
+          const group = await runner.runSingle<Group>(task,log);
+          const { extra: { rootFolder: { itemId } } } = group;
+          const itemTask = taskManager.createGetGroupItemsTask(member,itemId);
+          return runner.runSingle(itemTask,log);
+        }
+      );
       // get own
       fastify.get(
         '/own', { schema: getOwnGetShared },

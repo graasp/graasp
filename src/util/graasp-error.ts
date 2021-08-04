@@ -126,6 +126,16 @@ export class GroupMembershipExists extends BaseGraaspError {
     super({ code: 'GERR019', statusCode: 400, message: 'Cannot create membership for member in group. Membership already exists' }, data);
   }
 }
+export class RootFolderNotFound extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR020', statusCode: 404, message: 'Root folder not found' }, data);
+  }
+}
+export class CannotAdminGroup extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR018', statusCode: 403, message: 'Member cannot admin the group' }, data);
+  }
+}
 export class DatabaseError extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: 'Database error' }, data);
