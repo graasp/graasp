@@ -125,7 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspChatbox);
       }
 
-      if (WEBSOCKETS_PLUGIN && websockets) {
+      if (WEBSOCKETS_PLUGIN) {
         registerItemWsHooks(
           websockets,
           runner,

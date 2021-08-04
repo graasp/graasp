@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // auth plugin session validation
     fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-    if (WEBSOCKETS_PLUGIN && websockets) {
+    if (WEBSOCKETS_PLUGIN) {
       registerItemMembershipWsHooks(
         websockets,
         runner,
