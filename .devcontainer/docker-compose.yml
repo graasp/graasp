@@ -19,7 +19,9 @@ services:
 
     volumes:
       - ..:/workspace:cached
-      - ${TMPDIR}:/tmp/graasp-file-item-storage
+      - ${TMPDIR}:/tmp/graasp-file-item-storage # On Linux (and other platforms) env var TMPDIR does not exist:
+                                                # replace "${TMPDIR}" with permanent existing path e.g.
+                                                # "/tmp/graasp-file-item-storage"
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
@@ -49,6 +51,13 @@ services:
 
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward MongoDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  redis:
+    container_name: graasp-redis
+    image: redis
+    ports:
+      - 6379:6379
+    restart: unless-stopped
 
 volumes:
   postgres-data:
