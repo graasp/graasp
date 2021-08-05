@@ -10,7 +10,7 @@ import { ItemMembershipTaskManager } from '../interfaces/item-membership-task-ma
 import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 
 // helper function to extract child ID from item path
-function extractChildId(itemPath: string): string {
+export function extractChildId(itemPath: string): string {
   const tokens = itemPath.split('.');
   return tokens[tokens.length - 1].replace(/_/g, '-');
 }

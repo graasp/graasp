@@ -16,7 +16,7 @@ import {
 } from './events';
 
 // helper function to find parent of item given path
-function getParentId(itemPath: string): string | undefined {
+export function getParentId(itemPath: string): string | undefined {
   const tokens = itemPath.split('.');
   return tokens.length >= 2 ? tokens[tokens.length - 2].replace(/_/g, '-') : undefined;
 }
