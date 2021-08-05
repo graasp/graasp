@@ -57,26 +57,26 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   await instance.register(authPlugin, { sessionCookieDomain: COOKIE_DOMAIN ?? null });
 
+  if (WEBSOCKETS_PLUGIN) {
+    await instance.register(graaspWebSockets, {
+      prefix: '/ws',
+      redis: {
+        config: {
+          host: REDIS_HOST,
+          port: +REDIS_PORT,
+          username: REDIS_USERNAME,
+          password: REDIS_PASSWORD,
+        }
+      }
+    });
+  }
+
   instance.register(async (instance) => {
     // core API modules
     instance
       .register(fp(MemberServiceApi))
       .register(fp(ItemMembershipsServiceApi))
       .register(fp(ItemsServiceApi));
-
-    if (WEBSOCKETS_PLUGIN) {
-      instance.register(graaspWebSockets, {
-        prefix: '/ws',
-        redis: {
-          config: {
-            host: REDIS_HOST,
-            port: +REDIS_PORT,
-            username: REDIS_USERNAME,
-            password: REDIS_PASSWORD,
-          }
-        }
-      });
-    }
   });
 }
 

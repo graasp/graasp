@@ -13,11 +13,19 @@ import common, {
 import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 import { TaskManager } from './task-manager';
+import { WEBSOCKETS_PLUGIN } from '../../util/config';
+import { registerItemMembershipWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { items: { dbService: itemsDbService }, itemMemberships, taskRunner: runner } = fastify;
+  const {
+    items: { dbService: itemsDbService },
+    itemMemberships,
+    taskRunner: runner,
+    websockets,
+    db,
+  } = fastify;
   const { dbService } = itemMemberships;
   const taskManager: ItemMembershipTaskManager = new TaskManager(itemsDbService, dbService);
   itemMemberships.taskManager = taskManager;
@@ -34,6 +42,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // auth plugin session validation
     fastify.addHook('preHandler', fastify.verifyAuthentication);
+
+    if (WEBSOCKETS_PLUGIN) {
+      registerItemMembershipWsHooks(
+        websockets,
+        runner,
+        itemsDbService,
+        dbService,
+        taskManager,
+        db.pool
+      );
+    }
 
     // get item's memberships
     fastify.get<{ Querystring: { itemId: string } }>(
