@@ -13,8 +13,29 @@ import {
 } from './util/config';
 
 const start = async () => {
-  const instance = fastify({ logger: !DISABLE_LOGS });
-  // const instance = fastify({ logger: { prettyPrint: true, level: 'debug' } });
+ const instance = fastify({ 
+    logger: !DISABLE_LOGS,
+    ajv: {
+      customOptions: {
+        // This allow routes that take array to correctly interpret single values as an array
+        // https://github.com/fastify/fastify/blob/main/docs/Validation-and-Serialization.md
+        coerceTypes: 'array',
+      }
+    }
+  });
+  /*const instance = fastify({ 
+    logger: { 
+      prettyPrint: true, 
+      level: 'debug' 
+    },
+    ajv: {
+      customOptions: {
+        // This allow routes that take array to correctly interpret single values as an array
+        // https://github.com/fastify/fastify/blob/main/docs/Validation-and-Serialization.md
+        coerceTypes: 'array',
+      }
+    }
+  });*/
 
   instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);
