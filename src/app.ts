@@ -1,5 +1,6 @@
-import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
+import graaspPluginPublic from 'graasp-plugin-public';
 
 import {
   COOKIE_DOMAIN,
@@ -14,6 +15,9 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
   REDIS_PASSWORD,
+  PUBLIC_PLUGIN,
+  S3_FILE_ITEM_PLUGIN,
+  GRAASP_ACTOR,
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -23,27 +27,10 @@ import metaPlugin from './plugins/meta';
 import mailerPlugin from 'graasp-mailer';
 import graaspWebSockets from 'graasp-websockets';
 
-import { ItemService } from './services/items/db-service';
-import { ItemMembershipService } from './services/item-memberships/db-service';
-import { MemberService } from './services/members/db-service';
 import ItemsServiceApi from './services/items/service-api';
 import ItemMembershipsServiceApi from './services/item-memberships/service-api';
 import MemberServiceApi from './services/members/service-api';
-import { GlobalTaskRunner } from './services/global-task-runner';
-
-const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
-  const { db, log } = fastify;
-  fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
-
-  fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
-  fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
-  fastify.decorate('itemMemberships', {
-    dbService: new ItemMembershipService(),
-    taskManager: null,
-  });
-
-  fastify.decorateRequest('member', null);
-};
+import decoratorPlugin from './plugins/decorator';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
@@ -51,7 +38,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   instance
     .register(fp(databasePlugin), { uri: PG_CONNECTION_URI, logs: DATABASE_LOGS })
-    .register(fp(decorateFastifyInstance))
+    .register(fp(decoratorPlugin))
     .register(metaPlugin)
     .register(mailerPlugin, {
       host: MAILER_CONFIG_SMTP_HOST,
@@ -60,7 +47,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     });
 
-  await instance.register(authPlugin, { sessionCookieDomain: COOKIE_DOMAIN ?? null });
+  await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
 
   if (WEBSOCKETS_PLUGIN) {
     await instance.register(graaspWebSockets, {
@@ -78,10 +65,20 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   instance.register(async (instance) => {
     // core API modules
-    instance
+    await instance
       .register(fp(MemberServiceApi))
       .register(fp(ItemMembershipsServiceApi))
       .register(fp(ItemsServiceApi));
+
+  if (PUBLIC_PLUGIN) {
+    await instance.register(graaspPluginPublic, {
+      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+      graaspActor: GRAASP_ACTOR,
+      enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
+      // native fastify option
+      prefix: '/p',
+    });
+  }
   });
 }
 

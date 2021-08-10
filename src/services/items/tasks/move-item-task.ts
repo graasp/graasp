@@ -1,12 +1,7 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import {
-  HierarchyTooDeep,
-  InvalidMoveTarget,
-  ItemNotFound,
-  TooManyDescendants,
-  UserCannotAdminItem,
-  UserCannotWriteItem,
+  HierarchyTooDeep, InvalidMoveTarget, TooManyDescendants
 } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_DESCENDANTS_FOR_MOVE, MAX_TREE_LEVELS } from '../../../util/config';
@@ -19,65 +14,47 @@ import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
+type InputType = { item?: Item, parentItem?: Item };
+
 export class MoveItemTask extends BaseItemTask<Item> {
   get name(): string {
     return MoveItemTask.name;
   }
 
-  constructor(
-    member: Member,
-    itemId: string,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-    parentItemId?: string,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.targetId = itemId;
-    this.parentItemId = parentItemId;
+  private itemMembershipService: ItemMembershipService;
+
+  input: InputType;
+  getInput: () => InputType;
+
+  constructor(member: Member, itemService: ItemService, itemMembershipService: ItemMembershipService,
+    input?: InputType) {
+    super(member, itemService);
+    this.itemMembershipService = itemMembershipService;
+    this.input = input ?? {};
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
-    // get item
-    const item = await this.itemService.get(this.targetId, handler);
-    if (!item) throw new ItemNotFound(this.targetId);
-
-    // verify membership rights over item
-    const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
-    if (!hasRights) throw new UserCannotAdminItem(this.targetId);
+    const { item, parentItem } = this.input;
+    this.targetId = item.id;
 
     // check how "big the tree is" below the item
     const numberOfDescendants = await this.itemService.getNumberOfDescendants(item, handler);
     if (numberOfDescendants > MAX_DESCENDANTS_FOR_MOVE) {
-      throw new TooManyDescendants(this.targetId);
+      throw new TooManyDescendants(item.id);
     }
 
-    let parentItem;
-
-    if (this.parentItemId) {
-      // attaching tree to new parent item
-      // get new parent item
-      parentItem = await this.itemService.get(this.parentItemId, handler);
-      if (!parentItem) throw new ItemNotFound(this.parentItemId);
-
-      const { path: parentItemPath } = parentItem;
+    if (parentItem) { // attaching tree to new parent item
+      const { id: parentItemId, path: parentItemPath } = parentItem;
 
       // fail if
       if (
         parentItemPath.startsWith(item.path) || // moving into itself or "below" itself
         BaseItem.parentPath(item) === parentItemPath // moving to the same parent ("not moving")
       ) {
-        throw new InvalidMoveTarget(this.parentItemId);
+        throw new InvalidMoveTarget(parentItemId);
       }
-
-      // verify membership rights over new parent item
-      const hasRightsOverParentItem = await this.itemMembershipService.canWrite(
-        this.actor.id,
-        parentItem,
-        handler,
-      );
-      if (!hasRightsOverParentItem) throw new UserCannotWriteItem(this.parentItemId);
 
       // check how deep (number of levels) the resulting tree will be
       const levelsToFarthestChild = await this.itemService.getNumberOfLevelsToFarthestChild(
@@ -90,23 +67,17 @@ export class MoveItemTask extends BaseItemTask<Item> {
       }
 
       // TODO: should this info go into 'message'? (it's the only exception to the rule)
-      this._message = `new parent ${this.parentItemId}`;
-    } else if (!BaseItem.parentPath(item)) {
-      // moving from "no-parent" to "no-parent" ("not moving")
+      this._message = `new parent ${parentItemId}`;
+    } else if (!BaseItem.parentPath(item)) { // moving from "no-parent" to "no-parent" ("not moving")
       throw new InvalidMoveTarget();
     }
 
     await this.preHookHandler?.(item, this.actor, { log, handler }, { destination: parentItem });
     // move item
     await this.moveItem(item, handler, parentItem);
+    const movedItem = await this.itemService.get(item.id, handler);
 
-    const movedItem = await this.itemService.get(this.targetId, handler);
-    await this.postHookHandler?.(
-      movedItem,
-      this.actor,
-      { log, handler },
-      { destination: parentItem },
-    );
+    await this.postHookHandler?.(movedItem, this.actor, { log, handler }, { destination: parentItem });
 
     this.status = 'OK';
   }

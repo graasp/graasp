@@ -24,16 +24,20 @@ export interface Task<A extends Actor, T> {
   postHookHandler?: PostHookHandlerType<T>;
 
   /**
-   * Skip `actor` checks (ex.: if it has permissions to execute the task).
-   * Sometimes not applicable. Vary from task to task.
+   * skip the task if set to true
    */
-  skipActorChecks?: boolean;
+  skip?: boolean;
+
+  input?: unknown;
 
   /**
-   * Skip target checks (ex.: if the target w/ `targetId` exists)
-   * Sometimes not applicable. Vary from task to task.
-   * */
-  skipTargetChecks?: boolean;
+   * To to fetch and overwrite any values in the task's input
+   */
+  getInput?: () => unknown;
+  /**
+   * To get a modified "version" of what this task's result should be
+   */
+  getResult?: () => unknown;
 }
 
 export interface TaskHookHandlerHelpers {

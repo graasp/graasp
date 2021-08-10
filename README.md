@@ -148,7 +148,7 @@ REDIS_PORT=6379
 CHATBOX_PLUGIN=true
 
 # Graasp public items
-PUBLIC_ITEMS_PLUGIN=true
+PUBLIC_PLUGIN=true
 ````
 
 ## Running

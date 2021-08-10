@@ -1,6 +1,6 @@
 name: Node CI
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build-node:
@@ -29,3 +29,9 @@ jobs:
           npm run test
         env:
           CI: true
+          # random keys
+          SECURE_SESSION_SECRET_KEY: 236a69acbef1e66e8ab8d91e41d00e69236a69acbef1e66e8ab8d91e41d00e69
+          JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
+          REFRESH_TOKEN_JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
+          AUTH_TOKEN_JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
+          FILE_STORAGE_ROOT_PATH: /

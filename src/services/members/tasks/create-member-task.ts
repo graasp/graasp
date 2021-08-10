@@ -7,21 +7,28 @@ import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 
+type InputType<E extends UnknownExtra> = { data?: Partial<Member<E>> };
+
 export class CreateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
   get name(): string {
     return CreateMemberTask.name;
   }
 
-  constructor(actor: Actor, data: Partial<Member<E>>, memberService: MemberService) {
+  input: InputType<E>;
+  getInput: () => InputType<E>;
+
+  constructor(actor: Actor, memberService: MemberService, input?: InputType<E>) {
     super(actor, memberService);
-    this.data = data;
+    this.input = input ?? {};
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
     this.status = 'RUNNING';
 
+    const { data } = this.input;
+
     // create member
-    const member = await this.memberService.create<E>(this.data, handler);
+    const member = await this.memberService.create<E>(data, handler);
 
     this.status = 'OK';
     this._result = member;

@@ -43,6 +43,24 @@ export class ItemMembershipService {
   );
 
   /**
+   * Get the "best" membership for member w/ `memberId` at `item`.
+   * `null` if non-existing.
+   * @param memberId Id of member in membership
+   * @param item Item whose path is referenced in membership
+   * @param transactionHandler Database transaction handler
+   */
+   async getForMemberAtItem(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<ItemMembership> {
+    return transactionHandler.query<ItemMembership>(sql`
+        SELECT ${ItemMembershipService.allColumns} FROM item_membership
+        WHERE member_id = ${memberId}
+          AND item_path @> ${item.path}
+        ORDER BY nlevel(item_path) DESC
+        LIMIT 1
+      `)
+      .then(({ rows }) => rows[0] ?? null);
+  }
+
+  /**
    * Get the permission level of a membership given the `memberId` and `item`.
    * `null` if non-existing.
    * @param memberId Id of member in membership

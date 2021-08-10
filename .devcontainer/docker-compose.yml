@@ -59,5 +59,14 @@ services:
       - 6379:6379
     restart: unless-stopped
 
+
+  # necessary for graasp-embedded-link-item
+  iframely:
+    image: graasp/iframely:latest
+    environment:
+      NODE_ENV: staging
+    ports:
+      - 8061:8061
+      
 volumes:
   postgres-data:

@@ -120,9 +120,8 @@ export class MemberService {
         SELECT ${selectColumns || MemberService.allColumns}
         FROM member
         WHERE id = ${id}
-      `,
-      )
-      .then(({ rows }) => rows[0]);
+      `)
+      .then(({ rows }) => rows[0] || null);
   }
 
   /**

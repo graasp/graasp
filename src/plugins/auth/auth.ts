@@ -6,7 +6,6 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 
 import { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
-import fp from 'fastify-plugin';
 import fastifyAuth from 'fastify-auth';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyBearerAuth from 'fastify-bearer-auth';
@@ -215,12 +214,10 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
         // check if member w/ email already exists
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-        task.skipActorChecks = true;
         const [member] = await runner.runSingle(task, log);
 
         if (!member) {
           const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
-          task.skipActorChecks = true;
           const member = await runner.runSingle(task, log);
 
           await generateRegisterLinkAndEmailIt(member);
@@ -239,7 +236,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       { schema: login },
       async ({ body, log }, reply) => {
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
-        task.skipActorChecks = true;
         const [member] = await runner.runSingle(task, log);
 
         if (member) {
@@ -312,13 +308,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
           // check if member w/ email already exists
           const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          task.skipActorChecks = true;
           const [member] = await runner.runSingle(task, log);
 
           if (!member) {
             const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, { name, email });
-            task.skipActorChecks = true;
             const member = await runner.runSingle(task, log);
+
             await generateRegisterLinkAndEmailIt(member, challenge);
             reply.status(StatusCodes.NO_CONTENT);
           } else {
@@ -326,6 +321,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             await generateLoginLinkAndEmailIt(member, true, challenge);
             reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
           }
+
         },
       );
 
@@ -335,7 +331,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         async ({ body, log }, reply) => {
           const { email, challenge } = body;
           const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          task.skipActorChecks = true;
           const [member] = await runner.runSingle(task, log);
 
           if (member) {
@@ -345,6 +340,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             log.warn(`Login attempt with non-existent email '${email}'`);
             reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
           }
+
         },
       );
 
@@ -404,4 +400,4 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   );
 };
 
-export default fp(plugin);
+export default plugin;

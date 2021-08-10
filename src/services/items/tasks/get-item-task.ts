@@ -1,40 +1,42 @@
 // global
-import { ItemNotFound, UserCannotReadItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
+import { ItemNotFound } from '../../../util/graasp-error';
 import { UnknownExtra } from '../../../interfaces/extra';
 // other services
-import { ItemMembershipService } from '../../../services/item-memberships/db-service';
-import { Member } from '../../../services/members/interfaces/member';
+import { Member } from '../../members/interfaces/member';
 // local
-import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
+import { ItemService } from '../db-service';
+import { FastifyLoggerInstance } from 'fastify';
+
+type InputType = { itemId?: string };
 
 export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
   get name(): string {
     return GetItemTask.name;
   }
 
-  constructor(
-    member: Member,
-    itemId: string,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.targetId = itemId;
+  input: InputType;
+  getInput: () => InputType;
+
+  constructor(member: Member, itemService: ItemService, input?: InputType) {
+    super(member, itemService);
+    this.input = input ?? {};
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<void> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
-    // get item
-    const item = await this.itemService.get<E>(this.targetId, handler);
-    if (!item) throw new ItemNotFound(this.targetId);
+    const { itemId } = this.input;
+    this.targetId = itemId;
 
-    // verify membership rights over item
-    const hasRights = await this.itemMembershipService.canRead(this.actor.id, item, handler);
-    if (!hasRights) throw new UserCannotReadItem(this.targetId);
+    // get item
+    const item = await this.itemService.get<E>(itemId, handler);
+    if (!item) throw new ItemNotFound(itemId);
+
+    await this.postHookHandler?.(item, this.actor, { log, handler });
+
 
     this.status = 'OK';
     this._result = item;

@@ -36,17 +36,17 @@ export class ItemNotFound extends BaseGraaspError {
     super({ code: 'GERR001', statusCode: 404, message: 'Item not found' }, data);
   }
 }
-export class UserCannotReadItem extends BaseGraaspError {
+export class MemberCannotReadItem extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR002', statusCode: 403, message: 'User cannot read item' }, data);
   }
 }
-export class UserCannotWriteItem extends BaseGraaspError {
+export class MemberCannotWriteItem extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR003', statusCode: 403, message: 'User cannot write item' }, data);
   }
 }
-export class UserCannotAdminItem extends BaseGraaspError {
+export class MemberCannotAdminItem extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR004', statusCode: 403, message: 'User cannot admin item' }, data);
   }
@@ -126,6 +126,11 @@ export class CannotModifyOtherMembers extends BaseGraaspError {
 export class TooManyMemberships extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR015', statusCode: 403, message: 'Too many memberships' }, data);
+  }
+}
+export class MemberCannotAccess extends BaseGraaspError {
+  constructor(data?: unknown) {
+    super({ code: 'GERR016', statusCode: 403, message: 'Member does not have a membership in item' }, data);
   }
 }
 export class DatabaseError extends BaseGraaspError {
