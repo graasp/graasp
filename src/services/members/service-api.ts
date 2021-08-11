@@ -7,6 +7,7 @@ import { MemberTaskManager } from './interfaces/member-task-manager';
 import { EmailParam } from './interfaces/requests';
 import common, { getOne, getBy, updateOne } from './schemas';
 import { TaskManager } from './task-manager';
+import {Member} from './interfaces/member';
 
 const ROUTES_PREFIX = '/members';
 

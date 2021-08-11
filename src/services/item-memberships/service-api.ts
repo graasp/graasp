@@ -17,9 +17,12 @@ import { TaskManager } from './task-manager';
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { items: { dbService: itemsDbService }, itemMemberships, taskRunner: runner } = fastify;
+  const {
+    items: { dbService: itemsDbService },
+    groupMemberships: { dbService: dbServiceGM},
+    itemMemberships, taskRunner: runner } = fastify;
   const { dbService } = itemMemberships;
-  const taskManager: ItemMembershipTaskManager = new TaskManager(itemsDbService, dbService);
+  const taskManager: ItemMembershipTaskManager = new TaskManager(itemsDbService, dbService,dbServiceGM);
   itemMemberships.taskManager = taskManager;
 
   // schemas

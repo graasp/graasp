@@ -9,6 +9,9 @@ import {GetGroupTask} from './tasks/get-group-task';
 import {GroupService} from './db-service';
 import {GetGroupChildrenTask} from './tasks/get-group-children-task';
 import {GetRootGroupsTask} from './tasks/get-root-groups-task';
+import {GetOwnItemsTask} from '../items/tasks/get-own-items-task';
+import {GetOwnGroupsTask} from './tasks/get-own-groups-task';
+import {GetGroupParentsTask} from './tasks/get-group-parents-task';
 
 export class TaskManager implements GroupTaskManager {
   private itemService: ItemService;
@@ -45,7 +48,14 @@ export class TaskManager implements GroupTaskManager {
     return new GetGroupChildrenTask(member,groupId,this.memberService,this.itemService,this.groupService,this.itemMembershipService,this.groupMembershipService);
   }
 
+  createGetParentsTask(member: Member, groupId: string): GetGroupChildrenTask {
+    return new GetGroupParentsTask(member,groupId,this.memberService,this.itemService,this.groupService,this.itemMembershipService,this.groupMembershipService);
+  }
+
   createGetRootGroupsTask(member: Member): GetRootGroupsTask {
     return new GetRootGroupsTask(member,this.memberService,this.itemService,this.groupService,this.itemMembershipService,this.groupMembershipService);
+  }
+  createGetOwnGroupsTask(member: Member): GetOwnGroupsTask {
+    return new GetOwnGroupsTask(member,this.memberService,this.itemService,this.groupService,this.itemMembershipService,this.groupMembershipService);
   }
 }

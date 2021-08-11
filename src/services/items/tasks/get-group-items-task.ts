@@ -21,7 +21,6 @@ export class GetGroupItemsTask extends BaseItemTask<Item[]> {
   async run(handler: DatabaseTransactionHandler): Promise<void> {
     this.status = 'RUNNING';
 
-    console.log(this.targetId);
     const item = await this.itemService
       .get(this.targetId, handler);
     if (!item) throw new ItemNotFound(this.targetId);

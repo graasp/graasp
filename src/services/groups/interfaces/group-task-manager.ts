@@ -9,4 +9,5 @@ export interface GroupTaskManager<A extends Actor = Actor> {
 
   createGetTask(actor: A, extra?: unknown): Task<A, Group>;
 
+
 }

@@ -29,9 +29,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.post<{ Querystring: ParentIdParam }>(
       '/', { schema: create },
       async ({ member,query: { parentId },log, body }) => {
-            console.log(parentId);
             const task = groupTaskManager.createCreateTask(member,body,parentId);
             return runner.runSingle(task, log);
+      }
+    );
+
+    fastify.get(
+      '/own',
+      async ({ member,log }) => {
+        const task = groupTaskManager.createGetOwnGroupsTask(member);
+        return runner.runSingle(task, log);
       }
     );
 
@@ -63,6 +70,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/children',
       async ({member,params: { id},log}) => {
         const task = groupTaskManager.createGetChildrenTask(member, id);
+        return runner.runSingle(task, log);
+      }
+    );
+
+    fastify.get<{ Params: IdParam }>(
+      '/:id/parents',
+      async ({member,params: { id},log}) => {
+        const task = groupTaskManager.createGetParentsTask(member, id);
         return runner.runSingle(task, log);
       }
     );

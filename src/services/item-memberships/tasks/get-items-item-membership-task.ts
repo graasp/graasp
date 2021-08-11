@@ -3,6 +3,7 @@ import { ItemNotFound, UserCannotReadItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
+import { GroupMembershipService } from '../../group-memberships/db-service';
 import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemMembershipService } from '../db-service';
@@ -14,8 +15,8 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMemb
   get name(): string { return GetItemsItemMembershipsTask.name; }
 
   constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
-    super(member, itemService, itemMembershipService);
+    itemService: ItemService, itemMembershipService: ItemMembershipService, groupMembershipService: GroupMembershipService) {
+    super(member, itemService, itemMembershipService,groupMembershipService);
     this.itemId = itemId;
   }
 
@@ -29,8 +30,15 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMemb
     // get memberships
     const itemMemberships = await this.itemMembershipService.getInheritedForAll(item, handler);
 
+    // get groupMemberships
+    const groupMemberships = await this.groupMembershipService.getGroupMemberships(this.actor.id,handler);
+
+    const groups = groupMemberships.map((gM) => gM.group);
     // verify if member has rights to view the item by checking if member is in the list
-    const hasRights = itemMemberships.some(m => m.memberId === this.actor.id);
+    const hasRights = itemMemberships.some(m => (
+      m.memberId === this.actor.id) || groups.includes(m.memberId)
+    );
+
     if (!hasRights) throw new UserCannotReadItem(this.itemId);
 
     // return item's memberships

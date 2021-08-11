@@ -53,6 +53,49 @@ export class GroupService {
       AND member.type='group'
     `).then(({ rows }) => rows.slice(0));
   }
+  async getGroupParents(groupId: string, transactionHandler: TrxHandler) : Promise<Group[]> {
+
+    return transactionHandler.query<Group>(sql`
+
+      SELECT ${GroupService.allColumnsForJoins} FROM (
+            WITH RECURSIVE subordinates AS (
+                SELECT *
+                from group_membership
+                     WHERE member = ${groupId}
+
+                UNION
+                SELECT gm.*
+                from group_membership gm
+                INNER JOIN subordinates s ON s."group" = gm.member
+            )
+            SELECT *
+            FROM subordinates
+            ) as groupM
+      JOIN member ON groupM."group" = member.id
+    `).then(({ rows }) => rows.slice(0));
+  }
+
+  async getOwnGroups(memberId: string, transactionHandler: TrxHandler) : Promise<Group[]> {
+
+    return transactionHandler.query<Group>(sql`
+
+      SELECT DISTINCT ${GroupService.allColumnsForJoins} FROM (
+            WITH RECURSIVE subordinates AS (
+                SELECT *
+                from group_membership
+                     WHERE member = ${memberId}
+
+                UNION
+                SELECT gm.*
+                from group_membership gm
+                INNER JOIN subordinates s ON s."group" = gm.member
+            )
+            SELECT *
+            FROM subordinates
+            ) as groupM
+      JOIN member ON groupM.group = member.id
+    `).then(({ rows }) => rows.slice(0));
+  }
 
   async getRootGroups (memberId: string,transationHandler: TrxHandler) : Promise<Group[]> {
     return transationHandler.query<Group>(sql`

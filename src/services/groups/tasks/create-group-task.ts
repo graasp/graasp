@@ -90,7 +90,6 @@ export class CreateGroupTask extends BaseGroupTask<Group> {
     await this.groupMembershipService.create(groupMembership,handler);
 
     if(this.parentId) {
-      console.log(this.parentId);
 
       const membership = await this.groupMembershipService.checkMembership(actorId,this.parentId,handler);
       if(!membership) throw new GroupMembershipExists({member: actorId, group: this.parentId});

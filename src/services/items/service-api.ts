@@ -52,7 +52,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     items,
     itemMemberships: { dbService: itemMembershipsDbService },
     groups: { taskManager: groupTaskManager },
-    taskRunner: runner
+    taskRunner: runner,
   } = fastify;
   const { dbService } = items;
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
@@ -60,7 +60,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
 
-  console.log(groupTaskManager);
   // deployed w/o the '/items' prefix and w/o auth pre-handler
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
@@ -177,6 +176,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         async ({ member, log }) => {
           const task = taskManager.createGetSharedWithTask(member);
           return runner.runSingle(task, log);
+        }
+      );
+
+      // get shared with
+      fastify.get<{ Params: GroupIdParam }> (
+        '/group/:groupId/shared-with', { schema: getOwnGetShared },
+        async ({ member, params: {groupId}, log }) => {
+          const task = groupTaskManager.createGetTask(member,groupId);
+          const group = await runner.runSingle(task, log);
+          const { extra: { rootFolder: { itemId } } } = group;
+          const sharedTask = taskManager.createGetSharedWithTask(group);
+          return runner.runSingle(sharedTask, log);
         }
       );
 
