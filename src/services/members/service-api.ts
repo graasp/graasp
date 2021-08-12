@@ -19,6 +19,8 @@ import { MemberTaskManager } from './interfaces/member-task-manager';
 import { EmailParam } from './interfaces/requests';
 import common, { getOne, getMany, getBy, updateOne } from './schemas';
 import { TaskManager } from './task-manager';
+import subscriptionsPlugin from 'graasp-plugin-subscriptions';
+import { DEFAULT_PLAN_PRICE_ID, STRIPE_SECRET_KEY } from '../../util/config';
 
 const ROUTES_PREFIX = '/members';
 
@@ -75,6 +77,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         },
 
         prefix: '/avatars',
+      });
+
+      fastify.register(subscriptionsPlugin, {
+        stripeSecretKey: STRIPE_SECRET_KEY,
+        defaultPlanPriceId: DEFAULT_PLAN_PRICE_ID,
       });
 
       // get current
