@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // get members
     fastify.get<{ Querystring: IdsParams }>(
-      '/test', { schema: getMany }, 
+      '/multi', { schema: getMany }, 
       async ({ member, query: { id: ids }, log }) => {
         const tasks = ids.map(id => taskManager.createGetTask(member, id));
         return runner.runMultiple(tasks, log);
