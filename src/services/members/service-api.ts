@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // get members
     fastify.get<{ Querystring: IdsParams }>(
-      '/multi', { schema: getMany }, 
+      '/', { schema: getMany }, 
       async ({ member, query: { id: ids }, log }) => {
         const tasks = ids.map(id => taskManager.createGetTask(member, id));
         return runner.runMultiple(tasks, log);
@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // get members by
     fastify.get<{ Querystring: EmailParam }>(
-      '/', { schema: getBy },
+      '/search', { schema: getBy },
       async ({ member, query: { email }, log }) => {
         const task = taskManager.createGetByTask(member, { email });
         return runner.runSingle(task, log);
