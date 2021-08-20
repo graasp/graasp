@@ -223,13 +223,14 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const member = await runner.runSingle(task, log);
 
           await generateRegisterLinkAndEmailIt(member);
+          reply.status(204);
         } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
           await generateLoginLinkAndEmailIt(member, true);
+          reply.status(409);
+          return null;
         }
-
-        reply.status(204);
-      },
+      }
     );
 
     // login
@@ -243,13 +244,13 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
         if (member) {
           await generateLoginLinkAndEmailIt(member);
+          reply.status(204);
         } else {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
+          reply.callNotFound();
         }
-
-        reply.status(204);
-      },
+      }
     );
 
     // authenticate
