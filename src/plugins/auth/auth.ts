@@ -274,6 +274,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       '/register',
       { schema: mregister },
       async ({ body: { name, email, challenge }, log }, reply) => {
+        // The email is lowercased when the user registers
+        // To every subsequents call, it is to the client to ensure the email is sent in lowercase
+        // the servers always do a 1:1 match to retrieve the member by email.
+        email = email.toLowerCase();
+
         // check if member w/ email already exists
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         task.skipActorChecks = true;
