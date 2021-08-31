@@ -1,11 +1,11 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from 'fastify-cors';
-import { IdParam } from '../../interfaces/requests';
+import { IdParam, IdsParams } from '../../interfaces/requests';
 // local
 import { MemberTaskManager } from './interfaces/member-task-manager';
 import { EmailParam } from './interfaces/requests';
-import common, { getOne, getBy, updateOne } from './schemas';
+import common, { getOne, getMany, getBy, updateOne } from './schemas';
 import { TaskManager } from './task-manager';
 
 const ROUTES_PREFIX = '/members';
@@ -41,9 +41,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
     );
 
+    // get members
+    fastify.get<{ Querystring: IdsParams }>(
+      '/', { schema: getMany }, 
+      async ({ member, query: { id: ids }, log }) => {
+        const tasks = ids.map(id => taskManager.createGetTask(member, id));
+        return runner.runMultiple(tasks, log);
+    });
+
     // get members by
     fastify.get<{ Querystring: EmailParam }>(
-      '/', { schema: getBy },
+      '/search', { schema: getBy },
       async ({ member, query: { email }, log }) => {
         const task = taskManager.createGetByTask(member, { email });
         return runner.runSingle(task, log);

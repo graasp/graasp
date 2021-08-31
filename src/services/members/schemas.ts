@@ -1,3 +1,7 @@
+import {
+  MAX_TARGETS_FOR_READ_REQUEST
+} from '../../util/config';
+
 export default {
   $id: 'http://graasp.org/members/',
   definitions: {
@@ -44,6 +48,22 @@ const getOne = {
   }
 };
 
+// schema for getting >1 members
+const getMany = {
+  querystring: {
+    allOf: [
+      { $ref: 'http://graasp.org/#/definitions/idsQuery' },
+      { properties: { id: { maxItems: MAX_TARGETS_FOR_READ_REQUEST } } }
+    ]
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: { $ref: 'http://graasp.org/members/#/definitions/member' }
+    }
+  }
+};
+
 // schema for getting members by
 const getBy = {
   querystring: {
@@ -72,6 +92,7 @@ const updateOne = {
 
 export {
   getOne,
+  getMany,
   updateOne,
   getBy
 };
