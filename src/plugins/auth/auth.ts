@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import jwt, { Secret, VerifyOptions, SignOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { JsonWebTokenError } from 'jsonwebtoken';
+import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 
 import { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
@@ -227,8 +228,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
           await generateLoginLinkAndEmailIt(member, true);
-          reply.status(409);
-          return null;
+          reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
         }
       }
     );
@@ -248,7 +248,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         } else {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
-          reply.callNotFound();
+          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
         }
       }
     );
