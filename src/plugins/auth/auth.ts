@@ -319,12 +319,35 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, { name, email });
             task.skipActorChecks = true;
             const member = await runner.runSingle(task, log);
-
             await generateRegisterLinkAndEmailIt(member, challenge);
-          } else {
+            reply.status(204);
+          } 
+          else {
             log.warn(`Member re-registration attempt for email '${email}'`);
             await generateLoginLinkAndEmailIt(member, true, challenge);
+            reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
           }
+      }
+    );
+
+    fastify.post<{ Body: { email: string, challenge: string } }>(
+      '/login',
+      { schema: mlogin },
+      async ({ body, log }, reply) => {
+        const { email, challenge } = body;
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        task.skipActorChecks = true;
+        const [member] = await runner.runSingle(task, log);
+
+        if (member) {
+          await generateLoginLinkAndEmailIt(member, false, challenge);
+          reply.status(204);
+        } else {
+          log.warn(`Login attempt with non-existent email '${email}'`);
+          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+        }
+      }
+    );
 
           reply.status(204);
         },
