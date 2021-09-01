@@ -72,14 +72,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }
 
   if (PUBLIC_ITEMS_PLUGIN) {
-    await fastify.register(async function (fastify) {
-      
-      await fastify.register(graaspPublicItems, {
-        tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
-        graaspActor: GRAASP_ACTOR,
-        // native fastify option
-        prefix: '/p'
-      });
+    await fastify.register(graaspPublicItems, {
+      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+      graaspActor: GRAASP_ACTOR,
+      // native fastify option
+      prefix: '/p'
     });
   }
 
