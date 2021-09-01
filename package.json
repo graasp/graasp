@@ -58,6 +58,7 @@
     "graasp-mailer": "git://github.com/graasp/graasp-mailer.git#master",
     "graasp-plugin-chatbox": "git://github.com/graasp/graasp-plugin-chatbox.git#main",
     "graasp-public-items": "git://github.com/graasp/graasp-public-items.git#main",
+    "graasp-recycle-bin": "git://github.com/graasp/graasp-recycle-bin.git#3/prepareScript",
     "graasp-s3-file-item": "git://github.com/graasp/graasp-s3-file-item.git#master",
     "graasp-websockets": "git://github.com/graasp/graasp-websockets.git#master",
     "jsonwebtoken": "^8.5.1",

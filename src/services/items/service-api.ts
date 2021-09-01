@@ -10,6 +10,7 @@ import graaspPublicItems from 'graasp-public-items';
 import graaspItemLogin from 'graasp-item-login';
 import graaspApps from 'graasp-apps';
 import graaspChatbox from 'graasp-plugin-chatbox';
+import graaspRecycleBin from 'graasp-recycle-bin';
 import fastifyCors from 'fastify-cors';
 
 import {
@@ -71,13 +72,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }
 
   if (PUBLIC_ITEMS_PLUGIN) {
-    fastify.register(graaspPublicItems, {
-      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
-      graaspActor: GRAASP_ACTOR,
-      // native fastify option
-      prefix: '/p'
+    await fastify.register(async function (fastify) {
+      
+      await fastify.register(graaspPublicItems, {
+        tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+        graaspActor: GRAASP_ACTOR,
+        // native fastify option
+        prefix: '/p'
+      });
     });
   }
+
 
   fastify.register(async function (fastify) {
     // add CORS support
@@ -120,6 +125,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemFlags);
 
       fastify.register(graaspItemTags);
+
+      fastify.register(graaspRecycleBin);
 
       if (CHATBOX_PLUGIN) {
         fastify.register(graaspChatbox);
