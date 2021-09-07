@@ -30,7 +30,7 @@ describe('GetOwnItemsTask', () => {
     itemService.getOwn = jest.fn(async () => items);
 
     const task = new GetOwnItemsTask(member, itemService, itemMembershipService);
-    await task.run(dbHandler);
+    await task.run(dbHandler, null);
 
     expect(task.result).toMatchObject(items);
   });
