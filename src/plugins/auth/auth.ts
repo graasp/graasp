@@ -224,7 +224,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const member = await runner.runSingle(task, log);
 
           await generateRegisterLinkAndEmailIt(member);
-          reply.status(204);
+          reply.status(StatusCodes.NO_CONTENT);
         } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
           await generateLoginLinkAndEmailIt(member, true);
@@ -244,7 +244,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
         if (member) {
           await generateLoginLinkAndEmailIt(member);
-          reply.status(204);
+          reply.status(StatusCodes.NO_CONTENT);
         } else {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
@@ -320,7 +320,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             task.skipActorChecks = true;
             const member = await runner.runSingle(task, log);
             await generateRegisterLinkAndEmailIt(member, challenge);
-            reply.status(204);
+            reply.status(StatusCodes.NO_CONTENT);
           } 
           else {
             log.warn(`Member re-registration attempt for email '${email}'`);
@@ -341,7 +341,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
         if (member) {
           await generateLoginLinkAndEmailIt(member, false, challenge);
-          reply.status(204);
+          reply.status(StatusCodes.NO_CONTENT);
         } else {
           log.warn(`Login attempt with non-existent email '${email}'`);
           reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
