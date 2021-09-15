@@ -12,6 +12,7 @@ In order to run the Graasp backend, the following software is needed :
 
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
 - [NVM](https://github.com/nvm-sh/nvm) : CLI to manage multiple versions of Node.js and NPM. It is recommanded to be easily able to build plugins locally.
+- [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : Quickly enables to setup the dev environnement.
 
 # Installation
 
