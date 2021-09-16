@@ -37,7 +37,7 @@ This will create 3 containers :
 - db : PostgreSQL database used by the backend 
 - redis : Redis instance to enable websockets
 
-Then run the following command to install the required npm packages. Note : this is required because
+Then run the following command to install the required npm packages. Note : this is required because bcrypt use native libraires and it is not currently possible to directly install deps from the container.
 
 `npm install bcrypt`
 
