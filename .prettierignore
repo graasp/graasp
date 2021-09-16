@@ -1,3 +1,7 @@
 dist
 coverage
 node_modules
+.devcontainer
+.github
+.stagincontainer
+.vscode
