@@ -17,10 +17,17 @@ export interface ItemTaskManager<A extends Actor = Actor> {
   getGetOwnTaskName(): string;
   getGetSharedWithTaskName(): string;
 
-
-  createCreateTask<E extends UnknownExtra>(actor: A, object: Partial<Item<E>>, extra?: unknown): Task<A, Item<E>>;
+  createCreateTask<E extends UnknownExtra>(
+    actor: A,
+    object: Partial<Item<E>>,
+    extra?: unknown,
+  ): Task<A, Item<E>>;
   createGetTask<E extends UnknownExtra>(actor: A, objectId: string): Task<A, Item<E>>;
-  createUpdateTask<E extends UnknownExtra>(actor: A, objectId: string, object: Partial<Item<E>>): Task<A, Item<E>>;
+  createUpdateTask<E extends UnknownExtra>(
+    actor: A,
+    objectId: string,
+    object: Partial<Item<E>>,
+  ): Task<A, Item<E>>;
   createDeleteTask(actor: A, objectId: string, extra?: unknown): Task<A, Item>;
 
   createMoveTask(actor: Actor, itemId: string, parentId?: string): Task<A, Item>;

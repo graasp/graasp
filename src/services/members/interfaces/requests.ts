@@ -1,1 +1,3 @@
-export interface EmailParam { email: string }
+export interface EmailParam {
+  email: string;
+}

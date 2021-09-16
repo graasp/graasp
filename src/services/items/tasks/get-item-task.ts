@@ -11,10 +11,16 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
 export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
-  get name(): string { return GetItemTask.name; }
+  get name(): string {
+    return GetItemTask.name;
+  }
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
   }

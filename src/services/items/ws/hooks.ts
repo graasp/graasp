@@ -30,7 +30,7 @@ function registerItemTopic(
   itemService: ItemService,
   itemMembershipService: ItemMembershipService,
   itemTaskManager: ItemTaskManager,
-  validationDbHandler: DatabaseTransactionHandler
+  validationDbHandler: DatabaseTransactionHandler,
 ) {
   websockets.register(itemTopic, async (req) => {
     const { channel: itemId, member, reject } = req;
@@ -124,7 +124,7 @@ function registerMemberItemsTopic(
   websockets: WebSocketService,
   runner: TaskRunner<Actor>,
   itemService: ItemService,
-  itemTaskManager: ItemTaskManager
+  itemTaskManager: ItemTaskManager,
 ) {
   websockets.register(memberItemsTopic, async (req) => {
     const { channel: memberId, member, reject } = req;
@@ -194,7 +194,7 @@ function registerMemberItemsTopic(
       members.forEach((memberId) => {
         websockets.publish(memberItemsTopic, memberId, SharedItemsEvent('delete', item));
       });
-    }
+    },
   );
 
   // on copy, notify own items of creator with new item IF destination is root
@@ -249,7 +249,7 @@ export function registerItemWsHooks(
   itemService: ItemService,
   itemMembershipService: ItemMembershipService,
   itemTaskManager: ItemTaskManager,
-  validationDbHandler: DatabaseTransactionHandler
+  validationDbHandler: DatabaseTransactionHandler,
 ): void {
   registerItemTopic(
     websockets,
@@ -257,7 +257,7 @@ export function registerItemWsHooks(
     itemService,
     itemMembershipService,
     itemTaskManager,
-    validationDbHandler
+    validationDbHandler,
   );
 
   registerMemberItemsTopic(websockets, runner, itemService, itemTaskManager);

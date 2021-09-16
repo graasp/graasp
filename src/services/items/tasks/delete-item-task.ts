@@ -17,8 +17,12 @@ class DeleteItemSubTask extends BaseItemTask<Item> {
     return DeleteItemTask.name;
   }
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
   }
@@ -36,11 +40,17 @@ class DeleteItemSubTask extends BaseItemTask<Item> {
 }
 
 export class DeleteItemTask extends BaseItemTask<Item> {
-  get name(): string { return DeleteItemTask.name; }
+  get name(): string {
+    return DeleteItemTask.name;
+  }
   private subtasks: DeleteItemSubTask[];
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     const partialSubtasks = true;
     super(member, itemService, itemMembershipService, partialSubtasks); // partial execution of subtasks
     this.targetId = itemId;
@@ -48,14 +58,17 @@ export class DeleteItemTask extends BaseItemTask<Item> {
 
   get result(): Item {
     // if item has no descendants or subtasks are still 'New'
-    if (!this.subtasks || this.subtasks.some(st => st.status === 'NEW')) return this._result;
+    if (!this.subtasks || this.subtasks.some((st) => st.status === 'NEW')) return this._result;
 
     // return the result of the last subtask that executed successfully,
     // in other words, the last deleted item
-    return this.subtasks.filter(st => st.status === 'OK').pop().result;
+    return this.subtasks.filter((st) => st.status === 'OK').pop().result;
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<DeleteItemSubTask[]> {
+  async run(
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<DeleteItemSubTask[]> {
     this.status = 'RUNNING';
 
     // get item
@@ -67,8 +80,7 @@ export class DeleteItemTask extends BaseItemTask<Item> {
     if (!hasRights) throw new UserCannotAdminItem(this.targetId);
 
     // get descendants
-    const descendants =
-      await this.itemService.getDescendants(item, handler, 'DESC', 'ALL', ['id']);
+    const descendants = await this.itemService.getDescendants(item, handler, 'DESC', 'ALL', ['id']);
 
     // check how "big the tree is" below the item
     if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
@@ -80,7 +92,10 @@ export class DeleteItemTask extends BaseItemTask<Item> {
       // delete item + all descendants, one by one.
       this.subtasks = descendants
         .concat(item)
-        .map(d => new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService));
+        .map(
+          (d) =>
+            new DeleteItemSubTask(this.actor, d.id, this.itemService, this.itemMembershipService),
+        );
 
       return this.subtasks;
     }

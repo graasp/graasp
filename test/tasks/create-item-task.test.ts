@@ -2,7 +2,12 @@ import { DatabaseTransactionConnectionType } from 'slonik';
 
 import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../src/util/config';
 
-import { HierarchyTooDeep, ItemNotFound, TooManyChildren, UserCannotWriteItem } from '../../src/util/graasp-error';
+import {
+  HierarchyTooDeep,
+  ItemNotFound,
+  TooManyChildren,
+  UserCannotWriteItem,
+} from '../../src/util/graasp-error';
 import { Member } from '../../src/services/members/interfaces/member';
 import { ItemService } from '../../src/services/items/db-service';
 import { ItemMembershipService } from '../../src/services/item-memberships/db-service';
@@ -49,7 +54,13 @@ describe('CreateItemTask', () => {
     itemService.get = jest.fn(async () => null);
 
     try {
-      const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
+      const task = new CreateItemTask(
+        member,
+        itemData,
+        itemService,
+        itemMembershipService,
+        parentItemId,
+      );
       await task.run(dbHandler, null);
     } catch (error) {
       expect(error).toBeInstanceOf(ItemNotFound);
@@ -62,20 +73,32 @@ describe('CreateItemTask', () => {
     itemMembershipService.getPermissionLevel = jest.fn(async () => null);
 
     try {
-      const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
+      const task = new CreateItemTask(
+        member,
+        itemData,
+        itemService,
+        itemMembershipService,
+        parentItemId,
+      );
       await task.run(dbHandler, null);
     } catch (error) {
       expect(error).toBeInstanceOf(UserCannotWriteItem);
     }
   });
 
-  test('Should fail when `member` has only \'read\' permission over parent-item', async () => {
+  test("Should fail when `member` has only 'read' permission over parent-item", async () => {
     expect.assertions(1);
     itemService.get = jest.fn(async () => parentItem);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Read);
 
     try {
-      const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
+      const task = new CreateItemTask(
+        member,
+        itemData,
+        itemService,
+        itemMembershipService,
+        parentItemId,
+      );
       await task.run(dbHandler, null);
     } catch (error) {
       expect(error).toBeInstanceOf(UserCannotWriteItem);
@@ -91,21 +114,33 @@ describe('CreateItemTask', () => {
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
 
     try {
-      const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
+      const task = new CreateItemTask(
+        member,
+        itemData,
+        itemService,
+        itemMembershipService,
+        parentItemId,
+      );
       await task.run(dbHandler, null);
     } catch (error) {
       expect(error).toBeInstanceOf(HierarchyTooDeep);
     }
   });
 
-  test('Should fail if by creating item, the parent-item\'s children count crosses `MAX_NUMBER_OF_CHILDREN`', async () => {
+  test("Should fail if by creating item, the parent-item's children count crosses `MAX_NUMBER_OF_CHILDREN`", async () => {
     expect.assertions(1);
     itemService.get = jest.fn(async () => parentItem);
     itemService.getNumberOfChildren = jest.fn(async () => MAX_NUMBER_OF_CHILDREN);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
 
     try {
-      const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
+      const task = new CreateItemTask(
+        member,
+        itemData,
+        itemService,
+        itemMembershipService,
+        parentItemId,
+      );
       await task.run(dbHandler, null);
     } catch (error) {
       expect(error).toBeInstanceOf(TooManyChildren);
@@ -117,7 +152,13 @@ describe('CreateItemTask', () => {
     itemService.getNumberOfChildren = jest.fn(async () => 0);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Write);
 
-    const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
+    const task = new CreateItemTask(
+      member,
+      itemData,
+      itemService,
+      itemMembershipService,
+      parentItemId,
+    );
     await task.run(dbHandler, null);
 
     expect(itemService.create).toHaveBeenCalled();
@@ -129,7 +170,13 @@ describe('CreateItemTask', () => {
     itemService.getNumberOfChildren = jest.fn(async () => 0);
     itemMembershipService.getPermissionLevel = jest.fn(async () => PermissionLevel.Admin);
 
-    const task = new CreateItemTask(member, itemData, itemService, itemMembershipService, parentItemId);
+    const task = new CreateItemTask(
+      member,
+      itemData,
+      itemService,
+      itemMembershipService,
+      parentItemId,
+    );
     await task.run(dbHandler, null);
 
     expect(itemService.create).toHaveBeenCalled();

@@ -22,36 +22,89 @@ export class TaskManager implements ItemMembershipTaskManager<Member> {
     this.itemMembershipService = itemMembershipService;
   }
 
-  getCreateTaskName(): string { return CreateItemMembershipTask.name; }
-  getGetTaskName(): string { throw new Error('Method not implemented.'); }
-  getUpdateTaskName(): string { return UpdateItemMembershipTask.name; }
-  getDeleteTaskName(): string { return DeleteItemMembershipTask.name; }
+  getCreateTaskName(): string {
+    return CreateItemMembershipTask.name;
+  }
+  getGetTaskName(): string {
+    throw new Error('Method not implemented.');
+  }
+  getUpdateTaskName(): string {
+    return UpdateItemMembershipTask.name;
+  }
+  getDeleteTaskName(): string {
+    return DeleteItemMembershipTask.name;
+  }
 
-  getGetOfItemTaskName(): string { return GetItemsItemMembershipsTask.name; }
+  getGetOfItemTaskName(): string {
+    return GetItemsItemMembershipsTask.name;
+  }
 
   // CRUD
-  createCreateTask(member: Member, data: Partial<ItemMembership>, itemId: string): CreateItemMembershipTask {
-    return new CreateItemMembershipTask(member, data, itemId, this.itemService, this.itemMembershipService);
+  createCreateTask(
+    member: Member,
+    data: Partial<ItemMembership>,
+    itemId: string,
+  ): CreateItemMembershipTask {
+    return new CreateItemMembershipTask(
+      member,
+      data,
+      itemId,
+      this.itemService,
+      this.itemMembershipService,
+    );
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createGetTask(member: Member, objectId: string): BaseItemMembershipTask<ItemMembership> {
     throw new Error('Method not implemented.');
   }
 
-  createUpdateTask(member: Member, itemMembershipId: string, data: Partial<ItemMembership>): UpdateItemMembershipTask {
-    return new UpdateItemMembershipTask(member, itemMembershipId, data, this.itemService, this.itemMembershipService);
+  createUpdateTask(
+    member: Member,
+    itemMembershipId: string,
+    data: Partial<ItemMembership>,
+  ): UpdateItemMembershipTask {
+    return new UpdateItemMembershipTask(
+      member,
+      itemMembershipId,
+      data,
+      this.itemService,
+      this.itemMembershipService,
+    );
   }
 
-  createDeleteTask(member: Member, itemMembershipId: string, purgeBelow?: boolean): DeleteItemMembershipTask {
-    return new DeleteItemMembershipTask(member, itemMembershipId, this.itemService, this.itemMembershipService, purgeBelow);
+  createDeleteTask(
+    member: Member,
+    itemMembershipId: string,
+    purgeBelow?: boolean,
+  ): DeleteItemMembershipTask {
+    return new DeleteItemMembershipTask(
+      member,
+      itemMembershipId,
+      this.itemService,
+      this.itemMembershipService,
+      purgeBelow,
+    );
   }
 
   // Other
   createGetOfItemTask(member: Member, itemId: string): GetItemsItemMembershipsTask {
-    return new GetItemsItemMembershipsTask(member, itemId, this.itemService, this.itemMembershipService);
+    return new GetItemsItemMembershipsTask(
+      member,
+      itemId,
+      this.itemService,
+      this.itemMembershipService,
+    );
   }
 
-  createDeleteAllOnAndBelowItemTask(member: Member, itemId: string): DeleteItemsItemMembershipsTask {
-    return new DeleteItemsItemMembershipsTask(member, itemId, this.itemService, this.itemMembershipService);
+  createDeleteAllOnAndBelowItemTask(
+    member: Member,
+    itemId: string,
+  ): DeleteItemsItemMembershipsTask {
+    return new DeleteItemsItemMembershipsTask(
+      member,
+      itemId,
+      this.itemService,
+      this.itemMembershipService,
+    );
   }
 }

@@ -1,7 +1,12 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../plugins/database';
-import { IndividualResultType, PostHookHandlerType, PreHookHandlerType, TaskStatus } from '../interfaces/task';
+import {
+  IndividualResultType,
+  PostHookHandlerType,
+  PreHookHandlerType,
+  TaskStatus,
+} from '../interfaces/task';
 import { Task } from '../interfaces/task';
 import { Actor } from '../interfaces/actor';
 
@@ -27,9 +32,18 @@ export abstract class BaseTask<A extends Actor, R> implements Task<A, R> {
   }
 
   abstract get name(): string;
-  get result(): R { return this._result; }
-  get message(): string { return this._message; }
-  get partialSubtasks(): boolean { return this._partialSubtasks; }
+  get result(): R {
+    return this._result;
+  }
+  get message(): string {
+    return this._message;
+  }
+  get partialSubtasks(): boolean {
+    return this._partialSubtasks;
+  }
 
-  abstract run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void | BaseTask<A, R>[]>;
+  abstract run(
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<void | BaseTask<A, R>[]>;
 }

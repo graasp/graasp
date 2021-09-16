@@ -41,7 +41,7 @@ describe('GetItemChildrenTask', () => {
     }
   });
 
-  test('Should fail when `member` can\'t read item', async () => {
+  test("Should fail when `member` can't read item", async () => {
     expect.assertions(1);
     itemService.get = jest.fn(async () => getDummyItem());
     itemMembershipService.canRead = jest.fn(async () => false);
@@ -54,7 +54,7 @@ describe('GetItemChildrenTask', () => {
     }
   });
 
-  test('Should return item\'s children when `member` can read item', async () => {
+  test("Should return item's children when `member` can read item", async () => {
     const childrenItems = [...Array(3).keys()].map(() => getDummyItem());
     itemService.get = jest.fn(async () => getDummyItem());
     itemMembershipService.canRead = jest.fn(async () => true);

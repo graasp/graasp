@@ -12,7 +12,7 @@ declare module 'fastify' {
 
 export enum MemberType {
   Individual = 'individual',
-  Group = 'group'
+  Group = 'group',
 }
 
 export interface Member<E extends UnknownExtra = UnknownExtra> extends Actor {

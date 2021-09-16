@@ -4,14 +4,18 @@ import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
 import { Item } from '../../services/items/interfaces/item';
 import { Member } from '../../services/members/interfaces/member';
 // local
-import { ItemMembership, PermissionLevel, PermissionLevelCompare } from './interfaces/item-membership';
+import {
+  ItemMembership,
+  PermissionLevel,
+  PermissionLevelCompare,
+} from './interfaces/item-membership';
 import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 
 declare module 'fastify' {
   interface FastifyInstance {
     itemMemberships: {
-      taskManager: ItemMembershipTaskManager,
-      dbService: ItemMembershipService
+      taskManager: ItemMembershipTaskManager;
+      dbService: ItemMembershipService;
     };
   }
 }
@@ -26,13 +30,16 @@ export class ItemMembershipService {
       'permission',
       'creator',
       ['created_at', 'createdAt'],
-      ['updated_at', 'updatedAt']
-    ].map(c =>
-      !Array.isArray(c) ?
-        sql.identifier([c]) :
-        sql.join(c.map(cwa => sql.identifier([cwa])), sql` AS `)
+      ['updated_at', 'updatedAt'],
+    ].map((c) =>
+      !Array.isArray(c)
+        ? sql.identifier([c])
+        : sql.join(
+            c.map((cwa) => sql.identifier([cwa])),
+            sql` AS `,
+          ),
     ),
-    sql`, `
+    sql`, `,
   );
 
   /**
@@ -42,15 +49,22 @@ export class ItemMembershipService {
    * @param item Item whose path is referenced in membership
    * @param transactionHandler Database transaction handler
    */
-  async getPermissionLevel(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<PermissionLevel> {
-    return transactionHandler.query<ItemMembership>(sql`
+  async getPermissionLevel(
+    memberId: string,
+    item: Item,
+    transactionHandler: TrxHandler,
+  ): Promise<PermissionLevel> {
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         SELECT permission FROM item_membership
         WHERE member_id = ${memberId}
           AND item_path @> ${item.path}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
-      `)
-      .then(({ rows, rowCount }) => rowCount ? rows[0].permission : null);
+      `,
+      )
+      .then(({ rows, rowCount }) => (rowCount ? rows[0].permission : null));
   }
 
   /**
@@ -61,8 +75,15 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getInherited(memberId: string, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership> {
-    return transactionHandler.query<ItemMembership>(sql`
+  async getInherited(
+    memberId: string,
+    item: Item,
+    transactionHandler: TrxHandler,
+    considerLocal = false,
+  ): Promise<ItemMembership> {
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
         WHERE member_id = ${memberId}
@@ -70,7 +91,8 @@ export class ItemMembershipService {
           ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0] || null);
   }
 
@@ -82,17 +104,27 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    * @param considerLocal Also consider a (possible) membership targeting this `item` for this `member`
    */
-  async getAllBelow(memberId: string, item: Item, transactionHandler: TrxHandler, considerLocal = false): Promise<ItemMembership[]> {
-    return transactionHandler.query<ItemMembership>(sql`
+  async getAllBelow(
+    memberId: string,
+    item: Item,
+    transactionHandler: TrxHandler,
+    considerLocal = false,
+  ): Promise<ItemMembership[]> {
+    return (
+      transactionHandler
+        .query<ItemMembership>(
+          sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
         WHERE member_id = ${memberId}
           AND ${item.path} @> item_path
           ${considerLocal ? sql`` : sql`AND item_path != ${item.path}`}
         ORDER BY nlevel(item_path) DESC
-      `)
-      // TODO: is there a better way?
-      .then(({ rows }) => rows.slice(0));
+      `,
+        )
+        // TODO: is there a better way?
+        .then(({ rows }) => rows.slice(0))
+    );
   }
 
   /**
@@ -102,14 +134,19 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    */
   async getAllInSubtree(item: Item, transactionHandler: TrxHandler): Promise<ItemMembership[]> {
-    return transactionHandler.query<ItemMembership>(sql`
+    return (
+      transactionHandler
+        .query<ItemMembership>(
+          sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM item_membership
         WHERE ${item.path} @> item_path
         ORDER BY nlevel(item_path) DESC
-      `)
-      // TODO: is there a better way?
-      .then(({ rows }) => rows.slice(0));
+      `,
+        )
+        // TODO: is there a better way?
+        .then(({ rows }) => rows.slice(0))
+    );
   }
 
   /**
@@ -119,7 +156,10 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    */
   async getInheritedForAll(item: Item, transactionHandler: TrxHandler): Promise<ItemMembership[]> {
-    return transactionHandler.query<ItemMembership>(sql`
+    return (
+      transactionHandler
+        .query<ItemMembership>(
+          sql`
         SELECT ${ItemMembershipService.allColumns}
         FROM (
           SELECT *,
@@ -128,9 +168,11 @@ export class ItemMembershipService {
           WHERE item_path @> ${item.path}
         ) AS t1
         WHERE membership_rank = 1
-      `)
-      // TODO: is there a better way?
-      .then(({ rows }) => rows.slice(0));
+      `,
+        )
+        // TODO: is there a better way?
+        .then(({ rows }) => rows.slice(0))
+    );
   }
 
   /**
@@ -140,8 +182,7 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    */
   async canRead(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
-    return this.getPermissionLevel(memberId, item, transactionHandler)
-      .then(Boolean);  // if any permission exists it means the member can read the item
+    return this.getPermissionLevel(memberId, item, transactionHandler).then(Boolean); // if any permission exists it means the member can read the item
   }
 
   /**
@@ -151,8 +192,9 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    */
   async canWrite(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
-    return this.getPermissionLevel(memberId, item, transactionHandler)
-      .then(p => p === PermissionLevel.Write || p === PermissionLevel.Admin);
+    return this.getPermissionLevel(memberId, item, transactionHandler).then(
+      (p) => p === PermissionLevel.Write || p === PermissionLevel.Admin,
+    );
   }
 
   /**
@@ -162,8 +204,9 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    */
   async canAdmin(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<boolean> {
-    return this.getPermissionLevel(memberId, item, transactionHandler)
-      .then(p => p === PermissionLevel.Admin);
+    return this.getPermissionLevel(memberId, item, transactionHandler).then(
+      (p) => p === PermissionLevel.Admin,
+    );
   }
 
   /**
@@ -172,11 +215,14 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    */
   async get(id: string, transactionHandler: TrxHandler): Promise<ItemMembership> {
-    return transactionHandler.query<ItemMembership>(sql`
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
       SELECT ${ItemMembershipService.allColumns}
       FROM item_membership
       WHERE id = ${id}
-    `)
+    `,
+      )
       .then(({ rows }) => rows[0] || null);
   }
 
@@ -185,13 +231,19 @@ export class ItemMembershipService {
    * @param membership Partial membership object with `memberId`, `itemPath`, `permission`, `creator`.
    * @param transactionHandler Database transaction handler
    */
-  async create(membership: Partial<ItemMembership>, transactionHandler: TrxHandler): Promise<ItemMembership> {
+  async create(
+    membership: Partial<ItemMembership>,
+    transactionHandler: TrxHandler,
+  ): Promise<ItemMembership> {
     const { memberId, itemPath, permission, creator } = membership;
-    return transactionHandler.query<ItemMembership>(sql`
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         INSERT INTO item_membership (member_id, item_path, permission, creator)
         VALUES (${memberId}, ${itemPath}, ${permission}, ${creator})
         RETURNING ${ItemMembershipService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0]);
   }
 
@@ -200,17 +252,26 @@ export class ItemMembershipService {
    * @param memberships Array of objects with properties: `memberId`, `itemPath`, `permission`, `creator`
    * @param transactionHandler Database transaction handler
    */
-  async createMany(memberships: Partial<ItemMembership>[], transactionHandler: TrxHandler): Promise<readonly ItemMembership[]> {
-    const newRows = memberships.map(
-      ({ memberId, itemPath, permission, creator }) => [memberId, itemPath, permission, creator]
-    );
+  async createMany(
+    memberships: Partial<ItemMembership>[],
+    transactionHandler: TrxHandler,
+  ): Promise<readonly ItemMembership[]> {
+    const newRows = memberships.map(({ memberId, itemPath, permission, creator }) => [
+      memberId,
+      itemPath,
+      permission,
+      creator,
+    ]);
 
-    return transactionHandler.query<ItemMembership>(sql`
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         INSERT INTO item_membership (member_id, item_path, permission, creator)
           SELECT *
           FROM ${sql.unnest(newRows, ['uuid', 'ltree', 'permissions_enum', 'uuid'])}
         RETURNING ${ItemMembershipService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows);
   }
 
@@ -220,13 +281,20 @@ export class ItemMembershipService {
    * @param permission New permission value
    * @param transactionHandler Database transaction handler
    */
-  async update(id: string, permission: PermissionLevel, transactionHandler: TrxHandler): Promise<ItemMembership> {
-    return transactionHandler.query<ItemMembership>(sql`
+  async update(
+    id: string,
+    permission: PermissionLevel,
+    transactionHandler: TrxHandler,
+  ): Promise<ItemMembership> {
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         UPDATE item_membership
         SET permission = ${permission}
         WHERE id = ${id}
         RETURNING ${ItemMembershipService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0]);
   }
 
@@ -236,11 +304,14 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    */
   async delete(id: string, transactionHandler: TrxHandler): Promise<ItemMembership> {
-    return transactionHandler.query<ItemMembership>(sql`
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         DELETE FROM item_membership
         WHERE id = ${id}
         RETURNING ${ItemMembershipService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0] || null);
   }
 
@@ -250,15 +321,22 @@ export class ItemMembershipService {
    * @param memberships List of objects with: `memberId`, `itemPath`
    * @param transactionHandler Database transaction handler
    */
-  async deleteManyMatching(memberships: Partial<ItemMembership>[], transactionHandler: TrxHandler): Promise<readonly ItemMembership[]> {
-    const conditions =
-      memberships.map(({ memberId, itemPath }) => sql`(member_id = ${memberId} AND item_path = ${itemPath})`);
+  async deleteManyMatching(
+    memberships: Partial<ItemMembership>[],
+    transactionHandler: TrxHandler,
+  ): Promise<readonly ItemMembership[]> {
+    const conditions = memberships.map(
+      ({ memberId, itemPath }) => sql`(member_id = ${memberId} AND item_path = ${itemPath})`,
+    );
 
-    return transactionHandler.query<ItemMembership>(sql`
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         DELETE FROM item_membership
         WHERE ${sql.join(conditions, sql` OR `)}
         RETURNING ${ItemMembershipService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows);
   }
 
@@ -276,7 +354,12 @@ export class ItemMembershipService {
    * @param transactionHandler Database transaction handler
    * @param newParentItem Parent item to where `item` will be moved to
    */
-  async moveHousekeeping(item: Item, member: Member, transactionHandler: TrxHandler, newParentItem?: Item): Promise<{
+  async moveHousekeeping(
+    item: Item,
+    member: Member,
+    transactionHandler: TrxHandler,
+    newParentItem?: Item,
+  ): Promise<{
     inserts: Partial<ItemMembership>[];
     deletes: Partial<ItemMembership>[];
   }> {
@@ -315,14 +398,17 @@ export class ItemMembershipService {
 
     const changes = {
       inserts: [] as Partial<ItemMembership>[],
-      deletes: [] as Partial<ItemMembership>[]
+      deletes: [] as Partial<ItemMembership>[],
     };
 
     rows.reduce((chngs, row) => {
       const {
-        memberId, itemPath,
-        permission: p, action, inherited: ip,
-        action2IgnoreInherited
+        memberId,
+        itemPath,
+        permission: p,
+        action,
+        inherited: ip,
+        action2IgnoreInherited,
       } = row;
 
       if (action === 0) return chngs;
@@ -347,7 +433,12 @@ export class ItemMembershipService {
     return changes;
   }
 
-  private getPermissionsAtItemSql(itemPath: string, newParentItemPath: string, itemIdAsPath: string, parentItemPath?: string) {
+  private getPermissionsAtItemSql(
+    itemPath: string,
+    newParentItemPath: string,
+    itemIdAsPath: string,
+    parentItemPath?: string,
+  ) {
     const ownItemPermissions = sql`
       SELECT
         member_id,
@@ -390,7 +481,11 @@ export class ItemMembershipService {
    * @param member Member used as `creator` for any new memberships
    * @param transactionHandler Database transaction handler
    */
-  private async detachedMoveHousekeeping(item: Item, member: Member, transactionHandler: TrxHandler) {
+  private async detachedMoveHousekeeping(
+    item: Item,
+    member: Member,
+    transactionHandler: TrxHandler,
+  ) {
     const index = item.path.lastIndexOf('.');
     const itemIdAsPath = item.path.slice(index + 1);
     const { id: creator } = member;
@@ -407,16 +502,19 @@ export class ItemMembershipService {
 
     const changes = {
       inserts: [] as Partial<ItemMembership>[],
-      deletes: [] as Partial<ItemMembership>[]
+      deletes: [] as Partial<ItemMembership>[],
     };
 
     rows.reduce((chngs, row) => {
       const { memberId, itemPath, permission } = row;
 
       if (itemPath !== item.path) {
-        chngs.inserts.push(
-          { memberId, itemPath: itemIdAsPath, permission, creator } as Partial<ItemMembership>
-        );
+        chngs.inserts.push({
+          memberId,
+          itemPath: itemIdAsPath,
+          permission,
+          creator,
+        } as Partial<ItemMembership>);
       }
 
       return chngs;

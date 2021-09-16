@@ -4,10 +4,10 @@ const register = {
     required: ['name', 'email'],
     properties: {
       name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
-      email: { type: 'string', format: 'email' }
+      email: { type: 'string', format: 'email' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 const mregister = {
@@ -17,10 +17,10 @@ const mregister = {
     properties: {
       name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
       email: { type: 'string', format: 'email' },
-      challenge: { type: 'string' }
+      challenge: { type: 'string' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 const login = {
@@ -28,9 +28,9 @@ const login = {
     type: 'object',
     required: ['email'],
     properties: {
-      email: { type: 'string', format: 'email' }
+      email: { type: 'string', format: 'email' },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
 };
 
@@ -40,9 +40,9 @@ const mlogin = {
     required: ['email', 'challenge'],
     properties: {
       email: { type: 'string', format: 'email' },
-      challenge: { type: 'string' }
+      challenge: { type: 'string' },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
 };
 
@@ -51,10 +51,10 @@ const auth = {
     type: 'object',
     required: ['t'],
     properties: {
-      t: { type: 'string' }
+      t: { type: 'string' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 const mauth = {
@@ -63,10 +63,10 @@ const mauth = {
     required: ['t', 'verifier'],
     properties: {
       t: { type: 'string' },
-      verifier: { type: 'string' }
+      verifier: { type: 'string' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 const mdeepLink = {
@@ -74,18 +74,10 @@ const mdeepLink = {
     type: 'object',
     required: ['t'],
     properties: {
-      t: { type: 'string' }
+      t: { type: 'string' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
-export {
-  register,
-  mregister,
-  login,
-  mlogin,
-  auth,
-  mauth,
-  mdeepLink
-};
+export { register, mregister, login, mlogin, auth, mauth, mdeepLink };

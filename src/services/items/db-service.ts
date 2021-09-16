@@ -13,10 +13,10 @@ import { ItemTaskManager } from './interfaces/item-task-manager';
 declare module 'fastify' {
   interface FastifyInstance {
     items: {
-      taskManager: ItemTaskManager,
-      dbService: ItemService,
-      extendCreateSchema: (itemTypeSchema?: ObjectSchema) => void
-      extendExtrasUpdateSchema: (itemTypeSchema?: ObjectSchema) => void
+      taskManager: ItemTaskManager;
+      dbService: ItemService;
+      extendCreateSchema: (itemTypeSchema?: ObjectSchema) => void;
+      extendExtrasUpdateSchema: (itemTypeSchema?: ObjectSchema) => void;
     };
   }
 }
@@ -28,15 +28,24 @@ export class ItemService {
   // the 'safe' way to dynamically generate the columns names:
   private static allColumns = sql.join(
     [
-      'id', 'name', 'description', 'type', 'path', 'extra', 'creator',
+      'id',
+      'name',
+      'description',
+      'type',
+      'path',
+      'extra',
+      'creator',
       ['created_at', 'createdAt'],
       ['updated_at', 'updatedAt'],
-    ].map(c =>
-      !Array.isArray(c) ?
-        sql.identifier([c]) :
-        sql.join(c.map(cwa => sql.identifier([cwa])), sql` AS `)
+    ].map((c) =>
+      !Array.isArray(c)
+        ? sql.identifier([c])
+        : sql.join(
+            c.map((cwa) => sql.identifier([cwa])),
+            sql` AS `,
+          ),
     ),
-    sql`, `
+    sql`, `,
   );
 
   private static allColumnsForJoins = sql.join(
@@ -50,8 +59,13 @@ export class ItemService {
       [['item', 'creator'], ['creator']],
       [['item', 'created_at'], ['createdAt']],
       [['item', 'updated_at'], ['updatedAt']],
-    ].map(c => sql.join(c.map(cwa => sql.identifier(cwa)), sql` AS `)),
-    sql`, `
+    ].map((c) =>
+      sql.join(
+        c.map((cwa) => sql.identifier(cwa)),
+        sql` AS `,
+      ),
+    ),
+    sql`, `,
   );
 
   /**
@@ -61,11 +75,13 @@ export class ItemService {
    */
   async get<E extends UnknownExtra>(id: string, transactionHandler: TrxHandler): Promise<Item<E>> {
     return transactionHandler
-      .query<Item<E>>(sql`
+      .query<Item<E>>(
+        sql`
         SELECT ${ItemService.allColumns}
         FROM item
         WHERE id = ${id}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0] || null);
   }
 
@@ -74,13 +90,18 @@ export class ItemService {
    * @param path Item path
    * @param transactionHandler Database transaction handler
    */
-  async getMatchingPath<E extends UnknownExtra>(path: string, transactionHandler: TrxHandler): Promise<Item<E>> {
+  async getMatchingPath<E extends UnknownExtra>(
+    path: string,
+    transactionHandler: TrxHandler,
+  ): Promise<Item<E>> {
     return transactionHandler
-      .query<Item<E>>(sql`
+      .query<Item<E>>(
+        sql`
         SELECT ${ItemService.allColumns}
         FROM item
         WHERE path = ${path}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0] || null);
   }
 
@@ -91,11 +112,13 @@ export class ItemService {
    */
   async getMany(ids: string[], transactionHandler: TrxHandler): Promise<readonly Item[]> {
     return transactionHandler
-      .query<Item>(sql`
+      .query<Item>(
+        sql`
         SELECT ${ItemService.allColumns}
         FROM item
         WHERE id IN (${sql.join(ids, sql`, `)})
-      `)
+      `,
+      )
       .then(({ rows }) => rows);
   }
 
@@ -104,15 +127,20 @@ export class ItemService {
    * @param item Item to create
    * @param transactionHandler Database transaction handler
    */
-  async create<E extends UnknownExtra>(item: Partial<Item<E>>, transactionHandler: TrxHandler): Promise<Item<E>> {
+  async create<E extends UnknownExtra>(
+    item: Partial<Item<E>>,
+    transactionHandler: TrxHandler,
+  ): Promise<Item<E>> {
     const { id, name, description, type, path, extra, creator } = item;
 
     return transactionHandler
-      .query<Item<E>>(sql`
+      .query<Item<E>>(
+        sql`
         INSERT INTO item (id, name, description, type, path, extra, creator)
         VALUES (${id}, ${name}, ${description}, ${type}, ${path}, ${sql.json(extra)}, ${creator})
         RETURNING ${ItemService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0]);
   }
 
@@ -122,30 +150,32 @@ export class ItemService {
    * @param data Item changes
    * @param transactionHandler Database transaction handler
    */
-  async update<E extends UnknownExtra>(id: string, data: Partial<Item<E>>, transactionHandler: TrxHandler): Promise<Item<E>> {
+  async update<E extends UnknownExtra>(
+    id: string,
+    data: Partial<Item<E>>,
+    transactionHandler: TrxHandler,
+  ): Promise<Item<E>> {
     // dynamically build "column1 = value1, column2 = value2, ..." based on the
     // properties present in data
     const setValues = sql.join(
-      Object.keys(data)
-        .map((key: keyof Item) =>
-          sql.join(
-            [
-              sql.identifier([key]),
-              key !== 'extra' ? sql`${data[key]}` : sql.json(data[key])
-            ],
-            sql` = `
-          )
+      Object.keys(data).map((key: keyof Item) =>
+        sql.join(
+          [sql.identifier([key]), key !== 'extra' ? sql`${data[key]}` : sql.json(data[key])],
+          sql` = `,
         ),
-      sql`, `
+      ),
+      sql`, `,
     );
 
     return transactionHandler
-      .query<Item<E>>(sql`
+      .query<Item<E>>(
+        sql`
         UPDATE item
         SET ${setValues}
         WHERE id = ${id}
         RETURNING ${ItemService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0]);
   }
 
@@ -157,13 +187,18 @@ export class ItemService {
    * @param id Item id
    * @param transactionHandler Database transaction handler
    */
-  async delete<E extends UnknownExtra>(id: string, transactionHandler: TrxHandler): Promise<Item<E>> {
+  async delete<E extends UnknownExtra>(
+    id: string,
+    transactionHandler: TrxHandler,
+  ): Promise<Item<E>> {
     return transactionHandler
-      .query<Item<E>>(sql`
+      .query<Item<E>>(
+        sql`
         DELETE FROM item
         WHERE id = ${id}
         RETURNING ${ItemService.allColumns}
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0] || null);
   }
 
@@ -174,11 +209,13 @@ export class ItemService {
    */
   async getNumberOfChildren(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
-      .oneFirst<string>(sql`
+      .oneFirst<string>(
+        sql`
         SELECT count(*) FROM item
         WHERE path ~ ${item.path + '.*{1}'}
-      `)
-      .then(count => parseInt(count, 10));
+      `,
+      )
+      .then((count) => parseInt(count, 10));
   }
 
   /**
@@ -188,10 +225,12 @@ export class ItemService {
    */
   async getChildren(item: Item, transactionHandler: TrxHandler): Promise<readonly Item[]> {
     return transactionHandler
-      .query<Item>(sql`
+      .query<Item>(
+        sql`
         SELECT ${ItemService.allColumns} FROM item
         WHERE path ~ ${item.path + '.*{1}'}
-      `)
+      `,
+      )
       .then(({ rows }) => rows);
   }
 
@@ -202,12 +241,14 @@ export class ItemService {
    */
   async getNumberOfDescendants(item: Item, transactionHandler: TrxHandler): Promise<number> {
     return transactionHandler
-      .oneFirst<string>(sql`
+      .oneFirst<string>(
+        sql`
         SELECT count(*) FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}
-      `) // `AND id != ${item.id}` because <@ includes the item's path
-      .then(count => parseInt(count, 10));
+      `,
+      ) // `AND id != ${item.id}` because <@ includes the item's path
+      .then((count) => parseInt(count, 10));
   }
 
   /**
@@ -225,31 +266,42 @@ export class ItemService {
    * * `3`: children + grandchildren + great-grandchildren
    * @param properties List of Item properties to fetch - returns all if not defined.
    */
-  async getDescendants(item: Item, transactionHandler: TrxHandler,
-    direction: ('ASC' | 'DESC') = 'ASC', levels: number | 'ALL' = 'ALL', properties?: (keyof Item)[]): Promise<Item[]> {
+  async getDescendants(
+    item: Item,
+    transactionHandler: TrxHandler,
+    direction: 'ASC' | 'DESC' = 'ASC',
+    levels: number | 'ALL' = 'ALL',
+    properties?: (keyof Item)[],
+  ): Promise<Item[]> {
     let selectColumns;
 
     if (properties && properties.length) {
       selectColumns = sql.join(
-        properties.map(p => sql.identifier([p])),
-        sql`, `
+        properties.map((p) => sql.identifier([p])),
+        sql`, `,
       );
     }
 
-    const levelLimit = levels !== 'ALL' && levels > 0 ?
-      sql`AND nlevel(path) <= nlevel(${item.path}) + ${levels}` : sql``;
+    const levelLimit =
+      levels !== 'ALL' && levels > 0
+        ? sql`AND nlevel(path) <= nlevel(${item.path}) + ${levels}`
+        : sql``;
 
-    return transactionHandler
-      .query<Item>(sql`
+    return (
+      transactionHandler
+        .query<Item>(
+          sql`
         SELECT ${selectColumns || ItemService.allColumns} FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}
           ${levelLimit}
         ORDER BY nlevel(path) ${direction === 'DESC' ? sql`DESC` : sql`ASC`}
-      `) // `AND id != ${item.id}` because <@ includes the item's path
-      // TODO: is there a better way to avoid the error of assigning
-      // this result to a mutable property? (.slice(0))
-      .then(({ rows }) => rows.slice(0));
+      `,
+        ) // `AND id != ${item.id}` because <@ includes the item's path
+        // TODO: is there a better way to avoid the error of assigning
+        // this result to a mutable property? (.slice(0))
+        .then(({ rows }) => rows.slice(0))
+    );
   }
 
   /**
@@ -257,17 +309,22 @@ export class ItemService {
    * @param item Item from where to start
    * @param transactionHandler Database transaction handler
    */
-  async getNumberOfLevelsToFarthestChild(item: Item, transactionHandler: TrxHandler): Promise<number> {
+  async getNumberOfLevelsToFarthestChild(
+    item: Item,
+    transactionHandler: TrxHandler,
+  ): Promise<number> {
     return transactionHandler
-      .maybeOneFirst<string>(sql`
+      .maybeOneFirst<string>(
+        sql`
         SELECT nlevel(path) - nlevel(${item.path})
         FROM item
         WHERE path <@ ${item.path}
           AND id != ${item.id}
         ORDER BY nlevel(path) DESC
         LIMIT 1
-      `) // `AND id != ${item.id}` because <@ includes the item's path
-      .then(n => parseInt(n || '0', 10)); // TODO: improve?
+      `,
+      ) // `AND id != ${item.id}` because <@ includes the item's path
+      .then((n) => parseInt(n || '0', 10)); // TODO: improve?
   }
 
   /**
@@ -277,8 +334,10 @@ export class ItemService {
    * TODO: does this make sense here? Should this be part of different (micro)service??
    */
   async getOwn(memberId: string, transactionHandler: TrxHandler): Promise<Item[]> {
-    return transactionHandler
-      .query<Item>(sql`
+    return (
+      transactionHandler
+        .query<Item>(
+          sql`
         SELECT ${ItemService.allColumnsForJoins}
         FROM item
         INNER JOIN item_membership
@@ -286,9 +345,11 @@ export class ItemService {
         WHERE item_membership.member_id = ${memberId}
           AND item_membership.permission = ${PermissionLevel.Admin}
           AND item.creator = ${memberId}
-      `)
-      // TODO: is there a better way?
-      .then(({ rows }) => rows.slice(0));
+      `,
+        )
+        // TODO: is there a better way?
+        .then(({ rows }) => rows.slice(0))
+    );
   }
 
   /**
@@ -299,7 +360,10 @@ export class ItemService {
    * TODO: does this make sense here? Should this be part of different (micro)service??
    */
   async getSharedWith(memberId: string, transactionHandler: TrxHandler): Promise<Item[]> {
-    return transactionHandler.query<Item>(sql`
+    return (
+      transactionHandler
+        .query<Item>(
+          sql`
       SELECT ${ItemService.allColumnsForJoins}
       FROM (
         SELECT item_path, permission,
@@ -314,9 +378,11 @@ export class ItemService {
           t1.permission != 'admin'
           OR item.creator != ${memberId}
         )
-      `)
-      // TODO: is there a better way?
-      .then(({ rows }) => rows.slice(0));
+      `,
+        )
+        // TODO: is there a better way?
+        .then(({ rows }) => rows.slice(0))
+    );
   }
 
   /**
@@ -325,7 +391,10 @@ export class ItemService {
    * @param transactionHandler Database transaction handler
    * @returns Array of memberIds (empty or w/ memberIds/strings)
    */
-  async membersWithSharedItem(itemPath: string, transactionHandler: TrxHandler): Promise<readonly string[]> {
+  async membersWithSharedItem(
+    itemPath: string,
+    transactionHandler: TrxHandler,
+  ): Promise<readonly string[]> {
     const pathLevels = itemPath.split('.').length;
 
     return transactionHandler.anyFirst<string>(sql`
@@ -353,15 +422,13 @@ export class ItemService {
    * @param parentItem Destination item
    */
   async move(item: Item, transactionHandler: TrxHandler, parentItem?: Item): Promise<void> {
-    const pathSql = parentItem ?
-      sql`${parentItem.path} || subpath(path, nlevel(${item.path}) - 1)` :
-      sql`subpath(path, nlevel(${item.path}) - 1)`;
+    const pathSql = parentItem
+      ? sql`${parentItem.path} || subpath(path, nlevel(${item.path}) - 1)`
+      : sql`subpath(path, nlevel(${item.path}) - 1)`;
 
-    await transactionHandler
-      .query(sql`
+    await transactionHandler.query(sql`
         UPDATE item
         SET path = ${pathSql}
-        WHERE path <@ ${item.path}`
-      );
+        WHERE path <@ ${item.path}`);
   }
 }

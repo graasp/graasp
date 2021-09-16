@@ -22,7 +22,7 @@ interface DatabasePluginOptions {
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify, { uri, logs }) => {
   const options = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    typeParsers: [] as any[]
+    typeParsers: [] as any[],
   };
 
   if (logs) {

@@ -33,7 +33,7 @@ interface ItemMembershipEvent extends MembershipEvent {
  */
 export const ItemMembershipEvent = (
   op: ItemMembershipEvent['op'],
-  membership: ItemMembership
+  membership: ItemMembership,
 ): ItemMembershipEvent => ({
   kind: 'item',
   op,

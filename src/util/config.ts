@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 enum Environment {
   production = 'production',
   staging = 'staging',
-  development = 'development'
+  development = 'development',
 }
 
 export let ENVIRONMENT: Environment;
@@ -79,9 +79,9 @@ export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
-export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = +process.env. AUTH_TOKEN_EXPIRATION_IN_MINUTES;
+export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES;
 /** Refresh token expiration, in minutes */
-export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = +process.env. REFRESH_TOKEN_EXPIRATION_IN_MINUTES;
+export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES;
 
 // Graasp limits
 
@@ -113,7 +113,7 @@ export const MAX_DESCENDANTS_FOR_COPY = 20;
 /**
  * Maximun number of item memberships when deleting all "under" an item
  */
- export const MAX_ITEM_MEMBERSHIPS_FOR_DELETE = 25;
+export const MAX_ITEM_MEMBERSHIPS_FOR_DELETE = 25;
 
 /**
  * Maximun number of targets in a "many" request that only reads data (`get`)
@@ -136,7 +136,8 @@ export const MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE = 5;
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
-export const MAILER_CONFIG_FROM_EMAIL = process.env.MAILER_CONFIG_FROM_EMAIL || 'no-reply@graasp.org';
+export const MAILER_CONFIG_FROM_EMAIL =
+  process.env.MAILER_CONFIG_FROM_EMAIL || 'no-reply@graasp.org';
 
 // Graasp file item
 // TODO: should this be here?
@@ -153,7 +154,8 @@ export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_AC
 // Graasp embedded link item
 // TODO: should this be here?
 export const EMBEDDED_LINK_ITEM_PLUGIN = process.env.EMBEDDED_LINK_ITEM_PLUGIN === 'true';
-export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
+export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN =
+  process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
 
 // Graasp apps
 export const APPS_PLUGIN = process.env.APPS_PLUGIN === 'true';

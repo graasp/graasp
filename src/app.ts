@@ -3,7 +3,9 @@ import fp from 'fastify-plugin';
 
 import {
   COOKIE_DOMAIN,
-  PG_CONNECTION_URI, DATABASE_LOGS, MAILER_CONFIG_SMTP_HOST,
+  PG_CONNECTION_URI,
+  DATABASE_LOGS,
+  MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_FROM_EMAIL,
@@ -11,7 +13,7 @@ import {
   REDIS_HOST,
   REDIS_PORT,
   REDIS_USERNAME,
-  REDIS_PASSWORD
+  REDIS_PASSWORD,
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -35,7 +37,10 @@ const decorateFastifyInstance: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
   fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
-  fastify.decorate('itemMemberships', { dbService: new ItemMembershipService(), taskManager: null });
+  fastify.decorate('itemMemberships', {
+    dbService: new ItemMembershipService(),
+    taskManager: null,
+  });
 
   fastify.decorateRequest('member', null);
 };
@@ -52,7 +57,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       host: MAILER_CONFIG_SMTP_HOST,
       username: MAILER_CONFIG_USERNAME,
       password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL
+      fromEmail: MAILER_CONFIG_FROM_EMAIL,
     });
 
   await instance.register(authPlugin, { sessionCookieDomain: COOKIE_DOMAIN ?? null });
@@ -66,8 +71,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
           port: +REDIS_PORT,
           username: REDIS_USERNAME,
           password: REDIS_PASSWORD,
-        }
-      }
+        },
+      },
     });
   }
 

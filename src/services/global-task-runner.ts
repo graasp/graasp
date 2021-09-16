@@ -4,7 +4,13 @@ import { GraaspError, UnexpectedError } from '../util/graasp-error';
 import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from '../plugins/database';
 
 import { TaskRunner } from '../interfaces/task-runner';
-import { Task, PreHookHandlerType, PostHookHandlerType, TaskHookHandlerHelpers, IndividualResultType } from '../interfaces/task';
+import {
+  Task,
+  PreHookHandlerType,
+  PostHookHandlerType,
+  TaskHookHandlerHelpers,
+  IndividualResultType,
+} from '../interfaces/task';
 import { Actor } from '../interfaces/actor';
 
 export class GlobalTaskRunner implements TaskRunner<Actor> {
@@ -17,19 +23,30 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     this.logger = logger;
   }
 
-  private handleTaskFinish<T>(task: Task<Actor, T>, log: FastifyLoggerInstance, error?: Record<string, unknown>) {
+  private handleTaskFinish<T>(
+    task: Task<Actor, T>,
+    log: FastifyLoggerInstance,
+    error?: Record<string, unknown>,
+  ) {
     if (error) task.status = 'FAIL';
 
-    const { name, actor: { id: actorId }, targetId, status, message: taskMessage, result } = task;
+    const {
+      name,
+      actor: { id: actorId },
+      targetId,
+      status,
+      message: taskMessage,
+      result,
+    } = task;
 
-    let message = `${name}: ` +
-      `actor '${actorId}'`;
+    let message = `${name}: ` + `actor '${actorId}'`;
 
     if (targetId) message += `, target '${targetId}'`;
     message += `, status '${status}'`;
     if (result) {
-      const resultText = Array.isArray(result) ?
-        result.map(this.getIdIfExists) : this.getIdIfExists(result);
+      const resultText = Array.isArray(result)
+        ? result.map(this.getIdIfExists)
+        : this.getIdIfExists(result);
       if (resultText) message += `, result '${resultText}'`;
     }
     if (taskMessage) message += `, message '${taskMessage}'`;
@@ -37,9 +54,14 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     switch (status) {
       case 'OK':
       case 'DELEGATED':
-      case 'RUNNING': log.info(message); break;
-      case 'FAIL': log.error(error); break;
-      default: log.warn(message);
+      case 'RUNNING':
+        log.info(message);
+        break;
+      case 'FAIL':
+        log.error(error);
+        break;
+      default:
+        log.warn(message);
     }
   }
 
@@ -58,18 +80,24 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
    * should represent the "global" result (dependant on task implementation).
    */
   private async runTransactionally<T>(
-    task: Task<Actor, T>, log: FastifyLoggerInstance, handler?: DatabaseTransactionHandler): Promise<T> {
-
+    task: Task<Actor, T>,
+    log: FastifyLoggerInstance,
+    handler?: DatabaseTransactionHandler,
+  ): Promise<T> {
     if (handler) {
       return this.runWithTransactionHandler(task, handler, log);
     } else {
-      return this.databasePool
-        .transaction(async (handler) => this.runWithTransactionHandler(task, handler, log));
+      return this.databasePool.transaction(async (handler) =>
+        this.runWithTransactionHandler(task, handler, log),
+      );
     }
   }
 
-  private async runWithTransactionHandler<T>(task: Task<Actor, T>, handler: DatabaseTransactionHandler,
-    log: FastifyLoggerInstance): Promise<T> {
+  private async runWithTransactionHandler<T>(
+    task: Task<Actor, T>,
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<T> {
     let subtasks;
 
     // set task's hook handlers before execution
@@ -97,7 +125,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
         for (i = 0; i < subtasks.length; i++) {
           subtask = subtasks[i];
           this.injectTaskHooksHandlers(subtask); // set task's hook handlers before execution
-          await handler.transaction(async nestedHandler => subtask.run(nestedHandler, log));
+          await handler.transaction(async (nestedHandler) => subtask.run(nestedHandler, log));
           this.handleTaskFinish(subtask, log);
         }
       } catch (error) {
@@ -117,7 +145,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
           this.injectTaskHooksHandlers(subtask); // set task's hook handlers before execution
           await subtask.run(handler, log);
         }
-        subtasks.forEach(st => this.handleTaskFinish(st, log));
+        subtasks.forEach((st) => this.handleTaskFinish(st, log));
       } catch (error) {
         this.handleTaskFinish(subtask, log, error);
         throw error;
@@ -161,7 +189,8 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       } catch (error) {
         if (this.isGraaspError(error)) {
           result.push(error);
-        } else { // if not graasp error, log error details and keep generic error to client
+        } else {
+          // if not graasp error, log error details and keep generic error to client
           log.error(error);
           result.push(new UnexpectedError());
         }
@@ -225,10 +254,13 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     }
   }
 
-  private tasksHooks = new Map<string, {
-    pre?: { handlers: PreHookHandlerType<unknown>[]; wrapped: PreHookHandlerType<unknown> };
-    post?: { handlers: PostHookHandlerType<unknown>[]; wrapped: PostHookHandlerType<unknown> };
-  }>();
+  private tasksHooks = new Map<
+    string,
+    {
+      pre?: { handlers: PreHookHandlerType<unknown>[]; wrapped: PreHookHandlerType<unknown> };
+      post?: { handlers: PostHookHandlerType<unknown>[]; wrapped: PostHookHandlerType<unknown> };
+    }
+  >();
 
   private injectTaskHooksHandlers<T>(task: Task<Actor, T>) {
     const { name } = task;
@@ -238,7 +270,12 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
 
   private wrapTaskPreHookHandlers<T>(taskName: string, handlers: PreHookHandlerType<T>[]) {
     // 'pre' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
-    return async (data: Partial<IndividualResultType<T>>, actor: Actor, { log, handler }: TaskHookHandlerHelpers, extraData?: unknown) => {
+    return async (
+      data: Partial<IndividualResultType<T>>,
+      actor: Actor,
+      { log, handler }: TaskHookHandlerHelpers,
+      extraData?: unknown,
+    ) => {
       try {
         for (let i = 0; i < handlers.length; i++) {
           await handlers[i](data, actor, { log, handler }, extraData);
@@ -252,7 +289,12 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
 
   private wrapTaskPostHookHandlers<T>(taskName: string, handlers: PostHookHandlerType<T>[]) {
     // 'post' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
-    return async (data: T, actor: Actor, { log, handler }: TaskHookHandlerHelpers, extraData?: unknown) => {
+    return async (
+      data: T,
+      actor: Actor,
+      { log, handler }: TaskHookHandlerHelpers,
+      extraData?: unknown,
+    ) => {
       try {
         for (let i = 0; i < handlers.length; i++) {
           await handlers[i](data, actor, { log, handler }, extraData);

@@ -4,7 +4,7 @@ type ErrorOrigin = 'core' | 'plugin' | 'unknown' | string;
 
 export interface GraaspError extends FastifyError {
   data?: unknown;
-  origin: ErrorOrigin
+  origin: ErrorOrigin;
 }
 
 export interface GraaspErrorDetails {
@@ -15,7 +15,7 @@ export interface GraaspErrorDetails {
 
 export abstract class BaseGraaspError implements GraaspError {
   name: string;
-  code: string
+  code: string;
   statusCode?: number;
   message: string;
   data?: unknown;
@@ -53,7 +53,15 @@ export class UserCannotAdminItem extends BaseGraaspError {
 }
 export class InvalidMembership extends BaseGraaspError {
   constructor(data?: unknown) {
-    super({ code: 'GERR005', statusCode: 400, message: 'Membership with this permission level cannot be created for this member in this item' }, data);
+    super(
+      {
+        code: 'GERR005',
+        statusCode: 400,
+        message:
+          'Membership with this permission level cannot be created for this member in this item',
+      },
+      data,
+    );
   }
 }
 export class ItemMembershipNotFound extends BaseGraaspError {
@@ -63,12 +71,26 @@ export class ItemMembershipNotFound extends BaseGraaspError {
 }
 export class ModifyExisting extends BaseGraaspError {
   constructor(data?: unknown) {
-    super({ code: 'GERR007', statusCode: 400, message: 'Cannot create membership for member in item. Should modify existing one' }, data);
+    super(
+      {
+        code: 'GERR007',
+        statusCode: 400,
+        message: 'Cannot create membership for member in item. Should modify existing one',
+      },
+      data,
+    );
   }
 }
 export class InvalidPermissionLevel extends BaseGraaspError {
   constructor(data?: unknown) {
-    super({ code: 'GERR008', statusCode: 400, message: 'Cannot change to a worse permission level than the one inherited' }, data);
+    super(
+      {
+        code: 'GERR008',
+        statusCode: 400,
+        message: 'Cannot change to a worse permission level than the one inherited',
+      },
+      data,
+    );
   }
 }
 export class HierarchyTooDeep extends BaseGraaspError {

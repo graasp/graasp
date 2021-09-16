@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
-import {
-  MAX_TARGETS_FOR_MODIFY_REQUEST,
-  MAX_TARGETS_FOR_READ_REQUEST
-} from '../../util/config';
+import { MAX_TARGETS_FOR_MODIFY_REQUEST, MAX_TARGETS_FOR_READ_REQUEST } from '../../util/config';
 
 import { uuid, idParam, idsQuery, error } from '../../schemas/fluent-schema';
 
@@ -41,19 +38,14 @@ const baseItemCreate = S.object()
   .required(['name', 'type']);
 
 // type 'folder' (empty extra {})
-const folderItemCreate = S.object()
-  .prop('type', S.const('folder'))
-  .extend(baseItemCreate);
+const folderItemCreate = S.object().prop('type', S.const('folder')).extend(baseItemCreate);
 
 // type 'shortcut' (specific extra)
 const shortcutItemExtra = S.object()
   .additionalProperties(false)
   .prop(
     'shortcut',
-    S.object()
-      .additionalProperties(false)
-      .prop('target', uuid)
-      .required(['target'])
+    S.object().additionalProperties(false).prop('target', uuid).required(['target']),
   )
   .required(['shortcut']);
 
@@ -73,7 +65,7 @@ const folderExtra = S.object()
     S.object()
       // .additionalProperties(false)
       .prop('childrenOrder', S.array().items(uuid))
-      .required(['childrenOrder'])
+      .required(['childrenOrder']),
   )
   .required(['folder']);
 
@@ -85,29 +77,24 @@ const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
-  .anyOf([
-    S.required(['name']),
-    S.required(['description'])
-  ]);
+  .anyOf([S.required(['name']), S.required(['description'])]);
 
-const create = (...itemSchemas: JSONSchema[]) => (itemTypeSchema?: ObjectSchema) => {
-  if (itemTypeSchema) itemSchemas.push(itemTypeSchema.extend(baseItemCreate));
+const create =
+  (...itemSchemas: JSONSchema[]) =>
+  (itemTypeSchema?: ObjectSchema) => {
+    if (itemTypeSchema) itemSchemas.push(itemTypeSchema.extend(baseItemCreate));
 
-  return {
-    querystring: S.object().additionalProperties(false).prop('parentId', uuid),
-    body: S.object().oneOf(itemSchemas),
-    response: { 201: item, '4xx': error }
+    return {
+      querystring: S.object().additionalProperties(false).prop('parentId', uuid),
+      body: S.object().oneOf(itemSchemas),
+      response: { 201: item, '4xx': error },
+    };
   };
-};
-const initializedCreate = create(
-  baseItemCreate,
-  folderItemCreate,
-  shortcutItemCreate
-);
+const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
 
 const getOne = {
   params: idParam,
-  response: { 200: item, '4xx': error }
+  response: { 200: item, '4xx': error },
 };
 
 const getMany = {
@@ -116,47 +103,50 @@ const getMany = {
     .extend(idsQuery),
   response: {
     200: S.array().items(S.anyOf([error, item])),
-    '4xx': error
-  }
+    '4xx': error,
+  },
 };
 
 const getChildren = {
   params: idParam,
-  querystring: S.object()
-    .additionalProperties(false)
-    .prop('ordered', S.boolean()),
+  querystring: S.object().additionalProperties(false).prop('ordered', S.boolean()),
   response: {
     200: S.array().items(item),
-    '4xx': error
-  }
+    '4xx': error,
+  },
 };
 
 const getOwnGetShared = {
   response: {
     200: S.array().items(item),
-    '4xx': error
-  }
+    '4xx': error,
+  },
 };
 
-const updateOne = (...itemExtraSchemas: JSONSchema[]) => (itemExtraSchema?: ObjectSchema) => {
-  if (itemExtraSchema) itemExtraSchemas.push(itemExtraSchema);
+const updateOne =
+  (...itemExtraSchemas: JSONSchema[]) =>
+  (itemExtraSchema?: ObjectSchema) => {
+    if (itemExtraSchema) itemExtraSchemas.push(itemExtraSchema);
 
-  const body = itemExtraSchemas.length === 0 ?
-    itemUpdate :
-    S.object()
-      .prop('extra', S.oneOf(itemExtraSchemas))
-      .extend(itemUpdate.anyOf([
-        S.required(['name']),
-        S.required(['description']),
-        S.required(['extra'])
-      ]));
+    const body =
+      itemExtraSchemas.length === 0
+        ? itemUpdate
+        : S.object()
+            .prop('extra', S.oneOf(itemExtraSchemas))
+            .extend(
+              itemUpdate.anyOf([
+                S.required(['name']),
+                S.required(['description']),
+                S.required(['extra']),
+              ]),
+            );
 
-  return {
-    params: idParam,
-    body,
-    response: { 200: item, '4xx': error }
+    return {
+      params: idParam,
+      body,
+      response: { 200: item, '4xx': error },
+    };
   };
-};
 
 const initializedUpdate = updateOne(folderExtra);
 
@@ -171,14 +161,14 @@ const updateMany = () => {
     response: {
       200: S.array().items(S.anyOf([error, item])),
       202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-      '4xx': error
-    }
+      '4xx': error,
+    },
   };
 };
 
 const deleteOne = {
   params: idParam,
-  response: { 200: item, '4xx': error }
+  response: { 200: item, '4xx': error },
 };
 
 const deleteMany = {
@@ -188,40 +178,32 @@ const deleteMany = {
   response: {
     200: S.array().items(S.anyOf([error, item])),
     202: S.array().items(uuid), // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
-    '4xx': error
-  }
+    '4xx': error,
+  },
 };
 
 const moveOne = {
   params: idParam,
-  body: S.object()
-    .additionalProperties(false)
-    .prop('parentId', uuid),
+  body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
 const moveMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
-  body: S.object()
-    .additionalProperties(false)
-    .prop('parentId', uuid)
+  body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
 const copyOne = {
   params: idParam,
-  body: S.object()
-    .additionalProperties(false)
-    .prop('parentId', uuid)
+  body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
 const copyMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
-  body: S.object()
-    .additionalProperties(false)
-    .prop('parentId', uuid)
+  body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
 export {
@@ -237,5 +219,5 @@ export {
   moveOne,
   moveMany,
   copyOne,
-  copyMany
+  copyMany,
 };

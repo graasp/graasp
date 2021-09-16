@@ -24,7 +24,13 @@ describe('UpdateItemTask', () => {
   });
 
   test(`Task's \`name\` property should contain the classname: ${UpdateItemTask.name}`, () => {
-    const task = new UpdateItemTask(member, itemId, updatedItemData, itemService, itemMembershipService);
+    const task = new UpdateItemTask(
+      member,
+      itemId,
+      updatedItemData,
+      itemService,
+      itemMembershipService,
+    );
     expect(task.name).toBe(UpdateItemTask.name);
   });
 
@@ -33,20 +39,32 @@ describe('UpdateItemTask', () => {
     itemService.get = jest.fn(async () => null);
 
     try {
-      const task = new UpdateItemTask(member, itemId, updatedItemData, itemService, itemMembershipService);
+      const task = new UpdateItemTask(
+        member,
+        itemId,
+        updatedItemData,
+        itemService,
+        itemMembershipService,
+      );
       await task.run(dbHandler, null);
     } catch (error) {
       expect(error).toBeInstanceOf(ItemNotFound);
     }
   });
 
-  test('Should fail when `member` can not \'write\' permission over item', async () => {
+  test("Should fail when `member` can not 'write' permission over item", async () => {
     expect.assertions(1);
     itemService.get = jest.fn(async () => getDummyItem());
     itemMembershipService.canWrite = jest.fn(async () => false);
 
     try {
-      const task = new UpdateItemTask(member, itemId, updatedItemData, itemService, itemMembershipService);
+      const task = new UpdateItemTask(
+        member,
+        itemId,
+        updatedItemData,
+        itemService,
+        itemMembershipService,
+      );
       await task.run(dbHandler, null);
     } catch (error) {
       expect(error).toBeInstanceOf(UserCannotWriteItem);
@@ -77,7 +95,13 @@ describe('UpdateItemTask', () => {
     const updatedItem = Object.assign(item, updatedItemData);
     itemService.update = jest.fn(async () => updatedItem);
 
-    const task = new UpdateItemTask(member, itemId, updatedItemData, itemService, itemMembershipService);
+    const task = new UpdateItemTask(
+      member,
+      itemId,
+      updatedItemData,
+      itemService,
+      itemMembershipService,
+    );
     await task.run(dbHandler, null);
 
     expect(itemService.update).toHaveBeenCalled();
@@ -92,7 +116,13 @@ describe('UpdateItemTask', () => {
     itemMembershipService.canWrite = jest.fn(async () => true);
     itemService.update = jest.fn(async () => Object.assign(item, updatedExtra));
 
-    const task = new UpdateItemTask(member, itemId, updatedExtra, itemService, itemMembershipService);
+    const task = new UpdateItemTask(
+      member,
+      itemId,
+      updatedExtra,
+      itemService,
+      itemMembershipService,
+    );
     await task.run(dbHandler, null);
 
     expect(itemService.update).toHaveBeenCalled();

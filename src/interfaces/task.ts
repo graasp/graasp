@@ -10,12 +10,15 @@ export interface Task<A extends Actor, T> {
   readonly name: string;
   readonly actor: A;
   targetId?: string;
-  data?: Partial<IndividualResultType<T>>
+  data?: Partial<IndividualResultType<T>>;
   status: TaskStatus;
   readonly result: T;
   readonly message?: string;
   readonly partialSubtasks?: boolean;
-  run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void | Task<A, T>[]>;
+  run(
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<void | Task<A, T>[]>;
 
   preHookHandler?: PreHookHandlerType<T>;
   postHookHandler?: PostHookHandlerType<T>;
@@ -38,8 +41,16 @@ export interface TaskHookHandlerHelpers {
   handler?: DatabaseTransactionHandler;
 }
 
-export type PreHookHandlerType<T, K = unknown> =
-  (data: Partial<IndividualResultType<T>>, actor: Actor, helpers: TaskHookHandlerHelpers, extraData?: K) => Promise<void> | void;
+export type PreHookHandlerType<T, K = unknown> = (
+  data: Partial<IndividualResultType<T>>,
+  actor: Actor,
+  helpers: TaskHookHandlerHelpers,
+  extraData?: K,
+) => Promise<void> | void;
 
-export type PostHookHandlerType<T, K = unknown> =
-  (data: T, actor: Actor, helpers: TaskHookHandlerHelpers, extraData?: K) => Promise<void> | void;
+export type PostHookHandlerType<T, K = unknown> = (
+  data: T,
+  actor: Actor,
+  helpers: TaskHookHandlerHelpers,
+  extraData?: K,
+) => Promise<void> | void;

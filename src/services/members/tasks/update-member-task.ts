@@ -10,9 +10,16 @@ import { BaseMemberTask } from './base-member-task';
 import { Member } from '../interfaces/member';
 
 export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
-  get name(): string { return UpdateMemberTask.name; }
+  get name(): string {
+    return UpdateMemberTask.name;
+  }
 
-  constructor(actor: Actor, memberId: string, data: Partial<Member<E>>, memberService: MemberService) {
+  constructor(
+    actor: Actor,
+    memberId: string,
+    data: Partial<Member<E>>,
+    memberService: MemberService,
+  ) {
     super(actor, memberService);
     this.data = data;
     this.targetId = memberId;

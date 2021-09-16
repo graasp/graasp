@@ -8,7 +8,9 @@ import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 
 export class CreateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
-  get name(): string { return CreateMemberTask.name; }
+  get name(): string {
+    return CreateMemberTask.name;
+  }
 
   constructor(actor: Actor, data: Partial<Member<E>>, memberService: MemberService) {
     super(actor, memberService);

@@ -26,27 +26,59 @@ export class TaskManager implements ItemTaskManager<Member> {
     this.itemMembershipService = itemMembershipService;
   }
 
-  getCreateTaskName(): string { return CreateItemTask.name; }
-  getGetTaskName(): string { return GetItemTask.name; }
-  getUpdateTaskName(): string { return UpdateItemTask.name; }
-  getDeleteTaskName(): string { return DeleteItemTask.name; }
+  getCreateTaskName(): string {
+    return CreateItemTask.name;
+  }
+  getGetTaskName(): string {
+    return GetItemTask.name;
+  }
+  getUpdateTaskName(): string {
+    return UpdateItemTask.name;
+  }
+  getDeleteTaskName(): string {
+    return DeleteItemTask.name;
+  }
 
-  getMoveTaskName(): string { return MoveItemTask.name; }
-  getCopyTaskName(): string { return CopyItemTask.name; }
-  getGetChildrenTaskName(): string { return GetItemChildrenTask.name; }
-  getGetOwnTaskName(): string { return GetOwnItemsTask.name; }
-  getGetSharedWithTaskName(): string { return GetItemsSharedWithTask.name; }
+  getMoveTaskName(): string {
+    return MoveItemTask.name;
+  }
+  getCopyTaskName(): string {
+    return CopyItemTask.name;
+  }
+  getGetChildrenTaskName(): string {
+    return GetItemChildrenTask.name;
+  }
+  getGetOwnTaskName(): string {
+    return GetOwnItemsTask.name;
+  }
+  getGetSharedWithTaskName(): string {
+    return GetItemsSharedWithTask.name;
+  }
 
   // CRUD
-  createCreateTask<E extends UnknownExtra>(member: Member, data: Partial<Item<E>>, parentId?: string): CreateItemTask<E> {
-    return new CreateItemTask<E>(member, data, this.itemService, this.itemMembershipService, parentId);
+  createCreateTask<E extends UnknownExtra>(
+    member: Member,
+    data: Partial<Item<E>>,
+    parentId?: string,
+  ): CreateItemTask<E> {
+    return new CreateItemTask<E>(
+      member,
+      data,
+      this.itemService,
+      this.itemMembershipService,
+      parentId,
+    );
   }
 
   createGetTask<E extends UnknownExtra>(member: Member, itemId: string): GetItemTask<E> {
     return new GetItemTask(member, itemId, this.itemService, this.itemMembershipService);
   }
 
-  createUpdateTask<E extends UnknownExtra>(member: Member, itemId: string, data: Partial<Item<E>>): UpdateItemTask<E> {
+  createUpdateTask<E extends UnknownExtra>(
+    member: Member,
+    itemId: string,
+    data: Partial<Item<E>>,
+  ): UpdateItemTask<E> {
     return new UpdateItemTask(member, itemId, data, this.itemService, this.itemMembershipService);
   }
 
@@ -64,7 +96,13 @@ export class TaskManager implements ItemTaskManager<Member> {
   }
 
   createGetChildrenTask(member: Member, itemId: string, ordered?: boolean): GetItemChildrenTask {
-    return new GetItemChildrenTask(member, itemId, this.itemService, this.itemMembershipService, ordered);
+    return new GetItemChildrenTask(
+      member,
+      itemId,
+      this.itemService,
+      this.itemMembershipService,
+      ordered,
+    );
   }
 
   createGetOwnTask(member: Member): GetOwnItemsTask {

@@ -4,7 +4,7 @@ export default {
     // permission values
     permission: {
       type: 'string',
-      enum: ['read', 'write', 'admin']
+      enum: ['read', 'write', 'admin'],
     },
 
     // item membership properties to be returned to the client
@@ -25,9 +25,9 @@ export default {
         permission: { $ref: 'http://graasp.org/item-memberships/#/definitions/permission' },
         creator: { $ref: 'http://graasp.org/#/definitions/uuid' },
         createdAt: { type: 'string' },
-        updatedAt: { type: 'string' }
+        updatedAt: { type: 'string' },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
 
     // item membership properties required at creation
@@ -38,7 +38,7 @@ export default {
         memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
         permission: { $ref: '#/definitions/permission' },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
 
     // item membership properties that can be modified after creation
@@ -48,9 +48,9 @@ export default {
       properties: {
         permission: { $ref: '#/definitions/permission' },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 };
 
 // schema for creating an item membership
@@ -59,14 +59,14 @@ const create = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
   body: { $ref: 'http://graasp.org/item-memberships/#/definitions/createPartialItemMembership' },
   response: {
-    201: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' }
-  }
+    201: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+  },
 };
 
 // schema for getting an item's memberships
@@ -75,16 +75,16 @@ const getItems = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' }
-    }
-  }
+      items: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+    },
+  },
 };
 
 // schema for updating an item membership
@@ -92,8 +92,8 @@ const updateOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   body: { $ref: 'http://graasp.org/item-memberships/#/definitions/updatePartialItemMembership' },
   response: {
-    200: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' }
-  }
+    200: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+  },
 };
 
 // schema for deleting an item membership
@@ -102,13 +102,13 @@ const deleteOne = {
   querystring: {
     type: 'object',
     properties: {
-      purgeBelow: { type: 'boolean' }
+      purgeBelow: { type: 'boolean' },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
   response: {
-    200: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' }
-  }
+    200: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+  },
 };
 
 // schema for deleting all item's tree item memberships
@@ -117,16 +117,10 @@ const deleteAll = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
-export {
-  getItems,
-  create,
-  updateOne,
-  deleteOne,
-  deleteAll
-};
+export { getItems, create, updateOne, deleteOne, deleteAll };

@@ -42,7 +42,7 @@ describe('GetItemTask', () => {
     }
   });
 
-  test('Should fail when `member` can\'t read item', async () => {
+  test("Should fail when `member` can't read item", async () => {
     expect.assertions(1);
     itemService.get = jest.fn(async () => getDummyItem());
     itemMembershipService.canRead = jest.fn(async () => false);

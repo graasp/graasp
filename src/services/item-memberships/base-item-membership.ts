@@ -10,7 +10,12 @@ export class BaseItemMembership implements ItemMembership {
   readonly createdAt: string;
   readonly updatedAt: string;
 
-  constructor(memberId: string, itemPath: string, permission = PermissionLevel.Read, creator: string) {
+  constructor(
+    memberId: string,
+    itemPath: string,
+    permission = PermissionLevel.Read,
+    creator: string,
+  ) {
     this.memberId = memberId;
     this.itemPath = itemPath;
     this.permission = permission;

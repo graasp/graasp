@@ -1,8 +1,12 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import {
-  HierarchyTooDeep, InvalidMoveTarget, ItemNotFound,
-  TooManyDescendants, UserCannotAdminItem, UserCannotWriteItem
+  HierarchyTooDeep,
+  InvalidMoveTarget,
+  ItemNotFound,
+  TooManyDescendants,
+  UserCannotAdminItem,
+  UserCannotWriteItem,
 } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_DESCENDANTS_FOR_MOVE, MAX_TREE_LEVELS } from '../../../util/config';
@@ -16,11 +20,17 @@ import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
 export class MoveItemTask extends BaseItemTask<Item> {
-  get name(): string { return MoveItemTask.name; }
+  get name(): string {
+    return MoveItemTask.name;
+  }
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    parentItemId?: string) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    parentItemId?: string,
+  ) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
     this.parentItemId = parentItemId;
@@ -45,7 +55,8 @@ export class MoveItemTask extends BaseItemTask<Item> {
 
     let parentItem;
 
-    if (this.parentItemId) { // attaching tree to new parent item
+    if (this.parentItemId) {
+      // attaching tree to new parent item
       // get new parent item
       parentItem = await this.itemService.get(this.parentItemId, handler);
       if (!parentItem) throw new ItemNotFound(this.parentItemId);
@@ -61,12 +72,18 @@ export class MoveItemTask extends BaseItemTask<Item> {
       }
 
       // verify membership rights over new parent item
-      const hasRightsOverParentItem = await this.itemMembershipService.canWrite(this.actor.id, parentItem, handler);
+      const hasRightsOverParentItem = await this.itemMembershipService.canWrite(
+        this.actor.id,
+        parentItem,
+        handler,
+      );
       if (!hasRightsOverParentItem) throw new UserCannotWriteItem(this.parentItemId);
 
       // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild =
-        await this.itemService.getNumberOfLevelsToFarthestChild(item, handler);
+      const levelsToFarthestChild = await this.itemService.getNumberOfLevelsToFarthestChild(
+        item,
+        handler,
+      );
 
       if (BaseItem.itemDepth(parentItem) + 1 + levelsToFarthestChild > MAX_TREE_LEVELS) {
         throw new HierarchyTooDeep();
@@ -74,7 +91,8 @@ export class MoveItemTask extends BaseItemTask<Item> {
 
       // TODO: should this info go into 'message'? (it's the only exception to the rule)
       this._message = `new parent ${this.parentItemId}`;
-    } else if (!BaseItem.parentPath(item)) { // moving from "no-parent" to "no-parent" ("not moving")
+    } else if (!BaseItem.parentPath(item)) {
+      // moving from "no-parent" to "no-parent" ("not moving")
       throw new InvalidMoveTarget();
     }
 
@@ -83,7 +101,12 @@ export class MoveItemTask extends BaseItemTask<Item> {
     await this.moveItem(item, handler, parentItem);
 
     const movedItem = await this.itemService.get(this.targetId, handler);
-    await this.postHookHandler?.(movedItem, this.actor, { log, handler }, { destination: parentItem });
+    await this.postHookHandler?.(
+      movedItem,
+      this.actor,
+      { log, handler },
+      { destination: parentItem },
+    );
 
     this.status = 'OK';
   }
@@ -102,8 +125,12 @@ export class MoveItemTask extends BaseItemTask<Item> {
   private async moveItem(item: Item, handler: DatabaseTransactionHandler, parentItem?: Item) {
     // identify all the necessary adjustments to memberships
     // TODO: maybe this whole 'magic' should happen in a db procedure?
-    const { inserts, deletes } =
-      await this.itemMembershipService.moveHousekeeping(item, this.actor, handler, parentItem);
+    const { inserts, deletes } = await this.itemMembershipService.moveHousekeeping(
+      item,
+      this.actor,
+      handler,
+      parentItem,
+    );
 
     // move item (and subtree) - update paths of all items
     await this.itemService.move(item, handler, parentItem);
