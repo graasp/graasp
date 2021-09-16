@@ -3,5 +3,5 @@ coverage
 node_modules
 .devcontainer
 .github
-.stagincontainer
+.stagingcontainer
 .vscode
