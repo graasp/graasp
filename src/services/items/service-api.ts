@@ -28,7 +28,9 @@ import {
   APPS_JWT_SECRET,
   PUBLIC_ITEMS_PLUGIN,
   CHATBOX_PLUGIN,
-  WEBSOCKETS_PLUGIN
+  WEBSOCKETS_PLUGIN,
+  PUBLIC_ITEMS_TAG_ID,
+  LOGIN_ITEM_TAG_ID
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -73,7 +75,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   if (PUBLIC_ITEMS_PLUGIN) {
     await fastify.register(graaspPublicItems, {
-      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+      tagId: PUBLIC_ITEMS_TAG_ID,
       graaspActor: GRAASP_ACTOR,
       // native fastify option
       prefix: '/p'
@@ -89,7 +91,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // plugins that don't require authentication
     fastify.register(graaspItemLogin, {
-      tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
+      tagId: LOGIN_ITEM_TAG_ID,
       graaspActor: GRAASP_ACTOR
     });
 
