@@ -14,6 +14,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
+import { TaskStatus } from '../../../interfaces/task';
 
 export class MoveItemTask extends BaseItemTask<Item> {
   get name(): string { return MoveItemTask.name; }
@@ -27,7 +28,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item
     const item = await this.itemService.get(this.targetId, handler);
@@ -85,7 +86,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
     const movedItem = await this.itemService.get(this.targetId, handler);
     await this.postHookHandler?.(movedItem, this.actor, { log, handler }, { destination: parentItem });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 
   /**

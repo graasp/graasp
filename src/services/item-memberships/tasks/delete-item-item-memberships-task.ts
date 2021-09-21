@@ -10,6 +10,7 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask, DeleteItemMembershipTask } from './delete-item-membership-task';
 import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../../../util/config';
+import { TaskStatus } from '../../../interfaces/task';
 
 export class DeleteItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMembership> {
   // return main task's name so it is injected with the same hook handlers
@@ -22,7 +23,7 @@ export class DeleteItemsItemMembershipsTask extends BaseItemMembershipTask<ItemM
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item of which all item-memberships (except member's), at or bellow, will be removed
     const item = await this.itemService.get(this.itemId, handler);
@@ -36,7 +37,7 @@ export class DeleteItemsItemMembershipsTask extends BaseItemMembershipTask<ItemM
     const itemMemberships = await this.itemMembershipService.getAllInSubtree(item, handler);
     if (itemMemberships.length > MAX_ITEM_MEMBERSHIPS_FOR_DELETE) throw new TooManyMemberships();
 
-    this.status = 'DELEGATED';
+    this.status = TaskStatus.DELEGATED;
 
     // return list of subtasks for task manager to execute and
     // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)

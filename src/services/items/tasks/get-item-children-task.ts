@@ -8,6 +8,7 @@ import { Member } from '../../../services/members/interfaces/member';
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
+import { TaskStatus } from '../../../interfaces/task';
 
 const sortChildrenWith = (idsOrder: string[]) =>
   (stElem: { id: string }, ndElem: { id: string }) =>
@@ -27,7 +28,7 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item
     const item = await this.itemService
@@ -50,7 +51,7 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
       }
     }
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = children;
   }
 }

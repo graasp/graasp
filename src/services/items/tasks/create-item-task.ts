@@ -17,6 +17,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { BaseItem } from '../base-item';
+import { TaskStatus } from '../../../interfaces/task';
 
 export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
   get name(): string { return CreateItemTask.name; }
@@ -30,7 +31,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
     let parentItem;
     let parentItemPermissionLevel;
 
@@ -72,7 +73,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     }
     await this.postHookHandler?.(item, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = item;
   }
 }

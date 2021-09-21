@@ -10,6 +10,7 @@ import { Member } from '../../../services/members/interfaces/member';
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
+import { TaskStatus } from '../../../interfaces/task';
 
 // class UpdateItemSubTask extends BaseItemTask<Item> {
 //   get name() { return UpdateItemSubTask.name; }
@@ -57,7 +58,7 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
   // }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item
     const item = await this.itemService.get<E>(this.targetId, handler);
@@ -111,7 +112,7 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
       item;
     await this.postHookHandler?.(resultItem, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = resultItem;
   }
 }

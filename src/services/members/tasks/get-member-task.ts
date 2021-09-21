@@ -7,6 +7,7 @@ import { UnknownExtra } from '../../../interfaces/extra';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 import { Member } from '../interfaces/member';
+import { TaskStatus } from '../../../interfaces/task';
 
 export class GetMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
   get name(): string { return GetMemberTask.name; }
@@ -17,13 +18,13 @@ export class GetMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get member
     const member = await this.memberService.get<E>(this.targetId, handler);
     if (!member) throw new MemberNotFound(this.targetId);
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = member;
   }
 }

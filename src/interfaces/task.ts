@@ -2,7 +2,7 @@ import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../plugins/database';
 import { Actor } from './actor';
 
-export type TaskStatus = 'NEW' | 'RUNNING' | 'OK' | 'FAIL' | 'DELEGATED';
+export enum TaskStatus { 'NEW', 'RUNNING', 'OK', 'FAIL', 'DELEGATED' }
 
 export type IndividualResultType<T> = T extends (infer E)[] ? E : T;
 

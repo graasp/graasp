@@ -4,7 +4,7 @@ import { GraaspError, UnexpectedError } from '../util/graasp-error';
 import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from '../plugins/database';
 
 import { TaskRunner } from '../interfaces/task-runner';
-import { Task, PreHookHandlerType, PostHookHandlerType, TaskHookHandlerHelpers, IndividualResultType } from '../interfaces/task';
+import { Task, PreHookHandlerType, PostHookHandlerType, TaskHookHandlerHelpers, IndividualResultType, TaskStatus } from '../interfaces/task';
 import { Actor } from '../interfaces/actor';
 
 export class GlobalTaskRunner implements TaskRunner<Actor> {
@@ -18,7 +18,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
   }
 
   private handleTaskFinish<T>(task: Task<Actor, T>, log: FastifyLoggerInstance, error?: Record<string, unknown>) {
-    if (error) task.status = 'FAIL';
+    if (error) task.status = TaskStatus.FAIL;
 
     const { name, actor: { id: actorId }, targetId, status, message: taskMessage, result } = task;
 
@@ -35,10 +35,10 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     if (taskMessage) message += `, message '${taskMessage}'`;
 
     switch (status) {
-      case 'OK':
-      case 'DELEGATED':
-      case 'RUNNING': log.info(message); break;
-      case 'FAIL': log.error(error); break;
+      case TaskStatus.OK:
+      case TaskStatus.DELEGATED:
+      case TaskStatus.RUNNING: log.info(message); break;
+      case TaskStatus.FAIL: log.error(error); break;
       default: log.warn(message);
     }
   }

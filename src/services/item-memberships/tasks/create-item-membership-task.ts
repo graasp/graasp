@@ -14,6 +14,7 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 import { BaseItemMembership } from '../base-item-membership';
 import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
+import { TaskStatus } from '../../../interfaces/task';
 
 class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name() {
@@ -29,13 +30,13 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     await this.preHookHandler?.(this.membership, this.actor, { log, handler });
     const itemMembership = await this.itemMembershipService.create(this.membership, handler);
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = itemMembership;
   }
 }
@@ -51,7 +52,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<BaseItemMembershipTask<ItemMembership>[]> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item that the new membership will target
     const item = await this.itemService.get(this.itemId, handler);
@@ -101,7 +102,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, newPermission));
 
       if (membershipsBelowToDiscard.length > 0) {
-        this.status = 'DELEGATED';
+        this.status = TaskStatus.DELEGATED;
 
         // return subtasks to remove redundant existing memberships and to create the new one
         return membershipsBelowToDiscard
@@ -119,6 +120,6 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     await this.postHookHandler?.(resultItemMembership, this.actor, { log, handler });
 
     this._result = resultItemMembership;
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

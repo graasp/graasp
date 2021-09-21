@@ -1,5 +1,6 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
+import { TaskStatus } from '../../../interfaces/task';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -18,7 +19,7 @@ export class GetOwnItemsTask extends BaseItemTask<Item[]> {
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const memberId = this.actor.id;
 
@@ -27,7 +28,7 @@ export class GetOwnItemsTask extends BaseItemTask<Item[]> {
 
     this.postHookHandler?.(items, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = items;
   }
 }

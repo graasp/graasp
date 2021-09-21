@@ -1,4 +1,5 @@
 // global
+import { TaskStatus } from '../../../interfaces/task';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemMembershipService } from '../../../services/item-memberships/db-service';
@@ -17,14 +18,14 @@ export class GetItemsSharedWithTask extends BaseItemTask<Item[]> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const memberId = this.actor.id;
 
     // get items "shared with" member
     const items = await this.itemService.getSharedWith(memberId, handler);
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = items;
   }
 }

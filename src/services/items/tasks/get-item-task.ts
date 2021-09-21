@@ -9,6 +9,7 @@ import { Member } from '../../../services/members/interfaces/member';
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
+import { TaskStatus } from '../../../interfaces/task';
 
 export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
   get name(): string { return GetItemTask.name; }
@@ -20,7 +21,7 @@ export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item
     const item = await this.itemService.get<E>(this.targetId, handler);
@@ -30,7 +31,7 @@ export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
     const hasRights = await this.itemMembershipService.canRead(this.actor.id, item, handler);
     if (!hasRights) throw new UserCannotReadItem(this.targetId);
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = item;
   }
 }

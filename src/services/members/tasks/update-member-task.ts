@@ -8,6 +8,7 @@ import { Actor } from '../../../interfaces/actor';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 import { Member } from '../interfaces/member';
+import { TaskStatus } from '../../../interfaces/task';
 
 export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
   get name(): string { return UpdateMemberTask.name; }
@@ -19,7 +20,7 @@ export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // if the targeted member of the update update is different from the actor making it then fail,
     // unless the flag to skip actor validations is set to 'true'
@@ -37,6 +38,6 @@ export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
     }
 
     this._result = await this.memberService.update(this.targetId, this.data, handler);
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

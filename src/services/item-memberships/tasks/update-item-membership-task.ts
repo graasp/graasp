@@ -10,6 +10,7 @@ import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership, PermissionLevelCompare, PermissionLevel } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
+import { TaskStatus } from '../../../interfaces/task';
 
 class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name() {
@@ -26,13 +27,13 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     await this.preHookHandler?.({ id: this.targetId, permission: this.permission }, this.actor, { log, handler });
     const itemMembership = await this.itemMembershipService.update(this.targetId, this.permission, handler);
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = itemMembership;
   }
 }
@@ -48,7 +49,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item membership
     const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
@@ -76,7 +77,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         const deleteSubtask =
           new DeleteItemMembershipSubTask(this.actor, this.targetId, this.itemService, this.itemMembershipService);
 
-        this.status = 'DELEGATED';
+        this.status = TaskStatus.DELEGATED;
         return [deleteSubtask];
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
         // if downgrading to "worse" than inherited
@@ -94,7 +95,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, permission));
 
       if (membershipsBelowToDiscard.length > 0) {
-        this.status = 'DELEGATED';
+        this.status = TaskStatus.DELEGATED;
 
         // return subtasks to remove redundant existing memberships and to update the existing one
         return membershipsBelowToDiscard
@@ -109,6 +110,6 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // update membership
     this._result = await this.itemMembershipService.update(this.targetId, permission, handler);
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

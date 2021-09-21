@@ -8,6 +8,7 @@ import { Member } from '../../../services/members/interfaces/member';
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership } from '../interfaces/item-membership';
+import { TaskStatus } from '../../../interfaces/task';
 
 // TODO: does this make sense here? Should this be part of different (micro)service??
 export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMembership[]> {
@@ -20,7 +21,7 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMemb
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     // get item for which we're fetching its memberships
     const item = await this.itemService.get(this.itemId, handler);
@@ -35,6 +36,6 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMemb
 
     // return item's memberships
     this._result = itemMemberships;
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }
