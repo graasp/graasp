@@ -9,10 +9,15 @@ import { Item } from '../interfaces/item';
 import { BaseItemTask } from './base-item-task';
 
 export class GetItemsSharedWithTask extends BaseItemTask<Item[]> {
-  get name(): string { return GetItemsSharedWithTask.name; }
+  get name(): string {
+    return GetItemsSharedWithTask.name;
+  }
 
-  constructor(member: Member,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
   }
 

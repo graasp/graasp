@@ -3,20 +3,21 @@ export default {
   definitions: {
     uuid: {
       type: 'string',
-      pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$'
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
     },
     itemPath: {
       type: 'string',
-      pattern: '^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}' +
-        '(\.[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12})*$'
+      pattern:
+        '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' +
+        '(.[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})*$',
     },
     idParam: {
       type: 'object',
       required: ['id'],
       properties: {
-        id: { $ref: '#/definitions/uuid' }
+        id: { $ref: '#/definitions/uuid' },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     idsQuery: {
       type: 'object',
@@ -25,10 +26,10 @@ export default {
         id: {
           type: 'array',
           items: { $ref: '#/definitions/uuid' },
-          uniqueItems: true
-        }
+          uniqueItems: true,
+        },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     error: {
       type: 'object',
@@ -38,10 +39,10 @@ export default {
         message: { type: 'string' },
         statusCode: { type: 'number' },
         data: {},
-        origin: { type: 'string' }
+        origin: { type: 'string' },
         // stack: {}
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 };

@@ -1,8 +1,10 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import {
-  InvalidMembership, ItemNotFound,
-  ModifyExisting, UserCannotAdminItem
+  InvalidMembership,
+  ItemNotFound,
+  ModifyExisting,
+  UserCannotAdminItem,
 } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
@@ -22,8 +24,12 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   }
   private membership: ItemMembership;
 
-  constructor(member: Member, membership: ItemMembership,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    membership: ItemMembership,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.membership = membership;
   }
@@ -41,16 +47,26 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
 }
 
 export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return CreateItemMembershipTask.name; }
+  get name(): string {
+    return CreateItemMembershipTask.name;
+  }
 
-  constructor(member: Member, data: Partial<ItemMembership>, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    data: Partial<ItemMembership>,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.data = data;
     this.itemId = itemId;
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<BaseItemMembershipTask<ItemMembership>[]> {
+  async run(
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<BaseItemMembershipTask<ItemMembership>[]> {
     this.status = 'RUNNING';
 
     // get item that the new membership will target
@@ -64,13 +80,21 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
       if (!hasRights) throw new UserCannotAdminItem(this.itemId);
     }
 
-    const itemMembership =
-      new BaseItemMembership(this.data.memberId, item.path, this.data.permission, this.actor.id);
+    const itemMembership = new BaseItemMembership(
+      this.data.memberId,
+      item.path,
+      this.data.permission,
+      this.actor.id,
+    );
     const { memberId } = itemMembership;
 
     // check member's membership "at" item
-    const inheritedMembership =
-      await this.itemMembershipService.getInherited(memberId, item, handler, true);
+    const inheritedMembership = await this.itemMembershipService.getInherited(
+      memberId,
+      item,
+      handler,
+      true,
+    );
 
     if (inheritedMembership) {
       const { itemPath, permission: inheritedPermission } = inheritedMembership;
@@ -90,26 +114,38 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow =
-      await this.itemMembershipService.getAllBelow(memberId, item, handler);
+    const membershipsBelow = await this.itemMembershipService.getAllBelow(memberId, item, handler);
 
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const { permission: newPermission } = itemMembership;
 
-      const membershipsBelowToDiscard =
-        membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, newPermission));
+      const membershipsBelowToDiscard = membershipsBelow.filter((m) =>
+        PermissionLevelCompare.lte(m.permission, newPermission),
+      );
 
       if (membershipsBelowToDiscard.length > 0) {
         this.status = 'DELEGATED';
 
         // return subtasks to remove redundant existing memberships and to create the new one
         return membershipsBelowToDiscard
-          .map(m => new DeleteItemMembershipSubTask(
-            this.actor, m.id, this.itemService, this.itemMembershipService
-          ))
-          .concat(new CreateItemMembershipSubTask(this.actor, itemMembership, this.itemService, this.itemMembershipService));
-
+          .map(
+            (m) =>
+              new DeleteItemMembershipSubTask(
+                this.actor,
+                m.id,
+                this.itemService,
+                this.itemMembershipService,
+              ),
+          )
+          .concat(
+            new CreateItemMembershipSubTask(
+              this.actor,
+              itemMembership,
+              this.itemService,
+              this.itemMembershipService,
+            ),
+          );
       }
     }
 

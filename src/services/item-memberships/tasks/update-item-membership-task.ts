@@ -1,6 +1,10 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { InvalidPermissionLevel, ItemMembershipNotFound, UserCannotAdminItem } from '../../../util/graasp-error';
+import {
+  InvalidPermissionLevel,
+  ItemMembershipNotFound,
+  UserCannotAdminItem,
+} from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { ItemService } from '../../../services/items/db-service';
@@ -8,7 +12,11 @@ import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
-import { ItemMembership, PermissionLevelCompare, PermissionLevel } from '../interfaces/item-membership';
+import {
+  ItemMembership,
+  PermissionLevelCompare,
+  PermissionLevel,
+} from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
 class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
@@ -18,8 +26,13 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   }
   private permission: PermissionLevel;
 
-  constructor(member: Member, itemMembershipId: string, permission: PermissionLevel,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemMembershipId: string,
+    permission: PermissionLevel,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.permission = permission;
     this.targetId = itemMembershipId;
@@ -28,8 +41,15 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.({ id: this.targetId, permission: this.permission }, this.actor, { log, handler });
-    const itemMembership = await this.itemMembershipService.update(this.targetId, this.permission, handler);
+    await this.preHookHandler?.({ id: this.targetId, permission: this.permission }, this.actor, {
+      log,
+      handler,
+    });
+    const itemMembership = await this.itemMembershipService.update(
+      this.targetId,
+      this.permission,
+      handler,
+    );
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
@@ -38,10 +58,17 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
 }
 
 export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return UpdateItemMembershipTask.name; }
+  get name(): string {
+    return UpdateItemMembershipTask.name;
+  }
 
-  constructor(member: Member, itemMembershipId: string, data: Partial<ItemMembership>,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemMembershipId: string,
+    data: Partial<ItemMembership>,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.data = data;
     this.targetId = itemMembershipId;
@@ -63,8 +90,11 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // check member's inherited membership
     const { memberId } = itemMembership;
-    const inheritedMembership =
-      await this.itemMembershipService.getInherited(memberId, item, handler);
+    const inheritedMembership = await this.itemMembershipService.getInherited(
+      memberId,
+      item,
+      handler,
+    );
 
     const { permission } = this.data;
 
@@ -73,8 +103,12 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
       if (permission === inheritedPermission) {
         // downgrading to same as the inherited, delete current membership
-        const deleteSubtask =
-          new DeleteItemMembershipSubTask(this.actor, this.targetId, this.itemService, this.itemMembershipService);
+        const deleteSubtask = new DeleteItemMembershipSubTask(
+          this.actor,
+          this.targetId,
+          this.itemService,
+          this.itemMembershipService,
+        );
 
         this.status = 'DELEGATED';
         return [deleteSubtask];
@@ -85,25 +119,37 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow =
-      await this.itemMembershipService.getAllBelow(memberId, item, handler);
+    const membershipsBelow = await this.itemMembershipService.getAllBelow(memberId, item, handler);
 
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
-      const membershipsBelowToDiscard =
-        membershipsBelow.filter(m => PermissionLevelCompare.lte(m.permission, permission));
+      const membershipsBelowToDiscard = membershipsBelow.filter((m) =>
+        PermissionLevelCompare.lte(m.permission, permission),
+      );
 
       if (membershipsBelowToDiscard.length > 0) {
         this.status = 'DELEGATED';
 
         // return subtasks to remove redundant existing memberships and to update the existing one
         return membershipsBelowToDiscard
-          .map(m => new DeleteItemMembershipSubTask(
-            this.actor, m.id, this.itemService, this.itemMembershipService
-          ))
-          .concat(new UpdateItemMembershipSubTask(
-            this.actor, this.targetId, permission, this.itemService, this.itemMembershipService
-          ));
+          .map(
+            (m) =>
+              new DeleteItemMembershipSubTask(
+                this.actor,
+                m.id,
+                this.itemService,
+                this.itemMembershipService,
+              ),
+          )
+          .concat(
+            new UpdateItemMembershipSubTask(
+              this.actor,
+              this.targetId,
+              permission,
+              this.itemService,
+              this.itemMembershipService,
+            ),
+          );
       }
     }
 

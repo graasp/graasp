@@ -30,11 +30,18 @@ import { Item } from '../interfaces/item';
 // }
 
 export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
-  get name(): string { return UpdateItemTask.name; }
+  get name(): string {
+    return UpdateItemTask.name;
+  }
   // private subtasks: UpdateItemSubTask[];
 
-  constructor(member: Member, itemId: string, data: Partial<Item<E>>,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemId: string,
+    data: Partial<Item<E>>,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.data = data;
     this.targetId = itemId;
@@ -106,9 +113,9 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
 
     // no propagating changes: just update target item
     await this.preHookHandler?.(item, this.actor, { log, handler });
-    const resultItem = Object.keys(this.data).length ?
-      await this.itemService.update(this.targetId, this.data, handler) :
-      item;
+    const resultItem = Object.keys(this.data).length
+      ? await this.itemService.update(this.targetId, this.data, handler)
+      : item;
     await this.postHookHandler?.(resultItem, this.actor, { log, handler });
 
     this.status = 'OK';

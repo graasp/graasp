@@ -1,8 +1,11 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import {
-  HierarchyTooDeep, ItemNotFound, TooManyDescendants,
-  UserCannotReadItem, UserCannotWriteItem
+  HierarchyTooDeep,
+  ItemNotFound,
+  TooManyDescendants,
+  UserCannotReadItem,
+  UserCannotWriteItem,
 } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from '../../../util/config';
@@ -25,9 +28,14 @@ class CopyItemSubTask extends BaseItemTask<Item> {
   private createMembership: boolean;
   private original: Item;
 
-  constructor(member: Member, original: Item, copy: Partial<Item>,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    createMembership?: boolean) {
+  constructor(
+    member: Member,
+    original: Item,
+    copy: Partial<Item>,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    createMembership?: boolean,
+  ) {
     super(member, itemService, itemMembershipService);
     this.targetId = original.id;
     this.data = copy;
@@ -38,7 +46,12 @@ class CopyItemSubTask extends BaseItemTask<Item> {
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.(this.data, this.actor, { log, handler }, { original: this.original });
+    await this.preHookHandler?.(
+      this.data,
+      this.actor,
+      { log, handler },
+      { original: this.original },
+    );
     const item = await this.itemService.create(this.data, handler);
 
     if (this.createMembership) {
@@ -53,12 +66,18 @@ class CopyItemSubTask extends BaseItemTask<Item> {
 }
 
 export class CopyItemTask extends BaseItemTask<Item> {
-  get name(): string { return CopyItemTask.name; }
+  get name(): string {
+    return CopyItemTask.name;
+  }
   private subtasks: CopyItemSubTask[];
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    parentItemId?: string) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    parentItemId?: string,
+  ) {
     const partialSubtasks = true;
     super(member, itemService, itemMembershipService, partialSubtasks); // partial execution of subtasks
     this.targetId = itemId;
@@ -66,7 +85,9 @@ export class CopyItemTask extends BaseItemTask<Item> {
     this.subtasks = [];
   }
 
-  get result(): Item { return this.subtasks[0].result; }
+  get result(): Item {
+    return this.subtasks[0].result;
+  }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
     this.status = 'RUNNING';
@@ -76,7 +97,11 @@ export class CopyItemTask extends BaseItemTask<Item> {
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
-    const itemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor.id, item, handler);
+    const itemPermissionLevel = await this.itemMembershipService.getPermissionLevel(
+      this.actor.id,
+      item,
+      handler,
+    );
     if (!itemPermissionLevel) throw new UserCannotReadItem(this.targetId);
 
     // check how "big the tree is" below the item
@@ -88,20 +113,27 @@ export class CopyItemTask extends BaseItemTask<Item> {
     let parentItem;
     let parentItemPermissionLevel;
 
-    if (this.parentItemId) { // attaching copy to some item
+    if (this.parentItemId) {
+      // attaching copy to some item
       // get parent item
       parentItem = await this.itemService.get(this.parentItemId, handler);
       if (!parentItem) throw new ItemNotFound(this.parentItemId);
 
       // verify membership rights over parent item
-      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor.id, parentItem, handler);
+      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(
+        this.actor.id,
+        parentItem,
+        handler,
+      );
       if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
         throw new UserCannotWriteItem(this.parentItemId);
       }
 
       // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild =
-        await this.itemService.getNumberOfLevelsToFarthestChild(item, handler);
+      const levelsToFarthestChild = await this.itemService.getNumberOfLevelsToFarthestChild(
+        item,
+        handler,
+      );
 
       if (BaseItem.itemDepth(parentItem) + 1 + levelsToFarthestChild > MAX_TREE_LEVELS) {
         throw new HierarchyTooDeep();
@@ -120,8 +152,14 @@ export class CopyItemTask extends BaseItemTask<Item> {
     treeItemsCopy.forEach(({ copy, original }, originalId) => {
       // create 'admin' membership for "top" parent item if necessary
       const createMembership = originalId === this.targetId ? createAdminMembership : false;
-      const subtask = new CopyItemSubTask(this.actor, original, copy,
-        this.itemService, this.itemMembershipService, createMembership);
+      const subtask = new CopyItemSubTask(
+        this.actor,
+        original,
+        copy,
+        this.itemService,
+        this.itemMembershipService,
+        createMembership,
+      );
 
       this.subtasks.push(subtask);
     });
@@ -136,7 +174,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
   private copy(tree: Item[], parentItem?: Item) {
-    const old2New = new Map<string, { copy: Item, original: Item }>();
+    const old2New = new Map<string, { copy: Item; original: Item }>();
 
     for (let i = 0; i < tree.length; i++) {
       const original = tree[i];
@@ -149,7 +187,14 @@ export class CopyItemTask extends BaseItemTask<Item> {
         copy = new BaseItem(name, description, type, extra, this.actor.id, parentItem);
       } else {
         const oldParentId_ = BaseItem.pathToId(pathSplit.pop());
-        copy = new BaseItem(name, description, type, extra, this.actor.id, old2New.get(oldParentId_).copy);
+        copy = new BaseItem(
+          name,
+          description,
+          type,
+          extra,
+          this.actor.id,
+          old2New.get(oldParentId_).copy,
+        );
       }
 
       old2New.set(oldId_, { copy, original });

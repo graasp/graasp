@@ -8,15 +8,24 @@ import { Member } from '../../../services/members/interfaces/member';
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership } from '../interfaces/item-membership';
-import { DeleteItemMembershipSubTask, DeleteItemMembershipTask } from './delete-item-membership-task';
+import {
+  DeleteItemMembershipSubTask,
+  DeleteItemMembershipTask,
+} from './delete-item-membership-task';
 import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../../../util/config';
 
 export class DeleteItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMembership> {
   // return main task's name so it is injected with the same hook handlers
-  get name(): string { return DeleteItemMembershipTask.name; }
+  get name(): string {
+    return DeleteItemMembershipTask.name;
+  }
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.itemId = itemId;
   }
@@ -41,7 +50,15 @@ export class DeleteItemsItemMembershipsTask extends BaseItemMembershipTask<ItemM
     // return list of subtasks for task manager to execute and
     // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
     return itemMemberships
-      .filter(im => im.memberId != this.actor.id) // exclude (possible) member's own membership
-      .map(im => new DeleteItemMembershipSubTask(this.actor, im.id, this.itemService, this.itemMembershipService));
+      .filter((im) => im.memberId != this.actor.id) // exclude (possible) member's own membership
+      .map(
+        (im) =>
+          new DeleteItemMembershipSubTask(
+            this.actor,
+            im.id,
+            this.itemService,
+            this.itemMembershipService,
+          ),
+      );
   }
 }

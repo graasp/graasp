@@ -8,13 +8,16 @@ import { ItemMembershipService } from '../db-service';
 
 export abstract class BaseItemMembershipTask<R> extends BaseTask<Member, R> {
   protected itemService: ItemService;
-  protected itemMembershipService: ItemMembershipService
+  protected itemMembershipService: ItemMembershipService;
 
   /** id of the item to which the ItemMembership is linked to */
   itemId?: string;
 
-  constructor(member: Member,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member);
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;

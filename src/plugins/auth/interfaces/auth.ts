@@ -28,10 +28,12 @@ declare module 'fastify' {
     /**
      * Generate auth+refresh tokens pair for token base auth
      */
-    generateAuthTokensPair: (memberId: string) => Promise<{ authToken: string, refreshToken: string }>;
+    generateAuthTokensPair: (
+      memberId: string,
+    ) => Promise<{ authToken: string; refreshToken: string }>;
   }
 }
 
 export interface AuthPluginOptions {
-  sessionCookieDomain: string
+  sessionCookieDomain: string;
 }

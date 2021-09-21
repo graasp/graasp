@@ -9,18 +9,23 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
-const sortChildrenWith = (idsOrder: string[]) =>
-  (stElem: { id: string }, ndElem: { id: string }) =>
-    idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
+const sortChildrenWith = (idsOrder: string[]) => (stElem: { id: string }, ndElem: { id: string }) =>
+  idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
 
 export class GetItemChildrenTask extends BaseItemTask<Item[]> {
-  get name(): string { return GetItemChildrenTask.name; }
+  get name(): string {
+    return GetItemChildrenTask.name;
+  }
 
   private ordered: boolean;
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    ordered?: boolean) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    ordered?: boolean,
+  ) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemId;
     this.ordered = ordered;
@@ -30,8 +35,10 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
     this.status = 'RUNNING';
 
     // get item
-    const item = await this.itemService
-      .get<{ folder: { childrenOrder: string[] } }>(this.targetId, handler);
+    const item = await this.itemService.get<{ folder: { childrenOrder: string[] } }>(
+      this.targetId,
+      handler,
+    );
     if (!item) throw new ItemNotFound(this.targetId);
 
     // verify membership rights over item
@@ -42,7 +49,9 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
     const children = await this.itemService.getDescendants(item, handler, 'ASC', 1);
 
     if (this.ordered) {
-      const { extra: { folder: { childrenOrder = [] } = {} } } = item;
+      const {
+        extra: { folder: { childrenOrder = [] } = {} },
+      } = item;
 
       if (childrenOrder.length) {
         const compareFn = sortChildrenWith(childrenOrder);

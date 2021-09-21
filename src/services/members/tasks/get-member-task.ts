@@ -9,7 +9,9 @@ import { BaseMemberTask } from './base-member-task';
 import { Member } from '../interfaces/member';
 
 export class GetMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
-  get name(): string { return GetMemberTask.name; }
+  get name(): string {
+    return GetMemberTask.name;
+  }
 
   constructor(actor: Actor, memberId: string, memberService: MemberService) {
     super(actor, memberService);

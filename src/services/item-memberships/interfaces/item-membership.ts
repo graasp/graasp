@@ -1,7 +1,7 @@
 export enum PermissionLevel {
   Read = 'read',
   Write = 'write',
-  Admin = 'admin'
+  Admin = 'admin',
 }
 
 export class PermissionLevelCompare {
@@ -15,7 +15,8 @@ export class PermissionLevelCompare {
   /**
    * `a` is a better, or the same, permission level when compared to `b`.
    */
-  static gte = (a: PermissionLevel, b: PermissionLevel): boolean => a === b || PermissionLevelCompare.gt(a, b);
+  static gte = (a: PermissionLevel, b: PermissionLevel): boolean =>
+    a === b || PermissionLevelCompare.gt(a, b);
 
   /**
    * `a` is a worse permission level when compared to `b`.
@@ -27,7 +28,8 @@ export class PermissionLevelCompare {
   /**
    * `a` is a worse, or the same, permission level when compared to `b`.
    */
-  static lte = (a: PermissionLevel, b: PermissionLevel): boolean => a === b || PermissionLevelCompare.lt(a, b);
+  static lte = (a: PermissionLevel, b: PermissionLevel): boolean =>
+    a === b || PermissionLevelCompare.lt(a, b);
 }
 
 export interface ItemMembership {

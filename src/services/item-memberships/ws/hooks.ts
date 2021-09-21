@@ -30,7 +30,7 @@ export function registerItemMembershipWsHooks(
   itemService: ItemService,
   itemMembershipService: ItemMembershipService,
   itemMembershipTaskManager: ItemMembershipTaskManager,
-  validationDbHandler: DatabaseTransactionHandler
+  validationDbHandler: DatabaseTransactionHandler,
 ): void {
   websockets.register(itemMembershipsTopic, async (req) => {
     const { channel: itemId, member, reject } = req;
@@ -62,7 +62,7 @@ export function registerItemMembershipWsHooks(
         websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent('create', item));
       }
       websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('create', membership));
-    }
+    },
   );
 
   // on update notify item itself of updated membership
@@ -76,7 +76,7 @@ export function registerItemMembershipWsHooks(
         return;
       }
       websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('update', membership));
-    }
+    },
   );
 
   // on delete
@@ -93,6 +93,6 @@ export function registerItemMembershipWsHooks(
       }
       websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent('delete', item));
       websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('delete', membership));
-    }
+    },
   );
 }

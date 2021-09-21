@@ -1,8 +1,10 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import {
-  ItemNotFound, UserCannotWriteItem,
-  HierarchyTooDeep, TooManyChildren
+  ItemNotFound,
+  UserCannotWriteItem,
+  HierarchyTooDeep,
+  TooManyChildren,
 } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../../util/config';
@@ -19,11 +21,17 @@ import { Item } from '../interfaces/item';
 import { BaseItem } from '../base-item';
 
 export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
-  get name(): string { return CreateItemTask.name; }
+  get name(): string {
+    return CreateItemTask.name;
+  }
 
-  constructor(member: Member, data: Partial<Item<E>>,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    parentItemId?: string) {
+  constructor(
+    member: Member,
+    data: Partial<Item<E>>,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    parentItemId?: string,
+  ) {
     super(member, itemService, itemMembershipService);
     this.data = data;
     this.parentItemId = parentItemId;
@@ -40,7 +48,11 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
       if (!parentItem) throw new ItemNotFound(this.parentItemId);
 
       // verify membership rights over parent item
-      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(this.actor.id, parentItem, handler);
+      parentItemPermissionLevel = await this.itemMembershipService.getPermissionLevel(
+        this.actor.id,
+        parentItem,
+        handler,
+      );
       if (!parentItemPermissionLevel || parentItemPermissionLevel === pl.Read) {
         throw new UserCannotWriteItem(this.parentItemId);
       }

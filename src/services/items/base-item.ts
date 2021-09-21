@@ -26,17 +26,15 @@ export class BaseItem<E extends UnknownExtra> implements Item<E> {
     type: string = 'base',
     extra: E,
     creator: string,
-    parent?: Item
+    parent?: Item,
   ) {
     this.id = uuidv4();
     this.name = name;
     this.description = description;
     this.type = type;
-    this.extra = extra ? extra : {} as E;
+    this.extra = extra ? extra : ({} as E);
     this.creator = creator;
-    this.path = parent ?
-      `${parent.path}.${dashToUnderscore(this.id)}` :
-      dashToUnderscore(this.id);
+    this.path = parent ? `${parent.path}.${dashToUnderscore(this.id)}` : dashToUnderscore(this.id);
   }
 
   static itemDepth(item: Item): number {

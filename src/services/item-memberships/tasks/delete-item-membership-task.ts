@@ -17,8 +17,12 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
     return DeleteItemMembershipTask.name;
   }
 
-  constructor(member: Member, itemMembershipId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemMembershipId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemMembershipId;
   }
@@ -36,19 +40,28 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
 }
 
 export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return DeleteItemMembershipTask.name; }
+  get name(): string {
+    return DeleteItemMembershipTask.name;
+  }
 
   private purgeBelow: boolean;
 
-  constructor(member: Member, itemMembershipId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService,
-    purgeBelow?: boolean) {
+  constructor(
+    member: Member,
+    itemMembershipId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    purgeBelow?: boolean,
+  ) {
     super(member, itemService, itemMembershipService);
     this.targetId = itemMembershipId;
     this.purgeBelow = purgeBelow;
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<DeleteItemMembershipSubTask[]> {
+  async run(
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<DeleteItemMembershipSubTask[]> {
     this.status = 'RUNNING';
 
     // get item membership
@@ -68,8 +81,11 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     if (this.purgeBelow) {
       const item = { path: itemMembership.itemPath } as Item;
 
-      const itemMembershipsBelow =
-        await this.itemMembershipService.getAllBelow(itemMembership.memberId, item, handler);
+      const itemMembershipsBelow = await this.itemMembershipService.getAllBelow(
+        itemMembership.memberId,
+        item,
+        handler,
+      );
 
       if (itemMembershipsBelow.length > 0) {
         this.status = 'DELEGATED';
@@ -78,7 +94,15 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
         return itemMembershipsBelow
           .concat(itemMembership)
-          .map(im => new DeleteItemMembershipSubTask(this.actor, im.id, this.itemService, this.itemMembershipService));
+          .map(
+            (im) =>
+              new DeleteItemMembershipSubTask(
+                this.actor,
+                im.id,
+                this.itemService,
+                this.itemMembershipService,
+              ),
+          );
       }
     }
 

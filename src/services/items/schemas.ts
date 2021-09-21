@@ -1,7 +1,4 @@
-import {
-  MAX_TARGETS_FOR_MODIFY_REQUEST,
-  MAX_TARGETS_FOR_READ_REQUEST
-} from '../../util/config';
+import { MAX_TARGETS_FOR_MODIFY_REQUEST, MAX_TARGETS_FOR_READ_REQUEST } from '../../util/config';
 
 // TODO: this file can be removed. confirm if not referenced somewhere
 export default {
@@ -24,7 +21,7 @@ export default {
         path: { type: 'string' },
         extra: {
           type: 'object',
-          additionalProperties: true
+          additionalProperties: true,
         },
         creator: { $ref: 'http://graasp.org/#/definitions/uuid' },
         /**
@@ -35,9 +32,9 @@ export default {
         // createdAt: { type: 'string' },
         // updatedAt: { type: 'string' }
         createdAt: {},
-        updatedAt: {}
+        updatedAt: {},
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
 
     // item properties that can be modified with user input
@@ -47,9 +44,9 @@ export default {
         name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
         type: { type: 'string', minLength: 3, pattern: '^\\S+( \\S+)*$' },
         description: { type: 'string' },
-        extra: { type: 'object', additionalProperties: true }
+        extra: { type: 'object', additionalProperties: true },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
 
     // partialItem requiring one property to be defined
@@ -57,15 +54,11 @@ export default {
       allOf: [
         { $ref: '#/definitions/partialItem' },
         {
-          anyOf: [
-            { required: ['name'] },
-            { required: ['description'] },
-            { required: ['extra'] }
-          ]
-        }
-      ]
-    }
-  }
+          anyOf: [{ required: ['name'] }, { required: ['description'] }, { required: ['extra'] }],
+        },
+      ],
+    },
+  },
 };
 
 // schema for creating an item
@@ -73,27 +66,24 @@ const create = {
   querystring: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
   body: {
-    allOf: [
-      { $ref: 'http://graasp.org/items/#/definitions/partialItem' },
-      { required: ['name'] }
-    ]
+    allOf: [{ $ref: 'http://graasp.org/items/#/definitions/partialItem' }, { required: ['name'] }],
   },
   response: {
-    201: { $ref: 'http://graasp.org/items/#/definitions/item' }
-  }
+    201: { $ref: 'http://graasp.org/items/#/definitions/item' },
+  },
 };
 
 // schema for getting one item
 const getOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/items/#/definitions/item' }
-  }
+    200: { $ref: 'http://graasp.org/items/#/definitions/item' },
+  },
 };
 
 // schema for getting one item's children
@@ -102,9 +92,9 @@ const getChildren = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/items/#/definitions/item' }
-    }
-  }
+      items: { $ref: 'http://graasp.org/items/#/definitions/item' },
+    },
+  },
 };
 
 // schema for getting >1 items
@@ -112,8 +102,8 @@ const getMany = {
   querystring: {
     allOf: [
       { $ref: 'http://graasp.org/#/definitions/idsQuery' },
-      { properties: { id: { maxItems: MAX_TARGETS_FOR_READ_REQUEST } } }
-    ]
+      { properties: { id: { maxItems: MAX_TARGETS_FOR_READ_REQUEST } } },
+    ],
   },
   response: {
     200: {
@@ -122,10 +112,10 @@ const getMany = {
         anyOf: [
           { $ref: 'http://graasp.org/#/definitions/error' },
           { $ref: 'http://graasp.org/items/#/definitions/item' },
-        ]
-      }
-    }
-  }
+        ],
+      },
+    },
+  },
 };
 
 // schema for getting member's own items and items shared with him/her
@@ -133,9 +123,9 @@ const getOwnAndShared = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/items/#/definitions/item' }
-    }
-  }
+      items: { $ref: 'http://graasp.org/items/#/definitions/item' },
+    },
+  },
 };
 
 // schema for updating an item
@@ -143,8 +133,8 @@ const updateOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   body: { $ref: 'http://graasp.org/items/#/definitions/partialItemRequireOne' },
   response: {
-    200: { $ref: 'http://graasp.org/items/#/definitions/item' }
-  }
+    200: { $ref: 'http://graasp.org/items/#/definitions/item' },
+  },
 };
 
 // schema for updating up to 10 items
@@ -152,8 +142,8 @@ const updateMany = {
   querystring: {
     allOf: [
       { $ref: 'http://graasp.org/#/definitions/idsQuery' },
-      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } }
-    ]
+      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } },
+    ],
   },
   body: { $ref: 'http://graasp.org/items/#/definitions/partialItemRequireOne' },
   response: {
@@ -162,23 +152,24 @@ const updateMany = {
       items: {
         anyOf: [
           { $ref: 'http://graasp.org/#/definitions/error' },
-          { $ref: 'http://graasp.org/items/#/definitions/item' }
-        ]
-      }
+          { $ref: 'http://graasp.org/items/#/definitions/item' },
+        ],
+      },
     },
-    202: { // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
+    202: {
+      // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'http://graasp.org/#/definitions/uuid' }
-    }
-  }
+      items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    },
+  },
 };
 
 // schema for deleting one item
 const deleteOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/items/#/definitions/item' }
-  }
+    200: { $ref: 'http://graasp.org/items/#/definitions/item' },
+  },
 };
 
 // schema for deleting >1 items
@@ -186,8 +177,8 @@ const deleteMany = {
   querystring: {
     allOf: [
       { $ref: 'http://graasp.org/#/definitions/idsQuery' },
-      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } }
-    ]
+      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } },
+    ],
   },
   response: {
     200: {
@@ -195,15 +186,16 @@ const deleteMany = {
       items: {
         anyOf: [
           { $ref: 'http://graasp.org/#/definitions/error' },
-          { $ref: 'http://graasp.org/items/#/definitions/item' }
-        ]
-      }
+          { $ref: 'http://graasp.org/items/#/definitions/item' },
+        ],
+      },
     },
-    202: { // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
+    202: {
+      // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'http://graasp.org/#/definitions/uuid' }
-    }
-  }
+      items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    },
+  },
 };
 
 // schema for moving one item
@@ -212,10 +204,10 @@ const moveOne = {
   body: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 // schema for moving >1 items
@@ -223,16 +215,16 @@ const moveMany = {
   querystring: {
     allOf: [
       { $ref: 'http://graasp.org/#/definitions/idsQuery' },
-      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } }
-    ]
+      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } },
+    ],
   },
   body: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 // schema for copying one item
@@ -241,10 +233,10 @@ const copyOne = {
   body: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 // schema for copying >1 items
@@ -252,16 +244,16 @@ const copyMany = {
   querystring: {
     allOf: [
       { $ref: 'http://graasp.org/#/definitions/idsQuery' },
-      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } }
-    ]
+      { properties: { id: { maxItems: MAX_TARGETS_FOR_MODIFY_REQUEST } } },
+    ],
   },
   body: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' }
+      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 };
 
 export {
@@ -277,5 +269,5 @@ export {
   moveOne,
   moveMany,
   copyOne,
-  copyMany
+  copyMany,
 };

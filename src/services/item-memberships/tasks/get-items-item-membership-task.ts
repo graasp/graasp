@@ -11,10 +11,16 @@ import { ItemMembership } from '../interfaces/item-membership';
 
 // TODO: does this make sense here? Should this be part of different (micro)service??
 export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMembership[]> {
-  get name(): string { return GetItemsItemMembershipsTask.name; }
+  get name(): string {
+    return GetItemsItemMembershipsTask.name;
+  }
 
-  constructor(member: Member, itemId: string,
-    itemService: ItemService, itemMembershipService: ItemMembershipService) {
+  constructor(
+    member: Member,
+    itemId: string,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     super(member, itemService, itemMembershipService);
     this.itemId = itemId;
   }
@@ -30,7 +36,7 @@ export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMemb
     const itemMemberships = await this.itemMembershipService.getInheritedForAll(item, handler);
 
     // verify if member has rights to view the item by checking if member is in the list
-    const hasRights = itemMemberships.some(m => m.memberId === this.actor.id);
+    const hasRights = itemMemberships.some((m) => m.memberId === this.actor.id);
     if (!hasRights) throw new UserCannotReadItem(this.itemId);
 
     // return item's memberships

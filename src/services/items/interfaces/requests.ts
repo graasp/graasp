@@ -1,1 +1,3 @@
-export interface Ordered { ordered?: boolean }
+export interface Ordered {
+  ordered?: boolean;
+}
