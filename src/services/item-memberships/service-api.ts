@@ -48,6 +48,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           db.pool,
         );
       }
+      registerItemMembershipWsHooks(
+        websockets,
+        runner,
+        itemsDbService,
+        dbService,
+        taskManager,
+        db.pool
+      );
 
       // get item's memberships
       fastify.get<{ Querystring: { itemId: string } }>(

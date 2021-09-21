@@ -34,6 +34,7 @@ export class ItemService {
       'type',
       'path',
       'extra',
+      'settings',
       'creator',
       ['created_at', 'createdAt'],
       ['updated_at', 'updatedAt'],
@@ -56,6 +57,7 @@ export class ItemService {
       [['item', 'type'], ['type']],
       [['item', 'path'], ['path']],
       [['item', 'extra'], ['extra']],
+      [['item', 'settings'], ['settings']],
       [['item', 'creator'], ['creator']],
       [['item', 'created_at'], ['createdAt']],
       [['item', 'updated_at'], ['updatedAt']],
@@ -160,7 +162,10 @@ export class ItemService {
     const setValues = sql.join(
       Object.keys(data).map((key: keyof Item) =>
         sql.join(
-          [sql.identifier([key]), key !== 'extra' ? sql`${data[key]}` : sql.json(data[key])],
+          [
+            sql.identifier([key]),
+            key !== 'extra' && key !== 'settings' ? sql`${data[key]}` : sql.json(data[key]),
+          ],
           sql` = `,
         ),
       ),

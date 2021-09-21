@@ -16,6 +16,13 @@ const item = S.object()
   .prop('type', S.string())
   .prop('path', S.string())
   .prop('extra', S.object().additionalProperties(true))
+  .prop(
+    'settings',
+    S.object()
+      .additionalProperties(false)
+      .prop('isPinned', S.boolean())
+      .prop('showChatbox', S.boolean()),
+  )
   .prop('creator', S.string())
   /**
    * for some reason setting these date fields as "type: 'string'"
@@ -35,6 +42,13 @@ const baseItemCreate = S.object()
   .prop('description', S.string())
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
+  .prop(
+    'settings',
+    S.object()
+      .additionalProperties(false)
+      .prop('isPinned', S.boolean())
+      .prop('showChatbox', S.boolean()),
+  )
   .required(['name', 'type']);
 
 // type 'folder' (empty extra {})
@@ -77,6 +91,13 @@ const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
+  .prop(
+    'settings',
+    S.object()
+      .additionalProperties(false)
+      .prop('isPinned', S.boolean())
+      .prop('showChatbox', S.boolean()),
+  )
   .anyOf([S.required(['name']), S.required(['description'])]);
 
 const create =
