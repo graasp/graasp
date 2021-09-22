@@ -1,4 +1,6 @@
-# Requirements
+# Graasp
+
+## Requirements
 
 In order to run the Graasp backend, it requires:
 
@@ -8,7 +10,7 @@ In order to run the Graasp backend, it requires:
 
 **IT IS IMPORTANT TO USE NPM 6.14 and Node.js 14**
 
-# Recommended Tools
+## Recommended Tools
 
 - [NVM](https://github.com/nvm-sh/nvm) : CLI to manage multiple versions of Node.js and NPM.
 
@@ -22,9 +24,16 @@ In order to run the Graasp backend, it requires:
 
     - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
 
-# Docker installation (Recommanded) 
+## Installation
 
-The installation with Docker is the recommanded way, it allows to use a preconfigured developement environnement.
+Graasp offers two ways to install the Graasp backend :
+
+    - Docker : this allows you to run a preconfigured environnement (Recommended)
+    - Local : you'll need to install and configure all the required services
+
+### Docker installation (Recommended) 
+
+We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
 
 First open the folder locally and run the following command to install the required npm packages.
 
@@ -33,29 +42,29 @@ First open the folder locally and run the following command to install the requi
 Then you can open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd>, and typing `Open Folder in Container`.
 
 This will create 3 containers :
-- app : Node.js backend of Graasp
-- db : PostgreSQL database used by the backend 
-- redis : Redis instance to enable websockets
+- `app` : Node.js backend of Graasp
+- `db` : PostgreSQL database used by the backend 
+- `redis` : Redis instance to enable websockets
 
-Then run the following command to install the required npm packages. Note : this is required because bcrypt use native libraires and it is not currently possible to directly install deps from the container.
+Then run the following command to install the required npm packages. Note : this is required because `bcrypt` use native libraires and it is not currently possible to directly install deps from the container.
 
 `npm install bcrypt`
 
-# Local Installation
+### Local Installation
 
 First a running and accessible instance of PostgreSQL is required.
 
 To enable websockets capabilities, it is required to have a running instance of [Redis](https://redis.io).
 
-First open the folder locally and run the following command to install the required npm packages.
+Then open the folder locally and run the following command to install the required npm packages.
 
 `npm install`
 
-# Database creation
+### Database creation
 
 Before running the application you'll need to install the PostgreSQL database.
 
-Then you'll need to execute the content of the `db-schema.sql`.
+You'll need to create the necessary tables. The SQL commands are available in `db-schema.sql`.
 
 Install the corresponding schema if you are using any fo the following plugins :
 
@@ -65,9 +74,11 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Apps : [`db-schema.sql`](https://github.com/graasp/graasp-apps/blob/main/db-schema.sql)
 
-- Item-Flagging [`db-schema.sql`](https://github.com/graasp/graasp-item-flagging/blob/master/db-schema.sql)
+- Item-Flagging : [`db-schema.sql`](https://github.com/graasp/graasp-item-flagging/blob/master/db-schema.sql)
 
-# Configuration
+- ChatBox : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/db-schema.sql)
+
+### Configuration
 
 To configure the application, you'll need to change the values in  `development.env`. The file should have the following structure :
 
@@ -82,18 +93,19 @@ PORT=3000
 # CORS_ORIGIN_REGEX=
 
 # Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
-SECURE_SESSION_SECRET_KEY=
+SECURE_SESSION_SECRET_KEY=<content>
 
 # JWT secrets
-JWT_SECRET=
+JWT_SECRET=<content>
 
 TOKEN_BASED_AUTH=true
-AUTH_TOKEN_JWT_SECRET=
+AUTH_TOKEN_JWT_SECRET=<content>
 AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
-REFRESH_TOKEN_JWT_SECRET=
+REFRESH_TOKEN_JWT_SECRET=<content>
 REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 
 # PostgreSQL connection string
+# If you are using dev-containers, this value is overwritten in docker-compose.yml
 PG_CONNECTION_URI=postgresql://<user>:<password>@localhost:5432/<dbname>
 
 # Slonik database logging (uncomment both)
@@ -106,6 +118,7 @@ PG_CONNECTION_URI=postgresql://<user>:<password>@localhost:5432/<dbname>
 # MAILER_CONFIG_PASSWORD=
 
 # Graasp file item file storage path
+# If you are using dev-containers, this value is overwritten in docker-compose.yml
 FILE_STORAGE_ROOT_PATH=
 
 # Graasp s3 file item
@@ -124,6 +137,7 @@ APPS_PLUGIN=true
 APPS_JWT_SECRET=
 
 # Graasp websockets
+# If you are using a local installation and don't want to install redis, you can set WEBSOCKETS_PLUGIN to false
 WEBSOCKETS_PLUGIN=true
 REDIS_HOST=graasp-redis
 REDIS_PORT=6379
@@ -137,6 +151,6 @@ CHATBOX_PLUGIN=true
 PUBLIC_ITEMS_PLUGIN=true
 ````
 
-# Running
+## Running
 
 To run the application, use `npm run watch`. If any file change, the application will automatically reload.
