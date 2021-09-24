@@ -230,7 +230,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           await generateLoginLinkAndEmailIt(member, true);
           reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
         }
-      }
+      },
     );
 
     // login
@@ -250,7 +250,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           log.warn(`Login attempt with non-existent email '${email}'`);
           reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
         }
-      }
+      },
     );
 
     // authenticate
@@ -321,33 +321,32 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             const member = await runner.runSingle(task, log);
             await generateRegisterLinkAndEmailIt(member, challenge);
             reply.status(StatusCodes.NO_CONTENT);
-          } 
-          else {
+          } else {
             log.warn(`Member re-registration attempt for email '${email}'`);
             await generateLoginLinkAndEmailIt(member, true, challenge);
             reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
           }
-      }
-    );
+        },
+      );
 
-    fastify.post<{ Body: { email: string, challenge: string } }>(
-      '/login',
-      { schema: mlogin },
-      async ({ body, log }, reply) => {
-        const { email, challenge } = body;
-        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-        task.skipActorChecks = true;
-        const [member] = await runner.runSingle(task, log);
+      fastify.post<{ Body: { email: string; challenge: string } }>(
+        '/login',
+        { schema: mlogin },
+        async ({ body, log }, reply) => {
+          const { email, challenge } = body;
+          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+          task.skipActorChecks = true;
+          const [member] = await runner.runSingle(task, log);
 
-        if (member) {
-          await generateLoginLinkAndEmailIt(member, false, challenge);
-          reply.status(StatusCodes.NO_CONTENT);
-        } else {
-          log.warn(`Login attempt with non-existent email '${email}'`);
-          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
-        }
-      }
-    );
+          if (member) {
+            await generateLoginLinkAndEmailIt(member, false, challenge);
+            reply.status(StatusCodes.NO_CONTENT);
+          } else {
+            log.warn(`Login attempt with non-existent email '${email}'`);
+            reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+          }
+        },
+      );
 
       fastify.post<{ Body: { t: string; verifier: string } }>(
         '/auth',
