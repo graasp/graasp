@@ -349,29 +349,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       }
     );
 
-          reply.status(204);
-        },
-      );
-
-      fastify.post<{ Body: { email: string; challenge: string } }>(
-        '/login',
-        { schema: mlogin },
-        async ({ body, log }, reply) => {
-          const { email, challenge } = body;
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          task.skipActorChecks = true;
-          const [member] = await runner.runSingle(task, log);
-
-          if (member) {
-            await generateLoginLinkAndEmailIt(member, false, challenge);
-          } else {
-            log.warn(`Login attempt with non-existent email '${email}'`);
-          }
-
-          reply.status(204);
-        },
-      );
-
       fastify.post<{ Body: { t: string; verifier: string } }>(
         '/auth',
         { schema: mauth },
