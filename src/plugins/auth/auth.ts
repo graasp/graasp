@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import jwt, { Secret, VerifyOptions, SignOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { JsonWebTokenError } from 'jsonwebtoken';
+import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 
 import { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
@@ -223,12 +224,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const member = await runner.runSingle(task, log);
 
           await generateRegisterLinkAndEmailIt(member);
+          reply.status(StatusCodes.NO_CONTENT);
         } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
           await generateLoginLinkAndEmailIt(member, true);
+          reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
         }
-
-        reply.status(204);
       },
     );
 
@@ -243,12 +244,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
         if (member) {
           await generateLoginLinkAndEmailIt(member);
+          reply.status(StatusCodes.NO_CONTENT);
         } else {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
+          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
         }
-
-        reply.status(204);
       },
     );
 
@@ -318,14 +319,13 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, { name, email });
             task.skipActorChecks = true;
             const member = await runner.runSingle(task, log);
-
             await generateRegisterLinkAndEmailIt(member, challenge);
+            reply.status(StatusCodes.NO_CONTENT);
           } else {
             log.warn(`Member re-registration attempt for email '${email}'`);
             await generateLoginLinkAndEmailIt(member, true, challenge);
+            reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
           }
-
-          reply.status(204);
         },
       );
 
@@ -340,11 +340,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
           if (member) {
             await generateLoginLinkAndEmailIt(member, false, challenge);
+            reply.status(StatusCodes.NO_CONTENT);
           } else {
             log.warn(`Login attempt with non-existent email '${email}'`);
+            reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
           }
-
-          reply.status(204);
         },
       );
 

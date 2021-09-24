@@ -63,6 +63,7 @@
     "graasp-recycle-bin": "git://github.com/graasp/graasp-recycle-bin.git#main",
     "graasp-s3-file-item": "git://github.com/graasp/graasp-s3-file-item.git#master",
     "graasp-websockets": "git://github.com/graasp/graasp-websockets.git#master",
+    "http-status-codes": "2.1.4",
     "jsonwebtoken": "^8.5.1",
     "slonik": "^23.8.3",
     "uuid": "^8.3.2"
