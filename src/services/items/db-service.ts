@@ -1,6 +1,6 @@
 // global
 import { ObjectSchema } from 'fluent-json-schema';
-import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
+import { sql, DatabaseTransactionConnectionType as TrxHandler, SqlTaggedTemplateType, ValueExpressionType } from 'slonik';
 import { UnknownExtra } from '../../interfaces/extra';
 // other services
 import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
@@ -164,7 +164,7 @@ export class ItemService {
         sql.join(
           [
             sql.identifier([key]),
-            key !== 'extra' && key !== 'settings' ? sql`${data[key]}` : sql.json(data[key]),
+            this.buildColumnsForUpdate(key, data)
           ],
           sql` = `,
         ),
@@ -182,6 +182,17 @@ export class ItemService {
       `,
       )
       .then(({ rows }) => rows[0]);
+  }
+
+  buildColumnsForUpdate<E extends UnknownExtra>(key: string, data: Partial<Item<E>>): ValueExpressionType {
+    switch(key){
+      case 'settings':
+        return sql`${sql.identifier([key])} || ${sql.json(data[key])}`;
+      case 'extra':
+        return sql.json(data[key]);
+      default:
+        return sql`${data[key]}`;
+    }
   }
 
   /**
