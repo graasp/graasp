@@ -173,3 +173,12 @@ export const PUBLIC_ITEMS_PLUGIN = process.env.PUBLIC_ITEMS_PLUGIN === 'true';
 
 // Graasp chatbox plugin
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';
+
+export const S3_FILE_ITEM_PLUGIN_OPTIONS = {
+  s3Region: S3_FILE_ITEM_REGION,
+  s3Bucket: S3_FILE_ITEM_BUCKET,
+  s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
+  s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
+};
+
+export const FILE_ITEM_PLUGIN_OPTIONS= { storageRootPath: FILE_STORAGE_ROOT_PATH }; 

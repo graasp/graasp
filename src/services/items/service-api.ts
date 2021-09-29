@@ -15,12 +15,7 @@ import fastifyCors from 'fastify-cors';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-  FILE_STORAGE_ROOT_PATH,
   S3_FILE_ITEM_PLUGIN,
-  S3_FILE_ITEM_REGION,
-  S3_FILE_ITEM_BUCKET,
-  S3_FILE_ITEM_ACCESS_KEY_ID,
-  S3_FILE_ITEM_SECRET_ACCESS_KEY,
   EMBEDDED_LINK_ITEM_PLUGIN,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   GRAASP_ACTOR,
@@ -29,6 +24,8 @@ import {
   PUBLIC_ITEMS_PLUGIN,
   CHATBOX_PLUGIN,
   WEBSOCKETS_PLUGIN,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -61,13 +58,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     taskRunner: runner,
     websockets,
     db,
-    log,
   } = fastify;
   const { dbService } = items;
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
   items.taskManager = taskManager;
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
+
+  fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
+  fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
   // deployed w/o the '/items' prefix and w/o auth pre-handler
   if (APPS_PLUGIN) {
@@ -80,6 +79,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await fastify.register(graaspPublicItems, {
       tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
       graaspActor: GRAASP_ACTOR,
+      enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
       // native fastify option
       prefix: '/p',
     });
@@ -104,14 +104,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
         if (S3_FILE_ITEM_PLUGIN) {
-          fastify.register(graaspS3FileItem, {
-            s3Region: S3_FILE_ITEM_REGION,
-            s3Bucket: S3_FILE_ITEM_BUCKET,
-            s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
-            s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
-          });
+          fastify.register(graaspS3FileItem,S3_FILE_ITEM_PLUGIN_OPTIONS);
         } else {
-          fastify.register(graaspFileItem, { storageRootPath: FILE_STORAGE_ROOT_PATH });
+          fastify.register(graaspFileItem, FILE_ITEM_PLUGIN_OPTIONS);
         }
 
         if (EMBEDDED_LINK_ITEM_PLUGIN) {
