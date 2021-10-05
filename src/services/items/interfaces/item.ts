@@ -1,4 +1,4 @@
-import { UnknownExtra } from '../../../interfaces/extra';
+import { Serializable, UnknownExtra } from '../../../interfaces/extra';
 
 export interface Item<T extends UnknownExtra = UnknownExtra> {
   id: string;
@@ -13,7 +13,7 @@ export interface Item<T extends UnknownExtra = UnknownExtra> {
   updatedAt: string;
 }
 
-export interface ItemSettings extends UnknownExtra {
+export interface ItemSettings extends Serializable {
   isPinned: boolean;
   showChatBox: boolean;
 }
