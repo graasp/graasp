@@ -22,8 +22,9 @@ CREATE TABLE "item" (
   "type" character varying(100),
   "path" ltree UNIQUE NOT NULL,
   "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
-  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove item - set creator to NULL
+  "settings" jsonb NOT NULL DEFAULT '{}'::jsonb,
 
+  "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove item - set creator to NULL
   "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
   "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
 );

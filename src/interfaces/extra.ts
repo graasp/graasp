@@ -10,3 +10,6 @@ export type Anything =
 export interface UnknownExtra {
   [key: string]: Anything;
 }
+export interface Serializable {
+  [key: string]: Anything;
+}
