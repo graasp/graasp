@@ -19,9 +19,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     taskRunner: runner,
     websockets,
     db,
+    members: { dbService: membersDbService },
   } = fastify;
   const { dbService } = itemMemberships;
-  const taskManager: ItemMembershipTaskManager = new TaskManager(itemsDbService, dbService);
+  const taskManager: ItemMembershipTaskManager =
+    new TaskManager(itemsDbService, dbService, membersDbService);
   itemMemberships.taskManager = taskManager;
 
   // schemas
@@ -48,60 +50,52 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           db.pool,
         );
       }
+    // get item's memberships
+    fastify.get<{ Querystring: { itemId: string } }>(
+      '/', { schema: getItems },
+      async ({ member, query: { itemId }, log }) => {
+        const tasks = taskManager.createGetOfItemTaskSequence(member, itemId);
+        return runner.runSingleSequence(tasks, log);
+      }
+    );
 
-      // get item's memberships
-      fastify.get<{ Querystring: { itemId: string } }>(
-        '/',
-        { schema: getItems },
-        async ({ member, query: { itemId }, log }) => {
-          const task = taskManager.createGetOfItemTask(member, itemId);
-          return runner.runSingle(task, log);
-        },
-      );
+    // create item membership
+    fastify.post<{ Querystring: { itemId: string } }>(
+      '/', { schema: create },
+      async ({ member, query: { itemId }, body, log }) => {
+        const tasks = taskManager.createCreateTaskSequence(member, body, itemId);
+        return runner.runSingleSequence(tasks, log);
+      }
+    );
 
-      // create item membership
-      fastify.post<{ Querystring: { itemId: string } }>(
-        '/',
-        { schema: create },
-        async ({ member, query: { itemId }, body, log }) => {
-          const task = taskManager.createCreateTask(member, body, itemId);
-          return runner.runSingle(task, log);
-        },
-      );
+    // update item membership
+    fastify.patch<{ Params: IdParam }>(
+      '/:id', { schema: updateOne },
+      async ({ member, params: { id }, body, log }) => {
+        const tasks = taskManager.createUpdateTaskSequence(member, id, body);
+        return runner.runSingleSequence(tasks, log);
+      }
+    );
 
-      // update item membership
-      fastify.patch<{ Params: IdParam }>(
-        '/:id',
-        { schema: updateOne },
-        async ({ member, params: { id }, body, log }) => {
-          const task = taskManager.createUpdateTask(member, id, body);
-          return runner.runSingle(task, log);
-        },
-      );
+    // delete item membership
+    fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
+      '/:id', { schema: deleteOne },
+      async ({ member, params: { id }, query: { purgeBelow }, log }) => {
+        const tasks = taskManager.createDeleteTaskSequence(member, id, purgeBelow);
+        return runner.runSingleSequence(tasks, log);
+      }
+    );
 
-      // delete item membership
-      fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
-        '/:id',
-        { schema: deleteOne },
-        async ({ member, params: { id }, query: { purgeBelow }, log }) => {
-          const task = taskManager.createDeleteTask(member, id, purgeBelow);
-          return runner.runSingle(task, log);
-        },
-      );
-
-      // delete item's item memberships
-      fastify.delete<{ Querystring: { itemId: string } }>(
-        '/',
-        { schema: deleteAll },
-        async ({ member, query: { itemId }, log }, reply) => {
-          const task = taskManager.createDeleteAllOnAndBelowItemTask(member, itemId);
-          await runner.runSingle(task, log);
-          reply.status(204);
-        },
-      );
-    },
-    { prefix: ROUTES_PREFIX },
-  );
+    // delete item's item memberships
+    fastify.delete<{ Querystring: { itemId: string } }>(
+      '/', { schema: deleteAll },
+      async ({ member, query: { itemId }, log }, reply) => {
+        const tasks = taskManager.createDeleteAllOnAndBelowItemTaskSequence(member, itemId);
+        await runner.runSingleSequence(tasks, log);
+        reply.status(204);
+      }
+    );
+  }, { prefix: ROUTES_PREFIX });
 };
 
 export default plugin;

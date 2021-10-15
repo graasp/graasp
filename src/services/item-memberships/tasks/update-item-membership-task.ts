@@ -1,14 +1,10 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import {
-  InvalidPermissionLevel,
-  ItemMembershipNotFound,
-  UserCannotAdminItem,
-} from '../../../util/graasp-error';
+import { InvalidPermissionLevel } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
-import { ItemService } from '../../../services/items/db-service';
 import { Member } from '../../../services/members/interfaces/member';
+import { Item } from '../../items/interfaces/item';
 // local
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
@@ -24,32 +20,22 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
     // return main task's name so it is injected with the same hook handlers
     return UpdateItemMembershipTask.name;
   }
-  private permission: PermissionLevel;
+  input: { itemMembershipId?: string, permission?: PermissionLevel };
 
-  constructor(
-    member: Member,
-    itemMembershipId: string,
-    permission: PermissionLevel,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.permission = permission;
-    this.targetId = itemMembershipId;
+  constructor(member: Member, itemMembershipService: ItemMembershipService,
+    input: { itemMembershipId?: string, permission?: PermissionLevel }) {
+    super(member, itemMembershipService);
+    this.input = input ?? {};
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.({ id: this.targetId, permission: this.permission }, this.actor, {
-      log,
-      handler,
-    });
-    const itemMembership = await this.itemMembershipService.update(
-      this.targetId,
-      this.permission,
-      handler,
-    );
+    const { itemMembershipId, permission } = this.input;
+    this.targetId = itemMembershipId;
+
+    await this.preHookHandler?.({ id: itemMembershipId, permission }, this.actor, { log, handler });
+    const itemMembership = await this.itemMembershipService.update(itemMembershipId, permission, handler);
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
@@ -57,70 +43,61 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   }
 }
 
+type InputType = {
+  itemMembership?: ItemMembership,
+  item?: Item,
+  data?: Partial<ItemMembership>
+};
+
 export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string {
-    return UpdateItemMembershipTask.name;
+  get name(): string { return UpdateItemMembershipTask.name; }
+  private subtasks: BaseItemMembershipTask<ItemMembership>[];
+
+  input: InputType;
+  getInput: () => InputType;
+
+  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: InputType) {
+    super(member, itemMembershipService);
+    this.input = input ?? {};
   }
 
-  constructor(
-    member: Member,
-    itemMembershipId: string,
-    data: Partial<ItemMembership>,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.data = data;
-    this.targetId = itemMembershipId;
+  get result(): ItemMembership {
+    return this.subtasks ? this.subtasks[this.subtasks.length - 1]?.result : this._result;
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<DeleteItemMembershipSubTask[]> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<BaseItemMembershipTask<ItemMembership>[]> {
     this.status = 'RUNNING';
 
-    // get item membership
-    const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
-    if (!itemMembership) throw new ItemMembershipNotFound(this.targetId);
-
-    // get item that membership is targeting
-    const item = await this.itemService.getMatchingPath(itemMembership.itemPath, handler);
-
-    // verify if member updating the membership has rights for that
-    const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
-    if (!hasRights) throw new UserCannotAdminItem(item.id);
+    const { itemMembership, item, data } = this.input;
+    this.targetId = itemMembership.id;
 
     // check member's inherited membership
-    const { memberId } = itemMembership;
-    const inheritedMembership = await this.itemMembershipService.getInherited(
-      memberId,
-      item,
-      handler,
-    );
+    const { memberId, id: itemMembershipId } = itemMembership;
+    const inheritedMembership =
+      await this.itemMembershipService.getInherited(memberId, item, handler);
 
-    const { permission } = this.data;
+    const { permission } = data;
 
     if (inheritedMembership) {
       const { permission: inheritedPermission } = inheritedMembership;
 
       if (permission === inheritedPermission) {
         // downgrading to same as the inherited, delete current membership
-        const deleteSubtask = new DeleteItemMembershipSubTask(
-          this.actor,
-          this.targetId,
-          this.itemService,
-          this.itemMembershipService,
-        );
-
+        const deleteSubtask =
+          new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, { itemMembershipId });
+          
         this.status = 'DELEGATED';
-        return [deleteSubtask];
+        this.subtasks = [deleteSubtask];
+        return this.subtasks;
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
         // if downgrading to "worse" than inherited
-        throw new InvalidPermissionLevel(this.targetId);
+        throw new InvalidPermissionLevel(itemMembershipId);
       }
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow = await this.itemMembershipService.getAllBelow(memberId, item, handler);
-
+    const membershipsBelow =
+      await this.itemMembershipService.getAllBelow(memberId, item, handler);
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>
@@ -131,30 +108,25 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         this.status = 'DELEGATED';
 
         // return subtasks to remove redundant existing memberships and to update the existing one
-        return membershipsBelowToDiscard
-          .map(
-            (m) =>
-              new DeleteItemMembershipSubTask(
-                this.actor,
-                m.id,
-                this.itemService,
-                this.itemMembershipService,
-              ),
-          )
-          .concat(
-            new UpdateItemMembershipSubTask(
-              this.actor,
-              this.targetId,
-              permission,
-              this.itemService,
-              this.itemMembershipService,
-            ),
-          );
+        this.subtasks = membershipsBelowToDiscard
+          .map(m => new DeleteItemMembershipSubTask(
+            this.actor, this.itemMembershipService, { itemMembershipId: m.id }
+          ));
+        this.subtasks.push(new UpdateItemMembershipSubTask(
+          this.actor, this.itemMembershipService, { itemMembershipId, permission }
+        ));
+
+        return this.subtasks;
       }
     }
 
     // update membership
-    this._result = await this.itemMembershipService.update(this.targetId, permission, handler);
+    await this.preHookHandler?.({ id: itemMembershipId, permission }, this.actor, { log, handler });
+    const updatedItemMembership =
+      await this.itemMembershipService.update(itemMembershipId, permission, handler);
+    await this.postHookHandler?.(updatedItemMembership, this.actor, { log, handler });
+
     this.status = 'OK';
+    this._result = updatedItemMembership;
   }
 }

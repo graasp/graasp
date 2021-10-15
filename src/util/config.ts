@@ -4,6 +4,7 @@ enum Environment {
   production = 'production',
   staging = 'staging',
   development = 'development',
+  test = 'test'
 }
 
 export let ENVIRONMENT: Environment;
@@ -17,6 +18,10 @@ switch (process.env.NODE_ENV) {
     dotenv.config({ path: 'staging.env' });
     ENVIRONMENT = Environment.staging;
     break;
+  case Environment.test:
+    dotenv.config({ path: 'test.env' });
+    ENVIRONMENT = Environment.test;
+    break;
   // case Environment.development:
   default:
     dotenv.config({ path: 'development.env' });
@@ -27,10 +32,11 @@ switch (process.env.NODE_ENV) {
 export const PROD = ENVIRONMENT === Environment.production;
 export const STAGING = ENVIRONMENT === Environment.staging;
 export const DEV = ENVIRONMENT === Environment.development;
+export const TEST = ENVIRONMENT === Environment.test;
 
 const { PORT: port } = process.env;
 
-if (!port) {
+if (!port && !TEST) {
   console.error('PORT environment variable missing.');
   process.exit(1);
 }
@@ -51,7 +57,7 @@ export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 
-if (!PG_CONNECTION_URI) {
+if (!PG_CONNECTION_URI && !TEST) {
   console.error('PG_CONNECTION_URI environment variable missing.');
   process.exit(1);
 }
@@ -79,9 +85,9 @@ export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
-export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES;
+export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES || 10080;
 /** Refresh token expiration, in minutes */
-export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES;
+export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES || 86400;
 
 // Graasp limits
 
@@ -169,7 +175,7 @@ export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // Graasp public items
-export const PUBLIC_ITEMS_PLUGIN = process.env.PUBLIC_ITEMS_PLUGIN === 'true';
+export const PUBLIC_PLUGIN = process.env.PUBLIC_PLUGIN === 'true';
 
 // Graasp chatbox plugin
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';

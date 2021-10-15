@@ -1,9 +1,7 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import { ItemMembershipNotFound, UserCannotAdminItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
-import { ItemService } from '../../../services/items/db-service';
 import { Item } from '../../../services/items/interfaces/item';
 import { Member } from '../../../services/members/interfaces/member';
 // local
@@ -17,21 +15,22 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
     return DeleteItemMembershipTask.name;
   }
 
-  constructor(
-    member: Member,
-    itemMembershipId: string,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.targetId = itemMembershipId;
+  input: { itemMembershipId: string };
+
+  constructor(member: Member, itemMembershipService: ItemMembershipService,
+    input: { itemMembershipId: string }) {
+    super(member, itemMembershipService);
+    this.input = input;
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.({ id: this.targetId }, this.actor, { log, handler });
-    const itemMembership = await this.itemMembershipService.delete(this.targetId, handler);
+    const { itemMembershipId } = this.input;
+    this.targetId = itemMembershipId;
+
+    await this.preHookHandler?.({ id: itemMembershipId }, this.actor, { log, handler });
+    const itemMembership = await this.itemMembershipService.delete(itemMembershipId, handler);
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
@@ -39,23 +38,22 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   }
 }
 
+type InputType = { itemMembership?: ItemMembership, purgeBelow?: boolean };
+
 export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string {
-    return DeleteItemMembershipTask.name;
+  get name(): string { return DeleteItemMembershipTask.name; }
+  private subtasks: DeleteItemMembershipSubTask[];
+
+  input: InputType;
+  getInput: () => InputType;
+
+  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: InputType) {
+    super(member, itemMembershipService);
+    this.input = input ?? {};
   }
 
-  private purgeBelow: boolean;
-
-  constructor(
-    member: Member,
-    itemMembershipId: string,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-    purgeBelow?: boolean,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.targetId = itemMembershipId;
-    this.purgeBelow = purgeBelow;
+  get result(): ItemMembership {
+    return this.subtasks ? this.subtasks[0]?.result : this._result;
   }
 
   async run(
@@ -64,21 +62,10 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
   ): Promise<DeleteItemMembershipSubTask[]> {
     this.status = 'RUNNING';
 
-    // get item membership
-    const itemMembership = await this.itemMembershipService.get(this.targetId, handler);
-    if (!itemMembership) throw new ItemMembershipNotFound(this.targetId);
+    const { itemMembership, purgeBelow } = this.input;
+    this.targetId = itemMembership.id;
 
-    // if trying to remove someone else's membership
-    if (itemMembership.memberId !== this.actor.id && !this.skipActorChecks) {
-      // get item to which the membership is bound to
-      const item = await this.itemService.getMatchingPath(itemMembership.itemPath, handler);
-
-      // verify if member deleting the membership has rights for that
-      const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
-      if (!hasRights) throw new UserCannotAdminItem(item.id);
-    }
-
-    if (this.purgeBelow) {
+    if (purgeBelow) {
       const item = { path: itemMembership.itemPath } as Item;
 
       const itemMembershipsBelow = await this.itemMembershipService.getAllBelow(
@@ -92,23 +79,19 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
         // return list of subtasks for task manager to execute and
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
-        return itemMembershipsBelow
+        this.subtasks = itemMembershipsBelow
           .concat(itemMembership)
-          .map(
-            (im) =>
-              new DeleteItemMembershipSubTask(
-                this.actor,
-                im.id,
-                this.itemService,
-                this.itemMembershipService,
-              ),
+          .map(({ id: itemMembershipId }) =>
+            new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, { itemMembershipId })
           );
+
+        return this.subtasks;
       }
     }
 
     // delete membership
     await this.preHookHandler?.(itemMembership, this.actor, { log, handler });
-    await this.itemMembershipService.delete(this.targetId, handler);
+    await this.itemMembershipService.delete(itemMembership.id, handler);
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';

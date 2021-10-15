@@ -6,21 +6,28 @@ import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 
+type InputType = { data?: Partial<Member> };
+
 export class GetMembersByTask extends BaseMemberTask<Member[]> {
   get name(): string {
     return GetMembersByTask.name;
   }
 
-  constructor(actor: Actor, data: Partial<Member>, memberService: MemberService) {
+  input: InputType;
+  getInput: () => InputType;
+
+  constructor(actor: Actor, memberService: MemberService, input?: InputType) {
     super(actor, memberService);
-    this.data = data;
+    this.input = input ?? {};
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
     this.status = 'RUNNING';
 
+    const { data } = this.input;
+
     // get member(s) matching a set of properties
-    const members = await this.memberService.getMatching(this.data, handler);
+    const members = await this.memberService.getMatching(data, handler);
 
     this.status = 'OK';
     this._result = members;

@@ -1,17 +1,16 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
-import graaspFileItem from 'graasp-file-item';
-import graaspS3FileItem from 'graasp-s3-file-item';
+import graaspFileItem from 'graasp-plugin-file-item';
+import graaspPluginS3FileItem from 'graasp-plugin-s3-file-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
-import graaspPublicItems from 'graasp-public-items';
-import graaspItemLogin from 'graasp-item-login';
+import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspApps from 'graasp-apps';
-import graaspChatbox from 'graasp-plugin-chatbox';
-import graaspRecycleBin from 'graasp-recycle-bin';
+import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
+import graaspChatbox from 'graasp-plugin-chatbox';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
@@ -21,7 +20,6 @@ import {
   GRAASP_ACTOR,
   APPS_PLUGIN,
   APPS_JWT_SECRET,
-  PUBLIC_ITEMS_PLUGIN,
   CHATBOX_PLUGIN,
   WEBSOCKETS_PLUGIN,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -75,16 +73,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
   }
 
-  if (PUBLIC_ITEMS_PLUGIN) {
-    await fastify.register(graaspPublicItems, {
-      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
-      graaspActor: GRAASP_ACTOR,
-      enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
-      // native fastify option
-      prefix: '/p',
-    });
-  }
-
   fastify.register(
     async function (fastify) {
       // add CORS support
@@ -104,7 +92,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
         if (S3_FILE_ITEM_PLUGIN) {
-          fastify.register(graaspS3FileItem,S3_FILE_ITEM_PLUGIN_OPTIONS);
+          fastify.register(graaspPluginS3FileItem, S3_FILE_ITEM_PLUGIN_OPTIONS);
         } else {
           fastify.register(graaspFileItem, FILE_ITEM_PLUGIN_OPTIONS);
         }
@@ -143,9 +131,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.post<{ Querystring: ParentIdParam }>(
           '/',
           { schema: create() },
-          async ({ member, query: { parentId }, body, log }) => {
-            const task = taskManager.createCreateTask(member, body, parentId);
-            return runner.runSingle(task, log);
+          async ({ member, query: { parentId }, body: data, log }) => {
+            const tasks = taskManager.createCreateTaskSequence(member, data, parentId);
+            return runner.runSingleSequence(tasks, log);
           },
         );
 
@@ -154,8 +142,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/:id',
           { schema: getOne },
           async ({ member, params: { id }, log }) => {
-            const task = taskManager.createGetTask(member, id);
-            return runner.runSingle(task, log);
+            const tasks = taskManager.createGetTaskSequence(member, id);
+            return runner.runSingleSequence(tasks, log);
           },
         );
 
@@ -163,8 +151,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/',
           { schema: getMany },
           async ({ member, query: { id: ids }, log }) => {
-            const tasks = ids.map((id) => taskManager.createGetTask(member, id));
-            return runner.runMultiple(tasks, log);
+            const tasks = ids.map((id) => taskManager.createGetTaskSequence(member, id));
+            return runner.runMultipleSequences(tasks, log);
           },
         );
 
@@ -185,8 +173,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/:id/children',
           { schema: getChildren },
           async ({ member, params: { id }, query: { ordered }, log }) => {
-            const task = taskManager.createGetChildrenTask(member, id, ordered);
-            return runner.runSingle(task, log);
+            const tasks = taskManager.createGetChildrenTaskSequence(member, id, ordered);
+            return runner.runSingleSequence(tasks, log);
           },
         );
 
@@ -195,8 +183,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/:id',
           { schema: updateOne() },
           async ({ member, params: { id }, body, log }) => {
-            const task = taskManager.createUpdateTask(member, id, body);
-            return runner.runSingle(task, log);
+            const tasks = taskManager.createUpdateTaskSequence(member, id, body);
+            return runner.runSingleSequence(tasks, log);
           },
         );
 
@@ -204,16 +192,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/',
           { schema: updateMany() },
           async ({ member, query: { id: ids }, body, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createUpdateTask(member, id, body));
+            const tasks = ids.map((id) => taskManager.createUpdateTaskSequence(member, id, body));
 
             // too many items to update: start execution and return '202'.
             if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultiple(tasks, log);
+              runner.runMultipleSequences(tasks, log);
               reply.status(202);
               return ids;
             }
 
-            return runner.runMultiple(tasks, log);
+            return runner.runMultipleSequences(tasks, log);
           },
         );
 
@@ -222,8 +210,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/:id',
           { schema: deleteOne },
           async ({ member, params: { id }, log }) => {
-            const task = taskManager.createDeleteTask(member, id);
-            return runner.runSingle(task, log);
+            const tasks = taskManager.createDeleteTaskSequence(member, id);
+            return runner.runSingleSequence(tasks, log);
           },
         );
 
@@ -231,16 +219,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/',
           { schema: deleteMany },
           async ({ member, query: { id: ids }, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createDeleteTask(member, id));
+            const tasks = ids.map((id) => taskManager.createDeleteTaskSequence(member, id));
 
             // too many items to delete: start execution and return '202'.
             if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultiple(tasks, log);
+              runner.runMultipleSequences(tasks, log);
               reply.status(202);
               return ids;
             }
 
-            return runner.runMultiple(tasks, log);
+            return runner.runMultipleSequences(tasks, log);
           },
         );
 
@@ -249,8 +237,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/:id/move',
           { schema: moveOne },
           async ({ member, params: { id }, body: { parentId }, log }, reply) => {
-            const task = taskManager.createMoveTask(member, id, parentId);
-            await runner.runSingle(task, log);
+            const task = taskManager.createMoveTaskSequence(member, id, parentId);
+            await runner.runSingleSequence(task, log);
             reply.status(204);
           },
         );
@@ -259,16 +247,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/move',
           { schema: moveMany },
           async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createMoveTask(member, id, parentId));
+            const tasks = ids.map((id) => taskManager.createMoveTaskSequence(member, id, parentId));
 
             // too many items to move: start execution and return '202'.
             if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultiple(tasks, log);
+              runner.runMultipleSequences(tasks, log);
               reply.status(202);
               return ids;
             }
 
-            await runner.runMultiple(tasks, log);
+            await runner.runMultipleSequences(tasks, log);
             reply.status(204);
           },
         );
@@ -278,8 +266,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/:id/copy',
           { schema: copyOne },
           async ({ member, params: { id }, body: { parentId }, log }) => {
-            const task = taskManager.createCopyTask(member, id, parentId);
-            return runner.runSingle(task, log);
+            const tasks = taskManager.createCopyTaskSequence(member, id, parentId);
+            return runner.runSingleSequence(tasks, log);
           },
         );
 
@@ -287,16 +275,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           '/copy',
           { schema: copyMany },
           async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createCopyTask(member, id, parentId));
+            const tasks = ids.map((id) => taskManager.createCopyTaskSequence(member, id, parentId));
 
             // too many items to copy: start execution and return '202'.
             if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultiple(tasks, log);
+              runner.runMultipleSequences(tasks, log);
               reply.status(202);
               return ids;
             }
 
-            return runner.runMultiple(tasks, log);
+            return runner.runMultipleSequences(tasks, log);
           },
         );
       });

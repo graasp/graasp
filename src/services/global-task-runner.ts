@@ -199,6 +199,65 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     return result;
   }
 
+  /**
+   * Run sequence of tasks in the same transaction and return the result of the last one.
+   * @param sequence Sequence of tasks to run.
+   * @param log Logger instance to use. Defaults to `this.logger`.
+   */
+  async runSingleSequence(sequence: Task<Actor, unknown>[], log = this.logger): Promise<unknown> {
+    const numberOfTasks = sequence.length;
+
+    return this.databasePool
+      .transaction(async (handler) => {
+        try {
+          for (let i = 0; i < numberOfTasks; i++) {
+            const t = sequence[i];
+            if (t.getInput) Object.assign(t.input, t.getInput());
+            if (t.skip) {
+              continue;
+            } else {
+              await this.runTransactionally(t, log, handler);
+            }
+          }
+        } catch (error) {
+          if (this.isGraaspError(error)) throw error;
+
+          // if not graasp error, log error details and return generic error to client
+          log.error(error);
+          throw new UnexpectedError();
+        }
+
+        const lastTask = sequence[numberOfTasks - 1];
+        return lastTask.getResult?.() ?? lastTask.result;
+      });
+  }
+
+  /**
+   * Run given sequences (one by one, each in a separate transaction),
+   * collect results (values or errors), and return an array with everything.
+   * @param sequences List of sequences of tasks to run.
+   * @param log Logger instance to use. Defaults to `this.logger`.
+   */
+   async runMultipleSequences(sequences: Task<Actor, unknown>[][], log = this.logger): Promise<unknown[]> {
+    const result = [];
+
+    for (let i = 0; i < sequences.length; i++) {
+      const sequence = sequences[i];
+      try {
+        const sequenceResult = await this.runSingleSequence(sequence, log);
+        if (sequenceResult) result.push(sequenceResult);
+      } catch (error) {
+        if (this.isGraaspError(error)) {
+          result.push(error);
+        } else { // if not graasp error, log error details and keep generic error to client
+          log.error(error);
+          result.push(new UnexpectedError());
+        }
+      }
+    }
+    return result;
+  }
+
   // Hooks
   setTaskPreHookHandler<T>(taskName: string, handler: PreHookHandlerType<T>): void {
     let hooks = this.tasksHooks.get(taskName);

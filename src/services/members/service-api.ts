@@ -53,25 +53,24 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         },
       );
 
-      // get members by
-      fastify.get<{ Querystring: EmailParam }>(
-        '/search',
-        { schema: getBy },
-        async ({ member, query: { email }, log }) => {
-          const task = taskManager.createGetByTask(member, { email });
-          return runner.runSingle(task, log);
-        },
-      );
+    // get members by
+    fastify.get<{ Querystring: EmailParam }>(
+      '/search', { schema: getBy },
+      async ({ member, query: { email }, log }) => {
+        const task = taskManager.createGetByTask(member, { email });
+        return runner.runSingle(task, log);
+      }
+    );
 
-      // update member
-      fastify.patch<{ Params: IdParam }>(
-        '/:id',
-        { schema: updateOne },
-        async ({ member, params: { id }, body, log }) => {
-          const task = taskManager.createUpdateTask(member, id, body);
-          return runner.runSingle(task, log);
-        },
-      );
+    // update member
+    fastify.patch<{ Params: IdParam }>(
+      '/:id', { schema: updateOne },
+      async ({ member, params: { id }, body, log }) => {
+        const tasks = taskManager.createUpdateTaskSequence(member, id, body);
+        return runner.runSingleSequence(tasks, log);
+      }
+    );
+
     },
     { prefix: ROUTES_PREFIX },
   );

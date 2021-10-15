@@ -1,6 +1,6 @@
 // global
 import { ObjectSchema } from 'fluent-json-schema';
-import { sql, DatabaseTransactionConnectionType as TrxHandler, SqlTaggedTemplateType, ValueExpressionType } from 'slonik';
+import { sql, DatabaseTransactionConnectionType as TrxHandler, ValueExpressionType } from 'slonik';
 import { UnknownExtra } from '../../interfaces/extra';
 // other services
 import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';

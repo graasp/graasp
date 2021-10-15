@@ -1,15 +1,10 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
-import {
-  InvalidMembership,
-  ItemNotFound,
-  ModifyExisting,
-  UserCannotAdminItem,
-} from '../../../util/graasp-error';
+import { InvalidMembership, ModifyExisting } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
-import { ItemService } from '../../../services/items/db-service';
 import { Member } from '../../../services/members/interfaces/member';
+import { Item } from '../../items/interfaces/item';
 // local
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
@@ -17,28 +12,30 @@ import { BaseItemMembership } from '../base-item-membership';
 import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 
-class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
-  get name() {
+type MembershipSubTaskInput = { data?: Partial<ItemMembership> };
+
+export class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
+  get name(): string {
     // return main task's name so it is injected with the same hook handlers
     return CreateItemMembershipTask.name;
   }
-  private membership: ItemMembership;
 
-  constructor(
-    member: Member,
-    membership: ItemMembership,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.membership = membership;
+  input: MembershipSubTaskInput;
+  getInput: () => MembershipSubTaskInput;
+
+  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: MembershipSubTaskInput) {
+    super(member, itemMembershipService);
+    this.input = input ?? {};
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
-    await this.preHookHandler?.(this.membership, this.actor, { log, handler });
-    const itemMembership = await this.itemMembershipService.create(this.membership, handler);
+    const { data } = this.input;
+
+    // create item membership
+    await this.preHookHandler?.(data, this.actor, { log, handler });
+    const itemMembership = await this.itemMembershipService.create(data, handler);
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
@@ -46,21 +43,22 @@ class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   }
 }
 
+type MembershipTaskInput = { data?: Partial<ItemMembership>, item?: Item };
+
 export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string {
-    return CreateItemMembershipTask.name;
+  get name(): string { return CreateItemMembershipTask.name; }
+  private subtasks: BaseItemMembershipTask<ItemMembership>[];
+
+  input: MembershipTaskInput;
+  getInput: () => MembershipTaskInput;
+
+  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: MembershipTaskInput) {
+    super(member, itemMembershipService);
+    this.input = input ?? {};
   }
 
-  constructor(
-    member: Member,
-    data: Partial<ItemMembership>,
-    itemId: string,
-    itemService: ItemService,
-    itemMembershipService: ItemMembershipService,
-  ) {
-    super(member, itemService, itemMembershipService);
-    this.data = data;
-    this.itemId = itemId;
+  get result(): ItemMembership {
+    return this.subtasks ? this.subtasks[0]?.result : this._result;
   }
 
   async run(
@@ -69,23 +67,11 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
   ): Promise<BaseItemMembershipTask<ItemMembership>[]> {
     this.status = 'RUNNING';
 
-    // get item that the new membership will target
-    const item = await this.itemService.get(this.itemId, handler);
-    if (!item) throw new ItemNotFound(this.itemId);
+    const { data, item } = this.input;
+    this.targetId = item.id;
 
-    // verify if member adding the new membership has rights for that
-    // TODO: how about a parameter in run() or on task creation to skip these verification (it could be helpful for 'public')
-    if (!this.skipActorChecks) {
-      const hasRights = await this.itemMembershipService.canAdmin(this.actor.id, item, handler);
-      if (!hasRights) throw new UserCannotAdminItem(this.itemId);
-    }
-
-    const itemMembership = new BaseItemMembership(
-      this.data.memberId,
-      item.path,
-      this.data.permission,
-      this.actor.id,
-    );
+    const itemMembership =
+      new BaseItemMembership(data.memberId, item.path, data.permission, this.actor.id);
     const { memberId } = itemMembership;
 
     // check member's membership "at" item
@@ -109,7 +95,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
       if (PermissionLevelCompare.lte(newPermission, inheritedPermission)) {
         // trying to add a membership with the same or "worse" permission level than
         // the one inherited from the membership "above"
-        throw new InvalidMembership(this.data);
+        throw new InvalidMembership(data);
       }
     }
 
@@ -128,24 +114,13 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         this.status = 'DELEGATED';
 
         // return subtasks to remove redundant existing memberships and to create the new one
-        return membershipsBelowToDiscard
-          .map(
-            (m) =>
-              new DeleteItemMembershipSubTask(
-                this.actor,
-                m.id,
-                this.itemService,
-                this.itemMembershipService,
-              ),
-          )
-          .concat(
-            new CreateItemMembershipSubTask(
-              this.actor,
-              itemMembership,
-              this.itemService,
-              this.itemMembershipService,
-            ),
+        this.subtasks = membershipsBelowToDiscard
+          .map(({ id: itemMembershipId }) =>
+            new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, { itemMembershipId })
           );
+
+        this.subtasks.unshift(new CreateItemMembershipSubTask(this.actor, this.itemMembershipService, { data: itemMembership }));
+        return this.subtasks;
       }
     }
 

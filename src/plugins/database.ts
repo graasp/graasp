@@ -14,7 +14,7 @@ export interface Database {
   pool: DatabasePoolHandler;
 }
 
-interface DatabasePluginOptions {
+export interface DatabasePluginOptions {
   uri: string;
   logs: boolean;
 }

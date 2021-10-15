@@ -9,41 +9,42 @@ import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 import { Member } from '../interfaces/member';
 
+type InputType<E extends UnknownExtra> =
+  { member?: Member, data?: Partial<Member<E>>, actorShouldMatchTarget?: boolean };
+
 export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
   get name(): string {
     return UpdateMemberTask.name;
   }
 
-  constructor(
-    actor: Actor,
-    memberId: string,
-    data: Partial<Member<E>>,
-    memberService: MemberService,
-  ) {
+  input: InputType<E>;
+  getInput: () => InputType<E>;
+
+  constructor(actor: Actor, memberService: MemberService, input?: InputType<E>) {
     super(actor, memberService);
-    this.data = data;
-    this.targetId = memberId;
+    this.input = input ?? {};
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
     this.status = 'RUNNING';
 
+    const { member, data, actorShouldMatchTarget } = this.input;
+    this.targetId = member.id;
+
     // if the targeted member of the update update is different from the actor making it then fail,
     // unless the flag to skip actor validations is set to 'true'
-    if (this.targetId !== this.actor.id && !this.skipActorChecks) {
-      throw new CannotModifyOtherMembers(this.targetId);
+    if (actorShouldMatchTarget && member.id !== this.actor.id) {
+      throw new CannotModifyOtherMembers(member.id);
     }
-
-    const member = await this.memberService.get(this.targetId, handler);
 
     // prepare changes
     // allow for individual changes in extra's own properties except if 'extra' is {};
     // in that case 'extra' is fully replace by {} (empty object).
-    if (this.data.extra && Object.keys(this.data.extra).length > 0) {
-      this.data.extra = Object.assign({}, member.extra, this.data.extra);
+    if (data.extra && Object.keys(data.extra).length > 0) {
+      data.extra = Object.assign({}, member.extra, data.extra);
     }
 
-    this._result = await this.memberService.update(this.targetId, this.data, handler);
+    this._result = await this.memberService.update(member.id, data, handler);
     this.status = 'OK';
   }
 }

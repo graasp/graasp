@@ -13,7 +13,6 @@ import { Actor } from '../interfaces/actor';
 export abstract class BaseTask<A extends Actor, R> implements Task<A, R> {
   protected _result: R;
   protected _message: string;
-
   readonly actor: A;
   protected _partialSubtasks: boolean;
 
@@ -23,8 +22,8 @@ export abstract class BaseTask<A extends Actor, R> implements Task<A, R> {
   preHookHandler?: PreHookHandlerType<R>;
   postHookHandler?: PostHookHandlerType<R>;
 
-  skipActorChecks?: boolean;
-  skipTargetChecks?: boolean;
+  getInput?: () => unknown;
+  getResult?: () => unknown;
 
   constructor(actor: A) {
     this.actor = actor;
@@ -42,8 +41,8 @@ export abstract class BaseTask<A extends Actor, R> implements Task<A, R> {
     return this._partialSubtasks;
   }
 
-  abstract run(
-    handler: DatabaseTransactionHandler,
-    log: FastifyLoggerInstance,
-  ): Promise<void | BaseTask<A, R>[]>;
+  input?: unknown;
+  skip?: boolean;
+
+  abstract run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void | BaseTask<A, R>[]>;
 }
