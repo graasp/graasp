@@ -25,6 +25,7 @@ import {
   TOKEN_BASED_AUTH,
   REFRESH_TOKEN_JWT_SECRET,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
+  AUTH_CLIENT_HOST,
 } from '../../util/config';
 
 // other services
@@ -274,7 +275,13 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         } catch (error) {
           if (error instanceof JsonWebTokenError) {
             session.delete();
-            reply.status(401);
+            if (CLIENT_HOST) {
+              // todo: provide more detailed message
+              reply.redirect(303, `//${AUTH_CLIENT_HOST}?error=true`);
+            }
+            else {
+              reply.status(401);
+            }
           }
 
           throw error;
