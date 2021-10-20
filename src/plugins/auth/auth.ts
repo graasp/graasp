@@ -268,23 +268,29 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           session.set('member', memberId);
 
           if (CLIENT_HOST) {
-            reply.redirect(303, `//${CLIENT_HOST}`);
+            reply.redirect(StatusCodes.SEE_OTHER, `//${CLIENT_HOST}`);
           } else {
-            reply.status(204);
+            reply.status(StatusCodes.NO_CONTENT);
           }
         } catch (error) {
-          if (error instanceof JsonWebTokenError) {
             session.delete();
-            if (CLIENT_HOST) {
+            if (AUTH_CLIENT_HOST) {
               // todo: provide more detailed message
-              reply.redirect(303, `//${AUTH_CLIENT_HOST}?error=true`);
+              reply.redirect(StatusCodes.SEE_OTHER, `//${AUTH_CLIENT_HOST}?error=true`);
             }
             else {
-              reply.status(401);
+              // the token caused the error
+              if (error instanceof JsonWebTokenError) {
+                reply.status(StatusCodes.UNAUTHORIZED);
+              }
+              // any other error
+              else {
+                reply.status(StatusCodes.INTERNAL_SERVER_ERROR);
+              }
             }
-          }
-
-          throw error;
+            
+            log.error(error);
+            throw error;
         }
       },
     );
