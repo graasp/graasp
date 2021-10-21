@@ -51,6 +51,7 @@ export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 
 export const CLIENT_HOST = process.env.CLIENT_HOST;
+export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
 export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;

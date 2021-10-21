@@ -25,6 +25,7 @@ import {
   TOKEN_BASED_AUTH,
   REFRESH_TOKEN_JWT_SECRET,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
+  AUTH_CLIENT_HOST,
 } from '../../util/config';
 
 // other services
@@ -267,17 +268,29 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           session.set('member', memberId);
 
           if (CLIENT_HOST) {
-            reply.redirect(303, `//${CLIENT_HOST}`);
+            reply.redirect(StatusCodes.SEE_OTHER, `//${CLIENT_HOST}`);
           } else {
-            reply.status(204);
+            reply.status(StatusCodes.NO_CONTENT);
           }
         } catch (error) {
-          if (error instanceof JsonWebTokenError) {
             session.delete();
-            reply.status(401);
-          }
-
-          throw error;
+            if (AUTH_CLIENT_HOST) {
+              // todo: provide more detailed message
+              reply.redirect(StatusCodes.SEE_OTHER, `//${AUTH_CLIENT_HOST}?error=true`);
+            }
+            else {
+              // the token caused the error
+              if (error instanceof JsonWebTokenError) {
+                reply.status(StatusCodes.UNAUTHORIZED);
+              }
+              // any other error
+              else {
+                reply.status(StatusCodes.INTERNAL_SERVER_ERROR);
+              }
+            }
+            
+            log.error(error);
+            throw error;
         }
       },
     );
