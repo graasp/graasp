@@ -88,8 +88,11 @@ const getItems = {
       type: 'array',
       items: {
         anyOf: [
+          { 
+            type:'array'
+            // todo/bug: define schema content of array
+           },
           { $ref: 'http://graasp.org/#/definitions/error' },
-          { type:'array',items:{$ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership'} }
         ],
       },
     },
