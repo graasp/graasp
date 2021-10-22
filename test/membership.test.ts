@@ -44,7 +44,7 @@ describe('Membership routes tests', () => {
   });
 
   describe('GET /item-memberships?itemId=<itemId>', () => {
-    it('Returns successfully', async () => {
+    it('Returns successfully for one id', async () => {
       const item = getDummyItem();
       const memberships = [buildMembership({ permission: PermissionLevel.Read, path: item.path })];
       mockItemServiceGet([item]);
@@ -56,7 +56,24 @@ describe('Membership routes tests', () => {
         url: `/item-memberships?itemId=${item.id}`,
       });
 
-      expect(response.json()).toEqual(memberships);
+      expect(response.json()).toEqual([memberships]);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+    it('Returns successfully for two ids', async () => {
+      const item1 = getDummyItem();
+      const item2 = getDummyItem();
+      const memberships = [ buildMembership({ permission: PermissionLevel.Read, path: item1.path }), buildMembership({ permission: PermissionLevel.Read, path: item2.path })];
+      mockItemServiceGet([item1, item2]);
+      mockItemMemberhipServiceGetInheritedForAll(memberships);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/item-memberships?itemId=${item1.id}&itemId=${item2.id}`,
+      });
+const m = response.json();
+expect(m[0]).toEqual([memberships[0]]);
+expect(m[1]).toEqual([memberships[1]]);
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
@@ -79,9 +96,8 @@ describe('Membership routes tests', () => {
         method: HTTP_METHODS.GET,
         url: `/item-memberships?itemId=${itemId}`,
       });
-
-      expect(response.json()).toEqual(new ItemNotFound(itemId));
-      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      expect(response.json()).toEqual([new ItemNotFound(itemId)]);
+      expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
     it('Cannot get memberships if user has no membership', async () => {
@@ -94,8 +110,8 @@ describe('Membership routes tests', () => {
         url: `/item-memberships?itemId=${item.id}`,
       });
 
-      expect(response.json()).toEqual(new MemberCannotReadItem(item.id));
-      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      expect(response.json()).toEqual([new MemberCannotReadItem(item.id)]);
+      expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
   });
