@@ -9,15 +9,15 @@ import { ItemMembership, PermissionLevel } from '../interfaces/item-membership';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../util/graasp-error';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 
-type InputType = { item?: Item, validatePermission?: PermissionLevel };
+export type GetMemberItemMembershipOverItemTaskInputType = { item?: Item, validatePermission?: PermissionLevel };
 
 export class GetMemberItemMembershipOverItemTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string { return GetMemberItemMembershipOverItemTask.name; }
 
-  input: InputType;
-  getInput: () => InputType;
+  input: GetMemberItemMembershipOverItemTaskInputType;
+  getInput: () => GetMemberItemMembershipOverItemTaskInputType;
 
-  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: InputType) {
+  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: GetMemberItemMembershipOverItemTaskInputType) {
     super(member, itemMembershipService);
     this.input = input ?? {};
   }

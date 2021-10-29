@@ -125,6 +125,10 @@ export class TaskManager implements ItemTaskManager<Member> {
     return [t1, t2, t3];
   }
 
+  createDeleteTask(member: Member, item?: Item): Task<Member, unknown> {
+    return new DeleteItemTask(member, this.itemService, { item });
+  }
+
   createDeleteTaskSequence(member: Member, itemId: string): Task<Member, unknown>[] {
     const t1 = new GetItemTask(member, this.itemService, { itemId });
 

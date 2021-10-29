@@ -69,20 +69,32 @@ const create = {
   },
 };
 
-// schema for getting an item's memberships
+// schema for getting many item's memberships
 const getItems = {
   querystring: {
     type: 'object',
     required: ['itemId'],
-    properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
-    },
+        properties: {
+          itemId: { 
+            type: 'array',
+            items: { $ref: 'http://graasp.org/#/definitions/uuid' }
+          },
+        },
+
     additionalProperties: false,
   },
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+      items: {
+        anyOf: [
+          { 
+            type:'array'
+            // todo/bug: define schema content of array
+           },
+          { $ref: 'http://graasp.org/#/definitions/error' },
+        ],
+      },
     },
   },
 };

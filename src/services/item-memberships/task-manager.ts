@@ -15,7 +15,7 @@ import { ItemMembershipTaskManager } from './interfaces/item-membership-task-man
 import { DeleteItemItemMembershipsTask } from './tasks/delete-item-item-memberships-task';
 import { Task } from '../../interfaces/task';
 import { GetItemMembershipTask } from './tasks/get-item-membership-task';
-import { GetMemberItemMembershipOverItemTask } from './tasks/get-member-item-membership-over-item-task';
+import { GetMemberItemMembershipOverItemTask, GetMemberItemMembershipOverItemTaskInputType } from './tasks/get-member-item-membership-over-item-task';
 import { GetItemWithPathTask } from '../items/tasks/get-item-with-path-task';
 import { GetMemberTask } from '../members/tasks/get-member-task';
 import { Actor } from '../../interfaces/actor';
@@ -131,7 +131,7 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     return [t1, t2, t3];
   }
 
-  createGetMemberItemMembershipTask(actor: Member): GetMemberItemMembershipOverItemTask {
-    return new GetMemberItemMembershipOverItemTask(actor, this.itemMembershipService);
+  createGetMemberItemMembershipTask(actor: Member, input?: GetMemberItemMembershipOverItemTaskInputType): GetMemberItemMembershipOverItemTask {
+    return new GetMemberItemMembershipOverItemTask(actor, this.itemMembershipService, input);
   }
 }

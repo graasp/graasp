@@ -1,7 +1,6 @@
-// global
 import { Actor } from '../../../interfaces/actor';
 import { Task } from '../../../interfaces/task';
-// local
+import { GetMemberItemMembershipOverItemTaskInputType } from '../tasks/get-member-item-membership-over-item-task';
 import { ItemMembership } from './item-membership';
 
 export interface ItemMembershipTaskManager<A extends Actor = Actor> {
@@ -20,5 +19,5 @@ export interface ItemMembershipTaskManager<A extends Actor = Actor> {
 
   createGetOfItemTaskSequence(actor: A, itemId: string): Task<A, unknown>[];
   createDeleteAllOnAndBelowItemTaskSequence(actor: A, itemId: string): Task<A, unknown>[];
-  createGetMemberItemMembershipTask(actor: A):  Task<A, ItemMembership>;
+  createGetMemberItemMembershipTask(actor: A, input?: GetMemberItemMembershipOverItemTaskInputType):  Task<A, ItemMembership>;
 }

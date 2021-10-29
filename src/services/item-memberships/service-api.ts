@@ -50,12 +50,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           db.pool,
         );
       }
-    // get item's memberships
-    fastify.get<{ Querystring: { itemId: string } }>(
+      
+    // get many item's memberships
+    fastify.get<{ Querystring: { itemId: string[] } }>(
       '/', { schema: getItems },
-      async ({ member, query: { itemId }, log }) => {
-        const tasks = taskManager.createGetOfItemTaskSequence(member, itemId);
-        return runner.runSingleSequence(tasks, log);
+      async ({ member, query: { itemId: ids }, log }) => {
+          const tasks = ids.map(id => taskManager.createGetOfItemTaskSequence(member, id));
+          return runner.runMultipleSequences(tasks, log);
       }
     );
 

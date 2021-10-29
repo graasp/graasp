@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
 import { Member } from '../../../services/members/interfaces/member';
@@ -16,13 +17,15 @@ export class GetItemsSharedWithTask extends BaseItemTask<Item[]> {
     super(member, itemService);
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<void> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = 'RUNNING';
 
     const { id: memberId } = this.actor;
 
     // get items "shared with" member
     const items = await this.itemService.getSharedWith(memberId, handler);
+
+    await this.postHookHandler?.(items, this.actor, { log, handler });
 
     this.status = 'OK';
     this._result = items;
