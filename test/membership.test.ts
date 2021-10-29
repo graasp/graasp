@@ -71,9 +71,9 @@ describe('Membership routes tests', () => {
         method: HTTP_METHODS.GET,
         url: `/item-memberships?itemId=${item1.id}&itemId=${item2.id}`,
       });
-const m = response.json();
-expect(m[0]).toEqual([memberships[0]]);
-expect(m[1]).toEqual([memberships[1]]);
+      const m = response.json();
+      expect(m[0]).toEqual([memberships[0]]);
+      expect(m[1]).toEqual([memberships[1]]);
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });

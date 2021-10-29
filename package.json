@@ -60,7 +60,7 @@
     "graasp-plugin-file-item": "git://github.com/graasp/graasp-plugin-file-item.git#master",
     "graasp-plugin-item-login": "git://github.com/graasp/graasp-plugin-item-login.git#master",
     "graasp-plugin-public": "git://github.com/graasp/graasp-plugin-public.git#main",
-    "graasp-plugin-recycle-bin": "git://github.com/graasp/graasp-plugin-recycle-bin.git#13/preventGetRecycledItem",
+    "graasp-plugin-recycle-bin": "git://github.com/graasp/graasp-plugin-recycle-bin.git#main",
     "graasp-plugin-s3-file-item": "git://github.com/graasp/graasp-plugin-s3-file-item.git#master",
     "graasp-websockets": "git://github.com/graasp/graasp-websockets.git#master",
     "http-status-codes": "2.1.4",
