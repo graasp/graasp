@@ -1,6 +1,6 @@
 // global
 import crypto from 'crypto';
-import jwt, { Secret, VerifyOptions, SignOptions } from 'jsonwebtoken';
+import jwt, { Secret, VerifyOptions, SignOptions, TokenExpiredError } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
@@ -282,6 +282,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
               // the token caused the error
               if (error instanceof JsonWebTokenError) {
                 reply.status(StatusCodes.UNAUTHORIZED);
+
+                // return a custom error when the token expired
+                // helps the client know when to request a refreshed token
+                if(error instanceof TokenExpiredError) {
+                  reply.status(439);
+                }
               }
               // any other error
               else {
@@ -375,6 +381,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           } catch (error) {
             if (error instanceof JsonWebTokenError) {
               reply.status(401);
+
+              // return a custom error when the token expired
+              // helps the client know when to request a refreshed token
+              if(error instanceof TokenExpiredError) {
+                reply.status(439);
+              }
             }
             throw error;
           }
