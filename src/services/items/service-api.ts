@@ -11,6 +11,7 @@ import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
+import graaspTumbnails from 'graasp-plugin-thumbnails';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
@@ -90,6 +91,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(async function (fastify) {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
+
+        await fastify.register(graaspTumbnails, {
+          enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
+          pluginStoragePrefix: 'thumbnails',
+          prefix: '/thumbnails'
+        });
 
         if (S3_FILE_ITEM_PLUGIN) {
           fastify.register(graaspPluginS3FileItem, S3_FILE_ITEM_PLUGIN_OPTIONS);
