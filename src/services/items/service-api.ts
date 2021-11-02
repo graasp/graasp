@@ -11,7 +11,7 @@ import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
-import graaspTumbnails from 'graasp-plugin-thumbnails';
+import graaspPluginTumbnails from 'graasp-plugin-thumbnails';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
@@ -47,13 +47,14 @@ import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
 import { registerItemWsHooks } from './ws/hooks';
+import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
 
 const ROUTES_PREFIX = '/items';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items,
-    itemMemberships: { dbService: itemMembershipsDbService },
+    itemMemberships: { taskManager: membership, dbService: itemMembershipsDbService },
     taskRunner: runner,
     websockets,
     db,
@@ -92,10 +93,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        await fastify.register(graaspTumbnails, {
+        await fastify.register(graaspPluginTumbnails, {
           enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
-          pluginStoragePrefix: 'thumbnails',
-          prefix: '/thumbnails'
+          pluginStoragePrefix: 'thumbnails/items',
+          uploadValidation: async (id, member) => {
+            const tasks = membership.createGetOfItemTaskSequence(member, id);
+            tasks[1].input = { validatePermission: PermissionLevel.Write };
+            return tasks;
+          },
+          downloadValidation: async (id, member) => {
+            const tasks = membership.createGetOfItemTaskSequence(member, id);
+            tasks[1].input = { validatePermission: PermissionLevel.Read };
+            return tasks;
+          },
+          // endpoint
+          prefix: '/thumbnails',
         });
 
         if (S3_FILE_ITEM_PLUGIN) {
