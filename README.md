@@ -4,11 +4,9 @@
 
 In order to run the Graasp backend, it requires:
 
-- Node v.14
-- NPM v.6.14
+- Node v.16
+- NPM v.7 or v.8
 - [Docker](https://docs.docker.com/get-docker/) : Docker is not necessary, it is possible to install everything locally. However it is strongly recommanded to use the Docker installation guide.
-
-**IT IS IMPORTANT TO USE NPM 6.14 and Node.js 14**
 
 ## Recommended Tools
 
@@ -35,20 +33,20 @@ Graasp offers two ways to install the Graasp backend :
 
 We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
 
-First open the folder locally and run the following command to install the required npm packages.
-
-`npm install`
-
-Then you can open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd>, and typing `Open Folder in Container`.
+First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd>, and typing `Open Folder in Container`.
 
 This will create 3 containers :
 - `app` : Node.js backend of Graasp
 - `db` : PostgreSQL database used by the backend 
 - `redis` : Redis instance to enable websockets
 
-Then run the following command to install the required npm packages. Note : this is required because `bcrypt` use native libraires and it is not currently possible to directly install deps from the container.
+Then install the required npm packages with one of the following commands.
 
-`npm install bcrypt`
+`npm install` or `sudo npm install`
+
+If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.
+
+To increase the memory limit, go to `Docker > Preferences > Resources` and change the memory from default (2 GB) to 8GB.
 
 ### Local Installation
 
