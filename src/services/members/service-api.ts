@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           return [tasks];
         },
         // endpoint
-        prefix: '/avatar',
+        prefix: '/avatars',
       });
 
       // get current

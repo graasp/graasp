@@ -95,6 +95,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         await fastify.register(graaspPluginTumbnails, {
           enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
+          enableItemsHooks: true,
           pluginStoragePrefix: 'thumbnails/items',
           uploadValidation: async (id, member) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id);
