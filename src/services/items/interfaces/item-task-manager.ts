@@ -24,6 +24,7 @@ export interface ItemTaskManager<A extends Actor = Actor> {
 
   createMoveTaskSequence(actor: Actor, itemId: string, parentId?: string): Task<A, unknown>[];
   createCopyTaskSequence(actor: Actor, itemId: string, parentId?: string): Task<A, unknown>[];
+  createCopySubTaskSequence(actor: Actor, itemTask: Task<A, Item>, parentId?: string): Task<A, unknown>[];
   createGetChildrenTaskSequence(actor: Actor, itemId: string, ordered?: boolean): Task<A, unknown>[];
   createGetOwnTask(actor: Actor): Task<A, Item[]>;
   createGetSharedWithTask(actor: Actor): Task<A, Item[]>;

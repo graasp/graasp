@@ -179,6 +179,13 @@ export class TaskManager implements ItemTaskManager<Member> {
     t2.getInput = () => ({ item: t1.result, validatePermission: PermissionLevel.Read });
     tasks.push(t2);
 
+    tasks.push(...this.createCopySubTaskSequence(member, t1, parentId));
+    return tasks;
+  }
+
+  createCopySubTaskSequence(member: Member, itemTask: Task<Member, Item>, parentId?: string): Task<Member, unknown>[] {
+    const tasks = [];
+
     let t3: Task<Member, Item>;
     let t4: Task<Member, ItemMembership>;
 
@@ -192,7 +199,7 @@ export class TaskManager implements ItemTaskManager<Member> {
     }
 
     const t5 = new CopyItemTask(member, this.itemService);
-    t5.getInput = () => ({ item: t1.result, parentItem: t3?.result });
+    t5.getInput = () => ({ item: itemTask.result, parentItem: t3?.result });
     tasks.push(t5);
 
     const t6 = new CreateItemMembershipSubTask(member, this.itemMembershipService);
