@@ -68,13 +68,15 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Item-Tags : [`db-schema.sql`](https://github.com/graasp/graasp-item-tags/blob/3/pinnedItem/db-schema.sql)
 
-- Public-Items : [`db-schema.sql`](https://github.com/graasp/graasp-public-items/blob/main/db-schema.sql)
+- Public-Items : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-public/blob/main/db-schema.sql)
 
 - Apps : [`db-schema.sql`](https://github.com/graasp/graasp-apps/blob/main/db-schema.sql)
 
 - Item-Flagging : [`db-schema.sql`](https://github.com/graasp/graasp-item-flagging/blob/master/db-schema.sql)
 
 - ChatBox : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/db-schema.sql)
+
+- Recycle Items : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-recycle-bin/blob/main/db-schema.sql)
 
 ### Configuration
 
