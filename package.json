@@ -62,7 +62,7 @@
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "graasp-plugin-recycle-bin": "github:graasp/graasp-plugin-recycle-bin",
     "graasp-plugin-s3-file-item": "github:graasp/graasp-plugin-s3-file-item",
-    "graasp-plugin-thumbnails": "github:graasp/graasp-plugin-thumbnails#1/init",
+    "graasp-plugin-thumbnails": "github:graasp/graasp-plugin-thumbnails",
     "graasp-websockets": "github:graasp/graasp-websockets",
     "http-status-codes": "2.1.4",
     "jsonwebtoken": "^8.5.1",
