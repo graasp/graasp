@@ -1,5 +1,5 @@
 # Update the VARIANT arg in docker-compose.yml to pick a Node version: 10, 12, 14
-ARG VARIANT=14
+ARG VARIANT=16
 FROM node:${VARIANT}
 
 # Update args in docker-compose.yaml to set the UID/GID of the "node" user.
@@ -34,10 +34,11 @@ COPY --chown=$USER_UID:$USER_GID . /home/node/app
 
 WORKDIR /home/node/app
 
-RUN npm i shelljs @types/uuid typescript@`node -p "require('./package.json').devDependencies.typescript"` \
-  && npm i --production
+RUN yarn install 
 
-RUN npm run build-ts \
-  && npm run copy-static-assets
+RUN yarn build-ts
+
+RUN yarn add shelljs @types/uuid typescript@`node -p "require('./package.json').devDependencies.typescript"` 
+RUN yarn copy-static-assets
 
 CMD NODE_PATH=./dist node dist/server.js

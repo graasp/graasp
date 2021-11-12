@@ -12,13 +12,13 @@
   "license": "AGPL-3.0-only",
   "author": "Graasp Association",
   "scripts": {
-    "start": "npm run serve",
-    "build": "npm run build-ts && npm run lint && npm run copy-static-assets",
+    "start": "yarn serve",
+    "build": "yarn build-ts && yarn lint && yarn copy-static-assets",
     "serve": "NODE_PATH=./dist node dist/server.js",
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
-    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "test": "DISABLE_LOGS=true jest test --forceExit --coverage --verbose",
-    "watch-test": "npm run test -- --watchAll",
+    "watch-test": "yarn test -- --watchAll",
     "build-ts": "tsc",
     "build-ts-declaration": "rm -rf ./types && tsc --project tsconfig.declaration.json --declaration --declarationDir ./types",
     "watch-ts": "tsc -w",
@@ -26,10 +26,10 @@
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
     "copy-static-assets": "node copyStaticAssets.mjs",
-    "debug": "npm run build && npm run watch-debug",
+    "debug": "yarn build && yarn watch-debug",
     "serve-debug": "NODE_PATH=./dist nodemon --inspect dist/server.js",
     "serve-debug-break": "NODE_PATH=./dist nodemon --inspect-brk dist/server.js",
-    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\""
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\""
   },
   "some-comments": [
     "test: tap -J test/*.test.ts test/**/*.test.ts",
@@ -96,5 +96,6 @@
     "ts-jest": "^26.5.6",
     "ts-node": "^9.1.1",
     "typescript": "^4.3.5"
-  }
+  },
+  "packageManager": "yarn@3.2.0-rc.3"
 }
