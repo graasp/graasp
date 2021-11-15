@@ -72,7 +72,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+    await fastify.register(graaspApps, { 
+      jwtSecret: APPS_JWT_SECRET,
+      enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN
+     });
   }
 
   fastify.register(
@@ -112,9 +115,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         });
 
         if (S3_FILE_ITEM_PLUGIN) {
-          fastify.register(graaspPluginS3FileItem, S3_FILE_ITEM_PLUGIN_OPTIONS);
+          fastify.register(graaspPluginS3FileItem, {
+            ...S3_FILE_ITEM_PLUGIN_OPTIONS,
+            onFileUploaded: async (parentId, data, { member }) => taskManager.createCreateTaskSequence(member, data, parentId),
+            downloadValidation: async (id, { member }) => taskManager.createGetTaskSequence(member, id),
+          });
         } else {
-          fastify.register(graaspFileItem, FILE_ITEM_PLUGIN_OPTIONS);
+          fastify.register(graaspFileItem, {
+            ...FILE_ITEM_PLUGIN_OPTIONS,
+            onFileUploaded: async (parentId, data, { member }) => taskManager.createCreateTaskSequence(member, data, parentId),
+            downloadValidation: async (id, { member }) => taskManager.createGetTaskSequence(member, id),
+          });
         }
 
         if (EMBEDDED_LINK_ITEM_PLUGIN) {
