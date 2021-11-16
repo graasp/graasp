@@ -7,6 +7,7 @@ import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
+import graaspCategoryPlugins from 'graasp-plugin-categories';
 import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
@@ -131,6 +132,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspItemTags);
 
         fastify.register(graaspRecycleBin);
+
+        fastify.register(graaspCategoryPlugins);
 
         if (CHATBOX_PLUGIN) {
           fastify.register(graaspChatbox);
