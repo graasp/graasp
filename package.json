@@ -40,6 +40,7 @@
     "ajv: ^8.3.0"
   ],
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "dotenv": "^8.6.0",
     "fastify": "^3.19.0",
     "fastify-auth": "^1.1.0",
@@ -56,6 +57,7 @@
     "graasp-item-flagging": "github:graasp/graasp-item-flagging",
     "graasp-item-tags": "github:graasp/graasp-item-tags",
     "graasp-mailer": "github:graasp/graasp-mailer",
+    "graasp-plugin-categories": "github:graasp/graasp-plugin-categories#Dev",
     "graasp-plugin-chatbox": "github:graasp/graasp-plugin-chatbox",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
