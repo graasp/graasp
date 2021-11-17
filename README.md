@@ -6,6 +6,7 @@ In order to run the Graasp backend, it requires:
 
 - Node v.16
 - NPM v.7 or v.8
+- Yarn
 - [Docker](https://docs.docker.com/get-docker/) : Docker is not necessary, it is possible to install everything locally. However it is strongly recommanded to use the Docker installation guide.
 
 ## Recommended Tools
@@ -33,16 +34,14 @@ Graasp offers two ways to install the Graasp backend :
 
 We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
 
-First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd>, and typing `Open Folder in Container`.
+First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd> (or <kbd>ctrl</kbd> instead of <kbd>cmd</kbd>), and typing `Open Folder in Container`.
 
 This will create 3 containers :
 - `app` : Node.js backend of Graasp
 - `db` : PostgreSQL database used by the backend 
 - `redis` : Redis instance to enable websockets
 
-Then install the required npm packages with one of the following commands.
-
-`npm install` or `sudo npm install`
+Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`). 
 
 If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.
 
@@ -56,7 +55,7 @@ To enable websockets capabilities, it is required to have a running instance of 
 
 Then open the folder locally and run the following command to install the required npm packages.
 
-`npm install`
+`yarn install`
 
 ### Database creation
 
@@ -77,6 +76,8 @@ Install the corresponding schema if you are using any fo the following plugins :
 - ChatBox : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/db-schema.sql)
 
 - Recycle Items : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-recycle-bin/blob/main/db-schema.sql)
+
+- Item Login : [`db-schema.sql`](https://github.com/graasp/graasp-item-login/blob/main/db-schema.sql)
 
 ### Configuration
 
@@ -153,4 +154,4 @@ PUBLIC_PLUGIN=true
 
 ## Running
 
-To run the application, use `npm run watch`. If any file change, the application will automatically reload.
+To run the application, use `yarn watch`. If any file change, the application will automatically reload.

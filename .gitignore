@@ -40,5 +40,10 @@ dist
 # Ignore generated .d.ts files
 types
 
-# ignore yarn.lock
-yarn.lock
+# yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
