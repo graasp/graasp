@@ -12,6 +12,7 @@ import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import graaspPluginThumbnails from 'graasp-plugin-thumbnails';
+import { FileItemPlugin, FILE_METHODS } from 'graasp-plugin-file';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
@@ -108,14 +109,24 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             return tasks;
           },
           // endpoint
-          prefix: '/thumbnails',
+          prefix: '/thumbnails'
         });
 
-        if (S3_FILE_ITEM_PLUGIN) {
+        fastify.register(FileItemPlugin, {
+          shouldLimit: true,
+          storageRootPath: '/files/',
+          serviceMethod: S3_FILE_ITEM_PLUGIN ? FILE_METHODS.S3 : FILE_METHODS.LOCAL,
+          serviceOptions: {
+            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+            local: FILE_ITEM_PLUGIN_OPTIONS
+          }
+        });
+
+        /*if (S3_FILE_ITEM_PLUGIN) {
           fastify.register(graaspPluginS3FileItem, S3_FILE_ITEM_PLUGIN_OPTIONS);
         } else {
           fastify.register(graaspFileItem, FILE_ITEM_PLUGIN_OPTIONS);
-        }
+        }*/
 
         if (EMBEDDED_LINK_ITEM_PLUGIN) {
           // 'await' necessary because internally it uses 'extendCreateSchema'
