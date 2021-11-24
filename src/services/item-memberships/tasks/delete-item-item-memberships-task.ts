@@ -45,9 +45,12 @@ export class DeleteItemItemMembershipsTask extends BaseItemMembershipTask<ItemMe
     // return list of subtasks for task manager to execute and
     // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
     return itemMemberships
-      .filter(im => im.memberId != this.actor.id) // exclude (possible) member's own membership
-      .map(({ id: itemMembershipId }) =>
-        new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, { itemMembershipId })
+      .filter((im) => im.memberId != this.actor.id) // exclude (possible) member's own membership
+      .map(
+        ({ id: itemMembershipId }) =>
+          new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, {
+            itemMembershipId,
+          }),
       );
   }
 }

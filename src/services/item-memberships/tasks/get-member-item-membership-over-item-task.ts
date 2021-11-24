@@ -9,17 +9,26 @@ import { ItemMembership, PermissionLevel } from '../interfaces/item-membership';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../util/graasp-error';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 
-export type GetMemberItemMembershipOverItemTaskInputType = { item?: Item, validatePermission?: PermissionLevel };
+export type GetMemberItemMembershipOverItemTaskInputType = {
+  item?: Item;
+  validatePermission?: PermissionLevel;
+};
 
 export class GetMemberItemMembershipOverItemTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return GetMemberItemMembershipOverItemTask.name; }
+  get name(): string {
+    return GetMemberItemMembershipOverItemTask.name;
+  }
 
   input: GetMemberItemMembershipOverItemTaskInputType;
   getInput: () => GetMemberItemMembershipOverItemTaskInputType;
 
-  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: GetMemberItemMembershipOverItemTaskInputType) {
+  constructor(
+    member: Member,
+    itemMembershipService: ItemMembershipService,
+    input?: GetMemberItemMembershipOverItemTaskInputType,
+  ) {
     super(member, itemMembershipService);
-    this.input = input ?? {};
+    this.input = input ?? {};
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
@@ -28,14 +37,19 @@ export class GetMemberItemMembershipOverItemTask extends BaseItemMembershipTask<
     const { item, validatePermission } = this.input;
 
     // verify membership rights over item
-    const membership = await this.itemMembershipService.getForMemberAtItem(this.actor.id, item, handler);
+    const membership = await this.itemMembershipService.getForMemberAtItem(
+      this.actor.id,
+      item,
+      handler,
+    );
     if (!membership) throw new MemberCannotAccess(item.id);
 
     if (validatePermission) {
       const { permission: p } = membership;
 
       switch (validatePermission) {
-        case PermissionLevel.Read: break;
+        case PermissionLevel.Read:
+          break;
         case PermissionLevel.Write:
           if (p !== PermissionLevel.Write && p !== PermissionLevel.Admin) {
             throw new MemberCannotWriteItem(item.id);

@@ -11,7 +11,7 @@ import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
-type CopyItemSubTaskInput = { copy: Partial<Item>, original: Item }
+type CopyItemSubTaskInput = { copy: Partial<Item>; original: Item; shouldCopyTags?: boolean };
 
 class CopyItemSubTask extends BaseItemTask<Item> {
   get name(): string {
@@ -19,29 +19,29 @@ class CopyItemSubTask extends BaseItemTask<Item> {
     return CopyItemTask.name;
   }
 
-  input: { copy: Partial<Item>, original: Item };
+  input: CopyItemSubTaskInput;
 
   constructor(member: Member, itemService: ItemService, input: CopyItemSubTaskInput) {
     super(member, itemService);
-    this.input = input ;
+    this.input = input;
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = 'RUNNING';
 
-    const { copy, original } = this.input;
+    const { copy, original, shouldCopyTags } = this.input;
     this.targetId = original.id;
 
-    await this.preHookHandler?.(copy, this.actor, { log, handler }, { original });
+    await this.preHookHandler?.(copy, this.actor, { log, handler }, { original, shouldCopyTags });
     const item = await this.itemService.create(copy, handler);
-    await this.postHookHandler?.(item, this.actor, { log, handler }, { original });
+    await this.postHookHandler?.(item, this.actor, { log, handler }, { original, shouldCopyTags });
 
     this.status = 'OK';
     this._result = item;
   }
 }
 
-type CopyItemTaskInput = { item?: Item, parentItem?: Item };
+type CopyItemTaskInput = { item?: Item; parentItem?: Item; shouldCopyTags?: boolean };
 
 export class CopyItemTask extends BaseItemTask<Item> {
   get name(): string {
@@ -50,7 +50,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
   private subtasks: CopyItemSubTask[];
 
   input: CopyItemTaskInput;
-  getInput: () => CopyItemTaskInput
+  getInput: () => CopyItemTaskInput;
 
   constructor(member: Member, itemService: ItemService, input?: CopyItemTaskInput) {
     const partialSubtasks = true;
@@ -59,11 +59,13 @@ export class CopyItemTask extends BaseItemTask<Item> {
     this.subtasks = [];
   }
 
-  get result(): Item { return this.subtasks[0]?.result; }
+  get result(): Item {
+    return this.subtasks[0]?.result;
+  }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
     this.status = 'RUNNING';
-    const { item, parentItem } = this.input;
+    const { item, parentItem, shouldCopyTags } = this.input;
     this.targetId = item.id;
 
     // check how "big the tree is" below the item
@@ -72,7 +74,8 @@ export class CopyItemTask extends BaseItemTask<Item> {
       throw new TooManyDescendants(item.id);
     }
 
-    if (parentItem) { // attaching copy to some item
+    if (parentItem) {
+      // attaching copy to some item
       // check how deep (number of levels) the resulting tree will be
       const levelsToFarthestChild = await this.itemService.getNumberOfLevelsToFarthestChild(
         item,
@@ -84,7 +87,6 @@ export class CopyItemTask extends BaseItemTask<Item> {
       }
     }
 
-
     // copy (memberships from origin are not copied/kept)
     // get the whole tree
     const descendants = await this.itemService.getDescendants(item, handler, 'ASC');
@@ -93,7 +95,9 @@ export class CopyItemTask extends BaseItemTask<Item> {
 
     // return list of subtasks for task manager to copy item + all descendants, one by one.
     treeItemsCopy.forEach(({ copy, original }) => {
-      this.subtasks.push(new CopyItemSubTask(this.actor, this.itemService, { copy, original }));
+      this.subtasks.push(
+        new CopyItemSubTask(this.actor, this.itemService, { copy, original, shouldCopyTags }),
+      );
     });
 
     this.status = 'DELEGATED';

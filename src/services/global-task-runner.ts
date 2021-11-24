@@ -207,29 +207,28 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
   async runSingleSequence(sequence: Task<Actor, unknown>[], log = this.logger): Promise<unknown> {
     const numberOfTasks = sequence.length;
 
-    return this.databasePool
-      .transaction(async (handler) => {
-        try {
-          for (let i = 0; i < numberOfTasks; i++) {
-            const t = sequence[i];
-            if (t.getInput) Object.assign(t.input, t.getInput());
-            if (t.skip) {
-              continue;
-            } else {
-              await this.runTransactionally(t, log, handler);
-            }
+    return this.databasePool.transaction(async (handler) => {
+      try {
+        for (let i = 0; i < numberOfTasks; i++) {
+          const t = sequence[i];
+          if (t.getInput) Object.assign(t.input, t.getInput());
+          if (t.skip) {
+            continue;
+          } else {
+            await this.runTransactionally(t, log, handler);
           }
-        } catch (error) {
-          if (this.isGraaspError(error)) throw error;
-
-          // if not graasp error, log error details and return generic error to client
-          log.error(error);
-          throw new UnexpectedError();
         }
+      } catch (error) {
+        if (this.isGraaspError(error)) throw error;
 
-        const lastTask = sequence[numberOfTasks - 1];
-        return lastTask.getResult?.() ?? lastTask.result;
-      });
+        // if not graasp error, log error details and return generic error to client
+        log.error(error);
+        throw new UnexpectedError();
+      }
+
+      const lastTask = sequence[numberOfTasks - 1];
+      return lastTask.getResult?.() ?? lastTask.result;
+    });
   }
 
   /**
@@ -238,7 +237,10 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
    * @param sequences List of sequences of tasks to run.
    * @param log Logger instance to use. Defaults to `this.logger`.
    */
-   async runMultipleSequences(sequences: Task<Actor, unknown>[][], log = this.logger): Promise<unknown[]> {
+  async runMultipleSequences(
+    sequences: Task<Actor, unknown>[][],
+    log = this.logger,
+  ): Promise<unknown[]> {
     const result = [];
 
     for (let i = 0; i < sequences.length; i++) {
@@ -249,7 +251,8 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       } catch (error) {
         if (this.isGraaspError(error)) {
           result.push(error);
-        } else { // if not graasp error, log error details and keep generic error to client
+        } else {
+          // if not graasp error, log error details and keep generic error to client
           log.error(error);
           result.push(new UnexpectedError());
         }

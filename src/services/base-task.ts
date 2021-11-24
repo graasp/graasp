@@ -44,5 +44,8 @@ export abstract class BaseTask<A extends Actor, R> implements Task<A, R> {
   input?: unknown;
   skip?: boolean;
 
-  abstract run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void | BaseTask<A, R>[]>;
+  abstract run(
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<void | BaseTask<A, R>[]>;
 }

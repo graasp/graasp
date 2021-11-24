@@ -17,8 +17,11 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
 
   input: { itemMembershipId: string };
 
-  constructor(member: Member, itemMembershipService: ItemMembershipService,
-    input: { itemMembershipId: string }) {
+  constructor(
+    member: Member,
+    itemMembershipService: ItemMembershipService,
+    input: { itemMembershipId: string },
+  ) {
     super(member, itemMembershipService);
     this.input = input;
   }
@@ -38,10 +41,12 @@ export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   }
 }
 
-type InputType = { itemMembership?: ItemMembership, purgeBelow?: boolean };
+type InputType = { itemMembership?: ItemMembership; purgeBelow?: boolean };
 
 export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return DeleteItemMembershipTask.name; }
+  get name(): string {
+    return DeleteItemMembershipTask.name;
+  }
   private subtasks: DeleteItemMembershipSubTask[];
 
   input: InputType;
@@ -81,8 +86,11 @@ export class DeleteItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         // delete all memberships in the (sub)tree, one by one, in reverse order (bottom > top)
         this.subtasks = itemMembershipsBelow
           .concat(itemMembership)
-          .map(({ id: itemMembershipId }) =>
-            new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, { itemMembershipId })
+          .map(
+            ({ id: itemMembershipId }) =>
+              new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, {
+                itemMembershipId,
+              }),
           );
 
         return this.subtasks;

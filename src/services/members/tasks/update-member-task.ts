@@ -9,8 +9,11 @@ import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 import { Member } from '../interfaces/member';
 
-type InputType<E extends UnknownExtra> =
-  { member?: Member, data?: Partial<Member<E>>, actorShouldMatchTarget?: boolean };
+type InputType<E extends UnknownExtra> = {
+  member?: Member;
+  data?: Partial<Member<E>>;
+  actorShouldMatchTarget?: boolean;
+};
 
 export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Member<E>> {
   get name(): string {

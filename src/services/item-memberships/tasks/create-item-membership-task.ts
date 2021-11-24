@@ -23,9 +23,13 @@ export class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   input: MembershipSubTaskInput;
   getInput: () => MembershipSubTaskInput;
 
-  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: MembershipSubTaskInput) {
+  constructor(
+    member: Member,
+    itemMembershipService: ItemMembershipService,
+    input?: MembershipSubTaskInput,
+  ) {
     super(member, itemMembershipService);
-    this.input = input ?? {};
+    this.input = input ?? {};
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
@@ -43,16 +47,22 @@ export class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   }
 }
 
-type MembershipTaskInput = { data?: Partial<ItemMembership>, item?: Item };
+type MembershipTaskInput = { data?: Partial<ItemMembership>; item?: Item };
 
 export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return CreateItemMembershipTask.name; }
+  get name(): string {
+    return CreateItemMembershipTask.name;
+  }
   private subtasks: BaseItemMembershipTask<ItemMembership>[];
 
   input: MembershipTaskInput;
   getInput: () => MembershipTaskInput;
 
-  constructor(member: Member, itemMembershipService: ItemMembershipService, input?: MembershipTaskInput) {
+  constructor(
+    member: Member,
+    itemMembershipService: ItemMembershipService,
+    input?: MembershipTaskInput,
+  ) {
     super(member, itemMembershipService);
     this.input = input ?? {};
   }
@@ -70,8 +80,12 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     const { data, item } = this.input;
     this.targetId = item.id;
 
-    const itemMembership =
-      new BaseItemMembership(data.memberId, item.path, data.permission, this.actor.id);
+    const itemMembership = new BaseItemMembership(
+      data.memberId,
+      item.path,
+      data.permission,
+      this.actor.id,
+    );
     const { memberId } = itemMembership;
 
     // check member's membership "at" item
@@ -114,12 +128,18 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         this.status = 'DELEGATED';
 
         // return subtasks to remove redundant existing memberships and to create the new one
-        this.subtasks = membershipsBelowToDiscard
-          .map(({ id: itemMembershipId }) =>
-            new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, { itemMembershipId })
-          );
+        this.subtasks = membershipsBelowToDiscard.map(
+          ({ id: itemMembershipId }) =>
+            new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, {
+              itemMembershipId,
+            }),
+        );
 
-        this.subtasks.unshift(new CreateItemMembershipSubTask(this.actor, this.itemMembershipService, { data: itemMembership }));
+        this.subtasks.unshift(
+          new CreateItemMembershipSubTask(this.actor, this.itemMembershipService, {
+            data: itemMembership,
+          }),
+        );
         return this.subtasks;
       }
     }
