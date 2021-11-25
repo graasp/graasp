@@ -1,7 +1,5 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
-import graaspFileItem from 'graasp-plugin-file-item';
-import graaspPluginS3FileItem from 'graasp-plugin-s3-file-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
@@ -11,8 +9,7 @@ import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
-import graaspPluginThumbnails from 'graasp-plugin-thumbnails';
-import { FileItemPlugin, FILE_METHODS } from 'graasp-plugin-file';
+import { FileItemPlugin, ServiceMethod, ThumbnailsPlugin, hash, } from 'graasp-plugin-file';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
@@ -49,6 +46,7 @@ import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
 import { registerItemWsHooks } from './ws/hooks';
 import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
+import { Item } from './interfaces/item';
 
 const ROUTES_PREFIX = '/items';
 
@@ -89,44 +87,56 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         graaspActor: GRAASP_ACTOR,
       });
 
+      const buildFilePath = (itemId, filename) => {
+        const filepath = hash(itemId)
+            .match(/.{1,8}/g)
+            .join('/');
+        return `/thumbnails/${filepath}/${filename}`;
+      };
+
       // core routes - require authentication
       fastify.register(async function (fastify) {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        await fastify.register(graaspPluginThumbnails, {
-          enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
-          enableItemsHooks: true,
-          pluginStoragePrefix: 'thumbnails/items',
-          uploadValidation: async (id, member) => {
+        fastify.register(ThumbnailsPlugin, {
+          serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
+
+          serviceOptions: {
+            s3: { ...S3_FILE_ITEM_PLUGIN_OPTIONS, s3UseAccelerateEndpoint: false, s3Expiration: 500 },
+            local: FILE_ITEM_PLUGIN_OPTIONS,
+          },
+          appsTemplateRoot: '/apps',
+
+          uploadPreHookTasks: async (id, { member }) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id);
             tasks[1].input = { validatePermission: PermissionLevel.Write };
             return tasks;
           },
-          downloadValidation: async (id, member) => {
+          downloadPreHookTasks: async ({ itemId: id, filename }, { member }) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id);
             tasks[1].input = { validatePermission: PermissionLevel.Read };
+            const last = tasks[tasks.length - 1];
+            last.getResult = () => ({
+              filepath: buildFilePath((tasks[0].result as Item).id, filename),
+              mimetype: 'image/jpeg',
+            });
             return tasks;
           },
-          // endpoint
-          prefix: '/thumbnails'
+
+          prefix: '/thumbnails',
         });
+
 
         fastify.register(FileItemPlugin, {
           shouldLimit: true,
           storageRootPath: '/files/',
-          serviceMethod: S3_FILE_ITEM_PLUGIN ? FILE_METHODS.S3 : FILE_METHODS.LOCAL,
+          serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
           serviceOptions: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-            local: FILE_ITEM_PLUGIN_OPTIONS
+            local: FILE_ITEM_PLUGIN_OPTIONS,
           }
         });
-
-        /*if (S3_FILE_ITEM_PLUGIN) {
-          fastify.register(graaspPluginS3FileItem, S3_FILE_ITEM_PLUGIN_OPTIONS);
-        } else {
-          fastify.register(graaspFileItem, FILE_ITEM_PLUGIN_OPTIONS);
-        }*/
 
         if (EMBEDDED_LINK_ITEM_PLUGIN) {
           // 'await' necessary because internally it uses 'extendCreateSchema'
