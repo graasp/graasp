@@ -1,7 +1,8 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from 'fastify-cors';
-import graaspPluginThumbnails from 'graasp-plugin-thumbnails';
+import { ServiceMethod } from 'graasp-plugin-file';
+import ThumbnailsPlugin, { buildFilePath, mimetype } from 'graasp-plugin-thumbnails';
 import { IdParam, IdsParams } from '../../interfaces/requests';
 // local
 import {
@@ -10,6 +11,7 @@ import {
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../util/config';
 import { CannotModifyOtherMembers } from '../../util/graasp-error';
+import { Member } from './interfaces/member';
 import { MemberTaskManager } from './interfaces/member-task-manager';
 import { EmailParam } from './interfaces/requests';
 import common, { getOne, getMany, getBy, updateOne } from './schemas';
@@ -44,21 +46,33 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
       fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
-      await fastify.register(graaspPluginThumbnails, {
-        enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
-        pluginStoragePrefix: 'thumbnails/users',
-        uploadValidation: async (id, member) => {
+      const pathPrefix = '/avatars/';
+
+      fastify.register(ThumbnailsPlugin, {
+        serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
+        serviceOptions: {
+          s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+          local: FILE_ITEM_PLUGIN_OPTIONS,
+        },
+        appsTemplateRoot: '/apps',
+        pathPrefix: pathPrefix,
+
+        uploadPreHookTasks: async (id, { member }) => {
           if (member.id !== id) {
             throw new CannotModifyOtherMembers(member.id);
           }
-          const tasks = taskManager.createGetTask(member, id);
-          return [tasks];
+          return [taskManager.createGetTask(member, id)];
         },
-        downloadValidation: async (id, member) => {
-          const tasks = taskManager.createGetTask(member, id);
-          return [tasks];
+        downloadPreHookTasks: async ({ itemId: id, filename }, { member }) => {
+          const task = taskManager.createGetTask(member, id);
+          task.getResult = () => ({
+            filepath: buildFilePath((task.result as Member).id, pathPrefix, filename),
+            mimetype: mimetype,
+          });
+
+          return [task];
         },
-        // endpoint
+
         prefix: '/avatars',
       });
 

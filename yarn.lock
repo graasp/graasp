@@ -4952,21 +4952,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
+"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#18/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=7de22f4e908a744b4cc5302292e9399919631cb6"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=c931bdbcb6fbd6670943c94ef8dcb6929405bc7c"
   dependencies:
-    content-disposition: 0.5.3
-    fastify-multipart: 4.0.0
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
-    http-status-codes: 2.1.4
-  checksum: 5a0f9c203ffed2ba73f74ed8e8c7ed5c06fb0cf2131f919a166edf9948583a5493bb381aa12aa17d7fcbafdf75c7b0cd50ab9a5a273f33c80e6b3dbc655de80c
+    graasp-plugin-file: "github:graasp/graasp-plugin-file#1/init"
+  checksum: bf72433088707aca7e5b8b8cd2d1bbd56a82b824d4c0abb6cdade85c49bb6c74803e8cda1f9521d46dc4f0a7b611d2e5d27ac787981d9904f51ea9e3ef5a7ffb
   languageName: node
   linkType: hard
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file#1/init":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=9eee92c0ceb85ec365e00e34a5d1a6d26dbf7b44"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=08f18191702bb3b33359665330ec1d52d1911925"
   dependencies:
     aws-sdk: ^2.793.0
     content-disposition: 0.5.3
@@ -4974,7 +4972,7 @@ __metadata:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     http-status-codes: 2.1.4
     sharp: 0.29.1
-  checksum: add02a17a56728530074b187f1bb9d95bbbb22db12c8663659c7083694c54f199179293113e8d7c85c5311147f426db6ee619fe40b29c0a93b37cedc815b5bca
+  checksum: ca7e7fe23cc8b66b9d8d53f0f64b551165b38c96dfe72aff4044538f7fb553527de8ace61d5a7a928072c1a2389049cb1f1da66b4c79930ad58361e117a13072
   languageName: node
   linkType: hard
 
@@ -4988,18 +4986,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-public@github:graasp/graasp-plugin-public":
+"graasp-plugin-public@github:graasp/graasp-plugin-public#23/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=c2c7f3910fe72b81b249d752563dc896a786908a"
+  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=cabc32923fea313e7d370df1b8906cdef192bd6d"
   dependencies:
-    aws-sdk: ^2.793.0
     fastify-cors: ^6.0.2
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-s3-file-item: "github:graasp/graasp-plugin-s3-file-item"
-    graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file#1/init"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#18/newFilePlugin"
+    graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails#9/newFilePlugin"
     http-status-codes: ^2.1.4
     qs: ^6.10.1
-  checksum: c7507517f9c69dd3c52aa4883dca2a61d182412ea565fca664d7bee61077b820435b723691f240f887cc48fa4cb6b615dbf1bb416f502d5c37020803ce021f59
+  checksum: 0668799fc6830767fb9e3f45d3c5244f99f35f94bfb197b3e61c7fdf16877e7e983f9f6648861a18230a3700a7dd9c565d8f59e723ffb17daeb975801c6bff0d
   languageName: node
   linkType: hard
 
@@ -5015,28 +5012,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-s3-file-item@github:graasp/graasp-plugin-s3-file-item":
+"graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails#9/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-s3-file-item@https://github.com/graasp/graasp-plugin-s3-file-item.git#commit=a1c0d0626bd961c2805f6769d21a3b6f5381e16a"
+  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=86d55b7323278a574e372037d3a22bb463f6d1e8"
   dependencies:
-    aws-sdk: ^2.793.0
-    graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
-    http-status-codes: ^2.1.4
-  checksum: 0d9b12856b47582c02b4a319559a57d38b3ed079d28eb2f2c27a2ee69209ed3ad5f35102ee95ca7df0706a301a9aba5fcc623464f672bef441c35ffb4ca8c591
-  languageName: node
-  linkType: hard
-
-"graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails":
-  version: 0.1.0
-  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=a468d263ae02fdc487f1fd2f1e770ffa1b5faf12"
-  dependencies:
-    content-disposition: 0.5.3
-    fastify-multipart: 4.0.0
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-s3-file-item: "github:graasp/graasp-plugin-s3-file-item"
-    http-status-codes: 2.1.4
+    graasp-plugin-file: "github:graasp/graasp-plugin-file#1/init"
     sharp: 0.29.1
-  checksum: bfc7d20c459230ef529a8745720c46216451de42d0ce9faa5b4775115977d962fcf1c1154fdbf26f085f29d3973debb89187851d8dc4e49de5eb4ce9b426a00f
+  checksum: fa40a96ff5780b17b166f24aaa3f1213f6583ce8997f85e366d90308e5f1bd8bcd47150d7f8aaeb8148025f369063f058a67ff33bbbcd60f191e88dfc27b9624
   languageName: node
   linkType: hard
 
@@ -5090,12 +5072,11 @@ __metadata:
     graasp-mailer: "github:graasp/graasp-mailer"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file#1/init"
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#18/newFilePlugin"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
-    graasp-plugin-public: "github:graasp/graasp-plugin-public"
+    graasp-plugin-public: "github:graasp/graasp-plugin-public#23/newFilePlugin"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
-    graasp-plugin-s3-file-item: "github:graasp/graasp-plugin-s3-file-item"
-    graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
+    graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails#9/newFilePlugin"
     graasp-websockets: "github:graasp/graasp-websockets"
     http-status-codes: 2.1.4
     jest: ^26.6.3
@@ -10087,15 +10068,15 @@ __metadata:
   linkType: hard
 
 "slonik-interceptor-query-logging@npm:^1.3.9":
-  version: 1.4.1
-  resolution: "slonik-interceptor-query-logging@npm:1.4.1"
+  version: 1.4.2
+  resolution: "slonik-interceptor-query-logging@npm:1.4.2"
   dependencies:
     crack-json: ^1.3.0
     pretty-ms: ^7.0.1
     serialize-error: ^9.0.0
   peerDependencies:
     slonik: ">=25.1.2"
-  checksum: 6cd9e8e1fcfa1a597b64fc32cedb334f4c3867b06c1d4b19b9be517bf0bfcb4b5630cafc3eae9b50780dc7f8e7a5b5344bf718b3b490553a5f03dee536547ae4
+  checksum: 60835f6a7138268be3ca82fb1f9fa6d9f366d648bae8e1b39446d8b50038aea510f342c8f638a776d9bb414b5b9d61c6906fede7c9065d6eca88520ba301bbee
   languageName: node
   linkType: hard
 

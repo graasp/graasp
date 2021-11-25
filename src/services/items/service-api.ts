@@ -9,7 +9,9 @@ import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
-import { FileItemPlugin, ServiceMethod, ThumbnailsPlugin, hash, } from 'graasp-plugin-file';
+import { FileItemPlugin } from 'graasp-plugin-file-item';
+import ThumbnailsPlugin, { buildFilePath, mimetype } from 'graasp-plugin-thumbnails';
+import { ServiceMethod } from 'graasp-plugin-file';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
@@ -87,26 +89,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         graaspActor: GRAASP_ACTOR,
       });
 
-      const buildFilePath = (itemId, filename) => {
-        const filepath = hash(itemId)
-            .match(/.{1,8}/g)
-            .join('/');
-        return `/thumbnails/${filepath}/${filename}`;
-      };
-
       // core routes - require authentication
       fastify.register(async function (fastify) {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
+        const pathPrefix = '/items/';
+
         fastify.register(ThumbnailsPlugin, {
           serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
-
           serviceOptions: {
-            s3: { ...S3_FILE_ITEM_PLUGIN_OPTIONS, s3UseAccelerateEndpoint: false, s3Expiration: 500 },
+            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
           appsTemplateRoot: '/apps',
+          pathPrefix: pathPrefix,
 
           uploadPreHookTasks: async (id, { member }) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id);
@@ -118,15 +115,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             tasks[1].input = { validatePermission: PermissionLevel.Read };
             const last = tasks[tasks.length - 1];
             last.getResult = () => ({
-              filepath: buildFilePath((tasks[0].result as Item).id, filename),
-              mimetype: 'image/jpeg',
+              filepath: buildFilePath((tasks[0].result as Item).id, pathPrefix, filename),
+              mimetype: mimetype,
             });
             return tasks;
           },
 
-          prefix: '/thumbnails',
+          prefix: '/thumbnails'
         });
-
 
         fastify.register(FileItemPlugin, {
           shouldLimit: true,
