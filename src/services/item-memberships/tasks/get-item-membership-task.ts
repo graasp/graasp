@@ -11,7 +11,9 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 type InputType = { itemMembershipId?: string };
 
 export class GetItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return GetItemMembershipTask.name; }
+  get name(): string {
+    return GetItemMembershipTask.name;
+  }
 
   input: InputType;
   getInput: () => InputType;

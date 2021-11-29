@@ -12,7 +12,7 @@ const sortChildrenWith = (idsOrder: string[]) => (stElem: { id: string }, ndElem
   idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
 
 export type FolderExtra = { folder: { childrenOrder: string[] } };
-type InputType = { item?: Item<FolderExtra>, ordered?: boolean };
+type InputType = { item?: Item<FolderExtra>; ordered?: boolean };
 
 export class GetItemChildrenTask extends BaseItemTask<Item[]> {
   get name(): string {
@@ -37,7 +37,9 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
     const children = await this.itemService.getDescendants(item, handler, 'ASC', 1);
 
     if (ordered) {
-      const { extra: { folder: { childrenOrder = [] } = {} } } = item;
+      const {
+        extra: { folder: { childrenOrder = [] } = {} },
+      } = item;
 
       if (childrenOrder.length) {
         const compareFn = sortChildrenWith(childrenOrder);

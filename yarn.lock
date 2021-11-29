@@ -4924,8 +4924,8 @@ __metadata:
 
 "graasp-item-tags@github:graasp/graasp-item-tags":
   version: 0.1.0
-  resolution: "graasp-item-tags@https://github.com/graasp/graasp-item-tags.git#commit=797c732e90a067c7d6198a7c8c3f5761500f60d5"
-  checksum: 157553a8bf2ce48f9dde36be0ebc3d7051f9cb8d7364d869421fc8f17d88c116880ba3f1ca329bcd62cc4278eee1bc7d7a7eef5f049a865bb0c6bf2d4cb98dd5
+  resolution: "graasp-item-tags@https://github.com/graasp/graasp-item-tags.git#commit=1f92e0bb15c6aeedf0a0faee9676a5c11a11e800"
+  checksum: 47b4aedfac819ab0931fad9a3befacca2aaaeead8570110972e2897fe2444232aeb4cef4918c156cedca1bcef00cb2068132ed9ae81f1bfd7ec0ad2c7fe15d1a
   languageName: node
   linkType: hard
 
@@ -4977,7 +4977,7 @@ __metadata:
 
 "graasp-plugin-public@github:graasp/graasp-plugin-public":
   version: 0.1.0
-  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=c2c7f3910fe72b81b249d752563dc896a786908a"
+  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=ab711fbee0748347733e089a3e5624837904e16b"
   dependencies:
     aws-sdk: ^2.793.0
     fastify-cors: ^6.0.2
@@ -4986,7 +4986,7 @@ __metadata:
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     http-status-codes: ^2.1.4
     qs: ^6.10.1
-  checksum: c7507517f9c69dd3c52aa4883dca2a61d182412ea565fca664d7bee61077b820435b723691f240f887cc48fa4cb6b615dbf1bb416f502d5c37020803ce021f59
+  checksum: 9c0d4ca3ebd622b1ca3b890b01562beb94df6d8ee43ec5cb5eaf55a4ccfef39f5b215511b15fee5f7380db881eb2411f1a780ca815ff2bde83a0d81d6d92644d
   languageName: node
   linkType: hard
 

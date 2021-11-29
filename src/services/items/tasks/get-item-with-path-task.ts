@@ -12,7 +12,9 @@ import { ItemService } from '../db-service';
 type InputType = { itemPath?: string };
 
 export class GetItemWithPathTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
-  get name(): string { return GetItemWithPathTask.name; }
+  get name(): string {
+    return GetItemWithPathTask.name;
+  }
 
   input: InputType;
   getInput: () => InputType;

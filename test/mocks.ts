@@ -14,14 +14,14 @@ import { getIdsFromPath } from './utils';
 
 // Item Membership Service
 export const mockItemMembershipServiceGetForMemberAtItem = (
-  memberships: ItemMembership[]
+  memberships: ItemMembership[],
 ): jest.SpyInstance => {
   return jest
     .spyOn(ItemMembershipService.prototype, 'getForMemberAtItem')
     .mockImplementation(async (memberId, { id: itemId }) => {
       return memberships.find(
         ({ memberId: thisMemberId, itemPath }) =>
-          getIdsFromPath(itemPath).includes(itemId) && thisMemberId === memberId
+          getIdsFromPath(itemPath).includes(itemId) && thisMemberId === memberId,
       );
     });
 };
@@ -30,12 +30,12 @@ export const mockItemMembershipServiceCreate = (): jest.SpyInstance => {
   return jest
     .spyOn(ItemMembershipService.prototype, 'create')
     .mockImplementation(async (membership) =>
-      buildMembership({ ...membership, creator: ACTOR.id })
+      buildMembership({ ...membership, creator: ACTOR.id }),
     );
 };
 
 export const mockItemMembershipServiceUpdate = (
-  memberships: ItemMembership[]
+  memberships: ItemMembership[],
 ): jest.SpyInstance => {
   return jest
     .spyOn(ItemMembershipService.prototype, 'update')
@@ -46,7 +46,7 @@ export const mockItemMembershipServiceUpdate = (
 };
 
 export const mockItemMembershipServiceGetAllInSubtree = (
-  memberships: ItemMembership[]
+  memberships: ItemMembership[],
 ): jest.SpyInstance => {
   return jest
     .spyOn(ItemMembershipService.prototype, 'getAllInSubtree')
@@ -56,18 +56,18 @@ export const mockItemMembershipServiceGetAllInSubtree = (
 };
 
 export const mockItemMemberhipServiceGetInheritedForAll = (
-  memberships: ItemMembership[]
+  memberships: ItemMembership[],
 ): jest.SpyInstance => {
   return jest
     .spyOn(ItemMembershipService.prototype, 'getInheritedForAll')
     .mockImplementation(async (item: Item) =>
-      memberships.filter((membership) => membership.itemPath === item.path)
+      memberships.filter((membership) => membership.itemPath === item.path),
     );
 };
 
 // define response directly
 export const mockItemMemberhipServiceGetInherited = (
-  membership?: ItemMembership
+  membership?: ItemMembership,
 ): jest.SpyInstance => {
   return jest
     .spyOn(ItemMembershipService.prototype, 'getInherited')
@@ -83,7 +83,7 @@ export const mockItemMemberhipServiceGet = (memberships: ItemMembership[]): jest
 
 // define response directly
 export const mockItemMemberhipServiceGetAllBelow = (
-  memberships: ItemMembership[]
+  memberships: ItemMembership[],
 ): jest.SpyInstance => {
   return jest
     .spyOn(ItemMembershipService.prototype, 'getAllBelow')
@@ -114,7 +114,7 @@ export const mockItemServiceGetNumberOfChildren = (fn = async () => 0): jest.Spy
   return jest.spyOn(ItemService.prototype, 'getNumberOfChildren').mockImplementation(fn);
 };
 export const mockItemServiceGetNumberOfLevelsToFarthestChild = (
-  fn = async () => 0
+  fn = async () => 0,
 ): jest.SpyInstance => {
   return jest
     .spyOn(ItemService.prototype, 'getNumberOfLevelsToFarthestChild')

@@ -4,7 +4,7 @@ enum Environment {
   production = 'production',
   staging = 'staging',
   development = 'development',
-  test = 'test'
+  test = 'test',
 }
 
 export let ENVIRONMENT: Environment;
@@ -86,9 +86,11 @@ export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
-export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES || 10080;
+export const AUTH_TOKEN_EXPIRATION_IN_MINUTES =
+  +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES || 10080;
 /** Refresh token expiration, in minutes */
-export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES || 86400;
+export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES =
+  +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES || 86400;
 
 // Graasp limits
 
@@ -188,4 +190,4 @@ export const S3_FILE_ITEM_PLUGIN_OPTIONS = {
   s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
 };
 
-export const FILE_ITEM_PLUGIN_OPTIONS= { storageRootPath: FILE_STORAGE_ROOT_PATH }; 
+export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };

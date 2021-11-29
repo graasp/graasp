@@ -8,7 +8,7 @@ import { uuid, idParam, idsQuery, error } from '../../schemas/fluent-schema';
 /**
  * for serialization
  */
- const settings =  S.object()
+const settings = S.object()
   .additionalProperties(false)
   .prop('isPinned', S.boolean())
   .prop('showChatbox', S.boolean());

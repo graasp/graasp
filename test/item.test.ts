@@ -58,7 +58,7 @@ describe('Item routes tests', () => {
 
   describe('POST /items', () => {
     it('Create successfully', async () => {
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
       ];
@@ -87,7 +87,7 @@ describe('Item routes tests', () => {
       app.close();
     });
     it('Create successfully in parent item', async () => {
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parent = getDummyItem();
       const items = [payload, parent];
       const memberships = [
@@ -131,7 +131,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetNumberOfChildren();
       mockItemServiceGet([parent]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
-      
+
       const app = await build();
       const response = await app.inject({
         method: 'POST',
@@ -167,7 +167,7 @@ describe('Item routes tests', () => {
     });
     it('Bad request if parentId id is invalid', async () => {
       const app = await build();
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parentId = 'invalid-id';
       const response = await app.inject({
         method: 'POST',
@@ -181,7 +181,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item in non-existing parent', async () => {
       const app = await build();
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parentId = uuidv4();
       const response = await app.inject({
         method: 'POST',
@@ -195,7 +195,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if member does not have membership on parent', async () => {
       const app = await build();
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parent = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       mockItemServiceGet([payload, parent]);
       const response = await app.inject({
@@ -210,7 +210,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if member can only read parent', async () => {
       const app = await build();
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parent = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
@@ -230,7 +230,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if parent item has too many children', async () => {
       const app = await build();
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parent = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
@@ -251,9 +251,9 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if parent is too deep in hierarchy', async () => {
       const app = await build();
-      const payload = getDummyItem({type: ITEM_TYPES.FOLDER});
+      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parentPath = `${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.`;
-      const parent = getDummyItem({parentPath});
+      const parent = getDummyItem({ parentPath });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
         buildMembership({ path: parent.path, permission: PermissionLevel.Write }),
@@ -355,19 +355,15 @@ describe('Item routes tests', () => {
     it('Returns one item successfully for valid item', async () => {
       const app = await build();
       const item = getDummyItem();
-      const memberships = [
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
-      ];
+      const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       const response = await app.inject({
         method: HTTP_METHODS.GET,
-        url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`
+        url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
 
-      expect(response.json()).toEqual(
-        ([item])
-      );
+      expect(response.json()).toEqual([item]);
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
@@ -403,7 +399,7 @@ describe('Item routes tests', () => {
         method: HTTP_METHODS.GET,
         url: `/items?${qs.stringify(
           { id: [items.map(({ id }) => id), missingId] },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
       });
 
@@ -549,7 +545,7 @@ describe('Item routes tests', () => {
       app.close();
     });
     it('Cannot get children if does not have membership on parent', async () => {
-      const item = getDummyItem({creator: MEMBERS_FIXTURES.BOB.id});
+      const item = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       mockItemServiceGet([item]);
       const app = await build();
       const response = await app.inject({
@@ -564,7 +560,7 @@ describe('Item routes tests', () => {
   });
   describe('PATCH /items/:id', () => {
     it('Update successfully', async () => {
-      const item = getDummyItem({type: ITEM_TYPES.FOLDER, extra: {[ITEM_TYPES.FOLDER]:{}}});
+      const item = getDummyItem({ type: ITEM_TYPES.FOLDER, extra: { [ITEM_TYPES.FOLDER]: {} } });
       const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
       const payload = {
         name: 'new name',
@@ -638,7 +634,7 @@ describe('Item routes tests', () => {
       const payload = {
         name: 'new name',
       };
-      const item = getDummyItem({creator: MEMBERS_FIXTURES.BOB.id});
+      const item = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       mockItemServiceGet([item]);
       const app = await build();
       const response = await app.inject({
@@ -655,7 +651,7 @@ describe('Item routes tests', () => {
       const payload = {
         name: 'new name',
       };
-      const item = getDummyItem({creator: MEMBERS_FIXTURES.BOB.id});
+      const item = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Read })];
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -716,7 +712,7 @@ describe('Item routes tests', () => {
         method: HTTP_METHODS.PATCH,
         url: `/items?${qs.stringify(
           { id: [...items.map(({ id }) => id), missingItemId] },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload,
       });
@@ -732,7 +728,7 @@ describe('Item routes tests', () => {
     it('Return 202 for a lof of items', async () => {
       const items = LOTS_OF_ITEMS;
       const memberships = items.map(({ path }) =>
-        buildMembership({ path, permission: PermissionLevel.Admin })
+        buildMembership({ path, permission: PermissionLevel.Admin }),
       );
       const ids = items.map(({ id }) => id);
       const payload = {
@@ -762,7 +758,7 @@ describe('Item routes tests', () => {
         method: HTTP_METHODS.PATCH,
         url: `/items?${qs.stringify(
           { id: [getDummyItem().id, 'invalid-id'] },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload,
       });
@@ -852,7 +848,7 @@ describe('Item routes tests', () => {
     it('Delete successfully', async () => {
       const items = [getDummyItem(), getDummyItem()];
       const memberships = items.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(items);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -870,9 +866,9 @@ describe('Item routes tests', () => {
     });
     it('Delete successfully one item', async () => {
       const items = [getDummyItem()];
-      mockItemServiceGet((items));
+      mockItemServiceGet(items);
       const memberships = items.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       mockItemServiceGetDescendants();
@@ -880,15 +876,10 @@ describe('Item routes tests', () => {
       const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.DELETE,
-        url: `/items?${qs.stringify(
-          { id: items.map(({ id }) => id) },
-          { arrayFormat: 'repeat' },
-        )}`,
+        url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
       });
 
-      expect(response.json()).toEqual(
-        (items),
-      );
+      expect(response.json()).toEqual(items);
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
@@ -908,7 +899,7 @@ describe('Item routes tests', () => {
       const id = uuidv4();
       const items = [getDummyItem(), getDummyItem()];
       const memberships = items.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(items);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -919,7 +910,7 @@ describe('Item routes tests', () => {
         method: HTTP_METHODS.DELETE,
         url: `/items?${qs.stringify(
           { id: [...items.map(({ id }) => id), id] },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
       });
 
@@ -934,7 +925,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const items = [item, targetItem];
       const memberships = items.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(items);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -1090,7 +1081,7 @@ describe('Item routes tests', () => {
       const item = getDummyItem();
       const targetItem = getDummyItem();
       const memberships = [item, targetItem].map((item) =>
-        buildMembership({ permission: PermissionLevel.Admin, path: item.path })
+        buildMembership({ permission: PermissionLevel.Admin, path: item.path }),
       );
       mockItemServiceGet([item, targetItem]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -1117,7 +1108,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const allItems = [...items, targetItem];
       const memberships = allItems.map((item) =>
-        buildMembership({ permission: PermissionLevel.Admin, path: item.path })
+        buildMembership({ permission: PermissionLevel.Admin, path: item.path }),
       );
 
       mockItemServiceGet(allItems);
@@ -1131,7 +1122,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/move?${qs.stringify(
           { id: items.map(({ id }) => id) },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {
           parentId: targetItem.id,
@@ -1149,7 +1140,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/move?${qs.stringify(
           { id: items.map(({ id }) => id) },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {},
       });
@@ -1163,7 +1154,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const allItems = [...items, targetItem];
       const memberships = allItems.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       const missingItemId = uuidv4();
       mockItemServiceGet(allItems);
@@ -1177,7 +1168,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/move?${qs.stringify(
           { id: [...items.map(({ id }) => id), missingItemId] },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {
           parentId: targetItem.id,
@@ -1192,7 +1183,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const allItems = [...items, targetItem];
       const memberships = allItems.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(allItems);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -1205,7 +1196,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/move?${qs.stringify(
           { id: items.map(({ id }) => id) },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {
           parentId: targetItem.id,
@@ -1219,7 +1210,7 @@ describe('Item routes tests', () => {
           expect(response.statusCode).toBe(202);
           app.close();
           res(true);
-        }, 1500)
+        }, 1500),
       );
     });
   });
@@ -1229,7 +1220,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const items = [item, targetItem];
       const memberships = [item, targetItem].map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(items);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -1381,7 +1372,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const allItems = [...items, targetItem];
       const memberships = allItems.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(allItems);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -1393,7 +1384,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/copy?${qs.stringify(
           { id: items.map(({ id }) => id) },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {
           parentId: targetItem.id,
@@ -1414,7 +1405,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/copy?${qs.stringify(
           { id: items.map(({ id }) => id) },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {},
       });
@@ -1429,7 +1420,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const allItems = [...items, targetItem];
       const memberships = allItems.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(allItems);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -1441,7 +1432,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/copy?${qs.stringify(
           { id: [...items.map(({ id }) => id), missingItemId] },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {
           parentId: targetItem.id,
@@ -1460,7 +1451,7 @@ describe('Item routes tests', () => {
       const targetItem = getDummyItem();
       const allItems = [...items, targetItem];
       const memberships = allItems.map((item) =>
-        buildMembership({ path: item.path, permission: PermissionLevel.Admin })
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
       );
       mockItemServiceGet(allItems);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -1472,7 +1463,7 @@ describe('Item routes tests', () => {
         method: 'POST',
         url: `/items/copy?${qs.stringify(
           { id: items.map(({ id }) => id) },
-          { arrayFormat: 'repeat' }
+          { arrayFormat: 'repeat' },
         )}`,
         payload: {
           parentId: targetItem.id,
@@ -1483,9 +1474,9 @@ describe('Item routes tests', () => {
         setTimeout(() => {
           expect(mockCreate).toHaveBeenCalledTimes(items.length);
           expect(response.statusCode).toBe(202);
-      app.close();
-      res(true);
-        }, 1500)
+          app.close();
+          res(true);
+        }, 1500),
       );
     });
   });

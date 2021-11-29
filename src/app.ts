@@ -70,15 +70,15 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(ItemMembershipsServiceApi))
       .register(fp(ItemsServiceApi));
 
-  if (PUBLIC_PLUGIN) {
-    await instance.register(graaspPluginPublic, {
-      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
-      graaspActor: GRAASP_ACTOR,
-      enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
-      // native fastify option
-      prefix: '/p',
-    });
-  }
+    if (PUBLIC_PLUGIN) {
+      await instance.register(graaspPluginPublic, {
+        tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+        graaspActor: GRAASP_ACTOR,
+        enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
+        // native fastify option
+        prefix: '/p',
+      });
+    }
   });
 }
 

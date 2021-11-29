@@ -12,12 +12,23 @@ export interface ItemMembershipTaskManager<A extends Actor = Actor> {
   getGetOfItemTaskName(): string;
 
   createCreateTask(actor: A, data: Partial<ItemMembership>): Task<A, ItemMembership>;
-  createCreateTaskSequence(actor: A, object: Partial<ItemMembership>, extra?: unknown): Task<A, unknown>[];
+  createCreateTaskSequence(
+    actor: A,
+    object: Partial<ItemMembership>,
+    extra?: unknown,
+  ): Task<A, unknown>[];
   createGetTask(actor: A, objectId: string): Task<A, ItemMembership>;
-  createUpdateTaskSequence(actor: A, objectId: string, object: Partial<ItemMembership>): Task<A, unknown>[];
+  createUpdateTaskSequence(
+    actor: A,
+    objectId: string,
+    object: Partial<ItemMembership>,
+  ): Task<A, unknown>[];
   createDeleteTaskSequence(actor: A, objectId: string, extra?: unknown): Task<A, unknown>[];
 
   createGetOfItemTaskSequence(actor: A, itemId: string): Task<A, unknown>[];
   createDeleteAllOnAndBelowItemTaskSequence(actor: A, itemId: string): Task<A, unknown>[];
-  createGetMemberItemMembershipTask(actor: A, input?: GetMemberItemMembershipOverItemTaskInputType):  Task<A, ItemMembership>;
+  createGetMemberItemMembershipTask(
+    actor: A,
+    input?: GetMemberItemMembershipOverItemTaskInputType,
+  ): Task<A, ItemMembership>;
 }

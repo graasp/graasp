@@ -130,7 +130,10 @@ export class TooManyMemberships extends BaseGraaspError {
 }
 export class MemberCannotAccess extends BaseGraaspError {
   constructor(data?: unknown) {
-    super({ code: 'GERR016', statusCode: 403, message: 'Member does not have a membership in item' }, data);
+    super(
+      { code: 'GERR016', statusCode: 403, message: 'Member does not have a membership in item' },
+      data,
+    );
   }
 }
 export class DatabaseError extends BaseGraaspError {

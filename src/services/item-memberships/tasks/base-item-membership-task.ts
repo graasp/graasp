@@ -6,7 +6,7 @@ import { Member } from '../../../services/members/interfaces/member';
 import { ItemMembershipService } from '../db-service';
 
 export abstract class BaseItemMembershipTask<R> extends BaseTask<Member, R> {
-  protected itemMembershipService: ItemMembershipService
+  protected itemMembershipService: ItemMembershipService;
 
   constructor(member: Member, itemMembershipService: ItemMembershipService) {
     super(member);

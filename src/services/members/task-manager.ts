@@ -19,16 +19,29 @@ export class TaskManager implements MemberTaskManager {
   }
 
   // CRUD
-  getCreateTaskName(): string { return CreateMemberTask.name; }
-  getGetTaskName(): string { return GetMemberTask.name; }
-  getUpdateTaskName(): string { return UpdateMemberTask.name; }
-  getDeleteTaskName(): string { throw new Error('Method not implemented.'); }
+  getCreateTaskName(): string {
+    return CreateMemberTask.name;
+  }
+  getGetTaskName(): string {
+    return GetMemberTask.name;
+  }
+  getUpdateTaskName(): string {
+    return UpdateMemberTask.name;
+  }
+  getDeleteTaskName(): string {
+    throw new Error('Method not implemented.');
+  }
 
   // Other
-  getGetByTaskName(): string { return GetMembersByTask.name; }
+  getGetByTaskName(): string {
+    return GetMembersByTask.name;
+  }
 
   // CRUD
-  createCreateTask<E extends UnknownExtra>(actor: Actor, data: Partial<Member<E>>): CreateMemberTask<E> {
+  createCreateTask<E extends UnknownExtra>(
+    actor: Actor,
+    data: Partial<Member<E>>,
+  ): CreateMemberTask<E> {
     return new CreateMemberTask<E>(actor, this.memberService, { data });
   }
 
@@ -36,10 +49,17 @@ export class TaskManager implements MemberTaskManager {
     return new GetMemberTask<E>(actor, this.memberService, { memberId });
   }
 
-  createUpdateTaskSequence<E extends UnknownExtra>(actor: Actor, memberId: string, data: Partial<Member<E>>): Task<Actor, unknown>[] {
+  createUpdateTaskSequence<E extends UnknownExtra>(
+    actor: Actor,
+    memberId: string,
+    data: Partial<Member<E>>,
+  ): Task<Actor, unknown>[] {
     const t1 = new GetMemberTask(actor, this.memberService, { memberId });
 
-    const t2 = new UpdateMemberTask<E>(actor, this.memberService, { data, actorShouldMatchTarget: true });
+    const t2 = new UpdateMemberTask<E>(actor, this.memberService, {
+      data,
+      actorShouldMatchTarget: true,
+    });
     t2.getInput = () => ({ member: t1.result });
 
     return [t1, t2];

@@ -7,7 +7,10 @@ import { GetItemTask } from '../items/tasks/get-item-task';
 // local
 import { ItemMembershipService } from './db-service';
 import { ItemMembership, PermissionLevel } from './interfaces/item-membership';
-import { CreateItemMembershipSubTask, CreateItemMembershipTask } from './tasks/create-item-membership-task';
+import {
+  CreateItemMembershipSubTask,
+  CreateItemMembershipTask,
+} from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
 import { GetItemsItemMembershipsTask } from './tasks/get-items-item-membership-task';
@@ -15,7 +18,10 @@ import { ItemMembershipTaskManager } from './interfaces/item-membership-task-man
 import { DeleteItemItemMembershipsTask } from './tasks/delete-item-item-memberships-task';
 import { Task } from '../../interfaces/task';
 import { GetItemMembershipTask } from './tasks/get-item-membership-task';
-import { GetMemberItemMembershipOverItemTask, GetMemberItemMembershipOverItemTaskInputType } from './tasks/get-member-item-membership-over-item-task';
+import {
+  GetMemberItemMembershipOverItemTask,
+  GetMemberItemMembershipOverItemTaskInputType,
+} from './tasks/get-member-item-membership-over-item-task';
 import { GetItemWithPathTask } from '../items/tasks/get-item-with-path-task';
 import { GetMemberTask } from '../members/tasks/get-member-task';
 import { Actor } from '../../interfaces/actor';
@@ -25,8 +31,11 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
   private itemMembershipService: ItemMembershipService;
   private memberService: MemberService;
 
-  constructor(itemService: ItemService, itemMembershipService: ItemMembershipService,
-    memberService: MemberService) {
+  constructor(
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    memberService: MemberService,
+  ) {
     this.itemService = itemService;
     this.itemMembershipService = itemMembershipService;
     this.memberService = memberService;
@@ -45,15 +54,23 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     return DeleteItemMembershipTask.name;
   }
 
-  getGetOfItemTaskName(): string { return GetItemsItemMembershipsTask.name; }
-  getDeleteAllOnAndBelowItemTaskName(): string { return DeleteItemItemMembershipsTask.name; }
+  getGetOfItemTaskName(): string {
+    return GetItemsItemMembershipsTask.name;
+  }
+  getDeleteAllOnAndBelowItemTaskName(): string {
+    return DeleteItemItemMembershipsTask.name;
+  }
 
   // CRUD
   createCreateTask(member: Member, data: Partial<ItemMembership>): CreateItemMembershipSubTask {
     return new CreateItemMembershipSubTask(member, this.itemMembershipService, { data });
   }
 
-  createCreateTaskSequence(member: Member, data: Partial<ItemMembership>, itemId: string): Task<Actor, unknown>[] {
+  createCreateTaskSequence(
+    member: Member,
+    data: Partial<ItemMembership>,
+    itemId: string,
+  ): Task<Actor, unknown>[] {
     const t1 = new GetItemTask(member, this.itemService, { itemId });
 
     const t2 = new GetMemberItemMembershipOverItemTask(member, this.itemMembershipService);
@@ -71,7 +88,11 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     throw new Error('Method not implemented.');
   }
 
-  createUpdateTaskSequence(member: Member, itemMembershipId: string, data: Partial<ItemMembership>): Task<Member, unknown>[] {
+  createUpdateTaskSequence(
+    member: Member,
+    itemMembershipId: string,
+    data: Partial<ItemMembership>,
+  ): Task<Member, unknown>[] {
     const t1 = new GetItemMembershipTask(member, this.itemMembershipService, { itemMembershipId });
 
     const t2 = new GetItemWithPathTask(member, this.itemService);
@@ -86,7 +107,11 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     return [t1, t2, t3, t4];
   }
 
-  createDeleteTaskSequence(member: Member, itemMembershipId: string, purgeBelow?: boolean): Task<Member, unknown>[] {
+  createDeleteTaskSequence(
+    member: Member,
+    itemMembershipId: string,
+    purgeBelow?: boolean,
+  ): Task<Member, unknown>[] {
     const t1 = new GetItemMembershipTask(member, this.itemMembershipService, { itemMembershipId });
 
     const t2 = new GetItemWithPathTask(member, this.itemService);
@@ -119,7 +144,10 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     return [t1, t2];
   }
 
-  createDeleteAllOnAndBelowItemTaskSequence(member: Member, itemId: string): Task<Member, unknown>[] {
+  createDeleteAllOnAndBelowItemTaskSequence(
+    member: Member,
+    itemId: string,
+  ): Task<Member, unknown>[] {
     const t1 = new GetItemTask(member, this.itemService, { itemId });
 
     const t2 = new GetMemberItemMembershipOverItemTask(member, this.itemMembershipService);
@@ -131,7 +159,10 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     return [t1, t2, t3];
   }
 
-  createGetMemberItemMembershipTask(actor: Member, input?: GetMemberItemMembershipOverItemTaskInputType): GetMemberItemMembershipOverItemTask {
+  createGetMemberItemMembershipTask(
+    actor: Member,
+    input?: GetMemberItemMembershipOverItemTaskInputType,
+  ): GetMemberItemMembershipOverItemTask {
     return new GetMemberItemMembershipOverItemTask(actor, this.itemMembershipService, input);
   }
 }

@@ -49,14 +49,21 @@ export class ItemMembershipService {
    * @param item Item whose path is referenced in membership
    * @param transactionHandler Database transaction handler
    */
-   async getForMemberAtItem(memberId: string, item: Item, transactionHandler: TrxHandler): Promise<ItemMembership> {
-    return transactionHandler.query<ItemMembership>(sql`
+  async getForMemberAtItem(
+    memberId: string,
+    item: Item,
+    transactionHandler: TrxHandler,
+  ): Promise<ItemMembership> {
+    return transactionHandler
+      .query<ItemMembership>(
+        sql`
         SELECT ${ItemMembershipService.allColumns} FROM item_membership
         WHERE member_id = ${memberId}
           AND item_path @> ${item.path}
         ORDER BY nlevel(item_path) DESC
         LIMIT 1
-      `)
+      `,
+      )
       .then(({ rows }) => rows[0] ?? null);
   }
 

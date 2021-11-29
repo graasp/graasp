@@ -273,30 +273,29 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             reply.status(StatusCodes.NO_CONTENT);
           }
         } catch (error) {
-            session.delete();
-            if (AUTH_CLIENT_HOST) {
-              // todo: provide more detailed message
-              reply.redirect(StatusCodes.SEE_OTHER, `//${AUTH_CLIENT_HOST}?error=true`);
-            }
-            else {
-              // the token caused the error
-              if (error instanceof JsonWebTokenError) {
-                reply.status(StatusCodes.UNAUTHORIZED);
+          session.delete();
+          if (AUTH_CLIENT_HOST) {
+            // todo: provide more detailed message
+            reply.redirect(StatusCodes.SEE_OTHER, `//${AUTH_CLIENT_HOST}?error=true`);
+          } else {
+            // the token caused the error
+            if (error instanceof JsonWebTokenError) {
+              reply.status(StatusCodes.UNAUTHORIZED);
 
-                // return a custom error when the token expired
-                // helps the client know when to request a refreshed token
-                if(error instanceof TokenExpiredError) {
-                  reply.status(439);
-                }
-              }
-              // any other error
-              else {
-                reply.status(StatusCodes.INTERNAL_SERVER_ERROR);
+              // return a custom error when the token expired
+              // helps the client know when to request a refreshed token
+              if (error instanceof TokenExpiredError) {
+                reply.status(439);
               }
             }
-            
-            log.error(error);
-            throw error;
+            // any other error
+            else {
+              reply.status(StatusCodes.INTERNAL_SERVER_ERROR);
+            }
+          }
+
+          log.error(error);
+          throw error;
         }
       },
     );
@@ -340,7 +339,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             await generateLoginLinkAndEmailIt(member, true, challenge);
             reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
           }
-
         },
       );
 
@@ -359,7 +357,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             log.warn(`Login attempt with non-existent email '${email}'`);
             reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
           }
-
         },
       );
 
@@ -384,7 +381,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
               // return a custom error when the token expired
               // helps the client know when to request a refreshed token
-              if(error instanceof TokenExpiredError) {
+              if (error instanceof TokenExpiredError) {
                 reply.status(439);
               }
             }

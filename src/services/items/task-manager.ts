@@ -62,7 +62,11 @@ export class TaskManager implements ItemTaskManager<Member> {
   }
 
   // CRUD
-  createCreateTaskSequence(member: Member, data: Partial<Item>, parentId?: string): Task<Member, unknown>[] {
+  createCreateTaskSequence(
+    member: Member,
+    data: Partial<Item>,
+    parentId?: string,
+  ): Task<Member, unknown>[] {
     const tasks = [];
     let t1: GetItemTask<UnknownExtra>;
     let t2: GetMemberItemMembershipOverItemTask;
@@ -83,11 +87,13 @@ export class TaskManager implements ItemTaskManager<Member> {
     const t4 = new CreateItemMembershipSubTask(member, this.itemMembershipService);
     t4.getInput = () => {
       if (!parentId || t2.result.permission === PermissionLevel.Write) {
-        return { data: new BaseItemMembership(member.id, t3.result.path, PermissionLevel.Admin, member.id) };
+        return {
+          data: new BaseItemMembership(member.id, t3.result.path, PermissionLevel.Admin, member.id),
+        };
       }
       t4.skip = true; // skip this task (t4)
     };
-    t4.getResult = () => (t3.result);
+    t4.getResult = () => t3.result;
     tasks.push(t4);
 
     return tasks;
@@ -100,20 +106,22 @@ export class TaskManager implements ItemTaskManager<Member> {
   createGetTaskSequence(member: Member, itemId: string): Task<Member, unknown>[] {
     const t1 = new GetItemTask(member, this.itemService, { itemId });
 
-    const t2 = new GetMemberItemMembershipOverItemTask(
-      member,
-      this.itemMembershipService,
-      { validatePermission: PermissionLevel.Read }
-    );
+    const t2 = new GetMemberItemMembershipOverItemTask(member, this.itemMembershipService, {
+      validatePermission: PermissionLevel.Read,
+    });
     t2.getInput = () => {
-      return ({ item: t1.result });
+      return { item: t1.result };
     };
-    t2.getResult = () => (t1.result);
+    t2.getResult = () => t1.result;
 
     return [t1, t2];
   }
 
-  createUpdateTaskSequence(member: Member, itemId: string, data: Partial<Item>): Task<Member, unknown>[] {
+  createUpdateTaskSequence(
+    member: Member,
+    itemId: string,
+    data: Partial<Item>,
+  ): Task<Member, unknown>[] {
     const t1 = new GetItemTask(member, this.itemService, { itemId });
 
     const t2 = new GetMemberItemMembershipOverItemTask(member, this.itemMembershipService);
@@ -142,7 +150,11 @@ export class TaskManager implements ItemTaskManager<Member> {
   }
 
   // Other
-  createMoveTaskSequence(member: Member, itemId: string, parentId?: string): Task<Member, unknown>[] {
+  createMoveTaskSequence(
+    member: Member,
+    itemId: string,
+    parentId?: string,
+  ): Task<Member, unknown>[] {
     const tasks = [];
     const t1 = new GetItemTask(member, this.itemService, { itemId });
     tasks.push(t1);
@@ -170,7 +182,12 @@ export class TaskManager implements ItemTaskManager<Member> {
     return tasks;
   }
 
-  createCopyTaskSequence(member: Member, itemId: string, parentId?: string): Task<Member, unknown>[] {
+  createCopyTaskSequence(
+    member: Member,
+    itemId: string,
+    options: { parentId?: string; shouldCopyTags?: boolean },
+  ): Task<Member, unknown>[] {
+    const { parentId, shouldCopyTags } = options;
     const tasks = [];
     const t1 = new GetItemTask(member, this.itemService, { itemId });
     tasks.push(t1);
@@ -179,11 +196,16 @@ export class TaskManager implements ItemTaskManager<Member> {
     t2.getInput = () => ({ item: t1.result, validatePermission: PermissionLevel.Read });
     tasks.push(t2);
 
-    tasks.push(...this.createCopySubTaskSequence(member, t1, parentId));
+    tasks.push(...this.createCopySubTaskSequence(member, t1, { parentId, shouldCopyTags }));
     return tasks;
   }
 
-  createCopySubTaskSequence(member: Member, itemTask: Task<Member, Item>, parentId?: string): Task<Member, unknown>[] {
+  createCopySubTaskSequence(
+    member: Member,
+    itemTask: Task<Member, Item>,
+    options: { parentId?: string; shouldCopyTags?: boolean },
+  ): Task<Member, unknown>[] {
+    const { parentId, shouldCopyTags } = options;
     const tasks = [];
 
     let t3: Task<Member, Item>;
@@ -199,27 +221,36 @@ export class TaskManager implements ItemTaskManager<Member> {
     }
 
     const t5 = new CopyItemTask(member, this.itemService);
-    t5.getInput = () => ({ item: itemTask.result, parentItem: t3?.result });
+    t5.getInput = () => ({ item: itemTask.result, parentItem: t3?.result, shouldCopyTags });
     tasks.push(t5);
 
     const t6 = new CreateItemMembershipSubTask(member, this.itemMembershipService);
     t6.getInput = function () {
       if (!parentId || t4.result.permission === PermissionLevel.Write) {
-        return { data: new BaseItemMembership(member.id, t5.result.path, PermissionLevel.Admin, member.id) };
+        return {
+          data: new BaseItemMembership(member.id, t5.result.path, PermissionLevel.Admin, member.id),
+        };
       }
       this.skip = true; // skip this task (t6)
     };
-    t6.getResult = () => (t5.result);
+    t6.getResult = () => t5.result;
     tasks.push(t6);
 
     return tasks;
   }
 
-  createGetChildrenTask(member: Member, {item, ordered}: {item?: Item<FolderExtra>, ordered?: boolean}): Task<Member, unknown> {
+  createGetChildrenTask(
+    member: Member,
+    { item, ordered }: { item?: Item<FolderExtra>; ordered?: boolean },
+  ): Task<Member, unknown> {
     return new GetItemChildrenTask(member, this.itemService, { item, ordered });
   }
 
-  createGetChildrenTaskSequence(member: Member, itemId: string, ordered?: boolean): Task<Member, unknown>[] {
+  createGetChildrenTaskSequence(
+    member: Member,
+    itemId: string,
+    ordered?: boolean,
+  ): Task<Member, unknown>[] {
     const t1 = new GetItemTask<FolderExtra>(member, this.itemService, { itemId });
 
     const t2 = new GetMemberItemMembershipOverItemTask(member, this.itemMembershipService);

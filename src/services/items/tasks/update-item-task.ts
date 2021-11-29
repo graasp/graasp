@@ -9,10 +9,12 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
-type InputType<E extends UnknownExtra> = { item?: Item<E>, data?: Partial<Item<E>> };
+type InputType<E extends UnknownExtra> = { item?: Item<E>; data?: Partial<Item<E>> };
 
 export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
-  get name(): string { return UpdateItemTask.name; }
+  get name(): string {
+    return UpdateItemTask.name;
+  }
 
   input: InputType<E>;
   getInput: () => InputType<E>;
@@ -40,9 +42,9 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
 
     // update item
     await this.preHookHandler?.(item, this.actor, { log, handler });
-    const resultItem = Object.keys(data).length ?
-      await this.itemService.update(item.id, data, handler) :
-      item;
+    const resultItem = Object.keys(data).length
+      ? await this.itemService.update(item.id, data, handler)
+      : item;
     await this.postHookHandler?.(resultItem, this.actor, { log, handler });
 
     this.status = 'OK';

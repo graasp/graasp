@@ -18,10 +18,7 @@ import { TaskManager } from './task-manager';
 const ROUTES_PREFIX = '/members';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    members,
-    taskRunner: runner,
-  } = fastify;
+  const { members, taskRunner: runner } = fastify;
 
   const { dbService } = members;
   const taskManager: MemberTaskManager = new TaskManager(dbService);

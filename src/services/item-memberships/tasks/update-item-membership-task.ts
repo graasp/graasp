@@ -20,10 +20,13 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
     // return main task's name so it is injected with the same hook handlers
     return UpdateItemMembershipTask.name;
   }
-  input: { itemMembershipId?: string, permission?: PermissionLevel };
+  input: { itemMembershipId?: string; permission?: PermissionLevel };
 
-  constructor(member: Member, itemMembershipService: ItemMembershipService,
-    input: { itemMembershipId?: string, permission?: PermissionLevel }) {
+  constructor(
+    member: Member,
+    itemMembershipService: ItemMembershipService,
+    input: { itemMembershipId?: string; permission?: PermissionLevel },
+  ) {
     super(member, itemMembershipService);
     this.input = input ?? {};
   }
@@ -35,7 +38,11 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
     this.targetId = itemMembershipId;
 
     await this.preHookHandler?.({ id: itemMembershipId, permission }, this.actor, { log, handler });
-    const itemMembership = await this.itemMembershipService.update(itemMembershipId, permission, handler);
+    const itemMembership = await this.itemMembershipService.update(
+      itemMembershipId,
+      permission,
+      handler,
+    );
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
@@ -44,13 +51,15 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
 }
 
 type InputType = {
-  itemMembership?: ItemMembership,
-  item?: Item,
-  data?: Partial<ItemMembership>
+  itemMembership?: ItemMembership;
+  item?: Item;
+  data?: Partial<ItemMembership>;
 };
 
 export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
-  get name(): string { return UpdateItemMembershipTask.name; }
+  get name(): string {
+    return UpdateItemMembershipTask.name;
+  }
   private subtasks: BaseItemMembershipTask<ItemMembership>[];
 
   input: InputType;
@@ -65,7 +74,10 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     return this.subtasks ? this.subtasks[this.subtasks.length - 1]?.result : this._result;
   }
 
-  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<BaseItemMembershipTask<ItemMembership>[]> {
+  async run(
+    handler: DatabaseTransactionHandler,
+    log: FastifyLoggerInstance,
+  ): Promise<BaseItemMembershipTask<ItemMembership>[]> {
     this.status = 'RUNNING';
 
     const { itemMembership, item, data } = this.input;
@@ -73,8 +85,11 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // check member's inherited membership
     const { memberId, id: itemMembershipId } = itemMembership;
-    const inheritedMembership =
-      await this.itemMembershipService.getInherited(memberId, item, handler);
+    const inheritedMembership = await this.itemMembershipService.getInherited(
+      memberId,
+      item,
+      handler,
+    );
 
     const { permission } = data;
 
@@ -83,9 +98,12 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
       if (permission === inheritedPermission) {
         // downgrading to same as the inherited, delete current membership
-        const deleteSubtask =
-          new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, { itemMembershipId });
-          
+        const deleteSubtask = new DeleteItemMembershipSubTask(
+          this.actor,
+          this.itemMembershipService,
+          { itemMembershipId },
+        );
+
         this.status = 'DELEGATED';
         this.subtasks = [deleteSubtask];
         return this.subtasks;
@@ -96,8 +114,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     }
 
     // check existing memberships lower in the tree
-    const membershipsBelow =
-      await this.itemMembershipService.getAllBelow(memberId, item, handler);
+    const membershipsBelow = await this.itemMembershipService.getAllBelow(memberId, item, handler);
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>
@@ -108,13 +125,18 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
         this.status = 'DELEGATED';
 
         // return subtasks to remove redundant existing memberships and to update the existing one
-        this.subtasks = membershipsBelowToDiscard
-          .map(m => new DeleteItemMembershipSubTask(
-            this.actor, this.itemMembershipService, { itemMembershipId: m.id }
-          ));
-        this.subtasks.push(new UpdateItemMembershipSubTask(
-          this.actor, this.itemMembershipService, { itemMembershipId, permission }
-        ));
+        this.subtasks = membershipsBelowToDiscard.map(
+          (m) =>
+            new DeleteItemMembershipSubTask(this.actor, this.itemMembershipService, {
+              itemMembershipId: m.id,
+            }),
+        );
+        this.subtasks.push(
+          new UpdateItemMembershipSubTask(this.actor, this.itemMembershipService, {
+            itemMembershipId,
+            permission,
+          }),
+        );
 
         return this.subtasks;
       }
@@ -122,8 +144,11 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // update membership
     await this.preHookHandler?.({ id: itemMembershipId, permission }, this.actor, { log, handler });
-    const updatedItemMembership =
-      await this.itemMembershipService.update(itemMembershipId, permission, handler);
+    const updatedItemMembership = await this.itemMembershipService.update(
+      itemMembershipId,
+      permission,
+      handler,
+    );
     await this.postHookHandler?.(updatedItemMembership, this.actor, { log, handler });
 
     this.status = 'OK';
