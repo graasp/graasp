@@ -4922,10 +4922,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-item-tags@github:graasp/graasp-item-tags#9/shouldCopyTags":
+"graasp-item-tags@github:graasp/graasp-item-tags":
   version: 0.1.0
-  resolution: "graasp-item-tags@https://github.com/graasp/graasp-item-tags.git#commit=a3185275f1feadb6ac51df461e2ba1184b2e51d6"
-  checksum: a26f74547f844a84d26e8cfbca5e95e02ce8bed60e7bffc8b158c6f75818922b646ff060381acce4da9155642d57606f605848206dae057a56dff79d1ae037df
+  resolution: "graasp-item-tags@https://github.com/graasp/graasp-item-tags.git#commit=1f92e0bb15c6aeedf0a0faee9676a5c11a11e800"
+  checksum: 47b4aedfac819ab0931fad9a3befacca2aaaeead8570110972e2897fe2444232aeb4cef4918c156cedca1bcef00cb2068132ed9ae81f1bfd7ec0ad2c7fe15d1a
   languageName: node
   linkType: hard
 
@@ -4975,9 +4975,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-public@github:graasp/graasp-plugin-public#18/shouldCopyTags":
+"graasp-plugin-public@github:graasp/graasp-plugin-public":
   version: 0.1.0
-  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=c7c905c8e0ee43dfb3c52d2651d418932f07945b"
+  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=ab711fbee0748347733e089a3e5624837904e16b"
   dependencies:
     aws-sdk: ^2.793.0
     fastify-cors: ^6.0.2
@@ -4986,7 +4986,7 @@ __metadata:
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     http-status-codes: ^2.1.4
     qs: ^6.10.1
-  checksum: 700b8c183c7d67bdfb068e2dca7001e813d24970ceb619cb5e95d05c1871e25d2cdfa04117de9d3700f356312e0b1c223aa003518acfaab1ded1ce041a9aa724
+  checksum: 9c0d4ca3ebd622b1ca3b890b01562beb94df6d8ee43ec5cb5eaf55a4ccfef39f5b215511b15fee5f7380db881eb2411f1a780ca815ff2bde83a0d81d6d92644d
   languageName: node
   linkType: hard
 
@@ -5073,12 +5073,12 @@ __metadata:
     graasp-document-item: "github:graasp/graasp-document-item"
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
     graasp-item-flagging: "github:graasp/graasp-item-flagging"
-    graasp-item-tags: "github:graasp/graasp-item-tags#9/shouldCopyTags"
+    graasp-item-tags: "github:graasp/graasp-item-tags"
     graasp-mailer: "github:graasp/graasp-mailer"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
-    graasp-plugin-public: "github:graasp/graasp-plugin-public#18/shouldCopyTags"
+    graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-s3-file-item: "github:graasp/graasp-plugin-s3-file-item"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
