@@ -10,7 +10,10 @@ import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import { FileItemPlugin } from 'graasp-plugin-file-item';
-import ThumbnailsPlugin, { buildFilePath, mimetype } from 'graasp-plugin-thumbnails';
+import ThumbnailsPlugin, {
+  buildFilePathWithPrefix,
+  THUMBNAIL_MIMETYPE,
+} from 'graasp-plugin-thumbnails';
 import { ServiceMethod } from 'graasp-plugin-file';
 
 import {
@@ -94,7 +97,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        const pathPrefix = '/items/';
+        const pathPrefix = 'items/';
 
         fastify.register(ThumbnailsPlugin, {
           serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
@@ -102,11 +105,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
-          appsTemplateRoot: '/apps',
           pathPrefix: pathPrefix,
+          enableItemsHooks: true,
 
           uploadPreHookTasks: async (id, { member }) => {
-            const tasks = membership.createGetOfItemTaskSequence(member, id);
+            const tasks = membership.createGetOfItemTaskSequence(member, id.parentId);
             tasks[1].input = { validatePermission: PermissionLevel.Write };
             return tasks;
           },
@@ -115,23 +118,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             tasks[1].input = { validatePermission: PermissionLevel.Read };
             const last = tasks[tasks.length - 1];
             last.getResult = () => ({
-              filepath: buildFilePath((tasks[0].result as Item).id, pathPrefix, filename),
-              mimetype: mimetype,
+              filepath: buildFilePathWithPrefix({
+                itemId: (tasks[0].result as Item).id,
+                pathPrefix,
+                filename,
+              }),
+              mimetype: THUMBNAIL_MIMETYPE,
             });
             return tasks;
           },
 
-          prefix: '/thumbnails'
+          prefix: '/thumbnails',
         });
 
         fastify.register(FileItemPlugin, {
           shouldLimit: true,
-          storageRootPath: '/files/',
+          pathPrefix: 'files/',
           serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
           serviceOptions: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
-          }
+          },
         });
 
         if (EMBEDDED_LINK_ITEM_PLUGIN) {

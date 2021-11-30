@@ -2,7 +2,10 @@
 import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from 'fastify-cors';
 import { ServiceMethod } from 'graasp-plugin-file';
-import ThumbnailsPlugin, { buildFilePath, mimetype } from 'graasp-plugin-thumbnails';
+import ThumbnailsPlugin, {
+  buildFilePathWithPrefix,
+  THUMBNAIL_MIMETYPE,
+} from 'graasp-plugin-thumbnails';
 import { IdParam, IdsParams } from '../../interfaces/requests';
 // local
 import {
@@ -20,10 +23,7 @@ import { TaskManager } from './task-manager';
 const ROUTES_PREFIX = '/members';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    members,
-    taskRunner: runner,
-  } = fastify;
+  const { members, taskRunner: runner } = fastify;
 
   const { dbService } = members;
   const taskManager: MemberTaskManager = new TaskManager(dbService);
@@ -46,7 +46,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
       fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
-      const pathPrefix = '/avatars/';
+      const pathPrefix = 'avatars/';
 
       fastify.register(ThumbnailsPlugin, {
         serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
@@ -54,10 +54,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
           local: FILE_ITEM_PLUGIN_OPTIONS,
         },
-        appsTemplateRoot: '/apps',
         pathPrefix: pathPrefix,
 
-        uploadPreHookTasks: async (id, { member }) => {
+        uploadPreHookTasks: async ({ parentId: id }, { member }) => {
           if (member.id !== id) {
             throw new CannotModifyOtherMembers(member.id);
           }
@@ -66,8 +65,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         downloadPreHookTasks: async ({ itemId: id, filename }, { member }) => {
           const task = taskManager.createGetTask(member, id);
           task.getResult = () => ({
-            filepath: buildFilePath((task.result as Member).id, pathPrefix, filename),
-            mimetype: mimetype,
+            filepath: buildFilePathWithPrefix({
+              itemId: (task.result as Member).id,
+              pathPrefix,
+              filename,
+            }),
+            mimetype: THUMBNAIL_MIMETYPE,
           });
 
           return [task];
