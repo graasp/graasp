@@ -4942,6 +4942,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graasp-plugin-categories@github:graasp/graasp-plugin-categories":
+  version: 0.1.0
+  resolution: "graasp-plugin-categories@https://github.com/graasp/graasp-plugin-categories.git#commit=befea42bce557232439b7d1faa59697f1c7ec36b"
+  checksum: b32e882c87118a749582754053021fb111f29a92e8d0308852be02eef750c3b57073d19df824b0bf0e90bac20e9be2b49bba0b2b4df9fe51f771d5473cd02ea4
+  languageName: node
+  linkType: hard
+
 "graasp-plugin-chatbox@github:graasp/graasp-plugin-chatbox":
   version: 1.0.0
   resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=8adea4164c5e73cb461f41f7ed821b910bbf1487"
@@ -5075,6 +5082,7 @@ __metadata:
     graasp-item-flagging: "github:graasp/graasp-item-flagging"
     graasp-item-tags: "github:graasp/graasp-item-tags"
     graasp-mailer: "github:graasp/graasp-mailer"
+    graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
