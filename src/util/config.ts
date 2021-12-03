@@ -101,7 +101,7 @@ export const MAX_TREE_LEVELS = 15;
 /**
  * Maximun number of children an item can have
  */
-export const MAX_NUMBER_OF_CHILDREN = 10;
+export const MAX_NUMBER_OF_CHILDREN = 30;
 /**
  * Maximun number of descendants (in the item's subtree) for a `delete`
  */
