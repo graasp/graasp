@@ -31,6 +31,7 @@ import ItemsServiceApi from './services/items/service-api';
 import ItemMembershipsServiceApi from './services/item-memberships/service-api';
 import MemberServiceApi from './services/members/service-api';
 import decoratorPlugin from './plugins/decorator';
+import { ServiceMethod } from 'graasp-plugin-file';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
@@ -74,7 +75,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     await instance.register(graaspPluginPublic, {
       tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
       graaspActor: GRAASP_ACTOR,
-      enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
+      serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
       // native fastify option
       prefix: '/p',
     });

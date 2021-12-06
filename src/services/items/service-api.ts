@@ -72,11 +72,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
   fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
+  const serviceMethod =  S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL;
+
   // deployed w/o the '/items' prefix and w/o auth pre-handler
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET, serviceMethod: serviceMethod });
   }
 
   fastify.register(
@@ -100,14 +102,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const pathPrefix = 'items/';
 
         fastify.register(ThumbnailsPlugin, {
-          serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
+          serviceMethod: serviceMethod,
           serviceOptions: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
           pathPrefix: pathPrefix,
           enableItemsHooks: true,
-
           uploadPreHookTasks: async (id, { member }) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id.parentId);
             tasks[1].input = { validatePermission: PermissionLevel.Write };
