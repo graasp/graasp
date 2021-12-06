@@ -179,6 +179,7 @@ export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // Graasp public items
 export const PUBLIC_PLUGIN = process.env.PUBLIC_PLUGIN === 'true';
+export const PUBLISHED_TAG_ID = process.env.PUBLISHED_TAG_ID;
 
 // Graasp chatbox plugin
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';

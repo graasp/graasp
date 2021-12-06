@@ -45,7 +45,7 @@
     "fastify-auth": "^1.1.0",
     "fastify-bearer-auth": "^6.0.0",
     "fastify-compress": "^3.6.0",
-    "fastify-cors": "^4.1.0",
+    "fastify-cors": "^6.0.2",
     "fastify-helmet": "^5.3.2",
     "fastify-plugin": "^3.0.0",
     "fastify-secure-session": "^2.3.1",

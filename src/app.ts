@@ -17,7 +17,7 @@ import {
   REDIS_PASSWORD,
   PUBLIC_PLUGIN,
   S3_FILE_ITEM_PLUGIN,
-  GRAASP_ACTOR,
+  GRAASP_ACTOR,PUBLISHED_TAG_ID
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -77,6 +77,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
         enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
         // native fastify option
         prefix: '/p',
+        publishedTagId: PUBLISHED_TAG_ID
       });
     }
   });
