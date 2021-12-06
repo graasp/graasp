@@ -5138,11 +5138,11 @@ __metadata:
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#18/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=873745b23d4aeb163f7ce1a9127a7aa11aa28f47"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=5e8d320b572dfb8bc015722488163a38e7b33043"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
-  checksum: 82de4e3e9d0fa399bd7955677eaa0ab0e762cd178b7d5a3e40ded5fb1698a75fb80b4849a60c5324fdcfca3278f9704dfea97ed440dcfb88b911c11efa1703f2
+  checksum: b046c38f62ce869fb303778606b1d74fcd38e51b215323854aab235219b1351ea645d3bf0f0825a42dffe0380bee22df5cc171b254b5b28500e7625bce16b57d
   languageName: node
   linkType: hard
 
@@ -5170,7 +5170,7 @@ __metadata:
 
 "graasp-plugin-public@github:graasp/graasp-plugin-public#23/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=df9d932e9b12998bafc045cc62d910972ecc6cb0"
+  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=02573dd05cb931f80ff43da900fd7e40996fe77e"
   dependencies:
     fastify-cors: ^6.0.2
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
@@ -5178,7 +5178,7 @@ __metadata:
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails#9/newFilePlugin"
     http-status-codes: ^2.1.4
     qs: ^6.10.1
-  checksum: d2ebc79b7df343e2114b82ee9a483184e6be00b35c6d52376aab53e75f66eabb6699227f70fdc3c0a17b57d791988a0c144c2790bc8e5ff76af9bb44a0a4e862
+  checksum: fcb4a90d196fff3404856ddc9b40cb9dc8d12bf87611988f5f8154d2422ce07fad5f2a57f9809fe70733a159871e5a823f035ad427b10228ea261d001805e12f
   languageName: node
   linkType: hard
 

@@ -1,8 +1,7 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from 'fastify-cors';
-import { ServiceMethod } from 'graasp-plugin-file';
-import ThumbnailsPlugin, {
+import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
 } from 'graasp-plugin-thumbnails';
@@ -10,8 +9,9 @@ import { IdParam, IdsParams } from '../../interfaces/requests';
 // local
 import {
   FILE_ITEM_PLUGIN_OPTIONS,
-  S3_FILE_ITEM_PLUGIN,
+  SERVICE_METHOD,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
+  AVATARS_PATH_PREFIX,
 } from '../../util/config';
 import { CannotModifyOtherMembers } from '../../util/graasp-error';
 import { Member } from './interfaces/member';
@@ -46,15 +46,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
       fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
-      const pathPrefix = 'avatars/';
-
-      fastify.register(ThumbnailsPlugin, {
-        serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
+      fastify.register(thumbnailsPlugin, {
+        serviceMethod: SERVICE_METHOD,
         serviceOptions: {
           s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
           local: FILE_ITEM_PLUGIN_OPTIONS,
         },
-        pathPrefix: pathPrefix,
+        pathPrefix: AVATARS_PATH_PREFIX,
 
         uploadPreHookTasks: async ({ parentId: id }, { member }) => {
           if (member.id !== id) {
@@ -67,7 +65,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           task.getResult = () => ({
             filepath: buildFilePathWithPrefix({
               itemId: (task.result as Member).id,
-              pathPrefix,
+              pathPrefix: AVATARS_PATH_PREFIX,
               filename,
             }),
             mimetype: THUMBNAIL_MIMETYPE,

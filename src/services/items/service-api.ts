@@ -9,16 +9,14 @@ import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
-import { FileItemPlugin } from 'graasp-plugin-file-item';
-import ThumbnailsPlugin, {
+import fileItemPlugin from 'graasp-plugin-file-item';
+import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
 } from 'graasp-plugin-thumbnails';
-import { ServiceMethod } from 'graasp-plugin-file';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-  S3_FILE_ITEM_PLUGIN,
   EMBEDDED_LINK_ITEM_PLUGIN,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   GRAASP_ACTOR,
@@ -27,7 +25,10 @@ import {
   CHATBOX_PLUGIN,
   WEBSOCKETS_PLUGIN,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
+  FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
+  SERVICE_METHOD,
+  THUMBNAILS_PATH_PREFIX,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -72,13 +73,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
   fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
-  const serviceMethod =  S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL;
-
   // deployed w/o the '/items' prefix and w/o auth pre-handler
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET, serviceMethod: serviceMethod });
+    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET, serviceMethod: SERVICE_METHOD });
   }
 
   fastify.register(
@@ -99,15 +98,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        const pathPrefix = 'items/';
-
-        fastify.register(ThumbnailsPlugin, {
-          serviceMethod: serviceMethod,
+        fastify.register(thumbnailsPlugin, {
+          serviceMethod: SERVICE_METHOD,
           serviceOptions: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
-          pathPrefix: pathPrefix,
+          pathPrefix: THUMBNAILS_PATH_PREFIX,
           enableItemsHooks: true,
           uploadPreHookTasks: async (id, { member }) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id.parentId);
@@ -121,7 +118,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             last.getResult = () => ({
               filepath: buildFilePathWithPrefix({
                 itemId: (tasks[0].result as Item).id,
-                pathPrefix,
+                pathPrefix: THUMBNAILS_PATH_PREFIX,
                 filename,
               }),
               mimetype: THUMBNAIL_MIMETYPE,
@@ -132,10 +129,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           prefix: '/thumbnails',
         });
 
-        fastify.register(FileItemPlugin, {
+        fastify.register(fileItemPlugin, {
           shouldLimit: true,
-          pathPrefix: 'files/',
-          serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
+          pathPrefix: FILES_PATH_PREFIX,
+          serviceMethod: SERVICE_METHOD,
           serviceOptions: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,

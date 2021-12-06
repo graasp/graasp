@@ -16,8 +16,10 @@ import {
   REDIS_USERNAME,
   REDIS_PASSWORD,
   PUBLIC_PLUGIN,
-  S3_FILE_ITEM_PLUGIN,
   GRAASP_ACTOR,
+  SERVICE_METHOD,
+  AVATARS_PATH_PREFIX,
+  FILES_PATH_PREFIX,
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -31,7 +33,7 @@ import ItemsServiceApi from './services/items/service-api';
 import ItemMembershipsServiceApi from './services/item-memberships/service-api';
 import MemberServiceApi from './services/members/service-api';
 import decoratorPlugin from './plugins/decorator';
-import { ServiceMethod } from 'graasp-plugin-file';
+import { THUMBNAIL_PATH_PREFIX } from 'graasp-plugin-thumbnails/dist/utils/constants';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
@@ -75,7 +77,12 @@ export default async function (instance: FastifyInstance): Promise<void> {
     await instance.register(graaspPluginPublic, {
       tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
       graaspActor: GRAASP_ACTOR,
-      serviceMethod: S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL,
+      serviceMethod: SERVICE_METHOD,
+      prefixes: {
+        avatarsPrefix: AVATARS_PATH_PREFIX,
+        filesPrefix: FILES_PATH_PREFIX,
+        thumbnailsPrefix: THUMBNAIL_PATH_PREFIX,
+      },
       // native fastify option
       prefix: '/p',
     });
