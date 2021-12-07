@@ -1104,15 +1104,15 @@ __metadata:
   linkType: hard
 
 "@types/babel__core@npm:^7.0.0, @types/babel__core@npm:^7.1.14, @types/babel__core@npm:^7.1.7":
-  version: 7.1.16
-  resolution: "@types/babel__core@npm:7.1.16"
+  version: 7.1.17
+  resolution: "@types/babel__core@npm:7.1.17"
   dependencies:
     "@babel/parser": ^7.1.0
     "@babel/types": ^7.0.0
     "@types/babel__generator": "*"
     "@types/babel__template": "*"
     "@types/babel__traverse": "*"
-  checksum: d5aa154ce8c63e5fd47f5b9286a2689eea1e6dd3e1005b0c608bfe72363a44cb32be1e104f81d4b976e8a9f1f802d03184e64a055984fd43a359c5518a0f94cf
+  checksum: 0108efab8acb6a8e0aab6f8113d5ef1fc4b58d40737aa70a3ee83112959e0880e5548374e7edb562e4e837cde4ae47265348b04eb7e684283b0dea418d013420
   languageName: node
   linkType: hard
 
@@ -1264,9 +1264,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 16.11.11
-  resolution: "@types/node@npm:16.11.11"
-  checksum: 1c472bd63f23ca0e4effc96e6e0c693b83b027f613a1f41b6d1bd7791f65ce171a351e0a5c92575cb59e84ad0a930875397bfbbb91a7c925ddbbb558f7461af8
+  version: 16.11.12
+  resolution: "@types/node@npm:16.11.12"
+  checksum: a3feb346d61a56f5a137c29bb8c63cfa3cc02e184b9dffdc18ef1528dcce55596e570575215a2e39e6ce69343eeb2a5ba71c271938f1dc8db4cc393902855412
   languageName: node
   linkType: hard
 
@@ -1946,8 +1946,8 @@ __metadata:
   linkType: hard
 
 "aws-sdk@npm:^2.793.0":
-  version: 2.1043.0
-  resolution: "aws-sdk@npm:2.1043.0"
+  version: 2.1044.0
+  resolution: "aws-sdk@npm:2.1044.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -1958,7 +1958,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: 12d00ce47a8c638cc5f0f30efc58ce39719a4f5fb19edeb7d8c4408694a524d0d5965dcdccf5399dd0e37fec788e0cda28eb51343c9ba0572d8b9c647897b918
+  checksum: 51c043cdd3e8faf8561f076a436159d2ffd9edd59a486a7181ef6704fe80580b5e624da31fd1ad19d7209d74912d120290f1c456202ad17eb6e6cc6a88c6d26a
   languageName: node
   linkType: hard
 
@@ -3509,9 +3509,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.896":
-  version: 1.4.11
-  resolution: "electron-to-chromium@npm:1.4.11"
-  checksum: 5dc6dafa8afd73ec451aced78570c75bd39abca6c7bb464664b886566db0a532f182a86aa3ec53948b5f4d15e3ed0dbeed7d7ddeb6fb18e73875f114aa1c9847
+  version: 1.4.12
+  resolution: "electron-to-chromium@npm:1.4.12"
+  checksum: 3a7571e9ca069d19251c11a4ed71953c16ff056c6ae77bc0a841d488c401613c9545189da8394f4da47d7a56ce081c5b78546fa1d1aaa76625a8e490defd8967
   languageName: node
   linkType: hard
 
@@ -5196,12 +5196,12 @@ __metadata:
 
 "graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails#9/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=eb7fe23b9334b59bfd34750966e81722846061fe"
+  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=dbfcd01a5675be548f51b10cb472868b03aed594"
   dependencies:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#18/newFilePlugin"
     sharp: 0.29.1
-  checksum: b95e81f3404390f234c8ed105158746d4362680cdda734a391f8d94afccea0f690e1450d6cebfd86756752e62ac663c62ec8aaf6a3919bb49ebe63fa92ed3a25
+  checksum: 23e67585d3b84e9cbdbdad623075623050a5607882905bb837902533cfaeb24aa22853d5b673ef60285c53410fe173454f8f5f79e3bab819ac1e4e6a7808a3f4
   languageName: node
   linkType: hard
 
@@ -8039,11 +8039,11 @@ __metadata:
   linkType: hard
 
 "minipass@npm:^3.0.0, minipass@npm:^3.1.0, minipass@npm:^3.1.1, minipass@npm:^3.1.3, minipass@npm:^3.1.5":
-  version: 3.1.5
-  resolution: "minipass@npm:3.1.5"
+  version: 3.1.6
+  resolution: "minipass@npm:3.1.6"
   dependencies:
     yallist: ^4.0.0
-  checksum: 8b410b9a5bd99ceb9d63c895891d1c30511791fdc7b717da4cf9403ca2419bc57af63b8485ffdaa421ef6cff56f63ae0b2f5135f8df502d21296e8c91460ebf9
+  checksum: 57a04041413a3531a65062452cb5175f93383ef245d6f4a2961d34386eb9aa8ac11ac7f16f791f5e8bbaf1dfb1ef01596870c88e8822215db57aa591a5bb0a77
   languageName: node
   linkType: hard
 
