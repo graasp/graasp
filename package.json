@@ -57,7 +57,7 @@
     "graasp-item-tags": "github:graasp/graasp-item-tags",
     "graasp-mailer": "github:graasp/graasp-mailer",
     "graasp-plugin-chatbox": "github:graasp/graasp-plugin-chatbox",
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file#3/fixS3",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item#18/newFilePlugin",
     "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public#23/newFilePlugin",
