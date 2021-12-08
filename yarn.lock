@@ -4957,7 +4957,7 @@ __metadata:
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#18/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=a4337e6560e3f0ca80839a5eb03dea3b829062c8"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=15fc2096fea1a90a09aeeb626f0308c21bc5ef10"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file#3/fixS3"
@@ -4979,13 +4979,13 @@ __metadata:
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file#3/fixS3":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=957ae59a46155f462632155ec17e7b2caa520b2f"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=e6783188692ba97e47f7471888adde440e12b851"
   dependencies:
     aws-sdk: ^2.793.0
     content-disposition: 0.5.3
     fastify-multipart: 5.1.0
     http-status-codes: 2.1.4
-  checksum: 12fa79e182bee102e549b3882bedbfa3cc83ef45c2c73f2ec0f5340453970e7fab9a2582d3cf310ca0c96d2af1e8d830f6d9c32f6cce603f380c985480daeb80
+  checksum: ff60d5d45308617040c3198ed7071af550c39c005ccf0bc337b8a096645d5ee2969d69aa6f825865b6955cfda3f8e45d9767fb09aa6cb19a6729854ebcca4457
   languageName: node
   linkType: hard
 
@@ -5027,7 +5027,7 @@ __metadata:
 
 "graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails#9/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=79d2d007fc9465f307f9e9bf38c94800c7554b31"
+  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=2c8ab1187254dd9eb113fa05462c448d3e711cda"
   dependencies:
     graasp-plugin-file: "github:graasp/graasp-plugin-file#3/fixS3"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#18/newFilePlugin"
