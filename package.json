@@ -60,6 +60,7 @@
     "graasp-plugin-chatbox": "github:graasp/graasp-plugin-chatbox",
     "graasp-plugin-file": "github:graasp/graasp-plugin-file",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
+    "graasp-plugin-import-zip": "github:graasp/graasp-plugin-import-zip#1/init",
     "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "graasp-plugin-recycle-bin": "github:graasp/graasp-plugin-recycle-bin",
