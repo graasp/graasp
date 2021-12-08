@@ -4957,11 +4957,11 @@ __metadata:
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#18/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=bb889e78d648ddc3568b5e0dfc04c398cf2e67d5"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=9f0644b8c50c689c3689d9fe258c685e4c51ce47"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file#3/fixS3"
-  checksum: b8ae7641be94c77b6de3d01bd0b3ff1c705f09a8c67d5e2947f99fb9c654f932b81951b85a7ada0735e502cd19fc8b90fef463e00ed572d77208acb9581d0549
+  checksum: d543da9394bbd51ab9df022fd1c91293207d947596407eb0dd1de6a9b37eff177f44405cdbb149d8c88966bce0fe2e29ce2d1863df34353eb0c01cb6fb78567a
   languageName: node
   linkType: hard
 
