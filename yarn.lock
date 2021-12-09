@@ -1946,8 +1946,8 @@ __metadata:
   linkType: hard
 
 "aws-sdk@npm:^2.793.0":
-  version: 2.1044.0
-  resolution: "aws-sdk@npm:2.1044.0"
+  version: 2.1045.0
+  resolution: "aws-sdk@npm:2.1045.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -1958,7 +1958,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: 51c043cdd3e8faf8561f076a436159d2ffd9edd59a486a7181ef6704fe80580b5e624da31fd1ad19d7209d74912d120290f1c456202ad17eb6e6cc6a88c6d26a
+  checksum: 249f5e5c3a4151371b466c16cb6fef365dc1b74939164f4a63c0b346da545641d051cb1d66abd013f50fdde884c280642ba21af6ae7d8dcf898f36d629b44e38
   languageName: node
   linkType: hard
 
@@ -2505,9 +2505,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001280":
-  version: 1.0.30001285
-  resolution: "caniuse-lite@npm:1.0.30001285"
-  checksum: 03abdcea913961f4484a7e9494482a0e8a32d6b2305e3922196d0672897c043ac2e1ce884c69730921400c7cddb41ae27a9fcfdaa7d82d11a75d7331393ab5c6
+  version: 1.0.30001286
+  resolution: "caniuse-lite@npm:1.0.30001286"
+  checksum: 04de4742552d4aeb713677b40693d9ac1fbd259573e0ff739565278bcecb6f398f3227546a4e930f4d5cf95b61458f4a53c9c1f90f5b0c4f6063b32e4c54b89e
   languageName: node
   linkType: hard
 
@@ -3509,9 +3509,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.896":
-  version: 1.4.13
-  resolution: "electron-to-chromium@npm:1.4.13"
-  checksum: ee45662aff47e0b809cad13bbd9d0e74c00b5b36f3420cda7346dc7be6ff187b4ebae06521b638dfb193ce2fe4408ce4b436ca7711eb793c149dd0d1bf4b0b03
+  version: 1.4.14
+  resolution: "electron-to-chromium@npm:1.4.14"
+  checksum: 7aaf299d9c6a4f1652e05595e5e8b5460197edc6f004341aa7935825fcd3c82c7260a461a4c15ef5c212fe00ee2e96d51e8111fc53f61cd1fca8913a542caba2
   languageName: node
   linkType: hard
 
@@ -4957,11 +4957,11 @@ __metadata:
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#18/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=9f0644b8c50c689c3689d9fe258c685e4c51ce47"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=6aeb57bd57646b819ccc55be2c2fc14238843ffe"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file#3/fixS3"
-  checksum: d543da9394bbd51ab9df022fd1c91293207d947596407eb0dd1de6a9b37eff177f44405cdbb149d8c88966bce0fe2e29ce2d1863df34353eb0c01cb6fb78567a
+  checksum: 7de58a037bbc5068b3de176990cdb6080ecd956025cde4461dd91dbe48de17e6c79c5efae2c6229c576db46d144eaedad12a541386b912fef8a59482599f4bfe
   languageName: node
   linkType: hard
 
@@ -4979,13 +4979,13 @@ __metadata:
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file#3/fixS3":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=94de2f0e51efdc4413dbc7748c390919872e37a7"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=bdc8831b5b40312f80746e18bd1254b9f0ae3e5a"
   dependencies:
     aws-sdk: ^2.793.0
     content-disposition: 0.5.3
     fastify-multipart: 5.1.0
     http-status-codes: 2.1.4
-  checksum: 3fc556d73e440f7138002f310cbd542cda579b0008408d4656a070c21fb0eae0ea91a0290eed3bb73155a09adf481f6e9ff46e2d3bf47f0ed375f74f223c2c80
+  checksum: ed2cc32f7232af99d6ad64cb79bf7639d8ec4d951286b700fc8d917130b9bdf5757b0aa63b130a766049344a0ebb70614b0fd7cf211bd1e529aba7ea0d9e82fb
   languageName: node
   linkType: hard
 
@@ -5027,7 +5027,7 @@ __metadata:
 
 "graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails#9/newFilePlugin":
   version: 0.1.0
-  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=0c607880c6acf163348a7902aef0a9d9f636417b"
+  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=3bbc486276c87911dd868a05cdb79e3a745d719b"
   dependencies:
     graasp-plugin-file: "github:graasp/graasp-plugin-file#3/fixS3"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#18/newFilePlugin"
@@ -5064,6 +5064,7 @@ __metadata:
     "@types/uuid": ^8.3.1
     "@typescript-eslint/eslint-plugin": ^4.28.2
     "@typescript-eslint/parser": ^4.28.2
+    aws-sdk: ^2.793.0
     chai: ^4.3.4
     concurrently: ^5.3.0
     dotenv: ^8.6.0
