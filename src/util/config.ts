@@ -105,7 +105,7 @@ export const MAX_NUMBER_OF_CHILDREN = 30;
 /**
  * Maximun number of descendants (in the item's subtree) for a `delete`
  */
-export const MAX_DESCENDANTS_FOR_DELETE = 5;
+export const MAX_DESCENDANTS_FOR_DELETE = 15;
 /**
  * Maximun number of descendants (in the item's subtree) for a `update`
  */
@@ -113,11 +113,11 @@ export const MAX_DESCENDANTS_FOR_UPDATE = 5;
 /**
  * Maximun number of descendants (in the item's subtree) for a `move`
  */
-export const MAX_DESCENDANTS_FOR_MOVE = 15;
+export const MAX_DESCENDANTS_FOR_MOVE = 40;
 /**
  * Maximun number of descendants (in the item's subtree) for a `copy`
  */
-export const MAX_DESCENDANTS_FOR_COPY = 20;
+export const MAX_DESCENDANTS_FOR_COPY = 40;
 
 /**
  * Maximun number of item memberships when deleting all "under" an item
