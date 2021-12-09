@@ -93,7 +93,7 @@ PORT=3000
 # EMAIL_LINKS_HOST=
 # CLIENT_HOST=
 # COOKIE_DOMAIN=
-CORS_ORIGIN_REGEX=<frontend-url>
+CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
 # Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
 SECURE_SESSION_SECRET_KEY=<content>
