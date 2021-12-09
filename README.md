@@ -85,7 +85,7 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 To configure the application, you'll need to change the values in  `development.env`. The file should have the following structure :
 
-```` 
+````
 # Application server
 # PROTOCOL=http
 # HOSTNAME=localhost
@@ -93,7 +93,7 @@ PORT=3000
 # EMAIL_LINKS_HOST=
 # CLIENT_HOST=
 # COOKIE_DOMAIN=
-# CORS_ORIGIN_REGEX=
+CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
 # Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
 SECURE_SESSION_SECRET_KEY=<content>
