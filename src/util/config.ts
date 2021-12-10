@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { ServiceMethod } from 'graasp-plugin-file';
 
 enum Environment {
   production = 'production',
@@ -160,6 +161,8 @@ export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
 
+export const SERVICE_METHOD = S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL;
+
 // Graasp embedded link item
 // TODO: should this be here?
 export const EMBEDDED_LINK_ITEM_PLUGIN = process.env.EMBEDDED_LINK_ITEM_PLUGIN === 'true';
@@ -190,5 +193,9 @@ export const S3_FILE_ITEM_PLUGIN_OPTIONS = {
   s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
   s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
 };
+
+export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
+export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
+export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
 
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };

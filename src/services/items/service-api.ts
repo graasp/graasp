@@ -1,7 +1,5 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
-import graaspFileItem from 'graasp-plugin-file-item';
-import graaspPluginS3FileItem from 'graasp-plugin-s3-file-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
@@ -12,11 +10,14 @@ import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
-import graaspPluginThumbnails from 'graasp-plugin-thumbnails';
+import fileItemPlugin from 'graasp-plugin-file-item';
+import thumbnailsPlugin, {
+  buildFilePathWithPrefix,
+  THUMBNAIL_MIMETYPE,
+} from 'graasp-plugin-thumbnails';
 
 import {
   MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-  S3_FILE_ITEM_PLUGIN,
   EMBEDDED_LINK_ITEM_PLUGIN,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   GRAASP_ACTOR,
@@ -25,7 +26,10 @@ import {
   CHATBOX_PLUGIN,
   WEBSOCKETS_PLUGIN,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
+  FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
+  SERVICE_METHOD,
+  THUMBNAILS_PATH_PREFIX,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -49,6 +53,7 @@ import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
 import { registerItemWsHooks } from './ws/hooks';
 import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
+import { Item } from './interfaces/item';
 
 const ROUTES_PREFIX = '/items';
 
@@ -73,7 +78,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET });
+    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET, serviceMethod: SERVICE_METHOD, thumbnailsPrefix: THUMBNAILS_PATH_PREFIX });
   }
 
   fastify.register(
@@ -94,29 +99,46 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        await fastify.register(graaspPluginThumbnails, {
-          enableS3FileItemPlugin: S3_FILE_ITEM_PLUGIN,
+        fastify.register(thumbnailsPlugin, {
+          serviceMethod: SERVICE_METHOD,
+          serviceOptions: {
+            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+            local: FILE_ITEM_PLUGIN_OPTIONS,
+          },
+          pathPrefix: THUMBNAILS_PATH_PREFIX,
           enableItemsHooks: true,
-          pluginStoragePrefix: 'thumbnails/items',
-          uploadValidation: async (id, member) => {
-            const tasks = membership.createGetOfItemTaskSequence(member, id);
+          uploadPreHookTasks: async (id, { member }) => {
+            const tasks = membership.createGetOfItemTaskSequence(member, id.parentId);
             tasks[1].input = { validatePermission: PermissionLevel.Write };
             return tasks;
           },
-          downloadValidation: async (id, member) => {
+          downloadPreHookTasks: async ({ itemId: id, filename }, { member }) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id);
             tasks[1].input = { validatePermission: PermissionLevel.Read };
+            const last = tasks[tasks.length - 1];
+            last.getResult = () => ({
+              filepath: buildFilePathWithPrefix({
+                itemId: (tasks[0].result as Item).id,
+                pathPrefix: THUMBNAILS_PATH_PREFIX,
+                filename,
+              }),
+              mimetype: THUMBNAIL_MIMETYPE,
+            });
             return tasks;
           },
-          // endpoint
+
           prefix: '/thumbnails',
         });
 
-        if (S3_FILE_ITEM_PLUGIN) {
-          fastify.register(graaspPluginS3FileItem, S3_FILE_ITEM_PLUGIN_OPTIONS);
-        } else {
-          fastify.register(graaspFileItem, FILE_ITEM_PLUGIN_OPTIONS);
-        }
+        fastify.register(fileItemPlugin, {
+          shouldLimit: true,
+          pathPrefix: FILES_PATH_PREFIX,
+          serviceMethod: SERVICE_METHOD,
+          serviceOptions: {
+            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+            local: FILE_ITEM_PLUGIN_OPTIONS,
+          },
+        });
 
         if (EMBEDDED_LINK_ITEM_PLUGIN) {
           // 'await' necessary because internally it uses 'extendCreateSchema'
