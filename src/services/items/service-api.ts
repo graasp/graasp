@@ -78,7 +78,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET, serviceMethod: SERVICE_METHOD });
+    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET, serviceMethod: SERVICE_METHOD, thumbnailsPrefix: THUMBNAILS_PATH_PREFIX });
   }
 
   fastify.register(
