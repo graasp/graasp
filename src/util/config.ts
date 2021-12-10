@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { ServiceMethod } from 'graasp-plugin-file';
+import S3 from 'aws-sdk/clients/s3';
 
 enum Environment {
   production = 'production',
@@ -160,6 +161,24 @@ export const S3_FILE_ITEM_REGION = process.env.S3_FILE_ITEM_REGION;
 export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
+const S3_FILE_ITEM_HOST = process.env.S3_FILE_ITEM_HOST;
+
+export const S3_FILE_ITEM_PLUGIN_OPTIONS = {
+  s3Region: S3_FILE_ITEM_REGION,
+  s3Bucket: S3_FILE_ITEM_BUCKET,
+  s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
+  s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
+  s3Instance: S3_FILE_ITEM_HOST ? new S3({         
+    region: S3_FILE_ITEM_REGION,
+    useAccelerateEndpoint: false,
+    s3ForcePathStyle: true,
+    credentials: { 
+      accessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID, 
+      secretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY
+    },
+    endpoint: S3_FILE_ITEM_HOST 
+  }) : undefined,
+};
 
 export const SERVICE_METHOD = S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL;
 
@@ -186,13 +205,6 @@ export const PUBLISHED_TAG_ID = process.env.PUBLISHED_TAG_ID;
 
 // Graasp chatbox plugin
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';
-
-export const S3_FILE_ITEM_PLUGIN_OPTIONS = {
-  s3Region: S3_FILE_ITEM_REGION,
-  s3Bucket: S3_FILE_ITEM_BUCKET,
-  s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
-  s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
-};
 
 export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
 export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;

@@ -4996,7 +4996,7 @@ __metadata:
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     http-status-codes: ^2.1.4
     qs: ^6.10.1
-  checksum: 6c77b3710f69074f6de4c06d8970c541d60affa8fd7e96144f0dad948a39ca0d3c6725ee21f5bfa6ccccd1aa0fb94396a9c3612588fa1b045cfe2197dad4473
+  checksum: 6c77b3710f69074f6de4c06d8970c541d60affa8fd7e96144f0dad948a39ca0d3c6725ee21f5bfa6ccccd1aa0fb94396a9c3612588fa1b045cfe2197dad44731
   languageName: node
   linkType: hard
 
