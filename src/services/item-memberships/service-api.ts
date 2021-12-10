@@ -22,8 +22,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     members: { dbService: membersDbService },
   } = fastify;
   const { dbService } = itemMemberships;
-  const taskManager: ItemMembershipTaskManager =
-    new TaskManager(itemsDbService, dbService, membersDbService);
+  const taskManager: ItemMembershipTaskManager = new TaskManager(
+    itemsDbService,
+    dbService,
+    membersDbService,
+  );
   itemMemberships.taskManager = taskManager;
 
   // schemas
@@ -50,53 +53,60 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           db.pool,
         );
       }
-      
-    // get many item's memberships
-    fastify.get<{ Querystring: { itemId: string[] } }>(
-      '/', { schema: getItems },
-      async ({ member, query: { itemId: ids }, log }) => {
-          const tasks = ids.map(id => taskManager.createGetOfItemTaskSequence(member, id));
+
+      // get many item's memberships
+      fastify.get<{ Querystring: { itemId: string[] } }>(
+        '/',
+        { schema: getItems },
+        async ({ member, query: { itemId: ids }, log }) => {
+          const tasks = ids.map((id) => taskManager.createGetOfItemTaskSequence(member, id));
           return runner.runMultipleSequences(tasks, log);
-      }
-    );
+        },
+      );
 
-    // create item membership
-    fastify.post<{ Querystring: { itemId: string } }>(
-      '/', { schema: create },
-      async ({ member, query: { itemId }, body, log }) => {
-        const tasks = taskManager.createCreateTaskSequence(member, body, itemId);
-        return runner.runSingleSequence(tasks, log);
-      }
-    );
+      // create item membership
+      fastify.post<{ Querystring: { itemId: string } }>(
+        '/',
+        { schema: create },
+        async ({ member, query: { itemId }, body, log }) => {
+          const tasks = taskManager.createCreateTaskSequence(member, body, itemId);
+          return runner.runSingleSequence(tasks, log);
+        },
+      );
 
-    // update item membership
-    fastify.patch<{ Params: IdParam }>(
-      '/:id', { schema: updateOne },
-      async ({ member, params: { id }, body, log }) => {
-        const tasks = taskManager.createUpdateTaskSequence(member, id, body);
-        return runner.runSingleSequence(tasks, log);
-      }
-    );
+      // update item membership
+      fastify.patch<{ Params: IdParam }>(
+        '/:id',
+        { schema: updateOne },
+        async ({ member, params: { id }, body, log }) => {
+          const tasks = taskManager.createUpdateTaskSequence(member, id, body);
+          return runner.runSingleSequence(tasks, log);
+        },
+      );
 
-    // delete item membership
-    fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
-      '/:id', { schema: deleteOne },
-      async ({ member, params: { id }, query: { purgeBelow }, log }) => {
-        const tasks = taskManager.createDeleteTaskSequence(member, id, purgeBelow);
-        return runner.runSingleSequence(tasks, log);
-      }
-    );
+      // delete item membership
+      fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
+        '/:id',
+        { schema: deleteOne },
+        async ({ member, params: { id }, query: { purgeBelow }, log }) => {
+          const tasks = taskManager.createDeleteTaskSequence(member, id, purgeBelow);
+          return runner.runSingleSequence(tasks, log);
+        },
+      );
 
-    // delete item's item memberships
-    fastify.delete<{ Querystring: { itemId: string } }>(
-      '/', { schema: deleteAll },
-      async ({ member, query: { itemId }, log }, reply) => {
-        const tasks = taskManager.createDeleteAllOnAndBelowItemTaskSequence(member, itemId);
-        await runner.runSingleSequence(tasks, log);
-        reply.status(204);
-      }
-    );
-  }, { prefix: ROUTES_PREFIX });
+      // delete item's item memberships
+      fastify.delete<{ Querystring: { itemId: string } }>(
+        '/',
+        { schema: deleteAll },
+        async ({ member, query: { itemId }, log }, reply) => {
+          const tasks = taskManager.createDeleteAllOnAndBelowItemTaskSequence(member, itemId);
+          await runner.runSingleSequence(tasks, log);
+          reply.status(204);
+        },
+      );
+    },
+    { prefix: ROUTES_PREFIX },
+  );
 };
 
 export default plugin;

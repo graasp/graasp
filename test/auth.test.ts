@@ -36,7 +36,7 @@ describe('Auth routes tests', () => {
     });
     it('Sign Up fallback to login for already register member', async () => {
       const member = MEMBERS_FIXTURES.BOB;
-      const app =await build();
+      const app = await build();
       const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
       mockMemberServiceGetMatching([member]);
       const mockCreate = mockMemberServiceCreate();
@@ -54,7 +54,7 @@ describe('Auth routes tests', () => {
     it('Bad request for invalid email', async () => {
       const email = 'wrongemail';
       const name = 'anna';
-      const app =await build();
+      const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.POST,
         url: '/register',
@@ -71,7 +71,7 @@ describe('Auth routes tests', () => {
     it('Sign In successfully', async () => {
       const member = MEMBERS_FIXTURES.BOB;
       mockMemberServiceGetMatching([member]);
-      const app =await build();
+      const app = await build();
       const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
       const response = await app.inject({
         method: HTTP_METHODS.POST,
@@ -85,7 +85,7 @@ describe('Auth routes tests', () => {
     });
     it('Sign In does send not found on non-existing email', async () => {
       const email = 'some@email.com';
-      const app =await build();
+      const app = await build();
       const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
       const response = await app.inject({
         method: HTTP_METHODS.POST,
@@ -99,7 +99,7 @@ describe('Auth routes tests', () => {
     });
     it('Bad request for invalid email', async () => {
       const email = 'wrongemail';
-      const app =await build();
+      const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.POST,
         url: '/login',
@@ -114,7 +114,7 @@ describe('Auth routes tests', () => {
 
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
-      const app =await build();
+      const app = await build();
       const member = MEMBERS_FIXTURES.BOB;
       const t = jwt.sign(member, JWT_SECRET);
       mockMemberServiceGetMatching([member]);
@@ -126,7 +126,7 @@ describe('Auth routes tests', () => {
       app.close();
     });
     it('Fail to authenticate if token is invalid', async () => {
-      const app =await build();
+      const app = await build();
       const member = MEMBERS_FIXTURES.BOB;
       const t = jwt.sign(member, 'secret');
       mockMemberServiceGetMatching([member]);
@@ -141,7 +141,7 @@ describe('Auth routes tests', () => {
 
   describe('GET /logout', () => {
     it('Authenticate successfully', async () => {
-      const app =await build();
+      const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.GET,
         url: '/logout',
@@ -159,7 +159,7 @@ describe('Auth routes tests', () => {
         const email = 'someemail@email.com';
         const name = 'anna';
         const mockCreate = mockMemberServiceCreate();
-        const app =await build();
+        const app = await build();
         const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
         const response = await app.inject({
           method: HTTP_METHODS.POST,
@@ -174,7 +174,7 @@ describe('Auth routes tests', () => {
       });
       it('Sign Up fallback to login for already register member', async () => {
         const member = MEMBERS_FIXTURES.BOB;
-        const app =await build();
+        const app = await build();
         const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
         mockMemberServiceGetMatching([member]);
         const mockCreate = mockMemberServiceCreate();
@@ -192,7 +192,7 @@ describe('Auth routes tests', () => {
       it('Bad request for invalid email', async () => {
         const email = 'wrongemail';
         const name = 'anna';
-        const app =await build();
+        const app = await build();
         const response = await app.inject({
           method: HTTP_METHODS.POST,
           url: '/m/register',
@@ -209,7 +209,7 @@ describe('Auth routes tests', () => {
       it('Sign In successfully', async () => {
         const member = MEMBERS_FIXTURES.BOB;
         mockMemberServiceGetMatching([member]);
-        const app =await build();
+        const app = await build();
         const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
         const response = await app.inject({
           method: HTTP_METHODS.POST,
@@ -223,7 +223,7 @@ describe('Auth routes tests', () => {
       });
       it('Sign In does send not found error for non-existing email', async () => {
         const email = 'some@email.com';
-        const app =await build();
+        const app = await build();
         const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
         const response = await app.inject({
           method: HTTP_METHODS.POST,
@@ -237,7 +237,7 @@ describe('Auth routes tests', () => {
       });
       it('Bad request for invalid email', async () => {
         const email = 'wrongemail';
-        const app =await build();
+        const app = await build();
         const response = await app.inject({
           method: HTTP_METHODS.POST,
           url: '/m/login',
@@ -261,7 +261,7 @@ describe('Auth routes tests', () => {
           return { sub: member.id, challenge };
         });
 
-        const app =await build();
+        const app = await build();
         const t = jwt.sign({ sub: member.id, challenge }, JWT_SECRET);
 
         const response = await app.inject({
@@ -278,7 +278,7 @@ describe('Auth routes tests', () => {
         app.close();
       });
       it('Fail to authenticate if verifier and challenge do not match', async () => {
-        const app =await build();
+        const app = await build();
         const member = MEMBERS_FIXTURES.BOB;
         const t = jwt.sign(member, JWT_SECRET);
         const verifier = 'verifier';
@@ -295,7 +295,7 @@ describe('Auth routes tests', () => {
         app.close();
       });
       it('Fail to authenticate if token is invalid', async () => {
-        const app =await build();
+        const app = await build();
         const t = 'sometoken';
         const verifier = 'verifier';
         const response = await app.inject({
@@ -313,7 +313,7 @@ describe('Auth routes tests', () => {
 
     describe('GET /m/auth/refresh', () => {
       it('Refresh tokens successfully', async () => {
-        const app =await build();
+        const app = await build();
         const member = MEMBERS_FIXTURES.BOB;
         const t = jwt.sign(member, REFRESH_TOKEN_JWT_SECRET);
         const response = await app.inject({
@@ -329,7 +329,7 @@ describe('Auth routes tests', () => {
         app.close();
       });
       it('Fail if token is invalid', async () => {
-        const app =await build();
+        const app = await build();
         const member = MEMBERS_FIXTURES.BOB;
         const t = jwt.sign(member, 'REFRESH_TOKEN_JWT_SECRET');
         const response = await app.inject({
@@ -346,7 +346,7 @@ describe('Auth routes tests', () => {
 
     describe('GET /m/deep-link', () => {
       it('Refresh tokens successfully', async () => {
-        const app =await build();
+        const app = await build();
         const member = MEMBERS_FIXTURES.BOB;
         const t = jwt.sign(member, JWT_SECRET);
         const response = await app.inject({

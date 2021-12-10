@@ -10,7 +10,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 
-type DeleteItemSubTaskInput= { itemId: string }
+type DeleteItemSubTaskInput = { itemId: string };
 
 export class DeleteItemSubTask extends BaseItemTask<Item> {
   get name() {
@@ -89,7 +89,7 @@ export class DeleteItemTask extends BaseItemTask<Item> {
       // delete item + all descendants, one by one.
       this.subtasks = descendants
         .concat(item)
-        .map(d => new DeleteItemSubTask(this.actor, this.itemService, { itemId: d.id }));
+        .map((d) => new DeleteItemSubTask(this.actor, this.itemService, { itemId: d.id }));
 
       return this.subtasks;
     }

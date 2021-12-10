@@ -20,6 +20,7 @@ import {
   SERVICE_METHOD,
   AVATARS_PATH_PREFIX,
   FILES_PATH_PREFIX,
+  PUBLISHED_TAG_ID
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -73,20 +74,21 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(ItemMembershipsServiceApi))
       .register(fp(ItemsServiceApi));
 
-  if (PUBLIC_PLUGIN) {
-    await instance.register(graaspPluginPublic, {
-      tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
-      graaspActor: GRAASP_ACTOR,
-      serviceMethod: SERVICE_METHOD,
-      prefixes: {
-        avatarsPrefix: AVATARS_PATH_PREFIX,
-        filesPrefix: FILES_PATH_PREFIX,
-        thumbnailsPrefix: THUMBNAIL_PATH_PREFIX,
-      },
-      // native fastify option
-      prefix: '/p',
-    });
-  }
+    if (PUBLIC_PLUGIN) {
+      await instance.register(graaspPluginPublic, {
+        tagId: 'afc2efc2-525e-4692-915f-9ba06a7f7887', // TODO: get from config
+        graaspActor: GRAASP_ACTOR,
+        serviceMethod: SERVICE_METHOD,
+        prefixes: {
+          avatarsPrefix: AVATARS_PATH_PREFIX,
+          filesPrefix: FILES_PATH_PREFIX,
+          thumbnailsPrefix: THUMBNAIL_PATH_PREFIX,
+        },
+        publishedTagId: PUBLISHED_TAG_ID,
+        // native fastify option
+        prefix: '/p',
+      });
+    }
   });
 }
 

@@ -65,13 +65,13 @@ You'll need to create the necessary tables. The SQL commands are available in `d
 
 Install the corresponding schema if you are using any fo the following plugins :
 
-- Item-Tags : [`db-schema.sql`](https://github.com/graasp/graasp-item-tags/blob/3/pinnedItem/db-schema.sql)
+- Item Tags : [`db-schema.sql`](https://github.com/graasp/graasp-item-tags/blob/3/pinnedItem/db-schema.sql)
 
-- Public-Items : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-public/blob/main/db-schema.sql)
+- Public : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-public/blob/main/db-schema.sql)
 
 - Apps : [`db-schema.sql`](https://github.com/graasp/graasp-apps/blob/main/db-schema.sql)
 
-- Item-Flagging : [`db-schema.sql`](https://github.com/graasp/graasp-item-flagging/blob/master/db-schema.sql)
+- Item Flagging : [`db-schema.sql`](https://github.com/graasp/graasp-item-flagging/blob/master/db-schema.sql)
 
 - ChatBox : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/db-schema.sql)
 
@@ -79,11 +79,13 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Item Login : [`db-schema.sql`](https://github.com/graasp/graasp-item-login/blob/main/db-schema.sql)
 
+- Item Categories [`db-schema.sql`](https://github.com/graasp/graasp-plugin-categories/blob/main/db-schema.sql)
+
 ### Configuration
 
 To configure the application, you'll need to change the values in  `development.env`. The file should have the following structure :
 
-```` 
+````
 # Application server
 # PROTOCOL=http
 # HOSTNAME=localhost
@@ -91,7 +93,7 @@ PORT=3000
 # EMAIL_LINKS_HOST=
 # CLIENT_HOST=
 # COOKIE_DOMAIN=
-# CORS_ORIGIN_REGEX=
+CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
 # Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
 SECURE_SESSION_SECRET_KEY=<content>

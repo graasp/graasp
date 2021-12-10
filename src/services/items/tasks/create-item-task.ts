@@ -12,7 +12,7 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { BaseItem } from '../base-item';
 
-type InputType<E extends UnknownExtra> = { data?: Partial<Item<E>>, parentItem?: Item };
+type InputType<E extends UnknownExtra> = { data?: Partial<Item<E>>; parentItem?: Item };
 
 export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
   get name(): string {

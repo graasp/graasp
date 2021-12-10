@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import  build from './app';
+import build from './app';
 import * as MEMBERS_FIXTURES from './fixtures/members';
 import {
   InvalidMembership,
@@ -63,7 +63,10 @@ describe('Membership routes tests', () => {
     it('Returns successfully for two ids', async () => {
       const item1 = getDummyItem();
       const item2 = getDummyItem();
-      const memberships = [ buildMembership({ permission: PermissionLevel.Read, path: item1.path }), buildMembership({ permission: PermissionLevel.Read, path: item2.path })];
+      const memberships = [
+        buildMembership({ permission: PermissionLevel.Read, path: item1.path }),
+        buildMembership({ permission: PermissionLevel.Read, path: item2.path }),
+      ];
       mockItemServiceGet([item1, item2]);
       mockItemMemberhipServiceGetInheritedForAll(memberships);
       const app = await build();
@@ -258,7 +261,7 @@ describe('Membership routes tests', () => {
         new InvalidMembership({
           memberId: newMembership.memberId,
           permission: newMembership.permission,
-        })
+        }),
       );
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       app.close();
@@ -753,7 +756,7 @@ describe('Membership routes tests', () => {
 
       // delete all memberships except author's
       expect(mockDelete).toHaveBeenCalledTimes(
-        memberships.filter(({ memberId }) => memberId !== MEMBERS_FIXTURES.ACTOR.id).length
+        memberships.filter(({ memberId }) => memberId !== MEMBERS_FIXTURES.ACTOR.id).length,
       );
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       app.close();

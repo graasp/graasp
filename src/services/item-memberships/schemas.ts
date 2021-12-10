@@ -74,12 +74,12 @@ const getItems = {
   querystring: {
     type: 'object',
     required: ['itemId'],
-        properties: {
-          itemId: { 
-            type: 'array',
-            items: { $ref: 'http://graasp.org/#/definitions/uuid' }
-          },
-        },
+    properties: {
+      itemId: {
+        type: 'array',
+        items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      },
+    },
 
     additionalProperties: false,
   },
@@ -88,10 +88,10 @@ const getItems = {
       type: 'array',
       items: {
         anyOf: [
-          { 
-            type:'array'
+          {
+            type: 'array',
             // todo/bug: define schema content of array
-           },
+          },
           { $ref: 'http://graasp.org/#/definitions/error' },
         ],
       },

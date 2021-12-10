@@ -5,6 +5,7 @@ import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
+import graaspCategoryPlugins from 'graasp-plugin-categories';
 import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
@@ -153,6 +154,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspItemTags);
 
         fastify.register(graaspRecycleBin);
+
+        fastify.register(graaspCategoryPlugins);
 
         if (CHATBOX_PLUGIN) {
           fastify.register(graaspChatbox);
@@ -304,20 +307,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         );
 
         // copy items
-        fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
+        fastify.post<{ Params: IdParam; Body: { parentId: string; shouldCopyTags?: boolean } }>(
           '/:id/copy',
           { schema: copyOne },
-          async ({ member, params: { id }, body: { parentId }, log }) => {
-            const tasks = taskManager.createCopyTaskSequence(member, id, parentId);
+          async ({ member, params: { id }, body: { parentId, shouldCopyTags }, log }) => {
+            const tasks = taskManager.createCopyTaskSequence(member, id, {
+              parentId,
+              shouldCopyTags,
+            });
             return runner.runSingleSequence(tasks, log);
           },
         );
 
-        fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
+        fastify.post<{
+          Querystring: IdsParams;
+          Body: { parentId: string; shouldCopyTags?: boolean };
+        }>(
           '/copy',
           { schema: copyMany },
-          async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createCopyTaskSequence(member, id, parentId));
+          async (
+            { member, query: { id: ids }, body: { parentId, shouldCopyTags }, log },
+            reply,
+          ) => {
+            const tasks = ids.map((id) =>
+              taskManager.createCopyTaskSequence(member, id, { parentId, shouldCopyTags }),
+            );
 
             // too many items to copy: start execution and return '202'.
             if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {

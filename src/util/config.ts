@@ -5,7 +5,7 @@ enum Environment {
   production = 'production',
   staging = 'staging',
   development = 'development',
-  test = 'test'
+  test = 'test',
 }
 
 export let ENVIRONMENT: Environment;
@@ -87,9 +87,11 @@ export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
-export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES || 10080;
+export const AUTH_TOKEN_EXPIRATION_IN_MINUTES =
+  +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES || 10080;
 /** Refresh token expiration, in minutes */
-export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES || 86400;
+export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES =
+  +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES || 86400;
 
 // Graasp limits
 
@@ -100,11 +102,11 @@ export const MAX_TREE_LEVELS = 15;
 /**
  * Maximun number of children an item can have
  */
-export const MAX_NUMBER_OF_CHILDREN = 10;
+export const MAX_NUMBER_OF_CHILDREN = 30;
 /**
  * Maximun number of descendants (in the item's subtree) for a `delete`
  */
-export const MAX_DESCENDANTS_FOR_DELETE = 5;
+export const MAX_DESCENDANTS_FOR_DELETE = 15;
 /**
  * Maximun number of descendants (in the item's subtree) for a `update`
  */
@@ -112,11 +114,11 @@ export const MAX_DESCENDANTS_FOR_UPDATE = 5;
 /**
  * Maximun number of descendants (in the item's subtree) for a `move`
  */
-export const MAX_DESCENDANTS_FOR_MOVE = 15;
+export const MAX_DESCENDANTS_FOR_MOVE = 40;
 /**
  * Maximun number of descendants (in the item's subtree) for a `copy`
  */
-export const MAX_DESCENDANTS_FOR_COPY = 20;
+export const MAX_DESCENDANTS_FOR_COPY = 40;
 
 /**
  * Maximun number of item memberships when deleting all "under" an item
@@ -180,6 +182,7 @@ export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // Graasp public items
 export const PUBLIC_PLUGIN = process.env.PUBLIC_PLUGIN === 'true';
+export const PUBLISHED_TAG_ID = process.env.PUBLISHED_TAG_ID;
 
 // Graasp chatbox plugin
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';
@@ -195,4 +198,4 @@ export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
 export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
 export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
 
-export const FILE_ITEM_PLUGIN_OPTIONS= { storageRootPath: FILE_STORAGE_ROOT_PATH }; 
+export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };

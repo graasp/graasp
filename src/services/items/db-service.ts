@@ -161,13 +161,7 @@ export class ItemService {
     // properties present in data
     const setValues = sql.join(
       Object.keys(data).map((key: keyof Item) =>
-        sql.join(
-          [
-            sql.identifier([key]),
-            this.buildColumnsForUpdate(key, data)
-          ],
-          sql` = `,
-        ),
+        sql.join([sql.identifier([key]), this.buildColumnsForUpdate(key, data)], sql` = `),
       ),
       sql`, `,
     );
@@ -184,8 +178,11 @@ export class ItemService {
       .then(({ rows }) => rows[0]);
   }
 
-  buildColumnsForUpdate<E extends UnknownExtra>(key: string, data: Partial<Item<E>>): ValueExpressionType {
-    switch(key){
+  buildColumnsForUpdate<E extends UnknownExtra>(
+    key: string,
+    data: Partial<Item<E>>,
+  ): ValueExpressionType {
+    switch (key) {
       case 'settings':
         return sql`${sql.identifier([key])} || ${sql.json(data[key])}`;
       case 'extra':

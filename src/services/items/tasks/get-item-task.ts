@@ -37,7 +37,6 @@ export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
 
     await this.postHookHandler?.(item, this.actor, { log, handler });
 
-
     this.status = 'OK';
     this._result = item;
   }

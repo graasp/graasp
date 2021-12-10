@@ -1,7 +1,9 @@
 // global
 import { FastifyLoggerInstance } from 'fastify';
 import {
-  HierarchyTooDeep, InvalidMoveTarget, TooManyDescendants
+  HierarchyTooDeep,
+  InvalidMoveTarget,
+  TooManyDescendants,
 } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { MAX_DESCENDANTS_FOR_MOVE, MAX_TREE_LEVELS } from '../../../util/config';
@@ -14,7 +16,7 @@ import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 
-type InputType = { item?: Item, parentItem?: Item };
+type InputType = { item?: Item; parentItem?: Item };
 
 export class MoveItemTask extends BaseItemTask<Item> {
   get name(): string {
@@ -26,8 +28,12 @@ export class MoveItemTask extends BaseItemTask<Item> {
   input: InputType;
   getInput: () => InputType;
 
-  constructor(member: Member, itemService: ItemService, itemMembershipService: ItemMembershipService,
-    input?: InputType) {
+  constructor(
+    member: Member,
+    itemService: ItemService,
+    itemMembershipService: ItemMembershipService,
+    input?: InputType,
+  ) {
     super(member, itemService);
     this.itemMembershipService = itemMembershipService;
     this.input = input ?? {};
@@ -45,7 +51,8 @@ export class MoveItemTask extends BaseItemTask<Item> {
       throw new TooManyDescendants(item.id);
     }
 
-    if (parentItem) { // attaching tree to new parent item
+    if (parentItem) {
+      // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
 
       // fail if
@@ -68,7 +75,8 @@ export class MoveItemTask extends BaseItemTask<Item> {
 
       // TODO: should this info go into 'message'? (it's the only exception to the rule)
       this._message = `new parent ${parentItemId}`;
-    } else if (!BaseItem.parentPath(item)) { // moving from "no-parent" to "no-parent" ("not moving")
+    } else if (!BaseItem.parentPath(item)) {
+      // moving from "no-parent" to "no-parent" ("not moving")
       throw new InvalidMoveTarget();
     }
 
@@ -77,7 +85,12 @@ export class MoveItemTask extends BaseItemTask<Item> {
     await this.moveItem(item, handler, parentItem);
     const movedItem = await this.itemService.get(item.id, handler);
 
-    await this.postHookHandler?.(movedItem, this.actor, { log, handler }, { destination: parentItem });
+    await this.postHookHandler?.(
+      movedItem,
+      this.actor,
+      { log, handler },
+      { destination: parentItem },
+    );
 
     this.status = 'OK';
   }
