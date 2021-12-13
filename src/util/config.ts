@@ -165,8 +165,8 @@ const S3_FILE_ITEM_HOST = process.env.S3_FILE_ITEM_HOST;
 
 let S3_INSTANCE: S3;
 
-// Enable localstack, only create the instance in test or dev environnements
-// If a custom endpoint is provided use it, otherwise use the AWS s3 backend
+// Enable localstack, only create the instance in test or dev environments
+// Use the provided endpoint or the aws s3 backend
 if((DEV || TEST) && S3_FILE_ITEM_HOST){
   S3_INSTANCE = new S3({         
     region: S3_FILE_ITEM_REGION,

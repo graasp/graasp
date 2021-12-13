@@ -24,7 +24,3 @@ corsConfig='{
 awslocal s3 mb s3://$bucketName
 
 awslocal s3api put-bucket-cors --bucket $bucketName --cors-configuration "${corsConfig}"
-
-
-
-
