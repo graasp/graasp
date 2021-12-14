@@ -1,7 +1,10 @@
+import { Item } from '../../..';
 import { Actor } from '../../../interfaces/actor';
 import { Task } from '../../../interfaces/task';
+import { GetOneItemItemMembershipsTask } from '../tasks/get-one-item-item-membership-task';
 import { GetMemberItemMembershipOverItemTaskInputType } from '../tasks/get-member-item-membership-over-item-task';
 import { ItemMembership } from './item-membership';
+import { GetManyItemsItemMembershipsTask } from '../tasks/get-many-items-item-membership-task';
 
 export interface ItemMembershipTaskManager<A extends Actor = Actor> {
   getCreateTaskName(): string;
@@ -24,7 +27,8 @@ export interface ItemMembershipTaskManager<A extends Actor = Actor> {
     object: Partial<ItemMembership>,
   ): Task<A, unknown>[];
   createDeleteTaskSequence(actor: A, objectId: string, extra?: unknown): Task<A, unknown>[];
-
+  createGetOfItemTask(member: A, item?: Item): GetOneItemItemMembershipsTask;
+  createGetOfManyItemsTask(member: A, items?: Item[]): GetManyItemsItemMembershipsTask;
   createGetOfItemTaskSequence(actor: A, itemId: string): Task<A, unknown>[];
   createDeleteAllOnAndBelowItemTaskSequence(actor: A, itemId: string): Task<A, unknown>[];
   createGetMemberItemMembershipTask(

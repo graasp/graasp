@@ -13,7 +13,7 @@ import {
 } from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
-import { GetItemsItemMembershipsTask } from './tasks/get-items-item-membership-task';
+import { GetOneItemItemMembershipsTask } from './tasks/get-one-item-item-membership-task';
 import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 import { DeleteItemItemMembershipsTask } from './tasks/delete-item-item-memberships-task';
 import { Task } from '../../interfaces/task';
@@ -25,6 +25,8 @@ import {
 import { GetItemWithPathTask } from '../items/tasks/get-item-with-path-task';
 import { GetMemberTask } from '../members/tasks/get-member-task';
 import { Actor } from '../../interfaces/actor';
+import { Item } from '../..';
+import { GetManyItemsItemMembershipsTask } from './tasks/get-many-items-item-membership-task';
 
 export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
   private itemService: ItemService;
@@ -55,7 +57,7 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
   }
 
   getGetOfItemTaskName(): string {
-    return GetItemsItemMembershipsTask.name;
+    return GetOneItemItemMembershipsTask.name;
   }
   getDeleteAllOnAndBelowItemTaskName(): string {
     return DeleteItemItemMembershipsTask.name;
@@ -134,11 +136,21 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     return [t1, t2, t3, t4];
   }
 
+  // get item memberships for given item
+  createGetOfItemTask(member: Member, item?: Item): GetOneItemItemMembershipsTask {
+    return new GetOneItemItemMembershipsTask(member, this.itemMembershipService, { item });
+  }
+
+  // get item memberships for many items
+  createGetOfManyItemsTask(member: Member, items?: Item[], shouldValidatePermission?:boolean): GetManyItemsItemMembershipsTask {
+    return new GetManyItemsItemMembershipsTask(member, this.itemMembershipService, { items, shouldValidatePermission });
+  }
+
   // Other
   createGetOfItemTaskSequence(member: Member, itemId: string): Task<Member, unknown>[] {
     const t1 = new GetItemTask(member, this.itemService, { itemId });
 
-    const t2 = new GetItemsItemMembershipsTask(member, this.itemMembershipService);
+    const t2 = new GetOneItemItemMembershipsTask(member, this.itemMembershipService);
     t2.getInput = () => ({ item: t1.result });
 
     return [t1, t2];
