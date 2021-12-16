@@ -9,8 +9,9 @@ import { uuid, idParam, idsQuery, error } from '../../schemas/fluent-schema';
  * for serialization
  */
 const settings = S.object()
-  .additionalProperties(false)
+  .additionalProperties(true)
   .prop('isPinned', S.boolean())
+  .prop('tags', S.array())
   .prop('showChatbox', S.boolean());
 
 const item = S.object()
