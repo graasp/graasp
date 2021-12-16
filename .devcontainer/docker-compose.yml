@@ -19,16 +19,16 @@ services:
 
     volumes:
       - ..:/workspace:cached
-      - ${TMPDIR}:/tmp/graasp-file-item-storage # On Linux (and other platforms) env var TMPDIR does not exist:
-                                                # replace "${TMPDIR}" with permanent existing path e.g.
-                                                # "/tmp/graasp-file-item-storage"
+      - ${TMPDIR}:/tmp/graasp-file-item-storage
+        # On Linux (and other platforms) env var TMPDIR does not exist:
+        # replace "${TMPDIR}" with permanent existing path e.g.
+        # "/tmp/graasp-file-item-storage"
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
 
     # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
     network_mode: service:db
-
     # Uncomment the next line to use a non-root user for all processes.
     # user: node
 
@@ -48,7 +48,6 @@ services:
       POSTGRES_DB: docker
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
-
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward MongoDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
@@ -59,6 +58,22 @@ services:
       - 6379:6379
     restart: unless-stopped
 
+  # Localstack is used to test aws services locally
+  localstack:
+    container_name: graasp-localstack
+    image: localstack/localstack
+    volumes:
+      - ${TMPDIR}/localstack:/tmp/graasp-localstack
+      - ./localstack:/docker-entrypoint-initaws.d
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+    ports:
+      - 4566-4583:4566-4583
 
   # necessary for graasp-embedded-link-item
   iframely:
@@ -69,4 +84,4 @@ services:
       - 8061:8061
 
 volumes:
-  postgres-data:
+  postgres-data: null

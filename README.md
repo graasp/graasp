@@ -40,6 +40,9 @@ This will create 3 containers :
 - `app` : Node.js backend of Graasp
 - `db` : PostgreSQL database used by the backend 
 - `redis` : Redis instance to enable websockets
+- `localstack` : Localstack instance use to locally test S3 storage
+
+To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 graasp-localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://graasp-localstack` hostname.
 
 Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`). 
 
@@ -52,6 +55,8 @@ To increase the memory limit, go to `Docker > Preferences > Resources` and chang
 First a running and accessible instance of PostgreSQL is required.
 
 To enable websockets capabilities, it is required to have a running instance of [Redis](https://redis.io).
+
+To use the backend with S3, it is required to have a running instance of [localstack](https://github.com/localstack/localstack).
 
 Then open the folder locally and run the following command to install the required npm packages.
 
@@ -126,10 +131,14 @@ FILE_STORAGE_ROOT_PATH=
 
 # Graasp s3 file item
 S3_FILE_ITEM_PLUGIN=false
-# S3_FILE_ITEM_REGION=
-# S3_FILE_ITEM_BUCKET=
-# S3_FILE_ITEM_ACCESS_KEY_ID=
-# S3_FILE_ITEM_SECRET_ACCESS_KEY=
+S3_FILE_ITEM_REGION=us-east-1
+S3_FILE_ITEM_BUCKET=graasp
+S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
+S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
+
+# If you are using a local installation of localstack replace by http://localhost:4566
+# This value is only used for Dev or Test environments
+S3_FILE_ITEM_HOST=http://graasp-localstack:4566
 
 # Graasp embedded link item
 EMBEDDED_LINK_ITEM_PLUGIN=false
