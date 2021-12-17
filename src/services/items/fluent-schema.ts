@@ -11,6 +11,7 @@ import { uuid, idParam, idsQuery, error } from '../../schemas/fluent-schema';
 const settings = S.object()
   .additionalProperties(false)
   .prop('isPinned', S.boolean())
+  .prop('tags', S.array())
   .prop('showChatbox', S.boolean());
 
 const item = S.object()
