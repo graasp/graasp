@@ -5061,6 +5061,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graasp-plugin-public@github:graasp/graasp-plugin-public#32/removeCors":
+  version: 0.1.0
+  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=a54b025fa4ed28dc97a581b1208bdf87d341b8a9"
+  dependencies:
+    graasp-item-tags: "github:graasp/graasp-item-tags"
+    http-status-codes: ^2.1.4
+    qs: ^6.10.1
+  checksum: 61f07a6d3d84b623b7fbbe6c194522eca3d780a05d51c3fecf82f7d9278b65719a8f28cdd20e003f6109d9ca95533dea8b7ba2b33234b0f4e52bd10d71c56ccb
+  languageName: node
+  linkType: hard
+
 "graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin":
   version: 0.1.0
   resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=d1c7903cefb3368ce5f0955427bb4f7b9dbd5ed4"
@@ -5140,7 +5151,7 @@ __metadata:
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-import-zip: "github:graasp/graasp-plugin-import-zip"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
-    graasp-plugin-public: "github:graasp/graasp-plugin-public"
+    graasp-plugin-public: "github:graasp/graasp-plugin-public#32/removeCors"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     graasp-websockets: "github:graasp/graasp-websockets"
