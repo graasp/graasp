@@ -5,9 +5,8 @@ import graaspDocumentItem from 'graasp-document-item';
 import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
-import graaspCategoryPlugins from 'graasp-plugin-categories';
+import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspApps from 'graasp-apps';
-import graaspPluginImportZip from 'graasp-plugin-import-zip';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
@@ -31,6 +30,7 @@ import {
   FILE_ITEM_PLUGIN_OPTIONS,
   SERVICE_METHOD,
   THUMBNAILS_PATH_PREFIX,
+  ITEMS_ROUTE_PREFIX,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -56,8 +56,6 @@ import { registerItemWsHooks } from './ws/hooks';
 import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
 import { Item } from './interfaces/item';
 
-const ROUTES_PREFIX = '/items';
-
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items,
@@ -79,7 +77,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
-    await fastify.register(graaspApps, { jwtSecret: APPS_JWT_SECRET, serviceMethod: SERVICE_METHOD, thumbnailsPrefix: THUMBNAILS_PATH_PREFIX });
+    await fastify.register(graaspApps, {
+      jwtSecret: APPS_JWT_SECRET,
+      serviceMethod: SERVICE_METHOD,
+      thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
+    });
   }
 
   fastify.register(
@@ -99,15 +101,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(async function (fastify) {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
-
-        await fastify.register(graaspPluginImportZip, {
-          pathPrefix: FILES_PATH_PREFIX,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
-            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-            local: FILE_ITEM_PLUGIN_OPTIONS,
-          },
-        });
 
         fastify.register(thumbnailsPlugin, {
           serviceMethod: SERVICE_METHOD,
@@ -165,7 +158,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspRecycleBin);
 
-        fastify.register(graaspCategoryPlugins);
+        fastify.register(graaspCategoryPlugin);
 
         if (CHATBOX_PLUGIN) {
           fastify.register(graaspChatbox);
@@ -355,7 +348,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         );
       });
     },
-    { prefix: ROUTES_PREFIX },
+    { prefix: ITEMS_ROUTE_PREFIX },
   );
 };
 

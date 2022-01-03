@@ -2,7 +2,7 @@
 import { MemberCannotReadItem } from '../../../util/graasp-error';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 // other services
-import { Member } from '../../../services/members/interfaces/member';
+import { Member } from '../../members/interfaces/member';
 import { Item } from '../../items/interfaces/item';
 // local
 import { ItemMembershipService } from '../db-service';
@@ -12,9 +12,9 @@ import { ItemMembership } from '../interfaces/item-membership';
 type InputType = { item?: Item };
 
 // TODO: does this make sense here? Should this be part of different (micro)service??
-export class GetItemsItemMembershipsTask extends BaseItemMembershipTask<ItemMembership[]> {
+export class GetOneItemItemMembershipsTask extends BaseItemMembershipTask<ItemMembership[]> {
   get name(): string {
-    return GetItemsItemMembershipsTask.name;
+    return GetOneItemItemMembershipsTask.name;
   }
 
   input: InputType;

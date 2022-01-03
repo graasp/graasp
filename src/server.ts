@@ -2,13 +2,7 @@ import fastify from 'fastify';
 import fastifyHelmet from 'fastify-helmet';
 import registerAppPlugins from './app';
 // import fastifyCompress from 'fastify-compress';
-import {
-  PORT,
-  ENVIRONMENT,
-  HOSTNAME,
-  CORS_ORIGIN_REGEX,
-  DISABLE_LOGS,
-} from './util/config';
+import { PORT, ENVIRONMENT, HOSTNAME, CORS_ORIGIN_REGEX, DISABLE_LOGS } from './util/config';
 
 const start = async () => {
   const instance = fastify({
