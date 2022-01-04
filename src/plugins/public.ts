@@ -9,11 +9,13 @@ import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
 import {
   APPS_JWT_SECRET,
+  APP_ITEMS_PREFIX,
   AVATARS_PATH_PREFIX,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
   GRAASP_ACTOR,
   ITEMS_ROUTE_PREFIX,
+  PUBLIC_ROUTE_PREFIX,
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -41,18 +43,19 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
     graaspActor: GRAASP_ACTOR,
   });
 
+
   // apps
   await instance.register(publicAppsPlugin, {
     jwtSecret: APPS_JWT_SECRET,
+    prefix: `${PUBLIC_ROUTE_PREFIX}${APP_ITEMS_PREFIX}`
   });
 
+  await instance.register(async function (instance) {
 
-  await instance.register(async () => {
-
-  // add CORS support
-  if (instance.corsPluginOptions) {
-    instance.register(fastifyCors, instance.corsPluginOptions);
-  }
+    // add CORS support
+    if (instance.corsPluginOptions) {
+      instance.register(fastifyCors, instance.corsPluginOptions);
+    }
 
     // items, members, item memberships
     await instance.register(graaspPluginPublic);
@@ -91,6 +94,7 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
       },
       { prefix: ITEMS_ROUTE_PREFIX },
     );
-  });
+  }, { prefix: PUBLIC_ROUTE_PREFIX });
 };
+
 export default plugin;

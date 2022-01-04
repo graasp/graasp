@@ -69,9 +69,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(ItemsServiceApi));
 
     if (PUBLIC_PLUGIN) {
-      await instance.register(publicPlugin, {
-        prefix: '/p',
-      });
+      await instance.register(publicPlugin);
     }
   });
 }

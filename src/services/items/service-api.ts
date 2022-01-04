@@ -31,6 +31,7 @@ import {
   SERVICE_METHOD,
   THUMBNAILS_PATH_PREFIX,
   ITEMS_ROUTE_PREFIX,
+  APP_ITEMS_PREFIX,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -81,6 +82,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       jwtSecret: APPS_JWT_SECRET,
       serviceMethod: SERVICE_METHOD,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
+      prefix: APP_ITEMS_PREFIX
     });
   }
 
