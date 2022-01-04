@@ -4905,7 +4905,7 @@ __metadata:
 
 "graasp-apps@github:graasp/graasp-apps#32/publicCors":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=7114e881af8ef337dafa32988204fd6ca19f4509"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=e9516ec7ad34b08bf9f7f9534f7b220bac6115ad"
   dependencies:
     fastify-auth: ^1.1.0
     fastify-bearer-auth: ^6.0.0
@@ -4916,7 +4916,7 @@ __metadata:
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
-  checksum: 6159dcded8532544888d7079a427e2176eed6fc2d29355a05771f6aec81596a38b1b5b34e95559294510a64fbb89f5008892f54b1f1738a021b27d5fb21ced9b
+  checksum: cc10a4c2220b6ac2c7822bb504d2276103ddf9c2bdab7642c6d74e0503498670cae6d6d8323aae0b6fbe39b28b62c83da772717eee17697ab7e3623d446c6559
   languageName: node
   linkType: hard
 

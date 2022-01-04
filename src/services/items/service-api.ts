@@ -32,6 +32,7 @@ import {
   THUMBNAILS_PATH_PREFIX,
   ITEMS_ROUTE_PREFIX,
   APP_ITEMS_PREFIX,
+  LOGIN_ITEM_TAG_ID,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -95,7 +96,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // plugins that don't require authentication
       fastify.register(graaspItemLogin, {
-        tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
+        tagId: LOGIN_ITEM_TAG_ID,
         graaspActor: GRAASP_ACTOR,
       });
 
