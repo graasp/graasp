@@ -8,6 +8,7 @@ import { Member } from '../../members/interfaces/member';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { ItemService } from '../db-service';
+import { TaskStatus } from '../../..';
 
 type InputType = { itemPath?: string };
 
@@ -25,7 +26,7 @@ export class GetItemWithPathTask<E extends UnknownExtra> extends BaseItemTask<It
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { itemPath } = this.input;
 
@@ -33,7 +34,7 @@ export class GetItemWithPathTask<E extends UnknownExtra> extends BaseItemTask<It
     const item = await this.itemService.getMatchingPath<E>(itemPath, handler);
     if (!item) throw new ItemNotFound(itemPath);
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = item;
   }
 }

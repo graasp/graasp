@@ -27,7 +27,7 @@ export abstract class BaseTask<A extends Actor, R> implements Task<A, R> {
 
   constructor(actor: A) {
     this.actor = actor;
-    this.status = 'NEW';
+    this.status = TaskStatus.NEW;
   }
 
   abstract get name(): string;

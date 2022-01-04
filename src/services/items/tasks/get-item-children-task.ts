@@ -7,6 +7,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { FastifyLoggerInstance } from 'fastify';
+import { TaskStatus } from '../../..';
 
 const sortChildrenWith = (idsOrder: string[]) => (stElem: { id: string }, ndElem: { id: string }) =>
   idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
@@ -28,7 +29,7 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { item, ordered } = this.input;
     this.targetId = item.id;
@@ -49,7 +50,7 @@ export class GetItemChildrenTask extends BaseItemTask<Item[]> {
 
     await this.postHookHandler?.(children, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = children;
   }
 }

@@ -7,6 +7,7 @@ import { Item } from '../../items/interfaces/item';
 // local
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
+import { TaskStatus } from '../../..';
 
 type InputType = { items?: Item[]; shouldValidatePermission?: boolean };
 
@@ -27,7 +28,7 @@ export class GetManyItemsItemMembershipsTask extends BaseItemMembershipTask<
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { items, shouldValidatePermission = true } = this.input;
     this.targetId = items.map(({ id }) => id).join(',');
@@ -51,6 +52,6 @@ export class GetManyItemsItemMembershipsTask extends BaseItemMembershipTask<
 
     // return item's memberships
     this._result = itemMemberships;
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

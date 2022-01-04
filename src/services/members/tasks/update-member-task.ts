@@ -8,6 +8,7 @@ import { Actor } from '../../../interfaces/actor';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
 import { Member } from '../interfaces/member';
+import { TaskStatus } from '../../..';
 
 type InputType<E extends UnknownExtra> = {
   member?: Member;
@@ -29,7 +30,7 @@ export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { member, data, actorShouldMatchTarget } = this.input;
     this.targetId = member.id;
@@ -48,6 +49,6 @@ export class UpdateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
     }
 
     this._result = await this.memberService.update(member.id, data, handler);
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

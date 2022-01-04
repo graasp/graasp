@@ -33,6 +33,7 @@ import {
   ITEMS_ROUTE_PREFIX,
   APP_ITEMS_PREFIX,
   LOGIN_ITEM_TAG_ID,
+  THUMBNAILS_ROUTE_PREFIX,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -133,7 +134,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             return tasks;
           },
 
-          prefix: '/thumbnails',
+          prefix: THUMBNAILS_ROUTE_PREFIX,
         });
 
         fastify.register(fileItemPlugin, {

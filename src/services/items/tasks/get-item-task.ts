@@ -9,6 +9,7 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { ItemService } from '../db-service';
 import { FastifyLoggerInstance } from 'fastify';
+import { TaskStatus } from '../../..';
 
 type InputType = { itemId?: string };
 
@@ -26,7 +27,7 @@ export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { itemId } = this.input;
     this.targetId = itemId;
@@ -37,7 +38,7 @@ export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
 
     await this.postHookHandler?.(item, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = item;
   }
 }

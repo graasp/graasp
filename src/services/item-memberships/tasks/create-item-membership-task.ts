@@ -11,6 +11,7 @@ import { BaseItemMembershipTask } from './base-item-membership-task';
 import { BaseItemMembership } from '../base-item-membership';
 import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
+import { TaskStatus } from '../../..';
 
 type MembershipSubTaskInput = { data?: Partial<ItemMembership> };
 
@@ -33,7 +34,7 @@ export class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { data } = this.input;
 
@@ -42,7 +43,7 @@ export class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
     const itemMembership = await this.itemMembershipService.create(data, handler);
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = itemMembership;
   }
 }
@@ -75,7 +76,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     handler: DatabaseTransactionHandler,
     log: FastifyLoggerInstance,
   ): Promise<BaseItemMembershipTask<ItemMembership>[]> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { data, item } = this.input;
     this.targetId = item.id;
@@ -125,7 +126,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
       );
 
       if (membershipsBelowToDiscard.length > 0) {
-        this.status = 'DELEGATED';
+        this.status = TaskStatus.DELEGATED;
 
         // return subtasks to remove redundant existing memberships and to create the new one
         this.subtasks = membershipsBelowToDiscard.map(
@@ -150,6 +151,6 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     await this.postHookHandler?.(resultItemMembership, this.actor, { log, handler });
 
     this._result = resultItemMembership;
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

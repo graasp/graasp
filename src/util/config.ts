@@ -229,3 +229,4 @@ export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PAT
 export const ITEMS_ROUTE_PREFIX = '/items';
 export const PUBLIC_ROUTE_PREFIX = '/p';
 export const APP_ITEMS_PREFIX = '/app-items';
+export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';

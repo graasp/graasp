@@ -10,6 +10,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
+import { TaskStatus } from '../../..';
 
 type CopyItemSubTaskInput = { copy: Partial<Item>; original: Item; shouldCopyTags?: boolean };
 
@@ -27,7 +28,7 @@ class CopyItemSubTask extends BaseItemTask<Item> {
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { copy, original, shouldCopyTags } = this.input;
     this.targetId = original.id;
@@ -36,7 +37,7 @@ class CopyItemSubTask extends BaseItemTask<Item> {
     const item = await this.itemService.create(copy, handler);
     await this.postHookHandler?.(item, this.actor, { log, handler }, { original, shouldCopyTags });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = item;
   }
 }
@@ -64,7 +65,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
     const { item, parentItem, shouldCopyTags } = this.input;
     this.targetId = item.id;
 
@@ -100,7 +101,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
       );
     });
 
-    this.status = 'DELEGATED';
+    this.status = TaskStatus.DELEGATED;
     return this.subtasks;
   }
 
