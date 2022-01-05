@@ -31,6 +31,9 @@ import {
   SERVICE_METHOD,
   THUMBNAILS_PATH_PREFIX,
   ITEMS_ROUTE_PREFIX,
+  APP_ITEMS_PREFIX,
+  LOGIN_ITEM_TAG_ID,
+  THUMBNAILS_ROUTE_PREFIX,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -81,6 +84,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       jwtSecret: APPS_JWT_SECRET,
       serviceMethod: SERVICE_METHOD,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
+      prefix: APP_ITEMS_PREFIX
     });
   }
 
@@ -93,7 +97,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // plugins that don't require authentication
       fastify.register(graaspItemLogin, {
-        tagId: '6230a72d-59c2-45c2-a8eb-e2a01a3ac05b', // TODO: get from config
+        tagId: LOGIN_ITEM_TAG_ID,
         graaspActor: GRAASP_ACTOR,
       });
 
@@ -130,7 +134,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             return tasks;
           },
 
-          prefix: '/thumbnails',
+          prefix: THUMBNAILS_ROUTE_PREFIX,
         });
 
         fastify.register(fileItemPlugin, {

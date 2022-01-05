@@ -7,6 +7,7 @@ import { ItemMembershipService } from '../db-service';
 import { ItemMembership } from '../interfaces/item-membership';
 import { ItemMembershipNotFound } from '../../../util/graasp-error';
 import { BaseItemMembershipTask } from './base-item-membership-task';
+import { TaskStatus } from '../../..';
 
 type InputType = { itemMembershipId?: string };
 
@@ -24,7 +25,7 @@ export class GetItemMembershipTask extends BaseItemMembershipTask<ItemMembership
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { itemMembershipId } = this.input;
 
@@ -32,7 +33,7 @@ export class GetItemMembershipTask extends BaseItemMembershipTask<ItemMembership
     const itemMembership = await this.itemMembershipService.get(itemMembershipId, handler);
     if (!itemMembership) throw new ItemMembershipNotFound(itemMembershipId);
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = itemMembership;
   }
 }

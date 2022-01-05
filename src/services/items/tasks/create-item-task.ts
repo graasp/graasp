@@ -11,6 +11,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { BaseItem } from '../base-item';
+import { TaskStatus } from '../../..';
 
 type InputType<E extends UnknownExtra> = { data?: Partial<Item<E>>; parentItem?: Item };
 
@@ -28,7 +29,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { data, parentItem } = this.input;
 
@@ -53,7 +54,7 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     await this.preHookHandler?.(item, this.actor, { log, handler });
     item = await this.itemService.create(item, handler);
     await this.postHookHandler?.(item, this.actor, { log, handler });
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = item;
   }
 }

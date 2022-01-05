@@ -10,6 +10,7 @@ import {
   PostHookHandlerType,
   TaskHookHandlerHelpers,
   IndividualResultType,
+  TaskStatus
 } from '../interfaces/task';
 import { Actor } from '../interfaces/actor';
 
@@ -28,7 +29,7 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     log: FastifyLoggerInstance,
     error?: Record<string, unknown>,
   ) {
-    if (error) task.status = 'FAIL';
+    if (error) task.status = TaskStatus.FAIL;
 
     const {
       name,
@@ -52,12 +53,12 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     if (taskMessage) message += `, message '${taskMessage}'`;
 
     switch (status) {
-      case 'OK':
-      case 'DELEGATED':
-      case 'RUNNING':
+      case TaskStatus.OK:
+      case TaskStatus.DELEGATED:
+      case TaskStatus.RUNNING:
         log.info(message);
         break;
-      case 'FAIL':
+      case TaskStatus.FAIL:
         log.error(error);
         break;
       default:

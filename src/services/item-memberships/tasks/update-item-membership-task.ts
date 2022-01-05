@@ -14,6 +14,7 @@ import {
   PermissionLevel,
 } from '../interfaces/item-membership';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
+import { TaskStatus } from '../../..';
 
 class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name() {
@@ -32,7 +33,7 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { itemMembershipId, permission } = this.input;
     this.targetId = itemMembershipId;
@@ -45,7 +46,7 @@ class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership>
     );
     await this.postHookHandler?.(itemMembership, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = itemMembership;
   }
 }
@@ -78,7 +79,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     handler: DatabaseTransactionHandler,
     log: FastifyLoggerInstance,
   ): Promise<BaseItemMembershipTask<ItemMembership>[]> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { itemMembership, item, data } = this.input;
     this.targetId = itemMembership.id;
@@ -104,7 +105,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
           { itemMembershipId },
         );
 
-        this.status = 'DELEGATED';
+        this.status = TaskStatus.DELEGATED;
         this.subtasks = [deleteSubtask];
         return this.subtasks;
       } else if (PermissionLevelCompare.lt(permission, inheritedPermission)) {
@@ -122,7 +123,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
       );
 
       if (membershipsBelowToDiscard.length > 0) {
-        this.status = 'DELEGATED';
+        this.status = TaskStatus.DELEGATED;
 
         // return subtasks to remove redundant existing memberships and to update the existing one
         this.subtasks = membershipsBelowToDiscard.map(
@@ -151,7 +152,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     );
     await this.postHookHandler?.(updatedItemMembership, this.actor, { log, handler });
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = updatedItemMembership;
   }
 }

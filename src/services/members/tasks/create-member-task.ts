@@ -6,6 +6,7 @@ import { UnknownExtra } from '../../../interfaces/extra';
 import { Member } from '../interfaces/member';
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
+import { TaskStatus } from '../../..';
 
 type InputType<E extends UnknownExtra> = { data?: Partial<Member<E>> };
 
@@ -23,14 +24,14 @@ export class CreateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { data } = this.input;
 
     // create member
     const member = await this.memberService.create<E>(data, handler);
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = member;
   }
 }

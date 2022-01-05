@@ -8,6 +8,7 @@ import { Item } from '../../items/interfaces/item';
 import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import { ItemMembership } from '../interfaces/item-membership';
+import { TaskStatus } from '../../..';
 
 type InputType = { item?: Item };
 
@@ -26,7 +27,7 @@ export class GetOneItemItemMembershipsTask extends BaseItemMembershipTask<ItemMe
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { item } = this.input;
     this.targetId = item.id;
@@ -40,6 +41,6 @@ export class GetOneItemItemMembershipsTask extends BaseItemMembershipTask<ItemMe
 
     // return item's memberships
     this._result = itemMemberships;
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 }

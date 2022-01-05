@@ -8,6 +8,7 @@ import { ItemMembershipService } from '../db-service';
 import { ItemMembership, PermissionLevel } from '../interfaces/item-membership';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../util/graasp-error';
 import { BaseItemMembershipTask } from './base-item-membership-task';
+import { TaskStatus } from '../../..';
 
 export type GetMemberItemMembershipOverItemTaskInputType = {
   item?: Item;
@@ -32,7 +33,7 @@ export class GetMemberItemMembershipOverItemTask extends BaseItemMembershipTask<
   }
 
   async run(handler: DatabaseTransactionHandler): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { item, validatePermission } = this.input;
 
@@ -63,7 +64,7 @@ export class GetMemberItemMembershipOverItemTask extends BaseItemMembershipTask<
       }
     }
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
     this._result = membership;
   }
 }

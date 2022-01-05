@@ -15,6 +15,7 @@ import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
+import { TaskStatus } from '../../..';
 
 type InputType = { item?: Item; parentItem?: Item };
 
@@ -40,7 +41,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
-    this.status = 'RUNNING';
+    this.status = TaskStatus.RUNNING;
 
     const { item, parentItem } = this.input;
     this.targetId = item.id;
@@ -92,7 +93,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
       { destination: parentItem },
     );
 
-    this.status = 'OK';
+    this.status = TaskStatus.OK;
   }
 
   /**
