@@ -4903,9 +4903,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-apps@github:graasp/graasp-apps#32/publicCors":
+"graasp-apps@github:graasp/graasp-apps":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=e9516ec7ad34b08bf9f7f9534f7b220bac6115ad"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=8b7182cbbccc2efaee8306fac810ae7f4b158418"
   dependencies:
     fastify-auth: ^1.1.0
     fastify-bearer-auth: ^6.0.0
@@ -5051,19 +5051,7 @@ __metadata:
 
 "graasp-plugin-public@github:graasp/graasp-plugin-public":
   version: 0.1.0
-  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=49554c352449666163616dafb23c81eccc7bef72"
-  dependencies:
-    fastify-cors: ^6.0.2
-    graasp-item-tags: "github:graasp/graasp-item-tags"
-    http-status-codes: ^2.1.4
-    qs: ^6.10.1
-  checksum: f027bfbf8a63652867e373d90246176f6fb922b6a24d4fd884d2d9bc6fd0db74d414b24061de2898f42e6492228d708298c39ddadbcefe46e5d6dcbecf8cbdc0
-  languageName: node
-  linkType: hard
-
-"graasp-plugin-public@github:graasp/graasp-plugin-public#32/removeCors":
-  version: 0.1.0
-  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=a54b025fa4ed28dc97a581b1208bdf87d341b8a9"
+  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=e8f931107388e14809118673a60c6837895438d3"
   dependencies:
     graasp-item-tags: "github:graasp/graasp-item-tags"
     http-status-codes: ^2.1.4
@@ -5139,7 +5127,7 @@ __metadata:
     fastify-plugin: ^3.0.0
     fastify-secure-session: ^2.3.1
     fluent-json-schema: ^2.0.5
-    graasp-apps: "github:graasp/graasp-apps#32/publicCors"
+    graasp-apps: "github:graasp/graasp-apps"
     graasp-document-item: "github:graasp/graasp-document-item"
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
     graasp-item-flagging: "github:graasp/graasp-item-flagging"
@@ -5151,7 +5139,7 @@ __metadata:
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-import-zip: "github:graasp/graasp-plugin-import-zip"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
-    graasp-plugin-public: "github:graasp/graasp-plugin-public#32/removeCors"
+    graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     graasp-websockets: "github:graasp/graasp-websockets"
