@@ -1,6 +1,6 @@
 // global
 import { ObjectSchema } from 'fluent-json-schema';
-import { sql, DatabaseTransactionConnectionType as TrxHandler, ValueExpressionType } from 'slonik';
+import { sql, DatabaseTransactionConnection as TrxHandler, ValueExpression } from 'slonik';
 import { UnknownExtra } from '../../interfaces/extra';
 // other services
 import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
@@ -181,7 +181,7 @@ export class ItemService {
   buildColumnsForUpdate<E extends UnknownExtra>(
     key: string,
     data: Partial<Item<E>>,
-  ): ValueExpressionType {
+  ): ValueExpression {
     switch (key) {
       case 'settings':
         return sql`${sql.identifier([key])} || ${sql.json(data[key])}`;

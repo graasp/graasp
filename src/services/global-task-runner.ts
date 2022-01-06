@@ -10,7 +10,7 @@ import {
   PostHookHandlerType,
   TaskHookHandlerHelpers,
   IndividualResultType,
-  TaskStatus
+  TaskStatus,
 } from '../interfaces/task';
 import { Actor } from '../interfaces/actor';
 

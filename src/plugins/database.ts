@@ -1,8 +1,8 @@
-import { createPool, DatabasePoolType, DatabaseTransactionConnectionType } from 'slonik';
+import { createPool, DatabasePool, DatabaseTransactionConnection } from 'slonik';
 import { FastifyPluginAsync } from 'fastify';
 
-export type DatabasePoolHandler = DatabasePoolType;
-export type DatabaseTransactionHandler = DatabaseTransactionConnectionType;
+export type DatabasePoolHandler = DatabasePool;
+export type DatabaseTransactionHandler = DatabaseTransactionConnection;
 
 declare module 'fastify' {
   interface FastifyInstance {

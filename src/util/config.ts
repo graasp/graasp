@@ -167,20 +167,20 @@ let S3_INSTANCE: S3;
 
 // Enable localstack, only create the instance in test or dev environments
 // Use the provided endpoint or the aws s3 backend
-if((DEV || TEST) && S3_FILE_ITEM_HOST){
-  S3_INSTANCE = new S3({         
+if ((DEV || TEST) && S3_FILE_ITEM_HOST) {
+  S3_INSTANCE = new S3({
     region: S3_FILE_ITEM_REGION,
     useAccelerateEndpoint: false,
-    credentials: { 
-      accessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID, 
-      secretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY
+    credentials: {
+      accessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
+      secretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
     },
     // this is necessary because localstack doesn't support hostnames eg: <bucket>.s3.<region>.amazonaws.com/<key>
     // so it we must use pathStyle buckets eg: localhost:4566/<bucket>/<key>
     s3ForcePathStyle: true,
     // this is necessary to use the localstack instance running on graasp-localstack or localhost
     // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
-    endpoint: S3_FILE_ITEM_HOST 
+    endpoint: S3_FILE_ITEM_HOST,
   });
 }
 
@@ -215,7 +215,7 @@ export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 export const PUBLIC_PLUGIN = process.env.PUBLIC_PLUGIN === 'true';
 export const PUBLISHED_TAG_ID = process.env.PUBLISHED_TAG_ID;
 export const PUBLIC_TAG_ID = process.env.PUBLIC_TAG_ID;
-export const LOGIN_ITEM_TAG_ID= process.env.LOGIN_ITEM_TAG_ID;
+export const LOGIN_ITEM_TAG_ID = process.env.LOGIN_ITEM_TAG_ID;
 
 // Graasp chatbox plugin
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';

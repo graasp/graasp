@@ -60,7 +60,8 @@ export class DeleteItemTask extends BaseItemTask<Item> {
 
   get result(): Item {
     // if item has no descendants or subtasks are still 'New'
-    if (!this.subtasks || this.subtasks.some((st) => st.status === TaskStatus.NEW)) return this._result;
+    if (!this.subtasks || this.subtasks.some((st) => st.status === TaskStatus.NEW))
+      return this._result;
 
     // return the result of the last subtask that executed successfully,
     // in other words, the last deleted item
