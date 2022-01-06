@@ -8,6 +8,7 @@ import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
+import graaspImportZip from 'graasp-plugin-import-zip';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
@@ -105,6 +106,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(async function (fastify) {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
+
+        fastify.register(graaspImportZip, {
+          pathPrefix: FILES_PATH_PREFIX,
+          serviceMethod: SERVICE_METHOD,
+          serviceOptions: {
+            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+            local: FILE_ITEM_PLUGIN_OPTIONS,
+          },
+        });
 
         fastify.register(thumbnailsPlugin, {
           serviceMethod: SERVICE_METHOD,
