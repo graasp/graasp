@@ -6,6 +6,7 @@ import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
+import graaspSearchPlugin from 'graasp-plugin-search';
 import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
@@ -40,6 +41,7 @@ import {
   HIDDEN_TAG_ID,
   SAVE_ACTIONS,
   CLIENT_HOSTS,
+  PUBLISHED_TAG_ID,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -206,6 +208,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspRecycleBin);
 
         fastify.register(graaspCategoryPlugin);
+
+        fastify.register(graaspSearchPlugin, {
+          publishedTagId: PUBLISHED_TAG_ID,
+        });
 
         if (CHATBOX_PLUGIN) {
           fastify.register(graaspChatbox);
