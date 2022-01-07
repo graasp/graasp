@@ -6,6 +6,7 @@ import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
+import graaspSearchPlugin from 'graasp-plugin-search';
 import graaspApps from 'graasp-apps';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import graaspImportZip from 'graasp-plugin-import-zip';
@@ -35,6 +36,7 @@ import {
   APP_ITEMS_PREFIX,
   LOGIN_ITEM_TAG_ID,
   THUMBNAILS_ROUTE_PREFIX,
+  PUBLISHED_TAG_ID,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -173,6 +175,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspRecycleBin);
 
         fastify.register(graaspCategoryPlugin);
+
+        fastify.register(graaspSearchPlugin, {
+          publishedTagId: PUBLISHED_TAG_ID,
+        });
 
         if (CHATBOX_PLUGIN) {
           fastify.register(graaspChatbox);
