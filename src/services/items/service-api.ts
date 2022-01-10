@@ -12,7 +12,7 @@ import graaspImportZip from 'graasp-plugin-import-zip';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
-import {createAction} from 'graasp-plugin-actions';
+import { createAction } from 'graasp-plugin-actions';
 import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
