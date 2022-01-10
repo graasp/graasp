@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import publicPlugin from './plugins/public';
+import graaspPluginActions from 'graasp-plugin-actions';
 
 import {
   COOKIE_DOMAIN,
@@ -71,6 +72,11 @@ export default async function (instance: FastifyInstance): Promise<void> {
     if (PUBLIC_PLUGIN) {
       await instance.register(publicPlugin);
     }
+  });
+
+  instance.register(async (instance) => {
+    instance.addHook('preHandler', instance.verifyAuthentication);
+    instance.register(graaspPluginActions);
   });
 }
 

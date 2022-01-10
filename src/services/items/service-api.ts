@@ -12,6 +12,7 @@ import graaspImportZip from 'graasp-plugin-import-zip';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
+import {createAction} from 'graasp-plugin-actions';
 import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
@@ -188,6 +189,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             db.pool,
           );
         }
+
+        // onRespoonse hook that executes createAction in graasp-plugin-actions every time there is response
+        // it is used to save the actions of the items
+        fastify.addHook('onResponse', (request, reply) => {
+          createAction(request, reply, runner, taskManager);
+        });
 
         // create item
         fastify.post<{ Querystring: ParentIdParam }>(
