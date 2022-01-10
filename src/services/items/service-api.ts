@@ -7,6 +7,7 @@ import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspSearchPlugin from 'graasp-plugin-search';
+import graaspValidationPlugin from 'graasp-plugin-validation';
 import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
@@ -208,6 +209,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspRecycleBin);
 
         fastify.register(graaspCategoryPlugin);
+
+        fastify.register(graaspValidationPlugin);
 
         fastify.register(graaspSearchPlugin, {
           publishedTagId: PUBLISHED_TAG_ID,
