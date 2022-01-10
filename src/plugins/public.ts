@@ -7,6 +7,7 @@ import { publicPlugin as publicFileItemPlugin } from 'graasp-plugin-file-item';
 import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
 import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
+import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
 import {
   APPS_JWT_SECRET,
   APP_ITEMS_PREFIX,
@@ -88,14 +89,15 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
           // categories
           await instance.register(publicCategoriesPlugin);
 
-          // chatbox
-          await instance.register(publicChatboxPlugin);
-        },
-        { prefix: ITEMS_ROUTE_PREFIX },
-      );
-    },
-    { prefix: PUBLIC_ROUTE_PREFIX },
-  );
+        // keyword search
+        await instance.register(publicSearchPlugin);
+
+        // chatbox
+        await instance.register(publicChatboxPlugin);
+      },
+      { prefix: ITEMS_ROUTE_PREFIX },
+    );
+  }, { prefix: PUBLIC_ROUTE_PREFIX });
 };
 
 export default plugin;
