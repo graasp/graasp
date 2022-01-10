@@ -31,6 +31,7 @@ import {
   mockItemServiceGetSharedWith,
   mockItemServiceMove,
   mockItemServiceUpdate,
+  mockActionServiceCreate,
 } from './mocks';
 import {
   MAX_DESCENDANTS_FOR_COPY,
@@ -50,6 +51,11 @@ baseItemMembershipMock.mockImplementation(() => mockedBaseItemMembership);
 jest.mock('../src/plugins/database');
 jest.mock('../src/plugins/auth/auth');
 jest.mock('../src/plugins/decorator');
+
+// we want to check saved actions run sucessfully if they are enabled
+if (process.env.SAVE_ACTIONS) {
+  mockActionServiceCreate();
+}
 
 describe('Item routes tests', () => {
   beforeEach(() => {

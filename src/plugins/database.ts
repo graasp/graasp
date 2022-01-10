@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify, { uri,
   const options = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeParsers: [] as any[],
-    maximumPoolSize: MAXIMUM_POOL_SIZE
+    maximumPoolSize: MAXIMUM_POOL_SIZE,
   };
 
   if (logs) {

@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
+import fastifyCors from 'fastify-cors';
 import publicPlugin from './plugins/public';
+import graaspPluginActions from 'graasp-plugin-actions';
 
 import {
   COOKIE_DOMAIN,
@@ -16,6 +18,9 @@ import {
   REDIS_USERNAME,
   REDIS_PASSWORD,
   PUBLIC_PLUGIN,
+  GRAASP_ACTOR,
+  SAVE_ACTIONS,
+  CLIENT_HOSTS,
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -72,6 +77,22 @@ export default async function (instance: FastifyInstance): Promise<void> {
       await instance.register(publicPlugin);
     }
   });
+
+  instance.register(
+    async (instance) => {
+      // add CORS support
+      if (instance.corsPluginOptions) {
+        instance.register(fastifyCors, instance.corsPluginOptions);
+      }
+      instance.addHook('preHandler', instance.verifyAuthentication);
+      instance.register(graaspPluginActions, {
+        shouldSave: SAVE_ACTIONS,
+        graaspActor: GRAASP_ACTOR,
+        hosts: CLIENT_HOSTS,
+      });
+    },
+    { prefix: '/analytics' },
+  );
 }
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...

@@ -36,6 +36,22 @@ export const STAGING = ENVIRONMENT === Environment.staging;
 export const DEV = ENVIRONMENT === Environment.development;
 export const TEST = ENVIRONMENT === Environment.test;
 
+// todo: get from graasp constants
+export const CLIENT_HOSTS = [
+  {
+    name: 'builder',
+    hostname: 'builder.graasp.org',
+  },
+  {
+    name: 'player',
+    hostname: 'player.graasp.org',
+  },
+  {
+    name: 'explorer',
+    hostname: 'explorer.graasp.org',
+  },
+];
+
 const { PORT: port } = process.env;
 
 if (!port && !TEST) {
@@ -225,6 +241,9 @@ export const LOGIN_ITEM_TAG_ID = process.env.LOGIN_ITEM_TAG_ID;
 
 // Graasp chatbox plugin
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';
+
+// actions
+export const SAVE_ACTIONS = process.env.SAVE_ACTIONS === 'true';
 
 export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
 export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;

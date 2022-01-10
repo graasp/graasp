@@ -35,3 +35,5 @@ jobs:
           REFRESH_TOKEN_JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
           AUTH_TOKEN_JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
           FILE_STORAGE_ROOT_PATH: /
+          SAVE_ACTIONS: true
+

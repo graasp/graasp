@@ -169,6 +169,9 @@ HIDDEN_TAG_ID=<tag-id>
 PUBLISHED_TAG_ID=<tag-id>
 PUBLIC_TAG_ID=<tag-id>
 LOGIN_ITEM_TAG_ID=<tag-id>
+
+# Graasp Actions
+SAVE_ACTIONS=true
 ````
 
 ## Running
