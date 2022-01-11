@@ -1,5 +1,5 @@
 // global
-import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
+import { sql, DatabaseTransactionConnection as TrxHandler } from 'slonik';
 // other services
 import { Item } from '../../services/items/interfaces/item';
 import { Member } from '../../services/members/interfaces/member';

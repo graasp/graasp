@@ -12,9 +12,7 @@ import { TaskStatus } from '../../..';
 type InputType = { items?: Item[]; shouldValidatePermission?: boolean };
 
 // TODO: does this make sense here? Should this be part of different (micro)service??
-export class GetManyItemsItemMembershipsTask extends BaseItemMembershipTask<
-  unknown[]
-> {
+export class GetManyItemsItemMembershipsTask extends BaseItemMembershipTask<unknown[]> {
   get name(): string {
     return GetManyItemsItemMembershipsTask.name;
   }
@@ -36,10 +34,10 @@ export class GetManyItemsItemMembershipsTask extends BaseItemMembershipTask<
     // get memberships
     const itemMemberships = await Promise.all(
       items.map(async (item) => {
-          // the item might be malformed / be an error, return it
-          if(!item.id) {
-              return item;
-          }
+        // the item might be malformed / be an error, return it
+        if (!item.id) {
+          return item;
+        }
         const memberships = await this.itemMembershipService.getInheritedForAll(item, handler);
         // verify if member has rights to view the item by checking if member is in the list
         if (shouldValidatePermission) {

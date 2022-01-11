@@ -43,58 +43,59 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
     graaspActor: GRAASP_ACTOR,
   });
 
-
   // apps
   await instance.register(publicAppsPlugin, {
     jwtSecret: APPS_JWT_SECRET,
-    prefix: `${PUBLIC_ROUTE_PREFIX}${APP_ITEMS_PREFIX}`
+    prefix: `${PUBLIC_ROUTE_PREFIX}${APP_ITEMS_PREFIX}`,
   });
 
-  await instance.register(async function (instance) {
+  await instance.register(
+    async function (instance) {
+      // add CORS support
+      if (instance.corsPluginOptions) {
+        instance.register(fastifyCors, instance.corsPluginOptions);
+      }
 
-    // add CORS support
-    if (instance.corsPluginOptions) {
-      instance.register(fastifyCors, instance.corsPluginOptions);
-    }
+      // items, members, item memberships
+      await instance.register(graaspPluginPublic);
 
-    // items, members, item memberships
-    await instance.register(graaspPluginPublic);
+      // item thumbnail, member avatar endpoints
+      await instance.register(publicThumbnailsPlugin, {
+        serviceMethod: SERVICE_METHOD,
+        prefixes: {
+          avatarsPrefix: AVATARS_PATH_PREFIX,
+          thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
+        },
+        serviceOptions: {
+          s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+          local: FILE_ITEM_PLUGIN_OPTIONS,
+        },
+      });
 
-    // item thumbnail, member avatar endpoints
-    await instance.register(publicThumbnailsPlugin, {
-      serviceMethod: SERVICE_METHOD,
-      prefixes: {
-        avatarsPrefix: AVATARS_PATH_PREFIX,
-        thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
-      },
-      serviceOptions: {
-        s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-        local: FILE_ITEM_PLUGIN_OPTIONS,
-      },
-    });
+      // files
+      instance.register(
+        async () => {
+          await instance.register(publicFileItemPlugin, {
+            shouldLimit: true,
+            pathPrefix: FILES_PATH_PREFIX,
+            serviceMethod: SERVICE_METHOD,
+            serviceOptions: {
+              s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+              local: FILE_ITEM_PLUGIN_OPTIONS,
+            },
+          });
 
-    // files
-    instance.register(
-      async () => {
-        await instance.register(publicFileItemPlugin, {
-          shouldLimit: true,
-          pathPrefix: FILES_PATH_PREFIX,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
-            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-            local: FILE_ITEM_PLUGIN_OPTIONS,
-          },
-        });
+          // categories
+          await instance.register(publicCategoriesPlugin);
 
-        // categories
-        await instance.register(publicCategoriesPlugin);
-
-        // chatbox
-        await instance.register(publicChatboxPlugin);
-      },
-      { prefix: ITEMS_ROUTE_PREFIX },
-    );
-  }, { prefix: PUBLIC_ROUTE_PREFIX });
+          // chatbox
+          await instance.register(publicChatboxPlugin);
+        },
+        { prefix: ITEMS_ROUTE_PREFIX },
+      );
+    },
+    { prefix: PUBLIC_ROUTE_PREFIX },
+  );
 };
 
 export default plugin;

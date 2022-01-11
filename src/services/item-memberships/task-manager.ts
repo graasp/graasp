@@ -142,8 +142,15 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
   }
 
   // get item memberships for many items
-  createGetOfManyItemsTask(member: Member, items?: Item[], shouldValidatePermission?:boolean): GetManyItemsItemMembershipsTask {
-    return new GetManyItemsItemMembershipsTask(member, this.itemMembershipService, { items, shouldValidatePermission });
+  createGetOfManyItemsTask(
+    member: Member,
+    items?: Item[],
+    shouldValidatePermission?: boolean,
+  ): GetManyItemsItemMembershipsTask {
+    return new GetManyItemsItemMembershipsTask(member, this.itemMembershipService, {
+      items,
+      shouldValidatePermission,
+    });
   }
 
   // Other

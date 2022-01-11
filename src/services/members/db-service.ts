@@ -1,5 +1,5 @@
 // global
-import { sql, DatabaseTransactionConnectionType as TrxHandler } from 'slonik';
+import { sql, DatabaseTransactionConnection as TrxHandler } from 'slonik';
 import { UnknownExtra } from '../../interfaces/extra';
 // local
 import { Member } from './interfaces/member';

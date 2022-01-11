@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       jwtSecret: APPS_JWT_SECRET,
       serviceMethod: SERVICE_METHOD,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
-      prefix: APP_ITEMS_PREFIX
+      prefix: APP_ITEMS_PREFIX,
     });
   }
 
