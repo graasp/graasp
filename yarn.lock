@@ -4297,8 +4297,10 @@ __metadata:
 
 "graasp-plugin-search@github:graasp/graasp-plugin-search":
   version: 0.1.0
-  resolution: "graasp-plugin-search@https://github.com/graasp/graasp-plugin-search.git#commit=491c67907d440e94e02833e22466f644bf45571d"
-  checksum: f264c29c92c94759c11889fb136cc922f9116e54700481964fdd2ed148c5b478038e75dccf4db860d53558f9c279e1f95fe762af61fb831a1ce7634f7764d738
+  resolution: "graasp-plugin-search@https://github.com/graasp/graasp-plugin-search.git#commit=f94ecbb9f3c518f1d698efe5b524096340c5aee8"
+  dependencies:
+    graasp-plugin-public: "github:graasp/graasp-plugin-public"
+  checksum: 994a0031126412523dc936f683b62b59f8a5de384480610440f023a693f5ef0e43c1a98a7a26a1e503a5e8e145bc8deda4a52f23a4302f9a8febe3db1e218e2b
   languageName: node
   linkType: hard
 
