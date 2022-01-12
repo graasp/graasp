@@ -1021,9 +1021,9 @@ __metadata:
   linkType: hard
 
 "@types/prettier@npm:^2.1.5":
-  version: 2.4.2
-  resolution: "@types/prettier@npm:2.4.2"
-  checksum: 76e230b2d11028af11fe12e09b2d5b10b03738e9abf819ae6ebb0f78cac13d39f860755ce05ac3855b608222518d956628f5d00322dc206cc6d1f2d8d1519f1e
+  version: 2.4.3
+  resolution: "@types/prettier@npm:2.4.3"
+  checksum: b240434daabac54700c862b0bb52a83fec396e0e9c847447119ba41fd8404d79aadfa174e6306fb094b29efadac586344b7606c3a71c286b71755ab2579d54df
   languageName: node
   linkType: hard
 
@@ -1597,8 +1597,8 @@ __metadata:
   linkType: hard
 
 "aws-sdk@npm:^2.1051.0":
-  version: 2.1054.0
-  resolution: "aws-sdk@npm:2.1054.0"
+  version: 2.1055.0
+  resolution: "aws-sdk@npm:2.1055.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -1609,7 +1609,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: f77c45ec7482508da61838648bfeb760f6e7512968f4a9be7f8de7ce0e033f6043f2f386e6d6e1e08572a26b4d46700a7d51f6fec640b11e524ace2e596fc711
+  checksum: a54b0435352aad9b704955262e10034948f46396048adcaffd740fa146ad71aedc8b34f6fd0b77c80f7903953e67ba4752ad6c90dfb755fbf85e138158eb818f
   languageName: node
   linkType: hard
 
@@ -2025,9 +2025,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001286":
-  version: 1.0.30001298
-  resolution: "caniuse-lite@npm:1.0.30001298"
-  checksum: 43566732d1b8746e3dfae57f558471c701b26b2c166fb9fc53ad750d83128b2eb680a5e08233717e64055779b408c72d3b2cfad6d4ae33a3e647a11dc1c0d515
+  version: 1.0.30001299
+  resolution: "caniuse-lite@npm:1.0.30001299"
+  checksum: c770f60ebf3e0cc8043ba4db0ebec12d7a595a6b50cb4437c3c5c55b04de9d2413f711f2828be761e8c37bb46b927a8abe6b199b8f0ffc1a34af0ebdee84be27
   languageName: node
   linkType: hard
 
@@ -2270,12 +2270,12 @@ __metadata:
   linkType: hard
 
 "color@npm:^4.0.1":
-  version: 4.1.0
-  resolution: "color@npm:4.1.0"
+  version: 4.2.0
+  resolution: "color@npm:4.2.0"
   dependencies:
     color-convert: ^2.0.1
     color-string: ^1.9.0
-  checksum: 9f2ca574f8453983ab549282962ccdb094d8b5d29de2d162f2bca81c0c82429d1dfac49d8dabf2c0c0369bb7ceae16ceabc9f523f9eaedcba38a464e72091458
+  checksum: a5e7d8e8b4cdc3a005da8f0d9a41c63f74c46ab0865d834e950891a5c171141e8e88cbb958a501bd6d80ec57448fee4f630d9910f9533524ea9324e4bc9a3c35
   languageName: node
   linkType: hard
 
@@ -2838,9 +2838,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.17":
-  version: 1.4.40
-  resolution: "electron-to-chromium@npm:1.4.40"
-  checksum: f86a056ff719cffc66236dab73a08e7c2b3e0b2e6744b6061d9b9daf77f171e9f8cffb188b7938a5efb6aa81db97b19c840e7d65319bf925f62928d7ae3c9fb6
+  version: 1.4.43
+  resolution: "electron-to-chromium@npm:1.4.43"
+  checksum: c096a42ec6af0c22736f7151d1386e6597b125ad9a6379a747e67d33d03b3b2923336dbe17edad0037299e7aa1daa0f3feb726d797375e652b6918c1a467b39a
   languageName: node
   linkType: hard
 
@@ -4179,12 +4179,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-item-tags@github:graasp/graasp-item-tags":
+"graasp-item-tags@github:graasp/graasp-item-tags, graasp-item-tags@graasp/graasp-item-tags":
   version: 0.1.0
-  resolution: "graasp-item-tags@https://github.com/graasp/graasp-item-tags.git#commit=59a4a525b47acd73948a9b5fba70ece000073300"
+  resolution: "graasp-item-tags@https://github.com/graasp/graasp-item-tags.git#commit=fab30bc3e195ad1c156ea90754584988426f8a75"
   dependencies:
     http-status-codes: 2.2.0
-  checksum: ebd32e6ef983f599a84f08246acb712aa656e89902920cd8b152ebedeff47ba91fa31e20dcf0e3c075b8f83497551d8975e1160dcce42962fa9b558803344469
+  checksum: 6b3093f6f5776c96e8a19f2dd712a5f35eec2ce4d20c5a9b89f1855842f0b79c5804cdd9637a81a690af216afc36419b51c357b408adb44d51454b45b63966ef
   languageName: node
   linkType: hard
 
@@ -4245,6 +4245,15 @@ __metadata:
     fastify-multipart: 5.2.1
     http-status-codes: 2.2.0
   checksum: 33796d5bd0b5e97fdd333175a7e13438720dd98f675d79bbb672e4d7d7d4800fa8850a278b229008e5ea027322a4bf754ff43e60fa199cdc856b3d810042d337
+  languageName: node
+  linkType: hard
+
+graasp-plugin-hidden-items@graasp/graasp-plugin-hidden-items:
+  version: 0.1.0
+  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=22fbcd515901b4e5a2d9e70dc15e8e22bf9c8f66"
+  dependencies:
+    graasp-item-tags: graasp/graasp-item-tags
+  checksum: 86a055ceab05f17dc3c6987a3e18fd8681828af21267e8dae1d9bf9fabc43e9840317cb182d2519fb5a1dc6908d6cfacc39f09a2a5f17bd817c3a3f226a70d9a
   languageName: node
   linkType: hard
 
@@ -4358,6 +4367,7 @@ __metadata:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
+    graasp-plugin-hidden-items: graasp/graasp-plugin-hidden-items
     graasp-plugin-import-zip: "github:graasp/graasp-plugin-import-zip"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
@@ -4804,8 +4814,8 @@ __metadata:
   linkType: hard
 
 "ioredis@npm:^4.27.6":
-  version: 4.28.2
-  resolution: "ioredis@npm:4.28.2"
+  version: 4.28.3
+  resolution: "ioredis@npm:4.28.3"
   dependencies:
     cluster-key-slot: ^1.1.0
     debug: ^4.3.1
@@ -4818,7 +4828,7 @@ __metadata:
     redis-errors: ^1.2.0
     redis-parser: ^3.0.0
     standard-as-callback: ^2.1.0
-  checksum: 4d9e5a4707cc918d2c2e161ea430aa06e68d5a513a680e8a315cf2cdea0b65b410a2e7279a04bab6db66aa781af4244acce3df67f560fed198f1f2f1d2c1d609
+  checksum: f054e6db3a4d81200d4009a5efb6e6900bb1dfc590e23ea1a02f35d8da4aa0bb6939d4d8e7ec9af1f28f23cabf60f83d8a6ea66beef035feca4406e646cae8ae
   languageName: node
   linkType: hard
 
