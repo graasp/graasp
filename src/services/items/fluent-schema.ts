@@ -12,7 +12,8 @@ const settings = S.object()
   .additionalProperties(false)
   .prop('isPinned', S.boolean())
   .prop('tags', S.array())
-  .prop('showChatbox', S.boolean());
+  .prop('showChatbox', S.boolean())
+  .prop('hasThumbnail', S.boolean());
 
 const item = S.object()
   .additionalProperties(false)
