@@ -8,6 +8,13 @@ const register = {
     },
     additionalProperties: false,
   },
+  querystring: {
+    type: 'object',
+    properties: {
+      lang: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
 };
 
 const mregister = {
@@ -18,6 +25,13 @@ const mregister = {
       name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
       email: { type: 'string', format: 'email' },
       challenge: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      lang: { type: 'string' },
     },
     additionalProperties: false,
   },
@@ -32,6 +46,13 @@ const login = {
     },
     additionalProperties: false,
   },
+  querystring: {
+    type: 'object',
+    properties: {
+      lang: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
 };
 
 const mlogin = {
@@ -41,6 +62,13 @@ const mlogin = {
     properties: {
       email: { type: 'string', format: 'email' },
       challenge: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      lang: { type: 'string' },
     },
     additionalProperties: false,
   },

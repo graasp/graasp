@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { mockMemberServiceCreate, mockMemberServiceGetMatching } from './mocks';
 import * as MEMBERS_FIXTURES from './fixtures/members';
 import build from './app';
-import { JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../src/util/config';
+import { DEFAULT_LANG, JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../src/util/config';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { HTTP_METHODS } from './fixtures/utils';
 
@@ -30,7 +30,32 @@ describe('Auth routes tests', () => {
       });
 
       expect(mockSendRegisterEmail).toHaveBeenCalled();
-      expect(mockCreate).toHaveBeenCalledWith({ email, name }, expect.anything());
+      expect(mockCreate).toHaveBeenCalledWith(
+        { email, name, extra: { lang: DEFAULT_LANG } },
+        expect.anything(),
+      );
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      app.close();
+    });
+    it('Sign Up successfully with given lang', async () => {
+      const email = 'someemail@email.com';
+      const name = 'anna';
+      const lang = 'fr';
+      const mockCreate = mockMemberServiceCreate();
+      const app = await build();
+      const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: `/register?lang=${lang}`,
+        payload: { email, name },
+      });
+
+      expect(mockSendRegisterEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        lang,
+      );
+      expect(mockCreate).toHaveBeenCalledWith({ email, name, extra: { lang } }, expect.anything());
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       app.close();
     });
@@ -46,7 +71,12 @@ describe('Auth routes tests', () => {
         payload: member,
       });
 
-      expect(mockSendLoginEmail).toHaveBeenCalled();
+      expect(mockSendLoginEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        member.extra.lang,
+      );
       expect(mockCreate).not.toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
       app.close();
@@ -79,6 +109,34 @@ describe('Auth routes tests', () => {
         payload: { email: member.email },
       });
 
+      expect(mockSendLoginEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        null,
+        member.extra.lang,
+      );
+      expect(mockSendLoginEmail).toHaveBeenCalled();
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      app.close();
+    });
+    it('Sign In successfully with given lang', async () => {
+      const member = MEMBERS_FIXTURES.ANNA;
+      const lang = 'de';
+      mockMemberServiceGetMatching([member]);
+      const app = await build();
+      const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: `/login?lang=${lang}`,
+        payload: { email: member.email },
+      });
+
+      expect(mockSendLoginEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        null,
+        lang,
+      );
       expect(mockSendLoginEmail).toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       app.close();
@@ -168,7 +226,35 @@ describe('Auth routes tests', () => {
         });
 
         expect(mockSendRegisterEmail).toHaveBeenCalled();
-        expect(mockCreate).toHaveBeenCalledWith({ email, name }, expect.anything());
+        expect(mockCreate).toHaveBeenCalledWith(
+          { email, name, extra: { lang: DEFAULT_LANG } },
+          expect.anything(),
+        );
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        app.close();
+      });
+      it('Sign Up successfully with given lang', async () => {
+        const email = 'someemail@email.com';
+        const name = 'anna';
+        const lang = 'fr';
+        const mockCreate = mockMemberServiceCreate();
+        const app = await build();
+        const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
+        const response = await app.inject({
+          method: HTTP_METHODS.POST,
+          url: `/m/register?lang=${lang}`,
+          payload: { email, name, challenge },
+        });
+
+        expect(mockSendRegisterEmail).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.anything(),
+          lang,
+        );
+        expect(mockCreate).toHaveBeenCalledWith(
+          { email, name, extra: { lang } },
+          expect.anything(),
+        );
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         app.close();
       });
@@ -184,7 +270,12 @@ describe('Auth routes tests', () => {
           payload: { ...member, challenge },
         });
 
-        expect(mockSendLoginEmail).toHaveBeenCalled();
+        expect(mockSendLoginEmail).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.anything(),
+          expect.anything(),
+          member.extra.lang,
+        );
         expect(mockCreate).not.toHaveBeenCalled();
         expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
         app.close();
@@ -205,7 +296,7 @@ describe('Auth routes tests', () => {
       });
     });
 
-    describe('POST /login', () => {
+    describe('POST /m/login', () => {
       it('Sign In successfully', async () => {
         const member = MEMBERS_FIXTURES.BOB;
         mockMemberServiceGetMatching([member]);
@@ -217,10 +308,37 @@ describe('Auth routes tests', () => {
           payload: { email: member.email, challenge },
         });
 
-        expect(mockSendLoginEmail).toHaveBeenCalled();
+        expect(mockSendLoginEmail).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.anything(),
+          false,
+          member.extra.lang,
+        );
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         app.close();
       });
+
+      it('Sign In successfully with given lang', async () => {
+        const member = MEMBERS_FIXTURES.ANNA;
+        const lang = 'de';
+        mockMemberServiceGetMatching([member]);
+        const app = await build();
+        const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
+        const response = await app.inject({
+          method: HTTP_METHODS.POST,
+          url: `/m/login?lang=${lang}`,
+          payload: { email: member.email, challenge },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+        expect(mockSendLoginEmail).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.anything(),
+          false,
+          lang,
+        );
+        app.close();
+      });
+
       it('Sign In does send not found error for non-existing email', async () => {
         const email = 'some@email.com';
         const app = await build();
@@ -250,7 +368,7 @@ describe('Auth routes tests', () => {
       });
     });
 
-    describe('GET /auth', () => {
+    describe('GET /m/auth', () => {
       it('Authenticate successfully', async () => {
         const member = MEMBERS_FIXTURES.BOB;
         const verifier = 'verifier';

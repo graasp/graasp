@@ -24,4 +24,4 @@ export const ACTOR = buildMember({
 
 export const ANNA = buildMember({ name: 'anna' });
 
-export const BOB = buildMember({ name: 'bob' });
+export const BOB = buildMember({ name: 'bob', extra: { lang: 'fr' } });
