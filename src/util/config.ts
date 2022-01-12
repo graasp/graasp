@@ -213,6 +213,7 @@ export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // Graasp public items
 export const PUBLIC_PLUGIN = process.env.PUBLIC_PLUGIN === 'true';
+export const HIDDEN_TAG_ID = process.env.HIDDEN_TAG_ID;
 export const PUBLISHED_TAG_ID = process.env.PUBLISHED_TAG_ID;
 export const PUBLIC_TAG_ID = process.env.PUBLIC_TAG_ID;
 export const LOGIN_ITEM_TAG_ID = process.env.LOGIN_ITEM_TAG_ID;

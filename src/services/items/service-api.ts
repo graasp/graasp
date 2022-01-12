@@ -7,6 +7,7 @@ import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspApps from 'graasp-apps';
+import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import graaspImportZip from 'graasp-plugin-import-zip';
 import fastifyCors from 'fastify-cors';
@@ -35,6 +36,7 @@ import {
   APP_ITEMS_PREFIX,
   LOGIN_ITEM_TAG_ID,
   THUMBNAILS_ROUTE_PREFIX,
+  HIDDEN_TAG_ID,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -169,6 +171,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspItemFlags);
 
         fastify.register(graaspItemTags);
+
+        fastify.register(graaspHidden, {
+          hiddenTagId: HIDDEN_TAG_ID,
+        });
 
         fastify.register(graaspRecycleBin);
 
