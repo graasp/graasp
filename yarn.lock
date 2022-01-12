@@ -4304,6 +4304,15 @@ graasp-plugin-hidden-items@graasp/graasp-plugin-hidden-items:
   languageName: node
   linkType: hard
 
+"graasp-plugin-search@github:graasp/graasp-plugin-search":
+  version: 0.1.0
+  resolution: "graasp-plugin-search@https://github.com/graasp/graasp-plugin-search.git#commit=f94ecbb9f3c518f1d698efe5b524096340c5aee8"
+  dependencies:
+    graasp-plugin-public: "github:graasp/graasp-plugin-public"
+  checksum: 994a0031126412523dc936f683b62b59f8a5de384480610440f023a693f5ef0e43c1a98a7a26a1e503a5e8e145bc8deda4a52f23a4302f9a8febe3db1e218e2b
+  languageName: node
+  linkType: hard
+
 "graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails":
   version: 0.1.0
   resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=dedbb29bc437bbbcf962602341d6ae173c23cd64"
@@ -4372,6 +4381,7 @@ graasp-plugin-hidden-items@graasp/graasp-plugin-hidden-items:
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
+    graasp-plugin-search: "github:graasp/graasp-plugin-search"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     graasp-websockets: "github:graasp/graasp-websockets"
     http-status-codes: 2.2.0

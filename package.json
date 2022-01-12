@@ -58,6 +58,7 @@
     "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "graasp-plugin-recycle-bin": "github:graasp/graasp-plugin-recycle-bin",
+    "graasp-plugin-search": "github:graasp/graasp-plugin-search",
     "graasp-plugin-thumbnails": "github:graasp/graasp-plugin-thumbnails",
     "graasp-websockets": "github:graasp/graasp-websockets",
     "http-status-codes": "2.2.0",
