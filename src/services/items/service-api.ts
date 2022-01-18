@@ -131,6 +131,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             tasks[1].input = { validatePermission: PermissionLevel.Write };
             return tasks;
           },
+          uploadPostHookTasks: async (data, { member }) => {
+            const tasks = taskManager.createUpdateTaskSequence(member, data.itemId, {
+              settings: { hasThumbnail: Boolean(data.size) },
+            });
+            return tasks;
+          },
+
           downloadPreHookTasks: async ({ itemId: id, filename }, { member }) => {
             const tasks = membership.createGetOfItemTaskSequence(member, id);
             tasks[1].input = { validatePermission: PermissionLevel.Read };

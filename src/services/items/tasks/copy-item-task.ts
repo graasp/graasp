@@ -115,13 +115,13 @@ export class CopyItemTask extends BaseItemTask<Item> {
 
     for (let i = 0; i < tree.length; i++) {
       const original = tree[i];
-      const { name, description, type, path, extra } = original;
+      const { name, description, type, path, extra, settings } = original;
       const pathSplit = path.split('.');
       const oldId_ = BaseItem.pathToId(pathSplit.pop());
       let copy: Item;
 
       if (i === 0) {
-        copy = new BaseItem(name, description, type, extra, this.actor.id, parentItem);
+        copy = new BaseItem(name, description, type, extra, settings, this.actor.id, parentItem);
       } else {
         const oldParentId_ = BaseItem.pathToId(pathSplit.pop());
         copy = new BaseItem(
@@ -129,6 +129,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
           description,
           type,
           extra,
+          settings,
           this.actor.id,
           old2New.get(oldParentId_).copy,
         );

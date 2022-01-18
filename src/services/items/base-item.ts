@@ -1,6 +1,7 @@
 // global
 import { v4 as uuidv4 } from 'uuid';
 import { UnknownExtra } from '../../interfaces/extra';
+import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
 // local
 import { Item, ItemSettings } from './interfaces/item';
 
@@ -26,6 +27,7 @@ export class BaseItem<E extends UnknownExtra> implements Item<E> {
     description: string = null,
     type: string = 'base',
     extra: E,
+    settings: ItemSettings,
     creator: string,
     parent?: Item,
   ) {
@@ -34,6 +36,7 @@ export class BaseItem<E extends UnknownExtra> implements Item<E> {
     this.description = description;
     this.type = type;
     this.extra = extra ? extra : ({} as E);
+    this.settings = settings ?? DEFAULT_ITEM_SETTINGS;
     this.creator = creator;
     this.path = parent ? `${parent.path}.${dashToUnderscore(this.id)}` : dashToUnderscore(this.id);
   }

@@ -29,7 +29,7 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     this.status = TaskStatus.RUNNING;
 
     const { item, data } = this.input;
-    const { extra: extraChanges } = data;
+    const { extra: extraChanges, settings: settingsChanges } = data;
     this.targetId = item.id;
 
     // only allow for item type specific changes in extra
@@ -38,6 +38,14 @@ export class UpdateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
         data.extra = Object.assign({}, item.extra, extraChanges);
       } else {
         delete data.extra;
+      }
+    }
+
+    if (settingsChanges) {
+      if (Object.keys(settingsChanges).length === 1) {
+        data.settings = Object.assign({}, item.settings, settingsChanges);
+      } else {
+        delete data.settings;
       }
     }
 

@@ -4,6 +4,7 @@ import { sql, DatabaseTransactionConnection as TrxHandler, ValueExpression } fro
 import { UnknownExtra } from '../../interfaces/extra';
 // other services
 import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
+import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
 // local
 import { Item } from './interfaces/item';
 import { ItemTaskManager } from './interfaces/item-task-manager';
@@ -133,13 +134,24 @@ export class ItemService {
     item: Partial<Item<E>>,
     transactionHandler: TrxHandler,
   ): Promise<Item<E>> {
-    const { id, name, description, type, path, extra, creator } = item;
+    const {
+      id,
+      name,
+      description,
+      type,
+      path,
+      extra,
+      creator,
+      settings = DEFAULT_ITEM_SETTINGS,
+    } = item;
 
     return transactionHandler
       .query<Item<E>>(
         sql`
-        INSERT INTO item (id, name, description, type, path, extra, creator)
-        VALUES (${id}, ${name}, ${description}, ${type}, ${path}, ${sql.json(extra)}, ${creator})
+        INSERT INTO item (id, name, description, type, path, extra, settings, creator)
+        VALUES (${id}, ${name}, ${description}, ${type}, ${path}, ${sql.json(extra)},${sql.json(
+          settings,
+        )}, ${creator})
         RETURNING ${ItemService.allColumns}
       `,
       )

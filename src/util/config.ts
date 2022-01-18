@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { ServiceMethod } from 'graasp-plugin-file';
 import S3 from 'aws-sdk/clients/s3';
+import { ItemSettings } from '..';
 
 enum Environment {
   production = 'production',
@@ -231,3 +232,7 @@ export const ITEMS_ROUTE_PREFIX = '/items';
 export const PUBLIC_ROUTE_PREFIX = '/p';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
+
+export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
+  hasThumbnail: false,
+};

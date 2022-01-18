@@ -47,9 +47,9 @@ export class CreateItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>
     }
 
     // create item
-    const { name, description, type, extra } = data;
+    const { name, description, type, extra, settings } = data;
     const { id: creator } = this.actor;
-    let item = new BaseItem(name, description, type, extra, creator, parentItem);
+    let item = new BaseItem(name, description, type, extra, settings, creator, parentItem);
 
     await this.preHookHandler?.(item, this.actor, { log, handler });
     item = await this.itemService.create(item, handler);
