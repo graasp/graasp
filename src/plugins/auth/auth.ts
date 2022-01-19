@@ -26,6 +26,7 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_CLIENT_HOST,
+  DEFAULT_LANG,
 } from '../../util/config';
 
 // other services
@@ -34,6 +35,7 @@ import { TaskManager as MemberTaskManager } from '../../services/members/task-ma
 // local
 import { register, login, auth, mlogin, mauth, mdeepLink, mregister } from './schemas';
 import { AuthPluginOptions } from './interfaces/auth';
+import { Member } from '../..';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -151,6 +153,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   fastify.decorate('verifyAuthentication', verifyAuthentication);
 
+  const getLangFromMember = (member, defaultLang?): string => member.extra?.lang ?? defaultLang;
+
   async function generateAuthTokensPair(
     memberId: string,
   ): Promise<{ authToken: string; refreshToken: string }> {
@@ -177,11 +181,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // don't wait for mailer's response; log error and link if it fails.
     fastify.mailer
-      .sendRegisterEmail(member, link)
+      .sendRegisterEmail(member, link, getLangFromMember(member))
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  async function generateLoginLinkAndEmailIt(member, reRegistrationAttempt?, challenge?) {
+  async function generateLoginLinkAndEmailIt(member: Member, reRegistrationAttempt?: boolean, challenge?: string, lang?: string) {
     // generate token with member info and expiration
     const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
       expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
@@ -192,7 +196,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // don't wait for mailer's response; log error and link if it fails.
     fastify.mailer
-      .sendLoginEmail(member, link, reRegistrationAttempt)
+      .sendLoginEmail(member, link, reRegistrationAttempt, getLangFromMember(member, lang))
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
@@ -204,10 +208,10 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     }
 
     // register
-    fastify.post<{ Body: { name: string; email: string } }>(
+    fastify.post<{ Body: { name: string; email: string }; Querystring: { lang?: string } }>(
       '/register',
       { schema: register },
-      async ({ body, log }, reply) => {
+      async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
         // The email is lowercased when the user registers
         // To every subsequents call, it is to the client to ensure the email is sent in lowercase
         // the servers always do a 1:1 match to retrieve the member by email.
@@ -218,29 +222,32 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         const [member] = await runner.runSingle(task, log);
 
         if (!member) {
-          const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, body);
+          const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
+            ...body,
+            extra: { lang },
+          });
           const member = await runner.runSingle(task, log);
 
           await generateRegisterLinkAndEmailIt(member);
           reply.status(StatusCodes.NO_CONTENT);
         } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
-          await generateLoginLinkAndEmailIt(member, true);
+          await generateLoginLinkAndEmailIt(member, true, null, lang);
           reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
         }
       },
     );
 
     // login
-    fastify.post<{ Body: { email: string } }>(
+    fastify.post<{ Body: { email: string }; Querystring: { lang?: string } }>(
       '/login',
       { schema: login },
-      async ({ body, log }, reply) => {
+      async ({ body, log, query: { lang } }, reply) => {
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
         const [member] = await runner.runSingle(task, log);
 
         if (member) {
-          await generateLoginLinkAndEmailIt(member);
+          await generateLoginLinkAndEmailIt(member, null, null, lang);
           reply.status(StatusCodes.NO_CONTENT);
         } else {
           const { email } = body;
@@ -315,10 +322,16 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
       fastify.decorateRequest('memberId', null);
 
-      fastify.post<{ Body: { name: string; email: string; challenge: string } }>(
+      fastify.post<{
+        Body: { name: string; email: string; challenge: string };
+        Querystring: { lang?: string };
+      }>(
         '/register',
         { schema: mregister },
-        async ({ body: { name, email, challenge }, log }, reply) => {
+        async (
+          { body: { name, email, challenge }, query: { lang = DEFAULT_LANG }, log },
+          reply,
+        ) => {
           // The email is lowercased when the user registers
           // To every subsequents call, it is to the client to ensure the email is sent in lowercase
           // the servers always do a 1:1 match to retrieve the member by email.
@@ -329,29 +342,33 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const [member] = await runner.runSingle(task, log);
 
           if (!member) {
-            const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, { name, email });
+            const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
+              name,
+              email,
+              extra: { lang },
+            });
             const member = await runner.runSingle(task, log);
 
             await generateRegisterLinkAndEmailIt(member, challenge);
             reply.status(StatusCodes.NO_CONTENT);
           } else {
             log.warn(`Member re-registration attempt for email '${email}'`);
-            await generateLoginLinkAndEmailIt(member, true, challenge);
+            await generateLoginLinkAndEmailIt(member, true, challenge, lang);
             reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
           }
         },
       );
 
-      fastify.post<{ Body: { email: string; challenge: string } }>(
+      fastify.post<{ Body: { email: string; challenge: string }; Querystring: { lang?: string } }>(
         '/login',
         { schema: mlogin },
-        async ({ body, log }, reply) => {
+        async ({ body, log, query: { lang } }, reply) => {
           const { email, challenge } = body;
           const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
           const [member] = await runner.runSingle(task, log);
 
           if (member) {
-            await generateLoginLinkAndEmailIt(member, false, challenge);
+            await generateLoginLinkAndEmailIt(member, false, challenge, lang);
             reply.status(StatusCodes.NO_CONTENT);
           } else {
             log.warn(`Login attempt with non-existent email '${email}'`);

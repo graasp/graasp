@@ -89,15 +89,17 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
           // categories
           await instance.register(publicCategoriesPlugin);
 
-        // keyword search
-        await instance.register(publicSearchPlugin);
+          // keyword search
+          await instance.register(publicSearchPlugin);
 
-        // chatbox
-        await instance.register(publicChatboxPlugin);
-      },
-      { prefix: ITEMS_ROUTE_PREFIX },
-    );
-  }, { prefix: PUBLIC_ROUTE_PREFIX });
+          // chatbox
+          await instance.register(publicChatboxPlugin);
+        },
+        { prefix: ITEMS_ROUTE_PREFIX },
+      );
+    },
+    { prefix: PUBLIC_ROUTE_PREFIX },
+  );
 };
 
 export default plugin;

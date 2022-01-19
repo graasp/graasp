@@ -236,3 +236,4 @@ export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
 export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
   hasThumbnail: false,
 };
+export const DEFAULT_LANG = 'en';
