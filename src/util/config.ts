@@ -14,20 +14,19 @@ export let ENVIRONMENT: Environment;
 
 switch (process.env.NODE_ENV) {
   case Environment.production:
-    dotenv.config({ path: 'production.env' });
+    dotenv.config({ path: '.env.production' });
     ENVIRONMENT = Environment.production;
     break;
   case Environment.staging:
-    dotenv.config({ path: 'staging.env' });
+    dotenv.config({ path: '.env.staging' });
     ENVIRONMENT = Environment.staging;
     break;
   case Environment.test:
-    dotenv.config({ path: 'test.env' });
+    dotenv.config({ path: '.env.test' });
     ENVIRONMENT = Environment.test;
     break;
-  // case Environment.development:
   default:
-    dotenv.config({ path: 'development.env' });
+    dotenv.config({ path: '.env.development' });
     ENVIRONMENT = Environment.development;
     break;
 }
