@@ -185,7 +185,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  async function generateLoginLinkAndEmailIt(member: Member, reRegistrationAttempt?: boolean, challenge?: string, lang?: string) {
+  async function generateLoginLinkAndEmailIt(
+    member: Member,
+    reRegistrationAttempt?: boolean,
+    challenge?: string,
+    lang?: string,
+  ) {
     // generate token with member info and expiration
     const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
       expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
