@@ -136,6 +136,10 @@ S3_FILE_ITEM_BUCKET=graasp
 S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
 S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
 
+FILES_PATH_PREFIX=files/
+AVATARS_PATH_PREFIX=avatars/
+THUMBNAILS_PATH_PREFIX=items/
+
 # If you are using a local installation of localstack replace by http://localhost:4566
 # This value is only used for Dev or Test environments
 S3_FILE_ITEM_HOST=http://graasp-localstack:4566
@@ -161,6 +165,10 @@ CHATBOX_PLUGIN=true
 
 # Graasp public items
 PUBLIC_PLUGIN=true
+HIDDEN_TAG_ID=<tag-id>
+PUBLISHED_TAG_ID=<tag-id>
+PUBLIC_TAG_ID=<tag-id>
+LOGIN_ITEM_TAG_ID=<tag-id>
 ````
 
 ## Running

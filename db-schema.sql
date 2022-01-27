@@ -48,19 +48,6 @@ CREATE TABLE "item_membership" (
 );
 CREATE INDEX "item_membership_item_path_idx" ON "item_membership" USING gist ("item_path");
 
-/*
-CREATE TYPE "relations_enum" AS ENUM ('is member of', 'is administrator of');
-CREATE TABLE "members_relation" (
-  "member1" uuid REFERENCES "member" ("id") ON DELETE CASCADE, -- delete if member is deleted
-  "relation" relations_enum NOT NULL,
-  "member2" uuid REFERENCES "member" ("id") ON DELETE CASCADE, -- delete if member is deleted
-
-  "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-  "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
-  PRIMARY KEY ("member1", "member2")
-);
-*/
-
 -- Tables timestamps
 CREATE FUNCTION trigger_set_timestamp()
 RETURNS TRIGGER AS $$
@@ -85,12 +72,6 @@ BEFORE UPDATE ON "item_membership"
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
-/*
-CREATE TRIGGER "members_relation_set_timestamp"
-BEFORE UPDATE ON "members_relation"
-FOR EACH ROW
-EXECUTE PROCEDURE trigger_set_timestamp();
-*/
 
 -- Graasp member
 INSERT INTO "member" ("id", "name", "email")

@@ -29,7 +29,11 @@
     "debug": "yarn build && yarn watch-debug",
     "serve-debug": "NODE_PATH=./dist nodemon --inspect dist/server.js",
     "serve-debug-break": "NODE_PATH=./dist nodemon --inspect-brk dist/server.js",
-    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\""
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\"",
+    "hooks:uninstall": "husky uninstall",
+    "hooks:install": "husky install",
+    "postinstall": "husky install",
+    "pre-commit": "yarn prettier:check && yarn lint"
   },
   "dependencies": {
     "aws-sdk": "^2.1051.0",
@@ -68,6 +72,8 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "16.0.1",
+    "@commitlint/config-conventional": "16.0.0",
     "@types/chai": "^4.3.0",
     "@types/concurrently": "^6.4.0",
     "@types/eslint": "^8.2.1",
@@ -80,6 +86,7 @@
     "concurrently": "^7.0.0",
     "eslint": "^8.6.0",
     "eslint-config-prettier": "^8.3.0",
+    "husky": "7.0.4",
     "jest": "^27.4.7",
     "nodemon": "^2.0.15",
     "prettier": "2.5.1",
