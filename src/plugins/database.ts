@@ -1,5 +1,6 @@
 import { createPool, DatabasePool, DatabaseTransactionConnection } from 'slonik';
 import { FastifyPluginAsync } from 'fastify';
+import { MAXIMUM_POOL_SIZE } from '../util/config';
 
 export type DatabasePoolHandler = DatabasePool;
 export type DatabaseTransactionHandler = DatabaseTransactionConnection;
@@ -23,6 +24,7 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify, { uri,
   const options = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeParsers: [] as any[],
+    maximumPoolSize: MAXIMUM_POOL_SIZE
   };
 
   if (logs) {

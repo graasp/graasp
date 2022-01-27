@@ -98,6 +98,11 @@ export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES =
 // Graasp limits
 
 /**
+ * Maximum connections to the DB for slonik
+ */
+export const MAXIMUM_POOL_SIZE = 30;
+
+/**
  * Maximun items tree depth
  */
 export const MAX_TREE_LEVELS = 15;
