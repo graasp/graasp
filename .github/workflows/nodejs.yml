@@ -30,10 +30,10 @@ jobs:
         env:
           CI: true
           # random keys
-          SECURE_SESSION_SECRET_KEY: 236a69acbef1e66e8ab8d91e41d00e69236a69acbef1e66e8ab8d91e41d00e69
-          JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
-          REFRESH_TOKEN_JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
-          AUTH_TOKEN_JWT_SECRET: bd6df82a7b2b076c9f332983ac58ae83
+          SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
+          JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
+          REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
+          AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           FILE_STORAGE_ROOT_PATH: /
           SAVE_ACTIONS: true
 
