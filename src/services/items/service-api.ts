@@ -112,6 +112,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
+        // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
+        // it is used to save the actions of the items
+        if (SAVE_ACTIONS) {
+          const actionService = new ActionService();
+          const actionTaskManager = new ActionTaskManager(actionService, dbService, CLIENT_HOSTS);
+          fastify.addHook('onResponse', (request, reply) => {
+            // todo: save public actions?
+            if (request.member) {
+              const createActionTask = actionTaskManager.createCreateTask(request.member, {
+                request,
+                reply,
+              });
+              runner.runSingle(createActionTask);
+            }
+          });
+        }
+
         fastify.register(graaspImportZip, {
           pathPrefix: FILES_PATH_PREFIX,
           serviceMethod: SERVICE_METHOD,
@@ -203,20 +220,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             taskManager,
             db.pool,
           );
-        }
-
-        // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
-        // it is used to save the actions of the items
-        if (SAVE_ACTIONS) {
-          const actionService = new ActionService();
-          const actionTaskManager = new ActionTaskManager(actionService, dbService, CLIENT_HOSTS);
-          fastify.addHook('onResponse', (request, reply) => {
-            const createActionTask = actionTaskManager.createCreateTask(request.member, {
-              request,
-              reply,
-            });
-            runner.runSingle(createActionTask);
-          });
         }
 
         // create item

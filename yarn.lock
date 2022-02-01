@@ -4562,15 +4562,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-actions@github:graasp/graasp-plugin-actions#7/saveActions":
+"graasp-plugin-actions@github:graasp/graasp-plugin-actions":
   version: 0.1.0
-  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=bd8d4d41b161927c75a05114004ef674decf6467"
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=fa59b450c9d5bc33e2074b2a73728b1e2da81d28"
   dependencies:
     fluent-json-schema: 3.0.1
     geoip-lite: 1.4.2
     http-status-codes: 2.2.0
     uuid: 8.3.2
-  checksum: 4b1332804a4dbc49fe6774fbfad25c087cad20ac898a6b89ee482265153b79e0c2b521be3c7882e059a903d4945c4106b1783c58ac99a3649241ce1935171804
+  checksum: 10959971f80e277fd69958c38ae11f6a9dfc083d9d8ae6a61c5d8d63cbe6b89a47428aad7fba8dda02eb44f1d00551bfffd65043728d3bd4266cd528811810d7
   languageName: node
   linkType: hard
 
@@ -4745,7 +4745,7 @@ __metadata:
     graasp-item-flagging: "github:graasp/graasp-item-flagging"
     graasp-item-tags: "github:graasp/graasp-item-tags"
     graasp-mailer: "github:graasp/graasp-mailer"
-    graasp-plugin-actions: "github:graasp/graasp-plugin-actions#7/saveActions"
+    graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
