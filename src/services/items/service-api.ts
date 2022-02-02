@@ -13,6 +13,7 @@ import graaspImportZip from 'graasp-plugin-import-zip';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
+import { ActionTaskManager, ActionService } from 'graasp-plugin-actions';
 import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
@@ -37,6 +38,8 @@ import {
   LOGIN_ITEM_TAG_ID,
   THUMBNAILS_ROUTE_PREFIX,
   HIDDEN_TAG_ID,
+  SAVE_ACTIONS,
+  CLIENT_HOSTS,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -108,6 +111,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(async function (fastify) {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
+
+        // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
+        // it is used to save the actions of the items
+        if (SAVE_ACTIONS) {
+          const actionService = new ActionService();
+          const actionTaskManager = new ActionTaskManager(actionService, dbService, CLIENT_HOSTS);
+          fastify.addHook('onResponse', async (request, reply) => {
+            // todo: save public actions?
+            if (request.member) {
+              const createActionTask = actionTaskManager.createCreateTask(request.member, {
+                request,
+                reply,
+              });
+              await runner.runSingle(createActionTask);
+            }
+          });
+        }
 
         fastify.register(graaspImportZip, {
           pathPrefix: FILES_PATH_PREFIX,

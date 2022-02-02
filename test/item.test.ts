@@ -31,6 +31,7 @@ import {
   mockItemServiceGetSharedWith,
   mockItemServiceMove,
   mockItemServiceUpdate,
+  mockActionServiceCreate,
 } from './mocks';
 import {
   MAX_DESCENDANTS_FOR_COPY,
@@ -41,6 +42,7 @@ import {
 import { buildMembership } from './fixtures/memberships';
 import { HTTP_METHODS } from './fixtures/utils';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { MULTIPLE_ITEMS_LOADING_TIME } from './constants';
 
 // mock base item membership to detect calls
 const baseItemMembershipMock = jest.spyOn(baseItemMembershipModule, 'BaseItemMembership');
@@ -50,6 +52,11 @@ baseItemMembershipMock.mockImplementation(() => mockedBaseItemMembership);
 jest.mock('../src/plugins/database');
 jest.mock('../src/plugins/auth/auth');
 jest.mock('../src/plugins/decorator');
+
+// we want to check saved actions run sucessfully if they are enabled
+if (process.env.SAVE_ACTIONS) {
+  mockActionServiceCreate();
+}
 
 describe('Item routes tests', () => {
   beforeEach(() => {
@@ -1210,7 +1217,7 @@ describe('Item routes tests', () => {
           expect(response.statusCode).toBe(202);
           app.close();
           res(true);
-        }, 1500),
+        }, MULTIPLE_ITEMS_LOADING_TIME),
       );
     });
   });
@@ -1476,7 +1483,7 @@ describe('Item routes tests', () => {
           expect(response.statusCode).toBe(202);
           app.close();
           res(true);
-        }, 1500),
+        }, MULTIPLE_ITEMS_LOADING_TIME),
       );
     });
   });

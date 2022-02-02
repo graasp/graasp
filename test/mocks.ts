@@ -9,8 +9,10 @@ import { MemberService } from '../src/services/members/db-service';
 import { Member } from '../src/services/members/interfaces/member';
 import { getDummyItem } from './fixtures/items';
 import { ACTOR, buildMember } from './fixtures/members';
+import { buildAction } from './fixtures/actions';
 import { buildMembership } from './fixtures/memberships';
 import { getIdsFromPath } from './utils';
+import { ActionService } from 'graasp-plugin-actions';
 
 // Item Membership Service
 export const mockItemMembershipServiceGetForMemberAtItem = (
@@ -197,5 +199,11 @@ export const mockMemberServiceUpdate = (members: Member[]): jest.SpyInstance => 
 export const mockMemberServiceCreate = (): jest.SpyInstance => {
   return jest.spyOn(MemberService.prototype, 'create').mockImplementation(async (data) => {
     return buildMember(data);
+  });
+};
+
+export const mockActionServiceCreate = (): jest.SpyInstance => {
+  return jest.spyOn(ActionService.prototype, 'create').mockImplementation(async (data) => {
+    return buildAction(data);
   });
 };
