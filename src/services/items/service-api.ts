@@ -117,14 +117,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         if (SAVE_ACTIONS) {
           const actionService = new ActionService();
           const actionTaskManager = new ActionTaskManager(actionService, dbService, CLIENT_HOSTS);
-          fastify.addHook('onResponse', (request, reply) => {
+          fastify.addHook('onResponse', async (request, reply) => {
             // todo: save public actions?
             if (request.member) {
               const createActionTask = actionTaskManager.createCreateTask(request.member, {
                 request,
                 reply,
               });
-              runner.runSingle(createActionTask);
+              await runner.runSingle(createActionTask);
             }
           });
         }
