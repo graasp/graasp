@@ -351,8 +351,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               return ids;
             }
 
-            await runner.runMultipleSequences(tasks, log);
-            reply.status(204);
+            return runner.runMultipleSequences(tasks, log);
           },
         );
 
