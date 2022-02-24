@@ -70,7 +70,7 @@ You'll need to create the necessary tables. The SQL commands are available in `d
 
 Install the corresponding schema if you are using any fo the following plugins :
 
-- Item Tags : [`db-schema.sql`](https://github.com/graasp/graasp-item-tags/blob/3/pinnedItem/db-schema.sql)
+- Item Tags : [`db-schema.sql`](https://github.com/graasp/graasp-item-tags/blob/master/db-schema.sql)
 
 - Public : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-public/blob/main/db-schema.sql)
 
@@ -86,9 +86,11 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Item Categories [`db-schema.sql`](https://github.com/graasp/graasp-plugin-categories/blob/main/db-schema.sql)
 
+- Actions [`db-schema.sql`](https://github.com/graasp/graasp-plugin-actions/blob/main/db-schema.sql)
+
 ### Configuration
 
-To configure the application, you'll need to change the values in  `development.env`. The file should have the following structure :
+To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :
 
 ````
 # Application server
@@ -150,7 +152,7 @@ EMBEDDED_LINK_ITEM_PLUGIN=false
 
 # Graasp apps
 APPS_PLUGIN=true
-APPS_JWT_SECRET=
+APPS_JWT_SECRET=<content>
 
 # Graasp websockets
 # If you are using a local installation and don't want to install redis, you can set WEBSOCKETS_PLUGIN to false
