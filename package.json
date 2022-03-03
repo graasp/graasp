@@ -36,6 +36,7 @@
     "pre-commit": "yarn prettier:check && yarn lint"
   },
   "dependencies": {
+    "@graasp/translations": "github:graasp/graasp-translations",
     "aws-sdk": "^2.1051.0",
     "dotenv": "^10.0.0",
     "fastify": "^3.25.3",
