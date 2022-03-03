@@ -93,6 +93,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
       { destination: parentItem },
     );
 
+    this._result = movedItem;
     this.status = TaskStatus.OK;
   }
 

@@ -38,6 +38,7 @@
   "dependencies": {
     "@graasp/translations": "github:graasp/graasp-translations",
     "aws-sdk": "^2.1051.0",
+    "bcrypt": "5.0.1",
     "dotenv": "^10.0.0",
     "fastify": "^3.25.3",
     "fastify-auth": "^1.1.0",

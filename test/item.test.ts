@@ -1137,7 +1137,7 @@ describe('Item routes tests', () => {
       });
 
       expect(mockMove).toHaveBeenCalledTimes(items.length);
-      expect(response.statusCode).toBe(204);
+      expect(response.statusCode).toBe(200);
       app.close();
     });
     it('Bad request if one id is invalid', async () => {
@@ -1182,7 +1182,7 @@ describe('Item routes tests', () => {
         },
       });
       expect(mockMove).toHaveBeenCalledTimes(items.length);
-      expect(response.statusCode).toBe(204);
+      expect(response.statusCode).toBe(200);
       app.close();
     });
     it('Move lots of items', async () => {
