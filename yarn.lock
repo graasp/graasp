@@ -4913,7 +4913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items":
+graasp-plugin-hidden-items@graasp/graasp-plugin-hidden-items:
   version: 0.1.0
   resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=22fbcd515901b4e5a2d9e70dc15e8e22bf9c8f66"
   dependencies:
@@ -4940,6 +4940,13 @@ __metadata:
     qs: ^6.10.2
     stream-promise: 3.2.0
   checksum: 37ef68fac5de04d02d4b11808eb3a540ddea658b5dbcf9b0a5051e37d11d1eae4dde5d67551463bf00399863cf7760c651077839aefe4360e0fd94c31b414618
+  languageName: node
+  linkType: hard
+
+"graasp-plugin-item-likes@github:graasp/graasp-plugin-item-likes":
+  version: 0.1.0
+  resolution: "graasp-plugin-item-likes@https://github.com/graasp/graasp-plugin-item-likes.git#commit=2efe7ea639a4cabb4195aa21730720f2d548c8c4"
+  checksum: a037f6ef30c51ecfbaf41a95fe4d8ed30d01fb1cb919ea069e7e9df3954590a2eb3c10246dc05e8d269b750f32c6269e7c5d5a63d9e7c2cf67cb4d684524afaf
   languageName: node
   linkType: hard
 
@@ -4995,15 +5002,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-validation@portal:/tmp/graasp-plugin-validation::locator=graasp%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "graasp-plugin-validation@portal:/tmp/graasp-plugin-validation::locator=graasp%40workspace%3A."
+"graasp-plugin-validation@github:graasp/graasp-plugin-validation":
+  version: 0.1.0
+  resolution: "graasp-plugin-validation@https://github.com/graasp/graasp-plugin-validation.git#commit=2ad3c11afee644c13f1c16dfa07b0fd502fe0e1e"
   dependencies:
     bad-words: 3.0.4
     french-badwords-list: 1.0.5
     http-status-codes: 2.2.0
+  checksum: 99167b12272ade5f9e08748cae1f57fd339de4b5833865c3a9bad39d38f8218447a1d40e72fd7537ac781b274ea37892f486b3f5b71195ac1b54be21f3e0cdcd
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "graasp-websockets@github:graasp/graasp-websockets":
   version: 1.0.0
@@ -5061,8 +5069,9 @@ __metadata:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
+    graasp-plugin-hidden-items: graasp/graasp-plugin-hidden-items
     graasp-plugin-import-zip: "github:graasp/graasp-plugin-import-zip"
+    graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"

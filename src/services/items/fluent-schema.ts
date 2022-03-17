@@ -14,7 +14,8 @@ const settings = S.object()
   .prop('isPinned', S.boolean())
   .prop('tags', S.array())
   .prop('showChatbox', S.boolean())
-  .prop('hasThumbnail', S.boolean());
+  .prop('hasThumbnail', S.boolean())
+  .prop('ccLicenseAdaption', S.string());
 
 const item = S.object()
   .additionalProperties(false)
