@@ -4913,7 +4913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-graasp-plugin-hidden-items@graasp/graasp-plugin-hidden-items:
+"graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items":
   version: 0.1.0
   resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=22fbcd515901b4e5a2d9e70dc15e8e22bf9c8f66"
   dependencies:
@@ -5069,7 +5069,7 @@ graasp-plugin-hidden-items@graasp/graasp-plugin-hidden-items:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-hidden-items: graasp/graasp-plugin-hidden-items
+    graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
     graasp-plugin-import-zip: "github:graasp/graasp-plugin-import-zip"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
