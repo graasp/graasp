@@ -54,6 +54,25 @@ const login = {
     additionalProperties: false,
   },
 };
+const passswordLogin = {
+  body: {
+    type: 'object',
+    required: ['email', 'password'],
+    properties: {
+      email: { type: 'string', format: 'email' },
+      //TODO: review
+      password: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      lang: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+};
 
 const mlogin = {
   body: {
@@ -108,4 +127,4 @@ const mdeepLink = {
   },
 };
 
-export { register, mregister, login, mlogin, auth, mauth, mdeepLink };
+export { register, mregister, login, passswordLogin, mlogin, auth, mauth, mdeepLink };
