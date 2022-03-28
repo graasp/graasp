@@ -10,6 +10,7 @@ import fastifyAuth from 'fastify-auth';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyBearerAuth from 'fastify-bearer-auth';
 import fastifyCors from 'fastify-cors';
+import bcrypt from 'bcrypt';
 
 import {
   SECURE_SESSION_SECRET_KEY,
@@ -33,7 +34,16 @@ import {
 import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
 
 // local
-import { register, login, passswordLogin, auth, mlogin, mauth, mdeepLink, mregister} from './schemas';
+import {
+  register,
+  login,
+  passswordLogin,
+  auth,
+  mlogin,
+  mauth,
+  mdeepLink,
+  mregister,
+} from './schemas';
 import { AuthPluginOptions } from './interfaces/auth';
 import { Member } from '../..';
 
@@ -211,21 +221,29 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     challenge?: string,
     lang?: string,
   ) {
-    console.log(member, lang);
-    const mock_pwd = 'asd';
-    const user_pwd = body.password;
-    // TO DO: cheeck wrong password
-    if (mock_pwd.localeCompare(user_pwd) == 0) {
-      // generate token with member info and expiration
-      const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
-        expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-      });
-      const linkPath = challenge ? '/m/deep-link' : '/auth';
-      const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
-      return link;
-    } else {
-      return null;
-    }
+    const plainTextPassword = body.password;
+    const storedHash1 = '$2b$10$WFVpHW6qSpZrMnk06Qxmtuzu1OU2C3LqQby5szT0BboirsNx4cdD.';
+
+    /*     bcrypt.compare() allows to compare the provided password with a stored hash. 
+    It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
+    if they match, res is true */
+    const link = bcrypt
+      .compare(plainTextPassword, storedHash1)
+      .then(async (res: boolean) => {
+        if (res) {
+          // generate token with member info and expiration
+          const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
+            expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+          });
+          const linkPath = challenge ? '/m/deep-link' : '/auth';
+          const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
+          return link;
+        } else {
+          return null;
+        }
+      })
+      .catch((err) => console.error(err.message));
+    return link;
   }
 
   // cookie based auth and api endpoints
