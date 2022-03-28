@@ -833,39 +833,9 @@ describe('Membership routes tests', () => {
     });
     it(`Cannot delete more than ${MAX_ITEM_MEMBERSHIPS_FOR_DELETE} memberships`, async () => {
       const item = getDummyItem();
-      const memberships = [
+      const memberships = Array.from({ length: MAX_ITEM_MEMBERSHIPS_FOR_DELETE + 1 }, () =>
         buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-        buildMembership({ path: item.path, permission: PermissionLevel.Write, memberId: uuidv4() }),
-      ];
+      );
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       mockItemMembershipServiceGetAllInSubtree(memberships);
