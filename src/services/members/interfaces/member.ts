@@ -22,4 +22,5 @@ export interface Member<E extends UnknownExtra = UnknownExtra> extends Actor {
   extra: E;
   createdAt: string;
   updatedAt: string;
+  password: string;
 }

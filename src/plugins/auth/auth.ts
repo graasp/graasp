@@ -221,28 +221,30 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     challenge?: string,
     lang?: string,
   ) {
-    const plainTextPassword = body.password;
-    const storedHash1 = '$2b$10$WFVpHW6qSpZrMnk06Qxmtuzu1OU2C3LqQby5szT0BboirsNx4cdD.';
-
     /*     bcrypt.compare() allows to compare the provided password with a stored hash. 
     It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
     if they match, res is true */
-    const link = bcrypt
-      .compare(plainTextPassword, storedHash1)
-      .then(async (res: boolean) => {
-        if (res) {
-          // generate token with member info and expiration
-          const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
-            expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-          });
-          const linkPath = challenge ? '/m/deep-link' : '/auth';
-          const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
-          return link;
-        } else {
-          return null;
-        }
-      })
-      .catch((err) => console.error(err.message));
+    let link;
+    if (member.password === null) {
+      link = null;
+    } else {
+      link = bcrypt
+        .compare(body.password, member.password)
+        .then(async (res: boolean) => {
+          if (res) {
+            // generate token with member info and expiration
+            const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
+              expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+            });
+            const linkPath = challenge ? '/m/deep-link' : '/auth';
+            const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
+            return link;
+          } else {
+            return false;
+          }
+        })
+        .catch((err) => console.error(err.message));
+    }
     return link;
   }
 
@@ -313,11 +315,14 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         const [member] = await runner.runSingle(task, log);
 
         if (member) {
-          await verifyCredentials(member, body, null, lang).then((l) => {
-            l
-              ? reply.send({ link: l })
-              : reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
-          });
+          const link = await verifyCredentials(member, body, null, lang);
+          if (link === null) {
+            reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+          } else if (link) {
+            reply.send({ link });
+          } else {
+            reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+          }
         } else {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);

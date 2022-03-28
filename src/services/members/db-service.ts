@@ -28,6 +28,7 @@ export class MemberService {
       'extra',
       ['created_at', 'createdAt'],
       ['updated_at', 'updatedAt'],
+      'password',
     ].map((c) =>
       !Array.isArray(c)
         ? sql.identifier([c])
