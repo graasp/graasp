@@ -40,6 +40,7 @@ import {
   passswordLogin,
   auth,
   mlogin,
+  mPasswordLogin,
   mauth,
   mdeepLink,
   mregister,
@@ -236,9 +237,15 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
               expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
             });
-            const linkPath = challenge ? '/m/deep-link' : '/auth';
-            const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
-            return link;
+            if (challenge) {
+              // token for graasp mobile app
+              return token;
+            } else {
+              // link for graasp web
+              const linkPath = '/auth';
+              const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
+              return link;
+            }
           } else {
             return false;
           }
@@ -445,6 +452,35 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             await generateLoginLinkAndEmailIt(member, false, challenge, lang);
             reply.status(StatusCodes.NO_CONTENT);
           } else {
+            log.warn(`Login attempt with non-existent email '${email}'`);
+            reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+          }
+        },
+      );
+
+      fastify.post<{
+        Body: { email: string; challenge: string; password: string };
+        Querystring: { lang?: string };
+      }>(
+        '/loginpassword',
+        { schema: mPasswordLogin },
+        async ({ body, log, query: { lang } }, reply) => {
+          const email = body.email.toLowerCase();
+          const { challenge } = body;
+          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+          const [member] = await runner.runSingle(task, log);
+
+          if (member) {
+            const token = await verifyCredentials(member, body, challenge, lang);
+            if (token === null) {
+              reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+            } else if (token) {
+              reply.send({ t: token });
+            } else {
+              reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+            }
+          } else {
+            const { email } = body;
             log.warn(`Login attempt with non-existent email '${email}'`);
             reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
           }
