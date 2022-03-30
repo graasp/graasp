@@ -222,14 +222,18 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     challenge?: string,
     lang?: string,
   ) {
-    /*     bcrypt.compare() allows to compare the provided password with a stored hash. 
+    /* let verified is used to store the output of bcrypt.compare() 
+    bcrypt.compare() allows to compare the provided password with a stored hash. 
     It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
-    if they match, res is true */
-    let link;
+    if they match, verified is true 
+    if they do not match, verified is false
+    if the user does not has a stored hash, verified is null
+    */
+    let verified;
     if (member.password === null) {
-      link = null;
+      verified = null;
     } else {
-      link = bcrypt
+      verified = bcrypt
         .compare(body.password, member.password)
         .then(async (res: boolean) => {
           if (res) {
@@ -252,7 +256,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         })
         .catch((err) => console.error(err.message));
     }
-    return link;
+    return verified;
   }
 
   // cookie based auth and api endpoints
