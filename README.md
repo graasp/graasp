@@ -66,7 +66,9 @@ Then open the folder locally and run the following command to install the requir
 
 Before running the application you'll need to install the PostgreSQL database.
 
-You'll need to create the necessary tables. The SQL commands are available in `db-schema.sql`.
+You'll need to create the necessary tables. Copy & paste the commands from the file bellow into a SQL prompt.
+
+- The SQL commands are available in [`db-schema.sql`](https://github.com/graasp/graasp/blob/master/db-schema.sql)
 
 Install the corresponding schema if you are using any fo the following plugins :
 
@@ -82,7 +84,7 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Recycle Items : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-recycle-bin/blob/main/db-schema.sql)
 
-- Item Login : [`db-schema.sql`](https://github.com/graasp/graasp-item-login/blob/main/db-schema.sql)
+- Item Login : [`db-schema.sql`](https://github.com/graasp/graasp-item-login/blob/master/db-schema.sql)
 
 - Item Categories [`db-schema.sql`](https://github.com/graasp/graasp-plugin-categories/blob/main/db-schema.sql)
 
