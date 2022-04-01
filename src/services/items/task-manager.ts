@@ -2,8 +2,8 @@
 import { Task } from '../../interfaces/task';
 import { UnknownExtra } from '../../interfaces/extra';
 // other services
-import { Member } from '../../services/members/interfaces/member';
-import { ItemMembershipService } from '../../services/item-memberships/db-service';
+import { Member } from '../members/interfaces/member';
+import { ItemMembershipService } from '../item-memberships/db-service';
 import { ItemMembership, PermissionLevel } from '../item-memberships/interfaces/item-membership';
 import { GetMemberItemMembershipOverItemTask } from '../item-memberships/tasks/get-member-item-membership-over-item-task';
 import { BaseItemMembership } from '../item-memberships/base-item-membership';
@@ -60,6 +60,9 @@ export class TaskManager implements ItemTaskManager<Member> {
   }
   getGetSharedWithTaskName(): string {
     return GetItemsSharedWithTask.name;
+  }
+  getGetManyTaskName(): string {
+    return GetManyItemsTask.name;
   }
 
   // CRUD
