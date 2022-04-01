@@ -71,7 +71,6 @@ export const itemActionHandler = async (
         case paths.copyItems.test(url):
           const copyItemsParentId = (request.body as { parentId: string })?.parentId;
           queryItemIds.forEach((id) => {
-            console.log('pushing id', id);
             actionsToSave.push({
               ...actionBase,
               itemId: id,
