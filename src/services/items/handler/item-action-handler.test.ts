@@ -1,10 +1,10 @@
-import { itemActionHandler } from '../src/services/items/handler/item-action-handler';
-import { getDummyItem } from './fixtures/items';
-import { CLIENT_HOSTS, GRAASP_ACTOR } from '../src/util/config';
+import { itemActionHandler } from './item-action-handler';
+import { getDummyItem } from '../../../../test/fixtures/items';
+import { GRAASP_ACTOR } from '../../../util/config';
 import { FastifyLoggerInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { DatabaseTransactionHandler, ItemService } from '../src';
-import { checkActionData, HTTP_METHODS } from './fixtures/utils';
-import { ACTION_TYPES } from '../src/services/items/constants/constants';
+import { DatabaseTransactionHandler, ItemService } from '../../../index';
+import { checkActionData, HTTP_METHODS } from '../../../../test/fixtures/utils';
+import { ACTION_TYPES } from '../constants/constants';
 import qs from 'qs';
 import { v4 } from 'uuid';
 
@@ -30,10 +30,9 @@ const reply = null as unknown as FastifyReply;
 const log = { debug: () => null } as unknown as FastifyLoggerInstance;
 const item = getDummyItem();
 const itemService = getItemService(item);
-const BUILDER_CLIENT_HOST = CLIENT_HOSTS[0];
 const request = {
   url: `/items/${item.id}`,
-  method: 'GET',
+  method: HTTP_METHODS.GET,
   member: GRAASP_ACTOR,
   params: {},
   query: {},
@@ -42,26 +41,6 @@ const request = {
 } as unknown as FastifyRequest;
 
 describe('Create Action Task', () => {
-  it('check geolocation and view properties', async () => {
-    // create a request with valid ip and headers to test view and geolocation
-    const geolocationAndViewRequest = {
-      ...request,
-      ip: '192.158.1.38',
-      headers: {
-        origin: `https://${BUILDER_CLIENT_HOST.hostname}`,
-      },
-    };
-
-    const actions = await itemActionHandler(itemService, {
-      request: geolocationAndViewRequest,
-      reply,
-      log,
-      dbHandler: dbTransactionHandler,
-    });
-    expect(actions[0].geolocation).toBeTruthy();
-    expect(actions[0].view).toEqual(BUILDER_CLIENT_HOST.name);
-  });
-
   it('returns empty actions array if request does not match any path', async () => {
     const invalidUrlRequest = {
       ...request,

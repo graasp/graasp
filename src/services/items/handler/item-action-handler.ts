@@ -1,8 +1,6 @@
-import { ActionHandlerInput, BaseAction } from 'graasp-plugin-actions';
-import geoip from 'geoip-lite';
-import { ACTION_TYPES, METHODS, paths, VIEW_UNKNOWN_NAME } from '../constants/constants';
+import { ActionHandlerInput, BaseAction, getBaseAction } from 'graasp-plugin-actions';
+import { ACTION_TYPES, METHODS, paths } from '../constants/constants';
 import { ItemService } from '../db-service';
-import { CLIENT_HOSTS } from '../../../util/config';
 
 export const itemActionHandler = async (
   dbService: ItemService,
@@ -11,27 +9,20 @@ export const itemActionHandler = async (
   const { request, log, dbHandler } = actionInput;
   // function called each time there is a request in the items in graasp (onResponse hook in graasp)
   // identify and check the correct endpoint of the request
-  // check that the request is ok
-  const { headers, member, method, url, ip, query, params } = request;
+  const { method, url, query, params, member } = request;
   // warning: this is really dependent on the url -> how to be more safe and dynamic?
   const paramItemId: string = (params as { id: string })?.id;
   let queryItemIds = (query as { id })?.id;
   if (!Array.isArray(queryItemIds)) {
     queryItemIds = [queryItemIds];
   }
-  const geolocation = geoip.lookup(ip);
 
-  const view =
-    CLIENT_HOSTS.find(({ hostname: thisHN }) => headers?.origin?.includes(thisHN))?.name ??
-    VIEW_UNKNOWN_NAME;
+  const baseAction = getBaseAction(request);
 
   const actionsToSave = [];
   const actionBase = {
-    memberId: member.id,
-    memberType: member.type,
+    ...baseAction,
     extra: { memberId: member.id },
-    view,
-    geolocation,
   };
 
   // identify the endpoint with method and url
