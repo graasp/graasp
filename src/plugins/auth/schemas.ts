@@ -65,13 +65,6 @@ const passswordLogin = {
     },
     additionalProperties: false,
   },
-  querystring: {
-    type: 'object',
-    properties: {
-      lang: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
 };
 
 const mlogin = {
@@ -101,13 +94,6 @@ const mPasswordLogin = {
       email: { type: 'string', format: 'email' },
       challenge: { type: 'string' },
       password: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
-  querystring: {
-    type: 'object',
-    properties: {
-      lang: { type: 'string' },
     },
     additionalProperties: false,
   },

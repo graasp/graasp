@@ -220,7 +220,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     member: Member,
     body: { email: string; password: string },
     challenge?: string,
-    lang?: string,
   ) {
     /* let verified is used to store the output of bcrypt.compare() 
     bcrypt.compare() allows to compare the provided password with a stored hash. 
@@ -284,6 +283,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
             ...body,
             extra: { lang },
+            password: null,
           });
           const member = await runner.runSingle(task, log);
 
@@ -317,20 +317,20 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     );
 
     // loginpassword
-    fastify.post<{ Body: { email: string; password: string }; Querystring: { lang?: string } }>(
+    fastify.post<{ Body: { email: string; password: string } }>(
       '/loginpassword',
       { schema: passswordLogin },
-      async ({ body, log, query: { lang } }, reply) => {
+      async ({ body, log }, reply) => {
         const email = body.email.toLowerCase();
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         const [member] = await runner.runSingle(task, log);
 
         if (member) {
-          const link = await verifyCredentials(member, body, null, lang);
+          const link = await verifyCredentials(member, body, null);
           if (link === null) {
             reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
           } else if (link) {
-            reply.send({ link });
+            reply.status(StatusCodes.SEE_OTHER).send({ link });
           } else {
             reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
           }
@@ -431,6 +431,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
               name,
               email,
               extra: { lang },
+              password: null,
             });
             const member = await runner.runSingle(task, log);
 
@@ -464,32 +465,27 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
       fastify.post<{
         Body: { email: string; challenge: string; password: string };
-        Querystring: { lang?: string };
-      }>(
-        '/loginpassword',
-        { schema: mPasswordLogin },
-        async ({ body, log, query: { lang } }, reply) => {
-          const email = body.email.toLowerCase();
-          const { challenge } = body;
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          const [member] = await runner.runSingle(task, log);
+      }>('/loginpassword', { schema: mPasswordLogin }, async ({ body, log }, reply) => {
+        const email = body.email.toLowerCase();
+        const { challenge } = body;
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const [member] = await runner.runSingle(task, log);
 
-          if (member) {
-            const token = await verifyCredentials(member, body, challenge, lang);
-            if (token === null) {
-              reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
-            } else if (token) {
-              reply.send({ t: token });
-            } else {
-              reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
-            }
+        if (member) {
+          const token = await verifyCredentials(member, body, challenge);
+          if (token === null) {
+            reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+          } else if (token) {
+            reply.status(StatusCodes.OK).send({ t: token });
           } else {
-            const { email } = body;
-            log.warn(`Login attempt with non-existent email '${email}'`);
-            reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+            reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
           }
-        },
-      );
+        } else {
+          const { email } = body;
+          log.warn(`Login attempt with non-existent email '${email}'`);
+          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+        }
+      });
 
       fastify.post<{ Body: { t: string; verifier: string } }>(
         '/auth',
