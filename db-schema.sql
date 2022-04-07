@@ -75,5 +75,6 @@ EXECUTE PROCEDURE trigger_set_timestamp();
 
 
 -- Graasp member
-INSERT INTO "member" ("id", "name", "email")
-VALUES ('12345678-1234-1234-1234-123456789012', 'Graasp', 'graasp@graasp.org');
+INSERT INTO "member" ("id", "name", "email", "password")
+VALUES ('12345678-1234-1234-1234-123456789012', 'Graasp', 'graasp@graasp.org', '$2b$10$4ixKKHAC.oSuO6D6/g35KOw3OPOkkOlfWk55y/XuQzFRvaXejzdXe');
+
