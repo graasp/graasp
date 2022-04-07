@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 5
+  version: 6
   cacheKey: 8
 
 "2-thenable@npm:^1.0.0":
@@ -2049,7 +2049,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bcrypt@npm:5.0.1, bcrypt@npm:^5.0.1":
+"bcrypt@npm:^5.0.1":
   version: 5.0.1
   resolution: "bcrypt@npm:5.0.1"
   dependencies:
@@ -4737,7 +4737,6 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.9.0
     "@typescript-eslint/parser": ^5.9.0
     aws-sdk: ^2.1051.0
-    bcrypt: 5.0.1
     chai: ^4.3.4
     concurrently: ^7.0.0
     dotenv: ^10.0.0
@@ -4751,7 +4750,7 @@ __metadata:
     fastify-helmet: ^5.3.2
     fastify-plugin: ^3.0.0
     fastify-secure-session: ^3.0.0
-    fluent-json-schema: 3.0.1
+    fluent-json-schema: ^3.0.1
     graasp-apps: "github:graasp/graasp-apps"
     graasp-document-item: "github:graasp/graasp-document-item"
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
@@ -9610,11 +9609,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.3.5#~builtin<compat/typescript>, typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>":
   version: 4.6.3
-  resolution: "typescript@patch:typescript@npm%3A4.6.3#~builtin<compat/typescript>::version=4.6.3&hash=ddd1e8"
+  resolution: "typescript@patch:typescript@npm%3A4.6.3#~builtin<compat/typescript>::version=4.6.3&hash=bda367"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: fe6bdc1afb2f145ddb7b0a3a31f96352209f6a5704d97f038414ea22ff9d8dd42f32cfb6652e30458d7d958d2d4e85de2df11c574899c6f750a6b3c0e90a3a76
+  checksum: 6bf45caf847062420592e711bc9c28bf5f9a9a7fa8245343b81493e4ededae33f1774009d1234d911422d1646a2c839f44e1a23ecb111b40a60ac2ea4c1482a8
   languageName: node
   linkType: hard
 

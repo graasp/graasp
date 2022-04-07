@@ -22,10 +22,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - name: yarn install, build, and test
+      - name: yarn install and build
         run: |
           yarn
           yarn build --if-present
+      - name: yarn test
+        run: 
           yarn test
         env:
           CI: true

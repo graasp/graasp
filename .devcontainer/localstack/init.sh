@@ -17,6 +17,19 @@ corsConfig='{
                 "null"
             ],
             "ExposeHeaders": []
+        },
+        {
+            "AllowedHeaders": [
+                "*"
+            ],
+            "AllowedMethods": [
+                "HEAD",
+                "GET",
+            ],
+            "AllowedOrigins": [
+                "*"
+            ],
+            "ExposeHeaders": []
         }
     ]
 }'

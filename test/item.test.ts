@@ -35,6 +35,7 @@ import {
 } from './mocks';
 import {
   MAX_DESCENDANTS_FOR_COPY,
+  MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
   MAX_NUMBER_OF_CHILDREN,
   MAX_TREE_LEVELS,
@@ -834,7 +835,7 @@ describe('Item routes tests', () => {
     it('Cannot delete too many descendants', async () => {
       const item = getDummyItem();
       const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
-      const children = LOTS_OF_ITEMS;
+      const children = Array.from({ length: MAX_DESCENDANTS_FOR_DELETE + 1 }, () => item);
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       mockItemServiceGetDescendants(async () => children);

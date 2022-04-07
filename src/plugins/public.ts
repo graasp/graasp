@@ -8,6 +8,7 @@ import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories
 import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
 import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
+import { publicPlugin as publicZipPlugin } from 'graasp-plugin-import-zip';
 import {
   APPS_JWT_SECRET,
   APP_ITEMS_PREFIX,
@@ -50,6 +51,7 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
     prefix: `${PUBLIC_ROUTE_PREFIX}${APP_ITEMS_PREFIX}`,
   });
 
+  // items
   await instance.register(
     async function (instance) {
       // add CORS support
@@ -94,6 +96,16 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
 
           // chatbox
           await instance.register(publicChatboxPlugin);
+
+          // download zip
+          await instance.register(publicZipPlugin, {
+            pathPrefix: FILES_PATH_PREFIX,
+            serviceMethod: SERVICE_METHOD,
+            serviceOptions: {
+              s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+              local: FILE_ITEM_PLUGIN_OPTIONS,
+            },
+          });
         },
         { prefix: ITEMS_ROUTE_PREFIX },
       );
