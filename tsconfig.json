@@ -8,5 +8,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["src/**/__mocks__", "test"]
+  "exclude": ["src/**/__mocks__", "test/", "src/**/*.test.*"]
 }

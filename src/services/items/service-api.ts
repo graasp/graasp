@@ -15,7 +15,12 @@ import graaspImportZip from 'graasp-plugin-import-zip';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
-import { ActionTaskManager, ActionService } from 'graasp-plugin-actions';
+import {
+  ActionTaskManager,
+  ActionService,
+  BaseAction,
+  ActionHandlerInput,
+} from 'graasp-plugin-actions';
 import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
@@ -66,6 +71,7 @@ import { Ordered } from './interfaces/requests';
 import { registerItemWsHooks } from './ws/hooks';
 import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
 import { Item } from './interfaces/item';
+import { itemActionHandler } from './handler/item-action-handler';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
@@ -118,13 +124,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // it is used to save the actions of the items
         if (SAVE_ACTIONS) {
           const actionService = new ActionService();
-          const actionTaskManager = new ActionTaskManager(actionService, dbService, CLIENT_HOSTS);
+          const actionTaskManager = new ActionTaskManager(actionService, CLIENT_HOSTS);
           fastify.addHook('onResponse', async (request, reply) => {
             // todo: save public actions?
             if (request.member) {
+              // wrap the itemActionHandler in a new function to provide it with the properties we already have
+              const actionHandler = (actionInput: ActionHandlerInput): Promise<BaseAction[]> =>
+                itemActionHandler(dbService, actionInput);
               const createActionTask = actionTaskManager.createCreateTask(request.member, {
                 request,
                 reply,
+                handler: actionHandler,
               });
               await runner.runSingle(createActionTask);
             }
