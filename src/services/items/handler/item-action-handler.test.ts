@@ -27,7 +27,7 @@ const buildMultipleItemsUrl = (endpoint, id?) =>
 // dbHandler can be null as we do not use it with the mock itemService
 const dbTransactionHandler = null as unknown as DatabaseTransactionHandler;
 const reply = null as unknown as FastifyReply;
-const log = { debug: () => null } as unknown as FastifyLoggerInstance;
+const log = { debug: jest.fn() } as unknown as FastifyLoggerInstance;
 const item = getDummyItem();
 const itemService = getItemService(item);
 const request = {
