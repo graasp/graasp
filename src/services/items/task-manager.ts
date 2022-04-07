@@ -64,9 +64,6 @@ export class TaskManager implements ItemTaskManager<Member> {
   getGetSharedWithTaskName(): string {
     return GetItemsSharedWithTask.name;
   }
-  getGetManyTaskName(): string {
-    return GetManyItemsTask.name;
-  }
 
   // CRUD
   createCreateTaskSequence(
