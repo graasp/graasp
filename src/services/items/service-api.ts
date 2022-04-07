@@ -6,6 +6,8 @@ import graaspItemTags from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
+import graaspPluginItemLikes from 'graasp-plugin-item-likes';
+import graaspValidationPlugin from 'graasp-plugin-validation';
 import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
@@ -217,6 +219,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspCategoryPlugin);
 
+        fastify.register(graaspValidationPlugin);
+
+        fastify.register(graaspPluginItemLikes);
+
         if (CHATBOX_PLUGIN) {
           fastify.register(graaspChatbox);
         }
@@ -361,8 +367,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               return ids;
             }
 
-            await runner.runMultipleSequences(tasks, log);
-            reply.status(204);
+            return runner.runMultipleSequences(tasks, log);
           },
         );
 

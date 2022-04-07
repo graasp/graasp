@@ -39,6 +39,9 @@ export class TaskManager implements ItemTaskManager<Member> {
   getGetTaskName(): string {
     return GetItemTask.name;
   }
+  getGetManyTaskName(): string {
+    return GetManyItemsTask.name;
+  }
   getUpdateTaskName(): string {
     return UpdateItemTask.name;
   }
