@@ -219,7 +219,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspCategoryPlugin);
 
-        fastify.register(graaspValidationPlugin);
+        fastify.register(graaspValidationPlugin, {
+          // replace this with real api from prod
+          classifierApi: 'http://172.17.0.1:8080/sync',
+          serviceMethod: SERVICE_METHOD,
+          serviceOptions: {
+            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+            local: FILE_ITEM_PLUGIN_OPTIONS,
+          },
+        });
 
         fastify.register(graaspPluginItemLikes);
 
