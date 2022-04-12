@@ -47,6 +47,7 @@ import {
   HIDDEN_TAG_ID,
   SAVE_ACTIONS,
   CLIENT_HOSTS,
+  IMAGE_CLASSIFIER_API,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -220,8 +221,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspCategoryPlugin);
 
         fastify.register(graaspValidationPlugin, {
-          // replace this with real api from prod
-          classifierApi: 'http://172.17.0.1:8080/sync',
+          // this api needs to be defined from .env
+          classifierApi: IMAGE_CLASSIFIER_API,
           serviceMethod: SERVICE_METHOD,
           serviceOptions: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,

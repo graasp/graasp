@@ -245,6 +245,9 @@ export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';
 // actions
 export const SAVE_ACTIONS = process.env.SAVE_ACTIONS === 'true';
 
+// validation
+export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
+
 export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
 export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
 export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
