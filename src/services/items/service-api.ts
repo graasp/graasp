@@ -123,27 +123,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
-        // it is used to save the actions of the items
-        if (SAVE_ACTIONS) {
-          const actionService = new ActionService();
-          const actionTaskManager = new ActionTaskManager(actionService, CLIENT_HOSTS);
-          fastify.addHook('onResponse', async (request, reply) => {
-            // todo: save public actions?
-            if (request.member) {
-              // wrap the itemActionHandler in a new function to provide it with the properties we already have
-              const actionHandler = (actionInput: ActionHandlerInput): Promise<BaseAction[]> =>
-                itemActionHandler(dbService, actionInput);
-              const createActionTask = actionTaskManager.createCreateTask(request.member, {
-                request,
-                reply,
-                handler: actionHandler,
-              });
-              await runner.runSingle(createActionTask);
-            }
-          });
-        }
-
         fastify.register(graaspImportZip, {
           pathPrefix: FILES_PATH_PREFIX,
           serviceMethod: SERVICE_METHOD,
@@ -252,176 +231,201 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
 
-        // create item
-        fastify.post<{ Querystring: ParentIdParam }>(
-          '/',
-          { schema: create() },
-          async ({ member, query: { parentId }, body: data, log }) => {
-            const tasks = taskManager.createCreateTaskSequence(member, data, parentId);
-            return runner.runSingleSequence(tasks, log);
-          },
-        );
-
-        // get item
-        fastify.get<{ Params: IdParam }>(
-          '/:id',
-          { schema: getOne },
-          async ({ member, params: { id }, log }) => {
-            const tasks = taskManager.createGetTaskSequence(member, id);
-            return runner.runSingleSequence(tasks, log);
-          },
-        );
-
-        fastify.get<{ Querystring: IdsParams }>(
-          '/',
-          { schema: getMany },
-          async ({ member, query: { id: ids }, log }) => {
-            const tasks = ids.map((id) => taskManager.createGetTaskSequence(member, id));
-            return runner.runMultipleSequences(tasks, log);
-          },
-        );
-
-        // get own
-        fastify.get('/own', { schema: getOwnGetShared }, async ({ member, log }) => {
-          const task = taskManager.createGetOwnTask(member);
-          return runner.runSingle(task, log);
-        });
-
-        // get shared with
-        fastify.get('/shared-with', { schema: getOwnGetShared }, async ({ member, log }) => {
-          const task = taskManager.createGetSharedWithTask(member);
-          return runner.runSingle(task, log);
-        });
-
-        // get item's children
-        fastify.get<{ Params: IdParam; Querystring: Ordered }>(
-          '/:id/children',
-          { schema: getChildren },
-          async ({ member, params: { id }, query: { ordered }, log }) => {
-            const tasks = taskManager.createGetChildrenTaskSequence(member, id, ordered);
-            return runner.runSingleSequence(tasks, log);
-          },
-        );
-
-        // update items
-        fastify.patch<{ Params: IdParam }>(
-          '/:id',
-          { schema: updateOne() },
-          async ({ member, params: { id }, body, log }) => {
-            const tasks = taskManager.createUpdateTaskSequence(member, id, body);
-            return runner.runSingleSequence(tasks, log);
-          },
-        );
-
-        fastify.patch<{ Querystring: IdsParams }>(
-          '/',
-          { schema: updateMany() },
-          async ({ member, query: { id: ids }, body, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createUpdateTaskSequence(member, id, body));
-
-            // too many items to update: start execution and return '202'.
-            if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultipleSequences(tasks, log);
-              reply.status(202);
-              return ids;
-            }
-
-            return runner.runMultipleSequences(tasks, log);
-          },
-        );
-
-        // delete items
-        fastify.delete<{ Params: IdParam }>(
-          '/:id',
-          { schema: deleteOne },
-          async ({ member, params: { id }, log }) => {
-            const tasks = taskManager.createDeleteTaskSequence(member, id);
-            return runner.runSingleSequence(tasks, log);
-          },
-        );
-
-        fastify.delete<{ Querystring: IdsParams }>(
-          '/',
-          { schema: deleteMany },
-          async ({ member, query: { id: ids }, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createDeleteTaskSequence(member, id));
-
-            // too many items to delete: start execution and return '202'.
-            if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultipleSequences(tasks, log);
-              reply.status(202);
-              return ids;
-            }
-
-            return runner.runMultipleSequences(tasks, log);
-          },
-        );
-
-        // move items
-        fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
-          '/:id/move',
-          { schema: moveOne },
-          async ({ member, params: { id }, body: { parentId }, log }, reply) => {
-            const task = taskManager.createMoveTaskSequence(member, id, parentId);
-            await runner.runSingleSequence(task, log);
-            reply.status(204);
-          },
-        );
-
-        fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
-          '/move',
-          { schema: moveMany },
-          async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
-            const tasks = ids.map((id) => taskManager.createMoveTaskSequence(member, id, parentId));
-
-            // too many items to move: start execution and return '202'.
-            if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultipleSequences(tasks, log);
-              reply.status(202);
-              return ids;
-            }
-
-            return runner.runMultipleSequences(tasks, log);
-          },
-        );
-
-        // copy items
-        fastify.post<{ Params: IdParam; Body: { parentId: string; shouldCopyTags?: boolean } }>(
-          '/:id/copy',
-          { schema: copyOne },
-          async ({ member, params: { id }, body: { parentId, shouldCopyTags }, log }) => {
-            const tasks = taskManager.createCopyTaskSequence(member, id, {
-              parentId,
-              shouldCopyTags,
+        fastify.register(async function (fastify) {
+          // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
+          // it is used to save the actions of the items
+          if (SAVE_ACTIONS) {
+            const actionService = new ActionService();
+            const actionTaskManager = new ActionTaskManager(actionService, CLIENT_HOSTS);
+            fastify.addHook('onResponse', async (request, reply) => {
+              // todo: save public actions?
+              if (request.member) {
+                // wrap the itemActionHandler in a new function to provide it with the properties we already have
+                const actionHandler = (actionInput: ActionHandlerInput): Promise<BaseAction[]> =>
+                  itemActionHandler(dbService, actionInput);
+                const createActionTask = actionTaskManager.createCreateTask(request.member, {
+                  request,
+                  reply,
+                  handler: actionHandler,
+                });
+                await runner.runSingle(createActionTask);
+              }
             });
-            return runner.runSingleSequence(tasks, log);
-          },
-        );
+          }
 
-        fastify.post<{
-          Querystring: IdsParams;
-          Body: { parentId: string; shouldCopyTags?: boolean };
-        }>(
-          '/copy',
-          { schema: copyMany },
-          async (
-            { member, query: { id: ids }, body: { parentId, shouldCopyTags }, log },
-            reply,
-          ) => {
-            const tasks = ids.map((id) =>
-              taskManager.createCopyTaskSequence(member, id, { parentId, shouldCopyTags }),
-            );
+          // create item
+          fastify.post<{ Querystring: ParentIdParam }>(
+            '/',
+            { schema: create() },
+            async ({ member, query: { parentId }, body: data, log }) => {
+              const tasks = taskManager.createCreateTaskSequence(member, data, parentId);
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
 
-            // too many items to copy: start execution and return '202'.
-            if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
-              runner.runMultipleSequences(tasks, log);
-              reply.status(202);
-              return ids;
-            }
+          // get item
+          fastify.get<{ Params: IdParam }>(
+            '/:id',
+            { schema: getOne },
+            async ({ member, params: { id }, log }) => {
+              const tasks = taskManager.createGetTaskSequence(member, id);
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
 
-            return runner.runMultipleSequences(tasks, log);
-          },
-        );
+          fastify.get<{ Querystring: IdsParams }>(
+            '/',
+            { schema: getMany },
+            async ({ member, query: { id: ids }, log }) => {
+              const tasks = ids.map((id) => taskManager.createGetTaskSequence(member, id));
+              return runner.runMultipleSequences(tasks, log);
+            },
+          );
+
+          // get own
+          fastify.get('/own', { schema: getOwnGetShared }, async ({ member, log }) => {
+            const task = taskManager.createGetOwnTask(member);
+            return runner.runSingle(task, log);
+          });
+
+          // get shared with
+          fastify.get('/shared-with', { schema: getOwnGetShared }, async ({ member, log }) => {
+            const task = taskManager.createGetSharedWithTask(member);
+            return runner.runSingle(task, log);
+          });
+
+          // get item's children
+          fastify.get<{ Params: IdParam; Querystring: Ordered }>(
+            '/:id/children',
+            { schema: getChildren },
+            async ({ member, params: { id }, query: { ordered }, log }) => {
+              const tasks = taskManager.createGetChildrenTaskSequence(member, id, ordered);
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
+
+          // update items
+          fastify.patch<{ Params: IdParam }>(
+            '/:id',
+            { schema: updateOne() },
+            async ({ member, params: { id }, body, log }) => {
+              const tasks = taskManager.createUpdateTaskSequence(member, id, body);
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
+
+          fastify.patch<{ Querystring: IdsParams }>(
+            '/',
+            { schema: updateMany() },
+            async ({ member, query: { id: ids }, body, log }, reply) => {
+              const tasks = ids.map((id) => taskManager.createUpdateTaskSequence(member, id, body));
+
+              // too many items to update: start execution and return '202'.
+              if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
+                runner.runMultipleSequences(tasks, log);
+                reply.status(202);
+                return ids;
+              }
+
+              return runner.runMultipleSequences(tasks, log);
+            },
+          );
+
+          // delete items
+          fastify.delete<{ Params: IdParam }>(
+            '/:id',
+            { schema: deleteOne },
+            async ({ member, params: { id }, log }) => {
+              const tasks = taskManager.createDeleteTaskSequence(member, id);
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
+
+          fastify.delete<{ Querystring: IdsParams }>(
+            '/',
+            { schema: deleteMany },
+            async ({ member, query: { id: ids }, log }, reply) => {
+              const tasks = ids.map((id) => taskManager.createDeleteTaskSequence(member, id));
+
+              // too many items to delete: start execution and return '202'.
+              if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
+                runner.runMultipleSequences(tasks, log);
+                reply.status(202);
+                return ids;
+              }
+
+              return runner.runMultipleSequences(tasks, log);
+            },
+          );
+
+          // move items
+          fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
+            '/:id/move',
+            { schema: moveOne },
+            async ({ member, params: { id }, body: { parentId }, log }, reply) => {
+              const task = taskManager.createMoveTaskSequence(member, id, parentId);
+              await runner.runSingleSequence(task, log);
+              reply.status(204);
+            },
+          );
+
+          fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
+            '/move',
+            { schema: moveMany },
+            async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
+              const tasks = ids.map((id) =>
+                taskManager.createMoveTaskSequence(member, id, parentId),
+              );
+
+              // too many items to move: start execution and return '202'.
+              if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
+                runner.runMultipleSequences(tasks, log);
+                reply.status(202);
+                return ids;
+              }
+
+              return runner.runMultipleSequences(tasks, log);
+            },
+          );
+
+          // copy items
+          fastify.post<{ Params: IdParam; Body: { parentId: string; shouldCopyTags?: boolean } }>(
+            '/:id/copy',
+            { schema: copyOne },
+            async ({ member, params: { id }, body: { parentId, shouldCopyTags }, log }) => {
+              const tasks = taskManager.createCopyTaskSequence(member, id, {
+                parentId,
+                shouldCopyTags,
+              });
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
+
+          fastify.post<{
+            Querystring: IdsParams;
+            Body: { parentId: string; shouldCopyTags?: boolean };
+          }>(
+            '/copy',
+            { schema: copyMany },
+            async (
+              { member, query: { id: ids }, body: { parentId, shouldCopyTags }, log },
+              reply,
+            ) => {
+              const tasks = ids.map((id) =>
+                taskManager.createCopyTaskSequence(member, id, { parentId, shouldCopyTags }),
+              );
+
+              // too many items to copy: start execution and return '202'.
+              if (tasks.length > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE) {
+                runner.runMultipleSequences(tasks, log);
+                reply.status(202);
+                return ids;
+              }
+
+              return runner.runMultipleSequences(tasks, log);
+            },
+          );
+        });
       });
     },
     { prefix: ITEMS_ROUTE_PREFIX },
