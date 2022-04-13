@@ -21,6 +21,9 @@ import {
   GRAASP_ACTOR,
   SAVE_ACTIONS,
   CLIENT_HOSTS,
+  SERVICE_METHOD,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_PLUGIN_OPTIONS,
 } from './util/config';
 import shared from './schemas/fluent-schema';
 
@@ -89,6 +92,11 @@ export default async function (instance: FastifyInstance): Promise<void> {
         shouldSave: SAVE_ACTIONS,
         graaspActor: GRAASP_ACTOR,
         hosts: CLIENT_HOSTS,
+        serviceMethod: SERVICE_METHOD,
+        serviceOptions: {
+          s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+          local: FILE_ITEM_PLUGIN_OPTIONS,
+        },
       });
     },
     { prefix: '/analytics' },

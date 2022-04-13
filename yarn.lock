@@ -1291,9 +1291,15 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=12, @types/node@npm:^17.0.8":
+<<<<<<< HEAD
   version: 17.0.26
   resolution: "@types/node@npm:17.0.26"
   checksum: 59f92f46cc76703921ddf50d34b920afe3bbf916360e46321d54507b28c0ead4c3aed57cfdc64eee7c089ed12321dc4a728aa63a1205f7c1115105467f7a2b31
+=======
+  version: 17.0.25
+  resolution: "@types/node@npm:17.0.25"
+  checksum: 6a820bd624e69ea772f52a6cdb326484eff5829443dc981939373929ade109f58c21698b9f0a831bd6ceea799e722a75dc49c5fa7a6bc32a81e1cbdfc6507b64
+>>>>>>> a78823b (feat: add get many members, update action plugin)
   languageName: node
   linkType: hard
 
@@ -1745,6 +1751,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"archiver@npm:5.3.1":
+  version: 5.3.1
+  resolution: "archiver@npm:5.3.1"
+  dependencies:
+    archiver-utils: ^2.1.0
+    async: ^3.2.3
+    buffer-crc32: ^0.2.1
+    readable-stream: ^3.6.0
+    readdir-glob: ^1.0.0
+    tar-stream: ^2.2.0
+    zip-stream: ^4.1.0
+  checksum: 905b198ed04d26c951b80545d45c7f2e0432ef89977a93af8a762501d659886e39dda0fbffb0d517ff3fa450a3d09a29146e4273c2170624e1988f889fb5302c
+  languageName: node
+  linkType: hard
+
 "archy@npm:^1.0.0":
   version: 1.0.0
   resolution: "archy@npm:1.0.0"
@@ -1875,7 +1896,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async@npm:^3.2.0":
+"async@npm:^3.2.0, async@npm:^3.2.3":
   version: 3.2.3
   resolution: "async@npm:3.2.3"
   checksum: c4bee57ab2249af3dc83ca3ef9acfa8e822c0d5e5aa41bae3eaf7f673648343cd64ecd7d26091ffd357f3f044428b17b5f00098494b6cf8b6b3e9681f0636ca1
@@ -3210,10 +3231,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+<<<<<<< HEAD
 "electron-to-chromium@npm:^1.4.118":
   version: 1.4.118
   resolution: "electron-to-chromium@npm:1.4.118"
   checksum: b1941bdff3ff8cb10a6f75f60527bff37fc43878b2ff4e0c1b5d6aa5062ea97df4e8c75e6d4c6eb97f0bab1cac6f8f1d799b7316e69f66b6a4b9b6773af97de2
+=======
+"electron-to-chromium@npm:^1.4.84":
+  version: 1.4.113
+  resolution: "electron-to-chromium@npm:1.4.113"
+  checksum: ce3ef4090a8088f399bc8c3443248711c82edbcc0c91f4c63d0f6bdc557ca12cb08e9e1e89743be9f48563cf701d6863c62c8250e4a5f297aa614c0c26da46ea
+>>>>>>> a78823b (feat: add get many members, update action plugin)
   languageName: node
   linkType: hard
 
@@ -4573,9 +4601,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-mailer@github:graasp/graasp-mailer":
+"graasp-mailer@github:graasp/graasp-mailer#17/actionExport":
   version: 0.1.0
-  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=1025e36ec9e3cd6d996401b9a7e647ced3670528"
+  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=375979d0ab2f1ae0f5a38dc671e4c03eebeae8c4"
   dependencies:
     cpy-cli: 4.1.0
     eta: ^1.12.3
@@ -4584,7 +4612,7 @@ __metadata:
     fastify-polyglot: 1.0.0
     i18n: 0.14.2
     point-of-view: ^5.2.0
-  checksum: 9508d5076ffbba79f2f6cacca1536847f4abd8ac7b61340635a5fc808fec34a26b1d9ba5a8a789f52b5e7408ddb78a7c62a6cddff0c92f855ded284c5fbf1a9f
+  checksum: ea693c4e381d89461efc23547c6e36abe6ae9c98d6b268c7b9e03f1939531b3f4fdc13b457c5d8aee6535ace1a124b6d7d4a16e459485fb8e45ebb03b467898e
   languageName: node
   linkType: hard
 
@@ -4597,6 +4625,21 @@ __metadata:
     http-status-codes: 2.2.0
     uuid: 8.3.2
   checksum: c6f02f5eeb2e369f590120084fa7193f58b60ee2b74b5268fae5cb16c5f46831fde03213d6812d953cafe66d8ef0f7e0dcc5bb901558408a206c293d29f87744
+  languageName: node
+  linkType: hard
+
+"graasp-plugin-actions@github:graasp/graasp-plugin-actions#16/exportActions":
+  version: 0.1.0
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=63974a3ac1828b5611cbf5399ceb5c7db13c6b1f"
+  dependencies:
+    archiver: 5.3.1
+    fluent-json-schema: 3.0.1
+    geoip-lite: 1.4.2
+    graasp-mailer: "github:graasp/graasp-mailer#17/actionExport"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file#19/expirationDownload"
+    http-status-codes: 2.2.0
+    uuid: 8.3.2
+  checksum: 7b0a92737c22040e7e5be446b9be8e9f6cd2c3b5abe10f24472bd2cde3bd6ab6dc3cd5c098a591972a8ff2087a93aa607ef6dec654f4796dc9b947fbbd7ecb58
   languageName: node
   linkType: hard
 
@@ -4645,6 +4688,19 @@ __metadata:
     http-status-codes: 2.2.0
     node-fetch: 2.6.7
   checksum: e31837cd8c9fb9f8aa4485b7226f36073b966c607c6e2e270c8fba22bc42486d0f4ff32529200cb74364ea7b4e673ca9014478ec0e0dfead4042549cbb0a24e4
+  languageName: node
+  linkType: hard
+
+"graasp-plugin-file@github:graasp/graasp-plugin-file#19/expirationDownload":
+  version: 0.1.0
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=45ed2b02383ce6d66661f13f44953514e5edecf7"
+  dependencies:
+    aws-sdk: 2.1111.0
+    content-disposition: 0.5.4
+    fastify-multipart: 5.3.1
+    http-status-codes: 2.2.0
+    node-fetch: 2.6.7
+  checksum: ca0ac8372ff1de887afd425b472fce089d358bec98617a148e968f1c69d6236f3118758e50d154312f0fba256b8e83836bec752d0ff8e5db5620ae1f092e41d5
   languageName: node
   linkType: hard
 
@@ -4804,8 +4860,8 @@ __metadata:
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
     graasp-item-flagging: "github:graasp/graasp-item-flagging"
     graasp-item-tags: "github:graasp/graasp-item-tags"
-    graasp-mailer: "github:graasp/graasp-mailer"
-    graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
+    graasp-mailer: "github:graasp/graasp-mailer#17/actionExport"
+    graasp-plugin-actions: "github:graasp/graasp-plugin-actions#16/exportActions"
     graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"

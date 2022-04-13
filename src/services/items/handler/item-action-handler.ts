@@ -1,4 +1,5 @@
 import { ActionHandlerInput, BaseAction, getBaseAction } from 'graasp-plugin-actions';
+import { CLIENT_HOSTS } from '../../../util/config';
 import { ACTION_TYPES, METHODS, paths } from '../constants/constants';
 import { ItemService } from '../db-service';
 
@@ -17,7 +18,7 @@ export const itemActionHandler = async (
     queryItemIds = [queryItemIds];
   }
 
-  const baseAction = getBaseAction(request);
+  const baseAction = getBaseAction(request, CLIENT_HOSTS);
 
   const actionsToSave = [];
   const actionBase = {

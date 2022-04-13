@@ -10,6 +10,7 @@ import { CreateMemberTask } from './tasks/create-member-task';
 import { GetMembersByTask } from './tasks/get-members-by-task';
 import { MemberTaskManager } from './interfaces/member-task-manager';
 import { UpdateMemberTask } from './tasks/update-member-task';
+import { GetManyMembersTask } from './tasks/get-many-members-task';
 
 export class TaskManager implements MemberTaskManager {
   private memberService: MemberService;
@@ -47,6 +48,13 @@ export class TaskManager implements MemberTaskManager {
 
   createGetTask<E extends UnknownExtra>(actor: Actor, memberId: string): GetMemberTask<E> {
     return new GetMemberTask<E>(actor, this.memberService, { memberId });
+  }
+
+  createGetManyTask<E extends UnknownExtra>(
+    actor: Actor,
+    memberIds?: string[],
+  ): GetManyMembersTask<E> {
+    return new GetManyMembersTask<E>(actor, this.memberService, { memberIds });
   }
 
   createUpdateTaskSequence<E extends UnknownExtra>(

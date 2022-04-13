@@ -80,6 +80,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items,
     itemMemberships: { taskManager: membership, dbService: itemMembershipsDbService },
+    members: { taskManager: mTM },
     taskRunner: runner,
     websockets,
     db,
@@ -242,7 +243,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           // it is used to save the actions of the items
           if (SAVE_ACTIONS) {
             const actionService = new ActionService();
-            const actionTaskManager = new ActionTaskManager(actionService, CLIENT_HOSTS);
+            const actionTaskManager = new ActionTaskManager(
+              actionService,
+              taskManager,
+              membership,
+              mTM,
+              CLIENT_HOSTS,
+            );
             fastify.addHook('onResponse', async (request, reply) => {
               // todo: save public actions?
               if (request.member) {
