@@ -54,7 +54,7 @@ const login = {
     additionalProperties: false,
   },
 };
-const passswordLogin = {
+const passwordLogin = {
   body: {
     type: 'object',
     required: ['email', 'password'],
@@ -136,7 +136,7 @@ export {
   register,
   mregister,
   login,
-  passswordLogin,
+  passwordLogin,
   mlogin,
   mPasswordLogin,
   auth,

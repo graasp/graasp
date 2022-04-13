@@ -37,7 +37,7 @@ import { TaskManager as MemberTaskManager } from '../../services/members/task-ma
 import {
   register,
   login,
-  passswordLogin,
+  passwordLogin,
   auth,
   mlogin,
   mPasswordLogin,
@@ -226,10 +226,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     const verified = bcrypt
       .compare(body.password, member.password)
       .then(async (res: boolean) => {
-        if (!res) {
-          return false;
-        }
-        return true;
+        return res;
       })
       .catch((err) => console.error(err.message));
     return verified;
@@ -295,7 +292,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     // login with password
     fastify.post<{ Body: { email: string; password: string } }>(
       '/login-password',
-      { schema: passswordLogin },
+      { schema: passwordLogin },
       async ({ body, log }, reply) => {
         const email = body.email.toLowerCase();
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
