@@ -56,7 +56,7 @@
     "graasp-mailer": "github:graasp/graasp-mailer",
     "graasp-plugin-actions": "github:graasp/graasp-plugin-actions",
     "graasp-plugin-categories": "github:graasp/graasp-plugin-categories",
-    "graasp-plugin-chatbox": "github:graasp/graasp-plugin-chatbox",
+    "graasp-plugin-chatbox": "github:graasp/graasp-plugin-chatbox#22/scopePlugin",
     "graasp-plugin-file": "github:graasp/graasp-plugin-file",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "graasp-plugin-hidden-items": "github:graasp/graasp-plugin-hidden-items",
