@@ -20,7 +20,6 @@ describe('Auth routes tests', () => {
     it('Sign Up successfully', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
-      const password = null;
       const mockCreate = mockMemberServiceCreate();
       const app = await build();
       const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
@@ -32,7 +31,7 @@ describe('Auth routes tests', () => {
 
       expect(mockSendRegisterEmail).toHaveBeenCalled();
       expect(mockCreate).toHaveBeenCalledWith(
-        { email, name, extra: { lang: DEFAULT_LANG }, password },
+        { email, name, extra: { lang: DEFAULT_LANG } },
         expect.anything(),
       );
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -42,7 +41,6 @@ describe('Auth routes tests', () => {
       const email = 'someemail@email.com';
       const name = 'anna';
       const lang = 'fr';
-      const password = null;
       const mockCreate = mockMemberServiceCreate();
       const app = await build();
       const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
@@ -57,10 +55,7 @@ describe('Auth routes tests', () => {
         expect.anything(),
         lang,
       );
-      expect(mockCreate).toHaveBeenCalledWith(
-        { email, name, extra: { lang }, password },
-        expect.anything(),
-      );
+      expect(mockCreate).toHaveBeenCalledWith({ email, name, extra: { lang } }, expect.anything());
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       app.close();
     });
@@ -175,7 +170,7 @@ describe('Auth routes tests', () => {
     });
   });
 
-  describe('POST /loginpassword', () => {
+  describe('POST /login-password', () => {
     it('Sign In successfully', async () => {
       const member = MEMBERS_FIXTURES.LOUISA;
       const clearPassword = 'asd';
@@ -183,11 +178,11 @@ describe('Auth routes tests', () => {
       const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.POST,
-        url: '/loginpassword',
+        url: '/login-password',
         payload: { email: member.email, password: clearPassword },
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-      expect(response.json()).toHaveProperty('link');
+      expect(response.json()).toHaveProperty('resource');
       app.close();
     });
 
@@ -198,7 +193,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.POST,
-        url: '/loginpassword',
+        url: '/login-password',
         payload: { email: member.email, password: clearWrongPassword },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -213,7 +208,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.POST,
-        url: '/loginpassword',
+        url: '/login-password',
         payload: { email: member.email, password: clearPassword },
       });
       expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
@@ -221,17 +216,16 @@ describe('Auth routes tests', () => {
       app.close();
     });
 
-    it('Sign In does send not found error for non-existing email', async () => {
+    it('Sign In send not found error for non-existing email', async () => {
       const email = 'some@email.com';
       const password = '1234';
       const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.POST,
-        url: '/loginpassword',
+        url: '/login-password',
         payload: { email, password },
       });
 
-      //expect(mockSendLoginEmail).not.toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       expect(response.statusMessage).toEqual(ReasonPhrases.NOT_FOUND);
       app.close();
@@ -243,7 +237,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const response = await app.inject({
         method: HTTP_METHODS.POST,
-        url: '/loginpassword',
+        url: '/login-password',
         payload: { email, password },
       });
 
@@ -299,7 +293,6 @@ describe('Auth routes tests', () => {
       it('Sign Up successfully', async () => {
         const email = 'someemail@email.com';
         const name = 'anna';
-        const password = null;
         const mockCreate = mockMemberServiceCreate();
         const app = await build();
         const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
@@ -311,7 +304,7 @@ describe('Auth routes tests', () => {
 
         expect(mockSendRegisterEmail).toHaveBeenCalled();
         expect(mockCreate).toHaveBeenCalledWith(
-          { email, name, extra: { lang: DEFAULT_LANG }, password },
+          { email, name, extra: { lang: DEFAULT_LANG } },
           expect.anything(),
         );
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -321,7 +314,6 @@ describe('Auth routes tests', () => {
         const email = 'someemail@email.com';
         const name = 'anna';
         const lang = 'fr';
-        const password = null;
         const mockCreate = mockMemberServiceCreate();
         const app = await build();
         const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
@@ -337,7 +329,7 @@ describe('Auth routes tests', () => {
           lang,
         );
         expect(mockCreate).toHaveBeenCalledWith(
-          { email, name, extra: { lang }, password },
+          { email, name, extra: { lang } },
           expect.anything(),
         );
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -453,7 +445,7 @@ describe('Auth routes tests', () => {
       });
     });
 
-    describe('POST /m/loginpassword', () => {
+    describe('POST /m/login-password', () => {
       it('Sign In successfully', async () => {
         const member = MEMBERS_FIXTURES.LOUISA;
         const clearPassword = 'asd';
@@ -461,7 +453,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const response = await app.inject({
           method: HTTP_METHODS.POST,
-          url: '/m/loginpassword',
+          url: '/m/login-password',
           payload: { email: member.email, challenge, password: clearPassword },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -476,7 +468,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const response = await app.inject({
           method: HTTP_METHODS.POST,
-          url: '/m/loginpassword',
+          url: '/m/login-password',
           payload: { email: member.email, challenge, password: clearWrongPassword },
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -484,14 +476,14 @@ describe('Auth routes tests', () => {
         app.close();
       });
 
-      it('Sign In does send not acceptable error when member does not have password', async () => {
+      it('Sign In send not acceptable error when member does not have password', async () => {
         const member = MEMBERS_FIXTURES.BOB;
         const clearPassword = 'asd';
         mockMemberServiceGetMatching([member]);
         const app = await build();
         const response = await app.inject({
           method: HTTP_METHODS.POST,
-          url: '/m/loginpassword',
+          url: '/m/login-password',
           payload: { email: member.email, challenge, password: clearPassword },
         });
         expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
@@ -499,13 +491,13 @@ describe('Auth routes tests', () => {
         app.close();
       });
 
-      it('Sign In does send not found error for non-existing email', async () => {
+      it('Sign In send not found error for non-existing email', async () => {
         const email = 'some@email.com';
         const password = '1234';
         const app = await build();
         const response = await app.inject({
           method: HTTP_METHODS.POST,
-          url: '/m/loginpassword',
+          url: '/m/login-password',
           payload: { email, challenge, password },
         });
 
@@ -520,7 +512,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const response = await app.inject({
           method: HTTP_METHODS.POST,
-          url: '/m/loginpassword',
+          url: '/m/login-password',
           payload: { email, challenge, password },
         });
 

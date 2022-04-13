@@ -260,7 +260,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
             ...body,
             extra: { lang },
-            password: null,
           });
           const member = await runner.runSingle(task, log);
 
@@ -305,17 +304,16 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         if (!member) {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
-          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+          return reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
         }
         if (member.password === null) {
           log.warn('Login attempt with non-existent password');
-          reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+          return reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
         }
         const verified = await verifyCredentials(member, body);
         if (!verified) {
           reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
         } else {
-          // const response = await generateResponse(member, body, null);
           const token = await promisifiedJwtSign({ sub: member.id }, JWT_SECRET, {
             expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
           });
@@ -416,7 +414,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
               name,
               email,
               extra: { lang },
-              password: null,
             });
             const member = await runner.runSingle(task, log);
 
@@ -448,29 +445,37 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         },
       );
 
-      fastify.post<{
-        Body: { email: string; challenge: string; password: string };
-      }>('/login-password', { schema: mPasswordLogin }, async ({ body, log }, reply) => {
-        const email = body.email.toLowerCase();
-        const { challenge } = body;
-        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-        const [member] = await runner.runSingle(task, log);
+      // login with password
+      fastify.post<{ Body: { email: string; challenge: string; password: string } }>(
+        '/login-password',
+        { schema: mPasswordLogin },
+        async ({ body, log }, reply) => {
+          const email = body.email.toLowerCase();
+          const { challenge } = body;
+          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+          const [member] = await runner.runSingle(task, log);
 
-        if (member) {
-          const token = await verifyCredentials(member, body);
-          if (token === null) {
-            reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
-          } else if (token) {
-            reply.status(StatusCodes.OK).send({ t: token });
-          } else {
-            reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+          if (!member) {
+            const { email } = body;
+            log.warn(`Login attempt with non-existent email '${email}'`);
+            return reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
           }
-        } else {
-          const { email } = body;
-          log.warn(`Login attempt with non-existent email '${email}'`);
-          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
-        }
-      });
+          if (member.password === null) {
+            log.warn('Login attempt with non-existent password');
+            return reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+          }
+          const verified = await verifyCredentials(member, body);
+          if (!verified) {
+            reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+          } else {
+            const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
+              expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+            });
+            // token for graasp mobile app
+            reply.status(StatusCodes.OK).send({ t: token });
+          }
+        },
+      );
 
       fastify.post<{ Body: { t: string; verifier: string } }>(
         '/auth',
