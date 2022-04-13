@@ -216,45 +216,22 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  async function verifyCredentials(
-    member: Member,
-    body: { email: string; password: string },
-    challenge?: string,
-  ) {
-    /* let verified is used to store the output of bcrypt.compare() 
+  async function verifyCredentials(member: Member, body: { email: string; password: string }) {
+    /* the verified variable is used to store the output of bcrypt.compare() 
     bcrypt.compare() allows to compare the provided password with a stored hash. 
     It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
     if they match, verified is true 
     if they do not match, verified is false
-    if the user does not has a stored hash, verified is null
     */
-    let verified;
-    if (member.password === null) {
-      verified = null;
-    } else {
-      verified = bcrypt
-        .compare(body.password, member.password)
-        .then(async (res: boolean) => {
-          if (res) {
-            // generate token with member info and expiration
-            const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
-              expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-            });
-            if (challenge) {
-              // token for graasp mobile app
-              return token;
-            } else {
-              // link for graasp web
-              const linkPath = '/auth';
-              const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
-              return link;
-            }
-          } else {
-            return false;
-          }
-        })
-        .catch((err) => console.error(err.message));
-    }
+    const verified = bcrypt
+      .compare(body.password, member.password)
+      .then(async (res: boolean) => {
+        if (!res) {
+          return false;
+        }
+        return true;
+      })
+      .catch((err) => console.error(err.message));
     return verified;
   }
 
@@ -316,28 +293,36 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       },
     );
 
-    // loginpassword
+    // login with password
     fastify.post<{ Body: { email: string; password: string } }>(
-      '/loginpassword',
+      '/login-password',
       { schema: passswordLogin },
       async ({ body, log }, reply) => {
         const email = body.email.toLowerCase();
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         const [member] = await runner.runSingle(task, log);
 
-        if (member) {
-          const link = await verifyCredentials(member, body, null);
-          if (link === null) {
-            reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
-          } else if (link) {
-            reply.status(StatusCodes.SEE_OTHER).send({ link });
-          } else {
-            reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
-          }
-        } else {
+        if (!member) {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
           reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+        }
+        if (member.password === null) {
+          log.warn('Login attempt with non-existent password');
+          reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+        }
+        const verified = await verifyCredentials(member, body);
+        if (!verified) {
+          reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+        } else {
+          // const response = await generateResponse(member, body, null);
+          const token = await promisifiedJwtSign({ sub: member.id }, JWT_SECRET, {
+            expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+          });
+          // link for graasp web
+          const linkPath = '/auth';
+          const resource = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
+          reply.status(StatusCodes.SEE_OTHER).send({ resource });
         }
       },
     );
@@ -465,14 +450,14 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
       fastify.post<{
         Body: { email: string; challenge: string; password: string };
-      }>('/loginpassword', { schema: mPasswordLogin }, async ({ body, log }, reply) => {
+      }>('/login-password', { schema: mPasswordLogin }, async ({ body, log }, reply) => {
         const email = body.email.toLowerCase();
         const { challenge } = body;
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         const [member] = await runner.runSingle(task, log);
 
         if (member) {
-          const token = await verifyCredentials(member, body, challenge);
+          const token = await verifyCredentials(member, body);
           if (token === null) {
             reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
           } else if (token) {

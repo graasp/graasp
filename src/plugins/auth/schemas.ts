@@ -60,7 +60,6 @@ const passswordLogin = {
     required: ['email', 'password'],
     properties: {
       email: { type: 'string', format: 'email' },
-      //TODO: review
       password: { type: 'string' },
     },
     additionalProperties: false,
