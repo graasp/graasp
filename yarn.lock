@@ -4593,9 +4593,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-chatbox@github:graasp/graasp-plugin-chatbox":
+"graasp-plugin-chatbox@github:graasp/graasp-plugin-chatbox#22/scopePlugin":
   version: 1.0.0
-  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=237a34f21fc1d056738265310a269a9a573aa5f2"
+  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=2cc890d32f7da896c186df6ef61b413f05b95d5b"
   dependencies:
     fastify: ^3.25.3
     fastify-plugin: ^3.0.0
@@ -4603,7 +4603,7 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-websockets: "github:graasp/graasp-websockets"
-  checksum: 948b3b05cf132173c5fe3e986eb6f20a96ee3711a987c209d28b0296e2b936d6f03ab388b4f293925cd431dca1ea6988c007c8e1b4e20ee75704eb971f402462
+  checksum: 5071698d8b8455fc913b3982579abf756c66b5a36c880151ffa447a75c02fdb717d28c8ac4643c3da152fa9577ace79ff817cb8398e39ec4824a9b07c980b9bb
   languageName: node
   linkType: hard
 
@@ -4791,7 +4791,7 @@ __metadata:
     graasp-mailer: "github:graasp/graasp-mailer"
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
-    graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
+    graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox#22/scopePlugin"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
