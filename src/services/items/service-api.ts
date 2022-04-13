@@ -48,6 +48,8 @@ import {
   SAVE_ACTIONS,
   CLIENT_HOSTS,
   IMAGE_CLASSIFIER_API,
+  PUBLIC_TAG_ID,
+  PUBLISHED_TAG_ID,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -216,7 +218,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           hiddenTagId: HIDDEN_TAG_ID,
         });
 
-        fastify.register(graaspRecycleBin);
+        fastify.register(graaspRecycleBin, {
+          publicTagId: PUBLIC_TAG_ID,
+          publishedTagId: PUBLISHED_TAG_ID,
+        });
 
         fastify.register(graaspCategoryPlugin);
 
