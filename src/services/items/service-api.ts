@@ -231,6 +231,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
 
+        // isolate the core actions using fastify.register
         fastify.register(async function (fastify) {
           // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
           // it is used to save the actions of the items
