@@ -4595,7 +4595,7 @@ __metadata:
 
 "graasp-plugin-chatbox@github:graasp/graasp-plugin-chatbox":
   version: 1.0.0
-  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=237a34f21fc1d056738265310a269a9a573aa5f2"
+  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=5c35f46da4d883c8c8724bf8d05dbbbea3d64380"
   dependencies:
     fastify: ^3.25.3
     fastify-plugin: ^3.0.0
@@ -4603,7 +4603,7 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-websockets: "github:graasp/graasp-websockets"
-  checksum: 948b3b05cf132173c5fe3e986eb6f20a96ee3711a987c209d28b0296e2b936d6f03ab388b4f293925cd431dca1ea6988c007c8e1b4e20ee75704eb971f402462
+  checksum: bcea4d163804db84ec005d24b03b4145ad2b044d6fd11f23c0d4c2e0a05c0232f007296fd990f21a6145035036ff78b75ce330d34bd3e75b41be97fb1f67f33b
   languageName: node
   linkType: hard
 
