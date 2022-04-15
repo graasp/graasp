@@ -225,9 +225,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     */
     const verified = bcrypt
       .compare(body.password, member.password)
-      .then(async (res: boolean) => {
-        return res;
-      })
+      .then((res) => res)
       .catch((err) => console.error(err.message));
     return verified;
   }
