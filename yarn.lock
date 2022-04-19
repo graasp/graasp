@@ -1276,13 +1276,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mime-types@npm:2.1.1":
-  version: 2.1.1
-  resolution: "@types/mime-types@npm:2.1.1"
-  checksum: 106b5d556add46446a579ad25ff15d6b421851790d887edcad558c90c1e64b1defc72bfbaf4b08f208916e21d9cc45cdb951d77be51268b18221544cfe054a3c
-  languageName: node
-  linkType: hard
-
 "@types/minimatch@npm:*":
   version: 3.0.5
   resolution: "@types/minimatch@npm:3.0.5"
@@ -1915,9 +1908,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:2.1074.0":
-  version: 2.1074.0
-  resolution: "aws-sdk@npm:2.1074.0"
+"aws-sdk@npm:2.1111.0":
+  version: 2.1111.0
+  resolution: "aws-sdk@npm:2.1111.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -1928,7 +1921,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: 30c0b4c454f96e28b34c57af24e7ba152b2f4df8de79446039b11dffe134f25698ff217262bcd8f7bb4cd8b30d4cbed588822ad089e00437855b98b7463d6a22
+  checksum: 1e918377e23704b1656aa5b9072ef8d8166198b14a4cdfd313745f7d4a3f826e3c14f4806e5b985fd67139a2a4cf30d65a0024cec16fbb6daa3ae99287951b76
   languageName: node
   linkType: hard
 
@@ -4494,7 +4487,7 @@ __metadata:
 
 "graasp-apps@github:graasp/graasp-apps":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=0fc1e4006561ea78f1e0d3b476957bf54aa65994"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=46534607247bcf1077ce0de4294f3dd051738487"
   dependencies:
     fastify-auth: ^1.1.0
     fastify-bearer-auth: ^6.1.0
@@ -4506,7 +4499,7 @@ __metadata:
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     http-status-codes: 2.2.0
-  checksum: 994d3b3338c98b3ee14da9a7f70f43f3e15e4d2811cc10362d033158658b12b6044553d25979a60e9e9300b9c35dbdde85afa066a92eace7c91d31f64febfd28
+  checksum: 5e1abd221f8fa460a2eec2827a44419578c55222a5f56cb4736d3e2b2e877d96d1307be582bf2ba4122ccd1a01c1e47e8e60e973a64f24024aa43789aa49358c
   languageName: node
   linkType: hard
 
@@ -4609,25 +4602,25 @@ __metadata:
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=7d59c7de6de8bfd337d50ed3a604edc55ec14013"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=5c596932cf54a5dac78b36e547055336adad445b"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-  checksum: ab11ab21e5131f71b823df0d2413eb731bf4648143116b47f3b7b1568a638ab8a044b93efea715249162a2d199212bf0212d7bfdbe398b57f3b43ecb7b8d2115
+  checksum: 8a872c9fe9682c7bb56c5d2cd1ea265ca9df67398bc77c519dc23a2fa4c007d485c73d4c6ff9b98c1eae0ab34a25afe6949e4c6ccf279526ec8ea6878b776f2c
   languageName: node
   linkType: hard
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=11ff0fd59b6b9bcbd0d863364e2f6864dc330ace"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=bfe7308de0d05b137d57cb7af9d34b8081e365cc"
   dependencies:
-    aws-sdk: 2.1074.0
+    aws-sdk: 2.1111.0
     content-disposition: 0.5.4
     fastify-multipart: 5.3.1
     http-status-codes: 2.2.0
-    node-fetch: 2
-  checksum: aa141edf29e9a8181f5caee38d2874e97a597e32b08badd73cbf17b3f5f0d0d14b67b83a7063fefba6e962db17ad1f7cd442d8491bf606424b8ce89e895b9499
+    node-fetch: 2.6.7
+  checksum: e31837cd8c9fb9f8aa4485b7226f36073b966c607c6e2e270c8fba22bc42486d0f4ff32529200cb74364ea7b4e673ca9014478ec0e0dfead4042549cbb0a24e4
   languageName: node
   linkType: hard
 
@@ -4642,7 +4635,7 @@ __metadata:
 
 "graasp-plugin-import-zip@github:graasp/graasp-plugin-import-zip":
   version: 0.1.0
-  resolution: "graasp-plugin-import-zip@https://github.com/graasp/graasp-plugin-import-zip.git#commit=991541f602205982f66ff6fedf81941b43970476"
+  resolution: "graasp-plugin-import-zip@https://github.com/graasp/graasp-plugin-import-zip.git#commit=73952ee1f3d9adbcf29376f02266488e41d28411"
   dependencies:
     "@types/archiver": 5.3.1
     archiver: 5.3.0
@@ -4658,7 +4651,7 @@ __metadata:
     path: 0.12.7
     qs: ^6.10.3
     stream-promise: 3.2.0
-  checksum: 4e6220581132274067c764768b96303f2efd8eb33e6cbf88b200fad9736ae052f183ac2bcfe81da04ce1302603faf25c9a7e510c47c47aced91e1acf248f00e4
+  checksum: 3986ca056d9e91e48b02c85667d1268df59fc73d17f05b6ca182f9f7a6eeb07c93bfec0fff81f274dddb5280e2617ba9ed847ce4ba2d5e7d4b643d2ba283f38b
   languageName: node
   linkType: hard
 
@@ -4711,22 +4704,21 @@ __metadata:
 
 "graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails":
   version: 0.1.0
-  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=06f8c8975af77e95941de7c188aacf4b29c3a296"
+  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=a53568ec4cae7f6418681b80fdb965f0266488cd"
   dependencies:
     "@graasp/translations": "github:graasp/graasp-translations"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     sharp: 0.30.3
-  checksum: 22f05ff2a13bb63ff248dd8f944ed576f9c1c5aee3f19f58907e932d733b1a47d7fb0b2b7728e6c6396dee87d07f01898ac9431dae9263554f50821ffbb46467
+  checksum: f4d8b1b2a01ee5d759a0f872abc92d8d30c86041536b0685488d9f10863088cf158005e75be1a88ad2da8984354169f2fb6d1b8a8126e3954ffa013c44953265
   languageName: node
   linkType: hard
 
 "graasp-plugin-validation@github:graasp/graasp-plugin-validation":
   version: 0.1.0
-  resolution: "graasp-plugin-validation@https://github.com/graasp/graasp-plugin-validation.git#commit=ccb535e1706e66c04a0a5dd5436bc29d278a4ddd"
+  resolution: "graasp-plugin-validation@https://github.com/graasp/graasp-plugin-validation.git#commit=3db494ad77c7ebc7b4fee59e2f0cfe0d0f0562aa"
   dependencies:
-    "@types/mime-types": 2.1.1
     axios: 0.26.1
     bad-words: 3.0.4
     french-badwords-list: 1.0.5
@@ -4735,7 +4727,7 @@ __metadata:
     http-status-codes: 2.2.0
     js-base64: 3.7.2
     mime-types: 2.1.35
-  checksum: b5f2d4e1ad5796a69e38a3076253fa18aac53fd64b1459d150091a42e139343275749e70d81d0222d04a1ae0d43a4b1fc3f4220a97c4f480560ed09f0bd161c4
+  checksum: 487ac1199b7c324c2ef834f7204f7485bd5f47a49784ccb94f9bc7616c2ba272a3ef9c511ef01668bf679345f6d12af5610b27bce281dbf972aa59af286292b9
   languageName: node
   linkType: hard
 
@@ -7065,7 +7057,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:2, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
+"node-fetch@npm:2.6.7, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
   version: 2.6.7
   resolution: "node-fetch@npm:2.6.7"
   dependencies:
