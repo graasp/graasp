@@ -200,7 +200,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspRecycleBin, {
           recycleItemPostHook: async (itemPath, member, { handler }) =>
-            itemTagService.deleteItemTagsByItemId(
+            await itemTagService.deleteItemTagsByItemId(
               itemPath,
               [PUBLISHED_TAG_ID, PUBLIC_TAG_ID],
               handler,
