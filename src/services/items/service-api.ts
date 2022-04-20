@@ -2,7 +2,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspDocumentItem from 'graasp-document-item';
-import graaspItemTags from 'graasp-item-tags';
+import graaspItemTags, { ItemTagService } from 'graasp-item-tags';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
@@ -89,6 +89,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.taskManager = taskManager;
   items.extendCreateSchema = create;
   items.extendExtrasUpdateSchema = updateOne;
+  const itemTagService = new ItemTagService();
 
   fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
   fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
@@ -198,8 +199,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         });
 
         fastify.register(graaspRecycleBin, {
-          publicTagId: PUBLIC_TAG_ID,
-          publishedTagId: PUBLISHED_TAG_ID,
+          recycleItemPostHook: async (itemPath, member, { handler }) =>
+            await itemTagService.deleteItemTagsByItemId(
+              itemPath,
+              [PUBLISHED_TAG_ID, PUBLIC_TAG_ID],
+              handler,
+            ),
         });
 
         fastify.register(graaspCategoryPlugin);
