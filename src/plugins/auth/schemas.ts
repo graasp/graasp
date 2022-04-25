@@ -54,6 +54,17 @@ const login = {
     additionalProperties: false,
   },
 };
+const passwordLogin = {
+  body: {
+    type: 'object',
+    required: ['email', 'password'],
+    properties: {
+      email: { type: 'string', format: 'email' },
+      password: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+};
 
 const mlogin = {
   body: {
@@ -69,6 +80,19 @@ const mlogin = {
     type: 'object',
     properties: {
       lang: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+};
+
+const mPasswordLogin = {
+  body: {
+    type: 'object',
+    required: ['email', 'challenge', 'password'],
+    properties: {
+      email: { type: 'string', format: 'email' },
+      challenge: { type: 'string' },
+      password: { type: 'string' },
     },
     additionalProperties: false,
   },
@@ -108,4 +132,14 @@ const mdeepLink = {
   },
 };
 
-export { register, mregister, login, mlogin, auth, mauth, mdeepLink };
+export {
+  register,
+  mregister,
+  login,
+  passwordLogin,
+  mlogin,
+  mPasswordLogin,
+  auth,
+  mauth,
+  mdeepLink,
+};

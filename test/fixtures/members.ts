@@ -5,6 +5,7 @@ export const buildMember = (options: {
   name?: string;
   email?: string;
   extra?: UnknownExtra;
+  password?: string;
 }): Member => ({
   id: uuidv4(),
   name: options.name,
@@ -13,6 +14,7 @@ export const buildMember = (options: {
   updatedAt: '2021-03-29T08:46:52.939Z',
   extra: options.extra ?? {},
   type: MemberType.Individual,
+  password: options.password ?? null,
 });
 
 export const ACTOR = buildMember({
@@ -25,3 +27,9 @@ export const ACTOR = buildMember({
 export const ANNA = buildMember({ name: 'anna' });
 
 export const BOB = buildMember({ name: 'bob', extra: { lang: 'fr' } });
+
+export const LOUISA = buildMember({
+  name: 'bob',
+  extra: { lang: 'fr' },
+  password: '$2b$10$WFVpHW6qSpZrMnk06Qxmtuzu1OU2C3LqQby5szT0BboirsNx4cdD.',
+});

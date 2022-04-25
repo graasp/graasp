@@ -10,6 +10,7 @@ import fastifyAuth from 'fastify-auth';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyBearerAuth from 'fastify-bearer-auth';
 import fastifyCors from 'fastify-cors';
+import bcrypt from 'bcrypt';
 
 import {
   SECURE_SESSION_SECRET_KEY,
@@ -33,7 +34,17 @@ import {
 import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
 
 // local
-import { register, login, auth, mlogin, mauth, mdeepLink, mregister } from './schemas';
+import {
+  register,
+  login,
+  passwordLogin,
+  auth,
+  mlogin,
+  mPasswordLogin,
+  mauth,
+  mdeepLink,
+  mregister,
+} from './schemas';
 import { AuthPluginOptions } from './interfaces/auth';
 import { Member } from '../..';
 
@@ -205,6 +216,20 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
+  async function verifyCredentials(member: Member, body: { email: string; password: string }) {
+    /* the verified variable is used to store the output of bcrypt.compare() 
+    bcrypt.compare() allows to compare the provided password with a stored hash. 
+    It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
+    if they match, verified is true 
+    if they do not match, verified is false
+    */
+    const verified = bcrypt
+      .compare(body.password, member.password)
+      .then((res) => res)
+      .catch((err) => console.error(err.message));
+    return verified;
+  }
+
   // cookie based auth and api endpoints
   await fastify.register(async function (fastify) {
     // add CORS support
@@ -258,6 +283,39 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
           reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+        }
+      },
+    );
+
+    // login with password
+    fastify.post<{ Body: { email: string; password: string } }>(
+      '/login-password',
+      { schema: passwordLogin },
+      async ({ body, log }, reply) => {
+        const email = body.email.toLowerCase();
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const [member] = await runner.runSingle(task, log);
+
+        if (!member) {
+          const { email } = body;
+          log.warn(`Login attempt with non-existent email '${email}'`);
+          return reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+        }
+        if (member.password === null) {
+          log.warn('Login attempt with non-existent password');
+          return reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+        }
+        const verified = await verifyCredentials(member, body);
+        if (!verified) {
+          reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+        } else {
+          const token = await promisifiedJwtSign({ sub: member.id }, JWT_SECRET, {
+            expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+          });
+          // link for graasp web
+          const linkPath = '/auth';
+          const resource = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
+          reply.status(StatusCodes.SEE_OTHER).send({ resource });
         }
       },
     );
@@ -378,6 +436,38 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           } else {
             log.warn(`Login attempt with non-existent email '${email}'`);
             reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+          }
+        },
+      );
+
+      // login with password
+      fastify.post<{ Body: { email: string; challenge: string; password: string } }>(
+        '/login-password',
+        { schema: mPasswordLogin },
+        async ({ body, log }, reply) => {
+          const email = body.email.toLowerCase();
+          const { challenge } = body;
+          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+          const [member] = await runner.runSingle(task, log);
+
+          if (!member) {
+            const { email } = body;
+            log.warn(`Login attempt with non-existent email '${email}'`);
+            return reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+          }
+          if (member.password === null) {
+            log.warn('Login attempt with non-existent password');
+            return reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+          }
+          const verified = await verifyCredentials(member, body);
+          if (!verified) {
+            reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+          } else {
+            const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
+              expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+            });
+            // token for graasp mobile app
+            reply.status(StatusCodes.OK).send({ t: token });
           }
         },
       );

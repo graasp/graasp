@@ -170,6 +170,83 @@ describe('Auth routes tests', () => {
     });
   });
 
+  describe('POST /login-password', () => {
+    it('Sign In successfully', async () => {
+      const member = MEMBERS_FIXTURES.LOUISA;
+      const clearPassword = 'asd';
+      mockMemberServiceGetMatching([member]);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: '/login-password',
+        payload: { email: member.email, password: clearPassword },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      expect(response.json()).toHaveProperty('resource');
+      app.close();
+    });
+
+    it('Sign In does send unauthorized error for wrong password', async () => {
+      const member = MEMBERS_FIXTURES.LOUISA;
+      const clearWrongPassword = '1234';
+      mockMemberServiceGetMatching([member]);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: '/login-password',
+        payload: { email: member.email, password: clearWrongPassword },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+      expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
+      app.close();
+    });
+
+    it('Sign In does send not acceptable error when member does not have password', async () => {
+      const member = MEMBERS_FIXTURES.BOB;
+      const clearPassword = 'asd';
+      mockMemberServiceGetMatching([member]);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: '/login-password',
+        payload: { email: member.email, password: clearPassword },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
+      expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
+      app.close();
+    });
+
+    it('Sign In send not found error for non-existing email', async () => {
+      const email = 'some@email.com';
+      const password = '1234';
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: '/login-password',
+        payload: { email, password },
+      });
+
+      expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+      expect(response.statusMessage).toEqual(ReasonPhrases.NOT_FOUND);
+      app.close();
+    });
+
+    it('Bad request for invalid email', async () => {
+      const email = 'wrongemail';
+      const password = '1234';
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: '/login-password',
+        payload: { email, password },
+      });
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      app.close();
+    });
+  });
+
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
       const app = await build();
@@ -360,6 +437,83 @@ describe('Auth routes tests', () => {
           method: HTTP_METHODS.POST,
           url: '/m/login',
           payload: { email, challenge },
+        });
+
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+        app.close();
+      });
+    });
+
+    describe('POST /m/login-password', () => {
+      it('Sign In successfully', async () => {
+        const member = MEMBERS_FIXTURES.LOUISA;
+        const clearPassword = 'asd';
+        mockMemberServiceGetMatching([member]);
+        const app = await build();
+        const response = await app.inject({
+          method: HTTP_METHODS.POST,
+          url: '/m/login-password',
+          payload: { email: member.email, challenge, password: clearPassword },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.json()).toHaveProperty('t');
+        app.close();
+      });
+
+      it('Sign In does send unauthorized error for wrong password', async () => {
+        const member = MEMBERS_FIXTURES.LOUISA;
+        const clearWrongPassword = '1234';
+        mockMemberServiceGetMatching([member]);
+        const app = await build();
+        const response = await app.inject({
+          method: HTTP_METHODS.POST,
+          url: '/m/login-password',
+          payload: { email: member.email, challenge, password: clearWrongPassword },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+        expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
+        app.close();
+      });
+
+      it('Sign In send not acceptable error when member does not have password', async () => {
+        const member = MEMBERS_FIXTURES.BOB;
+        const clearPassword = 'asd';
+        mockMemberServiceGetMatching([member]);
+        const app = await build();
+        const response = await app.inject({
+          method: HTTP_METHODS.POST,
+          url: '/m/login-password',
+          payload: { email: member.email, challenge, password: clearPassword },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
+        expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
+        app.close();
+      });
+
+      it('Sign In send not found error for non-existing email', async () => {
+        const email = 'some@email.com';
+        const password = '1234';
+        const app = await build();
+        const response = await app.inject({
+          method: HTTP_METHODS.POST,
+          url: '/m/login-password',
+          payload: { email, challenge, password },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+        expect(response.statusMessage).toEqual(ReasonPhrases.NOT_FOUND);
+        app.close();
+      });
+
+      it('Bad request for invalid email', async () => {
+        const email = 'wrongemail';
+        const password = '1234';
+        const app = await build();
+        const response = await app.inject({
+          method: HTTP_METHODS.POST,
+          url: '/m/login-password',
+          payload: { email, challenge, password },
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
