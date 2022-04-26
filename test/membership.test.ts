@@ -9,6 +9,7 @@ import {
   MemberCannotAccess,
   MemberCannotReadItem,
   MemberCannotWriteItem,
+  MemberCannotAdminItem,
   ModifyExisting,
   TooManyMemberships,
 } from '../src/util/graasp-error';
@@ -691,7 +692,7 @@ describe('Membership routes tests', () => {
         url: `/item-memberships/${memberMembership.id}`,
       });
 
-      expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
+      expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
       expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
       app.close();
     });
@@ -719,7 +720,7 @@ describe('Membership routes tests', () => {
         url: `/item-memberships/${memberMembership.id}`,
       });
 
-      expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
+      expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
       expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
       app.close();
     });
@@ -812,7 +813,7 @@ describe('Membership routes tests', () => {
         url: `/item-memberships?itemId=${item.id}`,
       });
 
-      expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
+      expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       app.close();
     });
@@ -827,7 +828,7 @@ describe('Membership routes tests', () => {
         url: `/item-memberships?itemId=${item.id}`,
       });
 
-      expect(response.json()).toEqual(new MemberCannotWriteItem(item.id));
+      expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       app.close();
     });

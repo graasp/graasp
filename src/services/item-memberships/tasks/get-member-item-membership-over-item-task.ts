@@ -6,7 +6,11 @@ import { Member } from '../../members/interfaces/member';
 // local
 import { ItemMembershipService } from '../db-service';
 import { ItemMembership, PermissionLevel } from '../interfaces/item-membership';
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../util/graasp-error';
+import {
+  MemberCannotAccess,
+  MemberCannotAdminItem,
+  MemberCannotWriteItem,
+} from '../../../util/graasp-error';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import { TaskStatus } from '../../..';
 
@@ -58,7 +62,7 @@ export class GetMemberItemMembershipOverItemTask extends BaseItemMembershipTask<
           break;
         case PermissionLevel.Admin:
           if (p !== PermissionLevel.Admin) {
-            throw new MemberCannotWriteItem(item.id);
+            throw new MemberCannotAdminItem(item.id);
           }
           break;
       }
