@@ -8,7 +8,7 @@ import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories
 import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
 import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
-import { publicPlugin as publicZipPlugin } from 'graasp-plugin-import-zip';
+import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
 import {
   APPS_JWT_SECRET,
   APP_ITEMS_PREFIX,

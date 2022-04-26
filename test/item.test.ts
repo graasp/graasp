@@ -335,7 +335,7 @@ describe('Item routes tests', () => {
     });
   });
   // get many items
-  describe('GET /items/id=<id>', () => {
+  describe('GET /items?id=<id>', () => {
     it('Returns successfully', async () => {
       const items = [
         getDummyItem({ type: ITEM_TYPES.FOLDER }),

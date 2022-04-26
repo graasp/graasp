@@ -1,3 +1,4 @@
+import qs from 'qs';
 import build from './app';
 import * as MEMBERS_FIXTURES from './fixtures/members';
 import { CannotModifyOtherMembers, MemberNotFound } from '../src/util/graasp-error';
@@ -83,6 +84,92 @@ describe('Member routes tests', () => {
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       expect(response.json()).toEqual(new MemberNotFound(memberId));
+      app.close();
+    });
+  });
+
+  // get many members
+  describe('GET /members', () => {
+    it('Returns successfully', async () => {
+      const members = [MEMBERS_FIXTURES.ANNA, MEMBERS_FIXTURES.BOB];
+      mockMemberServiceGet(members);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/members?${qs.stringify(
+          { id: members.map(({ id }) => id) },
+          { arrayFormat: 'repeat' },
+        )}`,
+      });
+      // console.log(response);
+      const result = response.json();
+      expect(result.length).toBeTruthy();
+      result.forEach((m, idx) => {
+        expect(m.email).toEqual(members[idx].email);
+        expect(m.name).toEqual(members[idx].name);
+        expect(m.id).toEqual(members[idx].id);
+        expect(m.password).toBeFalsy();
+      });
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+
+    it('Returns one member successfully', async () => {
+      const members = [MEMBERS_FIXTURES.ANNA];
+      mockMemberServiceGet(members);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/members?${qs.stringify({ id: members[0].id }, { arrayFormat: 'repeat' })}`,
+      });
+
+      const [m] = response.json();
+      expect(m.email).toEqual(members[0].email);
+      expect(m.name).toEqual(members[0].name);
+      expect(m.id).toEqual(members[0].id);
+      expect(m.password).toBeFalsy();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+
+    it('Returns Bad Request for one invalid id', async () => {
+      const members = [
+        MEMBERS_FIXTURES.ANNA,
+        MEMBERS_FIXTURES.BOB,
+        MEMBERS_FIXTURES.buildMember({ id: 'invalid-id' }),
+      ];
+      mockMemberServiceGet(members);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/members?${qs.stringify(
+          { id: members.map(({ id }) => id) },
+          { arrayFormat: 'repeat' },
+        )}`,
+      });
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      app.close();
+    });
+
+    it('Returns MemberNotFound for one missing id', async () => {
+      // the following id is not part of the fixtures
+      const memberId = 'a3894999-c958-49c0-a5f0-f82dfebd941e';
+      const members = [MEMBERS_FIXTURES.ANNA, MEMBERS_FIXTURES.BOB];
+
+      mockMemberServiceGet(members);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/members?${qs.stringify(
+          { id: [memberId, ...members.map(({ id }) => id)] },
+          { arrayFormat: 'repeat' },
+        )}`,
+      });
+
+      expect(response.json()[0]).toEqual(new MemberNotFound(memberId));
+      expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
   });

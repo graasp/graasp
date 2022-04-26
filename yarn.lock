@@ -1291,15 +1291,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=12, @types/node@npm:^17.0.8":
-<<<<<<< HEAD
-  version: 17.0.26
-  resolution: "@types/node@npm:17.0.26"
-  checksum: 59f92f46cc76703921ddf50d34b920afe3bbf916360e46321d54507b28c0ead4c3aed57cfdc64eee7c089ed12321dc4a728aa63a1205f7c1115105467f7a2b31
-=======
   version: 17.0.25
   resolution: "@types/node@npm:17.0.25"
   checksum: 6a820bd624e69ea772f52a6cdb326484eff5829443dc981939373929ade109f58c21698b9f0a831bd6ceea799e722a75dc49c5fa7a6bc32a81e1cbdfc6507b64
->>>>>>> a78823b (feat: add get many members, update action plugin)
   languageName: node
   linkType: hard
 
@@ -3231,17 +3225,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-<<<<<<< HEAD
 "electron-to-chromium@npm:^1.4.118":
   version: 1.4.118
   resolution: "electron-to-chromium@npm:1.4.118"
   checksum: b1941bdff3ff8cb10a6f75f60527bff37fc43878b2ff4e0c1b5d6aa5062ea97df4e8c75e6d4c6eb97f0bab1cac6f8f1d799b7316e69f66b6a4b9b6773af97de2
-=======
-"electron-to-chromium@npm:^1.4.84":
-  version: 1.4.113
-  resolution: "electron-to-chromium@npm:1.4.113"
-  checksum: ce3ef4090a8088f399bc8c3443248711c82edbcc0c91f4c63d0f6bdc557ca12cb08e9e1e89743be9f48563cf701d6863c62c8250e4a5f297aa614c0c26da46ea
->>>>>>> a78823b (feat: add get many members, update action plugin)
   languageName: node
   linkType: hard
 
@@ -4111,7 +4098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fluent-json-schema@npm:^3.0.1":
+"fluent-json-schema@npm:3.1.0, fluent-json-schema@npm:^3.0.1":
   version: 3.1.0
   resolution: "fluent-json-schema@npm:3.1.0"
   dependencies:
@@ -4603,7 +4590,7 @@ __metadata:
 
 "graasp-mailer@github:graasp/graasp-mailer#17/actionExport":
   version: 0.1.0
-  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=375979d0ab2f1ae0f5a38dc671e4c03eebeae8c4"
+  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=756625de4c21c7f6acadd9b8f62074873df73dde"
   dependencies:
     cpy-cli: 4.1.0
     eta: ^1.12.3
@@ -4612,7 +4599,7 @@ __metadata:
     fastify-polyglot: 1.0.0
     i18n: 0.14.2
     point-of-view: ^5.2.0
-  checksum: ea693c4e381d89461efc23547c6e36abe6ae9c98d6b268c7b9e03f1939531b3f4fdc13b457c5d8aee6535ace1a124b6d7d4a16e459485fb8e45ebb03b467898e
+  checksum: 3dfb2d9dea2220808196507ec3c96b5ca1d5ed04bb1f21674db8fc6bace13b59593f2058111a86c5fa228e09c1bc642168c25a132454b8f129dbce60d753b870
   languageName: node
   linkType: hard
 
@@ -4630,7 +4617,7 @@ __metadata:
 
 "graasp-plugin-actions@github:graasp/graasp-plugin-actions#16/exportActions":
   version: 0.1.0
-  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=63974a3ac1828b5611cbf5399ceb5c7db13c6b1f"
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=685a43f89b6baa8ec7c21123c40a86a8cce790ed"
   dependencies:
     archiver: 5.3.1
     fluent-json-schema: 3.0.1
@@ -4639,7 +4626,7 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file#19/expirationDownload"
     http-status-codes: 2.2.0
     uuid: 8.3.2
-  checksum: 7b0a92737c22040e7e5be446b9be8e9f6cd2c3b5abe10f24472bd2cde3bd6ab6dc3cd5c098a591972a8ff2087a93aa607ef6dec654f4796dc9b947fbbd7ecb58
+  checksum: 44cbe6da17aaa9ec6a943611abc6d9f7bfb8744f6bec8c475dd6bf8862bb284a86b730c6377899f377eb50f4602969cd3f780045ef8199d9ea5433a6135ccf3e
   languageName: node
   linkType: hard
 
@@ -4693,14 +4680,14 @@ __metadata:
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file#19/expirationDownload":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=45ed2b02383ce6d66661f13f44953514e5edecf7"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=fbd1956ce8ec18cce31f440af47de612235d32d0"
   dependencies:
     aws-sdk: 2.1111.0
     content-disposition: 0.5.4
     fastify-multipart: 5.3.1
     http-status-codes: 2.2.0
     node-fetch: 2.6.7
-  checksum: ca0ac8372ff1de887afd425b472fce089d358bec98617a148e968f1c69d6236f3118758e50d154312f0fba256b8e83836bec752d0ff8e5db5620ae1f092e41d5
+  checksum: fb6547805d817dbbbb8d2ba58089f597c856314b327a0bf72a718b449213368c34be7fada9fb62c1e0385f9cf19e338dc9054972509e56c2a15ee4b8ce50be0e
   languageName: node
   linkType: hard
 
@@ -4710,28 +4697,6 @@ __metadata:
   dependencies:
     graasp-item-tags: graasp/graasp-item-tags
   checksum: 86a055ceab05f17dc3c6987a3e18fd8681828af21267e8dae1d9bf9fabc43e9840317cb182d2519fb5a1dc6908d6cfacc39f09a2a5f17bd817c3a3f226a70d9a
-  languageName: node
-  linkType: hard
-
-"graasp-plugin-import-zip@github:graasp/graasp-plugin-import-zip":
-  version: 0.1.0
-  resolution: "graasp-plugin-import-zip@https://github.com/graasp/graasp-plugin-import-zip.git#commit=73952ee1f3d9adbcf29376f02266488e41d28411"
-  dependencies:
-    "@types/archiver": 5.3.1
-    archiver: 5.3.0
-    aws-sdk: ^2.1101.0
-    extract-zip: 2.0.1
-    fastify-multipart: 5.3.1
-    graasp-plugin-file: "github:graasp/graasp-plugin-file"
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-public: "github:graasp/graasp-plugin-public"
-    http-status-codes: ^2.2.0
-    mime-types: 2.1.35
-    mmmagic: 0.5.3
-    path: 0.12.7
-    qs: ^6.10.3
-    stream-promise: 3.2.0
-  checksum: 3986ca056d9e91e48b02c85667d1268df59fc73d17f05b6ca182f9f7a6eeb07c93bfec0fff81f274dddb5280e2617ba9ed847ce4ba2d5e7d4b643d2ba283f38b
   languageName: node
   linkType: hard
 
@@ -4749,6 +4714,28 @@ __metadata:
     bcrypt: ^5.0.1
     fastify-plugin: ^3.0.0
   checksum: 50a88959e2b670a4c25fe6511d3b9cfe687f45415bebf561eb1165f5ec6027899b3b0bcfbdcdaa3a8257764248c8c9a6060b881b23e2bf72e218bff755ca2e74
+  languageName: node
+  linkType: hard
+
+"graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
+  version: 0.1.0
+  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=b03842d6b67c0e219ad151231315245aecfb0cb6"
+  dependencies:
+    "@types/archiver": 5.3.1
+    archiver: 5.3.0
+    aws-sdk: ^2.1101.0
+    extract-zip: 2.0.1
+    fastify-multipart: 5.3.1
+    graasp-plugin-file: "github:graasp/graasp-plugin-file"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
+    graasp-plugin-public: "github:graasp/graasp-plugin-public"
+    http-status-codes: ^2.2.0
+    mime-types: 2.1.35
+    mmmagic: 0.5.3
+    path: 0.12.7
+    qs: ^6.10.3
+    stream-promise: 3.2.0
+  checksum: f2ebe7b91031aaebe6ad6f39baec4cac42d9d8640201e2ff2aff2828340a517fefa3140e7fed555c0baeb454186a739b626e80837c48e65bb118de0c12cc41ad
   languageName: node
   linkType: hard
 
@@ -4854,7 +4841,7 @@ __metadata:
     fastify-helmet: ^5.3.2
     fastify-plugin: ^3.0.0
     fastify-secure-session: ^3.0.0
-    fluent-json-schema: ^3.0.1
+    fluent-json-schema: 3.1.0
     graasp-apps: "github:graasp/graasp-apps"
     graasp-document-item: "github:graasp/graasp-document-item"
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
@@ -4867,9 +4854,9 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
-    graasp-plugin-import-zip: "github:graasp/graasp-plugin-import-zip"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
+    graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-search: "github:graasp/graasp-plugin-search"

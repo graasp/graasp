@@ -10,7 +10,7 @@ import { TaskStatus } from '../../..';
 type InputType = { memberIds?: string[] };
 
 export class GetManyMembersTask<E extends UnknownExtra> extends BaseMemberTask<
-  (Member<E> | Error)[]
+  (Member<E> | MemberNotFound)[]
 > {
   get name(): string {
     return GetManyMembersTask.name;
@@ -28,10 +28,9 @@ export class GetManyMembersTask<E extends UnknownExtra> extends BaseMemberTask<
     this.status = TaskStatus.RUNNING;
 
     const { memberIds } = this.input;
-    this.targetId = memberIds.join(', ');
+    this.targetId = JSON.stringify(memberIds);
 
     // get members
-    // todo: get all members given set of ids in one query
     this._result = await Promise.all(
       memberIds.map(async (id) => {
         const member = await this.memberService.get<E>(id, handler);
