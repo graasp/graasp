@@ -4098,7 +4098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fluent-json-schema@npm:3.1.0, fluent-json-schema@npm:^3.0.1":
+"fluent-json-schema@npm:^3.0.1":
   version: 3.1.0
   resolution: "fluent-json-schema@npm:3.1.0"
   dependencies:
@@ -4617,16 +4617,16 @@ __metadata:
 
 "graasp-plugin-actions@github:graasp/graasp-plugin-actions#16/exportActions":
   version: 0.1.0
-  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=685a43f89b6baa8ec7c21123c40a86a8cce790ed"
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=72bd7afcca7b8bb2074ab1ed3efaf9c7f3563746"
   dependencies:
     archiver: 5.3.1
     fluent-json-schema: 3.0.1
     geoip-lite: 1.4.2
     graasp-mailer: "github:graasp/graasp-mailer#17/actionExport"
-    graasp-plugin-file: "github:graasp/graasp-plugin-file#19/expirationDownload"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file"
     http-status-codes: 2.2.0
     uuid: 8.3.2
-  checksum: 44cbe6da17aaa9ec6a943611abc6d9f7bfb8744f6bec8c475dd6bf8862bb284a86b730c6377899f377eb50f4602969cd3f780045ef8199d9ea5433a6135ccf3e
+  checksum: 25c423d0aa692ca2ae63c50274ceaa7e4aa0ce83e998ea0e58dacaa3706252cea3e8a7a103053f43c43dd42efb040a0ee2e5a77c04ba3f2e2d71b85a87264a8a
   languageName: node
   linkType: hard
 
@@ -4675,19 +4675,6 @@ __metadata:
     http-status-codes: 2.2.0
     node-fetch: 2.6.7
   checksum: e31837cd8c9fb9f8aa4485b7226f36073b966c607c6e2e270c8fba22bc42486d0f4ff32529200cb74364ea7b4e673ca9014478ec0e0dfead4042549cbb0a24e4
-  languageName: node
-  linkType: hard
-
-"graasp-plugin-file@github:graasp/graasp-plugin-file#19/expirationDownload":
-  version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=fbd1956ce8ec18cce31f440af47de612235d32d0"
-  dependencies:
-    aws-sdk: 2.1111.0
-    content-disposition: 0.5.4
-    fastify-multipart: 5.3.1
-    http-status-codes: 2.2.0
-    node-fetch: 2.6.7
-  checksum: fb6547805d817dbbbb8d2ba58089f597c856314b327a0bf72a718b449213368c34be7fada9fb62c1e0385f9cf19e338dc9054972509e56c2a15ee4b8ce50be0e
   languageName: node
   linkType: hard
 
@@ -4841,7 +4828,7 @@ __metadata:
     fastify-helmet: ^5.3.2
     fastify-plugin: ^3.0.0
     fastify-secure-session: ^3.0.0
-    fluent-json-schema: 3.1.0
+    fluent-json-schema: ^3.0.1
     graasp-apps: "github:graasp/graasp-apps"
     graasp-document-item: "github:graasp/graasp-document-item"
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
