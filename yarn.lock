@@ -4590,7 +4590,7 @@ __metadata:
 
 "graasp-mailer@github:graasp/graasp-mailer#17/actionExport":
   version: 0.1.0
-  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=756625de4c21c7f6acadd9b8f62074873df73dde"
+  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=714d2ee1876682fdb8f2469199c3c59411fa2b75"
   dependencies:
     cpy-cli: 4.1.0
     eta: ^1.12.3
@@ -4599,7 +4599,7 @@ __metadata:
     fastify-polyglot: 1.0.0
     i18n: 0.14.2
     point-of-view: ^5.2.0
-  checksum: 3dfb2d9dea2220808196507ec3c96b5ca1d5ed04bb1f21674db8fc6bace13b59593f2058111a86c5fa228e09c1bc642168c25a132454b8f129dbce60d753b870
+  checksum: da59591082e36b193e71a002aeb905515c2d68d11a101a54a57bf9988cd0dc09973e5edeef9e303bad6fc35a75284edc4b7a11ae518c4bd4af8871ad325eab2a
   languageName: node
   linkType: hard
 
@@ -4617,7 +4617,7 @@ __metadata:
 
 "graasp-plugin-actions@github:graasp/graasp-plugin-actions#16/exportActions":
   version: 0.1.0
-  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=72bd7afcca7b8bb2074ab1ed3efaf9c7f3563746"
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=56d29083f8f9e2dbd423479362120db13b43c6d6"
   dependencies:
     archiver: 5.3.1
     fluent-json-schema: 3.0.1
@@ -4626,7 +4626,7 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     http-status-codes: 2.2.0
     uuid: 8.3.2
-  checksum: 25c423d0aa692ca2ae63c50274ceaa7e4aa0ce83e998ea0e58dacaa3706252cea3e8a7a103053f43c43dd42efb040a0ee2e5a77c04ba3f2e2d71b85a87264a8a
+  checksum: 96231b5ee230238edfa443d2fd8dbf121aceed73ee4647605191a3db6d7aae3268edf224cd4fecd32ae824de83c7850b4cceb2520e669c767e2d3d45e7d23364
   languageName: node
   linkType: hard
 
@@ -4642,7 +4642,7 @@ __metadata:
 
 "graasp-plugin-chatbox@github:graasp/graasp-plugin-chatbox":
   version: 1.0.0
-  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=5c35f46da4d883c8c8724bf8d05dbbbea3d64380"
+  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=ff64c24cb572f0848e8c0142a0e575128a4e0fa7"
   dependencies:
     fastify: ^3.25.3
     fastify-plugin: ^3.0.0
@@ -4650,7 +4650,7 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-websockets: "github:graasp/graasp-websockets"
-  checksum: bcea4d163804db84ec005d24b03b4145ad2b044d6fd11f23c0d4c2e0a05c0232f007296fd990f21a6145035036ff78b75ce330d34bd3e75b41be97fb1f67f33b
+  checksum: 6dbfeba71b77bc264c7dd92fd051b65cd10bab344119a0ca8b304a7fc0f5b92bc85bc1740fa610543b6e1c32e6ddb7d4d2ac9185480a2d570c8bc32f58eef205
   languageName: node
   linkType: hard
 

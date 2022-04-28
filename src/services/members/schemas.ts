@@ -59,7 +59,7 @@ const getMany = {
           {
             $ref: 'http://graasp.org/#/definitions/error',
           },
-          // additionalproperties=false wpuld prevent this schema to apply
+          // additionalproperties=false would prevent this schema to apply
           {
             type: 'object',
             properties: {

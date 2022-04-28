@@ -101,7 +101,6 @@ describe('Member routes tests', () => {
           { arrayFormat: 'repeat' },
         )}`,
       });
-      // console.log(response);
       const result = response.json();
       expect(result.length).toBeTruthy();
       result.forEach((m, idx) => {
