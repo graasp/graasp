@@ -6,9 +6,9 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 
 import { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
-import fastifyAuth from 'fastify-auth';
+import fastifyAuth from '@fastify/auth';
 import fastifySecureSession from 'fastify-secure-session';
-import fastifyBearerAuth from 'fastify-bearer-auth';
+import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from 'fastify-cors';
 import bcrypt from 'bcrypt';
 

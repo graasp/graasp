@@ -54,7 +54,22 @@ const getMany = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/members/#/definitions/member' },
+      items: {
+        anyOf: [
+          {
+            $ref: 'http://graasp.org/#/definitions/error',
+          },
+          // additionalproperties=false would prevent this schema to apply
+          {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              email: { type: 'string' },
+            },
+          },
+        ],
+      },
     },
   },
 };

@@ -11,7 +11,7 @@ import graaspValidationPlugin from 'graasp-plugin-validation';
 import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
-import graaspImportZip from 'graasp-plugin-import-zip';
+import graaspItemZip from 'graasp-plugin-item-zip';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
@@ -80,6 +80,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items,
     itemMemberships: { taskManager: membership, dbService: itemMembershipsDbService },
+    members: { taskManager: mTM },
     taskRunner: runner,
     websockets,
     db,
@@ -124,7 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        fastify.register(graaspImportZip, {
+        fastify.register(graaspItemZip, {
           pathPrefix: FILES_PATH_PREFIX,
           serviceMethod: SERVICE_METHOD,
           serviceOptions: {
@@ -242,7 +243,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           // it is used to save the actions of the items
           if (SAVE_ACTIONS) {
             const actionService = new ActionService();
-            const actionTaskManager = new ActionTaskManager(actionService, CLIENT_HOSTS);
+            const actionTaskManager = new ActionTaskManager(
+              actionService,
+              taskManager,
+              membership,
+              mTM,
+              CLIENT_HOSTS,
+            );
             fastify.addHook('onResponse', async (request, reply) => {
               // todo: save public actions?
               if (request.member) {
