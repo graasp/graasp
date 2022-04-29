@@ -148,8 +148,8 @@ export class CopyItemTask extends BaseItemTask<Item> {
       const { copy, original } = value;
       if (original.extra?.folder) {
         const { childrenOrder } = (original.extra as FolderExtra).folder;
-        const newOrder = childrenOrder.map((oldId) => itemsMap.get(oldId).copy.id);
-        (copy.extra as FolderExtra).folder.childrenOrder = newOrder;
+        const newOrder = childrenOrder.map((oldId) => itemsMap.get(oldId)?.copy?.id);
+        (copy.extra as FolderExtra).folder.childrenOrder = newOrder.filter(Boolean);
       }
 
       return value;

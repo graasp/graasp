@@ -1,6 +1,6 @@
 import fastify from 'fastify';
 import fastifyHelmet from '@fastify/helmet';
-import Sentry from '@sentry/node';
+import * as Sentry from '@sentry/node';
 
 import registerAppPlugins from './app';
 // import fastifyCompress from 'fastify-compress';

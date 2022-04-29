@@ -708,6 +708,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/error@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@fastify/error@npm:2.0.0"
+  checksum: ecf0834966b2bfb33ff834e3d55fe4dc04cbe9f822fda6c937b12cce4f162be4f8b0577ee665bc856d7012b1640c12472a1829a22ae38d287342c90b0f33a595
+  languageName: node
+  linkType: hard
+
 "@fastify/helmet@npm:8.0.0":
   version: 8.0.0
   resolution: "@fastify/helmet@npm:8.0.0"
@@ -1511,14 +1518,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12":
-  version: 17.0.29
-  resolution: "@types/node@npm:17.0.29"
-  checksum: bb9d7bce9d6d3882efd9d63b773b548dce98df4bd57eff8ceaa316aa2f3346e36d3618764cc93da84bbff92005174a35eec3465cde91ee973ef1c351ffa40074
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:17.0.30":
+"@types/node@npm:*, @types/node@npm:17.0.30, @types/node@npm:>=12":
   version: 17.0.30
   resolution: "@types/node@npm:17.0.30"
   checksum: b3cd2db6474aae3ddac5a312f340f6e4ca200429371e62cb74698fe7f23d7414d0200f643204ddfaa797846328539359e3797d7f2baaf3cdd643b159cf53baa6
@@ -2137,7 +2137,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-sdk@npm:2.1124.0":
+"aws-sdk@npm:2.1124.0, aws-sdk@npm:^2.1101.0":
   version: 2.1124.0
   resolution: "aws-sdk@npm:2.1124.0"
   dependencies:
@@ -2151,23 +2151,6 @@ __metadata:
     uuid: 3.3.2
     xml2js: 0.4.19
   checksum: a6ca56ff65d7c2769bc33c3c210cdb4f11d6e7e090d28f9a17f5b5b265542f2e4d62b970e240676f4e41b3ce03b0ef82a3d23aa5fd9df7cad700349441fcc184
-  languageName: node
-  linkType: hard
-
-"aws-sdk@npm:^2.1101.0":
-  version: 2.1123.0
-  resolution: "aws-sdk@npm:2.1123.0"
-  dependencies:
-    buffer: 4.9.2
-    events: 1.1.1
-    ieee754: 1.1.13
-    jmespath: 0.16.0
-    querystring: 0.2.0
-    sax: 1.2.1
-    url: 0.10.3
-    uuid: 3.3.2
-    xml2js: 0.4.19
-  checksum: e3e9eba5a4afd42aa2ee8ff4fa20ab2fbcde975b77ebcf3e12b4a44b17fd85f285e3840e94449d3fe848af8b6aeab74bf3f7c5314fc0c87e24d41ef47fe9c04e
   languageName: node
   linkType: hard
 
@@ -3373,9 +3356,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.118":
-  version: 1.4.124
-  resolution: "electron-to-chromium@npm:1.4.124"
-  checksum: 04551666fbc4e39e44d07b20348c6cbb23b5049bad62a78bbf65bde7a94c53b12db56a5e529806c325860763c28afe3523fa1ac00e0444fd6745c7ab35efc788
+  version: 1.4.127
+  resolution: "electron-to-chromium@npm:1.4.127"
+  checksum: 960333a1da1b29b58ba0daab9e9c7527c2d54f4fc74a82c65a7556cb4ade1e8a1710e5ccd2c3bbf610a164800c6a13bad5c8212a0cf6f07091f1384f6e557939
   languageName: node
   linkType: hard
 
@@ -3860,13 +3843,13 @@ __metadata:
   linkType: hard
 
 "fast-jwt@npm:^1.4.0":
-  version: 1.5.3
-  resolution: "fast-jwt@npm:1.5.3"
+  version: 1.5.4
+  resolution: "fast-jwt@npm:1.5.4"
   dependencies:
     asn1.js: ^5.3.0
     ecdsa-sig-formatter: ^1.0.11
     mnemonist: ^0.39.0
-  checksum: f57e2fba912c576bd54a1cf5d83a9a769bd55dc89d38ef04a2203d4d3dc026f72a16e84a6edfe8b3ae74b16542ad48200ede2a3e9c560e8c95b7d2ad1962218c
+  checksum: 267d0054863bd8c74fecbea8f093e96fb3dab19f6568491f5a740333314fc60135f9b9cbc531db6f74f060607fffe27de796d8e0d58987d260dedad5a148f18f
   languageName: node
   linkType: hard
 
@@ -4061,14 +4044,14 @@ __metadata:
   linkType: hard
 
 "fastify@npm:^3.18.1, fastify@npm:^3.25.3":
-  version: 3.28.0
-  resolution: "fastify@npm:3.28.0"
+  version: 3.29.0
+  resolution: "fastify@npm:3.29.0"
   dependencies:
     "@fastify/ajv-compiler": ^1.0.0
+    "@fastify/error": ^2.0.0
     abstract-logging: ^2.0.0
     avvio: ^7.1.2
     fast-json-stringify: ^2.5.2
-    fastify-error: ^0.3.0
     find-my-way: ^4.5.0
     flatstr: ^1.0.12
     light-my-request: ^4.2.0
@@ -4079,7 +4062,7 @@ __metadata:
     secure-json-parse: ^2.0.0
     semver: ^7.3.2
     tiny-lru: ^8.0.1
-  checksum: a91bd13384731e8f90ae2ccab39a79385853cd4870f8144dd83aee18344442be876b495fff49a08f593069e7a4ad23983b12dfc82bee30761d4883cf8ede093c
+  checksum: ed2964035e34843d08c09eee80f5f14bd8cc0ab9b46ac9d146c6821b586a359a93e1354fca4004ac14e37b267afe5bb1ba3ddb555ecf09b74d9b6bf2f9893ba1
   languageName: node
   linkType: hard
 
@@ -7213,16 +7196,16 @@ __metadata:
   linkType: hard
 
 "node-releases@npm:^2.0.3":
-  version: 2.0.3
-  resolution: "node-releases@npm:2.0.3"
-  checksum: 5e555fbbebb3343a5d1e5f4e10e1737998bedc57472a35027410d17b2678ed9bc0e5fae008f513798a960eb8687159331b1f46f82a3210d39bd7c40d3c9dcead
+  version: 2.0.4
+  resolution: "node-releases@npm:2.0.4"
+  checksum: b32d6c2032c7b169ae3938b416fc50f123f5bd577d54a79b2ae201febf27b22846b01c803dd35ac8689afe840f8ba4e5f7154723db629b80f359836b6707b92f
   languageName: node
   linkType: hard
 
 "nodemailer@npm:^6.4.10":
-  version: 6.7.3
-  resolution: "nodemailer@npm:6.7.3"
-  checksum: b94d099f00f25666fc96a7cb498045e7428045b8cc0245ce10522190fd513b586d6e31305afd019f6878f1540d14d169d0dbe2e1f77385795c7054912d822ec0
+  version: 6.7.4
+  resolution: "nodemailer@npm:6.7.4"
+  checksum: e3e89869b8e73b4ffd8214c7b2da38907b8a4c6948dd6283d83f063c62acd666179f2f36610eff5671542be3195687e5564b57435378602ab4356174d4c6638f
   languageName: node
   linkType: hard
 
@@ -9658,7 +9641,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.6.4":
+"typescript@npm:4.6.4, typescript@npm:^4.4.3":
   version: 4.6.4
   resolution: "typescript@npm:4.6.4"
   bin:
@@ -9668,33 +9651,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.3":
-  version: 4.6.3
-  resolution: "typescript@npm:4.6.3"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 255bb26c8cb846ca689dd1c3a56587af4f69055907aa2c154796ea28ee0dea871535b1c78f85a6212c77f2657843a269c3a742d09d81495b97b914bf7920415b
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@4.6.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@4.6.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>":
   version: 4.6.4
   resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=bda367"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 1cb434fbc637d347be90e3a0c6cd05e33c38f941713c8786d3031faf1842c2c148ba91d2fac01e7276b0ae3249b8633f1660e32686cc7a8c6a8fd5361dc52c66
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>":
-  version: 4.6.3
-  resolution: "typescript@patch:typescript@npm%3A4.6.3#~builtin<compat/typescript>::version=4.6.3&hash=bda367"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 6bf45caf847062420592e711bc9c28bf5f9a9a7fa8245343b81493e4ededae33f1774009d1234d911422d1646a2c839f44e1a23ecb111b40a60ac2ea4c1482a8
   languageName: node
   linkType: hard
 
