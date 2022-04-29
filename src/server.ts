@@ -1,8 +1,16 @@
 import fastify from 'fastify';
 import fastifyHelmet from 'fastify-helmet';
+import Sentry from '@sentry/node';
+
 import registerAppPlugins from './app';
 // import fastifyCompress from 'fastify-compress';
 import { PORT, ENVIRONMENT, HOSTNAME, CORS_ORIGIN_REGEX, DISABLE_LOGS } from './util/config';
+
+// Sentry
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+});
 
 const start = async () => {
   const instance = fastify({
@@ -28,6 +36,15 @@ const start = async () => {
       }
     }
   });*/
+
+  // fastify Sentry hook
+  instance.addHook('onError', (request, reply, error, done) => {
+    // Only send Sentry errors when not in development
+    if (process.env.NODE_ENV !== 'development') {
+      Sentry.captureException(error);
+    }
+    done();
+  });
 
   instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);

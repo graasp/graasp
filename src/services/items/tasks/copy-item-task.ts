@@ -11,6 +11,7 @@ import { BaseItemTask } from './base-item-task';
 import { BaseItem } from '../base-item';
 import { Item } from '../interfaces/item';
 import { TaskStatus } from '../../..';
+import { FolderExtra } from './get-item-children-task';
 
 type CopyItemSubTaskInput = { copy: Partial<Item>; original: Item; shouldCopyTags?: boolean };
 
@@ -93,7 +94,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
     const descendants = await this.itemService.getDescendants(item, handler, 'ASC');
     const treeItems = [item].concat(descendants);
     const treeItemsCopy = this.copy(treeItems, parentItem);
-
+    this.fixChildrenOrder(treeItemsCopy);
     // return list of subtasks for task manager to copy item + all descendants, one by one.
     treeItemsCopy.forEach(({ copy, original }) => {
       this.subtasks.push(
@@ -139,5 +140,19 @@ export class CopyItemTask extends BaseItemTask<Item> {
     }
 
     return old2New;
+  }
+
+  // replace children order with new ids
+  private fixChildrenOrder(itemsMap: Map<string, { copy: Item; original: Item }>) {
+    itemsMap.forEach((value) => {
+      const { copy, original } = value;
+      if (original.extra?.folder) {
+        const { childrenOrder } = (original.extra as FolderExtra).folder;
+        const newOrder = childrenOrder.map((oldId) => itemsMap.get(oldId).copy.id);
+        (copy.extra as FolderExtra).folder.childrenOrder = newOrder;
+      }
+
+      return value;
+    });
   }
 }

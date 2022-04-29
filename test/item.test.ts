@@ -1255,6 +1255,50 @@ describe('Item routes tests', () => {
       expect(newItem.type).toEqual(item.type);
       app.close();
     });
+    it('Copy successfully with correct order', async () => {
+      const item = getDummyItem();
+      const targetItem = getDummyItem();
+      const children = [
+        getDummyItem({ parentPath: item.path }),
+        getDummyItem({ parentPath: item.path }),
+      ];
+      const childOfChildren = getDummyItem({ parentPath: children[0].path });
+      item.extra.folder = { childrenOrder: children.map(({ id }) => id) };
+      children[0].extra.folder = { childrenOrder: [childOfChildren.id] };
+
+      const items = [item, targetItem, ...children];
+      const memberships = items.map((item) =>
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
+      );
+      mockItemServiceGet(items);
+      mockItemMembershipServiceGetForMemberAtItem(memberships);
+      mockItemServiceGetDescendants(async () => [...children, childOfChildren]);
+      mockItemServiceGetNumberOfDescendants();
+      mockItemServiceCreate();
+      mockItemServiceGetNumberOfLevelsToFarthestChild();
+      mockItemMembershipServiceCreate();
+      const app = await build();
+      const response = await app.inject({
+        method: 'POST',
+        url: `/items/${item.id}/copy`,
+        payload: {
+          parentId: targetItem.id,
+        },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const newItem = response.json();
+      expect(newItem.name).toEqual(item.name);
+      expect(newItem.description).toEqual(item.description);
+      expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
+      expect(newItem.path).toContain(buildPathFromId(targetItem.id));
+      expect(newItem.type).toEqual(item.type);
+
+      // check order has same length and is different
+      expect(newItem.extra.folder.childrenOrder).toHaveLength(children.length);
+      expect(newItem.extra.folder.childrenOrder[0]).not.toEqual(item.extra.folder.childrenOrder[0]);
+      app.close();
+    });
     it('Bad Request if copied item id is invalid', async () => {
       const app = await build();
       const item = 'invalid-id';
@@ -1385,6 +1429,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet(allItems);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       mockItemServiceGetNumberOfDescendants();
+      mockItemServiceGetDescendants();
       mockItemServiceGetNumberOfLevelsToFarthestChild();
       const mockCreate = mockItemServiceCreate();
       const app = await build();

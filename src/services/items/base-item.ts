@@ -35,7 +35,8 @@ export class BaseItem<E extends UnknownExtra> implements Item<E> {
     this.name = name;
     this.description = description;
     this.type = type;
-    this.extra = extra ? extra : ({} as E);
+    // deep copy of extra
+    this.extra = extra ? JSON.parse(JSON.stringify(extra)) : ({} as E);
     this.settings = settings ?? DEFAULT_ITEM_SETTINGS;
     this.creator = creator;
     this.path = parent ? `${parent.path}.${dashToUnderscore(this.id)}` : dashToUnderscore(this.id);
