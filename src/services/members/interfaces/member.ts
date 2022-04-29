@@ -1,5 +1,5 @@
 // global
-import { Session } from 'fastify-secure-session';
+import { Session } from '@fastify/secure-session';
 import { Actor } from '../../../interfaces/actor';
 import { UnknownExtra } from '../../../interfaces/extra';
 

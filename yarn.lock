@@ -668,6 +668,69 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/compress@npm:5.0.0":
+  version: 5.0.0
+  resolution: "@fastify/compress@npm:5.0.0"
+  dependencies:
+    encoding-negotiator: ^2.0.1
+    fastify-plugin: ^3.0.0
+    into-stream: ^6.0.0
+    is-deflate: ^1.0.0
+    is-gzip: ^2.0.0
+    is-zip: ^1.0.0
+    mime-db: ^1.51.0
+    minipass: ^3.1.6
+    peek-stream: ^1.1.3
+    pump: ^3.0.0
+    pumpify: ^2.0.1
+    string-to-stream: ^3.0.1
+  checksum: b2a611f817aa8d1ae6961016e519f8a0eba32e434b01d74c2ee0e7922151529a28b02410c5b81c624750bde9bd839be065ab8da46c62a0fd59c1c2fd5c5395c7
+  languageName: node
+  linkType: hard
+
+"@fastify/cookie@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@fastify/cookie@npm:6.0.0"
+  dependencies:
+    cookie-signature: ^1.1.0
+    fastify-plugin: ^3.0.1
+  checksum: 56146dd26b2639364d5d22372bf2de06d8aa78aab852251ad1a0344a409a37d7e8e14ca7d60d19bbc09dba240869f20a9c062c21f3325c12eb6161e4ca9df9e7
+  languageName: node
+  linkType: hard
+
+"@fastify/cors@npm:7.0.0":
+  version: 7.0.0
+  resolution: "@fastify/cors@npm:7.0.0"
+  dependencies:
+    fastify-plugin: ^3.0.0
+    vary: ^1.1.2
+  checksum: 1885eb60b6a64dc91c8ca47708b60de371982d8224e801d7ed60bf821bd045d0c99917c0cb7544dccd9ad1a3dd72368244f2ec2f58bc5fa46d10fe95ad43283a
+  languageName: node
+  linkType: hard
+
+"@fastify/helmet@npm:8.0.0":
+  version: 8.0.0
+  resolution: "@fastify/helmet@npm:8.0.0"
+  dependencies:
+    fastify-plugin: ^3.0.0
+    helmet: ^5.0.1
+  checksum: 2e3e23bc65b6b648c9211d1ac18f3189149471cfeaf35cbe36943069a59f129ef134a6aca1321cbca955f7f8cb25a45570df3b9c72465b6bcba5e9f10b3e4ced
+  languageName: node
+  linkType: hard
+
+"@fastify/secure-session@npm:4.0.0":
+  version: 4.0.0
+  resolution: "@fastify/secure-session@npm:4.0.0"
+  dependencies:
+    "@fastify/cookie": ^6.0.0
+    fastify-plugin: ^3.0.0
+    sodium-native: ^3.0.0
+  bin:
+    fastify-secure-session: genkey.js
+  checksum: 42ea43c7351842ed674c190aeedcbe8410a5427f45d5a9d2f0470f7fa339a33e2faf7bfecb1190b2414155f6a05a077cf5920bc52f352ba0437fcdb58c3804d7
+  languageName: node
+  linkType: hard
+
 "@gar/promisify@npm:^1.1.3":
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
@@ -3937,57 +4000,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-compress-deprecated@npm:fastify-compress@4.0.1":
-  version: 4.0.1
-  resolution: "fastify-compress@npm:4.0.1"
-  dependencies:
-    encoding-negotiator: ^2.0.1
-    fastify-plugin: ^3.0.0
-    into-stream: ^6.0.0
-    is-deflate: ^1.0.0
-    is-gzip: ^2.0.0
-    is-stream: ^2.0.1
-    is-zip: ^1.0.0
-    mime-db: ^1.51.0
-    minipass: ^3.1.5
-    peek-stream: ^1.1.3
-    pump: ^3.0.0
-    pumpify: ^2.0.1
-    string-to-stream: ^3.0.1
-  checksum: 96a76418281396ad9f0b0ea6823ba1dc99386703076be65a2c00df05c460a3dd46681d5b145f51d030ec71efe258f0e0f18097a6edf3eea7aa7001cc5f3f8e3a
-  languageName: node
-  linkType: hard
-
-"fastify-compress@npm:^4.0.1":
-  version: 4.1.0
-  resolution: "fastify-compress@npm:4.1.0"
-  dependencies:
-    fastify-compress-deprecated: "npm:fastify-compress@4.0.1"
-    process-warning: ^1.0.0
-  checksum: 7adfae17b2900eb5867410b8aa93d1ef59d28808c01782b51c67f5d6862e6845a9093dc0eb7fada49ab905e36085a3724ad048c2b1622220cf738e30bd69ebcb
-  languageName: node
-  linkType: hard
-
-"fastify-cookie-deprecated@npm:fastify-cookie@5.6.1":
-  version: 5.6.1
-  resolution: "fastify-cookie@npm:5.6.1"
-  dependencies:
-    cookie-signature: ^1.1.0
-    fastify-plugin: ^3.0.1
-  checksum: 33e6ea5c8e6f84acec375a734ad92806e7f39ae08425ab7e65ebab1b0c6933539e06efd5b31adcabe4f160e2d406a79a2c79bf0f9cd32cb9d802887f45f07207
-  languageName: node
-  linkType: hard
-
-"fastify-cookie@npm:^5.0.0":
-  version: 5.7.0
-  resolution: "fastify-cookie@npm:5.7.0"
-  dependencies:
-    fastify-cookie-deprecated: "npm:fastify-cookie@5.6.1"
-    process-warning: ^1.0.0
-  checksum: 8064c98ccaf81ce21b6bceb0dd11d3d6ee72b0a250aff71e61aab2989e54f6ca6150ddf2ac8ccb00664c4e418ed8f3a93ae1f0f6627217d5b830e285f3b854f2
-  languageName: node
-  linkType: hard
-
 "fastify-cors-deprecated@npm:fastify-cors@6.0.3":
   version: 6.0.3
   resolution: "fastify-cors@npm:6.0.3"
@@ -4012,16 +4024,6 @@ __metadata:
   version: 0.3.1
   resolution: "fastify-error@npm:0.3.1"
   checksum: fd6a0f6f87b5e4ab59a4d3d66124bd13830a1cf85cf1987259dfb1175fc6a4bcae68b076ad78f6bb06654f72af133b44813090e9ce5502d2ef56ddcb2b0fa867
-  languageName: node
-  linkType: hard
-
-"fastify-helmet@npm:^5.3.2":
-  version: 5.3.2
-  resolution: "fastify-helmet@npm:5.3.2"
-  dependencies:
-    fastify-plugin: ^3.0.0
-    helmet: ^4.0.0
-  checksum: e933893c473779a78b01aacfe38bf7481499d8c7a5b545ae9e1f667e66a22a1abd7635d0879c17aa6427c67341468dc9c0ae15bc83cef0223a6daa2ce29c69b3
   languageName: node
   linkType: hard
 
@@ -4097,29 +4099,6 @@ __metadata:
     fastify-plugin: ^2.3.2
     node-polyglot: ^2.4.2
   checksum: acc1832e004ba808a989676746c462a6fab687130a618d0ee2af3922c7c2594f69de42d657164152bac3ff302359f40dcfa4ea3b06427432570159faab22dad6
-  languageName: node
-  linkType: hard
-
-"fastify-secure-session-deprecated@npm:fastify-secure-session@3.1.0":
-  version: 3.1.0
-  resolution: "fastify-secure-session@npm:3.1.0"
-  dependencies:
-    fastify-cookie: ^5.0.0
-    fastify-plugin: ^3.0.0
-    sodium-native: ^3.0.0
-  bin:
-    fastify-secure-session: genkey.js
-  checksum: e289bc086ed580990c71b7daa7400d02e420780d396522c59465dc032dd6331908fd6bcda852575d19f95f51593dc6a559f4555d78481357a4ac1dab570151d7
-  languageName: node
-  linkType: hard
-
-"fastify-secure-session@npm:^3.0.0":
-  version: 3.2.0
-  resolution: "fastify-secure-session@npm:3.2.0"
-  dependencies:
-    fastify-secure-session-deprecated: "npm:fastify-secure-session@3.1.0"
-    process-warning: ^1.0.0
-  checksum: 6bad544d30f41a22ec90ba26dc3259012867079867b9ad4a4bd5b34204cb024a9cb5311e31ae9c270cc034749b59c95fe023904feaa9b726f832258c0b69e374
   languageName: node
   linkType: hard
 
@@ -4983,6 +4962,10 @@ __metadata:
     "@commitlint/config-conventional": 16.0.0
     "@fastify/auth": 2.0.0
     "@fastify/bearer-auth": 7.0.0
+    "@fastify/compress": 5.0.0
+    "@fastify/cors": 7.0.0
+    "@fastify/helmet": 8.0.0
+    "@fastify/secure-session": 4.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
     "@sentry/node": 6.19.7
     "@sentry/tracing": 6.19.7
@@ -5001,11 +4984,7 @@ __metadata:
     eslint: ^8.6.0
     eslint-config-prettier: ^8.3.0
     fastify: ^3.25.3
-    fastify-compress: ^4.0.1
-    fastify-cors: ^6.0.2
-    fastify-helmet: ^5.3.2
     fastify-plugin: ^3.0.0
-    fastify-secure-session: ^3.0.0
     fluent-json-schema: ^3.0.1
     graasp-apps: "github:graasp/graasp-apps"
     graasp-document-item: "github:graasp/graasp-document-item"
@@ -5135,10 +5114,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"helmet@npm:^4.0.0":
-  version: 4.6.0
-  resolution: "helmet@npm:4.6.0"
-  checksum: 139ad678d1cab207b043c206f50f6744eff2ef1f463e4626d36718b45b337485c77d10260ef9d89d292fa678da5153d86b08172b3b365cc8e680241015ed3a49
+"helmet@npm:^5.0.1":
+  version: 5.0.2
+  resolution: "helmet@npm:5.0.2"
+  checksum: 3fe107f3f73fb6a79173e5599f87a016c69f1c7cc46bcde1c60043ea36e64f893434592890d3c0be68f1d35731f2f2f22094a1cfd70438f9d35740861071dcf3
   languageName: node
   linkType: hard
 
@@ -5757,7 +5736,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-stream@npm:^2.0.0, is-stream@npm:^2.0.1":
+"is-stream@npm:^2.0.0":
   version: 2.0.1
   resolution: "is-stream@npm:2.0.1"
   checksum: b8e05ccdf96ac330ea83c12450304d4a591f9958c11fd17bed240af8d5ffe08aedafa4c0f4cfccd4d28dc9d4d129daca1023633d5c11601a6cbc77521f6fae66
@@ -7152,7 +7131,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minipass@npm:^3.0.0, minipass@npm:^3.1.1, minipass@npm:^3.1.5, minipass@npm:^3.1.6":
+"minipass@npm:^3.0.0, minipass@npm:^3.1.1, minipass@npm:^3.1.6":
   version: 3.1.6
   resolution: "minipass@npm:3.1.6"
   dependencies:
