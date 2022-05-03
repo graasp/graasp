@@ -9,8 +9,20 @@ import { Item } from '../interfaces/item';
 import { FastifyLoggerInstance } from 'fastify';
 import { TaskStatus } from '../../..';
 
-const sortChildrenWith = (idsOrder: string[]) => (stElem: { id: string }, ndElem: { id: string }) =>
-  idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
+export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: Item) => {
+  if (idsOrder.indexOf(stElem.id) >= 0 && idsOrder.indexOf(ndElem.id) >= 0) {
+    return idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
+  }
+  if (idsOrder.indexOf(stElem.id) >= 0) {
+    return -1;
+  }
+
+  if (idsOrder.indexOf(ndElem.id) >= 0) {
+    return 1;
+  }
+
+  return Date.parse(stElem.createdAt) - Date.parse(ndElem.createdAt);
+};
 
 export type FolderExtra = { folder: { childrenOrder: string[] } };
 type InputType = { item?: Item<FolderExtra>; ordered?: boolean };

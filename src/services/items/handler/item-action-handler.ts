@@ -18,6 +18,7 @@ export const itemActionHandler = async (
     queryItemIds = [queryItemIds];
   }
 
+  console.log('----ip', request);
   const baseAction = getBaseAction(request, CLIENT_HOSTS);
 
   const actionsToSave = [];

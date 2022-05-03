@@ -17,7 +17,7 @@
     "serve": "NODE_PATH=./dist node dist/server.js",
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
-    "test": "DISABLE_LOGS=true jest test/item.test.ts --forceExit --coverage --verbose",
+    "test": "DISABLE_LOGS=true jest --forceExit --coverage --verbose",
     "watch-test": "yarn test --watchAll",
     "build-ts": "tsc",
     "build-ts-declaration": "rm -rf ./types && tsc --project tsconfig.declaration.json --declaration --declarationDir ./types",
