@@ -8,9 +8,7 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { FastifyLoggerInstance } from 'fastify';
 import { TaskStatus } from '../../..';
-
-const sortChildrenWith = (idsOrder: string[]) => (stElem: { id: string }, ndElem: { id: string }) =>
-  idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
+import { sortChildrenWith } from '../constants/utils';
 
 export type FolderExtra = { folder: { childrenOrder: string[] } };
 type InputType = { item?: Item<FolderExtra>; ordered?: boolean };

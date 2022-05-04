@@ -4,11 +4,7 @@ import { Item } from '../../src/services/items/interfaces/item';
 import { buildPathFromId } from '../utils';
 import { ACTOR } from './members';
 import { ItemSettings } from '../../src/services/items/interfaces/item';
-
-// todo: import types from global constants repo
-export const ITEM_TYPES = {
-  FOLDER: 'folder',
-};
+import { ITEM_TYPES } from '../../src/services/items/constants/constants';
 
 const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 
@@ -45,7 +41,7 @@ export const getDummyItem = (
     id: buildId,
     name: name ?? randomHexOf4(),
     description: description ?? 'some description',
-    type: type || 'itemtype',
+    type: type || ITEM_TYPES.FOLDER,
     path: buildPath,
     extra: extra || {},
     creator: creator,

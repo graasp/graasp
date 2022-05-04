@@ -4,6 +4,7 @@ import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 import { MAX_TARGETS_FOR_MODIFY_REQUEST, MAX_TARGETS_FOR_READ_REQUEST } from '../../util/config';
 
 import { uuid, idParam, idsQuery, error } from '../../schemas/fluent-schema';
+import { ITEM_TYPES } from './constants/constants';
 
 /**
  * for serialization
@@ -72,13 +73,13 @@ const folderExtra = S.object()
   // are very counter-intuitive. We should change to JTD format (as soon as it is supported)
   // .additionalProperties(false)
   .prop(
-    'folder',
+    ITEM_TYPES.FOLDER,
     S.object()
       // .additionalProperties(false)
       .prop('childrenOrder', S.array().items(uuid))
       .required(['childrenOrder']),
   )
-  .required(['folder']);
+  .required([ITEM_TYPES.FOLDER]);
 
 /**
  * for validation on update

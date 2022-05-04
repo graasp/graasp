@@ -8,9 +8,12 @@ import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
-import { BaseItem } from '../base-item';
+import { BaseItem, dashToUnderscore } from '../base-item';
 import { Item } from '../interfaces/item';
 import { TaskStatus } from '../../..';
+import { FolderExtra } from './get-item-children-task';
+import { sortChildrenWith } from '../constants/utils';
+import { ITEM_TYPES } from '../constants/constants';
 
 type CopyItemSubTaskInput = { copy: Partial<Item>; original: Item; shouldCopyTags?: boolean };
 
@@ -93,7 +96,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
     const descendants = await this.itemService.getDescendants(item, handler, 'ASC');
     const treeItems = [item].concat(descendants);
     const treeItemsCopy = this.copy(treeItems, parentItem);
-
+    this.fixChildrenOrder(treeItemsCopy);
     // return list of subtasks for task manager to copy item + all descendants, one by one.
     treeItemsCopy.forEach(({ copy, original }) => {
       this.subtasks.push(
@@ -139,5 +142,40 @@ export class CopyItemTask extends BaseItemTask<Item> {
     }
 
     return old2New;
+  }
+
+  // replace children order with new ids
+  private fixChildrenOrder(itemsMap: Map<string, { copy: Item; original: Item }>) {
+    const copyItemsArray = Array.from(itemsMap.values()).map(({ copy }) => copy);
+    itemsMap.forEach((value) => {
+      const { copy, original } = value;
+      // set order for all copied folder
+      if (original.type === ITEM_TYPES.FOLDER) {
+        // init extra if necessary
+        if (!copy.extra.folder) {
+          copy.extra.folder = {};
+        }
+
+        const childrenOrder = (original.extra as FolderExtra)?.folder?.childrenOrder || [];
+
+        // change previous ids to copied item ids
+        const copyOrder = childrenOrder
+          .map((oldId) => itemsMap.get(oldId)?.copy?.id)
+          .filter(Boolean);
+
+        // get direct children
+        const children = copyItemsArray.filter(({ id, path }) => {
+          return path === `${copy.path}.${dashToUnderscore(id)}`;
+        });
+
+        // sort children to get wanter order -> get order by mapping to id
+        children.sort(sortChildrenWith(copyOrder));
+        const completeOrder = children.map(({ id }) => id);
+
+        (copy.extra as FolderExtra).folder.childrenOrder = completeOrder;
+      }
+
+      return value;
+    });
   }
 }

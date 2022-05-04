@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import qs from 'qs';
 import build from './app';
-import { getDummyItem, ITEM_TYPES, LOTS_OF_ITEMS } from './fixtures/items';
+import { getDummyItem, LOTS_OF_ITEMS } from './fixtures/items';
 import { PermissionLevel } from '../src/services/item-memberships/interfaces/item-membership';
 import * as MEMBERS_FIXTURES from './fixtures/members';
 import { buildPathFromId } from './utils';
@@ -44,6 +44,7 @@ import { buildMembership } from './fixtures/memberships';
 import { HTTP_METHODS } from './fixtures/utils';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { MULTIPLE_ITEMS_LOADING_TIME } from './constants';
+import { ITEM_TYPES } from '../src/services/items/constants/constants';
 
 // mock base item membership to detect calls
 const baseItemMembershipMock = jest.spyOn(baseItemMembershipModule, 'BaseItemMembership');
@@ -163,7 +164,7 @@ describe('Item routes tests', () => {
     it('Bad request if type is invalid', async () => {
       const app = await build();
       // by default the item creator use an invalid item type
-      const newItem = getDummyItem();
+      const newItem = getDummyItem({ type: 'invalid-type' });
       const response = await app.inject({
         method: 'POST',
         url: '/items',
@@ -1251,8 +1252,56 @@ describe('Item routes tests', () => {
       expect(newItem.description).toEqual(item.description);
       expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
       expect(newItem.path).toContain(buildPathFromId(targetItem.id));
-      expect(newItem.extra).toEqual(item.extra);
       expect(newItem.type).toEqual(item.type);
+      // copy adds the children order
+      expect(newItem.extra.folder.childrenOrder).toEqual([]);
+      app.close();
+    });
+    it('Copy successfully with correct order', async () => {
+      const item = getDummyItem();
+      const targetItem = getDummyItem();
+      const children = [
+        getDummyItem({ parentPath: item.path }),
+        getDummyItem({ parentPath: item.path }),
+        getDummyItem({ parentPath: item.path }),
+      ];
+      const childOfChildren = getDummyItem({ parentPath: children[0].path });
+      item.extra.folder = { childrenOrder: [children[0].id, children[2].id] };
+      children[0].extra.folder = { childrenOrder: [childOfChildren.id] };
+
+      const items = [item, targetItem, ...children];
+      const memberships = items.map((item) =>
+        buildMembership({ path: item.path, permission: PermissionLevel.Admin }),
+      );
+      const descendants = [...children, childOfChildren];
+      mockItemServiceGet(items);
+      mockItemMembershipServiceGetForMemberAtItem(memberships);
+      mockItemServiceGetDescendants(async () => descendants);
+      mockItemServiceGetNumberOfDescendants(async () => descendants.length);
+      mockItemServiceCreate();
+      mockItemServiceGetNumberOfLevelsToFarthestChild();
+      mockItemMembershipServiceCreate();
+
+      const app = await build();
+      const response = await app.inject({
+        method: 'POST',
+        url: `/items/${item.id}/copy`,
+        payload: {
+          parentId: targetItem.id,
+        },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const newItem = response.json();
+      expect(newItem.name).toEqual(item.name);
+      expect(newItem.description).toEqual(item.description);
+      expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
+      expect(newItem.path).toContain(buildPathFromId(targetItem.id));
+      expect(newItem.type).toEqual(item.type);
+
+      // check order is different and contains more children
+      expect(newItem.extra.folder.childrenOrder.length).toEqual(children.length);
+      expect(newItem.extra.folder.childrenOrder[0]).not.toEqual(item.extra.folder.childrenOrder[0]);
       app.close();
     });
     it('Bad Request if copied item id is invalid', async () => {
@@ -1385,6 +1434,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet(allItems);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       mockItemServiceGetNumberOfDescendants();
+      mockItemServiceGetDescendants();
       mockItemServiceGetNumberOfLevelsToFarthestChild();
       const mockCreate = mockItemServiceCreate();
       const app = await build();
