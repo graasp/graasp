@@ -5,11 +5,6 @@ import { buildPathFromId } from '../utils';
 import { ACTOR } from './members';
 import { ItemSettings } from '../../src/services/items/interfaces/item';
 
-// todo: import types from global constants repo
-export const ITEM_TYPES = {
-  FOLDER: 'folder',
-};
-
 const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 
 export const getDummyItem = (

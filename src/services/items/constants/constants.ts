@@ -26,3 +26,8 @@ export const paths = {
   childrenItem: /^\/items\/(?=.*[0-9])(?=.*[a-zA-Z])([a-z0-9-]+)\/children/,
   multipleItems: /^\/items\?id=(?=.*[0-9])(?=.*[a-zA-Z])([a-z0-9-]+)/,
 };
+
+// todo: import types from global constants repo
+export const ITEM_TYPES = {
+  FOLDER: 'folder',
+};

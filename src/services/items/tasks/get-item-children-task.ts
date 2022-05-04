@@ -8,21 +8,7 @@ import { BaseItemTask } from './base-item-task';
 import { Item } from '../interfaces/item';
 import { FastifyLoggerInstance } from 'fastify';
 import { TaskStatus } from '../../..';
-
-export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: Item) => {
-  if (idsOrder.indexOf(stElem.id) >= 0 && idsOrder.indexOf(ndElem.id) >= 0) {
-    return idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
-  }
-  if (idsOrder.indexOf(stElem.id) >= 0) {
-    return -1;
-  }
-
-  if (idsOrder.indexOf(ndElem.id) >= 0) {
-    return 1;
-  }
-
-  return Date.parse(stElem.createdAt) - Date.parse(ndElem.createdAt);
-};
+import { sortChildrenWith } from '../constants/utils';
 
 export type FolderExtra = { folder: { childrenOrder: string[] } };
 type InputType = { item?: Item<FolderExtra>; ordered?: boolean };

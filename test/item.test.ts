@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import qs from 'qs';
 import build from './app';
-import { getDummyItem, ITEM_TYPES, LOTS_OF_ITEMS } from './fixtures/items';
+import { getDummyItem, LOTS_OF_ITEMS } from './fixtures/items';
 import { PermissionLevel } from '../src/services/item-memberships/interfaces/item-membership';
 import * as MEMBERS_FIXTURES from './fixtures/members';
 import { buildPathFromId } from './utils';
@@ -44,6 +44,7 @@ import { buildMembership } from './fixtures/memberships';
 import { HTTP_METHODS } from './fixtures/utils';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { MULTIPLE_ITEMS_LOADING_TIME } from './constants';
+import { ITEM_TYPES } from '../src/services/items/constants/constants';
 
 // mock base item membership to detect calls
 const baseItemMembershipMock = jest.spyOn(baseItemMembershipModule, 'BaseItemMembership');
