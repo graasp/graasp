@@ -5,7 +5,7 @@ import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
 // local
 import { Item, ItemSettings } from './interfaces/item';
 
-const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
+export const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
 const underscoreToDash = (value: string) => value.replace(/_/g, '-');
 
 export class BaseItem<E extends UnknownExtra> implements Item<E> {

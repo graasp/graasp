@@ -8,7 +8,7 @@ import { Member } from '../../../services/members/interfaces/member';
 // local
 import { ItemService } from '../db-service';
 import { BaseItemTask } from './base-item-task';
-import { BaseItem } from '../base-item';
+import { BaseItem, dashToUnderscore } from '../base-item';
 import { Item } from '../interfaces/item';
 import { TaskStatus } from '../../..';
 import { FolderExtra } from './get-item-children-task';
@@ -164,8 +164,8 @@ export class CopyItemTask extends BaseItemTask<Item> {
           .filter(Boolean);
 
         // get direct children
-        const children = copyItemsArray.filter(({ path }) => {
-          return path.startsWith(`${copy.path}.`);
+        const children = copyItemsArray.filter(({ id, path }) => {
+          return path === `${copy.path}.${dashToUnderscore(id)}`;
         });
 
         // sort children to get wanter order -> get order by mapping to id

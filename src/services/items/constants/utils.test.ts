@@ -1,5 +1,5 @@
 import { Item } from '../interfaces/item';
-import { sortChildrenWith } from '../tasks/get-item-children-task';
+import { sortChildrenWith } from './utils';
 
 const a = {
   id: 'a',
