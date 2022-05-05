@@ -196,7 +196,7 @@ export class ItemService {
   ): ValueExpression {
     switch (key) {
       case 'settings':
-        return sql`${sql.identifier([key])} || ${sql.json(data[key])}`;
+        return sql`${sql.identifier([key])} || ${sql.jsonb(data[key])}`;
       case 'extra':
         return sql.json(data[key]);
       default:
