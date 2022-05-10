@@ -122,6 +122,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         graaspActor: GRAASP_ACTOR,
       });
 
+      fastify.register(graaspInvitationsPlugin, {
+        graaspActor: GRAASP_ACTOR,
+        buildInvitationLink: (invitation) =>
+          `${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
+      });
+
       // core routes - require authentication
       fastify.register(async function (fastify) {
         // auth plugin session validation
@@ -223,11 +229,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         });
 
         fastify.register(graaspPluginItemLikes);
-
-        fastify.register(graaspInvitationsPlugin, {
-          buildInvitationLink: (invitation) =>
-            `${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
-        });
 
         if (CHATBOX_PLUGIN) {
           fastify.register(graaspChatbox);
