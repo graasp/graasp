@@ -4785,7 +4785,7 @@ __metadata:
 
 "graasp-mailer@github:graasp/graasp-mailer#19/invitation, graasp-mailer@github:graasp/graasp-mailer.git#19/invitation":
   version: 0.1.0
-  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=5afa8c8e3c885657affdfa2601a88795daa34bda"
+  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=edf626e729de229f26b1dfe1a779008339bcf533"
   dependencies:
     cpy-cli: 4.1.0
     eta: ^1.12.3
@@ -4794,7 +4794,7 @@ __metadata:
     fastify-polyglot: 1.0.0
     i18n: 0.14.2
     point-of-view: ^5.2.0
-  checksum: 38911b8dfe2ab8f19d44eb9166a1d9ff05d79bbe2b62c9cc637e64b5557da2b481fa7a11d99585fb1d1533ba589b010a7fb9cb675626b0c915581f3acbcce636
+  checksum: 3727a1bf1149fbe147fb1f3f7073632e0c8e270a43faaabecb097180b6ed040ce773f597beffa41520aca1d6786bce698e83853646445b2ab0900cca94369fe6
   languageName: node
   linkType: hard
 
@@ -4872,7 +4872,7 @@ __metadata:
 
 "graasp-plugin-invitations@github:graasp/graasp-plugin-invitations#1/invite":
   version: 0.1.0
-  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=fe98c6a20edd9ed738663d263431231aed8fae66"
+  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=7a67ed6407fad805279a498c242a4773c00e8109"
   dependencies:
     "@graasp/utils": "github:graasp/graasp-utils.git"
     fastify: ^3.25.3
@@ -4881,7 +4881,7 @@ __metadata:
     qs: 6.10.3
     slonik: 28.1.0
     uuid: 8.3.2
-  checksum: cd60a56edea1cf48d0b066bd4632b5db84604f9adc9129c8bb464c2b8040c6e498ce5c14fdb4cb27c3c3d4668271dcf7ee1d4161f78bb2ff43b82a526d93b71e
+  checksum: 3dbe6de43a3f09c35f92075465a7f35bc26d029edfa4dee9c8f68af3136e238953227b8329ff490324818913390f26df5682827f42f36a41bf2322124fb2226a
   languageName: node
   linkType: hard
 

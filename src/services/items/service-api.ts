@@ -125,7 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspInvitationsPlugin, {
         graaspActor: GRAASP_ACTOR,
         buildInvitationLink: (invitation) =>
-          `${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
+          `//${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
       });
 
       // core routes - require authentication
