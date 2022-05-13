@@ -776,6 +776,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graasp/translations@github:graasp/graasp-translations#9/graaspAuth":
+  version: 0.1.0
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=e619850fbd511fc69e25869ebee0a31a2cb096d5"
+  dependencies:
+    i18next: 21.6.11
+  checksum: 0c35d7b31e6c127e49a91d2b04044c93ffdbbfab2e20b35ea6814cf2e54f117b4c659bf215d486a5ffb880f2958a16cf93f8092c85a53f8b51361961506ed727
+  languageName: node
+  linkType: hard
+
 "@graasp/utils@github:graasp/graasp-utils.git":
   version: 0.1.0
   resolution: "@graasp/utils@https://github.com/graasp/graasp-utils.git#commit=e31e4065909a253e20082d2fea34cad466a11b83"
@@ -4969,7 +4978,7 @@ __metadata:
     "@fastify/cors": 7.0.0
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
-    "@graasp/translations": "github:graasp/graasp-translations"
+    "@graasp/translations": "github:graasp/graasp-translations#9/graaspAuth"
     "@sentry/node": 6.19.7
     "@sentry/tracing": 6.19.7
     "@types/chai": 4.3.1
