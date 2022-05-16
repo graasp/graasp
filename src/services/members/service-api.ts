@@ -119,6 +119,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           return runner.runSingleSequence(tasks, log);
         },
       );
+
+      // delete member
+      fastify.delete<{ Params: IdParam }>(
+        '/:id',
+        { schema: getOne },
+        async ({ member, params: { id }, log }) => {
+          const tasks = taskManager.createDeleteTaskSequence(member, id);
+          return runner.runSingleSequence(tasks, log);
+        },
+      );
     },
     { prefix: ROUTES_PREFIX },
   );
