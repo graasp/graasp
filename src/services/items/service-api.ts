@@ -8,6 +8,7 @@ import graaspItemLogin from 'graasp-plugin-item-login';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspPluginItemLikes from 'graasp-plugin-item-likes';
 import graaspValidationPlugin from 'graasp-plugin-validation';
+import graaspInvitationsPlugin from 'graasp-plugin-invitations';
 import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
@@ -50,6 +51,8 @@ import {
   IMAGE_CLASSIFIER_API,
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
+  AUTH_CLIENT_HOST,
+  PROTOCOL,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -118,6 +121,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemLogin, {
         tagId: LOGIN_ITEM_TAG_ID,
         graaspActor: GRAASP_ACTOR,
+      });
+
+      fastify.register(graaspInvitationsPlugin, {
+        graaspActor: GRAASP_ACTOR,
+        buildInvitationLink: (invitation) =>
+          `${PROTOCOL}://${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
       });
 
       // core routes - require authentication

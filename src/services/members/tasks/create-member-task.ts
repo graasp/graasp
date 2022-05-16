@@ -1,4 +1,5 @@
 // global
+import { FastifyLoggerInstance } from 'fastify';
 import { DatabaseTransactionHandler } from '../../../plugins/database';
 import { Actor } from '../../../interfaces/actor';
 import { UnknownExtra } from '../../../interfaces/extra';
@@ -23,13 +24,14 @@ export class CreateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
     this.input = input ?? {};
   }
 
-  async run(handler: DatabaseTransactionHandler): Promise<void> {
+  async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
     this.status = TaskStatus.RUNNING;
 
     const { data } = this.input;
 
     // create member
     const member = await this.memberService.create<E>(data, handler);
+    await this.postHookHandler?.(member, this.actor, { log, handler });
 
     this.status = TaskStatus.OK;
     this._result = member;

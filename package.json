@@ -62,6 +62,7 @@
     "graasp-plugin-file": "github:graasp/graasp-plugin-file",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "graasp-plugin-hidden-items": "github:graasp/graasp-plugin-hidden-items",
+    "graasp-plugin-invitations": "github:graasp/graasp-plugin-invitations",
     "graasp-plugin-item-likes": "github:graasp/graasp-plugin-item-likes",
     "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
     "graasp-plugin-item-zip": "github:graasp/graasp-plugin-item-zip",
