@@ -52,6 +52,7 @@ import {
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
   AUTH_CLIENT_HOST,
+  PROTOCOL,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -125,7 +126,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspInvitationsPlugin, {
         graaspActor: GRAASP_ACTOR,
         buildInvitationLink: (invitation) =>
-          `//${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
+          `${PROTOCOL}://${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
       });
 
       // core routes - require authentication

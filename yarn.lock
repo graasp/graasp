@@ -4872,7 +4872,7 @@ __metadata:
 
 "graasp-plugin-invitations@github:graasp/graasp-plugin-invitations#1/invite":
   version: 0.1.0
-  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=7a67ed6407fad805279a498c242a4773c00e8109"
+  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=be18589c64967c9a29b053579dc0fe5923450df5"
   dependencies:
     "@graasp/utils": "github:graasp/graasp-utils.git"
     fastify: ^3.25.3
@@ -4881,7 +4881,7 @@ __metadata:
     qs: 6.10.3
     slonik: 28.1.0
     uuid: 8.3.2
-  checksum: 3dbe6de43a3f09c35f92075465a7f35bc26d029edfa4dee9c8f68af3136e238953227b8329ff490324818913390f26df5682827f42f36a41bf2322124fb2226a
+  checksum: ae877b0f4f09f6c0c76ae58f1c33f038e7e184f4d59d23ea7b56ad63794320cbc1e48ba8f9f883384bc8cfb66565241045f8ce5ce25ec5042edf978b462a282d
   languageName: node
   linkType: hard
 
