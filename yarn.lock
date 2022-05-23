@@ -659,6 +659,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/bearer-auth@npm:7.0.1":
+  version: 7.0.1
+  resolution: "@fastify/bearer-auth@npm:7.0.1"
+  dependencies:
+    fastify-plugin: ^3.0.0
+  checksum: 6d86da011fe202f8ce05bfddea250c964663532d57fd566745990ad9e7b20023d01e139b555ececa49c3bf67409f6750cfb4a05b08e9be3aca23af49129f0ba9
+  languageName: node
+  linkType: hard
+
 "@fastify/busboy@npm:^1.0.0":
   version: 1.0.0
   resolution: "@fastify/busboy@npm:1.0.0"
@@ -722,6 +731,19 @@ __metadata:
     fastify-plugin: ^3.0.0
     helmet: ^5.0.1
   checksum: 2e3e23bc65b6b648c9211d1ac18f3189149471cfeaf35cbe36943069a59f129ef134a6aca1321cbca955f7f8cb25a45570df3b9c72465b6bcba5e9f10b3e4ced
+  languageName: node
+  linkType: hard
+
+"@fastify/jwt@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@fastify/jwt@npm:5.0.1"
+  dependencies:
+    "@lukeed/ms": ^2.0.0
+    fast-jwt: ^1.5.1
+    fastify-plugin: ^3.0.1
+    http-errors: ^2.0.0
+    steed: ^1.1.3
+  checksum: 0a3b8e5bbf6600a5802d28dcb9dd633cb40cf7fd733fcc2a3f9d85ed4a3e922156da7ceff193b5a2c806f7200e71c489bc6058c26a84f9f0ecd99c2dfa692318
   languageName: node
   linkType: hard
 
@@ -3924,7 +3946,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-jwt@npm:^1.4.0":
+"fast-jwt@npm:^1.5.1":
   version: 1.5.4
   resolution: "fast-jwt@npm:1.5.4"
   dependencies:
@@ -3974,45 +3996,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-auth-deprecated@npm:fastify-auth@1.1.0":
-  version: 1.1.0
-  resolution: "fastify-auth@npm:1.1.0"
-  dependencies:
-    fastify-plugin: ^3.0.0
-    reusify: ^1.0.4
-  checksum: eb18de98f32765efb6af48e2bb8ca9131bd2203e885468a1f502da237bc7c9f6e404a6e87b373dcc6ae4fc0ed93eebff66e88a9f12cafc5e9de0a7c2e4f0fd82
-  languageName: node
-  linkType: hard
-
-"fastify-auth@npm:^1.1.0":
-  version: 1.2.0
-  resolution: "fastify-auth@npm:1.2.0"
-  dependencies:
-    fastify-auth-deprecated: "npm:fastify-auth@1.1.0"
-    process-warning: ^1.0.0
-  checksum: 95b3d0871d7cd583f38731c7d4384fe021610b3e58bbf6c6c63543420244de8c3dd4cc11ac3b78fbd20808d5f367ccbd990f2d5cd2139960c574240f40713d8d
-  languageName: node
-  linkType: hard
-
-"fastify-bearer-auth-deprecated@npm:fastify-bearer-auth@6.2.0":
-  version: 6.2.0
-  resolution: "fastify-bearer-auth@npm:6.2.0"
-  dependencies:
-    fastify-plugin: ^3.0.0
-  checksum: 0a5120113ef0a2014db424329b182c5f282299da3422d1cde939577d82450e361e982b1a566ea3bebd141927e9c426889208c804482ffad2d311d7d2e147348c
-  languageName: node
-  linkType: hard
-
-"fastify-bearer-auth@npm:^6.1.0":
-  version: 6.3.0
-  resolution: "fastify-bearer-auth@npm:6.3.0"
-  dependencies:
-    fastify-bearer-auth-deprecated: "npm:fastify-bearer-auth@6.2.0"
-    process-warning: ^1.0.0
-  checksum: bd7960948e1df3a977b409077821c0b9cf20968f81ddfdcb437944088a2a5c632aeb06aa2e09f93d015105cb4b4e30ea29590f9e61b92d5738b3bdf6d4b852d5
-  languageName: node
-  linkType: hard
-
 "fastify-cors-deprecated@npm:fastify-cors@6.0.3":
   version: 6.0.3
   resolution: "fastify-cors@npm:6.0.3"
@@ -4037,29 +4020,6 @@ __metadata:
   version: 0.3.1
   resolution: "fastify-error@npm:0.3.1"
   checksum: fd6a0f6f87b5e4ab59a4d3d66124bd13830a1cf85cf1987259dfb1175fc6a4bcae68b076ad78f6bb06654f72af133b44813090e9ce5502d2ef56ddcb2b0fa867
-  languageName: node
-  linkType: hard
-
-"fastify-jwt-deprecated@npm:fastify-jwt@4.1.3":
-  version: 4.1.3
-  resolution: "fastify-jwt@npm:4.1.3"
-  dependencies:
-    "@lukeed/ms": ^2.0.0
-    fast-jwt: ^1.4.0
-    fastify-plugin: ^3.0.0
-    http-errors: ^2.0.0
-    steed: ^1.1.3
-  checksum: fcf1770ec5a58880df4a631a19265229c76dc68ac5223c74cd8f400726e0f238687f665b5b531dbbe3c5668797c18cd56e31645e1996216ae5f7de88f4f91866
-  languageName: node
-  linkType: hard
-
-"fastify-jwt@npm:^4.1.3":
-  version: 4.2.0
-  resolution: "fastify-jwt@npm:4.2.0"
-  dependencies:
-    fastify-jwt-deprecated: "npm:fastify-jwt@4.1.3"
-    process-warning: ^1.0.0
-  checksum: 0a8924f234e8fd4d44be166261e1db06d5ff104ddc48fda356c0fbf798ea912901ce1a0e251efdcb026e515679e45d15734be129cffab3bbb04eaf16dcb59565
   languageName: node
   linkType: hard
 
@@ -4278,7 +4238,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fluent-json-schema@npm:3.1.0, fluent-json-schema@npm:^3.0.1":
+"fluent-json-schema@npm:3.1.0":
   version: 3.1.0
   resolution: "fluent-json-schema@npm:3.1.0"
   dependencies:
@@ -4706,19 +4666,19 @@ __metadata:
 
 "graasp-apps@github:graasp/graasp-apps":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=46534607247bcf1077ce0de4294f3dd051738487"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=7dbd01f2cd05d0a631fada161066ab968091326b"
   dependencies:
-    fastify-auth: ^1.1.0
-    fastify-bearer-auth: ^6.1.0
-    fastify-cors: ^6.0.2
-    fastify-jwt: ^4.1.3
-    fluent-json-schema: ^3.0.1
+    "@fastify/auth": 2.0.0
+    "@fastify/bearer-auth": 7.0.1
+    "@fastify/cors": 7.0.0
+    "@fastify/jwt": 5.0.1
+    fluent-json-schema: 3.1.0
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     http-status-codes: 2.2.0
-  checksum: 5e1abd221f8fa460a2eec2827a44419578c55222a5f56cb4736d3e2b2e877d96d1307be582bf2ba4122ccd1a01c1e47e8e60e973a64f24024aa43789aa49358c
+  checksum: 6cda74ec9097b55d79dc4c91c23c3345ec1b4e0454d666afcd7ef677a815c7da6f4aa92e6e8b1ac3780e3b6ec14e891125e8b8ac3afe210a962e36ab3e922c11
   languageName: node
   linkType: hard
 
