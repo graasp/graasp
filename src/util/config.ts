@@ -251,6 +251,7 @@ export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
 export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
 export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
 export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
+export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };
 

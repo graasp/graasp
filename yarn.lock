@@ -747,6 +747,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/multipart@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@fastify/multipart@npm:6.0.0"
+  dependencies:
+    "@fastify/busboy": ^1.0.0
+    "@fastify/error": ^2.0.0
+    deepmerge: ^4.2.2
+    end-of-stream: ^1.4.4
+    fastify-plugin: ^3.0.0
+    hexoid: ^1.0.0
+    secure-json-parse: ^2.4.0
+    stream-wormhole: ^1.1.0
+  checksum: 1c0ad54a6fccf5ae4030ae9a67677ce3351af79d5fe518d625c253434a12724bc0ca82cff1743ca48e338e92654c49b2d7dc1149d0d39678fc65ce4d6b491386
+  languageName: node
+  linkType: hard
+
 "@fastify/secure-session@npm:4.0.0":
   version: 4.0.0
   resolution: "@fastify/secure-session@npm:4.0.0"
@@ -1823,6 +1839,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ajv@npm:8.11.0, ajv@npm:^8.1.0, ajv@npm:^8.6.2":
+  version: 8.11.0
+  resolution: "ajv@npm:8.11.0"
+  dependencies:
+    fast-deep-equal: ^3.1.1
+    json-schema-traverse: ^1.0.0
+    require-from-string: ^2.0.2
+    uri-js: ^4.2.2
+  checksum: 5e0ff226806763be73e93dd7805b634f6f5921e3e90ca04acdf8db81eed9d8d3f0d4c5f1213047f45ebbf8047ffe0c840fa1ef2ec42c3a644899f69aa72b5bef
+  languageName: node
+  linkType: hard
+
 "ajv@npm:^6.10.0, ajv@npm:^6.11.0, ajv@npm:^6.12.4, ajv@npm:^6.12.6":
   version: 6.12.6
   resolution: "ajv@npm:6.12.6"
@@ -1832,18 +1860,6 @@ __metadata:
     json-schema-traverse: ^0.4.1
     uri-js: ^4.2.2
   checksum: 874972efe5c4202ab0a68379481fbd3d1b5d0a7bd6d3cc21d40d3536ebff3352a2a1fabb632d4fd2cc7fe4cbdcd5ed6782084c9bbf7f32a1536d18f9da5007d4
-  languageName: node
-  linkType: hard
-
-"ajv@npm:^8.1.0, ajv@npm:^8.6.2":
-  version: 8.11.0
-  resolution: "ajv@npm:8.11.0"
-  dependencies:
-    fast-deep-equal: ^3.1.1
-    json-schema-traverse: ^1.0.0
-    require-from-string: ^2.0.2
-    uri-js: ^4.2.2
-  checksum: 5e0ff226806763be73e93dd7805b634f6f5921e3e90ca04acdf8db81eed9d8d3f0d4c5f1213047f45ebbf8047ffe0c840fa1ef2ec42c3a644899f69aa72b5bef
   languageName: node
   linkType: hard
 
@@ -4821,6 +4837,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graasp-plugin-h5p@github:graasp/graasp-plugin-h5p#4-h5p-playback":
+  version: 0.1.0
+  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=f4ed7469d15655b988405fd3a1461fdb63fd6c70"
+  dependencies:
+    "@fastify/multipart": 6.0.0
+    ajv: 8.11.0
+    extract-zip: 2.0.1
+    graasp-plugin-file: "github:graasp/graasp-plugin-file"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
+    http-status-codes: 2.2.0
+    mmmagic: 0.5.3
+    secure-json-parse: 2.4.0
+    uuid: 8.3.2
+  checksum: 0572578a48f850d34b524911d4a068c56adf8ddc4f7944b967fa78741e0d0b7bcafcadec626f6743aeddb4b31748321d3255e40a748916921feb5aed8bfd098b
+  languageName: node
+  linkType: hard
+
 "graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items":
   version: 0.1.0
   resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=22fbcd515901b4e5a2d9e70dc15e8e22bf9c8f66"
@@ -5000,6 +5033,7 @@ __metadata:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
+    graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p#4-h5p-playback"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
@@ -8743,7 +8777,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"secure-json-parse@npm:^2.0.0, secure-json-parse@npm:^2.4.0":
+"secure-json-parse@npm:2.4.0, secure-json-parse@npm:^2.0.0, secure-json-parse@npm:^2.4.0":
   version: 2.4.0
   resolution: "secure-json-parse@npm:2.4.0"
   checksum: efaafcaa08a4646ca829b29168474f57fb289a0ca7a1d77b66b55a0292785bc6eb9143b21cfc50b37dd12a823c25b12aa1771f18314ed5a616a1f8f12a318533

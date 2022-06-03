@@ -13,6 +13,7 @@ import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import graaspItemZip from 'graasp-plugin-item-zip';
+import graaspItemH5P from 'graasp-plugin-h5p';
 import fastifyCors from 'fastify-cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
@@ -53,6 +54,7 @@ import {
   PUBLISHED_TAG_ID,
   AUTH_CLIENT_HOST,
   PROTOCOL,
+  H5P_PATH_PREFIX,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -136,6 +138,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemZip, {
           pathPrefix: FILES_PATH_PREFIX,
+          serviceMethod: SERVICE_METHOD,
+          serviceOptions: {
+            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+            local: FILE_ITEM_PLUGIN_OPTIONS,
+          },
+        });
+
+        fastify.register(graaspItemH5P, {
+          pathPrefix: H5P_PATH_PREFIX,
           serviceMethod: SERVICE_METHOD,
           serviceOptions: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
