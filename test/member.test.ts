@@ -277,7 +277,6 @@ describe('Member routes tests', () => {
 
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.json().name).toEqual(member.name);
-      // todo: test whether extra is correctly modified (extra is not returned)
       app.close();
     });
 
