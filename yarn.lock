@@ -5045,11 +5045,11 @@ __metadata:
 
 "graasp-plugin-subscriptions@github:graasp/graasp-plugin-subscriptions#1/setupInitialVersion":
   version: 0.1.0
-  resolution: "graasp-plugin-subscriptions@https://github.com/graasp/graasp-plugin-subscriptions.git#commit=f0a9a690d72c929aaadf04246735807182278009"
+  resolution: "graasp-plugin-subscriptions@https://github.com/graasp/graasp-plugin-subscriptions.git#commit=13c4336ad723834ab26ab9a058c7ca0048316a9b"
   dependencies:
     fastify: 4.0.0
     stripe: ^8.167.0
-  checksum: 4caed997a0a3b37b14cb773c3a5ca240cb88b3afa18dff0424f8e2c325e766fbdc94f4b40ef2ed1b0b859a2f9c5f5b25c5310a454ec2830cdd45aa4427e7ae64
+  checksum: 3d5cc4076de4b0e2a4814300cadfcddddd402008befc88e7b15af20d09170c7fbbb64108a7a14a7571348a21cb5614d27f78dec331e6799147ed7aa02fa7e6e2
   languageName: node
   linkType: hard
 
