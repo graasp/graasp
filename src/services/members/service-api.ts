@@ -17,7 +17,7 @@ import { CannotModifyOtherMembers } from '../../util/graasp-error';
 import { Member } from './interfaces/member';
 import { MemberTaskManager } from './interfaces/member-task-manager';
 import { EmailParam } from './interfaces/requests';
-import common, { getOne, getMany, getBy, updateOne } from './schemas';
+import common, { getOne, getMany, getBy, updateOne, deleteOne } from './schemas';
 import { TaskManager } from './task-manager';
 
 const ROUTES_PREFIX = '/members';
@@ -116,6 +116,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         { schema: updateOne },
         async ({ member, params: { id }, body, log }) => {
           const tasks = taskManager.createUpdateTaskSequence(member, id, body);
+          return runner.runSingleSequence(tasks, log);
+        },
+      );
+
+      // delete member
+      fastify.delete<{ Params: IdParam }>(
+        '/:id',
+        { schema: deleteOne },
+        async ({ member, params: { id }, log }) => {
+          const tasks = taskManager.createDeleteTaskSequence(member, id);
           return runner.runSingleSequence(tasks, log);
         },
       );

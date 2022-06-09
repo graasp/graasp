@@ -191,4 +191,19 @@ export class MemberService {
       )
       .then(({ rows }) => rows[0]);
   }
+
+  async delete<E extends UnknownExtra>(
+    id: string,
+    transactionHandler: TrxHandler,
+  ): Promise<Member<E>> {
+    return transactionHandler
+      .query<Member<E>>(
+        sql`
+      DELETE FROM member
+      WHERE id = ${id}
+      RETURNING ${MemberService.allColumns}
+    `,
+      )
+      .then(({ rows }) => rows[0]);
+  }
 }
