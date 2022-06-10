@@ -1,0 +1,79 @@
+name: Deploy Graasp backend to staging environment
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on repository-dispatch event
+  repository_dispatch:
+    types: [staging-deployment]
+
+# This workflow is made up of one job that calls the reusable workflow in graasp-deploy
+jobs:
+  graasp-deploy-ecs-backend-workflow:
+    # repository name
+    name: Graasp
+    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@main
+    # ecs-task-definition with template file. 
+    with:
+      ecs-task-definition: '.aws/graasp-stage.json'
+      tag: ${{ github.event.client_payload.tag }}
+    # required secrets
+    secrets:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGE }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGE }}
+      aws-region: ${{ secrets.AWS_REGION_STAGE }}
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_STAGE }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_STAGE }}
+      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_STAGE }}
+      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_STAGE }}
+      container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_STAGE }}
+      container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER_STAGE }}
+      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY_STAGE }}
+      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER_STAGE }}
+      apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_DEV }}
+      apps-plugin: ${{ secrets.APPS_PLUGIN_DEV }}
+      auth-client-host: ${{ secrets.AUTH_CLIENT_HOST_STAGE }}
+      auth-token-expiration-in-minutes: ${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES_DEV }}
+      auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET_DEV }}
+      avatars-path-prefix: ${{ secrets.AVATARS_PATH_PREFIX_DEV }}
+      chatbox-plugin: ${{ secrets.CHATBOX_PLUGIN_DEV }}
+      client-host: ${{ secrets.CLIENT_HOST_STAGE }}
+      cookie-domain: ${{ secrets.COOKIE_DOMAIN_STAGE }}
+      cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_STAGE }}
+      database-logs: ${{ secrets.DATABASE_LOGS_DEV }}
+      email-links-host: ${{ secrets.EMAIL_LINKS_HOST_STAGE }}
+      embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN_DEV }}
+      embedded-link-item-plugin: ${{ secrets.EMBEDDED_LINK_ITEM_PLUGIN_DEV }}
+      file-storage-root-path: ${{ secrets.FILE_STORAGE_ROOT_PATH_DEV }}
+      files-path-prefix: ${{ secrets.FILES_PATH_PREFIX_DEV }}
+      hidden-tag-id: ${{ secrets.HIDDEN_TAG_ID_DEV }}
+      hostname: ${{ secrets.HOSTNAME_STAGE }}
+      image-classifier-api: ${{ secrets.IMAGE_CLASSIFIER_API_DEV }}
+      jwt-secret: ${{ secrets.JWT_SECRET_DEV }}
+      login-item-tag-id: ${{ secrets.LOGIN_ITEM_TAG_ID_DEV }}
+      mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL_STAGE }}
+      mailer-config-password: ${{ secrets.MAILER_CONFIG_PASSWORD_DEV }}
+      mailer-config-smtp-host: ${{ secrets.MAILER_CONFIG_SMTP_HOST_DEV }}
+      mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_DEV }}
+      node-env: ${{ secrets.NODE_ENV_DEV }}
+      node-env-container-2: ${{ secrets.NODE_ENV_2_DEV }}
+      pg-connection-uri: ${{ secrets.PG_CONNECTION_URI_STAGE }}
+      port: ${{ secrets.PORT_DEV }}
+      public-plugin: ${{ secrets.PUBLIC_PLUGIN_DEV }}
+      public-tag-id: ${{ secrets.PUBLIC_TAG_ID_DEV }}
+      published-tag-id: ${{ secrets.PUBLISHED_TAG_ID_DEV }}
+      redis-host: ${{ secrets.REDIS_HOST_STAGE }}
+      redis-port: ${{ secrets.REDIS_PORT_STAGE }}
+      redis-username: ${{ secrets.REDIS_USERNAME_STAGE }}
+      refresh-token-expiration-in-minutes: ${{ secrets.REFRESH_TOKEN_EXPIRATION_IN_MINUTES_DEV }}
+      refresh-token-jwt-secret: ${{ secrets.REFRESH_TOKEN_JWT_SECRET_DEV }}
+      roarr-log: ${{ secrets.ROARR_LOG_DEV }}
+      s3-file-item-access-key-id: ${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID_STAGE }}
+      s3-file-item-bucket: ${{ secrets.S3_FILE_ITEM_BUCKET_STAGE }}
+      s3-file-item-access-plugin: ${{ secrets.S3_FILE_ITEM_PLUGIN_DEV }}
+      s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION_DEV }}
+      s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY_STAGE }}
+      save-actions: ${{ secrets.SAVE_ACTIONS_DEV }}
+      secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY_DEV }}
+      thumbnails-path-prefix: ${{ secrets.THUMBNAILS_PATH_PREFIX_DEV }}
+      token-based-auth: ${{ secrets.TOKEN_BASED_AUTH_DEV }}
+      websockets-plugin: ${{ secrets.WEBSOCKETS_PLUGIN_DEV }}
