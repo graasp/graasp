@@ -1,4 +1,4 @@
-name: Continuous Integration pipeline for ECS backend
+name: Deploy Graasp backend to development environment
 
 # Controls when the action will run.
 on:
@@ -20,6 +20,7 @@ jobs:
   graasp-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
+    # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
     uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@5ad156f86b2de177a81546db2ddc252a2ace36ca
     # ecs-task-definition with template file. 
     with:
@@ -31,8 +32,8 @@ jobs:
       aws-region: ${{ secrets.AWS_REGION_DEV }}
       ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_DEV }}
       ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_DEV }}
-      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_DEV }}
       ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_DEV }}
+      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_DEV }}
       container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_DEV }}
       container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER_DEV }}
       container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY_DEV }}
