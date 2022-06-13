@@ -265,4 +265,4 @@ export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
 export const DEFAULT_LANG = 'en';
 // Stripe
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-export const DEFAULT_PLAN_PRICE_ID = process.env.DEFAULT_PLAN_PRICE_ID;
+export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;

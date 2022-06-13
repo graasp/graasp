@@ -36,6 +36,8 @@ jobs:
           JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
           REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_DEFAULT_PLAN_PRICE_ID: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
           FILE_STORAGE_ROOT_PATH: /
           SAVE_ACTIONS: true
 
