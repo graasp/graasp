@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(subscriptionsPlugin, {
         stripeSecretKey: STRIPE_SECRET_KEY,
-        defaultPlanPriceId: STRIPE_DEFAULT_PLAN_PRICE_ID,
+        stripeDefaultPlanPriceId: STRIPE_DEFAULT_PLAN_PRICE_ID,
       });
 
       // get current
