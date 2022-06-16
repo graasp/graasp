@@ -16,7 +16,8 @@ const settings = S.object()
   .prop('tags', S.array())
   .prop('showChatbox', S.boolean())
   .prop('hasThumbnail', S.boolean())
-  .prop('ccLicenseAdaption', S.string());
+  .prop('ccLicenseAdaption', S.string())
+  .prop('displayCoEditors', S.boolean());
 
 const item = S.object()
   .additionalProperties(false)
