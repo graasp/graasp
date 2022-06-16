@@ -9,6 +9,7 @@ import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
 import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
 import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
+import { publicPlugin as publicH5PPlugin } from 'graasp-plugin-h5p';
 import {
   APPS_JWT_SECRET,
   APP_ITEMS_PREFIX,
@@ -16,6 +17,8 @@ import {
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
   GRAASP_ACTOR,
+  H5P_CONTENT_PLUGIN_OPTIONS,
+  H5P_PATH_PREFIX,
   ITEMS_ROUTE_PREFIX,
   PUBLIC_ROUTE_PREFIX,
   PUBLIC_TAG_ID,
@@ -109,6 +112,16 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
         },
         { prefix: ITEMS_ROUTE_PREFIX },
       );
+
+      // serve h5p (local storage mode)
+      await instance.register(publicH5PPlugin, {
+        pathPrefix: H5P_PATH_PREFIX,
+        serviceMethod: SERVICE_METHOD,
+        serviceOptions: {
+          s3: H5P_CONTENT_PLUGIN_OPTIONS,
+          local: FILE_ITEM_PLUGIN_OPTIONS,
+        },
+      });
     },
     { prefix: PUBLIC_ROUTE_PREFIX },
   );

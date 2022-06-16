@@ -55,6 +55,7 @@ import {
   AUTH_CLIENT_HOST,
   PROTOCOL,
   H5P_PATH_PREFIX,
+  H5P_CONTENT_PLUGIN_OPTIONS,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -149,7 +150,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           pathPrefix: H5P_PATH_PREFIX,
           serviceMethod: SERVICE_METHOD,
           serviceOptions: {
-            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+            s3: H5P_CONTENT_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
         });
