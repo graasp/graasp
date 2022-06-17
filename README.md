@@ -98,7 +98,7 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :
 
-````
+```` bash
 # Application server
 # PROTOCOL=http
 # HOSTNAME=localhost
