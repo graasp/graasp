@@ -4905,7 +4905,7 @@ __metadata:
 
 "graasp-plugin-h5p@github:graasp/graasp-plugin-h5p#4-h5p-playback":
   version: 0.1.0
-  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=135a1234c43a51a8d8a9cac67608780c5e7a3507"
+  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=31b801e319161320706cfea018ebc54f16094c73"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@fastify/static": 5.0.2
@@ -4914,10 +4914,10 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     http-status-codes: 2.2.0
-    mmmagic: 0.5.3
+    mime: 3.0.0
     secure-json-parse: 2.4.0
     uuid: 8.3.2
-  checksum: 07fd0dd36e3ec6c5a78934856efceac60956022ef90285090eebe385f3bba96c544ab54528e28c1781558d62086a4918bcc914a33befd0b4cb18ae4f731e160d
+  checksum: 90de09ce1e72bd24ca7db3577d31b3198518684d9b5b00d9f31ea5e47422c1640950e806d306aac9730b229c9db16a346168ae7db1375ad22cba5769f24d7e75
   languageName: node
   linkType: hard
 
@@ -7124,6 +7124,15 @@ __metadata:
   bin:
     mime: cli.js
   checksum: fef25e39263e6d207580bdc629f8872a3f9772c923c7f8c7e793175cee22777bbe8bba95e5d509a40aaa292d8974514ce634ae35769faa45f22d17edda5e8557
+  languageName: node
+  linkType: hard
+
+"mime@npm:3.0.0":
+  version: 3.0.0
+  resolution: "mime@npm:3.0.0"
+  bin:
+    mime: cli.js
+  checksum: f43f9b7bfa64534e6b05bd6062961681aeb406a5b53673b53b683f27fcc4e739989941836a355eef831f4478923651ecc739f4a5f6e20a76487b432bfd4db928
   languageName: node
   linkType: hard
 

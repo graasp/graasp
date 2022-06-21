@@ -37,5 +37,6 @@ jobs:
           REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           FILE_STORAGE_ROOT_PATH: /
+          H5P_PATH_PREFIX: h5p
           SAVE_ACTIONS: true
 
