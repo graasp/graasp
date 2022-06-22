@@ -69,6 +69,35 @@ const create = {
   },
 };
 
+// schema for creating an item membership
+const createMany = {
+  params: {
+    type: 'object',
+    required: ['itemId'],
+    properties: {
+      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    },
+    additionalProperties: false,
+  },
+  body: {
+    type: 'object',
+    properties: {
+      memberships: {
+        type: 'array',
+        items: {
+          anyOf: [
+            { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+            { $ref: 'http://graasp.org/#/definitions/error' },
+          ],
+        },
+      },
+    },
+  },
+  response: {
+    201: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+  },
+};
+
 // schema for getting many item's memberships
 const getItems = {
   querystring: {
@@ -135,4 +164,4 @@ const deleteAll = {
   },
 };
 
-export { getItems, create, updateOne, deleteOne, deleteAll };
+export { getItems, create, createMany, updateOne, deleteOne, deleteAll };

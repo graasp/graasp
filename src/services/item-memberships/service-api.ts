@@ -3,12 +3,13 @@ import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import { IdParam } from '../../interfaces/requests';
 // local
-import common, { getItems, create, updateOne, deleteOne, deleteAll } from './schemas';
+import common, { getItems, create, updateOne, deleteOne, deleteAll, createMany } from './schemas';
 import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 import { TaskManager } from './task-manager';
 import { WEBSOCKETS_PLUGIN } from '../../util/config';
 import { registerItemMembershipWsHooks } from './ws/hooks';
+import { ItemMembership } from './interfaces/item-membership';
 
 const ROUTES_PREFIX = '/item-memberships';
 
@@ -71,6 +72,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         async ({ member, query: { itemId }, body, log }) => {
           const tasks = taskManager.createCreateTaskSequence(member, body, itemId);
           return runner.runSingleSequence(tasks, log);
+        },
+      );
+
+      // create many item memberships
+      fastify.post<{ Params: { itemId: string }; Body: { memberships: ItemMembership[] } }>(
+        '/:itemId',
+        { schema: createMany },
+        async ({ member, params: { itemId }, body, log }) => {
+          // todo: optimize
+          const tasks = body.memberships.map((m) =>
+            taskManager.createCreateTaskSequence(member, m, itemId),
+          );
+          return runner.runMultipleSequences(tasks, log);
         },
       );
 

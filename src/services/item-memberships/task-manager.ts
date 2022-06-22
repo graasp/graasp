@@ -85,6 +85,7 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
 
     return [t1, t2, t3, t4];
   }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createGetTask(member: Member, objectId: string): Task<Member, ItemMembership> {
     throw new Error('Method not implemented.');

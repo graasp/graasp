@@ -126,7 +126,7 @@ describe('Membership routes tests', () => {
       const memberships = [buildMembership({ permission: PermissionLevel.Admin, path: item.path })];
       const member = MEMBERS_FIXTURES.BOB;
       const newMembership = buildMembership({
-        permission: PermissionLevel.Read,
+        permission: PermissionLevel.Write,
         path: item.path,
         memberId: member.id,
       });
@@ -302,6 +302,103 @@ describe('Membership routes tests', () => {
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      app.close();
+    });
+  });
+
+  describe('POST many /item-memberships/itemId', () => {
+    it('Create new memberships successfully', async () => {
+      const item = getDummyItem();
+      const memberships = [buildMembership({ permission: PermissionLevel.Admin, path: item.path })];
+      const member1 = MEMBERS_FIXTURES.BOB;
+      const member2 = MEMBERS_FIXTURES.LOUISA;
+      const newMemberships = [
+        buildMembership({
+          permission: PermissionLevel.Write,
+          path: item.path,
+          memberId: member1.id,
+        }),
+        buildMembership({
+          permission: PermissionLevel.Write,
+          path: item.path,
+          memberId: member2.id,
+        }),
+      ];
+      mockItemServiceGet([item]);
+      mockItemMemberhipServiceGetInheritedForAll(memberships);
+      const mockCreate = mockItemMembershipServiceCreate();
+      mockItemMembershipServiceGetForMemberAtItem(memberships);
+      mockMemberServiceGet([member1, member2]);
+      const app = await build();
+
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: `/item-memberships/${item.id}`,
+        payload: { memberships: newMemberships },
+      });
+
+      const result = response.json();
+      expect(mockCreate).toHaveBeenCalledTimes(newMemberships.length);
+      result.forEach((m, idx) => {
+        expect(m.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
+        expect(m.permission).toEqual(newMemberships[idx].permission);
+        expect(m.memberId).toEqual(newMemberships[idx].memberId);
+      });
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+
+    it('Bad Request for invalid id', async () => {
+      const item = getDummyItem();
+      const member = MEMBERS_FIXTURES.BOB;
+      const newMembership = [
+        buildMembership({
+          permission: PermissionLevel.Read,
+          path: item.path,
+          memberId: member.id,
+        }),
+      ];
+
+      const app = await build();
+      const id = 'invalid-id';
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: `/item-memberships/${id}`,
+        payload: { memberships: newMembership },
+      });
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      app.close();
+    });
+
+    it('Return error array for invalid payload', async () => {
+      const item = getDummyItem();
+      const member1 = MEMBERS_FIXTURES.BOB;
+      mockItemServiceGet([item]);
+      const memberships = [buildMembership({ permission: PermissionLevel.Admin, path: item.path })];
+      mockItemMemberhipServiceGetInheritedForAll(memberships);
+      mockItemMembershipServiceGetForMemberAtItem(memberships);
+      mockMemberServiceGet([member1]);
+
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.POST,
+        url: `/item-memberships/${item.id}`,
+        payload: {
+          memberships: [
+            {
+              email: member1.id,
+              path: item.path,
+              // missing permission
+            },
+          ],
+        },
+      });
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.OK);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.json()[0].statusCode).toBeTruthy();
       app.close();
     });
   });
