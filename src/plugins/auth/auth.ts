@@ -28,6 +28,7 @@ import {
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_CLIENT_HOST,
   DEFAULT_LANG,
+  REDIRECT_URL,
 } from '../../util/config';
 
 // other services
@@ -84,7 +85,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   // cookie based auth
   await fastify.register(fastifySecureSession, {
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
-    cookie: { domain, path: '/' },
+    cookie: { domain, path: '/', secure: true },
   });
 
   async function verifyMemberInSession(request: FastifyRequest) {
@@ -346,7 +347,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           session.set('member', memberId);
 
           if (CLIENT_HOST) {
-            reply.redirect(StatusCodes.SEE_OTHER, `//${CLIENT_HOST}`);
+            reply.redirect(StatusCodes.SEE_OTHER, REDIRECT_URL);
           } else {
             reply.status(StatusCodes.NO_CONTENT);
           }
