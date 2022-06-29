@@ -396,9 +396,8 @@ describe('Membership routes tests', () => {
         },
       });
 
-      expect(response.statusMessage).toEqual(ReasonPhrases.OK);
-      expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(response.json()[0].statusCode).toBeTruthy();
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       app.close();
     });
   });

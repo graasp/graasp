@@ -69,7 +69,7 @@ const create = {
   },
 };
 
-// schema for creating an item membership
+// schema for creating many item memberships
 const createMany = {
   params: {
     type: 'object',
@@ -85,16 +85,23 @@ const createMany = {
       memberships: {
         type: 'array',
         items: {
-          anyOf: [
-            { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
-            { $ref: 'http://graasp.org/#/definitions/error' },
-          ],
+          $ref: 'http://graasp.org/item-memberships/#/definitions/createPartialItemMembership',
         },
       },
     },
   },
   response: {
-    201: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+    200: {
+      type: 'array',
+      items: {
+        anyOf: [
+          { $ref: 'http://graasp.org/#/definitions/error' },
+          {
+            $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership',
+          },
+        ],
+      },
+    },
   },
 };
 

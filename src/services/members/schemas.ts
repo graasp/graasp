@@ -75,18 +75,24 @@ const getMany = {
 };
 
 // schema for getting members by
-const getBy = {
+const getManyBy = {
   querystring: {
     type: 'object',
     properties: {
-      email: { type: 'string', format: 'email' },
+      email: {
+        type: 'array',
+        items: { type: 'string', format: 'email' },
+      },
+      additionalProperties: false,
     },
-    additionalProperties: false,
   },
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/members/#/definitions/member' },
+      items: {
+        type: 'array',
+        items: { $ref: 'http://graasp.org/members/#/definitions/member' },
+      },
     },
   },
 };
@@ -108,4 +114,4 @@ const deleteOne = {
   },
 };
 
-export { getOne, getMany, updateOne, getBy, deleteOne };
+export { getOne, getMany, updateOne, getManyBy, deleteOne };

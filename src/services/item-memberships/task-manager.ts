@@ -10,6 +10,7 @@ import { ItemMembership, PermissionLevel } from './interfaces/item-membership';
 import {
   CreateItemMembershipSubTask,
   CreateItemMembershipTask,
+  CreateItemMembershipTaskInputType,
 } from './tasks/create-item-membership-task';
 import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
@@ -25,7 +26,7 @@ import {
 import { GetItemWithPathTask } from '../items/tasks/get-item-with-path-task';
 import { GetMemberTask } from '../members/tasks/get-member-task';
 import { Actor } from '../../interfaces/actor';
-import { Item } from '../..';
+import { Item, UnknownExtra } from '../..';
 import { GetManyItemsItemMembershipsTask } from './tasks/get-many-items-item-membership-task';
 
 export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
@@ -68,22 +69,39 @@ export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
     return new CreateItemMembershipSubTask(member, this.itemMembershipService, { data });
   }
 
-  createCreateTaskSequence(
-    member: Member,
-    data: Partial<ItemMembership>,
-    itemId: string,
-  ): Task<Actor, unknown>[] {
+  createGetAdminMembershipTaskSequence(member: Member, itemId: string) {
     const t1 = new GetItemTask(member, this.itemService, { itemId });
 
     const t2 = new GetMemberItemMembershipOverItemTask(member, this.itemMembershipService);
     t2.getInput = () => ({ item: t1.result, validatePermission: PermissionLevel.Admin });
 
-    const t3 = new GetMemberTask(member, this.memberService, { memberId: data.memberId });
+    return [t1, t2];
+  }
 
-    const t4 = new CreateItemMembershipTask(member, this.itemMembershipService, { data });
-    t4.getInput = () => ({ item: t1.result });
+  createCreateSubTaskSequence(member: Member, input: CreateItemMembershipTaskInputType) {
+    const t1 = new GetMemberTask(member, this.memberService, { memberId: input.data.memberId });
 
-    return [t1, t2, t3, t4];
+    const t2 = new CreateItemMembershipTask(member, this.itemMembershipService, input);
+    return [t1, t2];
+  }
+
+  createCreateTaskSequence(
+    member: Member,
+    input: Partial<ItemMembership>,
+    itemId: string,
+  ): Task<Actor, unknown>[] {
+    const checkAdminMembershipTaskSequence = this.createGetAdminMembershipTaskSequence(
+      member,
+      itemId,
+    );
+
+    const createTaskSequence = this.createCreateSubTaskSequence(member, { data: input });
+    // set item in last create task
+    const getItemTask = checkAdminMembershipTaskSequence[0] as GetItemTask<UnknownExtra>;
+    const [_getMemberTask, createTask] = createTaskSequence;
+    createTask.getInput = () => ({ ...input, item: getItemTask.result });
+
+    return [...checkAdminMembershipTaskSequence, ...createTaskSequence];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
