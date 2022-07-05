@@ -157,6 +157,7 @@ EMBEDDED_LINK_ITEM_PLUGIN=false
 # Graasp apps
 APPS_PLUGIN=true
 APPS_JWT_SECRET=<content>
+APPS_PUBLISHER_ID=<id>
 
 # Graasp websockets
 # If you are using a local installation and don't want to install redis, you can set WEBSOCKETS_PLUGIN to false
@@ -178,6 +179,9 @@ LOGIN_ITEM_TAG_ID=<tag-id>
 
 # Graasp Actions
 SAVE_ACTIONS=true
+
+# validation containers
+IMAGE_CLASSIFIER_API=<url>
 ````
 
 ## Running

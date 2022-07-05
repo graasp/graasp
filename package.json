@@ -50,7 +50,7 @@
     "fastify": "^3.25.3",
     "fastify-plugin": "3.0.1",
     "fluent-json-schema": "3.1.0",
-    "graasp-apps": "github:graasp/graasp-apps",
+    "graasp-apps": "github:graasp/graasp-apps#29/graaspList",
     "graasp-document-item": "github:graasp/graasp-document-item",
     "graasp-embedded-link-item": "github:graasp/graasp-embedded-link-item",
     "graasp-item-flagging": "github:graasp/graasp-item-flagging",
