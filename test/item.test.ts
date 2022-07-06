@@ -161,6 +161,30 @@ describe('Item routes tests', () => {
       expect(baseItemMembershipMock).toHaveBeenCalled();
       app.close();
     });
+    it('Bad request if name is invalid', async () => {
+      const app = await build();
+      // by default the item creator use an invalid item type
+      const newItem = getDummyItem({ name: '' });
+      const response = await app.inject({
+        method: 'POST',
+        url: '/items',
+        payload: newItem,
+      });
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+
+      // by default the item creator use an invalid item type
+      const newItem1 = getDummyItem({ name: ' ' });
+      const response1 = await app.inject({
+        method: 'POST',
+        url: '/items',
+        payload: newItem1,
+      });
+      expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+
+      app.close();
+    });
     it('Bad request if type is invalid', async () => {
       const app = await build();
       // by default the item creator use an invalid item type
@@ -445,6 +469,40 @@ describe('Item routes tests', () => {
       const response = await app.inject({
         method: HTTP_METHODS.GET,
         url: '/items/shared-with',
+      });
+
+      expect(response.json()).toEqual(items);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+    it('Returns successfully with one permission filter', async () => {
+      const items = [
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+      ];
+      mockItemServiceGetSharedWith(items);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: '/items/shared-with?permission=read',
+      });
+
+      expect(response.json()).toEqual(items);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+    it('Returns successfully with two permission filters', async () => {
+      const items = [
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+      ];
+      mockItemServiceGetSharedWith(items);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: '/items/shared-with?permission=admin&permission=write',
       });
 
       expect(response.json()).toEqual(items);
