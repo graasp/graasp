@@ -4694,9 +4694,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-apps@github:graasp/graasp-apps#29/graaspList":
+"graasp-apps@github:graasp/graasp-apps":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=30ef8d8d9dac1d31986e16ca59ee00d10b665fc2"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=696ae73ad9a956dfeb4bbd006890597863b66f8d"
   dependencies:
     "@fastify/auth": 2.0.0
     "@fastify/bearer-auth": 7.0.1
@@ -5005,7 +5005,7 @@ __metadata:
     fastify: ^3.25.3
     fastify-plugin: 3.0.1
     fluent-json-schema: 3.1.0
-    graasp-apps: "github:graasp/graasp-apps#29/graaspList"
+    graasp-apps: "github:graasp/graasp-apps"
     graasp-document-item: "github:graasp/graasp-document-item"
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
     graasp-item-flagging: "github:graasp/graasp-item-flagging"

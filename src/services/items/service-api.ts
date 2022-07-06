@@ -13,7 +13,7 @@ import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import graaspItemZip from 'graasp-plugin-item-zip';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
 import {
