@@ -11,6 +11,7 @@ import { GetMembersByTask } from './tasks/get-members-by-task';
 import { MemberTaskManager } from './interfaces/member-task-manager';
 import { UpdateMemberTask } from './tasks/update-member-task';
 import { GetManyMembersTask } from './tasks/get-many-members-task';
+import { DeleteMemberTask } from './tasks/delete-member-task';
 
 export class TaskManager implements MemberTaskManager {
   private memberService: MemberService;
@@ -30,7 +31,7 @@ export class TaskManager implements MemberTaskManager {
     return UpdateMemberTask.name;
   }
   getDeleteTaskName(): string {
-    throw new Error('Method not implemented.');
+    return DeleteMemberTask.name;
   }
 
   // Other
@@ -73,9 +74,18 @@ export class TaskManager implements MemberTaskManager {
     return [t1, t2];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createDeleteTask<E extends UnknownExtra>(actor: Actor, objectId: string): Task<Actor, Member<E>> {
-    throw new Error('Method not implemented.');
+  createDeleteTaskSequence(actor: Actor, memberId: string): Task<Actor, unknown>[] {
+    const t1 = new GetMemberTask(actor, this.memberService, { memberId });
+
+    const t2 = new DeleteMemberTask(actor, this.memberService, {
+      memberId,
+    });
+
+    return [t1, t2];
+  }
+
+  createDeleteTask<E extends UnknownExtra>(actor: Actor, memberId: string): Task<Actor, Member<E>> {
+    return new DeleteMemberTask(actor, this.memberService, { memberId });
   }
 
   // Other

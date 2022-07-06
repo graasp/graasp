@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import publicPlugin from './plugins/public';
 import graaspPluginActions from 'graasp-plugin-actions';
 

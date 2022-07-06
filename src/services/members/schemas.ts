@@ -100,4 +100,12 @@ const updateOne = {
   },
 };
 
-export { getOne, getMany, updateOne, getBy };
+// schema for getting a member
+const deleteOne = {
+  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  response: {
+    200: { $ref: 'http://graasp.org/members/#/definitions/member' },
+  },
+};
+
+export { getOne, getMany, updateOne, getBy, deleteOne };

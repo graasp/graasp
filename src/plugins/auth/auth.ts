@@ -3,13 +3,13 @@ import crypto from 'crypto';
 import jwt, { Secret, VerifyOptions, SignOptions, TokenExpiredError } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { JsonWebTokenError } from 'jsonwebtoken';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 
-import { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
+import { FastifyRequest, FastifyPluginAsync } from 'fastify';
 import fastifyAuth from '@fastify/auth';
 import fastifySecureSession from '@fastify/secure-session';
 import fastifyBearerAuth from '@fastify/bearer-auth';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 
 import {
@@ -28,6 +28,7 @@ import {
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_CLIENT_HOST,
   DEFAULT_LANG,
+  REDIRECT_URL,
 } from '../../util/config';
 
 // other services
@@ -47,6 +48,16 @@ import {
 } from './schemas';
 import { AuthPluginOptions } from './interfaces/auth';
 import { Member } from '../..';
+import {
+  IncorrectPassword,
+  InvalidSession,
+  InvalidToken,
+  MemberAlreadySignedUp,
+  MemberNotSignedUp,
+  MemberWithoutPassword,
+  OrphanSession,
+  TokenExpired,
+} from '../../util/graasp-error';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -74,16 +85,15 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   // cookie based auth
   await fastify.register(fastifySecureSession, {
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
-    cookie: { domain, path: '/' },
+    cookie: { domain, path: '/', secure: true },
   });
 
-  async function verifyMemberInSession(request: FastifyRequest, reply: FastifyReply) {
+  async function verifyMemberInSession(request: FastifyRequest) {
     const { session } = request;
     const memberId = session.get('member');
 
     if (!memberId) {
-      reply.status(401);
-      throw new Error('no valid session');
+      throw new InvalidSession();
     }
 
     // TODO: do we really need to get the user from the DB? (or actor: { id } is enough?)
@@ -91,9 +101,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     const member = await mS.get(memberId, db.pool);
 
     if (!member) {
-      reply.status(401);
       session.delete();
-      throw new Error('orphan session');
+      throw new OrphanSession();
     }
 
     request.member = member;
@@ -263,7 +272,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
           await generateLoginLinkAndEmailIt(member, true, null, lang);
-          reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
+          throw new MemberAlreadySignedUp({ email });
         }
       },
     );
@@ -282,7 +291,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         } else {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
-          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+          throw new MemberNotSignedUp({ email });
         }
       },
     );
@@ -299,24 +308,24 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         if (!member) {
           const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
-          return reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+          throw new MemberNotSignedUp({ email });
         }
         if (member.password === null) {
           log.warn('Login attempt with non-existent password');
-          return reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+          throw new MemberWithoutPassword({ email });
         }
         const verified = await verifyCredentials(member, body);
         if (!verified) {
-          reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
-        } else {
-          const token = await promisifiedJwtSign({ sub: member.id }, JWT_SECRET, {
-            expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-          });
-          // link for graasp web
-          const linkPath = '/auth';
-          const resource = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
-          reply.status(StatusCodes.SEE_OTHER).send({ resource });
+          throw new IncorrectPassword(body);
         }
+
+        const token = await promisifiedJwtSign({ sub: member.id }, JWT_SECRET, {
+          expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+        });
+        // link for graasp web
+        const linkPath = '/auth';
+        const resource = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}`;
+        reply.status(StatusCodes.SEE_OTHER).send({ resource });
       },
     );
 
@@ -338,7 +347,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           session.set('member', memberId);
 
           if (CLIENT_HOST) {
-            reply.redirect(StatusCodes.SEE_OTHER, `//${CLIENT_HOST}`);
+            reply.redirect(StatusCodes.SEE_OTHER, REDIRECT_URL);
           } else {
             reply.status(StatusCodes.NO_CONTENT);
           }
@@ -350,18 +359,16 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           } else {
             // the token caused the error
             if (error instanceof JsonWebTokenError) {
-              reply.status(StatusCodes.UNAUTHORIZED);
-
               // return a custom error when the token expired
               // helps the client know when to request a refreshed token
               if (error instanceof TokenExpiredError) {
-                reply.status(439);
+                throw new TokenExpired();
               }
+
+              throw new InvalidToken();
             }
             // any other error
-            else {
-              reply.status(StatusCodes.INTERNAL_SERVER_ERROR);
-            }
+            reply.status(StatusCodes.INTERNAL_SERVER_ERROR);
           }
 
           log.error(error);
@@ -417,7 +424,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           } else {
             log.warn(`Member re-registration attempt for email '${email}'`);
             await generateLoginLinkAndEmailIt(member, true, challenge, lang);
-            reply.status(StatusCodes.CONFLICT).send(ReasonPhrases.CONFLICT);
+            throw new MemberAlreadySignedUp({ email });
           }
         },
       );
@@ -435,7 +442,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             reply.status(StatusCodes.NO_CONTENT);
           } else {
             log.warn(`Login attempt with non-existent email '${email}'`);
-            reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+            throw new MemberNotSignedUp({ email });
           }
         },
       );
@@ -453,15 +460,15 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           if (!member) {
             const { email } = body;
             log.warn(`Login attempt with non-existent email '${email}'`);
-            return reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+            throw new MemberNotSignedUp({ email });
           }
           if (member.password === null) {
             log.warn('Login attempt with non-existent password');
-            return reply.status(StatusCodes.NOT_ACCEPTABLE).send(ReasonPhrases.NOT_ACCEPTABLE);
+            throw new MemberWithoutPassword({ email });
           }
           const verified = await verifyCredentials(member, body);
           if (!verified) {
-            reply.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+            throw new IncorrectPassword(body);
           } else {
             const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
               expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
@@ -489,13 +496,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             return generateAuthTokensPair(memberId);
           } catch (error) {
             if (error instanceof JsonWebTokenError) {
-              reply.status(401);
-
               // return a custom error when the token expired
               // helps the client know when to request a refreshed token
               if (error instanceof TokenExpiredError) {
-                reply.status(439);
+                throw new TokenExpired();
               }
+              throw new InvalidToken();
             }
             throw error;
           }

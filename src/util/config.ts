@@ -278,3 +278,5 @@ export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
   hasThumbnail: false,
 };
 export const DEFAULT_LANG = 'en';
+
+export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;

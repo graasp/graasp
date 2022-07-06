@@ -1,6 +1,6 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import { IdParam } from '../../interfaces/requests';
 // local
 import common, { getItems, create, updateOne, deleteOne, deleteAll } from './schemas';

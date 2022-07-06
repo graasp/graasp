@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import { ItemTagService } from 'graasp-item-tags';
 import graaspPluginPublic, { PublicItemService, PublicItemTaskManager } from 'graasp-plugin-public';
 import { publicPlugin as publicThumbnailsPlugin } from 'graasp-plugin-thumbnails';
