@@ -13,7 +13,7 @@ import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import graaspItemZip from 'graasp-plugin-item-zip';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
 import {
@@ -53,6 +53,7 @@ import {
   PUBLISHED_TAG_ID,
   AUTH_CLIENT_HOST,
   PROTOCOL,
+  APPS_PUBLISHER_ID,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -107,6 +108,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       serviceMethod: SERVICE_METHOD,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
       prefix: APP_ITEMS_PREFIX,
+      publisherId: APPS_PUBLISHER_ID,
     });
   }
 

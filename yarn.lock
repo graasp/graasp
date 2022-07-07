@@ -4696,7 +4696,7 @@ __metadata:
 
 "graasp-apps@github:graasp/graasp-apps":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=7dbd01f2cd05d0a631fada161066ab968091326b"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=696ae73ad9a956dfeb4bbd006890597863b66f8d"
   dependencies:
     "@fastify/auth": 2.0.0
     "@fastify/bearer-auth": 7.0.1
@@ -4708,7 +4708,7 @@ __metadata:
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     http-status-codes: 2.2.0
-  checksum: 6cda74ec9097b55d79dc4c91c23c3345ec1b4e0454d666afcd7ef677a815c7da6f4aa92e6e8b1ac3780e3b6ec14e891125e8b8ac3afe210a962e36ab3e922c11
+  checksum: 49b50ecee6ce77b9a55584539844f0f5d3b43195d3fe8d3b56718355d4133f24dd10a9a48d35ba99932c1d55a5f2a5e67cc1befe50e8800a0572f68a0066f1f8
   languageName: node
   linkType: hard
 
@@ -4848,7 +4848,7 @@ __metadata:
 
 "graasp-plugin-invitations@github:graasp/graasp-plugin-invitations":
   version: 0.1.0
-  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=a46fe2022ad2c930f8933cffbca8c2418bc7c15b"
+  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=9ef8e09effdf096d8d24ca9b7814fd0c2396a615"
   dependencies:
     "@graasp/utils": "github:graasp/graasp-utils.git"
     fastify: ^3.25.3
@@ -4857,7 +4857,7 @@ __metadata:
     qs: 6.10.3
     slonik: 28.1.0
     uuid: 8.3.2
-  checksum: c37f6a039874ed5c10f81362e01e39db0353b401f101b4096ad3a07de5e5f470b9185c5eca8e680c6e052e7d936d1fa2679a035000e6b579610bd6c4ad5a54fd
+  checksum: 6ca4053b9eb1a941a2b6ac5413356f14afcc4f26f29423a4ae1715345e3ced4f297415c8cc9a226f2fd907239ac22dceac7a2ce9e9c45254cac166d6b7e6fc0f
   languageName: node
   linkType: hard
 

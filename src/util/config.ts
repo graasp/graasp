@@ -259,6 +259,8 @@ export const PUBLIC_ROUTE_PREFIX = '/p';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
 
+export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
+
 export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
   hasThumbnail: false,
 };
