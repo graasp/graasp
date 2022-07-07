@@ -4888,12 +4888,13 @@ __metadata:
 
 "graasp-plugin-h5p@github:graasp/graasp-plugin-h5p#4-h5p-playback":
   version: 0.1.0
-  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=fddf65b8b61f3b2c99ff47ac1d5bd6143026bc8f"
+  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=0b24d692a36ecc3949286aa9e2b770a4ea826d07"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@fastify/static": 5.0.2
     ajv: 8.11.0
     extract-zip: 2.0.1
+    fastify-plugin: 3.0.1
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     h5p-standalone: 3.5.1
@@ -4901,7 +4902,7 @@ __metadata:
     mime: 3.0.0
     secure-json-parse: 2.4.0
     uuid: 8.3.2
-  checksum: a9ef0e0f185bee65f63ff113b107aac906c43b5b8e18bb0ed39e7e86191cd799e6b52d42df45b00249624c0a8bc39480b41f50af9780132b26a8794d91033458
+  checksum: 70ca068e8dca819c63af2845f6897e903e691e5e346af8c6067938e980e909674ecd2fc69e0ee084c33df17094c2e63383d057dcf4f87db2b1ab696f615a10c1
   languageName: node
   linkType: hard
 
@@ -4946,9 +4947,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
+"graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip#25-add-h5p-export":
   version: 0.1.0
-  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=cf291944423c4ad61be498700ec2c1168d65dc39"
+  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=fab399d451999c8e970095942f35e4d63971ccf6"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@types/archiver": 5.3.1
@@ -4964,7 +4965,7 @@ __metadata:
     path: 0.12.7
     qs: 6.10.3
     stream-promise: 3.2.0
-  checksum: 56887dc03c1c3cc680c2b08082e11fca1e6108784c08615a9a1c299730ed93fd639e8370ae8985172eeeb0424fb21d1beee62e1da85a189321bd6057e365d4ee
+  checksum: 0e9a06592d422466b4eb429bd84e7de68e9d6ce4e1268c25b7889ae5bc695099d13d05b8a387283c911f73866e968c5ebfba404e4e9647cd6e48e29bfd8f1fa2
   languageName: node
   linkType: hard
 
@@ -5088,7 +5089,7 @@ __metadata:
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
-    graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
+    graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip#25-add-h5p-export"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-search: "github:graasp/graasp-plugin-search"

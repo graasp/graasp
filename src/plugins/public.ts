@@ -78,6 +78,17 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
         },
       });
 
+      // serve h5p (local storage mode)
+      // H5P plugin must be registered before ZIP
+      await instance.register(publicH5PPlugin, {
+        pathPrefix: H5P_PATH_PREFIX,
+        serviceMethod: SERVICE_METHOD,
+        serviceOptions: {
+          s3: H5P_CONTENT_PLUGIN_OPTIONS,
+          local: FILE_ITEM_PLUGIN_OPTIONS,
+        },
+      });
+
       // files
       instance.register(
         async () => {
@@ -112,16 +123,6 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
         },
         { prefix: ITEMS_ROUTE_PREFIX },
       );
-
-      // serve h5p (local storage mode)
-      await instance.register(publicH5PPlugin, {
-        pathPrefix: H5P_PATH_PREFIX,
-        serviceMethod: SERVICE_METHOD,
-        serviceOptions: {
-          s3: H5P_CONTENT_PLUGIN_OPTIONS,
-          local: FILE_ITEM_PLUGIN_OPTIONS,
-        },
-      });
     },
     { prefix: PUBLIC_ROUTE_PREFIX },
   );

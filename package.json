@@ -66,7 +66,7 @@
     "graasp-plugin-invitations": "github:graasp/graasp-plugin-invitations",
     "graasp-plugin-item-likes": "github:graasp/graasp-plugin-item-likes",
     "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
-    "graasp-plugin-item-zip": "github:graasp/graasp-plugin-item-zip",
+    "graasp-plugin-item-zip": "github:graasp/graasp-plugin-item-zip#25-add-h5p-export",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "graasp-plugin-recycle-bin": "github:graasp/graasp-plugin-recycle-bin",
     "graasp-plugin-search": "github:graasp/graasp-plugin-search",
