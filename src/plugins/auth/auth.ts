@@ -9,7 +9,7 @@ import { FastifyRequest, FastifyPluginAsync } from 'fastify';
 import fastifyAuth from '@fastify/auth';
 import fastifySecureSession from '@fastify/secure-session';
 import fastifyBearerAuth from '@fastify/bearer-auth';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 
 import {

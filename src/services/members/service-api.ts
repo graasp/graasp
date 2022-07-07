@@ -1,6 +1,6 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(subscriptionsPlugin, {
         stripeSecretKey: STRIPE_SECRET_KEY,
-        stripeDefaultPlanPriceId: STRIPE_DEFAULT_PLAN_PRICE_ID,
+        stripeDefaultProductId: STRIPE_DEFAULT_PLAN_PRICE_ID,
       });
 
       // get current
