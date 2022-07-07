@@ -1,7 +1,6 @@
 // global
 import { Actor } from '../../../interfaces/actor';
 import { Task } from '../../../interfaces/task';
-import { GetItemsSharedWithTaskInputType } from '../tasks/get-items-shared-with-task';
 // local
 import { Item } from './item';
 
@@ -17,6 +16,7 @@ export interface ItemTaskManager<A extends Actor = Actor> {
   getGetOwnTaskName(): string;
   getGetSharedWithTaskName(): string;
   getGetManyTaskName(): string;
+  getGetDescendantsTaskName(): string;
 
   createCreateTaskSequence(actor: A, object: Partial<Item>, extra?: unknown): Task<A, unknown>[];
   createGetTaskSequence(actor: A, objectId: string): Task<Actor, unknown>[];
@@ -35,11 +35,17 @@ export interface ItemTaskManager<A extends Actor = Actor> {
     itemTask: Task<A, Item>,
     options: { parentId?: string; shouldCopyTags?: boolean },
   ): Task<A, unknown>[];
+  createGetChildrenTask(
+    member: Actor,
+    options: { item?: Item; ordered?: boolean },
+  ): Task<Actor, unknown>;
   createGetChildrenTaskSequence(
     actor: Actor,
     itemId: string,
     ordered?: boolean,
   ): Task<A, unknown>[];
   createGetOwnTask(actor: Actor): Task<A, Item[]>;
-  createGetSharedWithTask(actor: Actor, input: GetItemsSharedWithTaskInputType): Task<A, Item[]>;
+  createGetSharedWithTask(actor: Actor, input: { permissions?: string[] }): Task<A, Item[]>;
+  createGetDescendantsTask(member: Actor, input?: { item: Item }): Task<A, Item[]>;
+  createGetDescendantsTaskSequence(member: Actor, itemId: string): Task<A, unknown>[];
 }

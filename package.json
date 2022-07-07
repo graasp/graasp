@@ -43,7 +43,7 @@
     "@fastify/helmet": "8.0.0",
     "@fastify/secure-session": "4.0.0",
     "@graasp/translations": "github:graasp/graasp-translations",
-    "@graasp/utils": "github:graasp/graasp-utils",
+    "@graasp/utils": "github:graasp/graasp-utils#15/testUtils",
     "@sentry/node": "6.19.7",
     "@sentry/tracing": "6.19.7",
     "aws-sdk": "2.1124.0",
