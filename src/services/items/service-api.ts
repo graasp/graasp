@@ -73,6 +73,7 @@ import {
   copyMany,
   getShared,
   getOwn,
+  getDescendants,
 } from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
@@ -338,6 +339,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             { schema: getChildren },
             async ({ member, params: { id }, query: { ordered }, log }) => {
               const tasks = taskManager.createGetChildrenTaskSequence(member, id, ordered);
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
+
+          // get item's descendants
+          fastify.get<{ Params: IdParam }>(
+            '/:id/descendants',
+            { schema: getDescendants },
+            async ({ member, params: { id }, log }) => {
+              const tasks = taskManager.createGetDescendantsTaskSequence(member, id);
               return runner.runSingleSequence(tasks, log);
             },
           );

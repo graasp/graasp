@@ -130,6 +130,14 @@ const getChildren = {
   },
 };
 
+const getDescendants = {
+  params: idParam,
+  response: {
+    200: S.array().items(item),
+    '4xx': error,
+  },
+};
+
 const getOwn = {
   response: {
     200: S.array().items(item),
@@ -234,6 +242,7 @@ export {
   initializedCreate as create,
   getOne,
   getChildren,
+  getDescendants,
   getMany,
   getOwn,
   getShared,
