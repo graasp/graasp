@@ -77,7 +77,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
 
       // get current
-      fastify.get('/current', async ({ member }) => member);
+      fastify.get('/current', async ({ member }) => {
+        member['password'] !== null ? (member['password'] = true) : (member['password'] = false);
+        return member;
+      });
 
       // get member
       fastify.get<{ Params: IdParam }>(
