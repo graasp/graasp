@@ -1,14 +1,8 @@
-// global
+import { Actor, DatabaseTransactionHandler, Member, TaskStatus, UnknownExtra } from '@graasp/sdk';
+
 import { CannotModifyOtherMembers } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { UnknownExtra } from '../../../interfaces/extra';
-import { Actor } from '../../../interfaces/actor';
-// other services
-// local
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
-import { Member } from '../interfaces/member';
-import { TaskStatus } from '../../..';
 
 type InputType = {
   memberId?: string;

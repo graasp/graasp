@@ -1,19 +1,17 @@
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  ItemMembership,
+  ItemMembershipService,
+  ItemMembershipTaskManager,
+  ItemService,
+  TaskRunner,
+  getChildFromPath,
+} from '@graasp/sdk';
 import { AccessDenied, NotFound, WebSocketService } from 'graasp-websockets';
-import { Actor } from '../../../interfaces/actor';
-import { TaskRunner } from '../../../interfaces/task-runner';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { ItemService } from '../../items/db-service';
-import { memberItemsTopic, SharedItemsEvent } from '../../items/ws/events';
-import { ItemMembershipService } from '../db-service';
-import { ItemMembership } from '../interfaces/item-membership';
-import { ItemMembershipTaskManager } from '../interfaces/item-membership-task-manager';
-import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 
-// helper function to extract child ID from item path
-export function extractChildId(itemPath: string): string {
-  const tokens = itemPath.split('.');
-  return tokens[tokens.length - 1].replace(/_/g, '-');
-}
+import { SharedItemsEvent, memberItemsTopic } from '../../items/ws/events';
+import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 
 /**
  * Registers real-time websocket events for the item memberships service
@@ -53,7 +51,7 @@ export function registerItemMembershipWsHooks(
   runner.setTaskPostHookHandler<ItemMembership>(
     createItemMembershipTaskName,
     async (membership, actor, { handler }) => {
-      const itemId = extractChildId(membership.itemPath);
+      const itemId = getChildFromPath(membership.itemPath);
       const item = await itemService.get(itemId, handler);
       if (!item) {
         return;
@@ -70,7 +68,7 @@ export function registerItemMembershipWsHooks(
   runner.setTaskPostHookHandler<ItemMembership>(
     updateItemMembershipTaskName,
     async (membership, actor, { handler }) => {
-      const itemId = extractChildId(membership.itemPath);
+      const itemId = getChildFromPath(membership.itemPath);
       const item = await itemService.get(itemId, handler);
       if (!item) {
         return;
@@ -86,7 +84,7 @@ export function registerItemMembershipWsHooks(
   runner.setTaskPostHookHandler<ItemMembership>(
     deleteItemMembershipTaskName,
     async (membership, actor, { handler }) => {
-      const itemId = extractChildId(membership.itemPath);
+      const itemId = getChildFromPath(membership.itemPath);
       const item = await itemService.get(itemId, handler);
       if (!item) {
         return;

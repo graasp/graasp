@@ -1,26 +1,15 @@
-// global
-import { sql, DatabaseTransactionConnection as TrxHandler } from 'slonik';
-// other services
-import { Item } from '../../services/items/interfaces/item';
-import { Member } from '../../services/members/interfaces/member';
-// local
+import { DatabaseTransactionConnection as TrxHandler, sql } from 'slonik';
+
 import {
+  ItemMembershipService as DbService,
+  Item,
   ItemMembership,
+  Member,
   PermissionLevel,
   PermissionLevelCompare,
-} from './interfaces/item-membership';
-import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
+} from '@graasp/sdk';
 
-declare module 'fastify' {
-  interface FastifyInstance {
-    itemMemberships: {
-      taskManager: ItemMembershipTaskManager;
-      dbService: ItemMembershipService;
-    };
-  }
-}
-
-export class ItemMembershipService {
+export class ItemMembershipService implements DbService {
   // the 'safe' way to dynamically generate the columns names:
   private static allColumns = sql.join(
     [
@@ -105,7 +94,7 @@ export class ItemMembershipService {
     item: Item,
     transactionHandler: TrxHandler,
     considerLocal = false,
-  ): Promise<ItemMembership> {
+  ): Promise<ItemMembership | null> {
     return transactionHandler
       .query<ItemMembership>(
         sql`

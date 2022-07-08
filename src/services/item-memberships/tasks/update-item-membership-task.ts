@@ -1,20 +1,19 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { InvalidPermissionLevel } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../../services/members/interfaces/member';
-import { Item } from '../../items/interfaces/item';
-// local
-import { ItemMembershipService } from '../db-service';
-import { BaseItemMembershipTask } from './base-item-membership-task';
+
 import {
+  DatabaseTransactionHandler,
+  Item,
   ItemMembership,
-  PermissionLevelCompare,
+  ItemMembershipService,
+  Member,
   PermissionLevel,
-} from '../interfaces/item-membership';
+  PermissionLevelCompare,
+  TaskStatus,
+} from '@graasp/sdk';
+
+import { InvalidPermissionLevel } from '../../../util/graasp-error';
+import { BaseItemMembershipTask } from './base-item-membership-task';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
-import { TaskStatus } from '../../..';
 
 class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name() {
@@ -93,7 +92,6 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     );
 
     const { permission } = data;
-
     if (inheritedMembership) {
       const { permission: inheritedPermission } = inheritedMembership;
 
@@ -116,6 +114,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // check existing memberships lower in the tree
     const membershipsBelow = await this.itemMembershipService.getAllBelow(memberId, item, handler);
+    console.log(membershipsBelow);
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>

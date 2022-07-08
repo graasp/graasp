@@ -1,13 +1,6 @@
 import { VIEW_UNKNOWN_NAME } from '../../src/services/items/constants/constants';
 import { GRAASP_ACTOR } from '../../src/util/config';
 
-export enum HTTP_METHODS {
-  GET = 'GET',
-  POST = 'POST',
-  DELETE = 'DELETE',
-  PATCH = 'PATCH',
-}
-
 export const checkActionData = (savedAction, args) => {
   const {
     itemId,

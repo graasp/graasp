@@ -1,14 +1,15 @@
-import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from '@fastify/cors';
-import { ItemTagService } from 'graasp-item-tags';
-import graaspPluginPublic, { PublicItemService, PublicItemTaskManager } from 'graasp-plugin-public';
-import { publicPlugin as publicThumbnailsPlugin } from 'graasp-plugin-thumbnails';
-import { publicPlugin as publicFileItemPlugin } from 'graasp-plugin-file-item';
-import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
+import { FastifyPluginAsync } from 'fastify';
+
 import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
+import { ItemTagService } from 'graasp-item-tags';
+import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
-import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
+import { publicPlugin as publicFileItemPlugin } from 'graasp-plugin-file-item';
 import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
+import graaspPluginPublic, { PublicItemService, PublicItemTaskManager } from 'graasp-plugin-public';
+import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
+import { publicPlugin as publicThumbnailsPlugin } from 'graasp-plugin-thumbnails';
 
 import {
   APPS_JWT_SECRET,
@@ -16,13 +17,13 @@ import {
   AVATARS_PATH_PREFIX,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_TYPE,
   GRAASP_ACTOR,
   ITEMS_ROUTE_PREFIX,
   PUBLIC_ROUTE_PREFIX,
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-  SERVICE_METHOD,
   THUMBNAILS_PATH_PREFIX,
 } from '../util/config';
 
@@ -65,12 +66,12 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
 
       // item thumbnail, member avatar endpoints
       await instance.register(publicThumbnailsPlugin, {
-        serviceMethod: SERVICE_METHOD,
+        fileItemType: FILE_ITEM_TYPE,
         prefixes: {
           avatarsPrefix: AVATARS_PATH_PREFIX,
           thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
         },
-        serviceOptions: {
+        fileConfigurations: {
           s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
           local: FILE_ITEM_PLUGIN_OPTIONS,
         },
@@ -82,8 +83,8 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
           await instance.register(publicFileItemPlugin, {
             shouldLimit: true,
             pathPrefix: FILES_PATH_PREFIX,
-            serviceMethod: SERVICE_METHOD,
-            serviceOptions: {
+            fileItemType: FILE_ITEM_TYPE,
+            fileConfigurations: {
               s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
               local: FILE_ITEM_PLUGIN_OPTIONS,
             },
@@ -101,8 +102,8 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
           // download zip
           await instance.register(publicZipPlugin, {
             pathPrefix: FILES_PATH_PREFIX,
-            serviceMethod: SERVICE_METHOD,
-            serviceOptions: {
+            fileItemType: FILE_ITEM_TYPE,
+            fileConfigurations: {
               s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
               local: FILE_ITEM_PLUGIN_OPTIONS,
             },

@@ -1,14 +1,15 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Item } from '../../../services/items/interfaces/item';
-import { Member } from '../../../services/members/interfaces/member';
-// local
-import { ItemMembershipService } from '../db-service';
+
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemMembership,
+  ItemMembershipService,
+  Member,
+  TaskStatus,
+} from '@graasp/sdk';
+
 import { BaseItemMembershipTask } from './base-item-membership-task';
-import { ItemMembership } from '../interfaces/item-membership';
-import { TaskStatus } from '../../..';
 
 export class DeleteItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string {

@@ -1,4 +1,5 @@
-import { Item } from '../interfaces/item';
+import { Item } from '@graasp/sdk';
+
 import { sortChildrenWith } from './utils';
 
 const a = {

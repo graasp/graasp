@@ -1,8 +1,7 @@
 /**
  * Membership websocket events are registered under these topics
  */
-
-import { ItemMembership } from '../interfaces/item-membership';
+import { ItemMembership } from '@graasp/sdk';
 
 // memberships of a given item
 export const itemMembershipsTopic = 'memberships/item';

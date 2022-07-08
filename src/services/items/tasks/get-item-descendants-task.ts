@@ -1,13 +1,8 @@
-// global
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../members/interfaces/member';
-// local
-import { ItemService } from '../db-service';
-import { BaseItemTask } from './base-item-task';
-import { Item } from '../interfaces/item';
 import { FastifyLoggerInstance } from 'fastify';
-import { TaskStatus } from '../../..';
+
+import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
+
+import { BaseItemTask } from './base-item-task';
 
 export type GetItemDescendantsTaskInputType = { item?: Item };
 

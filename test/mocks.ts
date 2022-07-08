@@ -1,18 +1,14 @@
-import { ItemMembershipService } from '../src/services/item-memberships/db-service';
-import {
-  ItemMembership,
-  PermissionLevel,
-} from '../src/services/item-memberships/interfaces/item-membership';
-import { ItemService } from '../src/services/items/db-service';
-import { Item } from '../src/services/items/interfaces/item';
-import { MemberService } from '../src/services/members/db-service';
-import { Member } from '../src/services/members/interfaces/member';
-import { getDummyItem } from './fixtures/items';
-import { ACTOR, buildMember } from './fixtures/members';
-import { buildAction } from './fixtures/actions';
-import { buildMembership } from './fixtures/memberships';
+import { Item, ItemMembership, Member, PermissionLevel } from '@graasp/sdk';
 import { getIdsFromPath } from '@graasp/utils';
 import { ActionService } from 'graasp-plugin-actions';
+
+import { ItemMembershipService } from '../src/services/item-memberships/db-service';
+import { ItemService } from '../src/services/items/db-service';
+import { MemberService } from '../src/services/members/db-service';
+import { buildAction } from './fixtures/actions';
+import { getDummyItem } from './fixtures/items';
+import { ACTOR, buildMember } from './fixtures/members';
+import { buildMembership } from './fixtures/memberships';
 
 // Item Membership Service
 export const mockItemMembershipServiceGetForMemberAtItem = (

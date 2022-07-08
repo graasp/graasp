@@ -1,55 +1,39 @@
+import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import jwt, { Secret, VerifyOptions, SignOptions, TokenExpiredError } from 'jsonwebtoken';
-import { promisify } from 'util';
-import { JsonWebTokenError } from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
+import jwt, { Secret, SignOptions, TokenExpiredError, VerifyOptions } from 'jsonwebtoken';
+import { JsonWebTokenError } from 'jsonwebtoken';
+import { promisify } from 'util';
 
-import { FastifyRequest, FastifyPluginAsync, FastifyLoggerInstance } from 'fastify';
 import fastifyAuth from '@fastify/auth';
-import fastifySecureSession from '@fastify/secure-session';
 import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from '@fastify/cors';
-import bcrypt from 'bcrypt';
+import fastifySecureSession from '@fastify/secure-session';
+import { FastifyLoggerInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
 
-import {
-  SECURE_SESSION_SECRET_KEY,
-  GRAASP_ACTOR,
-  EMAIL_LINKS_HOST,
-  PROTOCOL,
-  CLIENT_HOST,
-  JWT_SECRET,
-  REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
-  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
-  AUTH_TOKEN_JWT_SECRET,
-  AUTH_TOKEN_EXPIRATION_IN_MINUTES,
-  TOKEN_BASED_AUTH,
-  REFRESH_TOKEN_JWT_SECRET,
-  REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
-  AUTH_CLIENT_HOST,
-  DEFAULT_LANG,
-  REDIRECT_URL,
-  PROD,
-  STAGING,
-} from '../../util/config';
+import { Member } from '@graasp/sdk';
 
-// other services
 import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
-
-// local
 import {
-  register,
-  login,
-  passwordLogin,
-  auth,
-  mlogin,
-  mPasswordLogin,
-  mauth,
-  mdeepLink,
-  mregister,
-  updatePassword,
-} from './schemas';
-import { AuthPluginOptions } from './interfaces/auth';
-import { Member } from '../..';
+  AUTH_CLIENT_HOST,
+  AUTH_TOKEN_EXPIRATION_IN_MINUTES,
+  AUTH_TOKEN_JWT_SECRET,
+  CLIENT_HOST,
+  DEFAULT_LANG,
+  EMAIL_LINKS_HOST,
+  GRAASP_ACTOR,
+  JWT_SECRET,
+  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
+  PROD,
+  PROTOCOL,
+  REDIRECT_URL,
+  REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
+  REFRESH_TOKEN_JWT_SECRET,
+  REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
+  SECURE_SESSION_SECRET_KEY,
+  STAGING,
+  TOKEN_BASED_AUTH,
+} from '../../util/config';
 import {
   EmptyCurrentPassword,
   IncorrectPassword,
@@ -63,6 +47,19 @@ import {
   TokenExpired,
 } from '../../util/graasp-error';
 import { SALT_ROUNDS } from './constants';
+import { AuthPluginOptions } from './interfaces/auth';
+import {
+  auth,
+  login,
+  mPasswordLogin,
+  mauth,
+  mdeepLink,
+  mlogin,
+  mregister,
+  passwordLogin,
+  register,
+  updatePassword,
+} from './schemas';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -134,6 +131,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     members: { dbService: mS },
     taskRunner: runner,
   } = fastify;
+
   const memberTaskManager = new MemberTaskManager(mS);
 
   // cookie based auth

@@ -1,7 +1,5 @@
-// global
-import { Actor } from '../../../interfaces/actor';
-import { BaseTask } from '../../base-task';
-// local
+import { Actor, BaseTask } from '@graasp/sdk';
+
 import { MemberService } from '../db-service';
 
 export abstract class BaseMemberTask<R> extends BaseTask<Actor, R> {

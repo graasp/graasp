@@ -1,19 +1,10 @@
-import { createPool, DatabasePool, DatabaseTransactionConnection } from 'slonik';
+import { createPool } from 'slonik';
+
 import { FastifyPluginAsync } from 'fastify';
+
+import { Database } from '@graasp/sdk';
+
 import { MAXIMUM_POOL_SIZE } from '../util/config';
-
-export type DatabasePoolHandler = DatabasePool;
-export type DatabaseTransactionHandler = DatabaseTransactionConnection;
-
-declare module 'fastify' {
-  interface FastifyInstance {
-    db: Database;
-  }
-}
-
-export interface Database {
-  pool: DatabasePoolHandler;
-}
 
 export interface DatabasePluginOptions {
   uri: string;

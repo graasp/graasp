@@ -1,11 +1,13 @@
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { mockMemberServiceCreate, mockMemberServiceGetMatching } from './mocks';
-import * as MEMBERS_FIXTURES from './fixtures/members';
-import build from './app';
-import { DEFAULT_LANG, JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../src/util/config';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { HTTP_METHODS } from './fixtures/utils';
+import jwt from 'jsonwebtoken';
+
+import { HttpMethod } from '@graasp/sdk';
+
+import { DEFAULT_LANG, JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../src/util/config';
+import build from './app';
+import * as MEMBERS_FIXTURES from './fixtures/members';
+import { mockMemberServiceCreate, mockMemberServiceGetMatching } from './mocks';
 
 // mock database and decorator plugins
 jest.mock('../src/plugins/database');
@@ -24,7 +26,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/register',
         payload: { email, name },
       });
@@ -45,7 +47,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/register?lang=${lang}`,
         payload: { email, name },
       });
@@ -69,7 +71,7 @@ describe('Auth routes tests', () => {
       mockMemberServiceGetMatching([member]);
       const mockCreate = mockMemberServiceCreate();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/register',
         payload: member,
       });
@@ -89,7 +91,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/register',
         payload: { email, name },
       });
@@ -107,7 +109,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login',
         payload: { email: member.email },
       });
@@ -129,7 +131,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/login?lang=${lang}`,
         payload: { email: member.email },
       });
@@ -149,7 +151,7 @@ describe('Auth routes tests', () => {
       const app = await build();
       const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login',
         payload: { email },
       });
@@ -162,7 +164,7 @@ describe('Auth routes tests', () => {
       const email = 'wrongemail';
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login',
         payload: { email },
       });
@@ -180,7 +182,7 @@ describe('Auth routes tests', () => {
       mockMemberServiceGetMatching([member]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login-password',
         payload: { email: member.email, password: clearPassword },
       });
@@ -195,7 +197,7 @@ describe('Auth routes tests', () => {
       mockMemberServiceGetMatching([member]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login-password',
         payload: { email: member.email, password: clearWrongPassword },
       });
@@ -210,7 +212,7 @@ describe('Auth routes tests', () => {
       mockMemberServiceGetMatching([member]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login-password',
         payload: { email: member.email, password: clearPassword },
       });
@@ -224,7 +226,7 @@ describe('Auth routes tests', () => {
       const password = '1234';
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login-password',
         payload: { email, password },
       });
@@ -239,7 +241,7 @@ describe('Auth routes tests', () => {
       const password = '1234';
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: '/login-password',
         payload: { email, password },
       });
@@ -257,7 +259,7 @@ describe('Auth routes tests', () => {
       const t = jwt.sign(member, JWT_SECRET);
       mockMemberServiceGetMatching([member]);
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -269,7 +271,7 @@ describe('Auth routes tests', () => {
       const t = jwt.sign(member, 'secret');
       mockMemberServiceGetMatching([member]);
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -281,7 +283,7 @@ describe('Auth routes tests', () => {
     it('Authenticate successfully', async () => {
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/logout',
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -300,7 +302,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/register',
           payload: { email, name, challenge },
         });
@@ -321,7 +323,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: `/m/register?lang=${lang}`,
           payload: { email, name, challenge },
         });
@@ -345,7 +347,7 @@ describe('Auth routes tests', () => {
         mockMemberServiceGetMatching([member]);
         const mockCreate = mockMemberServiceCreate();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/register',
           payload: { ...member, challenge },
         });
@@ -365,7 +367,7 @@ describe('Auth routes tests', () => {
         const name = 'anna';
         const app = await build();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/register',
           payload: { email, name },
         });
@@ -383,7 +385,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login',
           payload: { email: member.email, challenge },
         });
@@ -405,7 +407,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: `/m/login?lang=${lang}`,
           payload: { email: member.email, challenge },
         });
@@ -424,7 +426,7 @@ describe('Auth routes tests', () => {
         const app = await build();
         const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login',
           payload: { email, challenge },
         });
@@ -437,7 +439,7 @@ describe('Auth routes tests', () => {
         const email = 'wrongemail';
         const app = await build();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login',
           payload: { email, challenge },
         });
@@ -455,7 +457,7 @@ describe('Auth routes tests', () => {
         mockMemberServiceGetMatching([member]);
         const app = await build();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login-password',
           payload: { email: member.email, challenge, password: clearPassword },
         });
@@ -470,7 +472,7 @@ describe('Auth routes tests', () => {
         mockMemberServiceGetMatching([member]);
         const app = await build();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login-password',
           payload: { email: member.email, challenge, password: clearWrongPassword },
         });
@@ -485,7 +487,7 @@ describe('Auth routes tests', () => {
         mockMemberServiceGetMatching([member]);
         const app = await build();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login-password',
           payload: { email: member.email, challenge, password: clearPassword },
         });
@@ -499,7 +501,7 @@ describe('Auth routes tests', () => {
         const password = '1234';
         const app = await build();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login-password',
           payload: { email, challenge, password },
         });
@@ -514,7 +516,7 @@ describe('Auth routes tests', () => {
         const password = '1234';
         const app = await build();
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/login-password',
           payload: { email, challenge, password },
         });
@@ -540,7 +542,7 @@ describe('Auth routes tests', () => {
         const t = jwt.sign({ sub: member.id, challenge }, JWT_SECRET);
 
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/auth',
           payload: {
             t,
@@ -558,7 +560,7 @@ describe('Auth routes tests', () => {
         const t = jwt.sign(member, JWT_SECRET);
         const verifier = 'verifier';
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/auth',
           payload: {
             t,
@@ -574,7 +576,7 @@ describe('Auth routes tests', () => {
         const t = 'sometoken';
         const verifier = 'verifier';
         const response = await app.inject({
-          method: HTTP_METHODS.POST,
+          method: HttpMethod.POST,
           url: '/m/auth',
           payload: {
             t,
@@ -592,7 +594,7 @@ describe('Auth routes tests', () => {
         const member = MEMBERS_FIXTURES.BOB;
         const t = jwt.sign(member, REFRESH_TOKEN_JWT_SECRET);
         const response = await app.inject({
-          method: HTTP_METHODS.GET,
+          method: HttpMethod.GET,
           url: '/m/auth/refresh',
           headers: {
             authorization: `Bearer ${t}`,
@@ -608,7 +610,7 @@ describe('Auth routes tests', () => {
         const member = MEMBERS_FIXTURES.BOB;
         const t = jwt.sign(member, 'REFRESH_TOKEN_JWT_SECRET');
         const response = await app.inject({
-          method: HTTP_METHODS.GET,
+          method: HttpMethod.GET,
           url: '/m/auth/refresh',
           headers: {
             authorization: `Bearer ${t}`,
@@ -625,7 +627,7 @@ describe('Auth routes tests', () => {
         const member = MEMBERS_FIXTURES.BOB;
         const t = jwt.sign(member, JWT_SECRET);
         const response = await app.inject({
-          method: HTTP_METHODS.GET,
+          method: HttpMethod.GET,
           url: `/m/deep-link?t=${t}`,
         });
         expect(response.headers['content-type']).toEqual('text/html');
