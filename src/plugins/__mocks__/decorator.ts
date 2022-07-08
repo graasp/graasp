@@ -1,9 +1,10 @@
 import { FastifyPluginAsync } from 'fastify';
+
+import { ACTOR } from '../../../test/fixtures/members';
 import { GlobalTaskRunner } from '../../services/global-task-runner';
 import { ItemMembershipService } from '../../services/item-memberships/db-service';
 import { ItemService } from '../../services/items/db-service';
 import { MemberService } from '../../services/members/db-service';
-import { ACTOR } from '../../../test/fixtures/members';
 
 const mockedDecoratorPlugin: FastifyPluginAsync = async (fastify) => {
   const { db, log } = fastify;

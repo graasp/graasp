@@ -1,87 +1,90 @@
-// global
-import { FastifyPluginAsync } from 'fastify';
-import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
-import graaspDocumentItem from 'graasp-document-item';
-import graaspItemTags, { ItemTagService } from 'graasp-item-tags';
-import graaspItemFlags from 'graasp-item-flagging';
-import graaspItemLogin from 'graasp-plugin-item-login';
-import graaspCategoryPlugin from 'graasp-plugin-categories';
-import graaspPluginItemLikes from 'graasp-plugin-item-likes';
-import graaspValidationPlugin from 'graasp-plugin-validation';
-import graaspInvitationsPlugin from 'graasp-plugin-invitations';
-import graaspApps from 'graasp-apps';
-import graaspHidden from 'graasp-plugin-hidden-items';
-import graaspRecycleBin from 'graasp-plugin-recycle-bin';
-import graaspItemZip from 'graasp-plugin-item-zip';
 import fastifyCors from '@fastify/cors';
-import graaspChatbox from 'graasp-plugin-chatbox';
-import fileItemPlugin from 'graasp-plugin-file-item';
-import graaspItemPublishPlugin from 'graasp-plugin-item-publish';
-import {
-  ActionTaskManager,
-  ActionService,
-  BaseAction,
-  ActionHandlerInput,
-} from 'graasp-plugin-actions';
-import thumbnailsPlugin, {
-  buildFilePathWithPrefix,
-  THUMBNAIL_MIMETYPE,
-} from 'graasp-plugin-thumbnails';
+import { FastifyPluginAsync } from 'fastify';
 
 import {
-  MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-  EMBEDDED_LINK_ITEM_PLUGIN,
-  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-  GRAASP_ACTOR,
-  APPS_PLUGIN,
+  IdParam,
+  IdsParams,
+  Item,
+  ItemTaskManager,
+  ParentIdParam,
+  PermissionLevel,
+} from '@graasp/sdk';
+import graaspApps from 'graasp-apps';
+import graaspDocumentItem from 'graasp-document-item';
+import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
+import graaspItemFlags from 'graasp-item-flagging';
+import graaspItemTags, { ItemTagService } from 'graasp-item-tags';
+import {
+  ActionHandlerInput,
+  ActionService,
+  ActionTaskManager,
+  BaseAction,
+} from 'graasp-plugin-actions';
+import graaspCategoryPlugin from 'graasp-plugin-categories';
+import graaspChatbox from 'graasp-plugin-chatbox';
+import fileItemPlugin from 'graasp-plugin-file-item';
+import graaspHidden from 'graasp-plugin-hidden-items';
+import graaspInvitationsPlugin from 'graasp-plugin-invitations';
+import graaspPluginItemLikes from 'graasp-plugin-item-likes';
+import graaspItemLogin from 'graasp-plugin-item-login';
+import graaspItemPublishPlugin from 'graasp-plugin-item-publish';
+import graaspItemZip from 'graasp-plugin-item-zip';
+import graaspRecycleBin from 'graasp-plugin-recycle-bin';
+import thumbnailsPlugin, {
+  THUMBNAIL_MIMETYPE,
+  buildFilePathWithPrefix,
+} from 'graasp-plugin-thumbnails';
+import graaspValidationPlugin from 'graasp-plugin-validation';
+
+import {
   APPS_JWT_SECRET,
+  APPS_PLUGIN,
+  APPS_PUBLISHER_ID,
+  APP_ITEMS_PREFIX,
+  AUTH_CLIENT_HOST,
   CHATBOX_PLUGIN,
-  WEBSOCKETS_PLUGIN,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
+  CLIENT_HOSTS,
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+  EMBEDDED_LINK_ITEM_PLUGIN,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
-  SERVICE_METHOD,
-  THUMBNAILS_PATH_PREFIX,
-  ITEMS_ROUTE_PREFIX,
-  APP_ITEMS_PREFIX,
-  LOGIN_ITEM_TAG_ID,
-  THUMBNAILS_ROUTE_PREFIX,
+  FILE_ITEM_TYPE,
+  GRAASP_ACTOR,
   HIDDEN_TAG_ID,
-  SAVE_ACTIONS,
-  CLIENT_HOSTS,
   IMAGE_CLASSIFIER_API,
+  ITEMS_ROUTE_PREFIX,
+  LOGIN_ITEM_TAG_ID,
+  MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
+  PROTOCOL,
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
-  AUTH_CLIENT_HOST,
-  PROTOCOL,
-  APPS_PUBLISHER_ID,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
+  SAVE_ACTIONS,
+  THUMBNAILS_PATH_PREFIX,
+  THUMBNAILS_ROUTE_PREFIX,
+  WEBSOCKETS_PLUGIN,
 } from '../../util/config';
-import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
-// local
 import {
-  getOne,
-  getMany,
-  getChildren,
-  create,
-  updateOne,
-  updateMany,
-  deleteOne,
-  deleteMany,
-  moveOne,
-  moveMany,
-  copyOne,
   copyMany,
-  getShared,
-  getOwn,
+  copyOne,
+  create,
+  deleteMany,
+  deleteOne,
+  getChildren,
   getDescendants,
+  getMany,
+  getOne,
+  getOwn,
+  getShared,
+  moveMany,
+  moveOne,
+  updateMany,
+  updateOne,
 } from './fluent-schema';
-import { TaskManager } from './task-manager';
-import { ItemTaskManager } from './interfaces/item-task-manager';
-import { Ordered } from './interfaces/requests';
-import { registerItemWsHooks } from './ws/hooks';
-import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
-import { Item } from './interfaces/item';
 import { itemActionHandler } from './handler/item-action-handler';
+import { Ordered } from './interfaces/requests';
+import { TaskManager } from './task-manager';
+import { registerItemWsHooks } from './ws/hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
@@ -108,7 +111,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // because graaspApps extends the schemas
     await fastify.register(graaspApps, {
       jwtSecret: APPS_JWT_SECRET,
-      serviceMethod: SERVICE_METHOD,
+      fileItemType: FILE_ITEM_TYPE,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
       prefix: APP_ITEMS_PREFIX,
       publisherId: APPS_PUBLISHER_ID,
@@ -141,16 +144,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemZip, {
           pathPrefix: FILES_PATH_PREFIX,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
         });
 
         fastify.register(thumbnailsPlugin, {
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
@@ -189,8 +192,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fileItemPlugin, {
           shouldLimit: true,
           pathPrefix: FILES_PATH_PREFIX,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
@@ -234,8 +237,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspValidationPlugin, {
           // this api needs to be defined from .env
           classifierApi: IMAGE_CLASSIFIER_API,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
@@ -244,7 +247,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspPluginItemLikes);
 
         if (CHATBOX_PLUGIN) {
-          fastify.register(graaspChatbox);
+          fastify.register(graaspChatbox, { hosts: CLIENT_HOSTS });
         }
 
         if (WEBSOCKETS_PLUGIN) {

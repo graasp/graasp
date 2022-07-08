@@ -1,19 +1,19 @@
-// global
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemMembership,
+  ItemMembershipService,
+  Member,
+  TaskStatus,
+} from '@graasp/sdk';
+
+import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../../../util/config';
 import { TooManyMemberships } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../../services/members/interfaces/member';
-import { Item } from '../../items/interfaces/item';
-// local
-import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
-import { ItemMembership } from '../interfaces/item-membership';
 import {
   DeleteItemMembershipSubTask,
   DeleteItemMembershipTask,
 } from './delete-item-membership-task';
-import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../../../util/config';
-import { TaskStatus } from '../../..';
 
 type InputType = { item?: Item };
 

@@ -1,17 +1,18 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
+
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemService,
+  Member,
+  TaskStatus,
+  UnknownExtra,
+} from '@graasp/sdk';
+
+import { MAX_NUMBER_OF_CHILDREN, MAX_TREE_LEVELS } from '../../../util/config';
 import { HierarchyTooDeep, TooManyChildren } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { MAX_TREE_LEVELS, MAX_NUMBER_OF_CHILDREN } from '../../../util/config';
-import { UnknownExtra } from '../../../interfaces/extra';
-// other services
-import { Member } from '../../members/interfaces/member';
-// local
-import { ItemService } from '../db-service';
-import { BaseItemTask } from './base-item-task';
-import { Item } from '../interfaces/item';
 import { BaseItem } from '../base-item';
-import { TaskStatus } from '../../..';
+import { BaseItemTask } from './base-item-task';
 
 type InputType<E extends UnknownExtra> = { data?: Partial<Item<E>>; parentItem?: Item };
 

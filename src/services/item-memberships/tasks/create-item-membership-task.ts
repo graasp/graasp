@@ -1,17 +1,19 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
+
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemMembership,
+  ItemMembershipService,
+  Member,
+  PermissionLevelCompare,
+  TaskStatus,
+} from '@graasp/sdk';
+
 import { InvalidMembership, ModifyExisting } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../../services/members/interfaces/member';
-import { Item } from '../../items/interfaces/item';
-// local
-import { ItemMembershipService } from '../db-service';
-import { BaseItemMembershipTask } from './base-item-membership-task';
 import { BaseItemMembership } from '../base-item-membership';
-import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membership';
+import { BaseItemMembershipTask } from './base-item-membership-task';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
-import { TaskStatus } from '../../..';
 
 type MembershipSubTaskInput = { data?: Partial<ItemMembership>; item?: Item };
 

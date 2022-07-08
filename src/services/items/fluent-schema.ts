@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
+import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { MAX_TARGETS_FOR_MODIFY_REQUEST, MAX_TARGETS_FOR_READ_REQUEST } from '../../util/config';
-
-import { uuid, idParam, idsQuery, error } from '../../schemas/fluent-schema';
 import { ITEM_TYPES } from './constants/constants';
 
 /**

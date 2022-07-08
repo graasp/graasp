@@ -1,18 +1,23 @@
-import { v4 as uuidv4 } from 'uuid';
-import build from './app';
-import * as MEMBERS_FIXTURES from './fixtures/members';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+
+import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../src/util/config';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
   ItemNotFound,
   MemberCannotAccess,
-  MemberCannotReadItem,
-  MemberCannotWriteItem,
   MemberCannotAdminItem,
+  MemberCannotReadItem,
   ModifyExisting,
   TooManyMemberships,
 } from '../src/util/graasp-error';
+import build from './app';
+import { getDummyItem } from './fixtures/items';
+import * as MEMBERS_FIXTURES from './fixtures/members';
+import { buildMembership } from './fixtures/memberships';
 import {
   mockItemMemberhipServiceDelete,
   mockItemMemberhipServiceGet,
@@ -27,12 +32,6 @@ import {
   mockItemServiceGetMatchingPath,
   mockMemberServiceGet,
 } from './mocks';
-import { getDummyItem } from './fixtures/items';
-import { buildMembership } from './fixtures/memberships';
-import { PermissionLevel } from '../src';
-import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../src/util/config';
-import { HTTP_METHODS } from './fixtures/utils';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 // mock auth, decorator and database plugins
 jest.mock('../src/plugins/database');
@@ -53,7 +52,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/item-memberships?itemId=${item.id}`,
       });
 
@@ -72,7 +71,7 @@ describe('Membership routes tests', () => {
       mockItemMemberhipServiceGetInheritedForAll(memberships);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/item-memberships?itemId=${item1.id}&itemId=${item2.id}`,
       });
       const m = response.json();
@@ -85,7 +84,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/item-memberships?itemId=invalid-id',
       });
 
@@ -97,7 +96,7 @@ describe('Membership routes tests', () => {
       const app = await build();
       const itemId = getDummyItem().id;
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/item-memberships?itemId=${itemId}`,
       });
       expect(response.json()).toEqual([new ItemNotFound(itemId)]);
@@ -110,7 +109,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/item-memberships?itemId=${item.id}`,
       });
 
@@ -138,7 +137,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships?itemId=${item.id}`,
         payload: newMembership,
       });
@@ -184,7 +183,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships?itemId=${item.id}`,
         payload: newMembership,
       });
@@ -213,7 +212,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships?itemId=${item.id}`,
         payload: newMembership,
       });
@@ -253,7 +252,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships?itemId=${item.id}`,
         payload: newMembership,
       });
@@ -279,7 +278,7 @@ describe('Membership routes tests', () => {
       const app = await build();
       const id = 'invalid-id';
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships?itemId=${id}`,
         payload: newMembership,
       });
@@ -292,7 +291,7 @@ describe('Membership routes tests', () => {
       const item = getDummyItem();
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships?itemId=${item.id}`,
         payload: {
           path: item.path,
@@ -436,7 +435,7 @@ describe('Membership routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/item-memberships/${memberships[1].id}`,
         payload: newMembership,
       });
@@ -482,7 +481,7 @@ describe('Membership routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/item-memberships/${memberships[1].id}`,
         payload: newMembership,
       });
@@ -517,7 +516,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/item-memberships/${memberships[1].id}`,
         payload: newMembership,
       });
@@ -578,7 +577,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/item-memberships/${memberships[1].id}`,
         payload: newMembership,
       });
@@ -596,7 +595,7 @@ describe('Membership routes tests', () => {
       });
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/item-memberships/${newMembership.id}`,
         payload: { permission: 'permission' },
       });
@@ -616,7 +615,7 @@ describe('Membership routes tests', () => {
       const app = await build();
       const id = 'invalid-id';
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/item-memberships/${id}`,
         payload: newMembership,
       });
@@ -658,7 +657,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/item-memberships/${memberMembership.id}`,
         payload: newMembership,
       });
@@ -691,7 +690,7 @@ describe('Membership routes tests', () => {
       mockItemMemberhipServiceDelete(memberships);
 
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships/${memberMembership.id}`,
       });
 
@@ -725,7 +724,7 @@ describe('Membership routes tests', () => {
       const mockDelete = mockItemMemberhipServiceDelete(memberships);
 
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships/${memberMembership.id}?purgeBelow=true`,
       });
 
@@ -737,7 +736,7 @@ describe('Membership routes tests', () => {
       const app = await build();
       const id = 'invalid-id';
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships/${id}`,
       });
 
@@ -756,7 +755,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships/${memberMembership.id}`,
       });
 
@@ -784,7 +783,7 @@ describe('Membership routes tests', () => {
       mockItemMembershipServiceGetAllInSubtree(memberships);
 
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships/${memberMembership.id}`,
       });
 
@@ -812,7 +811,7 @@ describe('Membership routes tests', () => {
       mockItemMembershipServiceGetAllInSubtree(memberships);
 
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships/${memberMembership.id}`,
       });
 
@@ -847,7 +846,7 @@ describe('Membership routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships?itemId=${item.id}`,
       });
 
@@ -863,7 +862,7 @@ describe('Membership routes tests', () => {
       const id = 'invalid-id';
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships?itemId=${id}`,
       });
 
@@ -876,7 +875,7 @@ describe('Membership routes tests', () => {
       const id = getDummyItem().id;
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships?itemId=${id}`,
       });
 
@@ -890,7 +889,7 @@ describe('Membership routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships?itemId=${item.id}`,
       });
 
@@ -905,7 +904,7 @@ describe('Membership routes tests', () => {
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships?itemId=${item.id}`,
       });
 
@@ -920,7 +919,7 @@ describe('Membership routes tests', () => {
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships?itemId=${item.id}`,
       });
 
@@ -938,7 +937,7 @@ describe('Membership routes tests', () => {
       mockItemMembershipServiceGetAllInSubtree(memberships);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/item-memberships?itemId=${item.id}`,
       });
 

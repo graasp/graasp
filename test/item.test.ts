@@ -1,10 +1,18 @@
-import { v4 as uuidv4 } from 'uuid';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
-import build from './app';
-import { getDummyItem, LOTS_OF_ITEMS } from './fixtures/items';
-import { PermissionLevel } from '../src/services/item-memberships/interfaces/item-membership';
-import * as MEMBERS_FIXTURES from './fixtures/members';
-import { buildPathFromIds } from '@graasp/utils';
+import { v4 as uuidv4 } from 'uuid';
+
+import { HttpMethod, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
+
+import * as baseItemMembershipModule from '../src/services/item-memberships/base-item-membership';
+import { ITEM_TYPES } from '../src/services/items/constants/constants';
+import {
+  MAX_DESCENDANTS_FOR_COPY,
+  MAX_DESCENDANTS_FOR_DELETE,
+  MAX_DESCENDANTS_FOR_MOVE,
+  MAX_NUMBER_OF_CHILDREN,
+  MAX_TREE_LEVELS,
+} from '../src/util/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -14,12 +22,15 @@ import {
   TooManyChildren,
   TooManyDescendants,
 } from '../src/util/graasp-error';
-
-import * as baseItemMembershipModule from '../src/services/item-memberships/base-item-membership';
-import { mockedBaseItemMembership } from './mocks/base-item-membership';
+import build from './app';
+import { MULTIPLE_ITEMS_LOADING_TIME } from './constants';
+import { LOTS_OF_ITEMS, getDummyItem } from './fixtures/items';
+import * as MEMBERS_FIXTURES from './fixtures/members';
+import { buildMembership } from './fixtures/memberships';
 import {
-  mockItemMembershipServiceGetForMemberAtItem,
+  mockActionServiceCreate,
   mockItemMembershipServiceCreate,
+  mockItemMembershipServiceGetForMemberAtItem,
   mockItemServiceCreate,
   mockItemServiceDelete,
   mockItemServiceGet,
@@ -31,20 +42,8 @@ import {
   mockItemServiceGetSharedWith,
   mockItemServiceMove,
   mockItemServiceUpdate,
-  mockActionServiceCreate,
 } from './mocks';
-import {
-  MAX_DESCENDANTS_FOR_COPY,
-  MAX_DESCENDANTS_FOR_DELETE,
-  MAX_DESCENDANTS_FOR_MOVE,
-  MAX_NUMBER_OF_CHILDREN,
-  MAX_TREE_LEVELS,
-} from '../src/util/config';
-import { buildMembership } from './fixtures/memberships';
-import { HTTP_METHODS } from './fixtures/utils';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { MULTIPLE_ITEMS_LOADING_TIME } from './constants';
-import { ITEM_TYPES } from '../src/services/items/constants/constants';
+import { mockedBaseItemMembership } from './mocks/base-item-membership';
 
 // mock base item membership to detect calls
 const baseItemMembershipMock = jest.spyOn(baseItemMembershipModule, 'BaseItemMembership');
@@ -313,7 +312,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}`,
       });
 
@@ -325,7 +324,7 @@ describe('Item routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/items/invalid-id',
       });
 
@@ -337,7 +336,7 @@ describe('Item routes tests', () => {
       const app = await build();
       const id = uuidv4();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${id}`,
       });
 
@@ -350,7 +349,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet([item]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}`,
       });
 
@@ -377,7 +376,7 @@ describe('Item routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -392,7 +391,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -405,7 +404,7 @@ describe('Item routes tests', () => {
       const items = [getDummyItem(), { id: 'invalid-id' }];
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -429,7 +428,7 @@ describe('Item routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items?${qs.stringify(
           { id: [items.map(({ id }) => id), missingId] },
           { arrayFormat: 'repeat' },
@@ -448,7 +447,7 @@ describe('Item routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/items/own',
       });
 
@@ -467,7 +466,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetSharedWith(items);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/items/shared-with',
       });
 
@@ -520,7 +519,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetDescendants(async () => children);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/children`,
       });
 
@@ -536,7 +535,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetDescendants(async () => []);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/children`,
       });
 
@@ -562,7 +561,7 @@ describe('Item routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/children?ordered=true`,
       });
 
@@ -580,7 +579,7 @@ describe('Item routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/children?ordered=true`,
       });
 
@@ -591,7 +590,7 @@ describe('Item routes tests', () => {
     it('Bad Request for invalid id', async () => {
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/items/invalid-id/children',
       });
 
@@ -603,7 +602,7 @@ describe('Item routes tests', () => {
       const app = await build();
       const id = uuidv4();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${id}/children`,
       });
 
@@ -616,7 +615,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet([item]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/children`,
       });
 
@@ -711,7 +710,7 @@ describe('Item routes tests', () => {
       mockItemServiceUpdate([item]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items/${item.id}`,
         payload,
       });
@@ -727,7 +726,7 @@ describe('Item routes tests', () => {
         name: 'new name',
       };
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: '/items/invalid-id',
         payload,
       });
@@ -744,7 +743,7 @@ describe('Item routes tests', () => {
       };
       const id = getDummyItem().id;
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items/${id}`,
         payload,
       });
@@ -760,7 +759,7 @@ describe('Item routes tests', () => {
       const id = uuidv4();
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items/${id}`,
         payload,
       });
@@ -777,7 +776,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet([item]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items/${item.id}`,
         payload,
       });
@@ -796,7 +795,7 @@ describe('Item routes tests', () => {
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items/${item.id}`,
         payload,
       });
@@ -823,7 +822,7 @@ describe('Item routes tests', () => {
       mockItemServiceUpdate(items);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
         payload,
       });
@@ -848,7 +847,7 @@ describe('Item routes tests', () => {
         name: 'new name',
       };
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items?${qs.stringify(
           { id: [...items.map(({ id }) => id), missingItemId] },
           { arrayFormat: 'repeat' },
@@ -879,7 +878,7 @@ describe('Item routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         payload,
       });
@@ -894,7 +893,7 @@ describe('Item routes tests', () => {
         name: 'new name',
       };
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items?${qs.stringify(
           { id: [getDummyItem().id, 'invalid-id'] },
           { arrayFormat: 'repeat' },
@@ -914,7 +913,7 @@ describe('Item routes tests', () => {
         extra: { some: 'content' },
       };
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
         payload,
       });
@@ -934,7 +933,7 @@ describe('Item routes tests', () => {
       mockItemServiceDelete([item]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/items/${item.id}`,
       });
 
@@ -953,7 +952,7 @@ describe('Item routes tests', () => {
       const mockDelete = mockItemServiceDelete([item, ...children]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/items/${item.id}`,
       });
 
@@ -973,7 +972,7 @@ describe('Item routes tests', () => {
       mockItemServiceDelete([item, ...children]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/items/${item.id}`,
       });
 
@@ -995,7 +994,7 @@ describe('Item routes tests', () => {
       mockItemServiceDelete(items);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -1014,7 +1013,7 @@ describe('Item routes tests', () => {
       mockItemServiceDelete(items);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -1026,7 +1025,7 @@ describe('Item routes tests', () => {
       const app = await build();
       const items = [getDummyItem(), getDummyItem(), { id: 'invalid-id' }];
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/items?${qs.stringify({ id: items.map(({ id }) => id) }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -1046,7 +1045,7 @@ describe('Item routes tests', () => {
       mockItemServiceDelete(items);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/items?${qs.stringify(
           { id: [...items.map(({ id }) => id), id] },
           { arrayFormat: 'repeat' },

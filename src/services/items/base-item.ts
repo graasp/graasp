@@ -1,9 +1,8 @@
-// global
 import { v4 as uuidv4 } from 'uuid';
-import { UnknownExtra } from '../../interfaces/extra';
+
+import { Item, ItemSettings, UnknownExtra } from '@graasp/sdk';
+
 import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
-// local
-import { Item, ItemSettings } from './interfaces/item';
 
 export const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
 const underscoreToDash = (value: string) => value.replace(/_/g, '-');

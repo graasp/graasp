@@ -1,17 +1,11 @@
-// global
-import { Actor } from '../../interfaces/actor';
-import { UnknownExtra } from '../../interfaces/extra';
-import { Task } from '../../interfaces/task';
-// local
-import { Member } from './interfaces/member';
-import { MemberService } from './db-service';
-import { GetMemberTask } from './tasks/get-member-task';
+import { Actor, Member, MemberService, MemberTaskManager, Task, UnknownExtra } from '@graasp/sdk';
+
 import { CreateMemberTask } from './tasks/create-member-task';
-import { GetMembersByTask } from './tasks/get-members-by-task';
-import { MemberTaskManager } from './interfaces/member-task-manager';
-import { UpdateMemberTask } from './tasks/update-member-task';
-import { GetManyMembersTask } from './tasks/get-many-members-task';
 import { DeleteMemberTask } from './tasks/delete-member-task';
+import { GetManyMembersTask } from './tasks/get-many-members-task';
+import { GetMemberTask } from './tasks/get-member-task';
+import { GetMembersByTask } from './tasks/get-members-by-task';
+import { UpdateMemberTask } from './tasks/update-member-task';
 
 export class TaskManager implements MemberTaskManager {
   private memberService: MemberService;

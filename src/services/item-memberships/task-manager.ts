@@ -1,33 +1,35 @@
-// global
-// other services
-import { Member } from '../../services/members/interfaces/member';
-import { ItemService } from '../../services/items/db-service';
-import { MemberService } from '../members/db-service';
+import {
+  Actor,
+  Item,
+  ItemMembership,
+  ItemMembershipService,
+  ItemMembershipTaskManager,
+  ItemService,
+  Member,
+  MemberService,
+  PermissionLevel,
+  Task,
+  UnknownExtra,
+} from '@graasp/sdk';
+
 import { GetItemTask } from '../items/tasks/get-item-task';
-// local
-import { ItemMembershipService } from './db-service';
-import { ItemMembership, PermissionLevel } from './interfaces/item-membership';
+import { GetItemWithPathTask } from '../items/tasks/get-item-with-path-task';
+import { GetMemberTask } from '../members/tasks/get-member-task';
 import {
   CreateItemMembershipSubTask,
   CreateItemMembershipTask,
   CreateItemMembershipTaskInputType,
 } from './tasks/create-item-membership-task';
-import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
-import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
-import { GetOneItemItemMembershipsTask } from './tasks/get-one-item-item-membership-task';
-import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 import { DeleteItemItemMembershipsTask } from './tasks/delete-item-item-memberships-task';
-import { Task } from '../../interfaces/task';
+import { DeleteItemMembershipTask } from './tasks/delete-item-membership-task';
 import { GetItemMembershipTask } from './tasks/get-item-membership-task';
+import { GetManyItemsItemMembershipsTask } from './tasks/get-many-items-item-membership-task';
 import {
   GetMemberItemMembershipOverItemTask,
   GetMemberItemMembershipOverItemTaskInputType,
 } from './tasks/get-member-item-membership-over-item-task';
-import { GetItemWithPathTask } from '../items/tasks/get-item-with-path-task';
-import { GetMemberTask } from '../members/tasks/get-member-task';
-import { Actor } from '../../interfaces/actor';
-import { Item, UnknownExtra } from '../..';
-import { GetManyItemsItemMembershipsTask } from './tasks/get-many-items-item-membership-task';
+import { GetOneItemItemMembershipsTask } from './tasks/get-one-item-item-membership-task';
+import { UpdateItemMembershipTask } from './tasks/update-item-membership-task';
 
 export class TaskManager implements ItemMembershipTaskManager<Member | Actor> {
   private itemService: ItemService;

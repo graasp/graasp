@@ -1,18 +1,21 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { GraaspError, UnexpectedError } from '../util/graasp-error';
-import { Database, DatabasePoolHandler, DatabaseTransactionHandler } from '../plugins/database';
 
-import { TaskRunner } from '../interfaces/task-runner';
 import {
-  Task,
-  PreHookHandlerType,
-  PostHookHandlerType,
-  TaskHookHandlerHelpers,
+  Actor,
+  Database,
+  DatabasePoolHandler,
+  DatabaseTransactionHandler,
+  GraaspError,
   IndividualResultType,
+  PostHookHandlerType,
+  PreHookHandlerType,
+  Task,
+  TaskHookHandlerHelpers,
+  TaskRunner,
   TaskStatus,
-} from '../interfaces/task';
-import { Actor } from '../interfaces/actor';
+} from '@graasp/sdk';
+
+import { UnexpectedError } from '../util/graasp-error';
 
 export class GlobalTaskRunner implements TaskRunner<Actor> {
   private databasePool: DatabasePoolHandler;

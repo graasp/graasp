@@ -1,31 +1,13 @@
-// global
-import { ObjectSchema } from 'fluent-json-schema';
-import { sql, DatabaseTransactionConnection as TrxHandler, ValueExpression } from 'slonik';
-import { UnknownExtra } from '../../interfaces/extra';
-// other services
-import { PermissionLevel } from '../../services/item-memberships/interfaces/item-membership';
-import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
-// local
-import { Item } from './interfaces/item';
-import { ItemTaskManager } from './interfaces/item-task-manager';
+import { DatabaseTransactionConnection as TrxHandler, ValueExpression, sql } from 'slonik';
 
-// TODO: this module declaration should be placed somewhere else,
-// specially because of 'extendCreateSchema' - that seems very out of place in this file.
-declare module 'fastify' {
-  interface FastifyInstance {
-    items: {
-      taskManager: ItemTaskManager;
-      dbService: ItemService;
-      extendCreateSchema: (itemTypeSchema?: ObjectSchema) => void;
-      extendExtrasUpdateSchema: (itemTypeSchema?: ObjectSchema) => void;
-    };
-  }
-}
+import { ItemService as DbService, Item, PermissionLevel, UnknownExtra } from '@graasp/sdk';
+
+import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
 
 /**
  * Database's first layer of abstraction for Items
  */
-export class ItemService {
+export class ItemService implements DbService {
   // the 'safe' way to dynamically generate the columns names:
   private static allColumns = sql.join(
     [

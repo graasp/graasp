@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Member, MemberType, UnknownExtra } from '../../src';
+
+import { Member, MemberType, UnknownExtra } from '@graasp/sdk';
 
 export const buildMember = (options: {
   id?: string;
@@ -7,16 +8,19 @@ export const buildMember = (options: {
   email?: string;
   extra?: UnknownExtra;
   password?: string;
-}): Member => ({
-  id: options.id ?? uuidv4(),
-  name: options.name ?? uuidv4(),
-  email: options.email ?? `${options.name}@email.com`,
-  createdAt: '2021-03-29T08:46:52.939Z',
-  updatedAt: '2021-03-29T08:46:52.939Z',
-  extra: options.extra ?? {},
-  type: MemberType.Individual,
-  password: options.password,
-});
+}): Member => {
+  const id = uuidv4();
+  return {
+    id,
+    name: options.name ?? id,
+    email: options.email ?? `${options.name}@email.com`,
+    createdAt: '2021-03-29T08:46:52.939Z',
+    updatedAt: '2021-03-29T08:46:52.939Z',
+    extra: options.extra ?? {},
+    type: MemberType.Individual,
+    password: options.password,
+  };
+};
 
 export const ACTOR = buildMember({
   name: 'actor',

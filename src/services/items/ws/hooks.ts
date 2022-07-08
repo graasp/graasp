@@ -1,25 +1,23 @@
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  Item,
+  ItemMembershipService,
+  ItemService,
+  ItemTaskManager,
+  TaskRunner,
+  getParentFromPath,
+} from '@graasp/sdk';
 import { AccessDenied, NotFound, WebSocketService } from 'graasp-websockets';
-import { Actor } from '../../../interfaces/actor';
-import { TaskRunner } from '../../../interfaces/task-runner';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { ItemMembershipService } from '../../item-memberships/db-service';
-import { ItemService } from '../db-service';
-import { Item } from '../interfaces/item';
-import { ItemTaskManager } from '../interfaces/item-task-manager';
+
 import {
   ChildItemEvent,
-  itemTopic,
-  memberItemsTopic,
   OwnItemsEvent,
   SelfItemEvent,
   SharedItemsEvent,
+  itemTopic,
+  memberItemsTopic,
 } from './events';
-
-// helper function to find parent of item given path
-export function getParentId(itemPath: string): string | undefined {
-  const tokens = itemPath.split('.');
-  return tokens.length >= 2 ? tokens[tokens.length - 2].replace(/_/g, '-') : undefined;
-}
 
 /**
  * helper to register item topic
@@ -49,7 +47,7 @@ function registerItemTopic(
   // on create item, notify parent of new child
   const createItemTaskName = itemTaskManager.getCreateTaskName();
   runner.setTaskPostHookHandler<Item>(createItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
     }
@@ -63,7 +61,7 @@ function registerItemTopic(
     websockets.publish(itemTopic, item.id, SelfItemEvent('update', item));
   });
   runner.setTaskPostHookHandler<Item>(updateItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('update', item));
     }
@@ -77,7 +75,7 @@ function registerItemTopic(
     websockets.publish(itemTopic, item.id, SelfItemEvent('delete', item));
   });
   runner.setTaskPostHookHandler<Item>(deleteItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('delete', item));
     }
@@ -86,7 +84,7 @@ function registerItemTopic(
   // on copy item, notify destination parent of new child
   const copyItemTaskName = itemTaskManager.getCopyTaskName();
   runner.setTaskPostHookHandler<Item>(copyItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
     }
@@ -104,13 +102,13 @@ function registerItemTopic(
     if (!item) {
       return;
     }
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('delete', item));
     }
   });
   runner.setTaskPostHookHandler<Item>(moveItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
     }
@@ -137,7 +135,7 @@ function registerMemberItemsTopic(
   // on create, notify own items of creator with new item IF path is root
   const createItemTaskName = itemTaskManager.getCreateTaskName();
   runner.setTaskPostHookHandler<Item>(createItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId === undefined) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('create', item));
@@ -149,7 +147,7 @@ function registerMemberItemsTopic(
   // - notify members that have memberships on this item of update
   const updateItemTaskName = itemTaskManager.getUpdateTaskName();
   runner.setTaskPostHookHandler<Item>(updateItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId === undefined) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('update', item));
@@ -171,7 +169,7 @@ function registerMemberItemsTopic(
   //   (before with prehook, otherwise memberships lost on cascade from db!)
   const deleteItemTaskName = itemTaskManager.getDeleteTaskName();
   runner.setTaskPostHookHandler<Item>(deleteItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId === undefined) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('delete', item));
@@ -200,7 +198,7 @@ function registerMemberItemsTopic(
   // on copy, notify own items of creator with new item IF destination is root
   const copyItemTaskName = itemTaskManager.getCopyTaskName();
   runner.setTaskPostHookHandler<Item>(copyItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId === undefined) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('create', item));
@@ -219,14 +217,14 @@ function registerMemberItemsTopic(
     if (!item) {
       return;
     }
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId === undefined) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('delete', item));
     }
   });
   runner.setTaskPostHookHandler<Item>(moveItemTaskName, async (item) => {
-    const parentId = getParentId(item.path);
+    const parentId = getParentFromPath(item.path);
     if (parentId === undefined) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator, OwnItemsEvent('create', item));

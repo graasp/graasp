@@ -1,37 +1,7 @@
-import { FastifyError } from 'fastify';
-import { FAILURE_MESSAGES } from '@graasp/translations';
 import { StatusCodes } from 'http-status-codes';
 
-type ErrorOrigin = 'core' | 'plugin' | 'unknown' | string;
-
-export interface GraaspError extends FastifyError {
-  data?: unknown;
-  origin: ErrorOrigin;
-}
-
-export interface GraaspErrorDetails {
-  code: string;
-  message: string;
-  statusCode: number;
-}
-
-export abstract class BaseGraaspError implements GraaspError {
-  name: string;
-  code: string;
-  statusCode?: number;
-  message: string;
-  data?: unknown;
-  origin: ErrorOrigin;
-
-  constructor({ code, statusCode, message }: GraaspErrorDetails, data?: unknown) {
-    this.name = code;
-    this.code = code;
-    this.message = message;
-    this.statusCode = statusCode;
-    this.origin = 'core';
-    this.data = data;
-  }
-}
+import { BaseGraaspError } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
 export class ItemNotFound extends BaseGraaspError {
   constructor(data?: unknown) {

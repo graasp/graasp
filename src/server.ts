@@ -1,10 +1,11 @@
-import fastify from 'fastify';
-import fastifyHelmet from '@fastify/helmet';
 import * as Sentry from '@sentry/node';
+
+import fastifyHelmet from '@fastify/helmet';
+import fastify from 'fastify';
 
 import registerAppPlugins from './app';
 // import fastifyCompress from 'fastify-compress';
-import { PORT, ENVIRONMENT, HOSTNAME, CORS_ORIGIN_REGEX, DISABLE_LOGS } from './util/config';
+import { CORS_ORIGIN_REGEX, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
 
 // Sentry
 Sentry.init({

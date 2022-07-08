@@ -1,20 +1,19 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { InvalidPermissionLevel } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../../services/members/interfaces/member';
-import { Item } from '../../items/interfaces/item';
-// local
-import { ItemMembershipService } from '../db-service';
-import { BaseItemMembershipTask } from './base-item-membership-task';
+
 import {
+  DatabaseTransactionHandler,
+  Item,
   ItemMembership,
-  PermissionLevelCompare,
+  ItemMembershipService,
+  Member,
   PermissionLevel,
-} from '../interfaces/item-membership';
+  PermissionLevelCompare,
+  TaskStatus,
+} from '@graasp/sdk';
+
+import { InvalidPermissionLevel } from '../../../util/graasp-error';
+import { BaseItemMembershipTask } from './base-item-membership-task';
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
-import { TaskStatus } from '../../..';
 
 class UpdateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name() {

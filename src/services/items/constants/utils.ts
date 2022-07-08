@@ -1,4 +1,4 @@
-import { Item } from '../interfaces/item';
+import { Item } from '@graasp/sdk';
 
 export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: Item) => {
   if (idsOrder.indexOf(stElem.id) >= 0 && idsOrder.indexOf(ndElem.id) >= 0) {

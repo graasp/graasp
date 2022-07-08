@@ -1,7 +1,8 @@
+import { ItemService } from '@graasp/sdk';
 import { ActionHandlerInput, BaseAction, getBaseAction } from 'graasp-plugin-actions';
+
 import { CLIENT_HOSTS } from '../../../util/config';
 import { ACTION_TYPES, METHODS, paths } from '../constants/constants';
-import { ItemService } from '../db-service';
 
 export const itemActionHandler = async (
   dbService: ItemService,

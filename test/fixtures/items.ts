@@ -1,10 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UnknownExtra } from '../../src/interfaces/extra';
-import { Item } from '../../src/services/items/interfaces/item';
-import { buildPathFromIds } from '@graasp/utils';
-import { ACTOR } from './members';
-import { ItemSettings } from '../../src/services/items/interfaces/item';
+
+import { Item, ItemSettings, UnknownExtra, buildPathFromIds } from '@graasp/sdk';
+
 import { ITEM_TYPES } from '../../src/services/items/constants/constants';
+import { ACTOR } from './members';
 
 const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 

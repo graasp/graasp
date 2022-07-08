@@ -1,23 +1,11 @@
-// global
-import { sql, DatabaseTransactionConnection as TrxHandler } from 'slonik';
-import { UnknownExtra } from '../../interfaces/extra';
-// local
-import { Member } from './interfaces/member';
-import { MemberTaskManager } from './interfaces/member-task-manager';
+import { DatabaseTransactionConnection as TrxHandler, sql } from 'slonik';
 
-declare module 'fastify' {
-  interface FastifyInstance {
-    members: {
-      taskManager: MemberTaskManager;
-      dbService: MemberService;
-    };
-  }
-}
+import { MemberService as DbService, Member, UnknownExtra } from '@graasp/sdk';
 
 /**
  * Database's first layer of abstraction for Members
  */
-export class MemberService {
+export class MemberService implements DbService {
   // the 'safe' way to dynamically generate the columns names:
   private static allColumns = sql.join(
     [
