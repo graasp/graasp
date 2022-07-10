@@ -1,3 +1,7 @@
+export default {
+  $id: 'http://graasp.org/members/',
+};
+
 const register = {
   body: {
     type: 'object',
@@ -63,6 +67,30 @@ const passwordLogin = {
       password: { type: 'string' },
     },
     additionalProperties: false,
+  },
+};
+
+const updatePassword = {
+  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  body: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
+      password: { type: 'string' },
+      currentPassword: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
   },
 };
 
@@ -137,6 +165,7 @@ export {
   mregister,
   login,
   passwordLogin,
+  updatePassword,
   mlogin,
   mPasswordLogin,
   auth,
