@@ -37,24 +37,19 @@ export const STAGING = ENVIRONMENT === Environment.staging;
 export const DEV = ENVIRONMENT === Environment.development;
 export const TEST = ENVIRONMENT === Environment.test;
 
+// todo: get from graasp constants
 export const CLIENT_HOSTS = [
   {
     name: Context.BUILDER,
-    hostname: process.env.BUILDER_CLIENT_HOST
-      ? new URL(process.env.BUILDER_CLIENT_HOST).hostname
-      : '',
+    hostname: new URL(process.env.BUILDER_CLIENT_HOST).hostname,
   },
   {
     name: Context.PLAYER,
-    hostname: process.env.PLAYER_CLIENT_HOST
-      ? new URL(process.env.PLAYER_CLIENT_HOST).hostname
-      : '',
+    hostname: new URL(process.env.PLAYER_CLIENT_HOST).hostname,
   },
   {
     name: Context.EXPLORER,
-    hostname: process.env.EXPLORER_CLIENT_HOST
-      ? new URL(process.env.EXPLORER_CLIENT_HOST).hostname
-      : '',
+    hostname: new URL(process.env.EXPLORER_CLIENT_HOST).hostname,
   },
 ];
 
