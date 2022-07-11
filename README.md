@@ -30,7 +30,7 @@ Graasp offers two ways to install the Graasp backend :
     - Docker : this allows you to run a preconfigured environnement (Recommended)
     - Local : you'll need to install and configure all the required services
 
-### Docker installation (Recommended) 
+### Docker installation (Recommended)
 
 We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
 
@@ -38,13 +38,13 @@ First open the folder in the dev-container by using the command palette <kbd>cmd
 
 This will create 3 containers :
 - `app` : Node.js backend of Graasp
-- `db` : PostgreSQL database used by the backend 
+- `db` : PostgreSQL database used by the backend
 - `redis` : Redis instance to enable websockets
 - `localstack` : Localstack instance use to locally test S3 storage
 
 To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 graasp-localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://graasp-localstack` hostname.
 
-Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`). 
+Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
 
 If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.
 
@@ -183,6 +183,14 @@ SAVE_ACTIONS=true
 # validation containers
 IMAGE_CLASSIFIER_API=<url>
 ````
+
+> ⚠️ ** Warning ** ⚠️: By default, the Redis database will use a password. This password must be defined inside `.devcontainer/.env`. It must be the same as in the `.env.development` file because this is where the code will fetch the password. At the moment no easy way was found to de-duplicate this env variable.
+
+```
+REDIS_PASSWORD=<your password here>
+```
+
+If you wish to disable password auth for the Redis database, you should comment out the `command: redis-server --requirepass $REDIS_PASSWORD` line in `.devcontainer/docker-compose.yml`.
 
 ## Running
 
