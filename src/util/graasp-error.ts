@@ -323,7 +323,21 @@ export class InvalidPassword extends BaseGraaspError {
       {
         code: 'GERR025',
         statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'Current password is invalid. Please try again.',
+        message: FAILURE_MESSAGES.INVALID_PASSWORD,
+      },
+      data,
+    );
+  }
+}
+
+export class EmptyCurrentPassword extends BaseGraaspError {
+  constructor(data?: unknown) {
+    // this status code is custom for the browser to know it needs to refresh its token
+    super(
+      {
+        code: 'GERR026',
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: FAILURE_MESSAGES.EMPTY_CURRENT_PASSWORD,
       },
       data,
     );

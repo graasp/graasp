@@ -11,7 +11,6 @@ import fastifySecureSession from '@fastify/secure-session';
 import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from 'fastify-cors';
 import bcrypt from 'bcrypt';
-import { IdParam } from '../../interfaces/requests';
 
 import {
   SECURE_SESSION_SECRET_KEY,
@@ -51,6 +50,7 @@ import {
 import { AuthPluginOptions } from './interfaces/auth';
 import { Member } from '../..';
 import {
+  EmptyCurrentPassword,
   IncorrectPassword,
   InvalidPassword,
   InvalidSession,
@@ -61,6 +61,7 @@ import {
   OrphanSession,
   TokenExpired,
 } from '../../util/graasp-error';
+import { SALT_ROUNDS } from './constants';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -74,6 +75,51 @@ const promisifiedJwtSign = promisify<
   SignOptions,
   string
 >(jwt.sign);
+
+async function verifyCredentials(member: Member, body: { email: string; password: string }) {
+  /* the verified variable is used to store the output of bcrypt.compare() 
+  bcrypt.compare() allows to compare the provided password with a stored hash. 
+  It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
+  if they match, verified is true 
+  if they do not match, verified is false
+  */
+  const verified = bcrypt
+    .compare(body.password, member.password)
+    .then((res) => res)
+    .catch((err) => console.error(err.message));
+  return verified;
+}
+
+async function verifyCurrentPassword(member: Member, password: string) {
+  /* verified: stores the output of bcrypt.compare().
+  bcrypt.compare() allows to compare the provided password with a stored hash. 
+  It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
+  if they match, verified is true 
+  if they do not match, verified is false
+  */
+  // if the member already has a password set: return verified
+  if (member.password) {
+    const verified = bcrypt
+      .compare(password, member.password)
+      .then((res) => res)
+      .catch((err) => console.error(err.message));
+    return verified;
+  }
+  // if the member does not have a password set: return true
+  return true;
+}
+
+async function encryptPassword(password: string) {
+  /* encrypted: stores the output of bcrypt.hash().
+  bcrypt.hash() creates the salt and hashes the password. 
+  A new hash is created each time the function is run, regardless of the password being the same. 
+  */
+  const encrypted = bcrypt
+    .hash(password, SALT_ROUNDS)
+    .then((hash) => hash)
+    .catch((err) => console.error(err.message));
+  return encrypted;
+}
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   const { sessionCookieDomain: domain } = options;
@@ -228,20 +274,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  async function verifyCredentials(member: Member, body: { email: string; password: string }) {
-    /* the verified variable is used to store the output of bcrypt.compare() 
-    bcrypt.compare() allows to compare the provided password with a stored hash. 
-    It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
-    if they match, verified is true 
-    if they do not match, verified is false
-    */
-    const verified = bcrypt
-      .compare(body.password, member.password)
-      .then((res) => res)
-      .catch((err) => console.error(err.message));
-    return verified;
-  }
-
   // cookie based auth and api endpoints
   await fastify.register(async function (fastify) {
     // add CORS support
@@ -332,58 +364,27 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       },
     );
 
-    async function verifyCurrentPassword(member: Member, password: string) {
-      /* verified: stores the output of bcrypt.compare().
-      bcrypt.compare() allows to compare the provided password with a stored hash. 
-      It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
-      if they match, verified is true 
-      if they do not match, verified is false
-      */
-      // if the member already has a password set: return verified
-      if (member.password) {
-        const verified = bcrypt
-          .compare(password, member.password)
-          .then((res) => res)
-          .catch((err) => console.error(err.message));
-        return verified;
-      }
-      // if the member does not have a password set: return true
-      return true;
-    }
-
-    async function encryptPassword(password: string) {
-      /* encrypted: stores the output of bcrypt.hash().
-      bcrypt.hash() creates the salt and hashes the password. 
-      A new hash is created each time the function is run, regardless of the password being the same. 
-      */
-      const saltRounds = 10;
-      const encrypted = bcrypt
-        .hash(password, saltRounds)
-        .then((hash) => hash)
-        .catch((err) => console.error(err.message));
-      return encrypted;
-    }
-
     // update member password
-    fastify.patch<{ Params: IdParam }>(
-      '/members/:id/update-password',
-      { schema: updatePassword },
-      async ({ params: { id }, body, log }) => {
-        const member = await mS.get(id, db.pool);
+    fastify.patch(
+      '/members/update-password',
+      { schema: updatePassword, preHandler: fastify.verifyAuthentication },
+      async ({ member, body, log }) => {
         // verify that input current password is the same as the stored one
         const verified = await verifyCurrentPassword(member, body['currentPassword']);
-        if (verified) {
-          delete body['currentPassword'];
-          // auto-generate a salt and a hash
-          const hash = await encryptPassword(body['password']);
-          const tasks = memberTaskManager.createUpdateTaskSequence(member, id, {
-            password: hash,
-          });
-          return runner.runSingleSequence(tasks, log);
-        } else {
-          // throw error if password verification fails
+        // throw error if password verification fails
+        if (!verified) {
+          if (body['currentPassword'] === '') {
+            throw new EmptyCurrentPassword();
+          }
           throw new InvalidPassword();
         }
+        // auto-generate a salt and a hash
+        const hash = await encryptPassword(body['password']);
+        const tasks = memberTaskManager.createUpdateTaskSequence(member, member.id, {
+          password: hash,
+        });
+        return runner.runSingleSequence(tasks, log);
+        // }
       },
     );
 

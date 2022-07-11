@@ -71,11 +71,9 @@ const passwordLogin = {
 };
 
 const updatePassword = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   body: {
     type: 'object',
     properties: {
-      name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
       password: { type: 'string' },
       currentPassword: { type: 'string' },
     },

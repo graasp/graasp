@@ -19,8 +19,6 @@ export default {
       properties: {
         name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
         extra: { type: 'object', additionalProperties: true },
-        password: { type: 'string' },
-        currentPassword: { type: 'string' },
       },
       additionalProperties: false,
     },
@@ -30,12 +28,7 @@ export default {
       allOf: [
         { $ref: '#/definitions/partialMember' },
         {
-          anyOf: [
-            { required: ['name'] },
-            { required: ['extra'] },
-            { required: ['password'] },
-            { required: ['currentPassword'] },
-          ],
+          anyOf: [{ required: ['name'] }, { required: ['extra'] }],
         },
       ],
     },
