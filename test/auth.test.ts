@@ -10,6 +10,7 @@ import { HTTP_METHODS } from './fixtures/utils';
 // mock database and decorator plugins
 jest.mock('../src/plugins/database');
 jest.mock('../src/plugins/decorator');
+jest.mock('graasp-plugin-subscriptions');
 
 describe('Auth routes tests', () => {
   beforeEach(() => {
