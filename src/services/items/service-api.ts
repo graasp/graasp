@@ -70,7 +70,8 @@ import {
   moveMany,
   copyOne,
   copyMany,
-  getOwnGetShared,
+  getShared,
+  getOwn,
 } from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
@@ -307,16 +308,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
 
           // get own
-          fastify.get('/own', { schema: getOwnGetShared }, async ({ member, log }) => {
+          fastify.get('/own', { schema: getOwn }, async ({ member, log }) => {
             const task = taskManager.createGetOwnTask(member);
             return runner.runSingle(task, log);
           });
 
           // get shared with
-          fastify.get('/shared-with', { schema: getOwnGetShared }, async ({ member, log }) => {
-            const task = taskManager.createGetSharedWithTask(member);
-            return runner.runSingle(task, log);
-          });
+          fastify.get<{ Querystring: { permission?: string[] } }>(
+            '/shared-with',
+            { schema: getShared },
+            async ({ member, log, query }) => {
+              const permissions = query?.permission?.filter((p) => Boolean(p));
+              const task = taskManager.createGetSharedWithTask(member, { permissions });
+              return runner.runSingle(task, log);
+            },
+          );
 
           // get item's children
           fastify.get<{ Params: IdParam; Querystring: Ordered }>(
