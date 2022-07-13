@@ -36,6 +36,7 @@ describe('Member routes tests', () => {
       expect(m.name).toEqual(MEMBERS_FIXTURES.ACTOR.name);
       expect(m.email).toEqual(MEMBERS_FIXTURES.ACTOR.email);
       expect(m.id).toEqual(MEMBERS_FIXTURES.ACTOR.id);
+      expect(m.password).toBeUndefined();
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });

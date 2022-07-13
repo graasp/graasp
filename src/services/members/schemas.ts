@@ -13,6 +13,20 @@ export default {
       additionalProperties: false,
     },
 
+    currentMember: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string' },
+        type: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' },
+        extra: { type: 'object', additionalProperties: true },
+      },
+      additionalProperties: false,
+    },
+
     // member properties that can be modified with user input
     partialMember: {
       type: 'object',
@@ -32,6 +46,13 @@ export default {
         },
       ],
     },
+  },
+};
+
+// schema for getting current member
+const getCurrent = {
+  response: {
+    200: { $ref: 'http://graasp.org/members/#/definitions/currentMember' },
   },
 };
 
@@ -114,4 +135,4 @@ const deleteOne = {
   },
 };
 
-export { getOne, getMany, updateOne, getManyBy, deleteOne };
+export { getCurrent, getOne, getMany, updateOne, getManyBy, deleteOne };
