@@ -1,6 +1,7 @@
 // global
 import { Actor } from '../../../interfaces/actor';
 import { Task } from '../../../interfaces/task';
+import { GetItemsSharedWithTaskInputType } from '../tasks/get-items-shared-with-task';
 // local
 import { Item } from './item';
 
@@ -40,5 +41,5 @@ export interface ItemTaskManager<A extends Actor = Actor> {
     ordered?: boolean,
   ): Task<A, unknown>[];
   createGetOwnTask(actor: Actor): Task<A, Item[]>;
-  createGetSharedWithTask(actor: Actor): Task<A, Item[]>;
+  createGetSharedWithTask(actor: Actor, input: GetItemsSharedWithTaskInputType): Task<A, Item[]>;
 }

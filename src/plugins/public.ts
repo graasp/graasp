@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import { ItemTagService } from 'graasp-item-tags';
 import graaspPluginPublic, { PublicItemService, PublicItemTaskManager } from 'graasp-plugin-public';
 import { publicPlugin as publicThumbnailsPlugin } from 'graasp-plugin-thumbnails';
@@ -9,6 +9,7 @@ import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
 import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
 import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
+
 import {
   APPS_JWT_SECRET,
   APP_ITEMS_PREFIX,

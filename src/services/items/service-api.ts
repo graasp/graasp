@@ -13,9 +13,10 @@ import graaspApps from 'graasp-apps';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import graaspItemZip from 'graasp-plugin-item-zip';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
+import graaspItemPublishPlugin from 'graasp-plugin-item-publish';
 import {
   ActionTaskManager,
   ActionService,
@@ -53,6 +54,7 @@ import {
   PUBLISHED_TAG_ID,
   AUTH_CLIENT_HOST,
   PROTOCOL,
+  APPS_PUBLISHER_ID,
 } from '../../util/config';
 import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
@@ -69,7 +71,8 @@ import {
   moveMany,
   copyOne,
   copyMany,
-  getOwnGetShared,
+  getShared,
+  getOwn,
 } from './fluent-schema';
 import { TaskManager } from './task-manager';
 import { ItemTaskManager } from './interfaces/item-task-manager';
@@ -107,6 +110,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       serviceMethod: SERVICE_METHOD,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
       prefix: APP_ITEMS_PREFIX,
+      publisherId: APPS_PUBLISHER_ID,
     });
   }
 
@@ -203,6 +207,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspItemFlags);
 
         fastify.register(graaspItemTags);
+
+        await fastify.register(graaspItemPublishPlugin, {
+          publishedTagId: PUBLISHED_TAG_ID,
+          publicTagId: PUBLIC_TAG_ID,
+          graaspActor: GRAASP_ACTOR,
+          hostname: CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname,
+        });
 
         fastify.register(graaspHidden, {
           hiddenTagId: HIDDEN_TAG_ID,
@@ -305,16 +316,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
 
           // get own
-          fastify.get('/own', { schema: getOwnGetShared }, async ({ member, log }) => {
+          fastify.get('/own', { schema: getOwn }, async ({ member, log }) => {
             const task = taskManager.createGetOwnTask(member);
             return runner.runSingle(task, log);
           });
 
           // get shared with
-          fastify.get('/shared-with', { schema: getOwnGetShared }, async ({ member, log }) => {
-            const task = taskManager.createGetSharedWithTask(member);
-            return runner.runSingle(task, log);
-          });
+          fastify.get<{ Querystring: { permission?: string[] } }>(
+            '/shared-with',
+            { schema: getShared },
+            async ({ member, log, query }) => {
+              const permissions = query?.permission?.filter((p) => Boolean(p));
+              const task = taskManager.createGetSharedWithTask(member, { permissions });
+              return runner.runSingle(task, log);
+            },
+          );
 
           // get item's children
           fastify.get<{ Params: IdParam; Querystring: Ordered }>(

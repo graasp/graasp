@@ -36,6 +36,7 @@ describe('Member routes tests', () => {
       expect(m.name).toEqual(MEMBERS_FIXTURES.ACTOR.name);
       expect(m.email).toEqual(MEMBERS_FIXTURES.ACTOR.email);
       expect(m.id).toEqual(MEMBERS_FIXTURES.ACTOR.id);
+      expect(m.password).toBeUndefined();
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
@@ -184,7 +185,7 @@ describe('Member routes tests', () => {
         url: `/members/search?email=${member.email}`,
       });
 
-      const m = response.json()[0];
+      const m = response.json()[0][0];
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(m.name).toEqual(member.name);
       expect(m.id).toEqual(member.id);
@@ -215,7 +216,7 @@ describe('Member routes tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(response.json()).toEqual([]);
+      expect(response.json()).toEqual([[]]);
       app.close();
     });
   });

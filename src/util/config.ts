@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { ServiceMethod } from 'graasp-plugin-file';
 import S3 from 'aws-sdk/clients/s3';
 import { ItemSettings } from '..';
+import { Context } from '@graasp/utils';
 
 enum Environment {
   production = 'production',
@@ -39,16 +40,16 @@ export const TEST = ENVIRONMENT === Environment.test;
 // todo: get from graasp constants
 export const CLIENT_HOSTS = [
   {
-    name: 'builder',
-    hostname: 'builder.graasp.org',
+    name: Context.BUILDER,
+    hostname: new URL(process.env.BUILDER_CLIENT_HOST).hostname,
   },
   {
-    name: 'player',
-    hostname: 'player.graasp.org',
+    name: Context.PLAYER,
+    hostname: new URL(process.env.PLAYER_CLIENT_HOST).hostname,
   },
   {
-    name: 'explorer',
-    hostname: 'explorer.graasp.org',
+    name: Context.EXPLORER,
+    hostname: new URL(process.env.EXPLORER_CLIENT_HOST).hostname,
   },
 ];
 
@@ -258,6 +259,8 @@ export const ITEMS_ROUTE_PREFIX = '/items';
 export const PUBLIC_ROUTE_PREFIX = '/p';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
+
+export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
 
 export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
   hasThumbnail: false,

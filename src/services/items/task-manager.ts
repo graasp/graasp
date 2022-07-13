@@ -15,7 +15,10 @@ import { Item } from './interfaces/item';
 import { GetItemTask } from './tasks/get-item-task';
 import { FolderExtra, GetItemChildrenTask } from './tasks/get-item-children-task';
 import { GetOwnItemsTask } from './tasks/get-own-items-task';
-import { GetItemsSharedWithTask } from './tasks/get-items-shared-with-task';
+import {
+  GetItemsSharedWithTask,
+  GetItemsSharedWithTaskInputType,
+} from './tasks/get-items-shared-with-task';
 import { CreateItemTask } from './tasks/create-item-task';
 import { UpdateItemTask } from './tasks/update-item-task';
 import { DeleteItemTask } from './tasks/delete-item-task';
@@ -274,7 +277,10 @@ export class TaskManager implements ItemTaskManager<Member> {
     return new GetOwnItemsTask(member, this.itemService);
   }
 
-  createGetSharedWithTask(member: Member): GetItemsSharedWithTask {
-    return new GetItemsSharedWithTask(member, this.itemService);
+  createGetSharedWithTask(
+    member: Member,
+    input: GetItemsSharedWithTaskInputType,
+  ): GetItemsSharedWithTask {
+    return new GetItemsSharedWithTask(member, this.itemService, input);
   }
 }

@@ -1,6 +1,6 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
@@ -16,8 +16,7 @@ import {
 import { CannotModifyOtherMembers } from '../../util/graasp-error';
 import { Member } from './interfaces/member';
 import { MemberTaskManager } from './interfaces/member-task-manager';
-import { EmailParam } from './interfaces/requests';
-import common, { getOne, getMany, getBy, updateOne, deleteOne } from './schemas';
+import common, { getOne, getMany, getManyBy, updateOne, deleteOne, getCurrent } from './schemas';
 import { TaskManager } from './task-manager';
 
 const ROUTES_PREFIX = '/members';
@@ -78,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
 
       // get current
-      fastify.get('/current', async ({ member }) => member);
+      fastify.get('/current', { schema: getCurrent }, async ({ member }) => member);
 
       // get member
       fastify.get<{ Params: IdParam }>(
@@ -101,12 +100,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // get members by
-      fastify.get<{ Querystring: EmailParam }>(
+      fastify.get<{ Querystring: { email: string[] } }>(
         '/search',
-        { schema: getBy },
-        async ({ member, query: { email }, log }) => {
-          const task = taskManager.createGetByTask(member, { email });
-          return runner.runSingle(task, log);
+        { schema: getManyBy },
+        async ({ member, query: { email: emails }, log }) => {
+          const tasks = emails.map((email) => taskManager.createGetByTask(member, { email }));
+          return runner.runMultiple(tasks, log);
         },
       );
 

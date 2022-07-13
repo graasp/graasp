@@ -9,7 +9,7 @@ import { FastifyRequest, FastifyPluginAsync } from 'fastify';
 import fastifyAuth from '@fastify/auth';
 import fastifySecureSession from '@fastify/secure-session';
 import fastifyBearerAuth from '@fastify/bearer-auth';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import bcrypt from 'bcrypt';
 
 import {
@@ -29,6 +29,8 @@ import {
   AUTH_CLIENT_HOST,
   DEFAULT_LANG,
   REDIRECT_URL,
+  PROD,
+  STAGING,
 } from '../../util/config';
 
 // other services
@@ -134,7 +136,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   // cookie based auth
   await fastify.register(fastifySecureSession, {
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
-    cookie: { domain, path: '/', secure: true },
+    cookie: { domain, path: '/', secure: PROD || STAGING },
   });
 
   async function verifyMemberInSession(request: FastifyRequest) {

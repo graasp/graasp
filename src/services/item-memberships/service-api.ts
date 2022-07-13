@@ -1,20 +1,23 @@
 // global
 import { FastifyPluginAsync } from 'fastify';
-import fastifyCors from 'fastify-cors';
+import fastifyCors from '@fastify/cors';
 import { IdParam } from '../../interfaces/requests';
 // local
-import common, { getItems, create, updateOne, deleteOne, deleteAll } from './schemas';
+import common, { getItems, create, updateOne, deleteOne, deleteAll, createMany } from './schemas';
 import { PurgeBelowParam } from './interfaces/requests';
 import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
 import { TaskManager } from './task-manager';
 import { WEBSOCKETS_PLUGIN } from '../../util/config';
 import { registerItemMembershipWsHooks } from './ws/hooks';
+import { ItemMembership } from './interfaces/item-membership';
+import { GetItemTask } from '../items/tasks/get-item-task';
+import { UnknownExtra } from '../../interfaces/extra';
 
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
-    items: { dbService: itemsDbService },
+    items: { taskManager: iTM, dbService: itemsDbService },
     itemMemberships,
     taskRunner: runner,
     websockets,
@@ -73,6 +76,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           return runner.runSingleSequence(tasks, log);
         },
       );
+
+      // create many item memberships
+      fastify.post<{
+        Params: { itemId: string };
+        Body: { memberships: Partial<ItemMembership>[] };
+      }>('/:itemId', { schema: createMany }, async ({ member, params: { itemId }, body, log }) => {
+        const checkTasks = taskManager.createGetAdminMembershipTaskSequence(member, itemId);
+        await runner.runSingleSequence(checkTasks);
+
+        const getItemTask = checkTasks[0] as GetItemTask<UnknownExtra>;
+
+        const tasks = body.memberships.map((data) =>
+          taskManager.createCreateSubTaskSequence(member, { data, item: getItemTask.result }),
+        );
+        return runner.runMultipleSequences(tasks, log);
+      });
 
       // update item membership
       fastify.patch<{ Params: IdParam }>(
