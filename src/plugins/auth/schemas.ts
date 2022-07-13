@@ -1,7 +1,3 @@
-export default {
-  $id: 'http://graasp.org/members/',
-};
-
 const register = {
   body: {
     type: 'object',

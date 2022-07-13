@@ -384,7 +384,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           password: hash,
         });
         return runner.runSingleSequence(tasks, log);
-        // }
       },
     );
 
