@@ -16,6 +16,7 @@ import graaspItemZip from 'graasp-plugin-item-zip';
 import fastifyCors from '@fastify/cors';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
+import graaspItemPublishPlugin from 'graasp-plugin-item-publish';
 import {
   ActionTaskManager,
   ActionService,
@@ -206,6 +207,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspItemFlags);
 
         fastify.register(graaspItemTags);
+
+        await fastify.register(graaspItemPublishPlugin, {
+          publishedTagId: PUBLISHED_TAG_ID,
+          publicTagId: PUBLIC_TAG_ID,
+          graaspActor: GRAASP_ACTOR,
+          hostname: CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname,
+        });
 
         fastify.register(graaspHidden, {
           hiddenTagId: HIDDEN_TAG_ID,
