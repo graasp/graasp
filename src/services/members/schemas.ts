@@ -20,6 +20,8 @@ export default {
         name: { type: 'string' },
         email: { type: 'string' },
         type: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' },
         extra: { type: 'object', additionalProperties: true },
       },
       additionalProperties: false,
@@ -49,7 +51,6 @@ export default {
 
 // schema for getting current member
 const getCurrent = {
-  // params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   response: {
     200: { $ref: 'http://graasp.org/members/#/definitions/currentMember' },
   },
