@@ -12,7 +12,7 @@ jobs:
     # Replace with repository name
     name: Graasp
     # Replace 'main' with the hash of a commit, so it points to an specific version of the reusable workflow that is used
-    uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@5976045215b3db442504fdfecf3255fcb5d96fab
+    uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@7b5dd84304458c3c5ab03cbbde059670f77b1687
     # Replace input ecs-task-definition with template file. Format: '.aws/<name>-prod.json'
     with:
       ecs-task-definition: '.aws/graasp-prod.json'

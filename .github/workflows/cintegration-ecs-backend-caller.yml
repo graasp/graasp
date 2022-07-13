@@ -16,7 +16,7 @@ jobs:
     # repository name
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
-    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@5976045215b3db442504fdfecf3255fcb5d96fab
+    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@7b5dd84304458c3c5ab03cbbde059670f77b1687
     # ecs-task-definition with template file. 
     with:
       ecs-task-definition: '.aws/graasp-dev.json'
