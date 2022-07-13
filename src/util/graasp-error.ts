@@ -316,6 +316,34 @@ export class OrphanSession extends BaseGraaspError {
   }
 }
 
+export class InvalidPassword extends BaseGraaspError {
+  constructor(data?: unknown) {
+    // this status code is custom for the browser to know it needs to refresh its token
+    super(
+      {
+        code: 'GERR025',
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: FAILURE_MESSAGES.INVALID_PASSWORD,
+      },
+      data,
+    );
+  }
+}
+
+export class EmptyCurrentPassword extends BaseGraaspError {
+  constructor(data?: unknown) {
+    // this status code is custom for the browser to know it needs to refresh its token
+    super(
+      {
+        code: 'GERR026',
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: FAILURE_MESSAGES.EMPTY_CURRENT_PASSWORD,
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends BaseGraaspError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);

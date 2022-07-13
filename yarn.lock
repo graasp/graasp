@@ -792,10 +792,10 @@ __metadata:
 
 "@graasp/translations@github:graasp/graasp-translations":
   version: 0.1.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=aaebdfe8eafc095accf0ae8592554a22d15b9316"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=362af84f4980e05235b47f32dee259db32d907d7"
   dependencies:
     i18next: 21.6.11
-  checksum: b3b11ed0099405ed191ff147a12aaaeb18f026483fd46ac267f2f24cfe12301f695b55277bc0bdc83bd2915737d38a79df254ebe5e97d4dd644e13c2d4b17763
+  checksum: de03da287758e53bca6b14ca0b59045761ff14358034df604ae864765b180a763151fe61ab699834f414bf85ac4c104f52e4a5646528c59beeb7ff1c9814694d
   languageName: node
   linkType: hard
 
