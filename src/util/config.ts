@@ -258,11 +258,13 @@ export const ITEMS_ROUTE_PREFIX = '/items';
 export const PUBLIC_ROUTE_PREFIX = '/p';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
+export const SUBSCRIPTION_ROUTE_PREFIX = '/subscription';
 
 export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
   hasThumbnail: false,
 };
 export const DEFAULT_LANG = 'en';
 // Stripe
+export const SUBSCRIPTION_PLUGIN = process.env.SUBSCRIPTION_PLUGIN === 'true';
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
