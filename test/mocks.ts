@@ -196,6 +196,12 @@ export const mockMemberServiceUpdate = (members: Member[]): jest.SpyInstance => 
   });
 };
 
+export const mockMemberServiceDelete = (members: Member[]): jest.SpyInstance => {
+  return jest.spyOn(MemberService.prototype, 'delete').mockImplementation(async (id) => {
+    return members.find(({ id: thisId }) => id === thisId);
+  });
+};
+
 export const mockMemberServiceCreate = (): jest.SpyInstance => {
   return jest.spyOn(MemberService.prototype, 'create').mockImplementation(async (data) => {
     return buildMember(data);

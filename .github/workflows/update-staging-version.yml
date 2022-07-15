@@ -1,0 +1,43 @@
+# This workflow triggers a new workflow inside the graasp-deploy repository. It passes a json 
+# with the repository name and the latest tag pushed from the caller repository. 
+name: Push new tag to graasp-deploy repository
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push tag events.
+  push:
+    tags:
+      - v*
+
+# This workflow is made up of one job called dispatch
+jobs:
+  # Create a json with the repository name and tag and pass it to graasp-deploy repository 
+  dispatch:
+    name: Update staging versions
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Check-out repository under $GITHUB_WORKSPACE, so the job can access it
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    # Get the latest tag and create a json with the repository name and tag
+    # ::set-output name={name}::{value} Sets an output parameter for this step.
+    - name: Set tag
+      id: set-tag
+      run: |
+        COMMIT=$(git rev-list --tags --max-count=1)
+        TAG=$(git describe --tags $COMMIT)
+        REPOSITORY=$(echo '${{ github.repository }}')
+        JSON=$(jq --null-input --arg repository "$REPOSITORY" --arg tag "$TAG" '{"repository": $repository, "tag": $tag}')
+        echo ::set-output name=json::${JSON//'%'/'%25'}
+
+    # trigger an 'on: repository_dispatch' workflow to run in graasp-deploy repository
+    - name: Repository Dispatch
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: graasp/graasp-deploy
+        event-type: update-staging-version
+        client-payload: ${{steps.set-tag.outputs.json}}

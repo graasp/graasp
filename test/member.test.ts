@@ -6,6 +6,7 @@ import {
   mockMemberServiceGet,
   mockMemberServiceGetMatching,
   mockMemberServiceUpdate,
+  mockMemberServiceDelete,
 } from './mocks';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import { HTTP_METHODS } from './fixtures/utils';
@@ -35,6 +36,7 @@ describe('Member routes tests', () => {
       expect(m.name).toEqual(MEMBERS_FIXTURES.ACTOR.name);
       expect(m.email).toEqual(MEMBERS_FIXTURES.ACTOR.email);
       expect(m.id).toEqual(MEMBERS_FIXTURES.ACTOR.id);
+      expect(m.password).toBeUndefined();
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
@@ -183,7 +185,7 @@ describe('Member routes tests', () => {
         url: `/members/search?email=${member.email}`,
       });
 
-      const m = response.json()[0];
+      const m = response.json()[0][0];
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(m.name).toEqual(member.name);
       expect(m.id).toEqual(member.id);
@@ -214,7 +216,7 @@ describe('Member routes tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(response.json()).toEqual([]);
+      expect(response.json()).toEqual([[]]);
       app.close();
     });
   });
@@ -254,6 +256,39 @@ describe('Member routes tests', () => {
         payload: {
           name: 'new name',
         },
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      expect(response.json()).toEqual(new CannotModifyOtherMembers(member.id));
+      app.close();
+    });
+  });
+
+  describe('DELETE /members/:id', () => {
+    it('Returns successfully', async () => {
+      const member = MEMBERS_FIXTURES.ACTOR;
+
+      mockMemberServiceGet([member]);
+      mockMemberServiceDelete([member]);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.DELETE,
+        url: `/members/${member.id}`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.json().name).toEqual(member.name);
+      app.close();
+    });
+
+    it('Current member cannot delete another member', async () => {
+      const app = await build();
+      const member = MEMBERS_FIXTURES.BOB;
+      mockMemberServiceGet([member]);
+      mockMemberServiceDelete([member]);
+      const response = await app.inject({
+        method: HTTP_METHODS.DELETE,
+        url: `/members/${member.id}`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);

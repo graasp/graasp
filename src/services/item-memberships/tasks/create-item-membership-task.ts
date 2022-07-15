@@ -13,7 +13,7 @@ import { ItemMembership, PermissionLevelCompare } from '../interfaces/item-membe
 import { DeleteItemMembershipSubTask } from './delete-item-membership-task';
 import { TaskStatus } from '../../..';
 
-type MembershipSubTaskInput = { data?: Partial<ItemMembership> };
+type MembershipSubTaskInput = { data?: Partial<ItemMembership>; item?: Item };
 
 export class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string {
@@ -48,7 +48,7 @@ export class CreateItemMembershipSubTask extends BaseItemMembershipTask<ItemMemb
   }
 }
 
-type MembershipTaskInput = { data?: Partial<ItemMembership>; item?: Item };
+export type CreateItemMembershipTaskInputType = { data?: Partial<ItemMembership>; item?: Item };
 
 export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembership> {
   get name(): string {
@@ -56,13 +56,13 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
   }
   private subtasks: BaseItemMembershipTask<ItemMembership>[];
 
-  input: MembershipTaskInput;
-  getInput: () => MembershipTaskInput;
+  input: CreateItemMembershipTaskInputType;
+  getInput: () => CreateItemMembershipTaskInputType;
 
   constructor(
     member: Member,
     itemMembershipService: ItemMembershipService,
-    input?: MembershipTaskInput,
+    input?: CreateItemMembershipTaskInputType,
   ) {
     super(member, itemMembershipService);
     this.input = input ?? {};

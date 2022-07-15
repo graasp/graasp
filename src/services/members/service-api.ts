@@ -17,8 +17,7 @@ import {
 import { CannotModifyOtherMembers } from '../../util/graasp-error';
 import { Member } from './interfaces/member';
 import { MemberTaskManager } from './interfaces/member-task-manager';
-import { EmailParam } from './interfaces/requests';
-import common, { getOne, getMany, getBy, updateOne } from './schemas';
+import common, { getOne, getMany, getManyBy, updateOne, deleteOne, getCurrent } from './schemas';
 import { TaskManager } from './task-manager';
 import subscriptionsPlugin from 'graasp-plugin-subscriptions';
 import {
@@ -93,7 +92,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
 
       // get current
-      fastify.get('/current', async ({ member }) => member);
+      fastify.get('/current', { schema: getCurrent }, async ({ member }) => member);
 
       // get member
       fastify.get<{ Params: IdParam }>(
@@ -116,12 +115,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // get members by
-      fastify.get<{ Querystring: EmailParam }>(
+      fastify.get<{ Querystring: { email: string[] } }>(
         '/search',
-        { schema: getBy },
-        async ({ member, query: { email }, log }) => {
-          const task = taskManager.createGetByTask(member, { email });
-          return runner.runSingle(task, log);
+        { schema: getManyBy },
+        async ({ member, query: { email: emails }, log }) => {
+          const tasks = emails.map((email) => taskManager.createGetByTask(member, { email }));
+          return runner.runMultiple(tasks, log);
         },
       );
 
@@ -131,6 +130,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         { schema: updateOne },
         async ({ member, params: { id }, body, log }) => {
           const tasks = taskManager.createUpdateTaskSequence(member, id, body);
+          return runner.runSingleSequence(tasks, log);
+        },
+      );
+
+      // delete member
+      fastify.delete<{ Params: IdParam }>(
+        '/:id',
+        { schema: deleteOne },
+        async ({ member, params: { id }, log }) => {
+          const tasks = taskManager.createDeleteTaskSequence(member, id);
           return runner.runSingleSequence(tasks, log);
         },
       );

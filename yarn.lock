@@ -799,7 +799,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/utils@github:graasp/graasp-utils.git":
+"@graasp/utils@github:graasp/graasp-utils, @graasp/utils@github:graasp/graasp-utils.git":
   version: 0.1.0
   resolution: "@graasp/utils@https://github.com/graasp/graasp-utils.git#commit=f6c9e08e68d6e9a5b9480b8facdfb2f4cc474716"
   dependencies:
@@ -4049,6 +4049,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastify-cors-deprecated@npm:fastify-cors@6.0.3":
+  version: 6.0.3
+  resolution: "fastify-cors@npm:6.0.3"
+  dependencies:
+    fastify-plugin: ^3.0.0
+    vary: ^1.1.2
+  checksum: 054cf4e1cf0b20778ac24d9995a99f44e9b026ca9a028db0cbb6093922bcc931dff5f5bb185d19e881014392bb5886a8b5f9da6af3d3ab5e62b7a68f4eca33c4
+  languageName: node
+  linkType: hard
+
+"fastify-cors@npm:6.1.0":
+  version: 6.1.0
+  resolution: "fastify-cors@npm:6.1.0"
+  dependencies:
+    fastify-cors-deprecated: "npm:fastify-cors@6.0.3"
+    process-warning: ^1.0.0
+  checksum: dca7c39b4e515ea896aa07ad5c05c70100f427e4c92e3e0fae7cab7d8ccfc824c946723a7e90b4859a5802244932d0af5ee70d753f686092e8c47fca6700e370
+  languageName: node
+  linkType: hard
+
 "fastify-nodemailer@npm:^5.0.0":
   version: 5.0.0
   resolution: "fastify-nodemailer@npm:5.0.0"
@@ -4757,7 +4777,7 @@ __metadata:
 
 "graasp-plugin-actions@github:graasp/graasp-plugin-actions":
   version: 0.1.0
-  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=9218dd3ee98c21845ec1fc4ff81fed314ad7e74b"
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=6b8c9466f71911a655d9b7e365299e442119d643"
   dependencies:
     archiver: 5.3.1
     fluent-json-schema: 3.0.1
@@ -4766,7 +4786,7 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     http-status-codes: 2.2.0
     uuid: 8.3.2
-  checksum: cc19c23a0a8235c8d05caa20b87a6fbdac164e5d5ad03be6073967928f4aa22847106a532a1ec00ac8591b208149020b4a8e650f02a61377b1b2df46abb8029f
+  checksum: 2ae2a014c21d07ed047b312387a8e8ab73fe1a36acb798ff5e24ea776f69de08a8ecdfa233bfea6d0d5d08e11ed076cf2ec6e3a30fa4c39a35ab180f09e6ca91
   languageName: node
   linkType: hard
 
@@ -4861,6 +4881,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graasp-plugin-item-publish@github:graasp/graasp-plugin-item-publish":
+  version: 0.1.0
+  resolution: "graasp-plugin-item-publish@https://github.com/graasp/graasp-plugin-item-publish.git#commit=47d9222741b00ce68a56f66af98103015af3bbd4"
+  dependencies:
+    "@fastify/cors": 7.0.0
+    graasp-item-tags: "github:graasp/graasp-item-tags"
+    graasp-mailer: "github:graasp/graasp-mailer.git"
+    graasp-plugin-public: "github:graasp/graasp-plugin-public"
+    http-status-codes: 2.2.0
+    qs: 6.10.3
+    slonik: 28.1.0
+  checksum: cb860e68f78b4138bafa1f029a711c272b6ffffa718c4a4e4fdd8524ff647a711cb644ac9cf1939dbc1117f63ec81e158bebb246e32a4859051373e66c2aff43
+  languageName: node
+  linkType: hard
+
 "graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
   version: 0.1.0
   resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=cf291944423c4ad61be498700ec2c1168d65dc39"
@@ -4912,9 +4947,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-subscriptions@github:graasp/graasp-plugin-subscriptions#1/setupInitialVersion":
+"graasp-plugin-subscriptions@github:graasp/graasp-plugin-subscriptions":
   version: 0.1.0
-  resolution: "graasp-plugin-subscriptions@https://github.com/graasp/graasp-plugin-subscriptions.git#commit=97f169b49455de264a98658fc725d501853b6a13"
+  resolution: "graasp-plugin-subscriptions@https://github.com/graasp/graasp-plugin-subscriptions.git#commit=478cf674e93e33be22752caaf5c2b3762af1d65b"
   dependencies:
     fastify: ^3.25.3
     http-status-codes: 2.2.0
@@ -4980,6 +5015,7 @@ __metadata:
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
+    "@graasp/utils": "github:graasp/graasp-utils"
     "@sentry/node": 6.19.7
     "@sentry/tracing": 6.19.7
     "@types/chai": 4.3.1
@@ -4997,6 +5033,7 @@ __metadata:
     eslint: 8.14.0
     eslint-config-prettier: 8.5.0
     fastify: ^3.25.3
+    fastify-cors: 6.1.0
     fastify-plugin: 3.0.1
     fluent-json-schema: 3.1.0
     graasp-apps: "github:graasp/graasp-apps"
@@ -5014,11 +5051,12 @@ __metadata:
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
+    graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
     graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-search: "github:graasp/graasp-plugin-search"
-    graasp-plugin-subscriptions: "github:graasp/graasp-plugin-subscriptions#1/setupInitialVersion"
+    graasp-plugin-subscriptions: "github:graasp/graasp-plugin-subscriptions"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     graasp-plugin-validation: "github:graasp/graasp-plugin-validation"
     graasp-websockets: "github:graasp/graasp-websockets"

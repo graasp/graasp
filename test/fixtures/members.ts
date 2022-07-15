@@ -30,7 +30,7 @@ export const ANNA = buildMember({ name: 'anna' });
 export const BOB = buildMember({ name: 'bob', extra: { lang: 'fr' } });
 
 export const LOUISA = buildMember({
-  name: 'bob',
+  name: 'louisa',
   extra: { lang: 'fr' },
   password: '$2b$10$WFVpHW6qSpZrMnk06Qxmtuzu1OU2C3LqQby5szT0BboirsNx4cdD.',
 });

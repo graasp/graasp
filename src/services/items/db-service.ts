@@ -381,10 +381,20 @@ export class ItemService {
    * Get items "shared with" `member` - "highest" items in the membership tree where `member`
    * is not admin or `member` is admin but not the item creator
    * @param memberId Member's id
+   * @param filters.permissions filter items by memberships
    * @param transactionHandler Database transaction handler
    * TODO: does this make sense here? Should this be part of different (micro)service??
    */
-  async getSharedWith(memberId: string, transactionHandler: TrxHandler): Promise<Item[]> {
+  async getSharedWith(
+    memberId: string,
+    filters: { permissions?: string[] },
+    transactionHandler: TrxHandler,
+  ): Promise<Item[]> {
+    const permissions = filters?.permissions;
+    const permissionFilter = permissions?.length
+      ? sql`AND permission IN (${sql.join(permissions, sql`, `)})`
+      : sql``;
+
     return (
       transactionHandler
         .query<Item>(
@@ -394,7 +404,7 @@ export class ItemService {
         SELECT item_path, permission,
           RANK() OVER (PARTITION BY subpath(item_path, 0, 1) ORDER BY item_path ASC) AS membership_rank
         FROM item_membership
-        WHERE member_id = ${memberId}
+        WHERE member_id = ${memberId} ${permissionFilter}
       ) AS t1
       INNER JOIN item
         ON item.path = t1.item_path

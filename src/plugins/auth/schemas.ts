@@ -66,6 +66,28 @@ const passwordLogin = {
   },
 };
 
+const updatePassword = {
+  body: {
+    type: 'object',
+    properties: {
+      password: { type: 'string' },
+      currentPassword: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
+  },
+};
+
 const mlogin = {
   body: {
     type: 'object',
@@ -137,6 +159,7 @@ export {
   mregister,
   login,
   passwordLogin,
+  updatePassword,
   mlogin,
   mPasswordLogin,
   auth,
