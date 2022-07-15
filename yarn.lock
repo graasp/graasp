@@ -4846,7 +4846,7 @@ __metadata:
 
 "graasp-plugin-actions@github:graasp/graasp-plugin-actions#9/descendantActions":
   version: 0.1.0
-  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=9d1698ffbdaceb0f84aa109ea4df4c17f6209868"
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=5b2ee74f51a0655210d703eb35ca90cbc16740db"
   dependencies:
     archiver: 5.3.1
     fluent-json-schema: 3.0.1
@@ -4855,7 +4855,7 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     http-status-codes: 2.2.0
     uuid: 8.3.2
-  checksum: 7df273aa7c95d19480c97cab6ac093ca30797e5cd6dde9d69db85cce5fe6d5a7fcbb703d08a525c063e280e69035c9fb155933c3045b2d882b3941968d2eccd9
+  checksum: 2ae2a014c21d07ed047b312387a8e8ab73fe1a36acb798ff5e24ea776f69de08a8ecdfa233bfea6d0d5d08e11ed076cf2ec6e3a30fa4c39a35ab180f09e6ca91
   languageName: node
   linkType: hard
 

@@ -37,7 +37,7 @@ export interface ItemTaskManager<A extends Actor = Actor> {
   ): Task<A, unknown>[];
   createGetChildrenTask(
     member: Actor,
-    { item, ordered }: { item?: Item; ordered?: boolean },
+    options: { item?: Item; ordered?: boolean },
   ): Task<Actor, unknown>;
   createGetChildrenTaskSequence(
     actor: Actor,
