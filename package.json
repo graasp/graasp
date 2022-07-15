@@ -72,6 +72,7 @@
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "graasp-plugin-recycle-bin": "github:graasp/graasp-plugin-recycle-bin",
     "graasp-plugin-search": "github:graasp/graasp-plugin-search",
+    "graasp-plugin-subscriptions": "github:graasp/graasp-plugin-subscriptions",
     "graasp-plugin-thumbnails": "github:graasp/graasp-plugin-thumbnails",
     "graasp-plugin-validation": "github:graasp/graasp-plugin-validation",
     "graasp-websockets": "github:graasp/graasp-websockets",

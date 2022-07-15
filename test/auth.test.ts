@@ -31,7 +31,7 @@ describe('Auth routes tests', () => {
 
       expect(mockSendRegisterEmail).toHaveBeenCalled();
       expect(mockCreate).toHaveBeenCalledWith(
-        { email, name, extra: { lang: DEFAULT_LANG } },
+        { email, name, extra: expect.objectContaining({ lang: DEFAULT_LANG }) },
         expect.anything(),
       );
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -55,7 +55,10 @@ describe('Auth routes tests', () => {
         expect.anything(),
         lang,
       );
-      expect(mockCreate).toHaveBeenCalledWith({ email, name, extra: { lang } }, expect.anything());
+      expect(mockCreate).toHaveBeenCalledWith(
+        { email, name, extra: expect.objectContaining({ lang }) },
+        expect.anything(),
+      );
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       app.close();
     });
@@ -304,7 +307,7 @@ describe('Auth routes tests', () => {
 
         expect(mockSendRegisterEmail).toHaveBeenCalled();
         expect(mockCreate).toHaveBeenCalledWith(
-          { email, name, extra: { lang: DEFAULT_LANG } },
+          { email, name, extra: expect.objectContaining({ lang: DEFAULT_LANG }) },
           expect.anything(),
         );
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -329,7 +332,7 @@ describe('Auth routes tests', () => {
           lang,
         );
         expect(mockCreate).toHaveBeenCalledWith(
-          { email, name, extra: { lang } },
+          { email, name, extra: expect.objectContaining({ lang }) },
           expect.anything(),
         );
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);

@@ -92,6 +92,8 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Invitations [`db-schema.sql`](https://github.com/graasp/graasp-plugin-invitations/blob/main/db-schema.sql)
 
+- Subscriptions [`db-schema.sql`](https://github.com/graasp/graasp-plugin-subscriptions/blob/main/db-schema.sql)
+
 ### Configuration
 
 To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :
