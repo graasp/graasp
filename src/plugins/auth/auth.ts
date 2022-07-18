@@ -1,11 +1,10 @@
-// global
 import crypto from 'crypto';
 import jwt, { Secret, VerifyOptions, SignOptions, TokenExpiredError } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyRequest, FastifyPluginAsync } from 'fastify';
+import { FastifyRequest, FastifyPluginAsync, FastifyLoggerInstance } from 'fastify';
 import fastifyAuth from '@fastify/auth';
 import fastifySecureSession from '@fastify/secure-session';
 import fastifyBearerAuth from '@fastify/bearer-auth';
@@ -78,7 +77,11 @@ const promisifiedJwtSign = promisify<
   string
 >(jwt.sign);
 
-async function verifyCredentials(member: Member, body: { email: string; password: string }) {
+async function verifyCredentials(
+  member: Member,
+  body: { email: string; password: string },
+  log: FastifyLoggerInstance,
+) {
   /* the verified variable is used to store the output of bcrypt.compare() 
   bcrypt.compare() allows to compare the provided password with a stored hash. 
   It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
@@ -88,7 +91,7 @@ async function verifyCredentials(member: Member, body: { email: string; password
   const verified = bcrypt
     .compare(body.password, member.password)
     .then((res) => res)
-    .catch((err) => console.error(err.message));
+    .catch((err) => log.error(err.message));
   return verified;
 }
 
@@ -347,11 +350,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           log.warn(`Login attempt with non-existent email '${email}'`);
           throw new MemberNotSignedUp({ email });
         }
-        if (member.password === null) {
+        if (!member.password) {
           log.warn('Login attempt with non-existent password');
           throw new MemberWithoutPassword({ email });
         }
-        const verified = await verifyCredentials(member, body);
+        const verified = await verifyCredentials(member, body, log);
         if (!verified) {
           throw new IncorrectPassword(body);
         }
@@ -522,11 +525,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             log.warn(`Login attempt with non-existent email '${email}'`);
             throw new MemberNotSignedUp({ email });
           }
-          if (member.password === null) {
+          if (!member.password) {
             log.warn('Login attempt with non-existent password');
             throw new MemberWithoutPassword({ email });
           }
-          const verified = await verifyCredentials(member, body);
+          const verified = await verifyCredentials(member, body, log);
           if (!verified) {
             throw new IncorrectPassword(body);
           } else {

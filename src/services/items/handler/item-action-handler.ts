@@ -34,7 +34,7 @@ export const itemActionHandler = async (
         case paths.childrenItem.test(url):
           actionsToSave.push({
             ...actionBase,
-            itemId: paramItemId,
+            itemPath: paramItemId,
             actionType: ACTION_TYPES.GET_CHILDREN,
             extra: { ...actionBase.extra, itemId: paramItemId },
           });
@@ -125,8 +125,8 @@ export const itemActionHandler = async (
     actionsToSave.map(async (action) => {
       // warning: no check over membership !
       const item = await dbService.get(action.itemId, dbHandler);
-      // add item type
-      return new BaseAction({ ...action, itemType: item.type });
+      // add item type and path
+      return new BaseAction({ ...action, itemType: item.type, itemPath: item.path });
     }),
   );
 

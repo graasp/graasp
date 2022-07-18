@@ -26,6 +26,10 @@ import { MoveItemTask } from './tasks/move-item-task';
 import { CopyItemTask } from './tasks/copy-item-task';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 import { GetManyItemsTask } from './tasks/get-many-items-task';
+import {
+  GetItemDescendantsTask,
+  GetItemDescendantsTaskInputType,
+} from './tasks/get-item-descendants-task';
 
 export class TaskManager implements ItemTaskManager<Member> {
   private itemService: ItemService;
@@ -66,6 +70,9 @@ export class TaskManager implements ItemTaskManager<Member> {
   }
   getGetSharedWithTaskName(): string {
     return GetItemsSharedWithTask.name;
+  }
+  getGetDescendantsTaskName(): string {
+    return GetItemDescendantsTask.name;
   }
 
   // CRUD
@@ -271,6 +278,22 @@ export class TaskManager implements ItemTaskManager<Member> {
     t3.getInput = () => ({ item: t1.result });
 
     return [t1, t2, t3];
+  }
+
+  createGetDescendantsTaskSequence(member: Member, itemId: string): Task<Member, unknown>[] {
+    const [t1, t2] = this.createGetTaskSequence(member, itemId);
+    const t3 = new GetItemDescendantsTask(member, this.itemService);
+    t3.getInput = () => ({
+      item: t2.getResult() as Item,
+    });
+    return [t1, t2, t3];
+  }
+
+  createGetDescendantsTask(
+    member: Member,
+    input?: GetItemDescendantsTaskInputType,
+  ): Task<Member, Item[]> {
+    return new GetItemDescendantsTask(member, this.itemService, input);
   }
 
   createGetOwnTask(member: Member): GetOwnItemsTask {

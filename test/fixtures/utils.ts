@@ -17,7 +17,6 @@ export const checkActionData = (savedAction, args) => {
     view = VIEW_UNKNOWN_NAME,
     memberId = GRAASP_ACTOR.id,
   } = args;
-  expect(savedAction.itemId).toEqual(itemId);
   expect(savedAction.itemType).toEqual(itemType);
   expect(savedAction.memberId).toEqual(memberId);
   expect(savedAction.actionType).toEqual(actionType);

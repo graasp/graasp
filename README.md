@@ -179,8 +179,12 @@ PUBLISHED_TAG_ID=<tag-id>
 PUBLIC_TAG_ID=<tag-id>
 LOGIN_ITEM_TAG_ID=<tag-id>
 
-# Graasp Actions
+# Graasp Actions and hosts
 SAVE_ACTIONS=true
+BUILDER_CLIENT_HOST=<value>
+PLAYER_CLIENT_HOST=<value>
+EXPLORER_CLIENT_HOST=<value>
+AUTH_CLIENT_HOST=<value>
 
 # validation containers
 IMAGE_CLASSIFIER_API=<url>
