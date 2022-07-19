@@ -107,6 +107,7 @@ export class TaskManager implements ItemTaskManager<Member> {
       }
       t4.skip = true; // skip this task (t4)
     };
+
     t4.getResult = () => t3.result;
     tasks.push(t4);
 

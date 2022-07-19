@@ -17,7 +17,7 @@
     "serve": "NODE_PATH=./dist node dist/server.js",
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
-    "test": "DISABLE_LOGS=true jest --forceExit --coverage --verbose",
+    "test": "DISABLE_LOGS=true jest item.test.ts --forceExit --coverage --verbose",
     "watch-test": "yarn test --watchAll",
     "build-ts": "tsc",
     "build-ts-declaration": "rm -rf ./types && tsc --project tsconfig.declaration.json --declaration --declarationDir ./types",
@@ -48,6 +48,7 @@
     "@sentry/node": "6.19.7",
     "@sentry/tracing": "6.19.7",
     "aws-sdk": "2.1124.0",
+    "bcrypt": "5.0.1",
     "dotenv": "16.0.0",
     "fastify": "^3.29.1",
     "fastify-cors": "6.1.0",
@@ -110,5 +111,8 @@
     "ts-node": "10.7.0",
     "typescript": "4.6.4"
   },
-  "packageManager": "yarn@3.2.0"
+  "packageManager": "yarn@3.2.1",
+  "resolutions": {
+    "bcrypt": "5.0.1"
+  }
 }

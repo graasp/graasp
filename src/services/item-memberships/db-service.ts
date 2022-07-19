@@ -94,7 +94,7 @@ export class ItemMembershipService implements DbService {
     item: Item,
     transactionHandler: TrxHandler,
     considerLocal = false,
-  ): Promise<ItemMembership> {
+  ): Promise<ItemMembership | null> {
     return transactionHandler
       .query<ItemMembership>(
         sql`

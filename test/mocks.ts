@@ -1,15 +1,10 @@
-import {
-  Item,
-  ItemMembership,
-  ItemMembershipService,
-  ItemService,
-  Member,
-  MemberService,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { Item, ItemMembership, Member, PermissionLevel } from '@graasp/sdk';
 import { getIdsFromPath } from '@graasp/utils';
 import { ActionService } from 'graasp-plugin-actions';
 
+import { ItemMembershipService } from '../src/services/item-memberships/db-service';
+import { ItemService } from '../src/services/items/db-service';
+import { MemberService } from '../src/services/members/db-service';
 import { buildAction } from './fixtures/actions';
 import { getDummyItem } from './fixtures/items';
 import { ACTOR, buildMember } from './fixtures/members';

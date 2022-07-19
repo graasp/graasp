@@ -58,7 +58,10 @@ export class ItemService implements DbService {
    * @param id Item id
    * @param transactionHandler Database transaction handler
    */
-  async get<E extends UnknownExtra>(id: string, transactionHandler: TrxHandler): Promise<Item<E>> {
+  async get<E extends UnknownExtra>(
+    id: string,
+    transactionHandler: TrxHandler,
+  ): Promise<Item<E> | null> {
     return transactionHandler
       .query<Item<E>>(
         sql`

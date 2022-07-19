@@ -35,7 +35,10 @@ export class GetItemTask<E extends UnknownExtra> extends BaseItemTask<Item<E>> {
 
     // get item
     const item = await this.itemService.get<E>(itemId, handler);
-    if (!item) throw new ItemNotFound(itemId);
+
+    if (!item) {
+      throw new ItemNotFound(itemId);
+    }
 
     await this.postHookHandler?.(item, this.actor, { log, handler });
 

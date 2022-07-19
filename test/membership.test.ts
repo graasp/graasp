@@ -331,7 +331,7 @@ describe('Membership routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships/${item.id}`,
         payload: { memberships: newMemberships },
       });
@@ -361,7 +361,7 @@ describe('Membership routes tests', () => {
       const app = await build();
       const id = 'invalid-id';
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships/${id}`,
         payload: { memberships: newMembership },
       });
@@ -382,7 +382,7 @@ describe('Membership routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.POST,
+        method: HttpMethod.POST,
         url: `/item-memberships/${item.id}`,
         payload: {
           memberships: [
@@ -431,7 +431,6 @@ describe('Membership routes tests', () => {
       mockItemServiceGetMatchingPath([item, parentItem]);
       mockItemMembershipServiceUpdate(memberships);
       mockItemMemberhipServiceGetInherited();
-      //   const mockDelete = mockItemMemberhipServiceDelete(memberships)
 
       const app = await build();
       const response = await app.inject({
@@ -476,7 +475,7 @@ describe('Membership routes tests', () => {
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       mockItemServiceGetMatchingPath([item, parentItem]);
       mockItemMembershipServiceUpdate(memberships);
-      mockItemMemberhipServiceGetInherited(memberships[1]);
+      mockItemMemberhipServiceGetInherited();
       const mockDelete = mockItemMemberhipServiceDelete(memberships);
 
       const app = await build();
@@ -569,7 +568,7 @@ describe('Membership routes tests', () => {
       mockItemServiceGet([item]);
       mockItemMemberhipServiceGetInheritedForAll(memberships);
       mockMemberServiceGet([member]);
-      mockItemMemberhipServiceGetInherited();
+      mockItemMemberhipServiceGetInherited(memberships[0]);
 
       mockItemMemberhipServiceGetAllBelow(lowerMemberships);
       const mockDelete = mockItemMemberhipServiceDelete(memberships);

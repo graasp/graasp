@@ -110,7 +110,7 @@ describe('Item routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: 'POST',
+        method: HttpMethod.POST,
         url: `/items?parentId=${parent.id}`,
         payload,
       });
@@ -142,7 +142,7 @@ describe('Item routes tests', () => {
 
       const app = await build();
       const response = await app.inject({
-        method: 'POST',
+        method: HttpMethod.POST,
         url: `/items?parentId=${parent.id}`,
         payload,
       });
@@ -165,7 +165,7 @@ describe('Item routes tests', () => {
       // by default the item creator use an invalid item type
       const newItem = getDummyItem({ name: '' });
       const response = await app.inject({
-        method: 'POST',
+        method: HttpMethod.POST,
         url: '/items',
         payload: newItem,
       });
@@ -175,7 +175,7 @@ describe('Item routes tests', () => {
       // by default the item creator use an invalid item type
       const newItem1 = getDummyItem({ name: ' ' });
       const response1 = await app.inject({
-        method: 'POST',
+        method: HttpMethod.POST,
         url: '/items',
         payload: newItem1,
       });
@@ -189,7 +189,7 @@ describe('Item routes tests', () => {
       // by default the item creator use an invalid item type
       const newItem = getDummyItem({ type: 'invalid-type' });
       const response = await app.inject({
-        method: 'POST',
+        method: HttpMethod.POST,
         url: '/items',
         payload: newItem,
       });
@@ -202,7 +202,7 @@ describe('Item routes tests', () => {
       const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parentId = 'invalid-id';
       const response = await app.inject({
-        method: 'POST',
+        method: HttpMethod.POST,
         url: `/items?parentId=${parentId}`,
         payload,
       });
@@ -216,7 +216,7 @@ describe('Item routes tests', () => {
       const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
       const parentId = uuidv4();
       const response = await app.inject({
-        method: 'POST',
+        method: HttpMethod.POST,
         url: `/items?parentId=${parentId}`,
         payload,
       });
@@ -483,7 +483,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetSharedWith(items);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/items/shared-with?permission=read',
       });
 
@@ -500,7 +500,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetSharedWith(items);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/items/shared-with?permission=admin&permission=write',
       });
 
@@ -635,7 +635,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetDescendants(async () => descendants);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/descendants`,
       });
 
@@ -651,7 +651,7 @@ describe('Item routes tests', () => {
       mockItemServiceGetDescendants(async () => []);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/descendants`,
       });
 
@@ -662,7 +662,7 @@ describe('Item routes tests', () => {
     it('Bad Request for invalid id', async () => {
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/items/invalid-id/descendants',
       });
 
@@ -674,7 +674,7 @@ describe('Item routes tests', () => {
       const app = await build();
       const id = uuidv4();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${id}/descendants`,
       });
 
@@ -687,7 +687,7 @@ describe('Item routes tests', () => {
       mockItemServiceGet([item]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/items/${item.id}/descendants`,
       });
 

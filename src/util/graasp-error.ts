@@ -1,9 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { BaseGraaspError } from '@graasp/sdk';
+import { ErrorFactory } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
-export class ItemNotFound extends BaseGraaspError {
+export const CoreError = ErrorFactory('core');
+
+export class ItemNotFound extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -15,7 +17,7 @@ export class ItemNotFound extends BaseGraaspError {
     );
   }
 }
-export class MemberCannotReadItem extends BaseGraaspError {
+export class MemberCannotReadItem extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -27,7 +29,7 @@ export class MemberCannotReadItem extends BaseGraaspError {
     );
   }
 }
-export class MemberCannotWriteItem extends BaseGraaspError {
+export class MemberCannotWriteItem extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -39,7 +41,7 @@ export class MemberCannotWriteItem extends BaseGraaspError {
     );
   }
 }
-export class MemberCannotAdminItem extends BaseGraaspError {
+export class MemberCannotAdminItem extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -51,7 +53,7 @@ export class MemberCannotAdminItem extends BaseGraaspError {
     );
   }
 }
-export class InvalidMembership extends BaseGraaspError {
+export class InvalidMembership extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -63,7 +65,7 @@ export class InvalidMembership extends BaseGraaspError {
     );
   }
 }
-export class ItemMembershipNotFound extends BaseGraaspError {
+export class ItemMembershipNotFound extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -75,7 +77,7 @@ export class ItemMembershipNotFound extends BaseGraaspError {
     );
   }
 }
-export class ModifyExisting extends BaseGraaspError {
+export class ModifyExisting extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -87,7 +89,7 @@ export class ModifyExisting extends BaseGraaspError {
     );
   }
 }
-export class InvalidPermissionLevel extends BaseGraaspError {
+export class InvalidPermissionLevel extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -99,7 +101,7 @@ export class InvalidPermissionLevel extends BaseGraaspError {
     );
   }
 }
-export class HierarchyTooDeep extends BaseGraaspError {
+export class HierarchyTooDeep extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -111,7 +113,7 @@ export class HierarchyTooDeep extends BaseGraaspError {
     );
   }
 }
-export class TooManyChildren extends BaseGraaspError {
+export class TooManyChildren extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -123,7 +125,7 @@ export class TooManyChildren extends BaseGraaspError {
     );
   }
 }
-export class TooManyDescendants extends BaseGraaspError {
+export class TooManyDescendants extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -135,7 +137,7 @@ export class TooManyDescendants extends BaseGraaspError {
     );
   }
 }
-export class InvalidMoveTarget extends BaseGraaspError {
+export class InvalidMoveTarget extends CoreError {
   constructor(data?: unknown) {
     super(
       { code: 'GERR012', statusCode: 400, message: FAILURE_MESSAGES.INVALID_MOVE_TARGET },
@@ -143,12 +145,12 @@ export class InvalidMoveTarget extends BaseGraaspError {
     );
   }
 }
-export class MemberNotFound extends BaseGraaspError {
+export class MemberNotFound extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR013', statusCode: 404, message: FAILURE_MESSAGES.MEMBER_NOT_FOUND }, data);
   }
 }
-export class CannotModifyOtherMembers extends BaseGraaspError {
+export class CannotModifyOtherMembers extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -160,7 +162,7 @@ export class CannotModifyOtherMembers extends BaseGraaspError {
     );
   }
 }
-export class TooManyMemberships extends BaseGraaspError {
+export class TooManyMemberships extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -172,7 +174,7 @@ export class TooManyMemberships extends BaseGraaspError {
     );
   }
 }
-export class MemberCannotAccess extends BaseGraaspError {
+export class MemberCannotAccess extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -185,7 +187,7 @@ export class MemberCannotAccess extends BaseGraaspError {
   }
 }
 
-export class MemberAlreadySignedUp extends BaseGraaspError {
+export class MemberAlreadySignedUp extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -198,7 +200,7 @@ export class MemberAlreadySignedUp extends BaseGraaspError {
   }
 }
 
-export class MemberNotSignedUp extends BaseGraaspError {
+export class MemberNotSignedUp extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -211,7 +213,7 @@ export class MemberNotSignedUp extends BaseGraaspError {
   }
 }
 
-export class MemberWithoutPassword extends BaseGraaspError {
+export class MemberWithoutPassword extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -224,7 +226,7 @@ export class MemberWithoutPassword extends BaseGraaspError {
   }
 }
 
-export class IncorrectPassword extends BaseGraaspError {
+export class IncorrectPassword extends CoreError {
   constructor(data?: unknown) {
     super(
       {
@@ -237,14 +239,14 @@ export class IncorrectPassword extends BaseGraaspError {
   }
 }
 
-export class TokenExpired extends BaseGraaspError {
+export class TokenExpired extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token
     super({ code: 'GERR021', statusCode: 439, message: FAILURE_MESSAGES.TOKEN_EXPIRED }, data);
   }
 }
 
-export class InvalidToken extends BaseGraaspError {
+export class InvalidToken extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token
     super(
@@ -258,7 +260,7 @@ export class InvalidToken extends BaseGraaspError {
   }
 }
 
-export class InvalidSession extends BaseGraaspError {
+export class InvalidSession extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token
     super(
@@ -272,7 +274,7 @@ export class InvalidSession extends BaseGraaspError {
   }
 }
 
-export class OrphanSession extends BaseGraaspError {
+export class OrphanSession extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token
     super(
@@ -286,7 +288,7 @@ export class OrphanSession extends BaseGraaspError {
   }
 }
 
-export class InvalidPassword extends BaseGraaspError {
+export class InvalidPassword extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token
     super(
@@ -300,7 +302,7 @@ export class InvalidPassword extends BaseGraaspError {
   }
 }
 
-export class EmptyCurrentPassword extends BaseGraaspError {
+export class EmptyCurrentPassword extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token
     super(
@@ -314,13 +316,13 @@ export class EmptyCurrentPassword extends BaseGraaspError {
   }
 }
 
-export class DatabaseError extends BaseGraaspError {
+export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);
   }
 }
 
-export class UnexpectedError extends BaseGraaspError {
+export class UnexpectedError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR999', statusCode: 500, message: FAILURE_MESSAGES.UNEXPECTED_ERROR }, data);
     this.origin = 'unknown';

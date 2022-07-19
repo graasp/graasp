@@ -81,6 +81,7 @@ export class CreateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     this.status = TaskStatus.RUNNING;
 
     const { data, item } = this.input;
+
     this.targetId = item.id;
 
     const itemMembership = new BaseItemMembership(
