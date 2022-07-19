@@ -8,8 +8,8 @@ import { promisify } from 'util';
 import fastifyAuth from '@fastify/auth';
 import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from '@fastify/cors';
+import fastifySecureSession from '@fastify/secure-session';
 import { FastifyLoggerInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
-import fastifySecureSession from 'fastify-secure-session';
 
 import { Member } from '@graasp/sdk';
 

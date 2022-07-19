@@ -11,7 +11,7 @@ export const buildMember = (options: {
 }): Member => {
   const id = uuidv4();
   return {
-    id,
+    id: options.id ?? id,
     name: options.name ?? id,
     email: options.email ?? `${options.name}@email.com`,
     createdAt: '2021-03-29T08:46:52.939Z',
