@@ -8,16 +8,16 @@ const ts = tm.createSequence();
 const res = await runner.runSequence(ts);
 ```
 
-The system use the following components :
+The system uses the following components :
 
 - Database services
 - Tasks
-- Tasks sequences
+- Task sequences
 - Task managers
 
 ## Database services
 
-The database services are the classes where the SQL queries are stored. The Databases services implment methods to access the database :
+The database services are the classes where the SQL queries are stored. The database services implement methods to access the database :
 
 ```typescript
 // The trxHandler is given by the task when executed
@@ -41,19 +41,19 @@ return transactionHandler
 ### Constructors
 The constructor usually takes 3 arguments :
 
-- The Actor : The id of the member making the request
-- One database service : The task should use only one service, if multiple services are need the task should be split into a task sequence
-- The input : The user defined parameters that the task needs to successfuly execute its query
+- The actor : The id of the member making the request
+- One database service : The task should use only one service, if multiple services are needed the task should be split into a task sequence
+- The input : The user defined parameters that the task needs to successfully execute its query
 
 ### Input and getInput()
 
-When a task is created, the developper can give the task an input:
+When a task is created, the developer can give the task an input:
 
 ```typescript 
 new GetItemTask(member, dbservice, input)
 ```
 
-However it's possible that the input needs input coming from another task, to do that the `getInput` method will be used. The developper can implement this method in the following manner : 
+However it's possible that the task needs input coming from another task, to do that the `getInput` method will be used. The developer can implement this method in the following manner : 
 
 ```typescript
 t2.getInput = () => {
@@ -61,7 +61,7 @@ t2.getInput = () => {
 };
 ```
 
-Then the input from the constructor will be combined with the result of the getInput() when the task is executed.
+Then, the input from the constructor will be combined with the result of the getInput() when the task is executed.
 
 **Warning! The identical keys from the `input` will be replaced by the values of `getInput()`**
 
@@ -75,7 +75,7 @@ t1.skip = true;
 
 ### Result - getResult()
 
-When the task has been executed sucessfully, the result will be accessible with the result property :
+When the task has been successfully executed, the result will be accessible with the `result` property :
 
 ```typescript 
 const result = t1.result;
@@ -92,9 +92,9 @@ const t2 = new GetMembershipTask();
 t2.getResult = () => t1.result;
 ```
 
-### Prehooks and PostHooks
+### PreHooks and PostHooks
 
-Every task needs to implement the name property, this allows a convenient way to implement prehooks and posthooks handlers. This handlers allow plugin to do work on the data before or after an event has happend (eg. user creation, item copied, ...).
+Every task needs to implement the `name` property, this allows a convenient way to implement pre-hook and post-hook handlers. These handlers allow plugin to do work on the data before or after an event has happened (eg. user creation, item copy, ...).
 
 ```typescript
 get name() {
@@ -102,7 +102,7 @@ get name() {
     return UpdateItemTask.name;
 }
 ```
-When a `PreHookHandler` or `PostHookHandler` are registred, the task runner will ensure that all registred handler are run. The handler are registred using the name of the task they are attached to.
+When a `PreHookHandler` or `PostHookHandler` is registered, the task runner will ensure that all registered handlers are run. A handler is registered using the name of the task they are attached to.
 
 ```typescript
 // This is executed before the task makes the query to the database
@@ -114,7 +114,7 @@ runner.setTaskPostHookHandler<Item>(moveItemTaskName, async (item) => { });
 
 ## Sequences
 
-Sequences are an array of related tasks in the same transaction. If any task throw an error, the whole sequence is aborted. The `TaskRunner` will always return the result of the last task in the sequence.
+Sequences are arrays of related tasks that are run in the same transaction. If any task throws an error, the whole sequence is aborted. The `TaskRunner` will always return the result of the last task in the sequence.
 
 ```typescript
 // the task runner will always return the result from t3, even if skipped
@@ -153,7 +153,7 @@ createSequence(member: Actor, itemMembershipId: string){
 
 ## Task Managers
 
-Task managers are the main way to create tasks and tasks sequences. They implement the methods to create tasks, tasks sequences and methods returning the name of the tasks provided.
+Task managers are the main way to create tasks and task sequences. They implement the methods to create tasks, task sequences and methods returning the name of the tasks provided.
 
 ### Constructors
 
@@ -171,9 +171,9 @@ constructor(
 }
 ```
 
-### Tasks names
+### Task names
 
-The method returning the name are use to implements `preHookHandlers` and `postHookHandlers`. The method is implemented in the following way :
+The method returning the name of the task is used to implement `preHookHandlers` and `postHookHandlers`. The method is implemented in the following way :
 
 ```typescript
 getCreateTaskName(): string {
@@ -183,7 +183,7 @@ return CreateItemTask.name;
 
 ### Factory methods
 
-The task manager also implement methods to create new tasks or task sequences. This methods are responsible to inject the database service into the create tasks.
+The task manager also implements methods to create new tasks or task sequences. These methods are responsible to inject the database service when creating a new instance of the task.
 
 ```typescript
 createCreateTask(member: Member, data: Partial<Item>): CreateItemTask {
@@ -197,7 +197,7 @@ return new CreateItemTask(member, this.itemService, { data });
 The task runner executes all the tasks. It has 4 modes of execution.
 
 ```typescript
-//Run given task (transactionally) and return the task's result (or throws error).
+// Run given task (transactionally) and return the task's result (or throws error).
 runSingle<T>(task: Task<A, T>, log?: FastifyLoggerInstance): Promise<T>;
 
 // Run given tasks (one by one, each in a separate transaction), collect results (values or errors), and return an array with everything.
@@ -206,6 +206,6 @@ runMultiple(tasks: Task<A, unknown>[], log?: FastifyLoggerInstance): Promise<unk
 // Run given task sequence in a single transaction, sequencially, and return the last task's result.
 runSingleSequence(tasks: Task<A, unknown>[], log?: FastifyLoggerInstance): Promise<unknown>;
 
-// Run given tasks sequences (one by one, each in a separate transaction), collect results (values or errors), and return an array with everything.
+// Run given task sequences (one by one, each in a separate transaction), collect results (values or errors), and return an array with everything.
 runMultipleSequences(tasks: Task<A, unknown>[][], log?: FastifyLoggerInstance): Promise<unknown>;
 ```
