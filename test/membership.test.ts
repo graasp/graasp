@@ -475,7 +475,7 @@ describe('Membership routes tests', () => {
       mockItemMembershipServiceGetForMemberAtItem(memberships);
       mockItemServiceGetMatchingPath([item, parentItem]);
       mockItemMembershipServiceUpdate(memberships);
-      mockItemMemberhipServiceGetInherited();
+      mockItemMemberhipServiceGetInherited(memberships[1]);
       const mockDelete = mockItemMemberhipServiceDelete(memberships);
 
       const app = await build();
@@ -484,6 +484,7 @@ describe('Membership routes tests', () => {
         url: `/item-memberships/${memberships[1].id}`,
         payload: newMembership,
       });
+      console.log(response);
 
       expect(mockDelete).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -537,14 +538,14 @@ describe('Membership routes tests', () => {
       const memberships = [
         buildMembership({ permission: PermissionLevel.Admin, path: item.path }),
         buildMembership({
-          permission: PermissionLevel.Write,
+          permission: PermissionLevel.Read,
           path: item.path,
           memberId: member.id,
           creator: MEMBERS_FIXTURES.ACTOR.id,
         }),
       ];
       const newMembership = buildMembership({
-        permission: PermissionLevel.Read,
+        permission: PermissionLevel.Write,
         path: item.path,
         memberId: member.id,
       });
@@ -568,7 +569,7 @@ describe('Membership routes tests', () => {
       mockItemServiceGet([item]);
       mockItemMemberhipServiceGetInheritedForAll(memberships);
       mockMemberServiceGet([member]);
-      mockItemMemberhipServiceGetInherited(memberships[0]);
+      mockItemMemberhipServiceGetInherited(memberships[1]);
 
       mockItemMemberhipServiceGetAllBelow(lowerMemberships);
       const mockDelete = mockItemMemberhipServiceDelete(memberships);

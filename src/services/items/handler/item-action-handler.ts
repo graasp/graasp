@@ -35,7 +35,6 @@ export const itemActionHandler = async (
         case paths.childrenItem.test(url):
           actionsToSave.push({
             ...actionBase,
-            itemPath: paramItemId,
             actionType: ACTION_TYPES.GET_CHILDREN,
             extra: { ...actionBase.extra, itemId: paramItemId },
           });
@@ -43,7 +42,6 @@ export const itemActionHandler = async (
         case paths.baseItem.test(url):
           actionsToSave.push({
             ...actionBase,
-            itemId: paramItemId,
             actionType: ACTION_TYPES.GET,
             extra: { ...actionBase.extra, itemId: paramItemId },
           });
@@ -56,7 +54,6 @@ export const itemActionHandler = async (
           const copyItemParentId = (request.body as { parentId: string })?.parentId;
           actionsToSave.push({
             ...actionBase,
-            itemId: paramItemId,
             actionType: ACTION_TYPES.COPY,
             extra: { ...actionBase.extra, itemId: paramItemId, parentId: copyItemParentId },
           });
@@ -66,7 +63,6 @@ export const itemActionHandler = async (
           queryItemIds.forEach((id) => {
             actionsToSave.push({
               ...actionBase,
-              itemId: id,
               actionType: ACTION_TYPES.COPY,
               extra: { ...actionBase.extra, itemId: id, parentId: copyItemsParentId },
             });
@@ -76,7 +72,6 @@ export const itemActionHandler = async (
           const moveItemParentId = (request.body as { parentId: string })?.parentId;
           actionsToSave.push({
             ...actionBase,
-            itemId: paramItemId,
             actionType: ACTION_TYPES.MOVE,
             extra: { ...actionBase.extra, itemId: paramItemId, parentId: moveItemParentId },
           });
@@ -86,7 +81,6 @@ export const itemActionHandler = async (
           queryItemIds.forEach((id) => {
             actionsToSave.push({
               ...actionBase,
-              itemId: id,
               actionType: ACTION_TYPES.MOVE,
               extra: { ...actionBase.extra, itemId: id, parentId: moveItemsParentId },
             });
@@ -125,7 +119,7 @@ export const itemActionHandler = async (
   const actions = await Promise.all(
     actionsToSave.map(async (action) => {
       // warning: no check over membership !
-      const item = await dbService.get(action.itemId, dbHandler);
+      const item = await dbService.get(action.extra.itemId, dbHandler);
       // add item type and path
       return new BaseAction({ ...action, itemType: item.type, itemPath: item.path });
     }),

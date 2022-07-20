@@ -92,7 +92,6 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
     );
 
     const { permission } = data;
-
     if (inheritedMembership) {
       const { permission: inheritedPermission } = inheritedMembership;
 
@@ -115,6 +114,7 @@ export class UpdateItemMembershipTask extends BaseItemMembershipTask<ItemMembers
 
     // check existing memberships lower in the tree
     const membershipsBelow = await this.itemMembershipService.getAllBelow(memberId, item, handler);
+    console.log(membershipsBelow);
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>
