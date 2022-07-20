@@ -1,6 +1,6 @@
 # Task runner and database access
 
-The way Graasp access the database is by using a system of task, that works in the following way: 
+The way Graasp accesses the database is by using a system of tasks, that works in the following way: 
 
 ```typescript
 const tm = new TaskManager(dbService);
