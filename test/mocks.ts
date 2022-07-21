@@ -11,7 +11,7 @@ import { getDummyItem } from './fixtures/items';
 import { ACTOR, buildMember } from './fixtures/members';
 import { buildAction } from './fixtures/actions';
 import { buildMembership } from './fixtures/memberships';
-import { getIdsFromPath } from './utils';
+import { getIdsFromPath } from '@graasp/utils';
 import { ActionService } from 'graasp-plugin-actions';
 
 // Item Membership Service
@@ -145,7 +145,9 @@ export const mockItemServiceGetChildren = (fn = async () => []): jest.SpyInstanc
   return jest.spyOn(ItemService.prototype, 'getChildren').mockImplementation(fn);
 };
 
-export const mockItemServiceGetDescendants = (fn = async () => []): jest.SpyInstance => {
+export const mockItemServiceGetDescendants = (
+  fn: () => Promise<Item[]> = async () => [],
+): jest.SpyInstance => {
   return jest.spyOn(ItemService.prototype, 'getDescendants').mockImplementation(fn);
 };
 
