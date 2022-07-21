@@ -58,6 +58,8 @@ services:
     # with the value of the variable set.
     command: redis-server --requirepass $REDIS_PASSWORD
     restart: unless-stopped
+    ports:
+      - 6379:6379
 
   # Localstack is used to test aws services locally
   localstack:
