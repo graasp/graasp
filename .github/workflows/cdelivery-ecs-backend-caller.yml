@@ -11,7 +11,7 @@ jobs:
   graasp-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@7b5dd84304458c3c5ab03cbbde059670f77b1687
+    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@75e8ab3f101d60cb2d0c5b5ff6de39bc59f39c28
     # ecs-task-definition with template file. 
     with:
       ecs-task-definition: '.aws/graasp-stage.json'
