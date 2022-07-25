@@ -1,86 +1,90 @@
 // global
-import { FastifyPluginAsync } from 'fastify';
-import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
-import graaspDocumentItem from 'graasp-document-item';
-import graaspItemTags, { ItemTagService } from 'graasp-item-tags';
-import graaspItemFlags from 'graasp-item-flagging';
-import graaspItemLogin from 'graasp-plugin-item-login';
-import graaspCategoryPlugin from 'graasp-plugin-categories';
-import graaspPluginItemLikes from 'graasp-plugin-item-likes';
-import graaspValidationPlugin from 'graasp-plugin-validation';
-import graaspInvitationsPlugin from 'graasp-plugin-invitations';
-import graaspApps from 'graasp-apps';
-import graaspHidden from 'graasp-plugin-hidden-items';
-import graaspRecycleBin from 'graasp-plugin-recycle-bin';
-import graaspItemZip from 'graasp-plugin-item-zip';
-import graaspItemH5P from 'graasp-plugin-h5p';
 import fastifyCors from '@fastify/cors';
+import { FastifyPluginAsync } from 'fastify';
+import graaspApps from 'graasp-apps';
+import graaspDocumentItem from 'graasp-document-item';
+import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
+import graaspItemFlags from 'graasp-item-flagging';
+import graaspItemTags, { ItemTagService } from 'graasp-item-tags';
+import {
+  ActionHandlerInput,
+  ActionService,
+  ActionTaskManager,
+  BaseAction,
+} from 'graasp-plugin-actions';
+import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
-import {
-  ActionTaskManager,
-  ActionService,
-  BaseAction,
-  ActionHandlerInput,
-} from 'graasp-plugin-actions';
+import graaspItemH5P from 'graasp-plugin-h5p';
+import graaspHidden from 'graasp-plugin-hidden-items';
+import graaspInvitationsPlugin from 'graasp-plugin-invitations';
+import graaspPluginItemLikes from 'graasp-plugin-item-likes';
+import graaspItemLogin from 'graasp-plugin-item-login';
+import graaspItemPublishPlugin from 'graasp-plugin-item-publish';
+import graaspItemZip from 'graasp-plugin-item-zip';
+import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import thumbnailsPlugin, {
   buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
 } from 'graasp-plugin-thumbnails';
+import graaspValidationPlugin from 'graasp-plugin-validation';
 
+import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 import {
-  MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-  EMBEDDED_LINK_ITEM_PLUGIN,
-  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-  GRAASP_ACTOR,
-  APPS_PLUGIN,
   APPS_JWT_SECRET,
+  APPS_PLUGIN,
+  APPS_PUBLISHER_ID,
+  APP_ITEMS_PREFIX,
+  AUTH_CLIENT_HOST,
   CHATBOX_PLUGIN,
-  WEBSOCKETS_PLUGIN,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
+  CLIENT_HOSTS,
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+  EMBEDDED_LINK_ITEM_PLUGIN,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
-  SERVICE_METHOD,
-  THUMBNAILS_PATH_PREFIX,
-  ITEMS_ROUTE_PREFIX,
-  APP_ITEMS_PREFIX,
-  LOGIN_ITEM_TAG_ID,
-  THUMBNAILS_ROUTE_PREFIX,
+  GRAASP_ACTOR,
+  H5P_CONTENT_PLUGIN_OPTIONS,
+  H5P_PATH_PREFIX,
   HIDDEN_TAG_ID,
-  SAVE_ACTIONS,
-  CLIENT_HOSTS,
   IMAGE_CLASSIFIER_API,
+  ITEMS_ROUTE_PREFIX,
+  LOGIN_ITEM_TAG_ID,
+  MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
+  PROTOCOL,
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
-  AUTH_CLIENT_HOST,
-  PROTOCOL,
-  H5P_PATH_PREFIX,
-  H5P_CONTENT_PLUGIN_OPTIONS,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
+  SAVE_ACTIONS,
+  SERVICE_METHOD,
+  THUMBNAILS_PATH_PREFIX,
+  THUMBNAILS_ROUTE_PREFIX,
+  WEBSOCKETS_PLUGIN,
 } from '../../util/config';
-import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 // local
+import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
 import {
-  getOne,
-  getMany,
-  getChildren,
-  create,
-  updateOne,
-  updateMany,
-  deleteOne,
-  deleteMany,
-  moveOne,
-  moveMany,
-  copyOne,
   copyMany,
-  getOwnGetShared,
+  copyOne,
+  create,
+  deleteMany,
+  deleteOne,
+  getChildren,
+  getDescendants,
+  getMany,
+  getOne,
+  getOwn,
+  getShared,
+  moveMany,
+  moveOne,
+  updateMany,
+  updateOne,
 } from './fluent-schema';
-import { TaskManager } from './task-manager';
+import { itemActionHandler } from './handler/item-action-handler';
+import { Item } from './interfaces/item';
 import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
+import { TaskManager } from './task-manager';
 import { registerItemWsHooks } from './ws/hooks';
-import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
-import { Item } from './interfaces/item';
-import { itemActionHandler } from './handler/item-action-handler';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
@@ -110,6 +114,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       serviceMethod: SERVICE_METHOD,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
       prefix: APP_ITEMS_PREFIX,
+      publisherId: APPS_PUBLISHER_ID,
     });
   }
 
@@ -217,6 +222,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemTags);
 
+        await fastify.register(graaspItemPublishPlugin, {
+          publishedTagId: PUBLISHED_TAG_ID,
+          publicTagId: PUBLIC_TAG_ID,
+          graaspActor: GRAASP_ACTOR,
+          hostname: CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname,
+        });
+
         fastify.register(graaspHidden, {
           hiddenTagId: HIDDEN_TAG_ID,
         });
@@ -318,16 +330,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
 
           // get own
-          fastify.get('/own', { schema: getOwnGetShared }, async ({ member, log }) => {
+          fastify.get('/own', { schema: getOwn }, async ({ member, log }) => {
             const task = taskManager.createGetOwnTask(member);
             return runner.runSingle(task, log);
           });
 
           // get shared with
-          fastify.get('/shared-with', { schema: getOwnGetShared }, async ({ member, log }) => {
-            const task = taskManager.createGetSharedWithTask(member);
-            return runner.runSingle(task, log);
-          });
+          fastify.get<{ Querystring: { permission?: string[] } }>(
+            '/shared-with',
+            { schema: getShared },
+            async ({ member, log, query }) => {
+              const permissions = query?.permission?.filter((p) => Boolean(p));
+              const task = taskManager.createGetSharedWithTask(member, { permissions });
+              return runner.runSingle(task, log);
+            },
+          );
 
           // get item's children
           fastify.get<{ Params: IdParam; Querystring: Ordered }>(
@@ -335,6 +352,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             { schema: getChildren },
             async ({ member, params: { id }, query: { ordered }, log }) => {
               const tasks = taskManager.createGetChildrenTaskSequence(member, id, ordered);
+              return runner.runSingleSequence(tasks, log);
+            },
+          );
+
+          // get item's descendants
+          fastify.get<{ Params: IdParam }>(
+            '/:id/descendants',
+            { schema: getDescendants },
+            async ({ member, params: { id }, log }) => {
+              const tasks = taskManager.createGetDescendantsTaskSequence(member, id);
               return runner.runSingleSequence(tasks, log);
             },
           );

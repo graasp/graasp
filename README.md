@@ -30,7 +30,7 @@ Graasp offers two ways to install the Graasp backend :
     - Docker : this allows you to run a preconfigured environnement (Recommended)
     - Local : you'll need to install and configure all the required services
 
-### Docker installation (Recommended) 
+### Docker installation (Recommended)
 
 We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
 
@@ -38,13 +38,13 @@ First open the folder in the dev-container by using the command palette <kbd>cmd
 
 This will create 3 containers :
 - `app` : Node.js backend of Graasp
-- `db` : PostgreSQL database used by the backend 
+- `db` : PostgreSQL database used by the backend
 - `redis` : Redis instance to enable websockets
 - `localstack` : Localstack instance use to locally test S3 storage
 
 To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 graasp-localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://graasp-localstack` hostname.
 
-Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`). 
+Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
 
 If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.
 
@@ -92,11 +92,13 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Invitations [`db-schema.sql`](https://github.com/graasp/graasp-plugin-invitations/blob/main/db-schema.sql)
 
+- Subscriptions [`db-schema.sql`](https://github.com/graasp/graasp-plugin-subscriptions/blob/main/db-schema.sql)
+
 ### Configuration
 
 To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :
 
-````
+```` bash
 # Application server
 # PROTOCOL=http
 # HOSTNAME=localhost
@@ -157,6 +159,7 @@ EMBEDDED_LINK_ITEM_PLUGIN=false
 # Graasp apps
 APPS_PLUGIN=true
 APPS_JWT_SECRET=<content>
+APPS_PUBLISHER_ID=<id>
 
 # Graasp websockets
 # If you are using a local installation and don't want to install redis, you can set WEBSOCKETS_PLUGIN to false
@@ -176,9 +179,24 @@ PUBLISHED_TAG_ID=<tag-id>
 PUBLIC_TAG_ID=<tag-id>
 LOGIN_ITEM_TAG_ID=<tag-id>
 
-# Graasp Actions
+# Graasp Actions and hosts
 SAVE_ACTIONS=true
+BUILDER_CLIENT_HOST=<value>
+PLAYER_CLIENT_HOST=<value>
+EXPLORER_CLIENT_HOST=<value>
+AUTH_CLIENT_HOST=<value>
+
+# validation containers
+IMAGE_CLASSIFIER_API=<url>
 ````
+
+> ⚠️ ** Warning ** ⚠️: By default, the Redis database will use a password. This password must be defined inside `.devcontainer/.env`. It must be the same as in the `.env.development` file because this is where the code will fetch the password. At the moment no easy way was found to de-duplicate this env variable.
+
+```
+REDIS_PASSWORD=<your password here>
+```
+
+If you wish to disable password auth for the Redis database, you should comment out the `command: redis-server --requirepass $REDIS_PASSWORD` line in `.devcontainer/docker-compose.yml`.
 
 ## Running
 

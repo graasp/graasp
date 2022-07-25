@@ -13,6 +13,20 @@ export default {
       additionalProperties: false,
     },
 
+    currentMember: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string' },
+        type: { type: 'string' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' },
+        extra: { type: 'object', additionalProperties: true },
+      },
+      additionalProperties: false,
+    },
+
     // member properties that can be modified with user input
     partialMember: {
       type: 'object',
@@ -32,6 +46,13 @@ export default {
         },
       ],
     },
+  },
+};
+
+// schema for getting current member
+const getCurrent = {
+  response: {
+    200: { $ref: 'http://graasp.org/members/#/definitions/currentMember' },
   },
 };
 
@@ -75,18 +96,24 @@ const getMany = {
 };
 
 // schema for getting members by
-const getBy = {
+const getManyBy = {
   querystring: {
     type: 'object',
     properties: {
-      email: { type: 'string', format: 'email' },
+      email: {
+        type: 'array',
+        items: { type: 'string', format: 'email' },
+      },
+      additionalProperties: false,
     },
-    additionalProperties: false,
   },
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/members/#/definitions/member' },
+      items: {
+        type: 'array',
+        items: { $ref: 'http://graasp.org/members/#/definitions/member' },
+      },
     },
   },
 };
@@ -108,4 +135,4 @@ const deleteOne = {
   },
 };
 
-export { getOne, getMany, updateOne, getBy, deleteOne };
+export { getCurrent, getOne, getMany, updateOne, getManyBy, deleteOne };

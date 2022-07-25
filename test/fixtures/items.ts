@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UnknownExtra } from '../../src/interfaces/extra';
 import { Item } from '../../src/services/items/interfaces/item';
-import { buildPathFromId } from '../utils';
+import { buildPathFromIds } from '@graasp/utils';
 import { ACTOR } from './members';
 import { ItemSettings } from '../../src/services/items/interfaces/item';
 import { ITEM_TYPES } from '../../src/services/items/constants/constants';
@@ -33,7 +33,7 @@ export const getDummyItem = (
     settings = {} as ItemSettings,
   } = options;
   const buildId = id ?? uuidv4();
-  let buildPath = path ?? buildPathFromId(buildId);
+  let buildPath = path ?? buildPathFromIds(buildId);
 
   if (parentPath) buildPath = `${parentPath}.${buildPath}`;
 

@@ -16,7 +16,8 @@ const settings = S.object()
   .prop('tags', S.array())
   .prop('showChatbox', S.boolean())
   .prop('hasThumbnail', S.boolean())
-  .prop('ccLicenseAdaption', S.string());
+  .prop('ccLicenseAdaption', S.string())
+  .prop('displayCoEditors', S.boolean());
 
 const item = S.object()
   .additionalProperties(false)
@@ -42,7 +43,7 @@ const item = S.object()
 // type 'base' (empty extra {})
 const baseItemCreate = S.object()
   .additionalProperties(false)
-  .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
+  .prop('name', S.string().minLength(1).pattern('^\\S[ \\S]*$'))
   .prop('description', S.string())
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
@@ -129,7 +130,25 @@ const getChildren = {
   },
 };
 
-const getOwnGetShared = {
+const getDescendants = {
+  params: idParam,
+  response: {
+    200: S.array().items(item),
+    '4xx': error,
+  },
+};
+
+const getOwn = {
+  response: {
+    200: S.array().items(item),
+    '4xx': error,
+  },
+};
+
+const getShared = {
+  querystring: S.object()
+    .additionalProperties(false)
+    .prop('permission', S.array().items(S.string())),
   response: {
     200: S.array().items(item),
     '4xx': error,
@@ -223,8 +242,10 @@ export {
   initializedCreate as create,
   getOne,
   getChildren,
+  getDescendants,
   getMany,
-  getOwnGetShared,
+  getOwn,
+  getShared,
   initializedUpdate as updateOne,
   updateMany,
   deleteOne,

@@ -12,13 +12,19 @@ import {
   SERVICE_METHOD,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
   AVATARS_PATH_PREFIX,
+  SUBSCRIPTION_ROUTE_PREFIX,
 } from '../../util/config';
 import { CannotModifyOtherMembers } from '../../util/graasp-error';
 import { Member } from './interfaces/member';
 import { MemberTaskManager } from './interfaces/member-task-manager';
-import { EmailParam } from './interfaces/requests';
-import common, { getOne, getMany, getBy, updateOne, deleteOne } from './schemas';
+import common, { getOne, getMany, getManyBy, updateOne, deleteOne, getCurrent } from './schemas';
 import { TaskManager } from './task-manager';
+import subscriptionsPlugin from 'graasp-plugin-subscriptions';
+import {
+  STRIPE_DEFAULT_PLAN_PRICE_ID,
+  STRIPE_SECRET_KEY,
+  SUBSCRIPTION_PLUGIN,
+} from '../../util/config';
 
 const ROUTES_PREFIX = '/members';
 
@@ -77,8 +83,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         prefix: '/avatars',
       });
 
+      if (SUBSCRIPTION_PLUGIN) {
+        fastify.register(subscriptionsPlugin, {
+          stripeSecretKey: STRIPE_SECRET_KEY,
+          stripeDefaultProductId: STRIPE_DEFAULT_PLAN_PRICE_ID,
+          prefix: SUBSCRIPTION_ROUTE_PREFIX,
+        });
+      }
+
       // get current
-      fastify.get('/current', async ({ member }) => member);
+      fastify.get('/current', { schema: getCurrent }, async ({ member }) => member);
 
       // get member
       fastify.get<{ Params: IdParam }>(
@@ -101,12 +115,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // get members by
-      fastify.get<{ Querystring: EmailParam }>(
+      fastify.get<{ Querystring: { email: string[] } }>(
         '/search',
-        { schema: getBy },
-        async ({ member, query: { email }, log }) => {
-          const task = taskManager.createGetByTask(member, { email });
-          return runner.runSingle(task, log);
+        { schema: getManyBy },
+        async ({ member, query: { email: emails }, log }) => {
+          const tasks = emails.map((email) => taskManager.createGetByTask(member, { email }));
+          return runner.runMultiple(tasks, log);
         },
       );
 

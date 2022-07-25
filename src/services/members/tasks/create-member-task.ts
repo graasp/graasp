@@ -29,6 +29,8 @@ export class CreateMemberTask<E extends UnknownExtra> extends BaseMemberTask<Mem
 
     const { data } = this.input;
 
+    await this.preHookHandler?.(data, this.actor, { log, handler });
+
     // create member
     const member = await this.memberService.create<E>(data, handler);
     await this.postHookHandler?.(member, this.actor, { log, handler });

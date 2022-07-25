@@ -51,9 +51,12 @@ services:
   redis:
     container_name: graasp-redis
     image: redis
+    # For this to work a .env file needs to be provided in the .devcontainer folder
+    # with the value of the variable set.
+    command: redis-server --requirepass $REDIS_PASSWORD
+    restart: unless-stopped
     ports:
       - 6379:6379
-    restart: unless-stopped
 
   # Localstack is used to test aws services locally
   localstack:

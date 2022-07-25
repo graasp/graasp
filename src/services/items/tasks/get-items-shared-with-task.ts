@@ -9,13 +9,19 @@ import { ItemService } from '../db-service';
 import { Item } from '../interfaces/item';
 import { BaseItemTask } from './base-item-task';
 
+export interface GetItemsSharedWithTaskInputType {
+  permissions?: string[];
+}
 export class GetItemsSharedWithTask extends BaseItemTask<Item[]> {
+  input: GetItemsSharedWithTaskInputType;
+
   get name(): string {
     return GetItemsSharedWithTask.name;
   }
 
-  constructor(member: Member, itemService: ItemService) {
+  constructor(member: Member, itemService: ItemService, input: GetItemsSharedWithTaskInputType) {
     super(member, itemService);
+    this.input = input;
   }
 
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance): Promise<void> {
@@ -24,7 +30,7 @@ export class GetItemsSharedWithTask extends BaseItemTask<Item[]> {
     const { id: memberId } = this.actor;
 
     // get items "shared with" member
-    const items = await this.itemService.getSharedWith(memberId, handler);
+    const items = await this.itemService.getSharedWith(memberId, this.input, handler);
 
     await this.postHookHandler?.(items, this.actor, { log, handler });
 

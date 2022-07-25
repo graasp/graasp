@@ -1,15 +1,16 @@
-import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from '@fastify/cors';
-import { ItemTagService } from 'graasp-item-tags';
-import graaspPluginPublic, { PublicItemService, PublicItemTaskManager } from 'graasp-plugin-public';
-import { publicPlugin as publicThumbnailsPlugin } from 'graasp-plugin-thumbnails';
-import { publicPlugin as publicFileItemPlugin } from 'graasp-plugin-file-item';
-import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
+import { FastifyPluginAsync } from 'fastify';
 import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
+import { ItemTagService } from 'graasp-item-tags';
+import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
-import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
-import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
+import { publicPlugin as publicFileItemPlugin } from 'graasp-plugin-file-item';
 import { publicPlugin as publicH5PPlugin } from 'graasp-plugin-h5p';
+import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
+import graaspPluginPublic, { PublicItemService, PublicItemTaskManager } from 'graasp-plugin-public';
+import { publicPlugin as publicSearchPlugin } from 'graasp-plugin-search';
+import { publicPlugin as publicThumbnailsPlugin } from 'graasp-plugin-thumbnails';
+
 import {
   APPS_JWT_SECRET,
   APP_ITEMS_PREFIX,

@@ -4,7 +4,7 @@ import build from './app';
 import { getDummyItem, LOTS_OF_ITEMS } from './fixtures/items';
 import { PermissionLevel } from '../src/services/item-memberships/interfaces/item-membership';
 import * as MEMBERS_FIXTURES from './fixtures/members';
-import { buildPathFromId } from './utils';
+import { buildPathFromIds } from '@graasp/utils';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -86,7 +86,7 @@ describe('Item routes tests', () => {
       expect(newItem.name).toEqual(payload.name);
       expect(newItem.description).toEqual(payload.description);
       expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
-      expect(newItem.path).toEqual(buildPathFromId(newItem.id));
+      expect(newItem.path).toEqual(buildPathFromIds(newItem.id));
       expect(newItem.extra).toEqual(payload.extra);
       expect(newItem.type).toEqual(payload.type);
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -120,8 +120,8 @@ describe('Item routes tests', () => {
       expect(newItem.name).toEqual(payload.name);
       expect(newItem.description).toEqual(payload.description);
       expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
-      expect(newItem.path).toContain(buildPathFromId(newItem.id));
-      expect(newItem.path).toContain(buildPathFromId(parent.id));
+      expect(newItem.path).toContain(buildPathFromIds(newItem.id));
+      expect(newItem.path).toContain(buildPathFromIds(parent.id));
       expect(newItem.extra).toEqual(payload.extra);
       expect(newItem.type).toEqual(payload.type);
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -152,13 +152,37 @@ describe('Item routes tests', () => {
       expect(newItem.name).toEqual(payload.name);
       expect(newItem.description).toEqual(payload.description);
       expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
-      expect(newItem.path).toContain(buildPathFromId(newItem.id));
-      expect(newItem.path).toContain(buildPathFromId(parent.id));
+      expect(newItem.path).toContain(buildPathFromIds(newItem.id));
+      expect(newItem.path).toContain(buildPathFromIds(parent.id));
       expect(newItem.extra).toEqual(payload.extra);
       expect(newItem.type).toEqual(payload.type);
       expect(response.statusCode).toBe(StatusCodes.OK);
       // a membership is created for this item
       expect(baseItemMembershipMock).toHaveBeenCalled();
+      app.close();
+    });
+    it('Bad request if name is invalid', async () => {
+      const app = await build();
+      // by default the item creator use an invalid item type
+      const newItem = getDummyItem({ name: '' });
+      const response = await app.inject({
+        method: 'POST',
+        url: '/items',
+        payload: newItem,
+      });
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+
+      // by default the item creator use an invalid item type
+      const newItem1 = getDummyItem({ name: ' ' });
+      const response1 = await app.inject({
+        method: 'POST',
+        url: '/items',
+        payload: newItem1,
+      });
+      expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+
       app.close();
     });
     it('Bad request if type is invalid', async () => {
@@ -451,6 +475,40 @@ describe('Item routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
       app.close();
     });
+    it('Returns successfully with one permission filter', async () => {
+      const items = [
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+      ];
+      mockItemServiceGetSharedWith(items);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: '/items/shared-with?permission=read',
+      });
+
+      expect(response.json()).toEqual(items);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+    it('Returns successfully with two permission filters', async () => {
+      const items = [
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+        getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id }),
+      ];
+      mockItemServiceGetSharedWith(items);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: '/items/shared-with?permission=admin&permission=write',
+      });
+
+      expect(response.json()).toEqual(items);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
   });
   describe('GET /items/:id/children', () => {
     it('Returns successfully', async () => {
@@ -560,6 +618,78 @@ describe('Item routes tests', () => {
       const response = await app.inject({
         method: HTTP_METHODS.GET,
         url: `/items/${item.id}/children`,
+      });
+
+      expect(response.json()).toEqual(new MemberCannotAccess(item.id));
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      app.close();
+    });
+  });
+
+  describe('GET /items/:id/descendants', () => {
+    it('Returns successfully', async () => {
+      const item = getDummyItem();
+      const descendants = [getDummyItem(), getDummyItem()];
+      const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
+      mockItemServiceGet([item]);
+      mockItemMembershipServiceGetForMemberAtItem(memberships);
+      mockItemServiceGetDescendants(async () => descendants);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/items/${item.id}/descendants`,
+      });
+
+      expect(response.json()).toEqual(descendants);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+    it('Returns successfully empty descendants', async () => {
+      const item = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
+      mockItemServiceGet([item]);
+      mockItemMembershipServiceGetForMemberAtItem(memberships);
+      mockItemServiceGetDescendants(async () => []);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/items/${item.id}/descendants`,
+      });
+
+      expect(response.json()).toEqual([]);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      app.close();
+    });
+    it('Bad Request for invalid id', async () => {
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: '/items/invalid-id/descendants',
+      });
+
+      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      app.close();
+    });
+    it('Cannot get descendants from unexisting item', async () => {
+      const app = await build();
+      const id = uuidv4();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/items/${id}/descendants`,
+      });
+
+      expect(response.json()).toEqual(new ItemNotFound(id));
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      app.close();
+    });
+    it('Cannot get descendants if does not have membership on parent', async () => {
+      const item = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
+      mockItemServiceGet([item]);
+      const app = await build();
+      const response = await app.inject({
+        method: HTTP_METHODS.GET,
+        url: `/items/${item.id}/descendants`,
       });
 
       expect(response.json()).toEqual(new MemberCannotAccess(item.id));
@@ -1251,7 +1381,7 @@ describe('Item routes tests', () => {
       expect(newItem.name).toEqual(item.name);
       expect(newItem.description).toEqual(item.description);
       expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
-      expect(newItem.path).toContain(buildPathFromId(targetItem.id));
+      expect(newItem.path).toContain(buildPathFromIds(targetItem.id));
       expect(newItem.type).toEqual(item.type);
       // copy adds the children order
       expect(newItem.extra.folder.childrenOrder).toEqual([]);
@@ -1296,7 +1426,7 @@ describe('Item routes tests', () => {
       expect(newItem.name).toEqual(item.name);
       expect(newItem.description).toEqual(item.description);
       expect(newItem.creator).toEqual(MEMBERS_FIXTURES.ACTOR.id);
-      expect(newItem.path).toContain(buildPathFromId(targetItem.id));
+      expect(newItem.path).toContain(buildPathFromIds(targetItem.id));
       expect(newItem.type).toEqual(item.type);
 
       // check order is different and contains more children
