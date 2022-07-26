@@ -1,5 +1,4 @@
-import { Item, ItemMembership, Member, PermissionLevel } from '@graasp/sdk';
-import { getIdsFromPath } from '@graasp/utils';
+import { Item, ItemMembership, Member, PermissionLevel, getIdsFromPath } from '@graasp/sdk';
 import { ActionService } from 'graasp-plugin-actions';
 
 import { ItemMembershipService } from '../src/services/item-memberships/db-service';
