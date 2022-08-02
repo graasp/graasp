@@ -484,7 +484,6 @@ describe('Membership routes tests', () => {
         url: `/item-memberships/${memberships[1].id}`,
         payload: newMembership,
       });
-      console.log(response);
 
       expect(mockDelete).toHaveBeenCalledTimes(1);
       expect(response.statusCode).toBe(StatusCodes.OK);
