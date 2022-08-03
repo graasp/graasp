@@ -72,7 +72,7 @@
     "graasp-plugin-hidden-items": "github:graasp/graasp-plugin-hidden-items",
     "graasp-plugin-invitations": "github:graasp/graasp-plugin-invitations",
     "graasp-plugin-item-likes": "github:graasp/graasp-plugin-item-likes",
-    "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login#12/crypto",
+    "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
     "graasp-plugin-item-publish": "github:graasp/graasp-plugin-item-publish",
     "graasp-plugin-item-zip": "github:graasp/graasp-plugin-item-zip",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",

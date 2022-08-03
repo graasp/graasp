@@ -5132,9 +5132,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-item-login@github:graasp/graasp-plugin-item-login#12/crypto":
+"graasp-plugin-item-login@github:graasp/graasp-plugin-item-login":
   version: 0.1.0
-  resolution: "graasp-plugin-item-login@https://github.com/graasp/graasp-plugin-item-login.git#commit=ee9245a5999ff7dbeab730c0564113aa32271630"
+  resolution: "graasp-plugin-item-login@https://github.com/graasp/graasp-plugin-item-login.git#commit=4d0849db1ceb85f00963f8ea9e1c380368c89156"
   dependencies:
     bcrypt: ^5.0.1
     fastify-plugin: ^3.0.0
@@ -5317,7 +5317,7 @@ __metadata:
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
-    graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login#12/crypto"
+    graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
     graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
     graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
