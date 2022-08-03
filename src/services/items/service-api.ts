@@ -102,8 +102,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendExtrasUpdateSchema = updateOne;
   const itemTagService = new ItemTagService();
 
-  fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
-  fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
+  fastify.decorate('file', {
+    s3Config: S3_FILE_ITEM_PLUGIN_OPTIONS,
+    localConfig: FILE_ITEM_PLUGIN_OPTIONS,
+  });
 
   // deployed w/o the '/items' prefix and w/o auth pre-handler
   if (APPS_PLUGIN) {
