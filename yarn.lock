@@ -3336,15 +3336,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"crypto-random-string@npm:5.0.0":
-  version: 5.0.0
-  resolution: "crypto-random-string@npm:5.0.0"
-  dependencies:
-    type-fest: ^2.12.2
-  checksum: 42c8ad00764e865c7c8975b82b21d3a5b482ceaf141f04d76afa5537c718705b1c2c28082c69e71dba10a6a161bcd4b778e49ec2dbf031bc16dba361d7d2c9c6
-  languageName: node
-  linkType: hard
-
 "cssom@npm:^0.4.4":
   version: 0.4.4
   resolution: "cssom@npm:0.4.4"
@@ -5110,9 +5101,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items#3/sdk":
+"graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items":
   version: 0.1.0
-  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=16074f4dc00356e1a1ab33c8491d8029cf235904"
+  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=2a6b7a2e6d1b45348e9804576f8ec65206b42f16"
   dependencies:
     graasp-item-tags: graasp/graasp-item-tags
   checksum: 55a680a65927d987111a07c2a0c428c937ad0921f7a9e24abb7516629152bc126560c589167c299ace5e123a7328172e8f51c426fb08cd0fb0bd4e643c977f61
@@ -5141,15 +5132,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-item-login@github:graasp/graasp-plugin-item-login":
+"graasp-plugin-item-login@github:graasp/graasp-plugin-item-login#12/crypto":
   version: 0.1.0
-  resolution: "graasp-plugin-item-login@https://github.com/graasp/graasp-plugin-item-login.git#commit=84c42035d4ee1f683056e3000ff6a0ef1aa6093b"
+  resolution: "graasp-plugin-item-login@https://github.com/graasp/graasp-plugin-item-login.git#commit=ee9245a5999ff7dbeab730c0564113aa32271630"
   dependencies:
     bcrypt: ^5.0.1
-    crypto-random-string: 5.0.0
     fastify-plugin: ^3.0.0
     http-status-codes: 2.2.0
-  checksum: 8ddb2e84871d26bb3dc039048e4c77f5bbb137110b4209f4461b7a82038ed14bc42f18262b9f224359ce6e88267ce63c9e35cdacc158c8510a4c7d1cbb4a706f
+  checksum: c71860896f46df29071012ef0a33592106380528a9e73cbeda0359db90c44bce77f2305dd13cc4add44c40b133a9c26dd232a607018c57bbc7356f3a82c594ea
   languageName: node
   linkType: hard
 
@@ -5324,10 +5314,10 @@ __metadata:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items#3/sdk"
+    graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
-    graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
+    graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login#12/crypto"
     graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
     graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
@@ -10333,13 +10323,6 @@ __metadata:
   version: 1.4.0
   resolution: "type-fest@npm:1.4.0"
   checksum: b011c3388665b097ae6a109a437a04d6f61d81b7357f74cbcb02246f2f5bd72b888ae33631b99871388122ba0a87f4ff1c94078e7119ff22c70e52c0ff828201
-  languageName: node
-  linkType: hard
-
-"type-fest@npm:^2.12.2":
-  version: 2.18.0
-  resolution: "type-fest@npm:2.18.0"
-  checksum: 0737128d9d77b93793c6ee443e304462a792f5b723a6be035d6cb488c5610a8baa00522805421341c04324c80efba9849885bbfbc5a9623d0672fe8712969f62
   languageName: node
   linkType: hard
 
