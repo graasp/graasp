@@ -1,15 +1,17 @@
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
+
+import { HttpMethod } from '@graasp/sdk';
+
+import { CannotModifyOtherMembers, MemberNotFound } from '../src/util/graasp-error';
 import build from './app';
 import * as MEMBERS_FIXTURES from './fixtures/members';
-import { CannotModifyOtherMembers, MemberNotFound } from '../src/util/graasp-error';
 import {
+  mockMemberServiceDelete,
   mockMemberServiceGet,
   mockMemberServiceGetMatching,
   mockMemberServiceUpdate,
-  mockMemberServiceDelete,
 } from './mocks';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { HTTP_METHODS } from './fixtures/utils';
 
 // mock auth, decorator and database plugins
 jest.mock('../src/plugins/database');
@@ -27,7 +29,7 @@ describe('Member routes tests', () => {
       const app = await build();
 
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: '/members/current',
       });
 
@@ -49,7 +51,7 @@ describe('Member routes tests', () => {
       const app = await build();
       const memberId = member.id;
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members/${memberId}`,
       });
 
@@ -65,7 +67,7 @@ describe('Member routes tests', () => {
       const app = await build();
       const memberId = 'invalid-id';
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members/${memberId}`,
       });
 
@@ -80,7 +82,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGet([]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members/${memberId}`,
       });
 
@@ -97,7 +99,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGet(members);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members?${qs.stringify(
           { id: members.map(({ id }) => id) },
           { arrayFormat: 'repeat' },
@@ -120,7 +122,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGet(members);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members?${qs.stringify({ id: members[0].id }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -142,7 +144,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGet(members);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members?${qs.stringify(
           { id: members.map(({ id }) => id) },
           { arrayFormat: 'repeat' },
@@ -162,7 +164,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGet(members);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members?${qs.stringify(
           { id: [memberId, ...members.map(({ id }) => id)] },
           { arrayFormat: 'repeat' },
@@ -181,7 +183,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGetMatching([member]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members/search?email=${member.email}`,
       });
 
@@ -197,7 +199,7 @@ describe('Member routes tests', () => {
       const app = await build();
       const email = 'not-a-valid-email';
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members/search?email=${email}`,
       });
 
@@ -211,7 +213,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGetMatching([]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.GET,
+        method: HttpMethod.GET,
         url: `/members/search?email=${email}`,
       });
 
@@ -229,7 +231,7 @@ describe('Member routes tests', () => {
       mockMemberServiceUpdate([member]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/members/${member.id}`,
         payload: {
           name: newName,
@@ -251,7 +253,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGet([member]);
       mockMemberServiceUpdate([member]);
       const response = await app.inject({
-        method: HTTP_METHODS.PATCH,
+        method: HttpMethod.PATCH,
         url: `/members/${member.id}`,
         payload: {
           name: 'new name',
@@ -272,7 +274,7 @@ describe('Member routes tests', () => {
       mockMemberServiceDelete([member]);
       const app = await build();
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/members/${member.id}`,
       });
 
@@ -287,7 +289,7 @@ describe('Member routes tests', () => {
       mockMemberServiceGet([member]);
       mockMemberServiceDelete([member]);
       const response = await app.inject({
-        method: HTTP_METHODS.DELETE,
+        method: HttpMethod.DELETE,
         url: `/members/${member.id}`,
       });
 

@@ -1,12 +1,7 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { TaskStatus } from '../../..';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../../services/members/interfaces/member';
-// local
-import { ItemService } from '../db-service';
-import { Item } from '../interfaces/item';
+
+import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
+
 import { BaseItemTask } from './base-item-task';
 
 export interface GetItemsSharedWithTaskInputType {

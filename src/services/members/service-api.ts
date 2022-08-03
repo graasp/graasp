@@ -1,30 +1,26 @@
-// global
-import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from '@fastify/cors';
-import thumbnailsPlugin, {
-  buildFilePathWithPrefix,
-  THUMBNAIL_MIMETYPE,
-} from 'graasp-plugin-thumbnails';
-import { IdParam, IdsParams } from '../../interfaces/requests';
-// local
-import {
-  FILE_ITEM_PLUGIN_OPTIONS,
-  SERVICE_METHOD,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
-  AVATARS_PATH_PREFIX,
-  SUBSCRIPTION_ROUTE_PREFIX,
-} from '../../util/config';
-import { CannotModifyOtherMembers } from '../../util/graasp-error';
-import { Member } from './interfaces/member';
-import { MemberTaskManager } from './interfaces/member-task-manager';
-import common, { getOne, getMany, getManyBy, updateOne, deleteOne, getCurrent } from './schemas';
-import { TaskManager } from './task-manager';
+import { FastifyPluginAsync } from 'fastify';
+
+import { IdParam, IdsParams, Member, MemberTaskManager } from '@graasp/sdk';
 import subscriptionsPlugin from 'graasp-plugin-subscriptions';
+import thumbnailsPlugin, {
+  THUMBNAIL_MIMETYPE,
+  buildFilePathWithPrefix,
+} from 'graasp-plugin-thumbnails';
+
 import {
+  AVATARS_PATH_PREFIX,
+  FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_TYPE,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
   STRIPE_DEFAULT_PLAN_PRICE_ID,
   STRIPE_SECRET_KEY,
   SUBSCRIPTION_PLUGIN,
+  SUBSCRIPTION_ROUTE_PREFIX,
 } from '../../util/config';
+import { CannotModifyOtherMembers } from '../../util/graasp-error';
+import common, { deleteOne, getCurrent, getMany, getManyBy, getOne, updateOne } from './schemas';
+import { TaskManager } from './task-manager';
 
 const ROUTES_PREFIX = '/members';
 
@@ -53,8 +49,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
       fastify.register(thumbnailsPlugin, {
-        serviceMethod: SERVICE_METHOD,
-        serviceOptions: {
+        fileItemType: FILE_ITEM_TYPE,
+        fileConfigurations: {
           s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
           local: FILE_ITEM_PLUGIN_OPTIONS,
         },

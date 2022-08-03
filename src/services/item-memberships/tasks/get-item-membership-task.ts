@@ -1,13 +1,13 @@
-// global
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../members/interfaces/member';
-// local
-import { ItemMembershipService } from '../db-service';
-import { ItemMembership } from '../interfaces/item-membership';
+import {
+  DatabaseTransactionHandler,
+  ItemMembership,
+  ItemMembershipService,
+  Member,
+  TaskStatus,
+} from '@graasp/sdk';
+
 import { ItemMembershipNotFound } from '../../../util/graasp-error';
 import { BaseItemMembershipTask } from './base-item-membership-task';
-import { TaskStatus } from '../../..';
 
 type InputType = { itemMembershipId?: string };
 

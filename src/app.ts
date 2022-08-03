@@ -1,42 +1,41 @@
+import fastifyCors from '@fastify/cors';
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import fastifyCors from '@fastify/cors';
-import publicPlugin from './plugins/public';
-import graaspPluginActions from 'graasp-plugin-actions';
 
-import {
-  COOKIE_DOMAIN,
-  PG_CONNECTION_URI,
-  DATABASE_LOGS,
-  MAILER_CONFIG_SMTP_HOST,
-  MAILER_CONFIG_USERNAME,
-  MAILER_CONFIG_PASSWORD,
-  MAILER_CONFIG_FROM_EMAIL,
-  WEBSOCKETS_PLUGIN,
-  REDIS_HOST,
-  REDIS_PORT,
-  REDIS_USERNAME,
-  REDIS_PASSWORD,
-  PUBLIC_PLUGIN,
-  GRAASP_ACTOR,
-  SAVE_ACTIONS,
-  CLIENT_HOSTS,
-  SERVICE_METHOD,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
-  FILE_ITEM_PLUGIN_OPTIONS,
-} from './util/config';
-import shared from './schemas/fluent-schema';
-
-import databasePlugin from './plugins/database';
-import authPlugin from './plugins/auth/auth';
-import metaPlugin from './plugins/meta';
 import mailerPlugin from 'graasp-mailer';
+import graaspPluginActions from 'graasp-plugin-actions';
 import graaspWebSockets from 'graasp-websockets';
 
-import ItemsServiceApi from './services/items/service-api';
-import ItemMembershipsServiceApi from './services/item-memberships/service-api';
-import MemberServiceApi from './services/members/service-api';
+import authPlugin from './plugins/auth/auth';
+import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
+import metaPlugin from './plugins/meta';
+import publicPlugin from './plugins/public';
+import shared from './schemas/fluent-schema';
+import ItemMembershipsServiceApi from './services/item-memberships/service-api';
+import ItemsServiceApi from './services/items/service-api';
+import MemberServiceApi from './services/members/service-api';
+import {
+  CLIENT_HOSTS,
+  COOKIE_DOMAIN,
+  DATABASE_LOGS,
+  FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_TYPE,
+  GRAASP_ACTOR,
+  MAILER_CONFIG_FROM_EMAIL,
+  MAILER_CONFIG_PASSWORD,
+  MAILER_CONFIG_SMTP_HOST,
+  MAILER_CONFIG_USERNAME,
+  PG_CONNECTION_URI,
+  PUBLIC_PLUGIN,
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
+  REDIS_USERNAME,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
+  SAVE_ACTIONS,
+  WEBSOCKETS_PLUGIN,
+} from './util/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
@@ -92,8 +91,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
         shouldSave: SAVE_ACTIONS,
         graaspActor: GRAASP_ACTOR,
         hosts: CLIENT_HOSTS,
-        serviceMethod: SERVICE_METHOD,
-        serviceOptions: {
+        fileItemType: FILE_ITEM_TYPE,
+        fileConfigurations: {
           s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
           local: FILE_ITEM_PLUGIN_OPTIONS,
         },

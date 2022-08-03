@@ -1,35 +1,35 @@
-// global
-import { Task } from '../../interfaces/task';
-import { UnknownExtra } from '../../interfaces/extra';
-// other services
-import { Member } from '../members/interfaces/member';
-import { ItemMembershipService } from '../item-memberships/db-service';
-import { ItemMembership, PermissionLevel } from '../item-memberships/interfaces/item-membership';
-import { GetMemberItemMembershipOverItemTask } from '../item-memberships/tasks/get-member-item-membership-over-item-task';
+import {
+  Item,
+  ItemMembership,
+  ItemMembershipService,
+  ItemService,
+  ItemTaskManager,
+  Member,
+  PermissionLevel,
+  Task,
+  UnknownExtra,
+} from '@graasp/sdk';
+
 import { BaseItemMembership } from '../item-memberships/base-item-membership';
 import { CreateItemMembershipSubTask } from '../item-memberships/tasks/create-item-membership-task';
-
-// local
-import { ItemService } from './db-service';
-import { Item } from './interfaces/item';
-import { GetItemTask } from './tasks/get-item-task';
-import { FolderExtra, GetItemChildrenTask } from './tasks/get-item-children-task';
-import { GetOwnItemsTask } from './tasks/get-own-items-task';
-import {
-  GetItemsSharedWithTask,
-  GetItemsSharedWithTaskInputType,
-} from './tasks/get-items-shared-with-task';
-import { CreateItemTask } from './tasks/create-item-task';
-import { UpdateItemTask } from './tasks/update-item-task';
-import { DeleteItemTask } from './tasks/delete-item-task';
-import { MoveItemTask } from './tasks/move-item-task';
+import { GetMemberItemMembershipOverItemTask } from '../item-memberships/tasks/get-member-item-membership-over-item-task';
 import { CopyItemTask } from './tasks/copy-item-task';
-import { ItemTaskManager } from './interfaces/item-task-manager';
-import { GetManyItemsTask } from './tasks/get-many-items-task';
+import { CreateItemTask } from './tasks/create-item-task';
+import { DeleteItemTask } from './tasks/delete-item-task';
+import { FolderExtra, GetItemChildrenTask } from './tasks/get-item-children-task';
 import {
   GetItemDescendantsTask,
   GetItemDescendantsTaskInputType,
 } from './tasks/get-item-descendants-task';
+import { GetItemTask } from './tasks/get-item-task';
+import {
+  GetItemsSharedWithTask,
+  GetItemsSharedWithTaskInputType,
+} from './tasks/get-items-shared-with-task';
+import { GetManyItemsTask } from './tasks/get-many-items-task';
+import { GetOwnItemsTask } from './tasks/get-own-items-task';
+import { MoveItemTask } from './tasks/move-item-task';
+import { UpdateItemTask } from './tasks/update-item-task';
 
 export class TaskManager implements ItemTaskManager<Member> {
   private itemService: ItemService;
@@ -107,13 +107,14 @@ export class TaskManager implements ItemTaskManager<Member> {
       }
       t4.skip = true; // skip this task (t4)
     };
+
     t4.getResult = () => t3.result;
     tasks.push(t4);
 
     return tasks;
   }
 
-  createGetTask(member: Member, itemId: string): Task<Member, unknown> {
+  createGetTask<E extends UnknownExtra>(member: Member, itemId: string): Task<Member, Item<E>> {
     return new GetItemTask(member, this.itemService, { itemId });
   }
 
@@ -260,7 +261,7 @@ export class TaskManager implements ItemTaskManager<Member> {
   createGetChildrenTask(
     member: Member,
     { item, ordered }: { item?: Item<FolderExtra>; ordered?: boolean },
-  ): Task<Member, unknown> {
+  ): Task<Member, Item<UnknownExtra>[]> {
     return new GetItemChildrenTask(member, this.itemService, { item, ordered });
   }
 

@@ -5,7 +5,7 @@
     // "strict": true,
     "outDir": "dist",
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/__mocks__", "test/", "src/**/*.test.*"]

@@ -1,5 +1,4 @@
-// local
-import { ItemMembership, PermissionLevel } from './interfaces/item-membership';
+import { ItemMembership, PermissionLevel } from '@graasp/sdk';
 
 export class BaseItemMembership implements ItemMembership {
   readonly id: string;

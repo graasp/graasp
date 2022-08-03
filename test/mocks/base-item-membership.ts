@@ -1,4 +1,4 @@
-import { PermissionLevel } from '../../src/services/item-memberships/interfaces/item-membership';
+import { PermissionLevel } from '@graasp/sdk';
 
 export const mockedBaseItemMembership = {
   memberId: 'mock-base-item-membership-memberId',

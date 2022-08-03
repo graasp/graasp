@@ -1,9 +1,6 @@
-// global
-import { BaseTask } from '../../base-task';
-// other services
-import { Member } from '../../../services/members/interfaces/member';
-// local
-import { ItemService } from '../db-service';
+import { BaseTask, ItemService, Member } from '@graasp/sdk';
+
+import '../db-service';
 
 export abstract class BaseItemTask<R> extends BaseTask<Member, R> {
   protected itemService: ItemService;
