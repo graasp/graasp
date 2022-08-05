@@ -1,4 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
+
 import { AuthPluginOptions } from '../interfaces/auth';
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify) => {

@@ -1,6 +1,14 @@
-// global
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
+
+import {
+  IdParam,
+  IdsParams,
+  Item,
+  ItemTaskManager,
+  ParentIdParam,
+  PermissionLevel,
+} from '@graasp/sdk';
 import graaspApps from 'graasp-apps';
 import graaspDocumentItem from 'graasp-document-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
@@ -24,12 +32,11 @@ import graaspItemPublishPlugin from 'graasp-plugin-item-publish';
 import graaspItemZip from 'graasp-plugin-item-zip';
 import graaspRecycleBin from 'graasp-plugin-recycle-bin';
 import thumbnailsPlugin, {
-  buildFilePathWithPrefix,
   THUMBNAIL_MIMETYPE,
+  buildFilePathWithPrefix,
 } from 'graasp-plugin-thumbnails';
 import graaspValidationPlugin from 'graasp-plugin-validation';
 
-import { IdParam, IdsParams, ParentIdParam } from '../../interfaces/requests';
 import {
   APPS_JWT_SECRET,
   APPS_PLUGIN,
@@ -42,6 +49,7 @@ import {
   EMBEDDED_LINK_ITEM_PLUGIN,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_TYPE,
   GRAASP_ACTOR,
   H5P_CONTENT_PLUGIN_OPTIONS,
   H5P_PATH_PREFIX,
@@ -55,13 +63,10 @@ import {
   PUBLISHED_TAG_ID,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
   SAVE_ACTIONS,
-  SERVICE_METHOD,
   THUMBNAILS_PATH_PREFIX,
   THUMBNAILS_ROUTE_PREFIX,
   WEBSOCKETS_PLUGIN,
 } from '../../util/config';
-// local
-import { PermissionLevel } from '../item-memberships/interfaces/item-membership';
 import {
   copyMany,
   copyOne,
@@ -80,8 +85,6 @@ import {
   updateOne,
 } from './fluent-schema';
 import { itemActionHandler } from './handler/item-action-handler';
-import { Item } from './interfaces/item';
-import { ItemTaskManager } from './interfaces/item-task-manager';
 import { Ordered } from './interfaces/requests';
 import { TaskManager } from './task-manager';
 import { registerItemWsHooks } from './ws/hooks';
@@ -102,8 +105,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendExtrasUpdateSchema = updateOne;
   const itemTagService = new ItemTagService();
 
-  fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
-  fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
+  fastify.decorate('file', {
+    s3Config: S3_FILE_ITEM_PLUGIN_OPTIONS,
+    localConfig: FILE_ITEM_PLUGIN_OPTIONS,
+  });
 
   // deployed w/o the '/items' prefix and w/o auth pre-handler
   if (APPS_PLUGIN) {
@@ -111,7 +116,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // because graaspApps extends the schemas
     await fastify.register(graaspApps, {
       jwtSecret: APPS_JWT_SECRET,
-      serviceMethod: SERVICE_METHOD,
+      fileItemType: FILE_ITEM_TYPE,
       thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
       prefix: APP_ITEMS_PREFIX,
       publisherId: APPS_PUBLISHER_ID,
@@ -145,8 +150,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // H5P plugin must be registered before ZIP
         fastify.register(graaspItemH5P, {
           pathPrefix: H5P_PATH_PREFIX,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: H5P_CONTENT_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
@@ -154,16 +159,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemZip, {
           pathPrefix: FILES_PATH_PREFIX,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
         });
 
         fastify.register(thumbnailsPlugin, {
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
@@ -202,8 +207,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fileItemPlugin, {
           shouldLimit: true,
           pathPrefix: FILES_PATH_PREFIX,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
@@ -247,8 +252,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspValidationPlugin, {
           // this api needs to be defined from .env
           classifierApi: IMAGE_CLASSIFIER_API,
-          serviceMethod: SERVICE_METHOD,
-          serviceOptions: {
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
             s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
@@ -257,7 +262,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspPluginItemLikes);
 
         if (CHATBOX_PLUGIN) {
-          fastify.register(graaspChatbox);
+          fastify.register(graaspChatbox, { hosts: CLIENT_HOSTS });
         }
 
         if (WEBSOCKETS_PLUGIN) {

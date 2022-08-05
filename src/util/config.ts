@@ -1,8 +1,7 @@
-import dotenv from 'dotenv';
-import { ServiceMethod } from 'graasp-plugin-file';
 import S3 from 'aws-sdk/clients/s3';
-import { ItemSettings } from '..';
-import { Context } from '@graasp/utils';
+import dotenv from 'dotenv';
+
+import { Context, FileItemType, ItemSettings, ItemType } from '@graasp/sdk';
 
 enum Environment {
   production = 'production',
@@ -37,7 +36,6 @@ export const STAGING = ENVIRONMENT === Environment.staging;
 export const DEV = ENVIRONMENT === Environment.development;
 export const TEST = ENVIRONMENT === Environment.test;
 
-// todo: get from graasp constants
 export const CLIENT_HOSTS = [
   {
     name: Context.BUILDER,
@@ -228,7 +226,9 @@ export const H5P_CONTENT_PLUGIN_OPTIONS = {
   s3Instance: S3_INSTANCE,
 };
 
-export const SERVICE_METHOD = S3_FILE_ITEM_PLUGIN ? ServiceMethod.S3 : ServiceMethod.LOCAL;
+export const FILE_ITEM_TYPE: FileItemType = S3_FILE_ITEM_PLUGIN
+  ? ItemType.S3_FILE
+  : ItemType.LOCAL_FILE;
 
 // Graasp embedded link item
 // TODO: should this be here?

@@ -1,13 +1,9 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { Actor } from '../../../interfaces/actor';
-import { UnknownExtra } from '../../../interfaces/extra';
-// local
-import { Member } from '../interfaces/member';
+
+import { Actor, DatabaseTransactionHandler, Member, TaskStatus, UnknownExtra } from '@graasp/sdk';
+
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
-import { TaskStatus } from '../../..';
 
 type InputType<E extends UnknownExtra> = { data?: Partial<Member<E>> };
 

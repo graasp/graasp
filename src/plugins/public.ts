@@ -1,5 +1,6 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
+
 import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { ItemTagService } from 'graasp-item-tags';
 import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
@@ -17,6 +18,7 @@ import {
   AVATARS_PATH_PREFIX,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
+  FILE_ITEM_TYPE,
   GRAASP_ACTOR,
   H5P_CONTENT_PLUGIN_OPTIONS,
   H5P_PATH_PREFIX,
@@ -25,7 +27,6 @@ import {
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-  SERVICE_METHOD,
   THUMBNAILS_PATH_PREFIX,
 } from '../util/config';
 
@@ -68,12 +69,12 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
 
       // item thumbnail, member avatar endpoints
       await instance.register(publicThumbnailsPlugin, {
-        serviceMethod: SERVICE_METHOD,
+        fileItemType: FILE_ITEM_TYPE,
         prefixes: {
           avatarsPrefix: AVATARS_PATH_PREFIX,
           thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
         },
-        serviceOptions: {
+        fileConfigurations: {
           s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
           local: FILE_ITEM_PLUGIN_OPTIONS,
         },
@@ -83,8 +84,8 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
       // H5P plugin must be registered before ZIP
       await instance.register(publicH5PPlugin, {
         pathPrefix: H5P_PATH_PREFIX,
-        serviceMethod: SERVICE_METHOD,
-        serviceOptions: {
+        fileItemType: FILE_ITEM_TYPE,
+        fileConfigurations: {
           s3: H5P_CONTENT_PLUGIN_OPTIONS,
           local: FILE_ITEM_PLUGIN_OPTIONS,
         },
@@ -96,8 +97,8 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
           await instance.register(publicFileItemPlugin, {
             shouldLimit: true,
             pathPrefix: FILES_PATH_PREFIX,
-            serviceMethod: SERVICE_METHOD,
-            serviceOptions: {
+            fileItemType: FILE_ITEM_TYPE,
+            fileConfigurations: {
               s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
               local: FILE_ITEM_PLUGIN_OPTIONS,
             },
@@ -115,8 +116,8 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
           // download zip
           await instance.register(publicZipPlugin, {
             pathPrefix: FILES_PATH_PREFIX,
-            serviceMethod: SERVICE_METHOD,
-            serviceOptions: {
+            fileItemType: FILE_ITEM_TYPE,
+            fileConfigurations: {
               s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
               local: FILE_ITEM_PLUGIN_OPTIONS,
             },

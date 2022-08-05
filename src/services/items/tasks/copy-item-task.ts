@@ -1,19 +1,14 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { HierarchyTooDeep, TooManyDescendants } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
+
+import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
+
 import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from '../../../util/config';
-// other services
-import { Member } from '../../../services/members/interfaces/member';
-// local
-import { ItemService } from '../db-service';
-import { BaseItemTask } from './base-item-task';
+import { HierarchyTooDeep, TooManyDescendants } from '../../../util/graasp-error';
 import { BaseItem, dashToUnderscore } from '../base-item';
-import { Item } from '../interfaces/item';
-import { TaskStatus } from '../../..';
-import { FolderExtra } from './get-item-children-task';
-import { sortChildrenWith } from '../constants/utils';
 import { ITEM_TYPES } from '../constants/constants';
+import { sortChildrenWith } from '../constants/utils';
+import { BaseItemTask } from './base-item-task';
+import { FolderExtra } from './get-item-children-task';
 
 type CopyItemSubTaskInput = { copy: Partial<Item>; original: Item; shouldCopyTags?: boolean };
 

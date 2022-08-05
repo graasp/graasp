@@ -1,15 +1,10 @@
-// global
 import { FastifyLoggerInstance } from 'fastify';
-import { TooManyDescendants } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
+
+import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
+
 import { MAX_DESCENDANTS_FOR_DELETE } from '../../../util/config';
-// other services
-import { Member } from '../../members/interfaces/member';
-// local
-import { ItemService } from '../db-service';
+import { TooManyDescendants } from '../../../util/graasp-error';
 import { BaseItemTask } from './base-item-task';
-import { Item } from '../interfaces/item';
-import { TaskStatus } from '../../..';
 
 type DeleteItemSubTaskInput = { itemId: string };
 

@@ -1,6 +1,10 @@
-import { FastifyPluginAsync } from 'fastify';
 import { createMockPool, createMockQueryResult } from 'slonik';
-import { Database, DatabasePluginOptions } from '../database';
+
+import { FastifyPluginAsync } from 'fastify';
+
+import { Database } from '@graasp/sdk';
+
+import { DatabasePluginOptions } from '../database';
 
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify) => {
   const { log } = fastify;

@@ -1,8 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import {
-  ItemMembership,
-  PermissionLevel,
-} from '../../src/services/item-memberships/interfaces/item-membership';
+
+import { ItemMembership, PermissionLevel } from '@graasp/sdk';
+
 import { ACTOR } from './members';
 
 export const buildMembership = (options: {

@@ -1,14 +1,14 @@
-// global
-import { DatabaseTransactionHandler } from '../../../plugins/database';
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemService,
+  Member,
+  TaskStatus,
+  UnknownExtra,
+} from '@graasp/sdk';
+
 import { ItemNotFound } from '../../../util/graasp-error';
-import { UnknownExtra } from '../../../interfaces/extra';
-// other services
-import { Member } from '../../members/interfaces/member';
-// local
 import { BaseItemTask } from './base-item-task';
-import { Item } from '../interfaces/item';
-import { ItemService } from '../db-service';
-import { TaskStatus } from '../../..';
 
 type InputType = { itemPath?: string };
 

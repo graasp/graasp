@@ -1,12 +1,15 @@
-import { itemActionHandler } from './item-action-handler';
-import { getDummyItem } from '../../../../test/fixtures/items';
-import { GRAASP_ACTOR } from '../../../util/config';
-import { FastifyLoggerInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { DatabaseTransactionHandler, ItemService } from '../../../index';
-import { checkActionData, HTTP_METHODS } from '../../../../test/fixtures/utils';
-import { ACTION_TYPES } from '../constants/constants';
 import qs from 'qs';
 import { v4 } from 'uuid';
+
+import { FastifyLoggerInstance, FastifyReply, FastifyRequest } from 'fastify';
+
+import { DatabaseTransactionHandler, HttpMethod, ItemService } from '@graasp/sdk';
+
+import { getDummyItem } from '../../../../test/fixtures/items';
+import { checkActionData } from '../../../../test/fixtures/utils';
+import { GRAASP_ACTOR } from '../../../util/config';
+import { ACTION_TYPES } from '../constants/constants';
+import { itemActionHandler } from './item-action-handler';
 
 // mock itemService get method for single item
 const getItemService = (item) =>
@@ -32,7 +35,7 @@ const item = getDummyItem();
 const itemService = getItemService(item);
 const request = {
   url: `/items/${item.id}`,
-  method: HTTP_METHODS.GET,
+  method: HttpMethod.GET,
   member: GRAASP_ACTOR,
   params: {},
   query: {},
@@ -44,7 +47,7 @@ describe('Create Action Task', () => {
   it('returns empty actions array if request does not match any path', async () => {
     const invalidUrlRequest = {
       ...request,
-      method: HTTP_METHODS.GET,
+      method: HttpMethod.GET,
       url: '/hello',
     };
     const itemService = getItemService(item);
@@ -63,7 +66,7 @@ describe('Create Action Task', () => {
   it('GET an item', async () => {
     const validGetRequest = {
       ...request,
-      method: HTTP_METHODS.GET,
+      method: HttpMethod.GET,
       url: `/items/${item.id}`,
       params: {
         ...(request.params as object),
@@ -88,7 +91,7 @@ describe('Create Action Task', () => {
   it('GET children', async () => {
     const validGetChildrenRequest = {
       ...request,
-      method: HTTP_METHODS.GET,
+      method: HttpMethod.GET,
       url: `/items/${item.id}/children`,
       params: {
         ...(request.params as object),
@@ -114,7 +117,7 @@ describe('Create Action Task', () => {
   it('POST copy item', async () => {
     const validPostCopyRequest = {
       ...request,
-      method: HTTP_METHODS.POST,
+      method: HttpMethod.POST,
       url: `/items/${item.id}/copy`,
       params: {
         ...(request.params as object),
@@ -141,7 +144,7 @@ describe('Create Action Task', () => {
     const ids = [item.id];
     const validPostCopyOneUsingMultipleRequest = {
       ...request,
-      method: HTTP_METHODS.POST,
+      method: HttpMethod.POST,
       url: buildMultipleItemsUrl('/copy', ids),
       params: {
         ...(request.params as object),
@@ -173,7 +176,7 @@ describe('Create Action Task', () => {
 
     const validPostCopyMultipleRequest = {
       ...request,
-      method: HTTP_METHODS.POST,
+      method: HttpMethod.POST,
       url: buildMultipleItemsUrl('/copy', ids),
       params: {
         ...(request.params as object),
@@ -207,7 +210,7 @@ describe('Create Action Task', () => {
     const parentId = v4();
     const validPostMoveRequest = {
       ...request,
-      method: HTTP_METHODS.POST,
+      method: HttpMethod.POST,
       url: `/items/${item.id}/move`,
       params: {
         ...(request.params as object),
@@ -239,7 +242,7 @@ describe('Create Action Task', () => {
     const ids = [item.id];
     const validPostMoveOneUsingMultipleRequest = {
       ...request,
-      method: HTTP_METHODS.POST,
+      method: HttpMethod.POST,
       url: buildMultipleItemsUrl('/move', ids),
       params: {
         ...(request.params as object),
@@ -276,7 +279,7 @@ describe('Create Action Task', () => {
     const ids = items.map((i) => i.id);
     const validPostMoveMultipleRequest = {
       ...request,
-      method: HTTP_METHODS.POST,
+      method: HttpMethod.POST,
       url: buildMultipleItemsUrl('/move', ids),
       params: {
         ...(request.params as object),
@@ -309,7 +312,7 @@ describe('Create Action Task', () => {
   it('PATCH item', async () => {
     const validPatchRequest = {
       ...request,
-      method: HTTP_METHODS.PATCH,
+      method: HttpMethod.PATCH,
       url: `/items/${item.id}`,
       params: {
         ...(request.params as object),
@@ -337,7 +340,7 @@ describe('Create Action Task', () => {
     const ids = items.map((i) => i.id);
     const validPatchMultipleRequest = {
       ...request,
-      method: HTTP_METHODS.PATCH,
+      method: HttpMethod.PATCH,
       url: buildMultipleItemsUrl('', ids),
       params: {
         ...(request.params as object),

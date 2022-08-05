@@ -1,4 +1,4 @@
-import { Item } from '../interfaces/item';
+import { Item } from '@graasp/sdk';
 
 /**
  * Item websocket events are registered under these topics

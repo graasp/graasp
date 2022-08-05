@@ -94,6 +94,14 @@ Install the corresponding schema if you are using any fo the following plugins :
 
 - Subscriptions [`db-schema.sql`](https://github.com/graasp/graasp-plugin-subscriptions/blob/main/db-schema.sql)
 
+Also you will need to run all the migrations associated with the plugins you wish to use. For each plugin run **all** migrations in the folder **in increasing order**.
+
+- ChatBox : [`migrations`](https://github.com/graasp/graasp-plugin-chatbox/tree/main/migrations)
+    - [`migration1.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/migrations/migration1.sql)
+
+- Actions : [`migrations`](https://github.com/graasp/graasp-plugin-actions/tree/main/migrations)
+    - [`migration1.sql`](https://github.com/graasp/graasp-plugin-actions/blob/main/migrations/migration1.sql)
+
 ### Configuration
 
 To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :

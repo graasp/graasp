@@ -1,23 +1,20 @@
-// global
-import { FastifyPluginAsync } from 'fastify';
 import fastifyCors from '@fastify/cors';
-import { IdParam } from '../../interfaces/requests';
-// local
-import common, { getItems, create, updateOne, deleteOne, deleteAll, createMany } from './schemas';
-import { PurgeBelowParam } from './interfaces/requests';
-import { ItemMembershipTaskManager } from './interfaces/item-membership-task-manager';
-import { TaskManager } from './task-manager';
+import { FastifyPluginAsync } from 'fastify';
+
+import { IdParam, ItemMembership, ItemMembershipTaskManager, UnknownExtra } from '@graasp/sdk';
+
 import { WEBSOCKETS_PLUGIN } from '../../util/config';
-import { registerItemMembershipWsHooks } from './ws/hooks';
-import { ItemMembership } from './interfaces/item-membership';
 import { GetItemTask } from '../items/tasks/get-item-task';
-import { UnknownExtra } from '../../interfaces/extra';
+import { PurgeBelowParam } from './interfaces/requests';
+import common, { create, createMany, deleteAll, deleteOne, getItems, updateOne } from './schemas';
+import { TaskManager } from './task-manager';
+import { registerItemMembershipWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
-    items: { taskManager: iTM, dbService: itemsDbService },
+    items: { dbService: itemsDbService },
     itemMemberships,
     taskRunner: runner,
     websockets,

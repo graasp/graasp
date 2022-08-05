@@ -1,14 +1,14 @@
-// global
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemMembership,
+  ItemMembershipService,
+  Member,
+  TaskStatus,
+} from '@graasp/sdk';
+
 import { MemberCannotReadItem } from '../../../util/graasp-error';
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-// other services
-import { Member } from '../../members/interfaces/member';
-import { Item } from '../../items/interfaces/item';
-// local
-import { ItemMembershipService } from '../db-service';
 import { BaseItemMembershipTask } from './base-item-membership-task';
-import { ItemMembership } from '../interfaces/item-membership';
-import { TaskStatus } from '../../..';
 
 type InputType = { item?: Item };
 

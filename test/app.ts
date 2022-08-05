@@ -1,4 +1,5 @@
 import fastify from 'fastify';
+
 import registerAppPlugins from '../src/app';
 
 const build = async (opts = {}) => {

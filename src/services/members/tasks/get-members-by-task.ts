@@ -1,11 +1,7 @@
-// global
-import { DatabaseTransactionHandler } from '../../../plugins/database';
-import { Actor } from '../../../interfaces/actor';
-// local
-import { Member } from '../interfaces/member';
+import { Actor, DatabaseTransactionHandler, Member, TaskStatus } from '@graasp/sdk';
+
 import { MemberService } from '../db-service';
 import { BaseMemberTask } from './base-member-task';
-import { TaskStatus } from '../../..';
 
 type InputType = { data?: Partial<Member> };
 
