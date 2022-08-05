@@ -48,3 +48,6 @@ types
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Secrets
+secret-key

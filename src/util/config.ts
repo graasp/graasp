@@ -183,6 +183,12 @@ export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
 const S3_FILE_ITEM_HOST = process.env.S3_FILE_ITEM_HOST;
 
+export const H5P_CONTENT_REGION = process.env.H5P_CONTENT_REGION;
+export const H5P_CONTENT_BUCKET = process.env.H5P_CONTENT_BUCKET;
+export const H5P_CONTENT_ACCESS_KEY_ID = process.env.H5P_CONTENT_ACCESS_KEY_ID;
+export const H5P_CONTENT_SECRET_ACCESS_KEY = process.env.H5P_CONTENT_SECRET_ACCESS_KEY;
+export const H5P_CONTENT_HOST = process.env.H5P_CONTENT_HOST;
+
 let S3_INSTANCE: S3;
 
 // Enable localstack, only create the instance in test or dev environments
@@ -209,6 +215,14 @@ export const S3_FILE_ITEM_PLUGIN_OPTIONS = {
   s3Bucket: S3_FILE_ITEM_BUCKET,
   s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
   s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
+  s3Instance: S3_INSTANCE,
+};
+
+export const H5P_CONTENT_PLUGIN_OPTIONS = {
+  s3Region: H5P_CONTENT_REGION,
+  s3Bucket: H5P_CONTENT_BUCKET,
+  s3AccessKeyId: H5P_CONTENT_ACCESS_KEY_ID,
+  s3SecretAccessKey: H5P_CONTENT_SECRET_ACCESS_KEY,
   s3Instance: S3_INSTANCE,
 };
 
@@ -252,6 +266,7 @@ export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
 export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
 export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
 export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
+export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };
 

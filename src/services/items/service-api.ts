@@ -23,6 +23,7 @@ import {
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
+import graaspItemH5P from 'graasp-plugin-h5p';
 import graaspHidden from 'graasp-plugin-hidden-items';
 import graaspInvitationsPlugin from 'graasp-plugin-invitations';
 import graaspPluginItemLikes from 'graasp-plugin-item-likes';
@@ -50,6 +51,8 @@ import {
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
   GRAASP_ACTOR,
+  H5P_CONTENT_PLUGIN_OPTIONS,
+  H5P_PATH_PREFIX,
   HIDDEN_TAG_ID,
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
@@ -143,6 +146,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(async function (fastify) {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
+
+        // H5P plugin must be registered before ZIP
+        fastify.register(graaspItemH5P, {
+          pathPrefix: H5P_PATH_PREFIX,
+          fileItemType: FILE_ITEM_TYPE,
+          fileConfigurations: {
+            s3: H5P_CONTENT_PLUGIN_OPTIONS,
+            local: FILE_ITEM_PLUGIN_OPTIONS,
+          },
+        });
 
         fastify.register(graaspItemZip, {
           pathPrefix: FILES_PATH_PREFIX,

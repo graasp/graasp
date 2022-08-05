@@ -19,10 +19,7 @@ services:
 
     volumes:
       - ..:/workspace:cached
-      - ${TMPDIR}:/tmp/graasp-file-item-storage
-        # On Linux (and other platforms) env var TMPDIR does not exist:
-        # replace "${TMPDIR}" with permanent existing path e.g.
-        # "/tmp/graasp-file-item-storage"
+      - ../tmp:/tmp/graasp-file-item-storage
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
