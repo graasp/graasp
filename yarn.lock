@@ -813,6 +813,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/forwarded@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@fastify/forwarded@npm:2.1.0"
+  checksum: 58dc42ffa7ac2690930aaf112a1fa3a8eac663582736de4370dc8ea7b19a283311c2352bee4e339ec4b68a0e97c0e9a28fd942b815bcbc1bf851518911629a69
+  languageName: node
+  linkType: hard
+
 "@fastify/helmet@npm:8.0.0":
   version: 8.0.0
   resolution: "@fastify/helmet@npm:8.0.0"
@@ -5117,8 +5124,9 @@ __metadata:
 
 "graasp-plugin-actions@github:graasp/graasp-plugin-actions":
   version: 0.1.0
-  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=ab24b475f83f4cead2e3acb3b0a968f2822e2b0d"
+  resolution: "graasp-plugin-actions@https://github.com/graasp/graasp-plugin-actions.git#commit=3afc1f87847bd84ddf36d39d811f3938f836c640"
   dependencies:
+    "@fastify/forwarded": 2.1.0
     archiver: 5.3.1
     fluent-json-schema: 3.0.1
     geoip-lite: 1.4.2
@@ -5126,7 +5134,7 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     http-status-codes: 2.2.0
     uuid: 8.3.2
-  checksum: 422fd3948b025b8aebb57fd3f1429aa97fadf461ae9bfd674a7f0a5acb0ddafdbe87b79f740cda89eb034262e8f0eff61d6493582c92951c1b943be8d339eb5a
+  checksum: 4722ebb56fb50ee9df0670618a6fe551d6d7d2e67616d324767f581cbdbc6169ffeff390faa9ed75c060ce5f89dc5f6f49f52927c150ca63f051ef879cebfd05
   languageName: node
   linkType: hard
 

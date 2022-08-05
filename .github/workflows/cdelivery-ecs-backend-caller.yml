@@ -11,7 +11,7 @@ jobs:
   graasp-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@561d696d12551c19bc52173cf46fe272bf2af657
+    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@8c523bf1b0b9fed72eaad7bbf66fd4c036ed4953
     # ecs-task-definition with template file. 
     with:
       ecs-task-definition: '.aws/graasp-stage.json'
@@ -26,6 +26,7 @@ jobs:
       roarr-log: false
       s3-file-item-plugin: true
       save-actions: true
+      subscriptions-plugin: true
       token-based-auth: true
       websockets-plugin: true
     # required secrets
