@@ -77,7 +77,7 @@
     "graasp-plugin-item-publish": "github:graasp/graasp-plugin-item-publish",
     "graasp-plugin-item-zip": "github:graasp/graasp-plugin-item-zip",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
-    "graasp-plugin-recycle-bin": "github:graasp/graasp-plugin-recycle-bin",
+    "graasp-plugin-recycle-bin": "github:graasp/graasp-plugin-recycle-bin#34-get-descendants",
     "graasp-plugin-search": "github:graasp/graasp-plugin-search",
     "graasp-plugin-subscriptions": "github:graasp/graasp-plugin-subscriptions",
     "graasp-plugin-thumbnails": "github:graasp/graasp-plugin-thumbnails",

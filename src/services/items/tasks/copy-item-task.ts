@@ -40,7 +40,12 @@ class CopyItemSubTask extends BaseItemTask<Item> {
   }
 }
 
-type CopyItemTaskInput = { item?: Item; parentItem?: Item; shouldCopyTags?: boolean };
+type CopyItemTaskInput = {
+  item?: Item;
+  parentItem?: Item;
+  shouldCopyTags?: boolean;
+  descendants?: Item[];
+};
 
 export class CopyItemTask extends BaseItemTask<Item> {
   get name(): string {
@@ -64,31 +69,11 @@ export class CopyItemTask extends BaseItemTask<Item> {
 
   async run(handler: DatabaseTransactionHandler): Promise<CopyItemSubTask[]> {
     this.status = TaskStatus.RUNNING;
-    const { item, parentItem, shouldCopyTags } = this.input;
+    const { item, parentItem, shouldCopyTags, descendants } = this.input;
     this.targetId = item.id;
-
-    // check how "big the tree is" below the item
-    const numberOfDescendants = await this.itemService.getNumberOfDescendants(item, handler);
-    if (numberOfDescendants > MAX_DESCENDANTS_FOR_COPY) {
-      throw new TooManyDescendants(item.id);
-    }
-
-    if (parentItem) {
-      // attaching copy to some item
-      // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild = await this.itemService.getNumberOfLevelsToFarthestChild(
-        item,
-        handler,
-      );
-
-      if (BaseItem.itemDepth(parentItem) + 1 + levelsToFarthestChild > MAX_TREE_LEVELS) {
-        throw new HierarchyTooDeep();
-      }
-    }
 
     // copy (memberships from origin are not copied/kept)
     // get the whole tree
-    const descendants = await this.itemService.getDescendants(item, handler, 'ASC');
     const treeItems = [item].concat(descendants);
     const treeItemsCopy = this.copy(treeItems, parentItem);
     this.fixChildrenOrder(treeItemsCopy);

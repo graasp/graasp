@@ -10,6 +10,7 @@ import {
   UnknownExtra,
 } from '@graasp/sdk';
 
+import { MAX_DESCENDANTS_FOR_COPY } from '../../util/config';
 import { BaseItemMembership } from '../item-memberships/base-item-membership';
 import { CreateItemMembershipSubTask } from '../item-memberships/tasks/create-item-membership-task';
 import { GetMemberItemMembershipOverItemTask } from '../item-memberships/tasks/get-member-item-membership-over-item-task';
@@ -239,8 +240,22 @@ export class TaskManager implements ItemTaskManager<Member> {
       tasks.push(t4);
     }
 
+    // get descendants and check whether parentItem depth is valid, and max number of descendants
+    const getDescendantsTask = new GetItemDescendantsTask(member, this.itemService);
+    getDescendantsTask.getInput = () => ({
+      item: itemTask.result,
+      parentItem: t3?.result,
+      maxDescendantsNb: MAX_DESCENDANTS_FOR_COPY,
+    });
+    tasks.push(getDescendantsTask);
+
     const t5 = new CopyItemTask(member, this.itemService);
-    t5.getInput = () => ({ item: itemTask.result, parentItem: t3?.result, shouldCopyTags });
+    t5.getInput = () => ({
+      item: itemTask.result,
+      parentItem: t3?.result,
+      descendants: getDescendantsTask.result,
+      shouldCopyTags,
+    });
     tasks.push(t5);
 
     const t6 = new CreateItemMembershipSubTask(member, this.itemMembershipService);
