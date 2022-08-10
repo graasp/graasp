@@ -2,6 +2,7 @@ import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams, Member, MemberTaskManager } from '@graasp/sdk';
+import { memberPlugin as memberActionsPlugin } from 'graasp-plugin-actions';
 import subscriptionsPlugin from 'graasp-plugin-subscriptions';
 import thumbnailsPlugin, {
   THUMBNAIL_MIMETYPE,
@@ -13,19 +14,25 @@ import {
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
+  SAVE_ACTIONS,
   STRIPE_DEFAULT_PLAN_PRICE_ID,
   STRIPE_SECRET_KEY,
   SUBSCRIPTION_PLUGIN,
   SUBSCRIPTION_ROUTE_PREFIX,
 } from '../../util/config';
 import { CannotModifyOtherMembers } from '../../util/graasp-error';
+import { memberActionBuilder } from './handler/member-action-builder';
 import common, { deleteOne, getCurrent, getMany, getManyBy, getOne, updateOne } from './schemas';
 import { TaskManager } from './task-manager';
 
 const ROUTES_PREFIX = '/members';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { members, taskRunner: runner } = fastify;
+  const {
+    members,
+    taskRunner: runner,
+    actions: { taskManager: actionTaskManager },
+  } = fastify;
 
   const { dbService } = members;
   const taskManager: MemberTaskManager = new TaskManager(dbService);
@@ -84,6 +91,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           stripeSecretKey: STRIPE_SECRET_KEY,
           stripeDefaultProductId: STRIPE_DEFAULT_PLAN_PRICE_ID,
           prefix: SUBSCRIPTION_ROUTE_PREFIX,
+        });
+      }
+
+      if (SAVE_ACTIONS) {
+        // actions plugin
+        fastify.register(memberActionsPlugin);
+
+        fastify.addHook('onResponse', async (request, reply) => {
+          // todo: save public actions?
+          if (request.member) {
+            const createActionTask = actionTaskManager.createCreateTask(request.member, {
+              request,
+              reply,
+              actionBuilder: memberActionBuilder(),
+            });
+            await runner.runSingle(createActionTask);
+          }
         });
       }
 

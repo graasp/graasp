@@ -1,11 +1,17 @@
 import { FastifyLoggerInstance } from 'fastify';
 
-import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemService,
+  ItemType,
+  Member,
+  TaskStatus,
+} from '@graasp/sdk';
 
 import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from '../../../util/config';
 import { HierarchyTooDeep, TooManyDescendants } from '../../../util/graasp-error';
 import { BaseItem, dashToUnderscore } from '../base-item';
-import { ITEM_TYPES } from '../constants/constants';
 import { sortChildrenWith } from '../constants/utils';
 import { BaseItemTask } from './base-item-task';
 import { FolderExtra } from './get-item-children-task';
@@ -130,7 +136,7 @@ export class CopyItemTask extends BaseItemTask<Item> {
     itemsMap.forEach((value) => {
       const { copy, original } = value;
       // set order for all copied folder
-      if (original.type === ITEM_TYPES.FOLDER) {
+      if (original.type === ItemType.FOLDER) {
         // init extra if necessary
         if (!copy.extra.folder) {
           copy.extra.folder = {};

@@ -14,12 +14,7 @@ import graaspDocumentItem from 'graasp-document-item';
 import graaspEmbeddedLinkItem from 'graasp-embedded-link-item';
 import graaspItemFlags from 'graasp-item-flagging';
 import graaspItemTags, { ItemTagService } from 'graasp-item-tags';
-import {
-  ActionHandlerInput,
-  ActionService,
-  ActionTaskManager,
-  BaseAction,
-} from 'graasp-plugin-actions';
+import { itemPlugin as itemActionsPlugin } from 'graasp-plugin-actions';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspChatbox from 'graasp-plugin-chatbox';
 import fileItemPlugin from 'graasp-plugin-file-item';
@@ -84,7 +79,7 @@ import {
   updateMany,
   updateOne,
 } from './fluent-schema';
-import { itemActionHandler } from './handler/item-action-handler';
+import { itemActionBuilder } from './handler/item-action-builder';
 import { Ordered } from './interfaces/requests';
 import { TaskManager } from './task-manager';
 import { registerItemWsHooks } from './ws/hooks';
@@ -93,10 +88,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items,
     itemMemberships: { taskManager: membership, dbService: itemMembershipsDbService },
-    members: { taskManager: mTM },
     taskRunner: runner,
     websockets,
     db,
+    actions: { taskManager: actionTaskManager },
   } = fastify;
   const { dbService } = items;
   const taskManager: ItemTaskManager = new TaskManager(dbService, itemMembershipsDbService);
@@ -278,30 +273,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         // isolate the core actions using fastify.register
         fastify.register(async function (fastify) {
+          // action endpoints
+          fastify.register(itemActionsPlugin, {
+            hosts: CLIENT_HOSTS,
+            fileItemType: FILE_ITEM_TYPE,
+            fileConfigurations: {
+              s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+              local: FILE_ITEM_PLUGIN_OPTIONS,
+            },
+          });
+
           // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
           // it is used to save the actions of the items
           if (SAVE_ACTIONS) {
-            const actionService = new ActionService();
-            const actionTaskManager = new ActionTaskManager(
-              actionService,
-              taskManager,
-              membership,
-              mTM,
-              CLIENT_HOSTS,
-            );
-            fastify.addHook('onResponse', async (request, reply) => {
+            fastify.addHook('onSend', async (request, reply, payload) => {
               // todo: save public actions?
               if (request.member) {
-                // wrap the itemActionHandler in a new function to provide it with the properties we already have
-                const actionHandler = (actionInput: ActionHandlerInput): Promise<BaseAction[]> =>
-                  itemActionHandler(dbService, actionInput);
                 const createActionTask = actionTaskManager.createCreateTask(request.member, {
                   request,
                   reply,
-                  handler: actionHandler,
+                  actionBuilder: itemActionBuilder({ itemService: dbService, payload }),
                 });
                 await runner.runSingle(createActionTask);
               }
+
+              return payload;
             });
           }
 

@@ -1,10 +1,19 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, ItemMembership, ItemMembershipTaskManager, UnknownExtra } from '@graasp/sdk';
+import {
+  ActionType,
+  Context,
+  IdParam,
+  ItemMembership,
+  ItemMembershipTaskManager,
+  Member,
+  UnknownExtra,
+} from '@graasp/sdk';
 
-import { WEBSOCKETS_PLUGIN } from '../../util/config';
+import { SAVE_ACTIONS, WEBSOCKETS_PLUGIN } from '../../util/config';
 import { GetItemTask } from '../items/tasks/get-item-task';
+import { itemMembershipActionBuilder } from './handler/item-membership-action-builder';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteAll, deleteOne, getItems, updateOne } from './schemas';
 import { TaskManager } from './task-manager';
@@ -20,6 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     websockets,
     db,
     members: { dbService: membersDbService },
+    actions: { taskManager: actionTaskManager, dbService: actionService },
   } = fastify;
   const { dbService } = itemMemberships;
   const taskManager: ItemMembershipTaskManager = new TaskManager(
@@ -52,6 +62,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           taskManager,
           db.pool,
         );
+      }
+
+      // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
+      // it is used to save the actions of the items
+      if (SAVE_ACTIONS) {
+        fastify.addHook('onSend', async (request, reply, payload) => {
+          // todo: save public actions?
+          if (request.member) {
+            const createActionTask = actionTaskManager.createCreateTask(request.member, {
+              request,
+              reply,
+              actionBuilder: itemMembershipActionBuilder({ payload, itemService: itemsDbService }),
+            });
+            await runner.runSingle(createActionTask);
+          }
+          return payload;
+        });
       }
 
       // get many item's memberships

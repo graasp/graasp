@@ -30,6 +30,7 @@ import {
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
+  SAVE_ACTIONS,
   SECURE_SESSION_SECRET_KEY,
   STAGING,
   TOKEN_BASED_AUTH,
@@ -47,6 +48,7 @@ import {
   TokenExpired,
 } from '../../util/graasp-error';
 import { SALT_ROUNDS } from './constants';
+import { authActionBuilder } from './handler/auth-action-builder';
 import { AuthPluginOptions } from './interfaces/auth';
 import {
   auth,
@@ -130,6 +132,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     db,
     members: { dbService: mS },
     taskRunner: runner,
+    actions: { taskManager: actionTaskManager },
   } = fastify;
 
   const memberTaskManager = new MemberTaskManager(mS);
@@ -284,11 +287,30 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       await fastify.register(fastifyCors, fastify.corsPluginOptions);
     }
 
+    // actions
+    if (SAVE_ACTIONS) {
+      // TODO: add in each endpoint? avoid double when used with register and login
+      fastify.addHook('onResponse', async (request, reply) => {
+        // todo: save public actions?
+        const createActionTask = actionTaskManager.createCreateTask(GRAASP_ACTOR, {
+          request,
+          reply,
+          actionBuilder: authActionBuilder(),
+        });
+        await runner.runSingle(createActionTask);
+      });
+    }
+
     // register
     fastify.post<{ Body: { name: string; email: string }; Querystring: { lang?: string } }>(
       '/register',
       { schema: register },
-      async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
+      async (request, reply) => {
+        const {
+          body,
+          query: { lang = DEFAULT_LANG },
+          log,
+        } = request;
         // The email is lowercased when the user registers
         // To every subsequents call, it is to the client to ensure the email is sent in lowercase
         // the servers always do a 1:1 match to retrieve the member by email.
@@ -304,8 +326,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
             extra: { lang },
           });
           const member = await runner.runSingle(task, log);
-
           await generateRegisterLinkAndEmailIt(member);
+
           reply.status(StatusCodes.NO_CONTENT);
         } else {
           log.warn(`Member re-registration attempt for email '${email}'`);
@@ -456,39 +478,38 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       fastify.post<{
         Body: { name: string; email: string; challenge: string };
         Querystring: { lang?: string };
-      }>(
-        '/register',
-        { schema: mregister },
-        async (
-          { body: { name, email, challenge }, query: { lang = DEFAULT_LANG }, log },
-          reply,
-        ) => {
-          // The email is lowercased when the user registers
-          // To every subsequents call, it is to the client to ensure the email is sent in lowercase
-          // the servers always do a 1:1 match to retrieve the member by email.
-          email = email.toLowerCase();
+      }>('/register', { schema: mregister }, async (request, reply) => {
+        const {
+          body: { name, email: originalEmail, challenge },
+          query: { lang = DEFAULT_LANG },
+          log,
+        } = request;
+        // The email is lowercased when the user registers
+        // To every subsequents call, it is to the client to ensure the email is sent in lowercase
+        // the servers always do a 1:1 match to retrieve the member by email.
+        const email = originalEmail.toLowerCase();
 
-          // check if member w/ email already exists
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          const [member] = await runner.runSingle(task, log);
+        // check if member w/ email already exists
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const [member] = await runner.runSingle(task, log);
 
-          if (!member) {
-            const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
-              name,
-              email,
-              extra: { lang },
-            });
-            const member = await runner.runSingle(task, log);
+        if (!member) {
+          const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
+            name,
+            email,
+            extra: { lang },
+          });
+          const member = await runner.runSingle(task, log);
 
-            await generateRegisterLinkAndEmailIt(member, challenge);
-            reply.status(StatusCodes.NO_CONTENT);
-          } else {
-            log.warn(`Member re-registration attempt for email '${email}'`);
-            await generateLoginLinkAndEmailIt(member, true, challenge, lang);
-            throw new MemberAlreadySignedUp({ email });
-          }
-        },
-      );
+          await generateRegisterLinkAndEmailIt(member, challenge);
+
+          reply.status(StatusCodes.NO_CONTENT);
+        } else {
+          log.warn(`Member re-registration attempt for email '${email}'`);
+          await generateLoginLinkAndEmailIt(member, true, challenge, lang);
+          throw new MemberAlreadySignedUp({ email });
+        }
+      });
 
       fastify.post<{ Body: { email: string; challenge: string }; Querystring: { lang?: string } }>(
         '/login',

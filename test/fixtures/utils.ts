@@ -1,4 +1,5 @@
-import { VIEW_UNKNOWN_NAME } from '../../src/services/items/constants/constants';
+import { Context } from '@graasp/sdk';
+
 import { GRAASP_ACTOR } from '../../src/util/config';
 
 export const checkActionData = (savedAction, args) => {
@@ -7,7 +8,7 @@ export const checkActionData = (savedAction, args) => {
     extraItemId,
     itemType,
     actionType,
-    view = VIEW_UNKNOWN_NAME,
+    view = Context.UNKNOWN,
     memberId = GRAASP_ACTOR.id,
   } = args;
   expect(savedAction.itemType).toEqual(itemType);

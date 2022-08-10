@@ -9,7 +9,7 @@ import { getDummyItem } from '../../../../test/fixtures/items';
 import { checkActionData } from '../../../../test/fixtures/utils';
 import { GRAASP_ACTOR } from '../../../util/config';
 import { ACTION_TYPES } from '../constants/constants';
-import { itemActionHandler } from './item-action-handler';
+import { itemActionBuilder } from './item-action-builder';
 
 // mock itemService get method for single item
 const getItemService = (item) =>
@@ -53,7 +53,7 @@ describe('Create Action Task', () => {
     const itemService = getItemService(item);
 
     jest.spyOn(itemService, 'get');
-    const actions = await itemActionHandler(itemService, {
+    const actions = await itemActionBuilder(itemService, {
       request: invalidUrlRequest,
       reply,
       log,
@@ -74,7 +74,7 @@ describe('Create Action Task', () => {
       },
     };
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validGetRequest,
       reply,
       log,
@@ -99,7 +99,7 @@ describe('Create Action Task', () => {
       },
     };
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validGetChildrenRequest,
       reply,
       log,
@@ -125,7 +125,7 @@ describe('Create Action Task', () => {
       },
     };
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPostCopyRequest,
       reply,
       log,
@@ -155,7 +155,7 @@ describe('Create Action Task', () => {
       },
     };
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPostCopyOneUsingMultipleRequest,
       reply,
       log,
@@ -189,7 +189,7 @@ describe('Create Action Task', () => {
 
     const itemService = getMultipleItemService(items);
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPostCopyMultipleRequest,
       reply,
       log,
@@ -221,7 +221,7 @@ describe('Create Action Task', () => {
       },
     };
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPostMoveRequest,
       reply,
       log,
@@ -257,7 +257,7 @@ describe('Create Action Task', () => {
       get: jest.fn(async (id) => items.find(({ id: thisId }) => thisId === id)),
     } as unknown as ItemService;
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPostMoveOneUsingMultipleRequest,
       reply,
       log,
@@ -292,7 +292,7 @@ describe('Create Action Task', () => {
 
     const itemService = getMultipleItemService(items);
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPostMoveMultipleRequest,
       reply,
       log,
@@ -320,7 +320,7 @@ describe('Create Action Task', () => {
       },
     };
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPatchRequest,
       reply,
       log,
@@ -352,7 +352,7 @@ describe('Create Action Task', () => {
     };
     const itemService = getMultipleItemService(items);
 
-    const savedActions = await itemActionHandler(itemService, {
+    const savedActions = await itemActionBuilder(itemService)({
       request: validPatchMultipleRequest,
       reply,
       log,

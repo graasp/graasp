@@ -19,9 +19,6 @@ import {
   CLIENT_HOSTS,
   COOKIE_DOMAIN,
   DATABASE_LOGS,
-  FILE_ITEM_PLUGIN_OPTIONS,
-  FILE_ITEM_TYPE,
-  GRAASP_ACTOR,
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_SMTP_HOST,
@@ -32,8 +29,6 @@ import {
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
-  SAVE_ACTIONS,
   WEBSOCKETS_PLUGIN,
 } from './util/config';
 
@@ -51,6 +46,10 @@ export default async function (instance: FastifyInstance): Promise<void> {
       password: MAILER_CONFIG_PASSWORD,
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     });
+
+  instance.register(graaspPluginActions, {
+    hosts: CLIENT_HOSTS,
+  });
 
   await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
 
@@ -79,27 +78,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
       await instance.register(publicPlugin);
     }
   });
-
-  instance.register(
-    async (instance) => {
-      // add CORS support
-      if (instance.corsPluginOptions) {
-        instance.register(fastifyCors, instance.corsPluginOptions);
-      }
-      instance.addHook('preHandler', instance.verifyAuthentication);
-      instance.register(graaspPluginActions, {
-        shouldSave: SAVE_ACTIONS,
-        graaspActor: GRAASP_ACTOR,
-        hosts: CLIENT_HOSTS,
-        fileItemType: FILE_ITEM_TYPE,
-        fileConfigurations: {
-          s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-          local: FILE_ITEM_PLUGIN_OPTIONS,
-        },
-      });
-    },
-    { prefix: '/analytics' },
-  );
 }
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...
