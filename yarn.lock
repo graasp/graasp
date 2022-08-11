@@ -5294,10 +5294,10 @@ __metadata:
 
 "graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin":
   version: 0.1.0
-  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=b7d9c66eb7fad251688da1c9014b88a8cc5fd24f"
+  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=0a09aa992ca22446b5d27ddb7242ee105d383499"
   dependencies:
     http-status-codes: ^2.2.0
-  checksum: 13ae37ff1d36206e480a5535106e6db00a7454dec8082f7a15457e893a5bff68b5e7a144cade23941160cf0f1c10c7840e6a24ead243bd12dcc8e66755d32dc7
+  checksum: 03db56a3c0b33970c0a012630e99a22034772ff72d33a17a5b90f466c4bf07a10c0a100e09584f1706fdf31e2246f55e08d102cdf3cf2ca5eb4f764be4085d7b
   languageName: node
   linkType: hard
 
