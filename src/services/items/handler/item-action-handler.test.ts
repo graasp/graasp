@@ -41,6 +41,10 @@ const request = {
   query: {},
   ip: '',
   headers: {},
+  raw: {
+    headers: {},
+    socket: { remoteAddress: 'mock-address' },
+  },
 } as unknown as FastifyRequest;
 
 describe('Create Action Task', () => {
