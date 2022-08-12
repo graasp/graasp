@@ -6,6 +6,7 @@ import mailerPlugin from 'graasp-mailer';
 import graaspPluginActions from 'graasp-plugin-actions';
 import graaspWebSockets from 'graasp-websockets';
 
+import adminPlugin from './plugins/admin';
 import authPlugin from './plugins/auth/auth';
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
@@ -78,6 +79,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
     if (PUBLIC_PLUGIN) {
       await instance.register(publicPlugin);
     }
+
+    await instance.register(adminPlugin);
   });
 
   instance.register(

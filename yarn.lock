@@ -404,7 +404,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.12.0":
+"@babel/runtime@npm:^7.17.2":
   version: 7.18.9
   resolution: "@babel/runtime@npm:7.18.9"
   dependencies:
@@ -786,13 +786,12 @@ __metadata:
   linkType: hard
 
 "@fastify/cookie@npm:^7.0.0":
-  version: 7.3.1
-  resolution: "@fastify/cookie@npm:7.3.1"
+  version: 7.4.0
+  resolution: "@fastify/cookie@npm:7.4.0"
   dependencies:
     cookie: ^0.5.0
-    cookie-signature: ^1.1.0
     fastify-plugin: ^4.0.0
-  checksum: 406261a263333f7e63aee7c3c76c31d136976fddb60d277bf681d45e682d681b45edeab7ea9c630dfa9fa3d0916114ac4c9aaf4d1847cb9a709b7ebba0486119
+  checksum: cf710f8fcf07d1655bdd76b86076e32d343fdea9291534e0b87b909d978520333663c2aed63609f84c2eec46ac0e9068f462a4b63b5d124e3d31c873adaa66d7
   languageName: node
   linkType: hard
 
@@ -922,9 +921,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
+"@graasp/sdk@github:graasp/graasp-sdk#33/admin":
   version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=4796e963bdbc84b0a2b098a83a401c0aecc259cb"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=8507abe0c17a6667ef082b56d516a69ea8e8d99e"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
@@ -934,16 +933,32 @@ __metadata:
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: 1562609fe4dd058fe4c02991f5a7742dd932cbe301ae56cf77d217fc06243448fbed1dc05744829be2cc098a2bc4adacf6004c06cce8d49c6733b42a7fb1d9bf
+  checksum: ea64ce57688213dc24035532a2beb9294ecf8523d650cb7a9348c6d1f8324ddd65494e2490f0b936192afa6aff517764fd0a609029e6dc0c1740ae00a70b6a92
+  languageName: node
+  linkType: hard
+
+"@graasp/sdk@github:graasp/graasp-sdk.git":
+  version: 0.1.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=9b8bbbfa902c6c6157f4e3255e513c15d398ebe2"
+  dependencies:
+    "@fastify/secure-session": 5.2.0
+    aws-sdk: 2.1111.0
+    fastify: ^3.29.1
+    fluent-json-schema: 3.1.0
+    js-cookie: 3.0.1
+    qs: 6.11.0
+    slonik: 28.1.1
+    uuid: 8.3.2
+  checksum: 5bd019b105f58ee8ffdff527d9b6110a31d1d82e17101c41ee98e9dae9a75b972547a01e32c3587b8a89458cd738601de2eb48e4eddbc4d6893e01e4845fdbdf
   languageName: node
   linkType: hard
 
 "@graasp/translations@github:graasp/graasp-translations":
   version: 0.1.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=b5839cf012e2838da6893d5cec9b3ecd5d0d3376"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=bdfce69de5df6fc9761e31ee4f65709efbfd9a51"
   dependencies:
-    i18next: 21.6.11
-  checksum: bae42e4d5b91b09caa3d84b5568d2394995523ad9d8c80623ace0702ef09bde62f2731741ac4a31a244131ee009360c519d1e10defed4f54eb45de9c0bdc0403
+    i18next: 21.8.1
+  checksum: f8d4b86f5f74037f1b278d847dccb004ffd74156caffd7f5af300a44791c779458a20c16607da5a9a49cbf053b61ae926e67c71dda25edaba51e3ff92080c783
   languageName: node
   linkType: hard
 
@@ -1246,12 +1261,12 @@ __metadata:
   linkType: hard
 
 "@jridgewell/trace-mapping@npm:^0.3.9":
-  version: 0.3.14
-  resolution: "@jridgewell/trace-mapping@npm:0.3.14"
+  version: 0.3.15
+  resolution: "@jridgewell/trace-mapping@npm:0.3.15"
   dependencies:
     "@jridgewell/resolve-uri": ^3.0.3
     "@jridgewell/sourcemap-codec": ^1.4.10
-  checksum: b9537b9630ffb631aef9651a085fe361881cde1772cd482c257fe3c78c8fd5388d681f504a9c9fe1081b1c05e8f75edf55ee10fdb58d92bbaa8dbf6a7bd6b18c
+  checksum: 38917e9c2b014d469a9f51c016ed506acbe44dd16ec2f6f99b553ebf3764d22abadbf992f2367b6d2b3511f3eae8ed3a8963f6c1030093fda23efd35ecab2bae
   languageName: node
   linkType: hard
 
@@ -1691,9 +1706,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*, @types/node@npm:>=12, @types/node@npm:>=8.1.0":
-  version: 18.6.4
-  resolution: "@types/node@npm:18.6.4"
-  checksum: fc453dd2b541f5812ba1a8f957f577727cf2d8aee886f1d5c03eb153b2b3373d2e0953c5bd2b7a5b184073bc317f54ec91f1ec4830a58eda4a833e90654021de
+  version: 18.7.2
+  resolution: "@types/node@npm:18.7.2"
+  checksum: 422cf95dea09959d0e809d24280b76948f60ea805e20d38f07bf9eeafeb413513b9cc365404766f7752bef9cafb8301a882d9d097f780e13f2bedf507459ebc5
   languageName: node
   linkType: hard
 
@@ -2700,9 +2715,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001370":
-  version: 1.0.30001374
-  resolution: "caniuse-lite@npm:1.0.30001374"
-  checksum: a75656e971d7ef2af4d2f3529a4620ae1a45d09460601fbc34b26f6867f31bbca006f71d8840291c471a2f01fc1994044f319a5660241ffaf35a2d84535af442
+  version: 1.0.30001375
+  resolution: "caniuse-lite@npm:1.0.30001375"
+  checksum: 6ed9cf7a3f80f5880cb021105864b869dddfdda8490559aa623e77feeca5ce8958a3b7c1cf37322e519176dcb488c99e6358b8c2de2aa4a0e08846ac122c4e75
   languageName: node
   linkType: hard
 
@@ -3733,9 +3748,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.202":
-  version: 1.4.211
-  resolution: "electron-to-chromium@npm:1.4.211"
-  checksum: 43d983b94f5aa542926c4063bae597591458b59e96ec0ab85a62cc296b9760c447d7d0af369d3c40b44b75cfc9d3a66277495736517c370cf03e181cf3ed39f1
+  version: 1.4.217
+  resolution: "electron-to-chromium@npm:1.4.217"
+  checksum: 1902170384200c8f4bc4aa430503c527e6b8d06a63b8c604b5ede566c151c7001d93ebd1ad3d62acf2a872cbc2c8501d63fe9f99ff3b5ec84769bbbb2b36545d
   languageName: node
   linkType: hard
 
@@ -4371,9 +4386,9 @@ __metadata:
   linkType: hard
 
 "fastify-plugin@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "fastify-plugin@npm:4.0.0"
-  checksum: b929f94e70e3815643842cd50bdfecd26ca2c34ef7a31b1570bd3fe7437174858e9bc4dfa70c2984340d5450c24b830d37fe4789c103ef80565dcc9037ae987a
+  version: 4.1.0
+  resolution: "fastify-plugin@npm:4.1.0"
+  checksum: 98d4041c3dc51e1146d74cc76c68d8074d4fbedc8f1094de1f4e54fc9b4a7600e64431e3937be9412f25397b7d0a7ee66be55d2e6c292b67782a5f0c40bea970
   languageName: node
   linkType: hard
 
@@ -5109,7 +5124,7 @@ __metadata:
 
 "graasp-mailer@github:graasp/graasp-mailer, graasp-mailer@github:graasp/graasp-mailer.git":
   version: 0.1.0
-  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=ed640b93dce84f78fa6c87cfca3a42c03babdb8c"
+  resolution: "graasp-mailer@https://github.com/graasp/graasp-mailer.git#commit=dbe027a857d39297584d4489412c2702acf982b2"
   dependencies:
     cpy-cli: 4.1.0
     eta: ^1.12.3
@@ -5118,7 +5133,7 @@ __metadata:
     fastify-polyglot: 1.0.0
     i18n: 0.14.2
     point-of-view: ^5.2.0
-  checksum: 59d82675a9dc01341a57d2b61296b2d9b9cd3196623afde1108ba0f16ea41c5c1c995ad1401b4d4e82e12f9f375f6e740093fd95c78dcb1a9734b6c37a5b70b9
+  checksum: 7bd32852737e16b35ca7f85ba21ae6c729f0ff2fcc4d16c82b3a5772e45cdec7bcac6b4cdeb564ea8773e1ee31ced0c6d35cc85f554fe0d0c0036d8610202b82
   languageName: node
   linkType: hard
 
@@ -5135,6 +5150,17 @@ __metadata:
     http-status-codes: 2.2.0
     uuid: 8.3.2
   checksum: 4722ebb56fb50ee9df0670618a6fe551d6d7d2e67616d324767f581cbdbc6169ffeff390faa9ed75c060ce5f89dc5f6f49f52927c150ca63f051ef879cebfd05
+  languageName: node
+  linkType: hard
+
+"graasp-plugin-admin@github:graasp/graasp-plugin-admin#6-all-items-members":
+  version: 0.1.0
+  resolution: "graasp-plugin-admin@https://github.com/graasp/graasp-plugin-admin.git#commit=03d5c498aa61ec63235da6aebb446165347f6766"
+  dependencies:
+    "@graasp/sdk": "github:graasp/graasp-sdk#33/admin"
+    fastify-plugin: ^3.0.1
+    slonik: 28.1.1
+  checksum: 5bb8cd7655f7b92864bda6999f210dd07633c7d7ee086054aed0e16681b0cd6cc4a436a00944a392f45ab9150d4a496d4e7693d4976959989884f343337674e8
   languageName: node
   linkType: hard
 
@@ -5387,7 +5413,7 @@ __metadata:
     "@fastify/cors": 7.0.0
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
-    "@graasp/sdk": "github:graasp/graasp-sdk"
+    "@graasp/sdk": "github:graasp/graasp-sdk#33/admin"
     "@graasp/translations": "github:graasp/graasp-translations"
     "@sentry/node": 6.19.7
     "@sentry/tracing": 6.19.7
@@ -5419,6 +5445,7 @@ __metadata:
     graasp-item-tags: "github:graasp/graasp-item-tags"
     graasp-mailer: "github:graasp/graasp-mailer"
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
+    graasp-plugin-admin: "github:graasp/graasp-plugin-admin#6-all-items-members"
     graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
@@ -5524,7 +5551,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"has-symbols@npm:^1.0.1, has-symbols@npm:^1.0.2, has-symbols@npm:^1.0.3":
+"has-symbols@npm:^1.0.2, has-symbols@npm:^1.0.3":
   version: 1.0.3
   resolution: "has-symbols@npm:1.0.3"
   checksum: a054c40c631c0d5741a8285010a0777ea0c068f99ed43e5d6eb12972da223f8af553a455132fdb0801bdcfa0e0f443c0c03a68d8555aa529b3144b446c3f2410
@@ -5730,12 +5757,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:21.6.11":
-  version: 21.6.11
-  resolution: "i18next@npm:21.6.11"
+"i18next@npm:21.8.1":
+  version: 21.8.1
+  resolution: "i18next@npm:21.8.1"
   dependencies:
-    "@babel/runtime": ^7.12.0
-  checksum: 42716a7519d6066a8c9400639ab80fba0b568ae02205b1155ec9c4e627704bb2181dd182ff5eb0c91f6c67c8038ddd0754214e1932de5699d488c21ffd617c5e
+    "@babel/runtime": ^7.17.2
+  checksum: d95da86626356d980c7063f41f2dcb3ce82462a11aa968df10bb87eb19e7fa54a2303643551bfef6276c18e6fb12e8e320f6ff914ff2ad4e0b32ff849150fed0
   languageName: node
   linkType: hard
 
@@ -7837,9 +7864,9 @@ __metadata:
   linkType: hard
 
 "nodemailer@npm:^6.4.10":
-  version: 6.7.7
-  resolution: "nodemailer@npm:6.7.7"
-  checksum: 337cee85bd040ced14b09700032b8dcbb74266a4201a4ab55683412a008cc8d8f3a13e8eef37ebee93aa11bb07f6cd02de650025211a0c0884be3d1ca839f869
+  version: 6.7.8
+  resolution: "nodemailer@npm:6.7.8"
+  checksum: 92d4a1d48813825989c7f5fc7cbcf5ba8d1a8acf8e10e420b4aa7670ade7abd0c543cc6cf8adf14e44c62552e26efb37b2a15a9af90a515fa90b40ffc71c433e
   languageName: node
   linkType: hard
 
@@ -7978,14 +8005,14 @@ __metadata:
   linkType: hard
 
 "object.assign@npm:^4.1.2":
-  version: 4.1.2
-  resolution: "object.assign@npm:4.1.2"
+  version: 4.1.3
+  resolution: "object.assign@npm:4.1.3"
   dependencies:
-    call-bind: ^1.0.0
-    define-properties: ^1.1.3
-    has-symbols: ^1.0.1
+    call-bind: ^1.0.2
+    define-properties: ^1.1.4
+    has-symbols: ^1.0.3
     object-keys: ^1.1.1
-  checksum: d621d832ed7b16ac74027adb87196804a500d80d9aca536fccb7ba48d33a7e9306a75f94c1d29cbfa324bc091bfc530bc24789568efdaee6a47fcfa298993814
+  checksum: fe87c8acd60e0d7140e1eae8886804e7497bf6a019bae715084083c2abd1760bd5aa9c3f0e5b02c82ca5cc33b641dc908c42c86c6f7d6dfd9f083a7baa95d318
   languageName: node
   linkType: hard
 
@@ -9161,8 +9188,8 @@ __metadata:
   linkType: hard
 
 "roarr@npm:^7.11.0":
-  version: 7.11.0
-  resolution: "roarr@npm:7.11.0"
+  version: 7.12.0
+  resolution: "roarr@npm:7.12.0"
   dependencies:
     boolean: ^3.1.4
     fast-json-stringify: ^2.7.10
@@ -9170,7 +9197,7 @@ __metadata:
     fast-safe-stringify: ^2.1.1
     globalthis: ^1.0.2
     semver-compare: ^1.0.0
-  checksum: 1a0a0c0c607f1e65778384266b303e7969e809a4f068c6846e6f02d9d4615dca146d08171f96846f879e8b54963361042b1164dff668b1d8e261a5eaca978832
+  checksum: c2313af14e994620f3292fdfb09d161fc2976ac4a6eeea63c12388ee30603d9807ed331bf224f9b9ea58587654ccc1bc67ade9a717cfe69d3fe9ba83375d7e67
   languageName: node
   linkType: hard
 
@@ -9626,12 +9653,12 @@ __metadata:
   linkType: hard
 
 "sodium-native@npm:^3.0.0":
-  version: 3.3.0
-  resolution: "sodium-native@npm:3.3.0"
+  version: 3.4.1
+  resolution: "sodium-native@npm:3.4.1"
   dependencies:
     node-gyp: latest
     node-gyp-build: ^4.3.0
-  checksum: 4412bc90155261e2006c979788d3b33e3bdba1c41669c7054a876b8731a68886e1450b356791abd2c4e7b217d21f50adfdc1e194d8909dd003223195bd8ddc0a
+  checksum: 88f2f8c9ecb3c7952098b667ee3803f24253d72a3b3874b126e0e36b2ac20432e12ad44bde3664024e6d0ae1bc6d24fdebc81273af161e735f2eec22f10d26dd
   languageName: node
   linkType: hard
 

@@ -1,13 +1,6 @@
 import { FastifyLoggerInstance } from 'fastify';
 
-import {
-  DatabaseTransactionHandler,
-  Item,
-  ItemService,
-  Member,
-  TaskStatus,
-  UnknownExtra,
-} from '@graasp/sdk';
+import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
 
 import { BaseItemTask } from './base-item-task';
 

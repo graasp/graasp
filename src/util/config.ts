@@ -289,3 +289,6 @@ export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
 
 export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
+
+// roles
+export const ADMIN_ROLE_ID = process.env.ADMIN_ROLE_ID;
