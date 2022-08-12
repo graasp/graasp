@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/graasp/graasp/compare/v0.1.0...v0.1.1) (2022-08-12)
+
+
+### Bug Fixes
+
+* allow posthook in descendants in copy task ([#242](https://github.com/graasp/graasp/issues/242)) ([578231f](https://github.com/graasp/graasp/commit/578231f6a6fe5b47bb993a10f0aadc8cbb42f547))
+* update workflow sha ref ([927adea](https://github.com/graasp/graasp/commit/927adea75ebc6a6064e9c29b76dfa1e113d52e95))
+* update workflow sha ref ([d382ddd](https://github.com/graasp/graasp/commit/d382ddd83505ec92c3b4e9cee8a8a4f7df2c4182))
+* update workflow sha ref ([42bc90d](https://github.com/graasp/graasp/commit/42bc90d2cd3d49a5aff5a4adbe6d143287fb976c))
+
 ## 0.1.0 (2022-07-21)
 
 
