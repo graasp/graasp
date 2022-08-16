@@ -187,7 +187,6 @@ export const H5P_CONTENT_REGION = process.env.H5P_CONTENT_REGION;
 export const H5P_CONTENT_BUCKET = process.env.H5P_CONTENT_BUCKET;
 export const H5P_CONTENT_ACCESS_KEY_ID = process.env.H5P_CONTENT_ACCESS_KEY_ID;
 export const H5P_CONTENT_SECRET_ACCESS_KEY = process.env.H5P_CONTENT_SECRET_ACCESS_KEY;
-export const H5P_CONTENT_HOST = process.env.H5P_CONTENT_HOST;
 
 let S3_INSTANCE: S3;
 

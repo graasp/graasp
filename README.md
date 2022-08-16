@@ -160,6 +160,13 @@ THUMBNAILS_PATH_PREFIX=items/
 # This value is only used for Dev or Test environments
 S3_FILE_ITEM_HOST=http://graasp-localstack:4566
 
+# Graasp H5P
+H5P_CONTENT_REGION=us-east-1
+H5P_CONTENT_BUCKET=graasp-h5p
+H5P_CONTENT_ACCESS_KEY_ID=graasp-user
+H5P_CONTENT_SECRET_ACCESS_KEY=graasp-pwd
+H5P_PATH_PREFIX=h5p-content/
+
 # Graasp embedded link item
 EMBEDDED_LINK_ITEM_PLUGIN=false
 # EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=<protocol>://<hostname>:<port>
