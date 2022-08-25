@@ -67,7 +67,7 @@
     "graasp-plugin-actions": "github:graasp/graasp-plugin-actions",
     "graasp-plugin-categories": "github:graasp/graasp-plugin-categories",
     "graasp-plugin-chatbox": "github:graasp/graasp-plugin-chatbox",
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file#18/AllowCachePresignedUrl",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "graasp-plugin-h5p": "github:graasp/graasp-plugin-h5p",
     "graasp-plugin-hidden-items": "github:graasp/graasp-plugin-hidden-items",
