@@ -922,7 +922,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
+"@graasp/sdk@github:graasp/graasp-sdk#40/AddReplyurlToFileserviceInterface":
+  version: 0.1.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=ba6af023a7c909b1b717571fa834133fdc32669d"
+  dependencies:
+    "@fastify/secure-session": 5.2.0
+    aws-sdk: 2.1111.0
+    fastify: ^3.29.1
+    fluent-json-schema: 3.1.0
+    immutable: 4.1.0
+    js-cookie: 3.0.1
+    qs: 6.11.0
+    slonik: 28.1.1
+    uuid: 8.3.2
+  checksum: 2d4424fce5c30c622041e75359410d279145eba6d11ac3a4401aed4742b9c1044e9e8c69e946b4a9dea6e6a2c481e90e82e7ae0b00f3edbb1d1105bd70e6d328
+  languageName: node
+  linkType: hard
+
+"@graasp/sdk@github:graasp/graasp-sdk.git":
   version: 0.1.0
   resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=4796e963bdbc84b0a2b098a83a401c0aecc259cb"
   dependencies:
@@ -5190,6 +5207,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graasp-plugin-file@github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles":
+  version: 0.1.0
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=6518a147d863aa54c8874ec2b1c28c88d4397678"
+  dependencies:
+    "@fastify/multipart": 6.0.0
+    "@graasp/translations": "github:graasp/graasp-translations"
+    aws-sdk: 2.1111.0
+    content-disposition: 0.5.4
+    fs-extra: 10.1.0
+    http-status-codes: 2.2.0
+    node-fetch: 2.6.7
+  checksum: 97cc1b9e79148c6b17f7b45c08e431192a29383ee89d660fa31ffec405c841920b0adc0cb6ba3fced57644d9c6df7628e9f2a005457f060c5a82bc955add2466
+  languageName: node
+  linkType: hard
+
 "graasp-plugin-h5p@github:graasp/graasp-plugin-h5p":
   version: 0.1.0
   resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=a9aacda26c315b363c4f76a930977a4b7c43f518"
@@ -5387,7 +5419,7 @@ __metadata:
     "@fastify/cors": 7.0.0
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
-    "@graasp/sdk": "github:graasp/graasp-sdk"
+    "@graasp/sdk": "github:graasp/graasp-sdk#40/AddReplyurlToFileserviceInterface"
     "@graasp/translations": "github:graasp/graasp-translations"
     "@sentry/node": 6.19.7
     "@sentry/tracing": 6.19.7
@@ -5421,7 +5453,7 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
-    graasp-plugin-file: "github:graasp/graasp-plugin-file"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
@@ -5782,6 +5814,13 @@ __metadata:
   version: 5.2.0
   resolution: "ignore@npm:5.2.0"
   checksum: 6b1f926792d614f64c6c83da3a1f9c83f6196c2839aa41e1e32dd7b8d174cef2e329d75caabb62cb61ce9dc432f75e67d07d122a037312db7caa73166a1bdb77
+  languageName: node
+  linkType: hard
+
+"immutable@npm:4.1.0":
+  version: 4.1.0
+  resolution: "immutable@npm:4.1.0"
+  checksum: b9bc1f14fb18eb382d48339c064b24a1f97ae4cf43102e0906c0a6e186a27afcd18b55ca4a0b63c98eefb58143e2b5ebc7755a5fb4da4a7ad84b7a6096ac5b13
   languageName: node
   linkType: hard
 
