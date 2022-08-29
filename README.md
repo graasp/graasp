@@ -98,6 +98,7 @@ Also you will need to run all the migrations associated with the plugins you wis
 
 - ChatBox : [`migrations`](https://github.com/graasp/graasp-plugin-chatbox/tree/main/migrations)
     - [`migration1.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/migrations/migration1.sql)
+    - [`migration2.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/migrations/migration2.sql)
 
 - Actions : [`migrations`](https://github.com/graasp/graasp-plugin-actions/tree/main/migrations)
     - [`migration1.sql`](https://github.com/graasp/graasp-plugin-actions/blob/main/migrations/migration1.sql)
