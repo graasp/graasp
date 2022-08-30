@@ -5209,7 +5209,7 @@ __metadata:
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=6518a147d863aa54c8874ec2b1c28c88d4397678"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=051bda40ad5d58343ff9126a84a0dabb09c24508"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5218,7 +5218,7 @@ __metadata:
     fs-extra: 10.1.0
     http-status-codes: 2.2.0
     node-fetch: 2.6.7
-  checksum: 97cc1b9e79148c6b17f7b45c08e431192a29383ee89d660fa31ffec405c841920b0adc0cb6ba3fced57644d9c6df7628e9f2a005457f060c5a82bc955add2466
+  checksum: c5f936ced5ad1357eed0905d0f7b1c6adf1c9d08caffba7a1d76fc95971942bb92ddc8d2b4e6fae0adbdcfe61b00a6f32228d930800cf2a6522c476b39281025
   languageName: node
   linkType: hard
 
