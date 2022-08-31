@@ -924,7 +924,7 @@ __metadata:
 
 "@graasp/sdk@github:graasp/graasp-sdk#40/AddReplyurlToFileserviceInterface":
   version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=ba6af023a7c909b1b717571fa834133fdc32669d"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=75b3975f41a84ed616cc4b4ef2e4aac84ca29a36"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
@@ -935,7 +935,7 @@ __metadata:
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: 2d4424fce5c30c622041e75359410d279145eba6d11ac3a4401aed4742b9c1044e9e8c69e946b4a9dea6e6a2c481e90e82e7ae0b00f3edbb1d1105bd70e6d328
+  checksum: b28d9cc730306cb6486a0815140b7626cbb7b317830d34c16c628d5fd8cdf2485f0ebf1c19e8d9e224e0d1ea0f609cf0e492f0e5ceec7bcfa5c1b4290cec0f38
   languageName: node
   linkType: hard
 
@@ -5209,7 +5209,7 @@ __metadata:
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=051bda40ad5d58343ff9126a84a0dabb09c24508"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=6bab482724db8b74b983c02ecec6ad9376e04d5a"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5218,7 +5218,7 @@ __metadata:
     fs-extra: 10.1.0
     http-status-codes: 2.2.0
     node-fetch: 2.6.7
-  checksum: c5f936ced5ad1357eed0905d0f7b1c6adf1c9d08caffba7a1d76fc95971942bb92ddc8d2b4e6fae0adbdcfe61b00a6f32228d930800cf2a6522c476b39281025
+  checksum: f9c919c5ad7f063f2ff8dbe55aa23c45b774b5343af141295ab0657b8f79aeed78e8f8dc3a7737f586a286e8ca920d599bd2bfcb8f1b603399e5223658897b85
   languageName: node
   linkType: hard
 

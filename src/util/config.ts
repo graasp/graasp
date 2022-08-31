@@ -173,6 +173,7 @@ export const MAILER_CONFIG_FROM_EMAIL =
 // Graasp file item
 // TODO: should this be here?
 export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
+export const LOCAL_FILES_HOST = process.env.LOCAL_FILES_HOST;
 
 // Graasp S3 file item
 // TODO: should this be here?
@@ -267,7 +268,10 @@ export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
 export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
 export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 
-export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };
+export const FILE_ITEM_PLUGIN_OPTIONS = {
+  storageRootPath: FILE_STORAGE_ROOT_PATH,
+  localFilesHost: LOCAL_FILES_HOST,
+};
 
 export const ITEMS_ROUTE_PREFIX = '/items';
 export const PUBLIC_ROUTE_PREFIX = '/p';
