@@ -2,8 +2,6 @@ import { FastifyLoggerInstance } from 'fastify';
 
 import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
 
-import { MAX_DESCENDANTS_FOR_COPY, MAX_TREE_LEVELS } from '../../../util/config';
-import { HierarchyTooDeep, TooManyDescendants } from '../../../util/graasp-error';
 import { BaseItem, dashToUnderscore } from '../base-item';
 import { ITEM_TYPES } from '../constants/constants';
 import { sortChildrenWith } from '../constants/utils';

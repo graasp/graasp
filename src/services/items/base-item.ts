@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { Item, ItemSettings, UnknownExtra } from '@graasp/sdk';
+import { Item, ItemSettings, ItemType, UnknownExtra } from '@graasp/sdk';
 
 import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
 
@@ -13,7 +13,7 @@ export class BaseItem<E extends UnknownExtra> implements Item<E> {
   readonly id: string;
   name: string;
   description: string;
-  type: string;
+  type: ItemType;
   path: string;
   extra: E;
   settings: ItemSettings;
@@ -24,7 +24,7 @@ export class BaseItem<E extends UnknownExtra> implements Item<E> {
   constructor(
     name: string,
     description: string = null,
-    type: string = 'base',
+    type: ItemType = ItemType.FOLDER,
     extra: E,
     settings: ItemSettings,
     creator: string,

@@ -1,4 +1,4 @@
-import { MAX_TARGETS_FOR_READ_REQUEST } from '../../util/config';
+import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 export default {
   $id: 'http://graasp.org/members/',

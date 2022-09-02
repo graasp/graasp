@@ -4,13 +4,13 @@ import {
   ItemMembershipService,
   ItemService,
   ItemTaskManager,
+  MAX_DESCENDANTS_FOR_COPY,
   Member,
   PermissionLevel,
   Task,
   UnknownExtra,
 } from '@graasp/sdk';
 
-import { MAX_DESCENDANTS_FOR_COPY } from '../../util/config';
 import { BaseItemMembership } from '../item-memberships/base-item-membership';
 import { CreateItemMembershipSubTask } from '../item-memberships/tasks/create-item-membership-task';
 import { GetMemberItemMembershipOverItemTask } from '../item-memberships/tasks/get-member-item-membership-over-item-task';
