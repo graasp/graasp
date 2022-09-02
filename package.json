@@ -118,6 +118,7 @@
   },
   "packageManager": "yarn@3.2.1",
   "resolutions": {
-    "bcrypt": "5.0.1"
+    "bcrypt": "5.0.1",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles"
   }
 }

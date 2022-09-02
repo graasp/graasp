@@ -5194,7 +5194,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-file@github:graasp/graasp-plugin-file, graasp-plugin-file@github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles":
+"graasp-plugin-file@github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles":
   version: 0.1.0
   resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=b820457e641aeb7ba012809f893d803a4b95ec05"
   dependencies:
