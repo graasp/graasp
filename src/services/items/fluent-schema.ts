@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
-import { MAX_TARGETS_FOR_MODIFY_REQUEST, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import {
+  ItemType,
+  MAX_TARGETS_FOR_MODIFY_REQUEST,
+  MAX_TARGETS_FOR_READ_REQUEST,
+} from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
-import { ITEM_TYPES } from './constants/constants';
 
 /**
  * for serialization
@@ -74,13 +77,13 @@ const folderExtra = S.object()
   // are very counter-intuitive. We should change to JTD format (as soon as it is supported)
   // .additionalProperties(false)
   .prop(
-    ITEM_TYPES.FOLDER,
+    ItemType.FOLDER,
     S.object()
       // .additionalProperties(false)
       .prop('childrenOrder', S.array().items(uuid))
       .required(['childrenOrder']),
   )
-  .required([ITEM_TYPES.FOLDER]);
+  .required([ItemType.FOLDER]);
 
 /**
  * for validation on update
