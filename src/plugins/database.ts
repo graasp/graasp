@@ -1,4 +1,4 @@
-import { createPool } from 'slonik';
+import { ClientConfiguration, createPool } from 'slonik';
 
 import { FastifyPluginAsync } from 'fastify';
 
@@ -12,10 +12,11 @@ export interface DatabasePluginOptions {
 }
 
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify, { uri, logs }) => {
-  const options = {
+  const options: Partial<ClientConfiguration> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeParsers: [] as any[],
     maximumPoolSize: MAXIMUM_POOL_SIZE,
+    idleTimeout: 30000,
   };
 
   if (logs) {
