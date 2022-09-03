@@ -26,7 +26,7 @@ on:
 jobs:
   graasp-deploy-update-staging-version-workflow:
     # Replace with repository name
-    name: Update staging version caller template
+    name: Graasp
     # Replace 'main' with the hash of a commit, so it points to an specific version of the reusable workflow that is used
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
     uses: graasp/graasp-deploy/.github/workflows/update-staging-version.yml@2c1fbb283ea5db70258237bb0fe0fd1a09064861
