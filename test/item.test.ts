@@ -190,11 +190,10 @@ describe('Item routes tests', () => {
       const app = await build();
       // by default the item creator use an invalid item type
       const newItem = getDummyItem();
-      newItem.type = 'invalid-type';
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/items',
-        payload: newItem,
+        payload: { ...newItem, type: 'invalid-type' },
       });
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
