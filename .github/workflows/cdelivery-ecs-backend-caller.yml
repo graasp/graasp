@@ -1,4 +1,4 @@
-name: Deploy Graasp backend to staging environment
+name: Deploy to staging environment
 
 # Controls when the action will run.
 on:
