@@ -1,4 +1,4 @@
-import { MAX_TARGETS_FOR_MODIFY_REQUEST, MAX_TARGETS_FOR_READ_REQUEST } from '../../util/config';
+import { MAX_TARGETS_FOR_MODIFY_REQUEST, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 // TODO: this file can be removed. confirm if not referenced somewhere
 export default {

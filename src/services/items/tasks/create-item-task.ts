@@ -4,12 +4,13 @@ import {
   DatabaseTransactionHandler,
   Item,
   ItemService,
+  MAX_NUMBER_OF_CHILDREN,
+  MAX_TREE_LEVELS,
   Member,
   TaskStatus,
   UnknownExtra,
 } from '@graasp/sdk';
 
-import { MAX_NUMBER_OF_CHILDREN, MAX_TREE_LEVELS } from '../../../util/config';
 import { HierarchyTooDeep, TooManyChildren } from '../../../util/graasp-error';
 import { BaseItem } from '../base-item';
 import { BaseItemTask } from './base-item-task';

@@ -1,8 +1,14 @@
 import { FastifyLoggerInstance } from 'fastify';
 
-import { DatabaseTransactionHandler, Item, ItemService, Member, TaskStatus } from '@graasp/sdk';
+import {
+  DatabaseTransactionHandler,
+  Item,
+  ItemService,
+  MAX_TREE_LEVELS,
+  Member,
+  TaskStatus,
+} from '@graasp/sdk';
 
-import { MAX_TREE_LEVELS } from '../../../util/config';
 import { HierarchyTooDeep, TooManyDescendants } from '../../../util/graasp-error';
 import { BaseItem } from '../base-item';
 import { BaseItemTask } from './base-item-task';

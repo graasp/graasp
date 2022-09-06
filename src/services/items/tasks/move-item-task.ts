@@ -5,11 +5,12 @@ import {
   Item,
   ItemMembershipService,
   ItemService,
+  MAX_DESCENDANTS_FOR_MOVE,
+  MAX_TREE_LEVELS,
   Member,
   TaskStatus,
 } from '@graasp/sdk';
 
-import { MAX_DESCENDANTS_FOR_MOVE, MAX_TREE_LEVELS } from '../../../util/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,

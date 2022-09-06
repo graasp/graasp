@@ -1,8 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, MAX_ITEM_MEMBERSHIPS_FOR_DELETE, PermissionLevel } from '@graasp/sdk';
 
-import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../src/util/config';
 import {
   InvalidMembership,
   InvalidPermissionLevel,

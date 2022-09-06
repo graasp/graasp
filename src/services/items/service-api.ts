@@ -6,6 +6,7 @@ import {
   IdsParams,
   Item,
   ItemTaskManager,
+  MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
   ParentIdParam,
   PermissionLevel,
 } from '@graasp/sdk';
@@ -57,7 +58,6 @@ import {
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
   LOGIN_ITEM_TAG_ID,
-  MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
   PROTOCOL,
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,

@@ -1,8 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { Item, ItemSettings, UnknownExtra, buildPathFromIds } from '@graasp/sdk';
+import { Item, ItemSettings, ItemType, UnknownExtra, buildPathFromIds } from '@graasp/sdk';
 
-import { ITEM_TYPES } from '../../src/services/items/constants/constants';
 import { ACTOR } from './members';
 
 const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
@@ -10,7 +9,7 @@ const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padSta
 export const getDummyItem = (
   options: {
     name?: string;
-    type?: string;
+    type?: ItemType;
     path?: string;
     description?: string;
     id?: string;
@@ -40,7 +39,7 @@ export const getDummyItem = (
     id: buildId,
     name: name ?? randomHexOf4(),
     description: description ?? 'some description',
-    type: type || ITEM_TYPES.FOLDER,
+    type: type || ItemType.FOLDER,
     path: buildPath,
     extra: extra || {},
     creator: creator,

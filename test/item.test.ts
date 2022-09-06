@@ -2,17 +2,19 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
 
-import { HttpMethod, PermissionLevel, buildPathFromIds } from '@graasp/sdk';
-
-import * as baseItemMembershipModule from '../src/services/item-memberships/base-item-membership';
-import { ITEM_TYPES } from '../src/services/items/constants/constants';
 import {
+  HttpMethod,
+  ItemType,
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
   MAX_NUMBER_OF_CHILDREN,
   MAX_TREE_LEVELS,
-} from '../src/util/config';
+  PermissionLevel,
+  buildPathFromIds,
+} from '@graasp/sdk';
+
+import * as baseItemMembershipModule from '../src/services/item-memberships/base-item-membership';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -66,7 +68,7 @@ describe('Item routes tests', () => {
 
   describe('POST /items', () => {
     it('Create successfully', async () => {
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
       ];
@@ -95,7 +97,7 @@ describe('Item routes tests', () => {
       app.close();
     });
     it('Create successfully in parent item', async () => {
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const parent = getDummyItem();
       const items = [payload, parent];
       const memberships = [
@@ -129,7 +131,7 @@ describe('Item routes tests', () => {
       app.close();
     });
     it('Create successfully in shared parent item', async () => {
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const parent = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
@@ -187,11 +189,11 @@ describe('Item routes tests', () => {
     it('Bad request if type is invalid', async () => {
       const app = await build();
       // by default the item creator use an invalid item type
-      const newItem = getDummyItem({ type: 'invalid-type' });
+      const newItem = getDummyItem();
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/items',
-        payload: newItem,
+        payload: { ...newItem, type: 'invalid-type' },
       });
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -199,7 +201,7 @@ describe('Item routes tests', () => {
     });
     it('Bad request if parentId id is invalid', async () => {
       const app = await build();
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const parentId = 'invalid-id';
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -213,7 +215,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item in non-existing parent', async () => {
       const app = await build();
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const parentId = uuidv4();
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -227,7 +229,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if member does not have membership on parent', async () => {
       const app = await build();
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const parent = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       mockItemServiceGet([payload, parent]);
       const response = await app.inject({
@@ -242,7 +244,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if member can only read parent', async () => {
       const app = await build();
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const parent = getDummyItem({ creator: MEMBERS_FIXTURES.BOB.id });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
@@ -262,8 +264,8 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if parent item has too many children', async () => {
       const app = await build();
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
-      const parent = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
+      const parent = getDummyItem({ type: ItemType.FOLDER });
       const memberships = [
         buildMembership({ path: payload.path, permission: PermissionLevel.Admin }),
         buildMembership({ path: parent.path, permission: PermissionLevel.Write }),
@@ -283,7 +285,7 @@ describe('Item routes tests', () => {
     });
     it('Cannot create item if parent is too deep in hierarchy', async () => {
       const app = await build();
-      const payload = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const payload = getDummyItem({ type: ItemType.FOLDER });
       const parentPath = `${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.${uuidv4()}.`;
       const parent = getDummyItem({ parentPath });
       const memberships = [
@@ -362,9 +364,9 @@ describe('Item routes tests', () => {
   describe('GET /items?id=<id>', () => {
     it('Returns successfully', async () => {
       const items = [
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
       ];
       const memberships = [
         buildMembership({ path: items[0].path, permission: PermissionLevel.Admin }),
@@ -415,8 +417,8 @@ describe('Item routes tests', () => {
     it('Returns one error for one missing item', async () => {
       const missingId = uuidv4();
       const items = [
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
       ];
       const memberships = [
         buildMembership({ path: items[0].path, permission: PermissionLevel.Admin }),
@@ -528,7 +530,7 @@ describe('Item routes tests', () => {
       app.close();
     });
     it('Returns successfully empty children', async () => {
-      const item = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const item = getDummyItem({ type: ItemType.FOLDER });
       const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -545,13 +547,13 @@ describe('Item routes tests', () => {
     });
     it('Returns ordered children', async () => {
       const children = [
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
-        getDummyItem({ type: ITEM_TYPES.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
+        getDummyItem({ type: ItemType.FOLDER }),
       ];
       const childrenOrder = children.reverse();
       const item = getDummyItem({
-        type: ITEM_TYPES.FOLDER,
+        type: ItemType.FOLDER,
         extra: { folder: { childrenOrder: childrenOrder.map(({ id }) => id) } },
       });
       const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
@@ -644,7 +646,7 @@ describe('Item routes tests', () => {
       app.close();
     });
     it('Returns successfully empty descendants', async () => {
-      const item = getDummyItem({ type: ITEM_TYPES.FOLDER });
+      const item = getDummyItem({ type: ItemType.FOLDER });
       const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
       mockItemServiceGet([item]);
       mockItemMembershipServiceGetForMemberAtItem(memberships);
@@ -698,7 +700,7 @@ describe('Item routes tests', () => {
   });
   describe('PATCH /items/:id', () => {
     it('Update successfully', async () => {
-      const item = getDummyItem({ type: ITEM_TYPES.FOLDER, extra: { [ITEM_TYPES.FOLDER]: {} } });
+      const item = getDummyItem({ type: ItemType.FOLDER, extra: { [ItemType.FOLDER]: {} } });
       const memberships = [buildMembership({ path: item.path, permission: PermissionLevel.Admin })];
       const payload = {
         name: 'new name',

@@ -3,11 +3,11 @@ import {
   Item,
   ItemMembership,
   ItemMembershipService,
+  MAX_ITEM_MEMBERSHIPS_FOR_DELETE,
   Member,
   TaskStatus,
 } from '@graasp/sdk';
 
-import { MAX_ITEM_MEMBERSHIPS_FOR_DELETE } from '../../../util/config';
 import { TooManyMemberships } from '../../../util/graasp-error';
 import { BaseItemMembershipTask } from './base-item-membership-task';
 import {
