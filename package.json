@@ -37,7 +37,8 @@
     "release": "standard-version -a",
     "release:first": "standard-version -a --first-release",
     "release:minor": "standard-version -a --release-as minor",
-    "release:major": "standard-version -a --release-as major"
+    "release:major": "standard-version -a --release-as major",
+    "release:patch": "standard-version -a --release-as patch"
   },
   "dependencies": {
     "@fastify/auth": "2.0.0",
