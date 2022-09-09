@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.1.3 (2022-09-09)
+
+
+### Bug Fixes
+
+* add path in delete item subtask ([28c7772](https://github.com/graasp/graasp/commit/28c777279aba08406dc9fffdb29ce00ff69059bc))
+
 ### 0.1.2 (2022-09-07)
 
 ### [0.1.1](https://github.com/graasp/graasp/compare/v0.1.0...v0.1.1) (2022-08-12)
