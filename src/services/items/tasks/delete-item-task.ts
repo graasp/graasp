@@ -12,7 +12,7 @@ import {
 import { TooManyDescendants } from '../../../util/graasp-error';
 import { BaseItemTask } from './base-item-task';
 
-type DeleteItemSubTaskInput = { itemId: string };
+type DeleteItemSubTaskInput = { itemId: string; itemPath: string };
 
 export class DeleteItemSubTask extends BaseItemTask<Item> {
   get name() {
@@ -20,7 +20,7 @@ export class DeleteItemSubTask extends BaseItemTask<Item> {
     return DeleteItemTask.name;
   }
 
-  input: { itemId: string };
+  input: { itemId: string; itemPath: string };
 
   constructor(member: Member, itemService: ItemService, input: DeleteItemSubTaskInput) {
     super(member, itemService);
@@ -30,10 +30,10 @@ export class DeleteItemSubTask extends BaseItemTask<Item> {
   async run(handler: DatabaseTransactionHandler, log: FastifyLoggerInstance) {
     this.status = TaskStatus.RUNNING;
 
-    const { itemId } = this.input;
+    const { itemId, itemPath } = this.input;
     this.targetId = itemId;
 
-    await this.preHookHandler?.({ id: itemId }, this.actor, { log, handler });
+    await this.preHookHandler?.({ id: itemId, path: itemPath }, this.actor, { log, handler });
     const item = await this.itemService.delete(itemId, handler);
     await this.postHookHandler?.(item, this.actor, { log, handler });
 
@@ -92,7 +92,10 @@ export class DeleteItemTask extends BaseItemTask<Item> {
       // delete item + all descendants, one by one.
       this.subtasks = descendants
         .concat(item)
-        .map((d) => new DeleteItemSubTask(this.actor, this.itemService, { itemId: d.id }));
+        .map(
+          (d) =>
+            new DeleteItemSubTask(this.actor, this.itemService, { itemId: d.id, itemPath: d.path }),
+        );
 
       return this.subtasks;
     }

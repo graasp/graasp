@@ -923,7 +923,7 @@ __metadata:
 
 "@graasp/sdk@github:graasp/graasp-sdk#main":
   version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=41b8c166b4a4db98259e56797f9b1f56e1b40465"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=4fa31e8d473b13bfa0bad3e10da9e7b9ca4f20d5"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
@@ -934,7 +934,7 @@ __metadata:
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: e3d9523f5b6ea307a1ed5dfcf7827addf2f16a8b01220dd0ad6ebcda7d28dbd93ac4caacd76f3d8159bec5f4c02395713cc874e18e795bfc7a65a2b8ea494496
+  checksum: 9af6a948678de50d9ae48792982e340d9aafd20e528185b4d34f8e54df7374573d011843741faabf5197cb8d73cf2fbadf033998937a313ceed61295f013dbc8
   languageName: node
   linkType: hard
 
@@ -5153,7 +5153,7 @@ __metadata:
 
 "graasp-plugin-chatbox@github:graasp/graasp-plugin-chatbox":
   version: 1.0.0
-  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=13535c4924db46c6ad5568afb87cc90d65880925"
+  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=132e4d82129a9ec7989959b78fec641352211248"
   dependencies:
     "@graasp/sdk": "github:graasp/graasp-sdk"
     fastify: ^3.29.1
@@ -5162,7 +5162,7 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-websockets: "github:graasp/graasp-websockets"
-  checksum: f3c712d006e2b4d276528a8185ef86a1829662d1d8569f034b86e7b6c61ef90a8cb057b0d13bb4df6f9bf1bd99d5e2272c45968e4c8247e04b4bc21502e1916c
+  checksum: e024089d312b69be54eb84f8d518f587835441b5379b30f390dbc1c2e4723fa37b8edc2a0bbb4b20d9dc97bd99a4a724ee0775bfeb4432379ce503f584ebe547
   languageName: node
   linkType: hard
 
