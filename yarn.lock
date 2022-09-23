@@ -2700,9 +2700,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001400":
-  version: 1.0.30001407
-  resolution: "caniuse-lite@npm:1.0.30001407"
-  checksum: e1c449d22f120a708accc956c1780f1da01af6c226cb6a324e531dc9f26f53075bff98e6c9cfce806157cdeede459aa8de03a3407b05f71d292a57b2910018b1
+  version: 1.0.30001409
+  resolution: "caniuse-lite@npm:1.0.30001409"
+  checksum: d8581693491295ad8716db7ad6dccf74de970fc3ef4723b38bbc03b972862d363a9710c2a7582abcb741e1619164ddceca1df4dcf3d53d550e74829a9cb5ca82
   languageName: node
   linkType: hard
 
@@ -3734,9 +3734,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.251":
-  version: 1.4.255
-  resolution: "electron-to-chromium@npm:1.4.255"
-  checksum: 9fd4e0b4a05b072e211b5a1ad2e20b099d7cd54a47b6cbf700dc9ef2020291b5b2d179af0dd0fc71be74b3c765a71ad14f7ff20afb637c0b58e7abc26ff3b68e
+  version: 1.4.257
+  resolution: "electron-to-chromium@npm:1.4.257"
+  checksum: 0e15301c7420acbe5cdf8497026156144acfe5bedaba11bf0f837d4ed6d388d6f65a796a1b0569130c254066eea3062e50a4c452466ce9864b2bd9313181076e
   languageName: node
   linkType: hard
 
@@ -4474,11 +4474,11 @@ __metadata:
   linkType: hard
 
 "fb-watchman@npm:^2.0.0":
-  version: 2.0.1
-  resolution: "fb-watchman@npm:2.0.1"
+  version: 2.0.2
+  resolution: "fb-watchman@npm:2.0.2"
   dependencies:
     bser: 2.1.1
-  checksum: 8510230778ab3a51c27dffb1b76ef2c24fab672a42742d3c0a45c2e9d1e5f20210b1fbca33486088da4a9a3958bde96b5aec0a63aac9894b4e9df65c88b2cbd6
+  checksum: b15a124cef28916fe07b400eb87cbc73ca082c142abf7ca8e8de6af43eca79ca7bd13eb4d4d48240b3bd3136eaac40d16e42d6edf87a8e5d1dd8070626860c78
   languageName: node
   linkType: hard
 
@@ -5307,11 +5307,11 @@ __metadata:
 
 "graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin#38-one-query":
   version: 0.1.0
-  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=36fe4f6c535338148c924825217ae0e3e0f610f9"
+  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=7c8f24566b3f4f340ce9780e060df47115df9bca"
   dependencies:
     "@graasp/translations": "github:graasp/graasp-translations"
     http-status-codes: ^2.2.0
-  checksum: a7fae7bd8db5247d22749a12b3a0d5df19fc27ac8409df30052b42497a4da72c371a86abe17018154eb0b2a5907cd78a22e8ee1b19bc780c562ecf0299cc8143
+  checksum: f68169811388878166c5256242937250e59d0ab51e47c1181432e6e701631feef80e425a8c1298f0010d1111414280ebc8101f5ed5c22b165f700d098a00d4ed
   languageName: node
   linkType: hard
 
