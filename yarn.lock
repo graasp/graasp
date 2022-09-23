@@ -5215,10 +5215,10 @@ __metadata:
 
 "graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items#5-db-hooks":
   version: 0.1.0
-  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=23da1ca491068938611aaad0fc2dcaeeb6b7ae7c"
+  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=daef54a78d31cebd34f0e3df619ffe16dcf0c185"
   dependencies:
     graasp-item-tags: graasp/graasp-item-tags
-  checksum: 27647965348d018b51d4332dc9db85df67d1427131f9a9461c7434c52f9532f231274f5811bdaca9550323aaef481611605e9ca71e65ff45b2008f4af4c5b919
+  checksum: 5ff579ec0e134caa9d7c3b160a0a419a6f02603c694b7116d7990e1358f6e62bc756fef0e6d98e565e5c0a56b19c99db1e38cd0669858692853f9e14d1a003ac
   languageName: node
   linkType: hard
 
