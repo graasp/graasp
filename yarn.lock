@@ -5307,11 +5307,11 @@ __metadata:
 
 "graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin#38-one-query":
   version: 0.1.0
-  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=7c8f24566b3f4f340ce9780e060df47115df9bca"
+  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=39a275a3674a631bf9224a8cbd00cb2c4cd54c21"
   dependencies:
     "@graasp/translations": "github:graasp/graasp-translations"
     http-status-codes: ^2.2.0
-  checksum: f68169811388878166c5256242937250e59d0ab51e47c1181432e6e701631feef80e425a8c1298f0010d1111414280ebc8101f5ed5c22b165f700d098a00d4ed
+  checksum: 844e1a262db69c02e9c17537e5b6d10857e6ab9a9f243a1ef26b3891bab336669f7b3a42ecb96fae5db4416fe5093fa49c39678ff7aacddda72bb7d600eb94ff
   languageName: node
   linkType: hard
 
