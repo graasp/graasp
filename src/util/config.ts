@@ -210,7 +210,9 @@ export const LOGIN_ITEM_TAG_ID = process.env.LOGIN_ITEM_TAG_ID;
 export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';
 
 // Graasp hidden
-export const HIDDEN_ITEM_PLUGIN = process.env.HIDDEN_ITEM_PLUGIN === 'true' ?? true;
+export const HIDDEN_ITEMS_PLUGIN = process.env.HIDDEN_ITEMS_PLUGIN
+  ? process.env.HIDDEN_ITEMS_PLUGIN === 'true'
+  : true;
 
 // actions
 export const SAVE_ACTIONS = process.env.SAVE_ACTIONS === 'true';
