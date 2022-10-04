@@ -5215,10 +5215,10 @@ __metadata:
 
 "graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items#5-db-hooks":
   version: 0.1.0
-  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=daef54a78d31cebd34f0e3df619ffe16dcf0c185"
+  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=6e6316e0540da0ff9739c24de55154b3a0654726"
   dependencies:
     graasp-item-tags: graasp/graasp-item-tags
-  checksum: 5ff579ec0e134caa9d7c3b160a0a419a6f02603c694b7116d7990e1358f6e62bc756fef0e6d98e565e5c0a56b19c99db1e38cd0669858692853f9e14d1a003ac
+  checksum: 65e6d3e60a06ccb0b67ef425a8138291494e850a59d3f3a859519a41e6b52df4934246b760c3efb91ca8c81f8470a45c91c9e43438f237e9fcb6f41c7b5a3076
   languageName: node
   linkType: hard
 
@@ -5307,11 +5307,11 @@ __metadata:
 
 "graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin#38-one-query":
   version: 0.1.0
-  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=39a275a3674a631bf9224a8cbd00cb2c4cd54c21"
+  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=1af37e8a05da8c8fca404ea75332d699f6720130"
   dependencies:
     "@graasp/translations": "github:graasp/graasp-translations"
     http-status-codes: ^2.2.0
-  checksum: 844e1a262db69c02e9c17537e5b6d10857e6ab9a9f243a1ef26b3891bab336669f7b3a42ecb96fae5db4416fe5093fa49c39678ff7aacddda72bb7d600eb94ff
+  checksum: ab460fe7a7922e40b28080389e176f85fb54447b15f6eafe2f535a02f3667186d2d68dce9e4275411ef02fc95c0234d0f5307522bbe0995cb15c9393ff0da60e
   languageName: node
   linkType: hard
 
