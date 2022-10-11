@@ -54,6 +54,7 @@ import {
   GRAASP_ACTOR,
   H5P_CONTENT_PLUGIN_OPTIONS,
   H5P_PATH_PREFIX,
+  HIDDEN_ITEMS_PLUGIN,
   HIDDEN_TAG_ID,
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
@@ -234,9 +235,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           hostname: CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname,
         });
 
-        fastify.register(graaspHidden, {
-          hiddenTagId: HIDDEN_TAG_ID,
-        });
+        if (HIDDEN_ITEMS_PLUGIN) {
+          fastify.register(graaspHidden, {
+            hiddenTagId: HIDDEN_TAG_ID,
+          });
+        }
 
         fastify.register(graaspRecycleBin, {
           recycleItemPostHook: async (itemPath, member, { handler }) =>
