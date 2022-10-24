@@ -921,20 +921,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#main":
+"@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
   version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=4fa31e8d473b13bfa0bad3e10da9e7b9ca4f20d5"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=b90aef97b007d8f0bdd77cad8211f2c0e7b843c1"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
-    fastify: ^3.29.1
+    fastify: 3.29.1
     fluent-json-schema: 3.1.0
     immutable: 4.1.0
     js-cookie: 3.0.1
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: 9af6a948678de50d9ae48792982e340d9aafd20e528185b4d34f8e54df7374573d011843741faabf5197cb8d73cf2fbadf033998937a313ceed61295f013dbc8
+  checksum: 6ead9b61e2736a9a24c639076f208e05f82d1873b0a3964f3d1aff3eb98fc4fc0a29e26ab84a9818e6ac32a10af9f44a8312479f57e5eb301405dbb2f5a3dbd9
   languageName: node
   linkType: hard
 
@@ -4421,9 +4421,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:^3.29.1":
-  version: 3.29.2
-  resolution: "fastify@npm:3.29.2"
+"fastify@npm:3.29.1":
+  version: 3.29.1
+  resolution: "fastify@npm:3.29.1"
   dependencies:
     "@fastify/ajv-compiler": ^1.0.0
     "@fastify/error": ^2.0.0
@@ -4440,7 +4440,7 @@ __metadata:
     secure-json-parse: ^2.0.0
     semver: ^7.3.2
     tiny-lru: ^8.0.1
-  checksum: 81948f7c8d75d772a0adbc199e20c904b373c3be669e989e869acfb478765b2f8181c415a6ff0a9d45ca5ec71c1e2f9cf6798b19daa9e5431391b8bf840139d7
+  checksum: 8f9e9c9f837135b82c58f4bf8d0ddfad703275ff48827e37eccdb0f8b0366e043a2111da4ee8d35ae1bc78512b52ac15140790bbe314b51deced535cff9fefe5
   languageName: node
   linkType: hard
 
@@ -10637,7 +10637,7 @@ __metadata:
 
 "typescript@patch:typescript@4.6.4#~builtin<compat/typescript>":
   version: 4.6.4
-  resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=7ad353"
+  resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=701156"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
@@ -10647,11 +10647,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>":
   version: 4.8.3
-  resolution: "typescript@patch:typescript@npm%3A4.8.3#~builtin<compat/typescript>::version=4.8.3&hash=7ad353"
+  resolution: "typescript@patch:typescript@npm%3A4.8.3#~builtin<compat/typescript>::version=4.8.3&hash=701156"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 0404a09c625df01934ef774b45ce1ca57ccae41cd625fcdbb82056715320d9329e70d9d75c2c732ec6ef947444ca978c189a332b71fa21f5c1437d5a83e24906
+  checksum: 2222d2382fb3146089b1d27ce2b55e9d1f99cc64118f1aba75809b693b856c5d3c324f052f60c75b577947fc538bc1c27bad0eb76cbdba9a63a253489504ba7e
   languageName: node
   linkType: hard
 
