@@ -1,5 +1,7 @@
 # Graasp
 
+![GitHub package.json version](https://img.shields.io/github/package-json/v/graasp/graasp?color=deepskyblue)
+
 ## Requirements
 
 In order to run the Graasp backend, it requires:
