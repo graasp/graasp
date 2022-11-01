@@ -27,5 +27,27 @@
   "appService.zipIgnorePattern": [
     ".vscode{,/**}"
   ],
-  "appService.deploySubpath": ""
+  "appService.deploySubpath": "",
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "graasp-db",
+      "database": "docker",
+      "username": "docker",
+      "password": "docker"
+    },
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "typeorm",
+      "database": "typeorm",
+      "username": "docker",
+      "password": "docker"
+    }
+  ]
 }
