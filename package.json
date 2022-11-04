@@ -70,7 +70,7 @@
     "graasp-plugin-chatbox": "github:graasp/graasp-plugin-chatbox",
     "graasp-plugin-file": "github:graasp/graasp-plugin-file",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
-    "graasp-plugin-h5p": "github:graasp/graasp-plugin-h5p",
+    "graasp-plugin-h5p": "github:graasp/graasp-plugin-h5p#hotfix/upload-bypass-task-runner",
     "graasp-plugin-hidden-items": "github:graasp/graasp-plugin-hidden-items",
     "graasp-plugin-invitations": "github:graasp/graasp-plugin-invitations",
     "graasp-plugin-item-likes": "github:graasp/graasp-plugin-item-likes",

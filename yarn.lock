@@ -5193,9 +5193,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-h5p@github:graasp/graasp-plugin-h5p":
+"graasp-plugin-h5p@github:graasp/graasp-plugin-h5p#hotfix/upload-bypass-task-runner":
   version: 0.1.0
-  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=a9aacda26c315b363c4f76a930977a4b7c43f518"
+  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=425cab819a939dbe1552d3c14f8c778c0f6d1cae"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@fastify/static": 5.0.2
@@ -5209,7 +5209,7 @@ __metadata:
     secure-json-parse: 2.4.0
     tmp-promise: 3.0.3
     uuid: 8.3.2
-  checksum: 0737a696e3ad3b519b78bf103297410e0c9f135d6c6cb76429593e355c408f8fa5296190ab0da5d22eeb9aa354773e6bc257552082735c0c877e9ccea5ce1931
+  checksum: 4d72246e3bd02d3c75bb09a4e676fb687d6ddf40de91841df04891118df8474d600810266d693fcb6983b7cbd5303f301f52cde8c592c99d6e6a9ef37ede9713
   languageName: node
   linkType: hard
 
@@ -5429,7 +5429,7 @@ __metadata:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p"
+    graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p#hotfix/upload-bypass-task-runner"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
