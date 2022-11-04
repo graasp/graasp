@@ -5193,9 +5193,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-h5p@github:graasp/graasp-plugin-h5p#hotfix/upload-bypass-task-runner":
+"graasp-plugin-h5p@github:graasp/graasp-plugin-h5p":
   version: 0.1.0
-  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=425cab819a939dbe1552d3c14f8c778c0f6d1cae"
+  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=97b7f9973b1c55a646671a40df4ca73c27088049"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@fastify/static": 5.0.2
@@ -5429,7 +5429,7 @@ __metadata:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
-    graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p#hotfix/upload-bypass-task-runner"
+    graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
