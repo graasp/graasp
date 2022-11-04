@@ -1,11 +1,24 @@
 import * as Sentry from '@sentry/node';
+import { DataSource } from 'typeorm';
 
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 import registerAppPlugins from './app';
+import { Member } from './services/members/member';
 // import fastifyCompress from 'fastify-compress';
 import { CORS_ORIGIN_REGEX, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
+
+// TODO: REMOVE
+declare module 'fastify' {
+  interface FastifyInstance {
+    db: DataSource;
+  }
+
+  interface FastifyRequest {
+    member: Member;
+  }
+}
 
 // Sentry
 Sentry.init({
@@ -61,7 +74,7 @@ const start = async () => {
   await registerAppPlugins(instance);
 
   try {
-    await instance.listen(+PORT, HOSTNAME);
+    await instance.listen({ port: +PORT, host: HOSTNAME });
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);

@@ -6,15 +6,15 @@ import { ItemService } from '../services/items/db-service';
 import { MemberService } from '../services/members/db-service';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
-  const { db, log } = fastify;
-  fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
+  // const { db, log } = fastify;
+  // fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
 
-  fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
-  fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
-  fastify.decorate('itemMemberships', {
-    dbService: new ItemMembershipService(),
-    taskManager: null,
-  });
+  // fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
+  // fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
+  // fastify.decorate('itemMemberships', {
+  //   dbService: new ItemMembershipService(),
+  //   taskManager: null,
+  // });
 
   fastify.decorateRequest('member', null);
 };
