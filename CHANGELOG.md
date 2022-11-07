@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.1.7 (2022-11-07)
+
+
+### Bug Fixes
+
+* upgrade h5p plugin with upload task runner bypass ([#275](https://github.com/graasp/graasp/issues/275)) ([ef985c0](https://github.com/graasp/graasp/commit/ef985c095d2d18921b27123664e78cb5e7ca1ff5))
+
 ### 0.1.6 (2022-10-27)
 
 ### 0.1.5 (2022-10-27)
