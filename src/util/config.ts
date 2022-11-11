@@ -46,7 +46,7 @@ export const CLIENT_HOSTS = [
     hostname: new URL(process.env.PLAYER_CLIENT_HOST).hostname,
   },
   {
-    name: Context.EXPLORER,
+    name: Context.LIBRARY,
     hostname: new URL(process.env.EXPLORER_CLIENT_HOST).hostname,
   },
 ];
