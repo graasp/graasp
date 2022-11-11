@@ -121,6 +121,7 @@
   "resolutions": {
     "bcrypt": "5.0.1",
     "fastify": "3.29.1",
-    "@graasp/sdk": "github:graasp/graasp-sdk"
+    "@graasp/sdk": "github:graasp/graasp-sdk",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles"
   }
 }
