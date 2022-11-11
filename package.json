@@ -120,6 +120,7 @@
   "packageManager": "yarn@3.2.4",
   "resolutions": {
     "bcrypt": "5.0.1",
-    "fastify": "3.29.1"
+    "fastify": "3.29.1",
+    "@graasp/sdk": "github:graasp/graasp-sdk"
   }
 }
