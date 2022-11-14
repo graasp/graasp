@@ -921,7 +921,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk":
+"@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
   version: 0.1.0
   resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=3c6bf828279719895489d8237c4a53dfc430b2a8"
   dependencies:
@@ -5178,9 +5178,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-file@github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles":
+"graasp-plugin-file@github:graasp/graasp-plugin-file":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=0e7758bb558bf8357a065495bd43645df84ce182"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=95c3f4f4593f1b24809ae7d13d1fa64bb56ee139"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5427,7 +5427,7 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
-    graasp-plugin-file: "github:graasp/graasp-plugin-file#33/AllowReplyOfSignedUrlOfFiles"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
