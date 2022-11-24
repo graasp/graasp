@@ -18,6 +18,7 @@ const settings = S.object()
   .prop('isPinned', S.boolean())
   .prop('tags', S.array())
   .prop('showChatbox', S.boolean())
+  .prop('isResizable', S.boolean())
   .prop('hasThumbnail', S.boolean())
   .prop('ccLicenseAdaption', S.string())
   .prop('displayCoEditors', S.boolean());
