@@ -74,6 +74,7 @@ jobs:
       mailer-config-smtp-host: ${{ secrets.MAILER_CONFIG_SMTP_HOST }}
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_STAGE }}
       pg-connection-uri: ${{ secrets.PG_CONNECTION_URI_STAGE }}
+      pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS_STAGE }}
       player-client-host: ${{ secrets.PLAYER_CLIENT_HOST_STAGE }}
       port: ${{ secrets.PORT }}
       public-tag-id: ${{ secrets.PUBLIC_TAG_ID }}

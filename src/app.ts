@@ -27,7 +27,7 @@ import {
   MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
   PG_CONNECTION_URI,
-  PG_READ_REPLICA_CONNECTION_URIS,
+  PG_READ_REPLICAS_CONNECTION_URIS,
   PUBLIC_PLUGIN,
   REDIS_HOST,
   REDIS_PASSWORD,
@@ -45,7 +45,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
   instance
     .register(fp(databasePlugin), {
       uri: PG_CONNECTION_URI,
-      readReplicaUris: PG_READ_REPLICA_CONNECTION_URIS,
+      readReplicaUris: PG_READ_REPLICAS_CONNECTION_URIS,
       logs: DATABASE_LOGS,
     })
     .register(fp(decoratorPlugin))
