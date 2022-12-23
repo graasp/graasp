@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
 
     const readOnlyInterceptor: Interceptor = {
       beforePoolConnection: (connectionContext) => {
-        if (!connectionContext.query?.sql.trim().startsWith('SELECT ')) {
+        if (!connectionContext.query?.sql?.trim()?.startsWith('SELECT ')) {
           // Returning null falls back to using the DatabasePool from which the query originates.
           return null;
         }
@@ -50,7 +50,7 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
         //   # @volatile
         //   SELECT write_log()
         // `
-        if (connectionContext.query?.sql.includes('@volatile')) {
+        if (connectionContext.query?.sql?.includes('@volatile')) {
           // Returning null falls back to using the DatabasePool from which the query originates.
           return null;
         }
