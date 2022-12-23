@@ -67,8 +67,8 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
       },
     };
 
-    // modifies options in-place!
-    Object.assign(options, { interceptors: [...options.interceptors, readOnlyInterceptor] });
+    // modifies options.interceptors in-place!
+    Object.assign(options.interceptors, [...options.interceptors, readOnlyInterceptor]);
   }
 
   const pool = createPool(uri, options);
