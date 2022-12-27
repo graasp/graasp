@@ -134,6 +134,8 @@ REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 # PostgreSQL connection string
 # If you are using dev-containers, this value is overwritten in docker-compose.yml
 PG_CONNECTION_URI=postgresql://<user>:<password>@localhost:5432/<dbname>
+# If you want to add read replicas to your DB cluster, provide their connection URIs here separated by commas
+PG_READ_REPLICA_CONNECTION_URIS=
 
 # Slonik database logging (uncomment both)
 # DATABASE_LOGS=true
