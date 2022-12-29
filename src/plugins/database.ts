@@ -23,13 +23,24 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
     idleTimeout: 30000,
   };
 
+  /**
+   * Mutates the provided options in-place with a new interceptor
+   * @param options options to be mutated
+   * @param interceptor function to be added
+   */
+  function addInterceptor(options: Partial<ClientConfiguration>, interceptor: Interceptor) {
+    Object.assign(options, {
+      interceptors: options.interceptors ? [...options.interceptors, interceptor] : [interceptor],
+    });
+  }
+
   if (logs) {
     const queryLoggingInterceptor =
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       require('slonik-interceptor-query-logging').createQueryLoggingInterceptor();
 
     // modifies options in-place!
-    Object.assign(options, { interceptors: [queryLoggingInterceptor] });
+    addInterceptor(options, queryLoggingInterceptor);
   }
 
   // read replicas load balancing
@@ -67,8 +78,8 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
       },
     };
 
-    // modifies options.interceptors in-place!
-    Object.assign(options.interceptors, [...options.interceptors, readOnlyInterceptor]);
+    // modifies options in-place!
+    addInterceptor(options, readOnlyInterceptor);
   }
 
   const pool = createPool(uri, options);
