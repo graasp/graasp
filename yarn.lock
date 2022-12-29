@@ -5046,7 +5046,7 @@ __metadata:
 
 "graasp-apps@github:graasp/graasp-apps":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=aa4c9b0107579c9f8326255e65a48cad35f734ad"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=cd308a01302537181af0302a57d4c66b5d26cad2"
   dependencies:
     "@fastify/auth": 2.0.0
     "@fastify/bearer-auth": 7.0.2
@@ -5059,7 +5059,7 @@ __metadata:
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     http-status-codes: 2.2.0
-  checksum: a9a1c1fa7a5ff9481b79be3052fafe4b4261833605be55de9a57a1de7d2a5625362bc2e33d855ff75e0df8268a5210c3c17433c518cfa804aaae4bd88cd14c61
+  checksum: 6921eea5cf9e6a1a0e7cccf0a6a87f6bde675d5db6a37fb340d3941ebb6358ab19767cc4c631c9a20f6ac85ace7d7f7f2ae6be8ff5fa3eae9e6254d25d55b915
   languageName: node
   linkType: hard
 
@@ -5154,7 +5154,7 @@ __metadata:
 
 "graasp-plugin-chatbox@github:graasp/graasp-plugin-chatbox":
   version: 1.0.0
-  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=132e4d82129a9ec7989959b78fec641352211248"
+  resolution: "graasp-plugin-chatbox@https://github.com/graasp/graasp-plugin-chatbox.git#commit=8f1b32a3b7a8e350e1ee0da16690ac839d07049d"
   dependencies:
     "@graasp/sdk": "github:graasp/graasp-sdk"
     fastify: ^3.29.1
@@ -5163,18 +5163,18 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-websockets: "github:graasp/graasp-websockets"
-  checksum: e024089d312b69be54eb84f8d518f587835441b5379b30f390dbc1c2e4723fa37b8edc2a0bbb4b20d9dc97bd99a4a724ee0775bfeb4432379ce503f584ebe547
+  checksum: 75fb7351800420ed33bd3266982c15cd1271052bd03a6fbd3bacec2c308277826f986441248d43f101a3e666c9eab5099d71c64cbaa754c6b9d6fe6a233f0f21
   languageName: node
   linkType: hard
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=f311ad8ad3b8e2ad85e1e402fad669d0d5bd06a6"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=35f25c5b90438f659f6b6827ca285f4e480d214b"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-  checksum: 40ecc01d3aee658f2bc1647d69170b6515efbf9efab961a1cb09d7ae0111f5580784d58d934400e3f3ad76601b93f3a1ec6842d8287034ee7a577e8869e30464
+  checksum: aec4d81f57f2e2b54426fda266f524856275a689cb6cc7a7fd328fe59a64766d07fa29ac7d15ddc5a77c80d7432b32f415e6657b63a3ebf4d72907c0c7f411f5
   languageName: node
   linkType: hard
 
@@ -5195,7 +5195,7 @@ __metadata:
 
 "graasp-plugin-h5p@github:graasp/graasp-plugin-h5p":
   version: 0.1.0
-  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=97b7f9973b1c55a646671a40df4ca73c27088049"
+  resolution: "graasp-plugin-h5p@https://github.com/graasp/graasp-plugin-h5p.git#commit=18581d514911806a834732ba45f8d5e3c7299d6d"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@fastify/static": 5.0.2
@@ -5209,16 +5209,16 @@ __metadata:
     secure-json-parse: 2.4.0
     tmp-promise: 3.0.3
     uuid: 8.3.2
-  checksum: a05956c520c87a18f86b731c6fe393b8f0046b87dd822d543d57258dc7d1d9055411509e63987b692b204e6baf1718932bc6a46c31b88e66874d35c1af7a968f
+  checksum: 868688e6ae01b7e777d4a82fbb424bbed2c969ef90da588bcefc0b99a36790fb3995143f5aecd7a8ac3e97376123aed0949ad7bf6620484007574ac5433e278b
   languageName: node
   linkType: hard
 
 "graasp-plugin-hidden-items@github:graasp/graasp-plugin-hidden-items":
   version: 0.1.0
-  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=87ad9d4f617efffe8cbe4ebad8a85dfb6f5d0ae2"
+  resolution: "graasp-plugin-hidden-items@https://github.com/graasp/graasp-plugin-hidden-items.git#commit=fda553b68525ba9f6d644a294a1d694394bcb346"
   dependencies:
     graasp-item-tags: graasp/graasp-item-tags
-  checksum: 65e6d3e60a06ccb0b67ef425a8138291494e850a59d3f3a859519a41e6b52df4934246b760c3efb91ca8c81f8470a45c91c9e43438f237e9fcb6f41c7b5a3076
+  checksum: e7c1b6691aa38798650a277820a62231158fe7cada0f21df6759208884889df92251348ee05e499fc36dd17bcec19bd29a9c5dbfa2cdceced55103986f327570
   languageName: node
   linkType: hard
 
@@ -5307,11 +5307,11 @@ __metadata:
 
 "graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin":
   version: 0.1.0
-  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=3a732e228a1e2d5a9ad18e4610e845f96b18ccdb"
+  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=e809cab5e72ce9078053543f9355f6492e6992da"
   dependencies:
     "@graasp/translations": "github:graasp/graasp-translations"
     http-status-codes: ^2.2.0
-  checksum: ab460fe7a7922e40b28080389e176f85fb54447b15f6eafe2f535a02f3667186d2d68dce9e4275411ef02fc95c0234d0f5307522bbe0995cb15c9393ff0da60e
+  checksum: 1c750b9a257f7064d39e04fe4ccd277d6a19fce486e0f10f3acb5c1f1fd3275832aadaf89178640cd0c47ace72da4e2b383f788ba1b71e68151c5ae0ae2aef99
   languageName: node
   linkType: hard
 
