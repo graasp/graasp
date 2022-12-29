@@ -72,6 +72,8 @@ export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
 export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;
+export const PG_READ_REPLICAS_CONNECTION_URIS =
+  process.env.PG_READ_REPLICAS_CONNECTION_URIS?.split(',');
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 
