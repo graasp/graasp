@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/graasp/graasp/compare/v0.1.8...v0.2.0) (2023-01-03)
+
+
+### Features
+
+* implement DB read replicas ([#288](https://github.com/graasp/graasp/issues/288)) ([3e6793f](https://github.com/graasp/graasp/commit/3e6793f7d07d23a09105fb450b5b49e819df2484))
+
+
+### Bug Fixes
+
+* correctly assign interceptors when undefined ([#290](https://github.com/graasp/graasp/issues/290)) ([1bfb8b3](https://github.com/graasp/graasp/commit/1bfb8b3e2c6f097fa452436be2210252e5bc0814))
+* isolate transactions ([#291](https://github.com/graasp/graasp/issues/291)) ([4907250](https://github.com/graasp/graasp/commit/490725094fd74f6cea550da7c1e2f010ad5f32bf))
+
 ### 0.1.8 (2022-11-28)
 
 ### 0.1.7 (2022-11-07)
