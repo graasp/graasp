@@ -50,6 +50,7 @@ import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   EMBEDDED_LINK_ITEM_PLUGIN,
   ETHERPAD_API_KEY,
+  ETHERPAD_PUBLIC_URL,
   ETHERPAD_URL,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -164,6 +165,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspItemEtherpad, {
           url: ETHERPAD_URL,
           apiKey: ETHERPAD_API_KEY,
+          publicUrl: ETHERPAD_PUBLIC_URL,
         });
 
         fastify.register(graaspItemZip, {
