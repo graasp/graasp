@@ -935,6 +935,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graasp/sdk@github:graasp/graasp-sdk#etherpad":
+  version: 0.1.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=e539d6633e22ce2c63385199d4303141d1619b37"
+  dependencies:
+    "@fastify/secure-session": 5.2.0
+    aws-sdk: 2.1111.0
+    fastify: 3.29.1
+    fluent-json-schema: 3.1.0
+    immutable: 4.1.0
+    js-cookie: 3.0.1
+    qs: 6.11.0
+    slonik: 28.1.1
+    uuid: 8.3.2
+  checksum: 60a3ff7b31d1daf2e49ee2516ea80e5254d3fae9002d94573fa9fcf58e823fc4bf855aaf7cd27400740cc56803dcffa9d7b6283d287bdd9448c31ba20b01debc
+  languageName: node
+  linkType: hard
+
 "@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
   version: 0.1.0
   resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=3c6bf828279719895489d8237c4a53dfc430b2a8"
@@ -5608,7 +5625,7 @@ __metadata:
     "@fastify/cors": 7.0.0
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
-    "@graasp/sdk": "github:graasp/graasp-sdk"
+    "@graasp/sdk": "github:graasp/graasp-sdk#etherpad"
     "@graasp/translations": "github:graasp/graasp-translations"
     "@sentry/node": 6.19.7
     "@sentry/tracing": 6.19.7
