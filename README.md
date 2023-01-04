@@ -173,7 +173,7 @@ H5P_CONTENT_SECRET_ACCESS_KEY=graasp-pwd
 H5P_PATH_PREFIX=h5p-content/
 
 # Graasp Etherpad
-ETHERPAD_URL=http://localhost:9000
+ETHERPAD_URL=http://etherpad:9001
 ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Graasp embedded link item

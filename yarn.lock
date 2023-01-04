@@ -908,17 +908,15 @@ __metadata:
 
 "@graasp/etherpad-api@github:graasp/etherpad-api":
   version: 2.0.0
-  resolution: "@graasp/etherpad-api@https://github.com/graasp/etherpad-api.git#commit=eb8e4c3bbc0ff5b96509b5c96beff30a0cc49976"
+  resolution: "@graasp/etherpad-api@https://github.com/graasp/etherpad-api.git#commit=e894c74c3f02f54461d538c64b32d80bce411f86"
   dependencies:
     "@types/http-errors": ^1.6.1
-    "@types/is-url": ^1.2.28
     "@types/request-promise-native": ^1.0.15
     compare-versions: ^3.4.0
     http-errors: ^1.7.1
-    is-url: ^1.2.4
     request: ^2.88.0
     request-promise-native: ^1.0.5
-  checksum: cf968ce9783897324941bfe0641373ecfaf0345feccfcd62c28fef9319e89b84ab0799fdfa5c574104e11e1e40f43df2cdf6f57de552012f28440d0552f62ebf
+  checksum: 4e90fbdafa5e9976b53216eb03f5b5e38cce03e39b21c4f050deb279facc6ab7cde526445124df09c611bf717ed3d7d52042239f2443103455c2ff28962cb0af
   languageName: node
   linkType: hard
 
@@ -1661,13 +1659,6 @@ __metadata:
   version: 1.8.2
   resolution: "@types/http-errors@npm:1.8.2"
   checksum: ecc365eea98d7eca650d593e742571acc3003742f0dd0fbbb15b8fce286e0f7421644b4140fb9bf701bbb7f1b744aea3967ebe025f0f0811aa5ab2c3d40fe111
-  languageName: node
-  linkType: hard
-
-"@types/is-url@npm:^1.2.28":
-  version: 1.2.30
-  resolution: "@types/is-url@npm:1.2.30"
-  checksum: 81f337a7442f56d160ec0f63b2847cff368c5701f46a32c3c4fff5a1424b6afb4ad3eb7206febd26760a869680d61b7626e41f0ad652003f5783bcfda5b41d9e
   languageName: node
   linkType: hard
 
@@ -5379,7 +5370,7 @@ __metadata:
 
 "graasp-plugin-etherpad@github:graasp/graasp-plugin-etherpad#1-add-etherpad":
   version: 0.1.0
-  resolution: "graasp-plugin-etherpad@https://github.com/graasp/graasp-plugin-etherpad.git#commit=47f394d1f1caef105de90b951cf9528cf6e73764"
+  resolution: "graasp-plugin-etherpad@https://github.com/graasp/graasp-plugin-etherpad.git#commit=abcd538fa92dd17f761900b465773d45ed595fbd"
   dependencies:
     "@fastify/cookie": ^6.0.0
     "@graasp/etherpad-api": "github:graasp/etherpad-api"
@@ -6444,13 +6435,6 @@ __metadata:
   version: 1.0.0
   resolution: "is-typedarray@npm:1.0.0"
   checksum: 3508c6cd0a9ee2e0df2fa2e9baabcdc89e911c7bd5cf64604586697212feec525aa21050e48affb5ffc3df20f0f5d2e2cf79b08caa64e1ccc9578e251763aef7
-  languageName: node
-  linkType: hard
-
-"is-url@npm:^1.2.4":
-  version: 1.2.4
-  resolution: "is-url@npm:1.2.4"
-  checksum: 100e74b3b1feab87a43ef7653736e88d997eb7bd32e71fd3ebc413e58c1cbe56269699c776aaea84244b0567f2a7d68dfaa512a062293ed2f9fdecb394148432
   languageName: node
   linkType: hard
 
