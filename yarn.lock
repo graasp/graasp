@@ -5338,7 +5338,7 @@ __metadata:
 
 "graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails":
   version: 0.1.0
-  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=0272b26a061d3259fcd52298e55698b96c586dd4"
+  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=4ea6746993340b9ba4349a87b4d48359031bb6c1"
   dependencies:
     "@graasp/translations": "github:graasp/graasp-translations"
     fastify: ^3.29.1
@@ -5346,7 +5346,7 @@ __metadata:
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     sharp: 0.30.7
-  checksum: 3d16ff8b5c4c5f12d12f1fd94ed6e58d8f9732a18588057175117c5511b497cd33d3f815fc78654ac3aebf6314d98d0bb8a51319410e51233c0f0817e173c326
+  checksum: 0895bea748cc470dc0161052f6ee32c35e7b3f94abfb365abd50fa73172d249cab4325cf4ece5f657918e3c42230b81749c158b70ab1276f5a01aea20816b457
   languageName: node
   linkType: hard
 
