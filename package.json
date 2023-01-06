@@ -47,7 +47,7 @@
     "@fastify/cors": "7.0.0",
     "@fastify/helmet": "8.0.0",
     "@fastify/secure-session": "4.0.0",
-    "@graasp/sdk": "github:graasp/graasp-sdk#etherpad",
+    "@graasp/sdk": "0.2.0",
     "@graasp/translations": "github:graasp/graasp-translations",
     "@sentry/node": "6.19.7",
     "@sentry/tracing": "6.19.7",
