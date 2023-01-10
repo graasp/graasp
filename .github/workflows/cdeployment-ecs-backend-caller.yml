@@ -57,6 +57,8 @@ jobs:
       cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_PROD }}
       email-links-host: ${{ secrets.EMAIL_LINKS_HOST_PROD }}
       embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
+      etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_PROD }}
+      etherpad-url: ${{ secrets.ETHERPAD_URL_PROD }}
       explorer-client-host: ${{ secrets.EXPLORER_CLIENT_HOST_PROD }}
       file-storage-root-path: ${{ secrets.FILE_STORAGE_ROOT_PATH }}
       files-path-prefix: ${{ secrets.FILES_PATH_PREFIX }}
