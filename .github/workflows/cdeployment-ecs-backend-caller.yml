@@ -21,6 +21,7 @@ jobs:
       chatbox-plugin: true
       database-logs: false
       embedded-link-item-plugin: true
+      etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_PROD }}
       hidden-items-plugin: true
       node-env: production
       node-env-iframely: production
