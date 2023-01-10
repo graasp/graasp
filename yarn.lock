@@ -5380,14 +5380,14 @@ __metadata:
 
 "graasp-plugin-etherpad@github:graasp/graasp-plugin-etherpad":
   version: 0.1.0
-  resolution: "graasp-plugin-etherpad@https://github.com/graasp/graasp-plugin-etherpad.git#commit=c2869be72302cb25747dbeb9edbb3c8db6cfcf7d"
+  resolution: "graasp-plugin-etherpad@https://github.com/graasp/graasp-plugin-etherpad.git#commit=4b3eeafde71e3b170c8b86f99af9c3b33d0167dc"
   dependencies:
     "@fastify/cookie": ^6.0.0
     "@graasp/etherpad-api": "github:graasp/etherpad-api"
     http-status-codes: 2.2.0
     luxon: 3.0.4
     uuid: 9.0.0
-  checksum: 9053e3ebca1b32effe7993c72a3bd5f59fdaddaa1e181b998cf2c295b925a91eea577aa401ee31cd4618b330c6a647fc70ac8c1a9b58ce8cfb3a6b4d7b40b1a2
+  checksum: aa0e999c567e74e8a39422bd2be2253a36c163a5022291855041e2479a6ecb747a6d6cffaddc57b5b5d185caf32a71e01401037cdb0126cf081040b89ab207f3
   languageName: node
   linkType: hard
 
