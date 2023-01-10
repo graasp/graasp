@@ -176,6 +176,8 @@ H5P_PATH_PREFIX=h5p-content/
 ETHERPAD_URL=http://etherpad:9001
 # Optional, if the etherpad server server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
 ETHERPAD_PUBLIC_URL=http://localhost:9001
+# Optional, if the etherpad cookie domain is different from the domain of the public URL
+ETHERPAD_COOKIE_DOMAIN=localhost:9001
 ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Graasp embedded link item

@@ -50,6 +50,7 @@ import {
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   EMBEDDED_LINK_ITEM_PLUGIN,
   ETHERPAD_API_KEY,
+  ETHERPAD_COOKIE_DOMAIN,
   ETHERPAD_PUBLIC_URL,
   ETHERPAD_URL,
   FILES_PATH_PREFIX,
@@ -166,6 +167,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           url: ETHERPAD_URL,
           apiKey: ETHERPAD_API_KEY,
           publicUrl: ETHERPAD_PUBLIC_URL,
+          cookieDomain: ETHERPAD_COOKIE_DOMAIN,
         });
 
         fastify.register(graaspItemZip, {

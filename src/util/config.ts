@@ -150,6 +150,7 @@ export const H5P_CONTENT_SECRET_ACCESS_KEY = process.env.H5P_CONTENT_SECRET_ACCE
 export const ETHERPAD_URL = process.env.ETHERPAD_URL;
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
+export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
 
 let S3_INSTANCE: S3;
 
