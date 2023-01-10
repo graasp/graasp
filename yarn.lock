@@ -978,6 +978,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graasp/translations@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@graasp/translations@npm:1.2.1"
+  dependencies:
+    i18next: 21.8.1
+  checksum: 24e17531b1023b41773bd97dad93031ee7da914ef712b83cfa1ee20da3a16aa7c4fb5784213398ecc4872b3ef9e79b6696f61876ac6c572cb182e6ea564edfef
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.9.2":
   version: 0.9.5
   resolution: "@humanwhocodes/config-array@npm:0.9.5"
@@ -5618,7 +5627,7 @@ __metadata:
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
     "@graasp/sdk": 0.2.0
-    "@graasp/translations": "github:graasp/graasp-translations"
+    "@graasp/translations": 1.2.1
     "@sentry/node": 6.19.7
     "@sentry/tracing": 6.19.7
     "@trivago/prettier-plugin-sort-imports": 3.2.0
