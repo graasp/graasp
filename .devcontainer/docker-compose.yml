@@ -80,7 +80,7 @@ services:
       - DB_USER=etherpad
       - DB_PASS=etherpad
       # allow only group pads
-      - REQUIRE_SESSION=true
+      # - REQUIRE_SESSION=true
       # only API can create pads
       - EDIT_ONLY=true
     # restart the container until db has created tables
