@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/graasp/graasp/compare/v0.1.8...v0.2.0) (2023-01-11)
+
+
+### Features
+
+* add etherpad service ([#295](https://github.com/graasp/graasp/issues/295)) ([f8b3b0d](https://github.com/graasp/graasp/commit/f8b3b0ded745bec39d41ad9626708a5f5631ea78))
+* implement DB read replicas ([#288](https://github.com/graasp/graasp/issues/288)) ([3e6793f](https://github.com/graasp/graasp/commit/3e6793f7d07d23a09105fb450b5b49e819df2484))
+
+
+### Bug Fixes
+
+* correctly assign interceptors when undefined ([#290](https://github.com/graasp/graasp/issues/290)) ([1bfb8b3](https://github.com/graasp/graasp/commit/1bfb8b3e2c6f097fa452436be2210252e5bc0814))
+* pin graasp-plugin-thumbnails and graasp-plugin-file-item before transactions fix ([#299](https://github.com/graasp/graasp/issues/299)) ([67f7597](https://github.com/graasp/graasp/commit/67f75977a3628eda0f54bd4fda4ce9f97aae4f7b))
+
 ### 0.1.8 (2022-11-28)
 
 ### 0.1.7 (2022-11-07)
