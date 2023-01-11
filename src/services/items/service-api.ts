@@ -23,6 +23,7 @@ import {
 } from 'graasp-plugin-actions';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspChatbox from 'graasp-plugin-chatbox';
+import graaspItemEtherpad from 'graasp-plugin-etherpad';
 import fileItemPlugin from 'graasp-plugin-file-item';
 import graaspItemH5P from 'graasp-plugin-h5p';
 import graaspHidden from 'graasp-plugin-hidden-items';
@@ -48,6 +49,10 @@ import {
   CLIENT_HOSTS,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   EMBEDDED_LINK_ITEM_PLUGIN,
+  ETHERPAD_API_KEY,
+  ETHERPAD_COOKIE_DOMAIN,
+  ETHERPAD_PUBLIC_URL,
+  ETHERPAD_URL,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
@@ -156,6 +161,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             s3: H5P_CONTENT_PLUGIN_OPTIONS,
             local: FILE_ITEM_PLUGIN_OPTIONS,
           },
+        });
+
+        fastify.register(graaspItemEtherpad, {
+          url: ETHERPAD_URL,
+          apiKey: ETHERPAD_API_KEY,
+          publicUrl: ETHERPAD_PUBLIC_URL,
+          cookieDomain: ETHERPAD_COOKIE_DOMAIN,
         });
 
         fastify.register(graaspItemZip, {

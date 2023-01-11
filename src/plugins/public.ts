@@ -5,6 +5,7 @@ import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { ItemTagService } from 'graasp-item-tags';
 import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
+import { publicPlugin as publicEtherpadPlugin } from 'graasp-plugin-etherpad';
 import { publicPlugin as publicFileItemPlugin } from 'graasp-plugin-file-item';
 import { publicPlugin as publicH5PPlugin } from 'graasp-plugin-h5p';
 import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
@@ -16,6 +17,9 @@ import {
   APPS_JWT_SECRET,
   APP_ITEMS_PREFIX,
   AVATARS_PATH_PREFIX,
+  ETHERPAD_API_KEY,
+  ETHERPAD_PUBLIC_URL,
+  ETHERPAD_URL,
   FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
@@ -112,6 +116,13 @@ const plugin: FastifyPluginAsync<PublicPluginOptions> = async (instance) => {
 
           // chatbox
           await instance.register(publicChatboxPlugin);
+
+          // etherpad
+          await instance.register(publicEtherpadPlugin, {
+            url: ETHERPAD_URL,
+            apiKey: ETHERPAD_API_KEY,
+            publicUrl: ETHERPAD_PUBLIC_URL,
+          });
 
           // download zip
           await instance.register(publicZipPlugin, {
