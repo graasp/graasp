@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/graasp/graasp/compare/v0.2.1...v0.3.0) (2023-01-11)
+
+
+### Features
+
+* add etherpad service ([#295](https://github.com/graasp/graasp/issues/295)) ([2ff2ffb](https://github.com/graasp/graasp/commit/2ff2ffb4cf5cab3cfecab8655b868ec0117ed1b1))
+
 ## [0.2.1](https://github.com/graasp/graasp/compare/v0.2.0...v0.2.1) (2023-01-05)
 
 
