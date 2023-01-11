@@ -20,6 +20,8 @@ jobs:
       chatbox-plugin: true
       database-logs: false
       embedded-link-item-plugin: true
+      etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_STAGE }}
+      etherpad-url: ${{ vars.ETHERPAD_URL_STAGE }}
       hidden-items-plugin: true
       node-env: production
       node-env-iframely: production
@@ -56,6 +58,7 @@ jobs:
       cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_STAGE }}
       email-links-host: ${{ secrets.EMAIL_LINKS_HOST_STAGE }}
       embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
+      etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_STAGE }}
       explorer-client-host: ${{ secrets.EXPLORER_CLIENT_HOST_STAGE }}
       file-storage-root-path: ${{ secrets.FILE_STORAGE_ROOT_PATH }}
       files-path-prefix: ${{ secrets.FILES_PATH_PREFIX }}

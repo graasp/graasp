@@ -143,6 +143,11 @@ export const H5P_CONTENT_BUCKET = process.env.H5P_CONTENT_BUCKET;
 export const H5P_CONTENT_ACCESS_KEY_ID = process.env.H5P_CONTENT_ACCESS_KEY_ID;
 export const H5P_CONTENT_SECRET_ACCESS_KEY = process.env.H5P_CONTENT_SECRET_ACCESS_KEY;
 
+export const ETHERPAD_URL = process.env.ETHERPAD_URL;
+export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
+export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
+export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
+
 let S3_INSTANCE: S3;
 
 // Enable localstack, only create the instance in test or dev environments

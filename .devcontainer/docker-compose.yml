@@ -45,6 +45,9 @@ services:
       POSTGRES_DB: docker
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
+      POSTGRES_ETHERPAD_DB: etherpad
+      POSTGRES_ETHERPAD_USER: etherpad
+      POSTGRES_ETHERPAD_PASSWORD: etherpad
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward MongoDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
@@ -57,6 +60,33 @@ services:
     restart: unless-stopped
     ports:
       - 6379:6379
+
+  etherpad:
+    container_name: graasp-etherpad
+    image: etherpad/etherpad
+    # start the server with dev API key
+    # https://hub.docker.com/r/etherpad/etherpad/dockerfile
+    # https://github.com/ether/etherpad-lite/issues/3849
+    volumes:
+      # bind copy the dev API key
+      - ./etherpad/devApiKey.txt:/opt/etherpad-lite/APIKEY.txt
+    ports:
+      - 9001:9001
+    environment:
+      - DB_TYPE=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=etherpad
+      - DB_USER=etherpad
+      - DB_PASS=etherpad
+      # allow only group pads
+      # - REQUIRE_SESSION=true
+      # only API can create pads
+      - EDIT_ONLY=true
+    # restart the container until db has created tables
+    restart: unless-stopped
+    depends_on:
+      - db
 
   # Localstack is used to test aws services locally
   localstack:
