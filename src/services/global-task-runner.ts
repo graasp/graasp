@@ -22,6 +22,20 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
   protected logger: FastifyLoggerInstance;
   private getIdIfExists = ({ id }: { id?: string }) => id;
 
+  private tasksHooks = new Map<
+    string,
+    {
+      pre?: {
+        handlers: { fn: PreHookHandlerType<unknown>; registrationCallStack: string }[];
+        wrapped: PreHookHandlerType<unknown>;
+      };
+      post?: {
+        handlers: { fn: PreHookHandlerType<unknown>; registrationCallStack: string }[];
+        wrapped: PostHookHandlerType<unknown>;
+      };
+    }
+  >();
+
   constructor(database: Database, logger: FastifyLoggerInstance) {
     this.databasePool = database.pool;
     this.logger = logger;
@@ -276,12 +290,16 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       }
       // generated "wrapped" fn keeps a ref to the list of `handlers`;
       // only one "wrapped" fn generated per type of task, per hook moment.
-      const handlers: PreHookHandlerType<T>[] = [];
+      const handlers: { fn: PreHookHandlerType<T>; registrationCallStack: string }[] = [];
       const wrapped = this.wrapTaskPreHookHandlers(taskName, handlers);
       hooks.pre = { handlers, wrapped };
     }
 
-    hooks.pre.handlers.push(handler);
+    // artificially generate error to retrieve current call stack
+    // this is useful to know what LOC registered the handler if it later fails
+    const registrationCallStack = new Error().stack;
+
+    hooks.pre.handlers.push({ fn: handler, registrationCallStack });
   }
 
   setTaskPostHookHandler<T>(taskName: string, handler: PostHookHandlerType<T>): void {
@@ -294,19 +312,23 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       }
       // generated "wrapped" fn keeps a ref to the list of `handlers`;
       // only one "wrapped" fn generated per type of task, per hook moment.
-      const handlers: PostHookHandlerType<T>[] = [];
+      const handlers: { fn: PreHookHandlerType<T>; registrationCallStack: string }[] = [];
       const wrapped = this.wrapTaskPostHookHandlers(taskName, handlers);
       hooks.post = { handlers, wrapped };
     }
 
-    hooks.post.handlers.push(handler);
+    // artificially generate error to retrieve current call stack
+    // this is useful to know what LOC registered the handler if it later fails
+    const registrationCallStack = new Error().stack;
+
+    hooks.post.handlers.push({ fn: handler, registrationCallStack });
   }
 
   unsetTaskPreHookHandler<T>(taskName: string, handler: PreHookHandlerType<T>): void {
     const handlers = this.tasksHooks.get(taskName)?.pre?.handlers;
 
     if (handlers) {
-      const handlerIndex = handlers.indexOf(handler);
+      const handlerIndex = handlers.findIndex(({ fn }) => fn === handler);
       if (handlerIndex >= 0) handlers.splice(handlerIndex, 1);
     }
   }
@@ -315,18 +337,10 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     const handlers = this.tasksHooks.get(taskName)?.post?.handlers;
 
     if (handlers) {
-      const handlerIndex = handlers.indexOf(handler);
+      const handlerIndex = handlers.findIndex(({ fn }) => fn === handler);
       if (handlerIndex >= 0) handlers.splice(handlerIndex, 1);
     }
   }
-
-  private tasksHooks = new Map<
-    string,
-    {
-      pre?: { handlers: PreHookHandlerType<unknown>[]; wrapped: PreHookHandlerType<unknown> };
-      post?: { handlers: PostHookHandlerType<unknown>[]; wrapped: PostHookHandlerType<unknown> };
-    }
-  >();
 
   private injectTaskHooksHandlers<T>(task: Task<Actor, T>) {
     const { name } = task;
@@ -334,7 +348,10 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
     task.postHookHandler = this.tasksHooks.get(name)?.post?.wrapped;
   }
 
-  private wrapTaskPreHookHandlers<T>(taskName: string, handlers: PreHookHandlerType<T>[]) {
+  private wrapTaskPreHookHandlers<T>(
+    taskName: string,
+    handlers: { fn: PreHookHandlerType<unknown>; registrationCallStack: string }[],
+  ) {
     // 'pre' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
     return async (
       data: Partial<IndividualResultType<T>>,
@@ -342,18 +359,23 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       { log, handler }: TaskHookHandlerHelpers,
       extraData?: unknown,
     ) => {
-      try {
-        for (let i = 0; i < handlers.length; i++) {
-          await handlers[i](data, actor, { log, handler }, extraData);
+      for (let i = 0; i < handlers.length; i++) {
+        const { fn, registrationCallStack } = handlers[i];
+        try {
+          await fn(data, actor, { log, handler }, extraData);
+        } catch (error) {
+          log.error(`${taskName}: pre hook fail, object ${JSON.stringify(data)}`);
+          log.error(`The pre hook was registered at \n\t${registrationCallStack}`);
+          throw error;
         }
-      } catch (error) {
-        log.error(`${taskName}: pre hook fail, object ${JSON.stringify(data)}`);
-        throw error;
       }
     };
   }
 
-  private wrapTaskPostHookHandlers<T>(taskName: string, handlers: PostHookHandlerType<T>[]) {
+  private wrapTaskPostHookHandlers<T>(
+    taskName: string,
+    handlers: { fn: PreHookHandlerType<unknown>; registrationCallStack: string }[],
+  ) {
     // 'post' handlers executions '(a)wait', and if one fails, the task execution is interrupted - throws exception.
     return async (
       data: T,
@@ -361,13 +383,15 @@ export class GlobalTaskRunner implements TaskRunner<Actor> {
       { log, handler }: TaskHookHandlerHelpers,
       extraData?: unknown,
     ) => {
-      try {
-        for (let i = 0; i < handlers.length; i++) {
-          await handlers[i](data, actor, { log, handler }, extraData);
+      for (let i = 0; i < handlers.length; i++) {
+        const { fn, registrationCallStack } = handlers[i];
+        try {
+          await fn(data, actor, { log, handler }, extraData);
+        } catch (error) {
+          log.error(`${taskName}: post hook fail, object ${JSON.stringify(data)}`);
+          log.error(`The post hook was registered at \n\t${registrationCallStack}`);
+          throw error;
         }
-      } catch (error) {
-        log.error(`${taskName}: post hook fail, object ${JSON.stringify(data)}`);
-        throw error;
       }
     };
   }
