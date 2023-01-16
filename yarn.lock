@@ -5266,7 +5266,7 @@ __metadata:
 
 "graasp-apps@github:graasp/graasp-apps":
   version: 0.1.0
-  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=cd308a01302537181af0302a57d4c66b5d26cad2"
+  resolution: "graasp-apps@https://github.com/graasp/graasp-apps.git#commit=c23cdf4cf5214539e5c2c70089906dc922bf4231"
   dependencies:
     "@fastify/auth": 2.0.0
     "@fastify/bearer-auth": 7.0.2
@@ -5400,7 +5400,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#f311ad8ad3b8e2ad85e1e402fad669d0d5bd06a6":
+"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
   version: 0.1.0
   resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=35f25c5b90438f659f6b6827ca285f4e480d214b"
   dependencies:
@@ -5442,7 +5442,7 @@ __metadata:
     secure-json-parse: 2.4.0
     tmp-promise: 3.0.3
     uuid: 8.3.2
-  checksum: 868688e6ae01b7e777d4a82fbb424bbed2c969ef90da588bcefc0b99a36790fb3995143f5aecd7a8ac3e97376123aed0949ad7bf6620484007574ac5433e278b
+  checksum: 51e977a08275a4c635a80efe447e4932e373875dae34966ca885b61f5b845dc824f1e41a7a1ec2e6423eda6fe9370701700dd5ae2544aa05a4ec78899b20d7ec
   languageName: node
   linkType: hard
 
@@ -5505,7 +5505,7 @@ __metadata:
 
 "graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
   version: 0.1.0
-  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=09e87cc74774d3bbb1a1c890351e450b3ff6e729"
+  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=4b7d116fa1f1c438f65c1b59d2f62506d2dd897c"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5569,23 +5569,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails#0a01cc2b0f3c3c43fd8613024f00b338e8036c07":
+"graasp-plugin-thumbnails@github:graasp/graasp-plugin-thumbnails":
   version: 0.1.0
-  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=0272b26a061d3259fcd52298e55698b96c586dd4"
+  resolution: "graasp-plugin-thumbnails@https://github.com/graasp/graasp-plugin-thumbnails.git#commit=23acaeab444245be594c89934400888fd259b859"
   dependencies:
-    "@graasp/translations": "github:graasp/graasp-translations"
+    "@graasp/translations": 1.2.1
     fastify: ^3.29.1
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     sharp: 0.30.7
-  checksum: 3d16ff8b5c4c5f12d12f1fd94ed6e58d8f9732a18588057175117c5511b497cd33d3f815fc78654ac3aebf6314d98d0bb8a51319410e51233c0f0817e173c326
+  checksum: 64beac73f6a41352fe065cb4256375c201e25fb1e9178646fdf271caace8b6999bdbb168912b492504d10ca2c2082caa3caf0765f7e603e8e5af7d7e2e0b8344
   languageName: node
   linkType: hard
 
 "graasp-plugin-validation@github:graasp/graasp-plugin-validation":
   version: 0.1.0
-  resolution: "graasp-plugin-validation@https://github.com/graasp/graasp-plugin-validation.git#commit=3c14d41ccf408a14965417e8bfb093d072b05802"
+  resolution: "graasp-plugin-validation@https://github.com/graasp/graasp-plugin-validation.git#commit=6fb9a752edbc32a49051701faa77e728f3b1e2c8"
   dependencies:
     axios: 0.26.1
     bad-words: 3.0.4
@@ -5662,7 +5662,7 @@ __metadata:
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
     graasp-plugin-etherpad: "github:graasp/graasp-plugin-etherpad"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#f311ad8ad3b8e2ad85e1e402fad669d0d5bd06a6"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
@@ -5674,7 +5674,7 @@ __metadata:
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-search: "github:graasp/graasp-plugin-search"
     graasp-plugin-subscriptions: "github:graasp/graasp-plugin-subscriptions"
-    graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails#0a01cc2b0f3c3c43fd8613024f00b338e8036c07"
+    graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     graasp-plugin-validation: "github:graasp/graasp-plugin-validation"
     graasp-websockets: "github:graasp/graasp-websockets"
     http-status-codes: 2.2.0
