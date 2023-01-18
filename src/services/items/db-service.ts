@@ -377,32 +377,32 @@ export class ItemService implements DbService {
   ): Promise<Item[]> {
     const permissions = filters?.permissions;
     const permissionFilter = permissions?.length
-      ? sql`AND permission IN (${sql.join(permissions, sql`, `)})`
+      ? sql`AND item_membership.permission IN (${sql.join(permissions, sql`, `)})`
       : sql``;
 
-    return (
-      transactionHandler
-        .query<Item>(
-          sql`
+    const items = await transactionHandler
+      .query<Item>(
+        sql`
       SELECT ${ItemService.allColumnsForJoins}
-      FROM (
-        SELECT item_path, permission,
-          RANK() OVER (PARTITION BY subpath(item_path, 0, 1) ORDER BY item_path ASC) AS membership_rank
-        FROM item_membership
-        WHERE member_id = ${memberId} ${permissionFilter}
-      ) AS t1
+      FROM item_membership
       INNER JOIN item
-        ON item.path = t1.item_path
-      WHERE t1.membership_rank = 1
-        AND (
-          t1.permission != 'admin'
-          OR item.creator != ${memberId}
-        )
+        ON item.path = item_membership.item_path
+      WHERE (
+        (item_membership.permission != 'admin'
+        OR item.creator != ${memberId})
+        ${permissionFilter}
+      )
       `,
-        )
-        // TODO: is there a better way?
-        .then(({ rows }) => rows.slice(0))
-    );
+      )
+      // TODO: is there a better way?
+      .then(({ rows }) => rows.slice(0));
+
+    // TODO: optimize
+    // ignore children of shared parent
+    return items.filter(({ path }) => {
+      const hasParent = items.find((i) => path.includes(`${i.path}.`));
+      return !hasParent;
+    });
   }
 
   /**
