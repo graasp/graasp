@@ -115,8 +115,12 @@ export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES =
 
 /**
  * Maximum connections to the DB for slonik
+ * https://wiki.postgresql.org/wiki/Number_Of_Database_Connections
+ * should be around ((core_count * 2) + effective_spindle_count), to be tuned wrt effective workload
  */
-export const MAXIMUM_POOL_SIZE = 100;
+export const MAXIMUM_POOL_SIZE = process.env.MAXIMUM_POOL_SIZE
+  ? parseInt(process.env.MAXIMUM_POOL_SIZE)
+  : 20;
 
 // Graasp mailer config
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
