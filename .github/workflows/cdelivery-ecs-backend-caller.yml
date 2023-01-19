@@ -64,9 +64,9 @@ jobs:
       files-path-prefix: ${{ secrets.FILES_PATH_PREFIX }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID_STAGE }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET_STAGE }}
-      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION }}
+      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION_STAGE }}
       h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY_STAGE }}
-      h5p-path-prefix: ${{ secrets.H5P_PATH_PREFIX }}
+      h5p-path-prefix: ${{ secrets.H5P_PATH_PREFIX_STAGE }}
       hidden-tag-id: ${{ secrets.HIDDEN_TAG_ID }}
       hostname: ${{ secrets.HOSTNAME_STAGE}}
       image-classifier-api: ${{ secrets.IMAGE_CLASSIFIER_API }}
