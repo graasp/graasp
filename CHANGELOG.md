@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.1](https://github.com/graasp/graasp/compare/v0.2.0...v0.2.1) (2023-01-19)
+
+
+### Bug Fixes
+
+* isolate transactions ([#302](https://github.com/graasp/graasp/issues/302)) ([b44b486](https://github.com/graasp/graasp/commit/b44b486e5e12ea6a0ebd38bc3b64bcc94f38f43a))
+
 ## [0.2.0](https://github.com/graasp/graasp/compare/v0.1.8...v0.2.0) (2023-01-11)
 
 
