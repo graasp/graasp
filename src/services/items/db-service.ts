@@ -388,8 +388,12 @@ export class ItemService implements DbService {
       INNER JOIN item
         ON item.path = item_membership.item_path
       WHERE (
-        (item_membership.permission != 'admin'
-        OR item.creator != ${memberId})
+        item_membership.member_id = ${memberId}
+        AND (
+          item_membership.permission != 'admin'
+            OR 
+          item.creator != ${memberId}
+        )
         ${permissionFilter}
       )
       `,
