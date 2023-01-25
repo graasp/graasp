@@ -5623,13 +5623,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin":
+"graasp-plugin-recycle-bin@github:graasp/graasp-plugin-recycle-bin#42-fix-empty-deleted":
   version: 0.1.0
-  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=e809cab5e72ce9078053543f9355f6492e6992da"
+  resolution: "graasp-plugin-recycle-bin@https://github.com/graasp/graasp-plugin-recycle-bin.git#commit=0b00dbbfbcde562e40202cecf5c1ee30821854b6"
   dependencies:
     "@graasp/translations": "github:graasp/graasp-translations"
     http-status-codes: ^2.2.0
-  checksum: 1c750b9a257f7064d39e04fe4ccd277d6a19fce486e0f10f3acb5c1f1fd3275832aadaf89178640cd0c47ace72da4e2b383f788ba1b71e68151c5ae0ae2aef99
+  checksum: 75d3bbb546015211697b3b4c20d9d4c188d6a4d324718fd605428f9e9de350648f9c5e01e9746d4d56b65ce2bfa8e5b4ae94786e581b9256223307252661d742
   languageName: node
   linkType: hard
 
@@ -5756,7 +5756,7 @@ __metadata:
     graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
     graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-    graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
+    graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin#42-fix-empty-deleted"
     graasp-plugin-search: "github:graasp/graasp-plugin-search"
     graasp-plugin-subscriptions: "github:graasp/graasp-plugin-subscriptions"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
