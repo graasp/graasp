@@ -22,6 +22,7 @@ jobs:
       auth-client-host: ${{ vars.AUTH_CLIENT_HOST_STAGE }}
       auth-token-expiration-in-minutes: ${{ vars.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
       avatars-path-prefix: ${{ vars.AVATARS_PATH_PREFIX }}
+      aws-region: ${{ secrets.AWS_REGION_STAGE }}
       builder-client-host: ${{ vars.BUILDER_CLIENT_HOST_STAGE }}
       chatbox-plugin: true
       client-host: ${{ vars.CLIENT_HOST_STAGE }}
@@ -33,6 +34,8 @@ jobs:
       cookie-domain: ${{ vars.COOKIE_DOMAIN_STAGE }}
       cors-origin-regex: ${{ vars.CORS_ORIGIN_REGEX_STAGE }}
       database-logs: false
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_STAGE }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_STAGE }}
       email-links-host: ${{ vars.EMAIL_LINKS_HOST_STAGE }}
       embedded-link-item-iframely-href-origin: ${{ vars.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
       embedded-link-item-plugin: true
@@ -41,6 +44,7 @@ jobs:
       explorer-client-host: ${{ vars.EXPLORER_CLIENT_HOST_STAGE }}
       file-storage-root-path: ${{ vars.FILE_STORAGE_ROOT_PATH }}
       files-path-prefix: ${{ vars.FILES_PATH_PREFIX }}
+      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION_STAGE }}
       h5p-path-prefix: ${{ vars.H5P_PATH_PREFIX_STAGE }}
       hidden-items-plugin: true
       hostname: ${{ vars.HOSTNAME_STAGE}}
@@ -53,6 +57,7 @@ jobs:
       refresh-token-expiration-in-minutes: ${{ vars.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
       roarr-log: false
       s3-file-item-plugin: true
+      s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION }}
       save-actions: true
       subscriptions-plugin: true
       thumbnails-path-prefix: ${{ vars.THUMBNAILS_PATH_PREFIX }}
@@ -63,15 +68,11 @@ jobs:
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET_STAGE }}
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGE }}
-      aws-region: ${{ secrets.AWS_REGION_STAGE }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGE }}
       ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_STAGE }}
-      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_STAGE }}
-      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_STAGE }}
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_STAGE }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID_STAGE }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET_STAGE }}
-      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION_STAGE }}
       h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY_STAGE }}
       hidden-tag-id: ${{ secrets.HIDDEN_TAG_ID }}
       jwt-secret: ${{ secrets.JWT_SECRET_STAGE }}
@@ -90,7 +91,6 @@ jobs:
       refresh-token-jwt-secret: ${{ secrets.REFRESH_TOKEN_JWT_SECRET_STAGE }}
       s3-file-item-access-key-id: ${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID_STAGE }}
       s3-file-item-bucket: ${{ secrets.S3_FILE_ITEM_BUCKET_STAGE }}
-      s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION }}
       s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY_STAGE }}
       secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY_STAGE }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
