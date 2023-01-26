@@ -16,65 +16,68 @@ jobs:
   graasp-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
     uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
-    # ecs-task-definition with template file.
     with:
+      # workflow config
       ecs-task-definition: '.aws/graasp-dev.json'
+      # env vars
+      analyzer-client-host: ${{ vars.ANALYZER_CLIENT_HOST_DEV }}
       apps-plugin: true
+      auth-client-host: ${{ vars.AUTH_CLIENT_HOST_DEV }}
+      auth-token-expiration-in-minutes: ${{ vars.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
+      avatars-path-prefix: ${{ vars.AVATARS_PATH_PREFIX }}
+      builder-client-host: ${{ vars.BUILDER_CLIENT_HOST_DEV }}
       chatbox-plugin: true
+      client-host: ${{ vars.CLIENT_HOST_DEV }}
+      container-image-classifier: ${{ vars.CONTAINER_IMAGE_CLASSIFIER }}
+      container-image-iframely: ${{ vars.CONTAINER_IMAGE_IFRAMELY }}
+      container-name-classifier: ${{ vars.CONTAINER_NAME_CLASSIFIER }}
+      container-name-graasp: ${{ vars.CONTAINER_NAME_GRAASP_DEV }}
+      container-name-iframely: ${{ vars.CONTAINER_NAME_IFRAMELY_DEV }}
+      cookie-domain: ${{ vars.COOKIE_DOMAIN_DEV }}
+      cors-origin-regex: ${{ vars.CORS_ORIGIN_REGEX_DEV }}
       database-logs: false
+      email-links-host: ${{ vars.EMAIL_LINKS_HOST_DEV }}
+      embedded-link-item-iframely-href-origin: ${{ vars.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
       embedded-link-item-plugin: true
       etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_DEV }}
       etherpad-url: ${{ vars.ETHERPAD_URL_DEV }}
+      explorer-client-host: ${{ vars.EXPLORER_CLIENT_HOST_DEV }}
+      file-storage-root-path: ${{ vars.FILE_STORAGE_ROOT_PATH }}
+      files-path-prefix: ${{ vars.FILES_PATH_PREFIX }}
+      h5p-path-prefix: ${{ vars.H5P_PATH_PREFIX_DEV }}
       hidden-items-plugin: true
-      node-env: production
+      hostname: ${{ vars.HOSTNAME_DEV}}
+      image-classifier-api: ${{ vars.IMAGE_CLASSIFIER_API }}
       node-env-iframely: production
+      node-env: production
+      player-client-host: ${{ vars.PLAYER_CLIENT_HOST_DEV }}
+      port: ${{ vars.PORT }}
       public-plugin: true
+      refresh-token-expiration-in-minutes: ${{ vars.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
       roarr-log: false
       s3-file-item-plugin: true
       save-actions: true
       subscriptions-plugin: true
+      thumbnails-path-prefix: ${{ vars.THUMBNAILS_PATH_PREFIX }}
       token-based-auth: true
       websockets-plugin: true
-    # required secrets
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-      aws-region: ${{ secrets.AWS_REGION_DEV }}
-      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_DEV }}
-      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_DEV }}
-      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_DEV }}
-      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_DEV }}
-      container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_DEV }}
-      container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
-      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
-      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
-      analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_DEV }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_DEV }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
-      auth-client-host: ${{ secrets.AUTH_CLIENT_HOST_DEV }}
-      auth-token-expiration-in-minutes: ${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET_DEV }}
-      avatars-path-prefix: ${{ secrets.AVATARS_PATH_PREFIX }}
-      builder-client-host: ${{ secrets.BUILDER_CLIENT_HOST_DEV }}
-      client-host: ${{ secrets.CLIENT_HOST_DEV }}
-      cookie-domain: ${{ secrets.COOKIE_DOMAIN_DEV }}
-      cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_DEV }}
-      email-links-host: ${{ secrets.EMAIL_LINKS_HOST_DEV }}
-      embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+      aws-region: ${{ secrets.AWS_REGION_DEV }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_DEV }}
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_DEV }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_DEV }}
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_DEV }}
-      explorer-client-host: ${{ secrets.EXPLORER_CLIENT_HOST_DEV }}
-      file-storage-root-path: ${{ secrets.FILE_STORAGE_ROOT_PATH }}
-      files-path-prefix: ${{ secrets.FILES_PATH_PREFIX }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID_DEV }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET_DEV }}
       h5p-content-region: ${{ secrets.H5P_CONTENT_REGION_DEV }}
       h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY_DEV }}
-      h5p-path-prefix: ${{ secrets.H5P_PATH_PREFIX_DEV }}
       hidden-tag-id: ${{ secrets.HIDDEN_TAG_ID }}
-      hostname: ${{ secrets.HOSTNAME_DEV}}
-      image-classifier-api: ${{ secrets.IMAGE_CLASSIFIER_API }}
       jwt-secret: ${{ secrets.JWT_SECRET_DEV }}
       login-item-tag-id: ${{ secrets.LOGIN_ITEM_TAG_ID }}
       mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL_DEV }}
@@ -83,20 +86,16 @@ jobs:
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_DEV }}
       pg-connection-uri: ${{ secrets.PG_CONNECTION_URI_DEV }}
       pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS_DEV }}
-      player-client-host: ${{ secrets.PLAYER_CLIENT_HOST_DEV }}
-      port: ${{ secrets.PORT }}
       public-tag-id: ${{ secrets.PUBLIC_TAG_ID }}
       published-tag-id: ${{ secrets.PUBLISHED_TAG_ID }}
       redis-host: ${{ secrets.REDIS_HOST_DEV }}
       redis-port: ${{ secrets.REDIS_PORT }}
       redis-username: ${{ secrets.REDIS_USERNAME }}
-      refresh-token-expiration-in-minutes: ${{ secrets.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
       refresh-token-jwt-secret: ${{ secrets.REFRESH_TOKEN_JWT_SECRET_DEV }}
       s3-file-item-access-key-id: ${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID_DEV }}
       s3-file-item-bucket: ${{ secrets.S3_FILE_ITEM_BUCKET_DEV }}
       s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION }}
       s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY_DEV }}
       secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY_DEV }}
-      stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
-      thumbnails-path-prefix: ${{ secrets.THUMBNAILS_PATH_PREFIX }}
+      stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
