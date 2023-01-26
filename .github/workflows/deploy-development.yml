@@ -1,0 +1,102 @@
+name: Deploy to development environment
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push events only for the main branch
+  push:
+    branches:
+      - main
+      - master
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# This workflow is made up of one job that calls the reusable workflow in graasp-deploy
+jobs:
+  graasp-deploy-ecs-backend-workflow:
+    # repository name
+    name: Graasp
+    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+    environment: development
+    with:
+      # workflow config
+      ecs-task-definition: '.aws/graasp-dev.json'
+      # env vars
+      analyzer-client-host: ${{ vars.ANALYZER_CLIENT_HOST }}
+      apps-plugin: true
+      auth-client-host: ${{ vars.AUTH_CLIENT_HOST }}
+      auth-token-expiration-in-minutes: ${{ vars.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
+      avatars-path-prefix: ${{ vars.AVATARS_PATH_PREFIX }}
+      aws-region: ${{ secrets.AWS_REGION }}
+      builder-client-host: ${{ vars.BUILDER_CLIENT_HOST }}
+      chatbox-plugin: true
+      client-host: ${{ vars.CLIENT_HOST }}
+      container-image-classifier: ${{ vars.CONTAINER_IMAGE_CLASSIFIER }}
+      container-image-iframely: ${{ vars.CONTAINER_IMAGE_IFRAMELY }}
+      container-name-classifier: ${{ vars.CONTAINER_NAME_CLASSIFIER }}
+      container-name-graasp: ${{ vars.CONTAINER_NAME_GRAASP }}
+      container-name-iframely: ${{ vars.CONTAINER_NAME_IFRAMELY }}
+      cookie-domain: ${{ vars.COOKIE_DOMAIN }}
+      cors-origin-regex: ${{ vars.CORS_ORIGIN_REGEX }}
+      database-logs: false
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP }}
+      email-links-host: ${{ vars.EMAIL_LINKS_HOST }}
+      embedded-link-item-iframely-href-origin: ${{ vars.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
+      embedded-link-item-plugin: true
+      etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN }}
+      etherpad-url: ${{ vars.ETHERPAD_URL }}
+      explorer-client-host: ${{ vars.EXPLORER_CLIENT_HOST }}
+      file-storage-root-path: ${{ vars.FILE_STORAGE_ROOT_PATH }}
+      files-path-prefix: ${{ vars.FILES_PATH_PREFIX }}
+      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION }}
+      h5p-path-prefix: ${{ vars.H5P_PATH_PREFIX }}
+      hidden-items-plugin: true
+      hostname: ${{ vars.HOSTNAME}}
+      image-classifier-api: ${{ vars.IMAGE_CLASSIFIER_API }}
+      node-env-iframely: production
+      node-env: production
+      player-client-host: ${{ vars.PLAYER_CLIENT_HOST }}
+      port: ${{ vars.PORT }}
+      public-plugin: true
+      refresh-token-expiration-in-minutes: ${{ vars.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
+      roarr-log: false
+      s3-file-item-plugin: true
+      s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION }}
+      save-actions: true
+      subscriptions-plugin: true
+      thumbnails-path-prefix: ${{ vars.THUMBNAILS_PATH_PREFIX }}
+      token-based-auth: true
+      websockets-plugin: true
+    secrets:
+      apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET }}
+      apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
+      auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP }}
+      etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY }}
+      h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID }}
+      h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET }}
+      h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
+      hidden-tag-id: ${{ secrets.HIDDEN_TAG_ID }}
+      jwt-secret: ${{ secrets.JWT_SECRET }}
+      login-item-tag-id: ${{ secrets.LOGIN_ITEM_TAG_ID }}
+      mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
+      mailer-config-password: ${{ secrets.MAILER_CONFIG_PASSWORD }}
+      mailer-config-smtp-host: ${{ secrets.MAILER_CONFIG_SMTP_HOST }}
+      mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME }}
+      pg-connection-uri: ${{ secrets.PG_CONNECTION_URI }}
+      pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS }}
+      public-tag-id: ${{ secrets.PUBLIC_TAG_ID }}
+      published-tag-id: ${{ secrets.PUBLISHED_TAG_ID }}
+      redis-host: ${{ secrets.REDIS_HOST }}
+      redis-port: ${{ secrets.REDIS_PORT }}
+      redis-username: ${{ secrets.REDIS_USERNAME }}
+      refresh-token-jwt-secret: ${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
+      s3-file-item-access-key-id: ${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
+      s3-file-item-bucket: ${{ secrets.S3_FILE_ITEM_BUCKET }}
+      s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY }}
+      secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY }}
+      stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
+      stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
