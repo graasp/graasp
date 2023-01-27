@@ -1,0 +1,71 @@
+import * as Sentry from '@sentry/node';
+import { ProfilingIntegration } from '@sentry/profiling-node';
+import '@sentry/tracing';
+import { Integration, Transaction } from '@sentry/types';
+
+import { FastifyInstance } from 'fastify';
+
+// todo: use graasp-sdk?
+declare module 'fastify' {
+  interface FastifyRequest {
+    /**
+     * Collects metrics for logs, monitoring, traces
+     */
+    metrics?: {
+      /**
+       * Metrics collected by Sentry
+       */
+      sentry?: {
+        /**
+         * Sentry transaction span attached to the request
+         */
+        transaction: Transaction;
+      };
+    };
+  }
+}
+
+export const SentryConfig = {
+  enable: Boolean(process.env.SENTRY_DSN),
+  dsn: process.env.SENTRY_DSN,
+  enablePerformance: (process.env.SENTRY_ENABLE_PERFORMANCE ?? 'true') === 'true', // env var must be literal string "true"
+  enableProfiling: (process.env.SENTRY_ENABLE_PROFILING ?? 'true') === 'true', // env var must be literal string "true"
+  tracesSampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE ?? '1.0'),
+};
+
+export function initSentry(instance: FastifyInstance) {
+  const integrations: Array<Integration> = [];
+  if (SentryConfig.enableProfiling) {
+    integrations.push(new ProfilingIntegration());
+  }
+
+  Sentry.init({
+    dsn: SentryConfig.dsn,
+    environment: process.env.NODE_ENV,
+    integrations,
+    tracesSampleRate: SentryConfig.tracesSampleRate,
+  });
+
+  if (SentryConfig.enablePerformance) {
+    // fastify Sentry hooks
+    // https://www.fastify.io/docs/latest/Reference/Decorators/
+    instance.decorateRequest('metrics', {
+      sentry: {},
+    });
+    instance.addHook('onRequest', async (request, reply) => {
+      request.metrics.sentry.transaction = Sentry.startTransaction({
+        op: 'request',
+        name: 'Global request handler',
+      });
+    });
+    instance.addHook('onResponse', async (request, reply) => {
+      request.metrics.sentry.transaction.finish();
+    });
+  }
+
+  instance.addHook('onError', async (request, reply, error) => {
+    Sentry.captureException(error);
+  });
+
+  return { SentryConfig, Sentry };
+}

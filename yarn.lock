@@ -1635,84 +1635,86 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/core@npm:6.19.7":
-  version: 6.19.7
-  resolution: "@sentry/core@npm:6.19.7"
+"@sentry/core@npm:7.34.0":
+  version: 7.34.0
+  resolution: "@sentry/core@npm:7.34.0"
   dependencies:
-    "@sentry/hub": 6.19.7
-    "@sentry/minimal": 6.19.7
-    "@sentry/types": 6.19.7
-    "@sentry/utils": 6.19.7
+    "@sentry/types": 7.34.0
+    "@sentry/utils": 7.34.0
     tslib: ^1.9.3
-  checksum: d212e8ef07114549de4a93b81f8bfa217ca1550ca7a5eeaa611e5629faef78ff72663ce561ffa2cff48f3dc556745ef65177044f9965cdd3cbccf617cf3bf675
+  checksum: 8ed510b5b9145c07700fe92064ac6412d1466d572736a12124ca4cf7fc4ac0788e51ebd3f886feac5232cf8be88a3b7fb8c6a3d99a5e8190c367a9a67d634fac
   languageName: node
   linkType: hard
 
-"@sentry/hub@npm:6.19.7":
-  version: 6.19.7
-  resolution: "@sentry/hub@npm:6.19.7"
+"@sentry/hub@npm:^7.31.1":
+  version: 7.34.0
+  resolution: "@sentry/hub@npm:7.34.0"
   dependencies:
-    "@sentry/types": 6.19.7
-    "@sentry/utils": 6.19.7
+    "@sentry/core": 7.34.0
+    "@sentry/types": 7.34.0
+    "@sentry/utils": 7.34.0
     tslib: ^1.9.3
-  checksum: 10bb1c5cba1b0f1e27a3dd0a186c22f94aeaf11c4662890ab07b2774f46f46af78d61e3ba71d76edc750a7b45af86edd032f35efecdb4efa2eaf551080ccdcb1
+  checksum: 26134862134aa3b3e572d72cb1c4a7ba0cd82c52b5662026c5bbf3d54547164f5c484006ecb7461cff65922087d5da6a970dc69dc50903f895a3b4eee01f11f5
   languageName: node
   linkType: hard
 
-"@sentry/minimal@npm:6.19.7":
-  version: 6.19.7
-  resolution: "@sentry/minimal@npm:6.19.7"
+"@sentry/node@npm:7.34.0, @sentry/node@npm:^7.31.1":
+  version: 7.34.0
+  resolution: "@sentry/node@npm:7.34.0"
   dependencies:
-    "@sentry/hub": 6.19.7
-    "@sentry/types": 6.19.7
-    tslib: ^1.9.3
-  checksum: 9153ac426ee056fc34c5be898f83d74ec08f559d69f544c5944ec05e584b62ed356b92d1a9b08993a7022ad42b5661c3d72881221adc19bee5fc1af3ad3864a8
-  languageName: node
-  linkType: hard
-
-"@sentry/node@npm:6.19.7":
-  version: 6.19.7
-  resolution: "@sentry/node@npm:6.19.7"
-  dependencies:
-    "@sentry/core": 6.19.7
-    "@sentry/hub": 6.19.7
-    "@sentry/types": 6.19.7
-    "@sentry/utils": 6.19.7
+    "@sentry/core": 7.34.0
+    "@sentry/types": 7.34.0
+    "@sentry/utils": 7.34.0
     cookie: ^0.4.1
     https-proxy-agent: ^5.0.0
     lru_map: ^0.3.3
     tslib: ^1.9.3
-  checksum: 2293b0d1d1f9fac3a451eb94f820bc27721c8edddd1f373064666ddd6272f0a4c70dbe58c6c4b3d3ccaf4578aab8f466d71ee69f6f6ff93521bbb02dfe829ce5
+  checksum: 972eb7edd1217a1d30eaab374e1ad533b4cefc69ab756f123342fc55d0511892f4ebb2e86e03f85edf08fe28b5b22483aff65379c6b8cfc24cda16c988a0d208
   languageName: node
   linkType: hard
 
-"@sentry/tracing@npm:6.19.7":
-  version: 6.19.7
-  resolution: "@sentry/tracing@npm:6.19.7"
+"@sentry/profiling-node@npm:0.0.13":
+  version: 0.0.13
+  resolution: "@sentry/profiling-node@npm:0.0.13"
   dependencies:
-    "@sentry/hub": 6.19.7
-    "@sentry/minimal": 6.19.7
-    "@sentry/types": 6.19.7
-    "@sentry/utils": 6.19.7
-    tslib: ^1.9.3
-  checksum: 26e7bf435f0478356d95fab50fe4acd2cf449bfdfd457996111aeedd082f6c76f0592abd0c5f5dcfe2b582d3fd7988ffef07787e7ecc7f5d228278731ce6264e
+    "@sentry/hub": ^7.31.1
+    "@sentry/node": ^7.31.1
+    "@sentry/tracing": ^7.16.0
+    "@sentry/types": ^7.31.1
+    "@sentry/utils": ^7.31.1
+    nan: ^2.17.0
+    node-abi: ^3.28.0
+    node-gyp: ^9.3.0
+  checksum: aa21be8797149a1d31150386abcf9cd944d174b60f24cf7c00c8bdae7c99f5ed2ea339851c7a3b42ecf85ae4234361ff06bd942060bd853dc7f78e786022f9fd
   languageName: node
   linkType: hard
 
-"@sentry/types@npm:6.19.7":
-  version: 6.19.7
-  resolution: "@sentry/types@npm:6.19.7"
-  checksum: f46ef74a33376ad6ea9b128115515c58eb9369d89293c60aa67abca26b5d5d519aa4d0a736db56ae0d75ffd816643d62187018298523cbc2e6c2fb3a6b2a9035
-  languageName: node
-  linkType: hard
-
-"@sentry/utils@npm:6.19.7":
-  version: 6.19.7
-  resolution: "@sentry/utils@npm:6.19.7"
+"@sentry/tracing@npm:7.34.0, @sentry/tracing@npm:^7.16.0":
+  version: 7.34.0
+  resolution: "@sentry/tracing@npm:7.34.0"
   dependencies:
-    "@sentry/types": 6.19.7
+    "@sentry/core": 7.34.0
+    "@sentry/types": 7.34.0
+    "@sentry/utils": 7.34.0
     tslib: ^1.9.3
-  checksum: a000223b9c646c64e3565e79cace1eeb75114342b768367c4dddd646476c215eb1bddfb70c63f05e2352d3bce2d7d415344e4757a001605d0e01ac74da5dd306
+  checksum: f3d006a362a0994bce46d1856ba77f5086dfa11b9f8be6ddc72efd3e81eaa11922036c03efc0272fc8fb541bf6039cc4f6bf74f6f25ddeb59e39722fc8ca9a7c
+  languageName: node
+  linkType: hard
+
+"@sentry/types@npm:7.34.0, @sentry/types@npm:^7.31.1":
+  version: 7.34.0
+  resolution: "@sentry/types@npm:7.34.0"
+  checksum: fcd150a85a2ff0e2dffc815bd9e0507fc3b160d53bf72e38394f8678822da7eb191fbd1715f0e9e5b0f36d7f65800c3e5907fa77d446cab0af1d5c083e6d1f93
+  languageName: node
+  linkType: hard
+
+"@sentry/utils@npm:7.34.0, @sentry/utils@npm:^7.31.1":
+  version: 7.34.0
+  resolution: "@sentry/utils@npm:7.34.0"
+  dependencies:
+    "@sentry/types": 7.34.0
+    tslib: ^1.9.3
+  checksum: 3eff4d7f5c6affe0775c83ac5e4a289876912ec886da9af6562d78b3902faea84e87c439d0d88fcf065502d46c865ad3d7077efa4923ed0edd4c4be0b2c916b3
   languageName: node
   linkType: hard
 
@@ -2196,7 +2198,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abbrev@npm:1":
+"abbrev@npm:1, abbrev@npm:^1.0.0":
   version: 1.1.1
   resolution: "abbrev@npm:1.1.1"
   checksum: a4a97ec07d7ea112c517036882b2ac22f3109b7b19077dc656316d07d308438aac28e4d9746dc4d84bf6b1e75b4a7b0a5f3cb30592419f128ca9a8cee3bcfa17
@@ -5757,8 +5759,9 @@ __metadata:
     "@fastify/secure-session": 4.0.0
     "@graasp/sdk": 0.2.0
     "@graasp/translations": 1.2.1
-    "@sentry/node": 6.19.7
-    "@sentry/tracing": 6.19.7
+    "@sentry/node": 7.34.0
+    "@sentry/profiling-node": 0.0.13
+    "@sentry/tracing": 7.34.0
     "@trivago/prettier-plugin-sort-imports": 3.2.0
     "@types/chai": 4.3.1
     "@types/concurrently": 7.0.0
@@ -8032,6 +8035,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nan@npm:^2.17.0":
+  version: 2.17.0
+  resolution: "nan@npm:2.17.0"
+  dependencies:
+    node-gyp: latest
+  checksum: ec609aeaf7e68b76592a3ba96b372aa7f5df5b056c1e37410b0f1deefbab5a57a922061e2c5b369bae9c7c6b5e6eecf4ad2dac8833a1a7d3a751e0a7c7f849ed
+  languageName: node
+  linkType: hard
+
 "napi-build-utils@npm:^1.0.1":
   version: 1.0.2
   resolution: "napi-build-utils@npm:1.0.2"
@@ -8071,6 +8083,15 @@ __metadata:
   version: 1.1.0
   resolution: "next-tick@npm:1.1.0"
   checksum: 83b5cf36027a53ee6d8b7f9c0782f2ba87f4858d977342bfc3c20c21629290a2111f8374d13a81221179603ffc4364f38374b5655d17b6a8f8a8c77bdea4fe8b
+  languageName: node
+  linkType: hard
+
+"node-abi@npm:^3.28.0":
+  version: 3.31.0
+  resolution: "node-abi@npm:3.31.0"
+  dependencies:
+    semver: ^7.3.5
+  checksum: 38fa63c689ef50b4b8f576d5f843107e2d25bd7e7d4ed56dc0adb9db7eda945fc433a7a432beca4b9decf62ff05395f0e84f46e7ab7f275f85e5fde213353950
   languageName: node
   linkType: hard
 
@@ -8123,6 +8144,26 @@ __metadata:
     node-gyp-build-optional: optional.js
     node-gyp-build-test: build-test.js
   checksum: d888bae0fb88335f69af1b57a2294a931c5042f36e413d8d364c992c9ebfa0b96ffe773179a5a2c8f04b73856e8634e09cce108dbb9804396d3cc8c5455ff2db
+  languageName: node
+  linkType: hard
+
+"node-gyp@npm:^9.3.0":
+  version: 9.3.1
+  resolution: "node-gyp@npm:9.3.1"
+  dependencies:
+    env-paths: ^2.2.0
+    glob: ^7.1.4
+    graceful-fs: ^4.2.6
+    make-fetch-happen: ^10.0.3
+    nopt: ^6.0.0
+    npmlog: ^6.0.0
+    rimraf: ^3.0.2
+    semver: ^7.3.5
+    tar: ^6.1.2
+    which: ^2.0.2
+  bin:
+    node-gyp: bin/node-gyp.js
+  checksum: b860e9976fa645ca0789c69e25387401b4396b93c8375489b5151a6c55cf2640a3b6183c212b38625ef7c508994930b72198338e3d09b9d7ade5acc4aaf51ea7
   languageName: node
   linkType: hard
 
@@ -8208,6 +8249,17 @@ __metadata:
   bin:
     nopt: bin/nopt.js
   checksum: d35fdec187269503843924e0114c0c6533fb54bbf1620d0f28b4b60ba01712d6687f62565c55cc20a504eff0fbe5c63e22340c3fad549ad40469ffb611b04f2f
+  languageName: node
+  linkType: hard
+
+"nopt@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "nopt@npm:6.0.0"
+  dependencies:
+    abbrev: ^1.0.0
+  bin:
+    nopt: bin/nopt.js
+  checksum: 82149371f8be0c4b9ec2f863cc6509a7fd0fa729929c009f3a58e4eb0c9e4cae9920e8f1f8eb46e7d032fec8fb01bede7f0f41a67eb3553b7b8e14fa53de1dac
   languageName: node
   linkType: hard
 

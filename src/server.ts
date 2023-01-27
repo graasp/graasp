@@ -1,17 +1,10 @@
-import * as Sentry from '@sentry/node';
-
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 import registerAppPlugins from './app';
+import { initSentry } from './sentry';
 // import fastifyCompress from 'fastify-compress';
 import { CORS_ORIGIN_REGEX, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
-
-// Sentry
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-});
 
 const start = async () => {
   const instance = fastify({
@@ -38,14 +31,7 @@ const start = async () => {
     }
   });*/
 
-  // fastify Sentry hook
-  instance.addHook('onError', (request, reply, error, done) => {
-    // Only send Sentry errors when not in development
-    if (process.env.NODE_ENV !== 'development') {
-      Sentry.captureException(error);
-    }
-    done();
-  });
+  const { SentryConfig, Sentry } = initSentry(instance);
 
   instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);
@@ -60,12 +46,20 @@ const start = async () => {
 
   await registerAppPlugins(instance);
 
+  const mainMetric = (SentryConfig.enable) ? Sentry.startTransaction({
+    op: 'main',
+    name: 'Main server listen'
+  }) : null;
+
   try {
     await instance.listen(+PORT, HOSTNAME);
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);
+    Sentry.captureException(err);
     process.exit(1);
+  } finally {
+    mainMetric?.finish();
   }
 };
 
