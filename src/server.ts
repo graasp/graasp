@@ -46,10 +46,12 @@ const start = async () => {
 
   await registerAppPlugins(instance);
 
-  const mainMetric = (SentryConfig.enable) ? Sentry.startTransaction({
-    op: 'main',
-    name: 'Main server listen'
-  }) : null;
+  const mainMetric = SentryConfig.enable
+    ? Sentry.startTransaction({
+        op: 'main',
+        name: 'Main server listen',
+      })
+    : null;
 
   try {
     await instance.listen(+PORT, HOSTNAME);
