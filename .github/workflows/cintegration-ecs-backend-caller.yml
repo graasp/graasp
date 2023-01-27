@@ -18,6 +18,12 @@ jobs:
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
     uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+
+    # abort previous deployment if a newer one is in progress
+    concurrency:
+      group: deploy-development
+      cancel-in-progress: true
+
     # ecs-task-definition with template file.
     with:
       ecs-task-definition: '.aws/graasp-dev.json'
@@ -37,6 +43,7 @@ jobs:
       subscriptions-plugin: true
       token-based-auth: true
       websockets-plugin: true
+
     # required secrets
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}

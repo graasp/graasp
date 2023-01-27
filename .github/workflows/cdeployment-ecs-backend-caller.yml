@@ -13,6 +13,12 @@ jobs:
     name: Graasp
     # Replace 'main' with the hash of a commit, so it points to an specific version of the reusable workflow that is used
     uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@v1
+
+    # abort previous deployment if a newer one is in progress
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: true
+
     # Replace input ecs-task-definition with template file. Format: '.aws/<name>-prod.json'
     with:
       ecs-task-definition: '.aws/graasp-prod.json'
@@ -33,6 +39,7 @@ jobs:
       subscriptions-plugin: true
       token-based-auth: true
       websockets-plugin: true
+
     # Insert required secrets based on repository with the following format: ${{ secrets.SECRET_NAME }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
