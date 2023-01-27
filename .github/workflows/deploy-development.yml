@@ -27,7 +27,7 @@ jobs:
       auth-client-host: ${{ vars.AUTH_CLIENT_HOST }}
       auth-token-expiration-in-minutes: ${{ vars.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
       avatars-path-prefix: ${{ vars.AVATARS_PATH_PREFIX }}
-      aws-region: ${{ secrets.AWS_REGION }}
+      aws-region: ${{ vars.AWS_REGION }}
       builder-client-host: ${{ vars.BUILDER_CLIENT_HOST }}
       chatbox-plugin: true
       client-host: ${{ vars.CLIENT_HOST }}
@@ -39,8 +39,8 @@ jobs:
       cookie-domain: ${{ vars.COOKIE_DOMAIN }}
       cors-origin-regex: ${{ vars.CORS_ORIGIN_REGEX }}
       database-logs: false
-      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP }}
-      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP }}
+      ecs-cluster: ${{ vars.ECS_CLUSTER_GRAASP }}
+      ecs-service: ${{ vars.ECS_SERVICE_GRAASP }}
       email-links-host: ${{ vars.EMAIL_LINKS_HOST }}
       embedded-link-item-iframely-href-origin: ${{ vars.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
       embedded-link-item-plugin: true
@@ -49,7 +49,7 @@ jobs:
       explorer-client-host: ${{ vars.EXPLORER_CLIENT_HOST }}
       file-storage-root-path: ${{ vars.FILE_STORAGE_ROOT_PATH }}
       files-path-prefix: ${{ vars.FILES_PATH_PREFIX }}
-      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION }}
+      h5p-content-region: ${{ vars.H5P_CONTENT_REGION }}
       h5p-path-prefix: ${{ vars.H5P_PATH_PREFIX }}
       hidden-items-plugin: true
       hostname: ${{ vars.HOSTNAME}}
@@ -62,7 +62,7 @@ jobs:
       refresh-token-expiration-in-minutes: ${{ vars.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
       roarr-log: false
       s3-file-item-plugin: true
-      s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION }}
+      s3-file-item-region: ${{ vars.S3_FILE_ITEM_REGION }}
       save-actions: true
       subscriptions-plugin: true
       thumbnails-path-prefix: ${{ vars.THUMBNAILS_PATH_PREFIX }}
