@@ -100,6 +100,7 @@ jobs:
       s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION }}
       s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY_PROD }}
       secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY_PROD }}
+      sentry-dsn: ${{ secrets.SENTRY_DSN }}
       stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
       thumbnails-path-prefix: ${{ secrets.THUMBNAILS_PATH_PREFIX }}
