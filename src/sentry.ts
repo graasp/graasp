@@ -34,7 +34,14 @@ export const SentryConfig = {
   tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '1.0'),
 };
 
-export function initSentry(instance: FastifyInstance) {
+export function initSentry(instance: FastifyInstance): {
+  SentryConfig: typeof SentryConfig;
+  Sentry?: typeof Sentry;
+} {
+  if (!SentryConfig.enable) {
+    return { SentryConfig };
+  }
+
   const integrations: Array<Integration> = [];
   if (SentryConfig.enableProfiling) {
     integrations.push(new ProfilingIntegration());
