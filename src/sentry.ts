@@ -30,7 +30,8 @@ export const SentryConfig = {
   dsn: process.env.SENTRY_DSN,
   enablePerformance: (process.env.SENTRY_ENABLE_PERFORMANCE ?? 'true') === 'true', // env var must be literal string "true"
   enableProfiling: (process.env.SENTRY_ENABLE_PROFILING ?? 'true') === 'true', // env var must be literal string "true"
-  tracesSampleRate: parseFloat(process.env.SENTRY_SAMPLE_RATE ?? '1.0'),
+  profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE ?? '1.0'),
+  tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '1.0'),
 };
 
 export function initSentry(instance: FastifyInstance) {
@@ -43,6 +44,7 @@ export function initSentry(instance: FastifyInstance) {
     dsn: SentryConfig.dsn,
     environment: process.env.NODE_ENV,
     integrations,
+    profilesSampleRate: SentryConfig.profilesSampleRate,
     tracesSampleRate: SentryConfig.tracesSampleRate,
   });
 
