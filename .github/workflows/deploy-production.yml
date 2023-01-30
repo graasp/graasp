@@ -13,6 +13,12 @@ jobs:
     name: Graasp
     uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@v1
     environment: production
+
+    # abort previous deployment if a newer one is in progress
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: true
+
     with:
       # workflow config
       ecs-task-definition: '.aws/graasp-prod.json'
@@ -64,6 +70,7 @@ jobs:
       thumbnails-path-prefix: ${{ vars.THUMBNAILS_PATH_PREFIX }}
       token-based-auth: true
       websockets-plugin: true
+
     secrets:
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
