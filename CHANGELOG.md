@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.2](https://github.com/graasp/graasp/compare/v0.2.1...v0.2.2) (2023-01-30)
+
+
+### Bug Fixes
+
+* fix security alerts from dependencies ([#310](https://github.com/graasp/graasp/issues/310)) ([f5ad55f](https://github.com/graasp/graasp/commit/f5ad55f12e37a221537386633e24ca0f30f3ce1a))
+* return shared sibling items ([#305](https://github.com/graasp/graasp/issues/305)) ([fe05726](https://github.com/graasp/graasp/commit/fe057268486d8d57f931f93d8d13e39a91ac8edb))
+
 ## [0.2.1](https://github.com/graasp/graasp/compare/v0.2.0...v0.2.1) (2023-01-19)
 
 
