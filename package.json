@@ -50,7 +50,7 @@
     "@graasp/sdk": "0.2.0",
     "@graasp/translations": "1.2.1",
     "@sentry/node": "7.34.0",
-    "@sentry/profiling-node": "0.0.13",
+    "@sentry/profiling-node": "0.0.12",
     "@sentry/tracing": "7.34.0",
     "aws-sdk": "2.1124.0",
     "bcrypt": "5.0.1",
