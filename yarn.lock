@@ -1646,7 +1646,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/hub@npm:^7.31.1":
+"@sentry/hub@npm:^7.16.0":
   version: 7.34.0
   resolution: "@sentry/hub@npm:7.34.0"
   dependencies:
@@ -1658,7 +1658,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/node@npm:7.34.0, @sentry/node@npm:^7.31.1":
+"@sentry/node@npm:7.34.0, @sentry/node@npm:^7.16.0":
   version: 7.34.0
   resolution: "@sentry/node@npm:7.34.0"
   dependencies:
@@ -1673,19 +1673,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/profiling-node@npm:0.0.13":
-  version: 0.0.13
-  resolution: "@sentry/profiling-node@npm:0.0.13"
+"@sentry/profiling-node@npm:0.0.12":
+  version: 0.0.12
+  resolution: "@sentry/profiling-node@npm:0.0.12"
   dependencies:
-    "@sentry/hub": ^7.31.1
-    "@sentry/node": ^7.31.1
+    "@sentry/hub": ^7.16.0
+    "@sentry/node": ^7.16.0
     "@sentry/tracing": ^7.16.0
-    "@sentry/types": ^7.31.1
-    "@sentry/utils": ^7.31.1
+    "@sentry/types": ^7.16.0
+    "@sentry/utils": ^7.16.0
     nan: ^2.17.0
     node-abi: ^3.28.0
     node-gyp: ^9.3.0
-  checksum: aa21be8797149a1d31150386abcf9cd944d174b60f24cf7c00c8bdae7c99f5ed2ea339851c7a3b42ecf85ae4234361ff06bd942060bd853dc7f78e786022f9fd
+  checksum: c6f4f33eb0734fb3e2bb60907dc2fafabbc6806596d959fc6052ce9b1843dc8b50c2109300e47be9dd3e07f3a04aa0b70c5bda88a3fcb257ddf47dee98b2bbb3
   languageName: node
   linkType: hard
 
@@ -1701,14 +1701,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/types@npm:7.34.0, @sentry/types@npm:^7.31.1":
+"@sentry/types@npm:7.34.0, @sentry/types@npm:^7.16.0":
   version: 7.34.0
   resolution: "@sentry/types@npm:7.34.0"
   checksum: fcd150a85a2ff0e2dffc815bd9e0507fc3b160d53bf72e38394f8678822da7eb191fbd1715f0e9e5b0f36d7f65800c3e5907fa77d446cab0af1d5c083e6d1f93
   languageName: node
   linkType: hard
 
-"@sentry/utils@npm:7.34.0, @sentry/utils@npm:^7.31.1":
+"@sentry/utils@npm:7.34.0, @sentry/utils@npm:^7.16.0":
   version: 7.34.0
   resolution: "@sentry/utils@npm:7.34.0"
   dependencies:
@@ -5760,7 +5760,7 @@ __metadata:
     "@graasp/sdk": 0.2.0
     "@graasp/translations": 1.2.1
     "@sentry/node": 7.34.0
-    "@sentry/profiling-node": 0.0.13
+    "@sentry/profiling-node": 0.0.12
     "@sentry/tracing": 7.34.0
     "@trivago/prettier-plugin-sort-imports": 3.2.0
     "@types/chai": 4.3.1
