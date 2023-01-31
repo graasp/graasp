@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.1](https://github.com/graasp/graasp/compare/v0.3.0...v0.3.1) (2023-01-31)
+
+
+### Bug Fixes
+
+* downgrade @sentry/profiling-node to 0.0.12 ([#319](https://github.com/graasp/graasp/issues/319)) ([03e38a5](https://github.com/graasp/graasp/commit/03e38a5ffd0a13bf48d315b27dcbe70500ad4f05))
+
 ## [0.3.0](https://github.com/graasp/graasp/compare/v0.2.1...v0.3.0) (2023-01-30)
 
 
