@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.2](https://github.com/graasp/graasp/compare/v0.3.1...v0.3.2) (2023-02-02)
+
+
+### Bug Fixes
+
+* release new version with fixes ([8aa2e4d](https://github.com/graasp/graasp/commit/8aa2e4d774007916a4cd8b4ea7ddbbdaccd39cbf))
+
 ## [0.3.1](https://github.com/graasp/graasp/compare/v0.3.0...v0.3.1) (2023-01-31)
 
 
