@@ -5714,9 +5714,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-validation@github:graasp/graasp-plugin-validation#19-fix-file-validation":
+"graasp-plugin-validation@github:graasp/graasp-plugin-validation":
   version: 0.1.0
-  resolution: "graasp-plugin-validation@https://github.com/graasp/graasp-plugin-validation.git#commit=9b2e475b75df700a28f740a964adf2a38aa5bf23"
+  resolution: "graasp-plugin-validation@https://github.com/graasp/graasp-plugin-validation.git#commit=22d7e6e4ee0fc0887c4c281654761a07b9765838"
   dependencies:
     axios: 0.26.1
     bad-words: 3.0.4
@@ -5807,7 +5807,7 @@ __metadata:
     graasp-plugin-search: "github:graasp/graasp-plugin-search"
     graasp-plugin-subscriptions: "github:graasp/graasp-plugin-subscriptions"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
-    graasp-plugin-validation: "github:graasp/graasp-plugin-validation#19-fix-file-validation"
+    graasp-plugin-validation: "github:graasp/graasp-plugin-validation"
     graasp-websockets: "github:graasp/graasp-websockets"
     http-status-codes: 2.2.0
     husky: 7.0.4
