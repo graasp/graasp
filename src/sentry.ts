@@ -49,7 +49,7 @@ export function initSentry(instance: FastifyInstance): {
 
   Sentry.init({
     dsn: SentryConfig.dsn,
-    environment: process.env.NODE_ENV,
+    environment: process.env.DEPLOY_ENV ?? process.env.NODE_ENV,
     integrations,
     profilesSampleRate: SentryConfig.profilesSampleRate,
     tracesSampleRate: SentryConfig.tracesSampleRate,
@@ -64,7 +64,7 @@ export function initSentry(instance: FastifyInstance): {
     instance.addHook('onRequest', async (request, reply) => {
       request.metrics.sentry.transaction = Sentry.startTransaction({
         op: 'request',
-        name: 'Global request handler',
+        name: `${request.method} ${request.url}`,
       });
     });
     instance.addHook('onResponse', async (request, reply) => {
@@ -73,7 +73,14 @@ export function initSentry(instance: FastifyInstance): {
   }
 
   instance.addHook('onError', async (request, reply, error) => {
-    Sentry.captureException(error);
+    Sentry.withScope((scope) => {
+      scope.setSpan(request.metrics?.sentry?.transaction);
+      scope.setTransactionName(request.metrics?.sentry?.transaction?.name);
+      if (request.member) {
+        scope.setUser({ ...request.member, password: undefined });
+      }
+      Sentry.captureException(error);
+    });
   });
 
   return { SentryConfig, Sentry };
