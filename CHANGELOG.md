@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/graasp/graasp/compare/v0.3.2...v0.4.0) (2023-02-06)
+
+
+### Features
+
+* **sentry:** improve sentry metrics ([#325](https://github.com/graasp/graasp/issues/325)) ([06ce786](https://github.com/graasp/graasp/commit/06ce78628f2b0437646e4118ab91c6f5bb5ca659))
+
+
+### Bug Fixes
+
+* update validation plugin ([#324](https://github.com/graasp/graasp/issues/324)) ([0996cfa](https://github.com/graasp/graasp/commit/0996cfaca6792e8fccde6a809fd5584e84555dea))
+
 ## [0.3.2](https://github.com/graasp/graasp/compare/v0.3.1...v0.3.2) (2023-02-02)
 
 
