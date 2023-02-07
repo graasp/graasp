@@ -60,6 +60,7 @@ const start = async () => {
     instance.log.error(err);
     Sentry?.withScope((scope) => {
       scope.setSpan(mainMetric);
+      scope.setTransactionName(mainMetric.name);
       Sentry?.captureException(err);
     });
     process.exit(1);
