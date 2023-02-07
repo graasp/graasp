@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.1](https://github.com/graasp/graasp/compare/v0.4.0...v0.4.1) (2023-02-07)
+
+
+### Bug Fixes
+
+* **metrics:** use router path for sentry ([#327](https://github.com/graasp/graasp/issues/327)) ([de5c681](https://github.com/graasp/graasp/commit/de5c681f9b3c110fba325777b332fb1362a892d3))
+
 ## [0.4.0](https://github.com/graasp/graasp/compare/v0.3.2...v0.4.0) (2023-02-06)
 
 
