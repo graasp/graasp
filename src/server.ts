@@ -58,10 +58,11 @@ const start = async () => {
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);
-    Sentry?.withScope(scope => {
+    Sentry?.withScope((scope) => {
       scope.setSpan(mainMetric);
+      scope.setTransactionName(mainMetric.name);
       Sentry?.captureException(err);
-    })
+    });
     process.exit(1);
   } finally {
     mainMetric?.finish();

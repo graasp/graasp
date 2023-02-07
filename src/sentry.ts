@@ -64,7 +64,7 @@ export function initSentry(instance: FastifyInstance): {
     instance.addHook('onRequest', async (request, reply) => {
       request.metrics.sentry.transaction = Sentry.startTransaction({
         op: 'request',
-        name: `${request.method} ${request.url}`,
+        name: `${request.routerMethod} ${request.routerPath}`,
       });
     });
     instance.addHook('onResponse', async (request, reply) => {
