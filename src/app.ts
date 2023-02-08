@@ -4,7 +4,7 @@ import fp from 'fastify-plugin';
 
 import mailerPlugin from 'graasp-mailer';
 import graaspPluginActions from 'graasp-plugin-actions';
-import graaspWebSockets from 'graasp-websockets';
+import graaspWebSockets from 'graasp-plugin-websockets';
 
 import authPlugin from './plugins/auth/auth';
 import databasePlugin from './plugins/database';

@@ -8,7 +8,7 @@ import {
   TaskRunner,
   getParentFromPath,
 } from '@graasp/sdk';
-import { AccessDenied, NotFound, WebSocketService } from 'graasp-websockets';
+import { AccessDenied, NotFound, WebSocketService } from 'graasp-plugin-websockets';
 
 import {
   ChildItemEvent,
