@@ -74,7 +74,7 @@
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "graasp-plugin-h5p": "github:graasp/graasp-plugin-h5p",
     "graasp-plugin-hidden-items": "github:graasp/graasp-plugin-hidden-items",
-    "graasp-plugin-invitations": "github:graasp/graasp-plugin-invitations",
+    "graasp-plugin-invitations": "github:graasp/graasp-plugin-invitations#10-enforce-admin-rights",
     "graasp-plugin-item-likes": "github:graasp/graasp-plugin-item-likes",
     "graasp-plugin-item-login": "github:graasp/graasp-plugin-item-login",
     "graasp-plugin-item-publish": "github:graasp/graasp-plugin-item-publish",
