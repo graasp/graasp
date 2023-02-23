@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/graasp/graasp/compare/v0.4.1...v0.5.0) (2023-02-23)
+
+
+### Features
+
+* update graasp-plugin-websockets ([#329](https://github.com/graasp/graasp/issues/329)) ([e01c407](https://github.com/graasp/graasp/commit/e01c4072fdf80fb82eadd78114b8416367c8d1f1))
+
+
+### Bug Fixes
+
+* bump [@sentry](https://github.com/sentry) dependencies ([#336](https://github.com/graasp/graasp/issues/336)) ([dd6b40b](https://github.com/graasp/graasp/commit/dd6b40b1a197c2d2b4ab07290d44b1f9781a7aa7))
+
 ## [0.4.1](https://github.com/graasp/graasp/compare/v0.4.0...v0.4.1) (2023-02-07)
 
 
