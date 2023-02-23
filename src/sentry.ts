@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { ProfilingIntegration } from '@sentry/profiling-node';
 import '@sentry/tracing';
-import { Integration, Transaction } from '@sentry/types';
+import { Transaction } from '@sentry/types';
 
 import { FastifyInstance } from 'fastify';
 
@@ -42,15 +42,13 @@ export function initSentry(instance: FastifyInstance): {
     return { SentryConfig };
   }
 
-  const integrations: Array<Integration> = [];
-  if (SentryConfig.enableProfiling) {
-    integrations.push(new ProfilingIntegration());
-  }
-
   Sentry.init({
     dsn: SentryConfig.dsn,
     environment: process.env.DEPLOY_ENV ?? process.env.NODE_ENV,
-    integrations,
+    integrations: [
+      // configure sentry integrations given environment options
+      ...(SentryConfig.enableProfiling ? [new ProfilingIntegration()] : []),
+    ],
     profilesSampleRate: SentryConfig.profilesSampleRate,
     tracesSampleRate: SentryConfig.tracesSampleRate,
   });
