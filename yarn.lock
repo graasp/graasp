@@ -5587,9 +5587,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-invitations@github:graasp/graasp-plugin-invitations#10-enforce-admin-rights":
+"graasp-plugin-invitations@github:graasp/graasp-plugin-invitations":
   version: 0.1.0
-  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=e6ded0e3e8adc0287f66096fe64d51894ec37104"
+  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=a64541608a3d98aa6a267ce506c16b036052f968"
   dependencies:
     "@graasp/sdk": "github:graasp/graasp-sdk.git"
     fastify: ^3.29.1
@@ -5598,7 +5598,7 @@ __metadata:
     qs: 6.10.3
     slonik: 28.1.0
     uuid: 8.3.2
-  checksum: b62f55214951332217edee69a2970dc00e303f060b989776112efff1d8e1fc909c5af19d7a123f24f95bda3178fc4bc293750539e72f4e83193bb21c886af9ad
+  checksum: 24467a1dc34d913f5430eac83119024e4dd3cc54be33b799c4a9b220c16532c6d06fc8a00f747dff76efa3b18e91564b46be10d903869b389ad9b913dc23cf51
   languageName: node
   linkType: hard
 
@@ -5812,7 +5812,7 @@ __metadata:
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p"
     graasp-plugin-hidden-items: "github:graasp/graasp-plugin-hidden-items"
-    graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations#10-enforce-admin-rights"
+    graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
     graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
