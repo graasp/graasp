@@ -5574,7 +5574,7 @@ __metadata:
     secure-json-parse: 2.4.0
     tmp-promise: 3.0.3
     uuid: 8.3.2
-  checksum: 868688e6ae01b7e777d4a82fbb424bbed2c969ef90da588bcefc0b99a36790fb3995143f5aecd7a8ac3e97376123aed0949ad7bf6620484007574ac5433e278b
+  checksum: 51e977a08275a4c635a80efe447e4932e373875dae34966ca885b61f5b845dc824f1e41a7a1ec2e6423eda6fe9370701700dd5ae2544aa05a4ec78899b20d7ec
   languageName: node
   linkType: hard
 
@@ -5589,7 +5589,7 @@ __metadata:
 
 "graasp-plugin-invitations@github:graasp/graasp-plugin-invitations":
   version: 0.1.0
-  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=e9fc1f3e31120130ba1b4647b4f83cf91a492c9e"
+  resolution: "graasp-plugin-invitations@https://github.com/graasp/graasp-plugin-invitations.git#commit=a64541608a3d98aa6a267ce506c16b036052f968"
   dependencies:
     "@graasp/sdk": "github:graasp/graasp-sdk.git"
     fastify: ^3.29.1
@@ -5598,7 +5598,7 @@ __metadata:
     qs: 6.10.3
     slonik: 28.1.0
     uuid: 8.3.2
-  checksum: 67f1c8fcba1a8b500a57eeb2793d18bd9c8e318293f812bde96e16057ad8861f55c54643ffa192b280be655ad59665cd4879f0765e5f5ba808a05dc1ecfd4d4b
+  checksum: 24467a1dc34d913f5430eac83119024e4dd3cc54be33b799c4a9b220c16532c6d06fc8a00f747dff76efa3b18e91564b46be10d903869b389ad9b913dc23cf51
   languageName: node
   linkType: hard
 
