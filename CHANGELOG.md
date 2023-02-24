@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.1](https://github.com/graasp/graasp/compare/v0.5.0...v0.5.1) (2023-02-24)
+
+
+### Bug Fixes
+
+* update invitation permission ([#334](https://github.com/graasp/graasp/issues/334)) ([abe1f74](https://github.com/graasp/graasp/commit/abe1f7498b5cc062ad8880dad8d9050ad81296bc))
+
 ## [0.5.0](https://github.com/graasp/graasp/compare/v0.4.1...v0.5.0) (2023-02-23)
 
 
