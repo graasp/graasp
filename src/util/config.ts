@@ -257,3 +257,11 @@ export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
 
 export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
+
+export const METRICS_PLUGIN = (process.env.METRICS_PLUGIN ?? 'true') === 'true'; // env var must be literal string "true"
+export const SENTRY_DSN = process.env.SENTRY_DSN;
+export const SENTRY_ENABLE_PROFILING = (process.env.SENTRY_ENABLE_PROFILING ?? 'true') === 'true'; // env var must be literal string "true"
+export const SENTRY_PROFILES_SAMPLE_RATE = parseFloat(
+  process.env.SENTRY_PROFILES_SAMPLE_RATE ?? '1.0',
+);
+export const SENTRY_TRACES_SAMPLE_RATE = parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '1.0');

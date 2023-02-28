@@ -1,10 +1,22 @@
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
+import fp from 'fastify-plugin';
 
 import registerAppPlugins from './app';
-import { initSentry } from './sentry';
+import metricsPlugin from './services/metrics';
 // import fastifyCompress from 'fastify-compress';
-import { CORS_ORIGIN_REGEX, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
+import {
+  CORS_ORIGIN_REGEX,
+  DISABLE_LOGS,
+  ENVIRONMENT,
+  HOSTNAME,
+  METRICS_PLUGIN,
+  PORT,
+  SENTRY_DSN,
+  SENTRY_ENABLE_PROFILING,
+  SENTRY_PROFILES_SAMPLE_RATE,
+  SENTRY_TRACES_SAMPLE_RATE,
+} from './util/config';
 
 const start = async () => {
   const instance = fastify({
@@ -31,7 +43,19 @@ const start = async () => {
     }
   });*/
 
-  const { SentryConfig, Sentry } = initSentry(instance);
+  if (METRICS_PLUGIN) {
+    await instance.register(fp(metricsPlugin), {
+      sentry: {
+        enable: Boolean(SENTRY_DSN),
+        dsn: SENTRY_DSN,
+        enableProfiling: SENTRY_ENABLE_PROFILING,
+        profilesSampleRate: SENTRY_PROFILES_SAMPLE_RATE,
+        tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
+      },
+    });
+    const { metrics } = instance;
+    metrics.store.set('main', metrics.start({ name: 'main', description: 'Server start' }));
+  }
 
   instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);
@@ -46,26 +70,15 @@ const start = async () => {
 
   await registerAppPlugins(instance);
 
-  const mainMetric = SentryConfig.enable
-    ? Sentry.startTransaction({
-        op: 'main',
-        name: 'Main server listen',
-      })
-    : null;
-
   try {
     await instance.listen(+PORT, HOSTNAME);
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);
-    Sentry?.withScope((scope) => {
-      scope.setSpan(mainMetric);
-      scope.setTransactionName(mainMetric.name);
-      Sentry?.captureException(err);
-    });
+    instance.metrics?.store?.get('main')?.capture(err);
     process.exit(1);
   } finally {
-    mainMetric?.finish();
+    instance.metrics?.store?.get('main')?.stop();
   }
 };
 
