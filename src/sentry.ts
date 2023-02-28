@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
 import '@sentry/tracing';
 import { Transaction } from '@sentry/types';
 
@@ -46,8 +45,9 @@ export function initSentry(instance: FastifyInstance): {
     dsn: SentryConfig.dsn,
     environment: process.env.DEPLOY_ENV ?? process.env.NODE_ENV,
     integrations: [
-      // configure sentry integrations given environment options
-      ...(SentryConfig.enableProfiling ? [new ProfilingIntegration()] : []),
+      // TODO: re-enable when @sentry/profiling-node is more stable
+      // (currently does not report profiles and also causes compilation issues)
+      // ...(SentryConfig.enableProfiling ? [new ProfilingIntegration()] : []),
     ],
     profilesSampleRate: SentryConfig.profilesSampleRate,
     tracesSampleRate: SentryConfig.tracesSampleRate,
