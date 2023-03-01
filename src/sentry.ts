@@ -51,6 +51,15 @@ export function initSentry(instance: FastifyInstance): {
     ],
     profilesSampleRate: SentryConfig.profilesSampleRate,
     tracesSampleRate: SentryConfig.tracesSampleRate,
+    beforeBreadcrumb: (breadcrumb) => {
+      // fix: sentry collects some automatic breadcrumbs
+      // however these are currently irrelevant (logs http events such as S3 unrelated to current request lifecycle)
+      // TODO: find a better way to exclude unwanted irrelevant auto breadcrumbs (we blanket ban http ones for now)
+      if (breadcrumb.category === 'http' && breadcrumb.level === 'info') {
+        return null;
+      }
+      return breadcrumb;
+    },
   });
 
   if (SentryConfig.enablePerformance) {
