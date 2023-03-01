@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
 import '@sentry/tracing';
 import { Transaction } from '@sentry/types';
 
@@ -46,11 +45,21 @@ export function initSentry(instance: FastifyInstance): {
     dsn: SentryConfig.dsn,
     environment: process.env.DEPLOY_ENV ?? process.env.NODE_ENV,
     integrations: [
-      // configure sentry integrations given environment options
-      ...(SentryConfig.enableProfiling ? [new ProfilingIntegration()] : []),
+      // TODO: re-enable when @sentry/profiling-node is more stable
+      // (currently does not report profiles and also causes compilation issues)
+      // ...(SentryConfig.enableProfiling ? [new ProfilingIntegration()] : []),
     ],
     profilesSampleRate: SentryConfig.profilesSampleRate,
     tracesSampleRate: SentryConfig.tracesSampleRate,
+    beforeBreadcrumb: (breadcrumb) => {
+      // fix: sentry collects some automatic breadcrumbs
+      // however these are currently irrelevant (logs http events such as S3 unrelated to current request lifecycle)
+      // TODO: find a better way to exclude unwanted irrelevant auto breadcrumbs (we blanket ban http ones for now)
+      if (breadcrumb.category === 'http' && breadcrumb.level === 'info') {
+        return null;
+      }
+      return breadcrumb;
+    },
   });
 
   if (SentryConfig.enablePerformance) {
