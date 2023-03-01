@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.2](https://github.com/graasp/graasp/compare/v0.5.1...v0.5.2) (2023-03-01)
+
+
+### Bug Fixes
+
+* **sentry:** disable profiling, bump versions, ignore auto breadcrumbs ([#340](https://github.com/graasp/graasp/issues/340)) ([e7b3287](https://github.com/graasp/graasp/commit/e7b3287c70b61634568ebb913d9d0b9df411702b))
+
 ## [0.5.1](https://github.com/graasp/graasp/compare/v0.5.0...v0.5.1) (2023-02-24)
 
 
