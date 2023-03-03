@@ -2,20 +2,16 @@ name: Deploy to refactor environment
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push events only for the main branch
-  push:
-    branches:
-      - split-env-dev-refactor
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # This workflow is made up of one job that calls the reusable workflow in graasp-deploy
 jobs:
-  graasp-deploy-ecs-backend-workflow:
+  refactor-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    uses: graasp/graasp-deploy/.github/workflows/deploy-refactor.yml@refactor-deploy
+    uses: graasp/graasp-deploy/.github/workflows/deploy-refactor.yml@main
 
     # abort previous deployment if a newer one is in progress
     concurrency:
