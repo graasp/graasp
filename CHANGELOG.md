@@ -2,6 +2,108 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.2](https://github.com/graasp/graasp/compare/v0.5.1...v0.5.2) (2023-03-01)
+
+
+### Bug Fixes
+
+* **sentry:** disable profiling, bump versions, ignore auto breadcrumbs ([#340](https://github.com/graasp/graasp/issues/340)) ([e7b3287](https://github.com/graasp/graasp/commit/e7b3287c70b61634568ebb913d9d0b9df411702b))
+
+## [0.5.1](https://github.com/graasp/graasp/compare/v0.5.0...v0.5.1) (2023-02-24)
+
+
+### Bug Fixes
+
+* update invitation permission ([#334](https://github.com/graasp/graasp/issues/334)) ([abe1f74](https://github.com/graasp/graasp/commit/abe1f7498b5cc062ad8880dad8d9050ad81296bc))
+
+## [0.5.0](https://github.com/graasp/graasp/compare/v0.4.1...v0.5.0) (2023-02-23)
+
+
+### Features
+
+* update graasp-plugin-websockets ([#329](https://github.com/graasp/graasp/issues/329)) ([e01c407](https://github.com/graasp/graasp/commit/e01c4072fdf80fb82eadd78114b8416367c8d1f1))
+
+
+### Bug Fixes
+
+* bump [@sentry](https://github.com/sentry) dependencies ([#336](https://github.com/graasp/graasp/issues/336)) ([dd6b40b](https://github.com/graasp/graasp/commit/dd6b40b1a197c2d2b4ab07290d44b1f9781a7aa7))
+
+## [0.4.1](https://github.com/graasp/graasp/compare/v0.4.0...v0.4.1) (2023-02-07)
+
+
+### Bug Fixes
+
+* **metrics:** use router path for sentry ([#327](https://github.com/graasp/graasp/issues/327)) ([de5c681](https://github.com/graasp/graasp/commit/de5c681f9b3c110fba325777b332fb1362a892d3))
+
+## [0.4.0](https://github.com/graasp/graasp/compare/v0.3.2...v0.4.0) (2023-02-06)
+
+
+### Features
+
+* **sentry:** improve sentry metrics ([#325](https://github.com/graasp/graasp/issues/325)) ([06ce786](https://github.com/graasp/graasp/commit/06ce78628f2b0437646e4118ab91c6f5bb5ca659))
+
+
+### Bug Fixes
+
+* update validation plugin ([#324](https://github.com/graasp/graasp/issues/324)) ([0996cfa](https://github.com/graasp/graasp/commit/0996cfaca6792e8fccde6a809fd5584e84555dea))
+
+## [0.3.2](https://github.com/graasp/graasp/compare/v0.3.1...v0.3.2) (2023-02-02)
+
+
+### Bug Fixes
+
+* release new version with fixes ([8aa2e4d](https://github.com/graasp/graasp/commit/8aa2e4d774007916a4cd8b4ea7ddbbdaccd39cbf))
+
+## [0.3.1](https://github.com/graasp/graasp/compare/v0.3.0...v0.3.1) (2023-01-31)
+
+
+### Bug Fixes
+
+* downgrade @sentry/profiling-node to 0.0.12 ([#319](https://github.com/graasp/graasp/issues/319)) ([03e38a5](https://github.com/graasp/graasp/commit/03e38a5ffd0a13bf48d315b27dcbe70500ad4f05))
+
+## [0.3.0](https://github.com/graasp/graasp/compare/v0.2.1...v0.3.0) (2023-01-30)
+
+
+### Features
+
+* add sentry metrics ([#315](https://github.com/graasp/graasp/issues/315)) ([d43d7ae](https://github.com/graasp/graasp/commit/d43d7aecfea12d77a89e05df4a4752249f595710))
+
+
+### Bug Fixes
+
+* fix security alerts from dependencies ([#310](https://github.com/graasp/graasp/issues/310)) ([f5ad55f](https://github.com/graasp/graasp/commit/f5ad55f12e37a221537386633e24ca0f30f3ce1a))
+* return shared sibling items ([#305](https://github.com/graasp/graasp/issues/305)) ([fe05726](https://github.com/graasp/graasp/commit/fe057268486d8d57f931f93d8d13e39a91ac8edb))
+
+## [0.2.1](https://github.com/graasp/graasp/compare/v0.2.0...v0.2.1) (2023-01-19)
+
+
+### Bug Fixes
+
+* isolate transactions ([#302](https://github.com/graasp/graasp/issues/302)) ([b44b486](https://github.com/graasp/graasp/commit/b44b486e5e12ea6a0ebd38bc3b64bcc94f38f43a))
+
+## [0.2.0](https://github.com/graasp/graasp/compare/v0.1.8...v0.2.0) (2023-01-11)
+
+
+### Features
+
+* add etherpad service ([#295](https://github.com/graasp/graasp/issues/295)) ([f8b3b0d](https://github.com/graasp/graasp/commit/f8b3b0ded745bec39d41ad9626708a5f5631ea78))
+* implement DB read replicas ([#288](https://github.com/graasp/graasp/issues/288)) ([3e6793f](https://github.com/graasp/graasp/commit/3e6793f7d07d23a09105fb450b5b49e819df2484))
+
+
+### Bug Fixes
+
+* correctly assign interceptors when undefined ([#290](https://github.com/graasp/graasp/issues/290)) ([1bfb8b3](https://github.com/graasp/graasp/commit/1bfb8b3e2c6f097fa452436be2210252e5bc0814))
+* pin graasp-plugin-thumbnails and graasp-plugin-file-item before transactions fix ([#299](https://github.com/graasp/graasp/issues/299)) ([67f7597](https://github.com/graasp/graasp/commit/67f75977a3628eda0f54bd4fda4ce9f97aae4f7b))
+
+### 0.1.8 (2022-11-28)
+
+### 0.1.7 (2022-11-07)
+
+
+### Bug Fixes
+
+* upgrade h5p plugin with upload task runner bypass ([#275](https://github.com/graasp/graasp/issues/275)) ([ef985c0](https://github.com/graasp/graasp/commit/ef985c095d2d18921b27123664e78cb5e7ca1ff5))
+
 ### 0.1.6 (2022-10-27)
 
 ### 0.1.5 (2022-10-27)

@@ -136,7 +136,7 @@ const deleteOne = {
     },
   },
   response: {
-    200: { },
+    200: {},
   },
 };
 

@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item like entry
   fastify.delete<{ Params: { itemId: string } }>(
     '/:itemId/like',
-    { schema: deleteOne, preHandler: fastify.verifyAuthentication},
+    { schema: deleteOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { itemId }, log }) => {
       return db.transaction(async (manager) => {
         return itemLikeService.removeOne(member, buildRepositories(manager), itemId);

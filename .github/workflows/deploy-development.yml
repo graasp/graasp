@@ -18,6 +18,12 @@ jobs:
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
     uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+
+    # abort previous deployment if a newer one is in progress
+    concurrency:
+      group: deploy-development
+      cancel-in-progress: true
+
     # ecs-task-definition with template file.
     with:
       ecs-task-definition: '.aws/graasp-dev.json'
@@ -25,6 +31,8 @@ jobs:
       chatbox-plugin: true
       database-logs: false
       embedded-link-item-plugin: true
+      etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_DEV }}
+      etherpad-url: ${{ vars.ETHERPAD_URL_DEV }}
       hidden-items-plugin: true
       node-env: production
       node-env-iframely: production
@@ -35,6 +43,7 @@ jobs:
       subscriptions-plugin: true
       token-based-auth: true
       websockets-plugin: true
+
     # required secrets
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
@@ -61,14 +70,15 @@ jobs:
       cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_DEV }}
       email-links-host: ${{ secrets.EMAIL_LINKS_HOST_DEV }}
       embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
+      etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_DEV }}
       explorer-client-host: ${{ secrets.EXPLORER_CLIENT_HOST_DEV }}
       file-storage-root-path: ${{ secrets.FILE_STORAGE_ROOT_PATH }}
       files-path-prefix: ${{ secrets.FILES_PATH_PREFIX }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID_DEV }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET_DEV }}
-      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION }}
+      h5p-content-region: ${{ secrets.H5P_CONTENT_REGION_DEV }}
       h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY_DEV }}
-      h5p-path-prefix: ${{ secrets.H5P_PATH_PREFIX }}
+      h5p-path-prefix: ${{ secrets.H5P_PATH_PREFIX_DEV }}
       hidden-tag-id: ${{ secrets.HIDDEN_TAG_ID }}
       hostname: ${{ secrets.HOSTNAME_DEV}}
       image-classifier-api: ${{ secrets.IMAGE_CLASSIFIER_API }}
@@ -79,6 +89,7 @@ jobs:
       mailer-config-smtp-host: ${{ secrets.MAILER_CONFIG_SMTP_HOST }}
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_DEV }}
       pg-connection-uri: ${{ secrets.PG_CONNECTION_URI_DEV }}
+      pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS_DEV }}
       player-client-host: ${{ secrets.PLAYER_CLIENT_HOST_DEV }}
       port: ${{ secrets.PORT }}
       public-tag-id: ${{ secrets.PUBLIC_TAG_ID }}
@@ -93,6 +104,7 @@ jobs:
       s3-file-item-region: ${{ secrets.S3_FILE_ITEM_REGION }}
       s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY_DEV }}
       secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY_DEV }}
+      sentry-dsn: ${{ secrets.SENTRY_DSN }}
       stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
       thumbnails-path-prefix: ${{ secrets.THUMBNAILS_PATH_PREFIX }}

@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams, ItemTagType } from '@graasp/sdk';
@@ -6,7 +8,6 @@ import { buildRepositories } from '../../util/repositories';
 import { Item } from '../item/entities/Item';
 import common, { create, deleteOne, getItemTags, getMany, getTags } from './schemas/schemas';
 import { ItemTagService } from './service';
-import { StatusCodes } from 'http-status-codes';
 
 /**
  * Item tag plugin
@@ -57,7 +58,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/tags/:type',
     { schema: create, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { itemId, type } }) => {
-      return db.transaction(async manager => {
+      return db.transaction(async (manager) => {
         return iTS.post(member, buildRepositories(manager), itemId, type);
       });
     },
@@ -68,7 +69,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/tags/:type',
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { itemId, type }, log }, reply) => {
-     await db.transaction(async (manager) => {
+      await db.transaction(async (manager) => {
         await iTS.deleteOne(member, buildRepositories(manager), itemId, type);
         reply.status(StatusCodes.NO_CONTENT);
       });

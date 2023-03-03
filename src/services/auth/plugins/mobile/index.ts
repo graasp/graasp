@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
                 color: white;
                 padding: 1em 1.5em;
                 text-decoration: none;"
-                href="graasp://auth?t=${t}">Open with Graasp app</>
+                href="graasp-mobile-builder://auth?t=${t}">Open with Graasp app</>
             </body>
           </html>
         `;

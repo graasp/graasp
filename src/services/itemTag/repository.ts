@@ -8,7 +8,12 @@ import { pathToId } from '../item/utils';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { ItemTag } from './ItemTag';
-import { ItemTagNotFound, ItemHasTag, ConflictingTagsInTheHierarchy, CannotModifyParentTag } from './util/graasp-item-tags-error';
+import {
+  CannotModifyParentTag,
+  ConflictingTagsInTheHierarchy,
+  ItemHasTag,
+  ItemTagNotFound,
+} from './util/graasp-item-tags-error';
 
 /**
  * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)
@@ -114,13 +119,14 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     // delete item tag
     // we delete descendants tags, they happen on copy, move, or if you had on ancestor
     // but does not change the behavior
-    // cannot use leftJoinAndSelect for delete, so we select first 
+    // cannot use leftJoinAndSelect for delete, so we select first
     const itemTags = await this.createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item')
       .where('item.path <@ :path', { path: item.path })
-      .andWhere('itemTag.type = :type', { type }).getMany();
+      .andWhere('itemTag.type = :type', { type })
+      .getMany();
 
-      if (!itemTags || !itemTags.length) {
+    if (!itemTags || !itemTags.length) {
       throw new ItemTagNotFound({ item, type });
     }
 
@@ -130,7 +136,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
 
   async isNotInherited(item: Item, type: ItemTagType, { shouldThrow = true } = {}) {
     const entry = await this.getType(item, type);
-    if (entry && (entry.item.path !== item.path) && shouldThrow) {
+    if (entry && entry.item.path !== item.path && shouldThrow) {
       throw new CannotModifyParentTag(entry);
     }
   },

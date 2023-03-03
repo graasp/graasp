@@ -48,7 +48,7 @@ export const CLIENT_HOSTS = [
     hostname: new URL(process.env.PLAYER_CLIENT_HOST).hostname,
   },
   {
-    name: Context.EXPLORER,
+    name: Context.LIBRARY,
     hostname: new URL(process.env.EXPLORER_CLIENT_HOST).hostname,
   },
 ];
@@ -74,6 +74,8 @@ export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
 export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
 export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;
+export const PG_READ_REPLICAS_CONNECTION_URIS =
+  process.env.PG_READ_REPLICAS_CONNECTION_URIS?.split(',');
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 
@@ -115,8 +117,12 @@ export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES =
 
 /**
  * Maximum connections to the DB for slonik
+ * https://wiki.postgresql.org/wiki/Number_Of_Database_Connections
+ * should be around ((core_count * 2) + effective_spindle_count), to be tuned wrt effective workload
  */
-export const MAXIMUM_POOL_SIZE = 100;
+export const MAXIMUM_POOL_SIZE = process.env.MAXIMUM_POOL_SIZE
+  ? parseInt(process.env.MAXIMUM_POOL_SIZE)
+  : 20;
 
 // Graasp mailer config
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
@@ -142,6 +148,11 @@ export const H5P_CONTENT_REGION = process.env.H5P_CONTENT_REGION;
 export const H5P_CONTENT_BUCKET = process.env.H5P_CONTENT_BUCKET;
 export const H5P_CONTENT_ACCESS_KEY_ID = process.env.H5P_CONTENT_ACCESS_KEY_ID;
 export const H5P_CONTENT_SECRET_ACCESS_KEY = process.env.H5P_CONTENT_SECRET_ACCESS_KEY;
+
+export const ETHERPAD_URL = process.env.ETHERPAD_URL;
+export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
+export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
+export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
 
 let S3_INSTANCE: S3;
 

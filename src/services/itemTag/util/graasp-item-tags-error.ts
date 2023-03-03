@@ -30,7 +30,14 @@ export class TagNotFound extends GraaspItemTagsError {
 
 export class CannotModifyParentTag extends GraaspItemTagsError {
   constructor(data?: unknown) {
-    super({ code: 'GITERR008', statusCode: StatusCodes.FORBIDDEN, message: 'Cannot modify inherited tag' }, data);
+    super(
+      {
+        code: 'GITERR008',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: 'Cannot modify inherited tag',
+      },
+      data,
+    );
   }
 }
 

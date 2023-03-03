@@ -134,6 +134,8 @@ REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 # PostgreSQL connection string
 # If you are using dev-containers, this value is overwritten in docker-compose.yml
 PG_CONNECTION_URI=postgresql://<user>:<password>@localhost:5432/<dbname>
+# If you want to add read replicas to your DB cluster, provide their connection URIs here separated by commas
+PG_READ_REPLICA_CONNECTION_URIS=
 
 # Slonik database logging (uncomment both)
 # DATABASE_LOGS=true
@@ -169,6 +171,14 @@ H5P_CONTENT_BUCKET=graasp-h5p
 H5P_CONTENT_ACCESS_KEY_ID=graasp-user
 H5P_CONTENT_SECRET_ACCESS_KEY=graasp-pwd
 H5P_PATH_PREFIX=h5p-content/
+
+# Graasp Etherpad
+ETHERPAD_URL=http://etherpad:9001
+# Optional, if the etherpad server server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
+ETHERPAD_PUBLIC_URL=http://localhost:9001
+# Optional, if the etherpad cookie domain is different from the domain of the public URL
+ETHERPAD_COOKIE_DOMAIN=localhost:9001
+ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Graasp embedded link item
 EMBEDDED_LINK_ITEM_PLUGIN=false

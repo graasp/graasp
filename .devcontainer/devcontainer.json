@@ -9,14 +9,24 @@
     "terminal.integrated.shell.linux": "/bin/bash",
     "sqltools.connections": [
       {
-        "name": "Container database",
+        "name": "Graasp database",
         "driver": "PostgreSQL",
         "previewLimit": 50,
-        "server": "localhost",
+        "server": "db",
         "port": 5432,
         "database": "docker",
         "username": "docker",
         "password": "docker"
+      },
+      {
+        "name": "Etherpad database",
+        "driver": "PostgreSQL",
+        "previewLimit": 50,
+        "server": "db",
+        "port": 5432,
+        "database": "etherpad",
+        "username": "etherpad",
+        "password": "etherpad"
       }
     ]
   },
