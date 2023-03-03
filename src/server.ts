@@ -31,7 +31,7 @@ const start = async () => {
     });
   }
 
-  await registerAppPlugins(instance);
+  // await registerAppPlugins(instance);
 
   const mainMetric = SentryConfig.enable
     ? Sentry.startTransaction({
@@ -41,9 +41,11 @@ const start = async () => {
     : null;
 
   try {
+    console.log({ port: +PORT, host: HOSTNAME });
     await instance.listen({ port: +PORT, host: HOSTNAME });
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
+    console.log('ERROR!!!',err);
     instance.log.error(err);
     Sentry?.withScope((scope) => {
       scope.setSpan(mainMetric);
