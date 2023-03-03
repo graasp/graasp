@@ -137,17 +137,17 @@ export default async function (instance: FastifyInstance): Promise<void> {
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     });
 
-  // need to be defined before member and item for auth check
-  await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
+  // // need to be defined before member and item for auth check
+  // await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
 
-  // file
-  await instance.register(fp(filePlugin), {
-    fileItemType: FILE_ITEM_TYPE,
-    fileConfigurations: {
-      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-      local: FILE_ITEM_PLUGIN_OPTIONS,
-    },
-  });
+  // // file
+  // await instance.register(fp(filePlugin), {
+  //   fileItemType: FILE_ITEM_TYPE,
+  //   fileConfigurations: {
+  //     s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+  //     local: FILE_ITEM_PLUGIN_OPTIONS,
+  //   },
+  // });
 
   // if (WEBSOCKETS_PLUGIN) {
   //   await instance.register(graaspWebSockets, {
@@ -165,10 +165,10 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   instance.register(async (instance) => {
     // core API modules
-    await instance
-      .register(fp(MemberServiceApi))
-      .register(fp(ItemServiceApi))
-      .register(fp(ItemMembershipServiceApi));
+    // await instance
+    //   .register(fp(MemberServiceApi))
+    //   .register(fp(ItemServiceApi))
+    //   .register(fp(ItemMembershipServiceApi));
 
     //   // if (PUBLIC_PLUGIN) {
     //   //   await instance.register(publicPlugin);
