@@ -1,0 +1,99 @@
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifyPluginAsync } from 'fastify';
+
+import { DEFAULT_LANG } from '@graasp/sdk';
+
+import { buildRepositories } from '../../../../util/repositories';
+import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from '../../schemas';
+import { MemberPasswordService } from '../password/service';
+import { MobileService } from './service';
+
+// token based auth and endpoints for mobile
+const plugin: FastifyPluginAsync = async (fastify) => {
+  const { log, db, generateAuthTokensPair } = fastify;
+
+  const mobileService = new MobileService(fastify, log);
+  const memberPasswordService = new MemberPasswordService(log);
+
+  // no need to add CORS support here - only used by mobile app
+
+  fastify.decorateRequest('memberId', null);
+
+  fastify.post<{
+    Body: { name: string; email: string; challenge: string };
+    Querystring: { lang?: string };
+  }>(
+    '/register',
+    { schema: mregister },
+    async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
+      return db.transaction(async (manager) => {
+        await mobileService.register(null, buildRepositories(manager), body, lang);
+        reply.status(StatusCodes.NO_CONTENT);
+      });
+    },
+  );
+
+  fastify.post<{ Body: { email: string; challenge: string }; Querystring: { lang?: string } }>(
+    '/login',
+    { schema: mlogin },
+    async ({ body, query: { lang } }, reply) => {
+      await mobileService.login(null, buildRepositories(), body, lang);
+      reply.status(StatusCodes.NO_CONTENT);
+    },
+  );
+
+  // login with password
+  fastify.post<{ Body: { email: string; challenge: string; password: string } }>(
+    '/login-password',
+    { schema: mPasswordLogin },
+    async ({ body }, reply) => {
+      const token = await memberPasswordService.login(
+        null,
+        buildRepositories(),
+        body,
+        body.challenge,
+      );
+
+      reply.status(StatusCodes.OK).send({ t: token });
+    },
+  );
+
+  fastify.post<{ Body: { t: string; verifier: string } }>(
+    '/auth',
+    { schema: mauth },
+    async ({ body: { t: token, verifier } }) => {
+      return mobileService.auth(null, buildRepositories(), token, verifier);
+    },
+  );
+
+  fastify.get(
+    '/auth/refresh', // there's a hardcoded reference to this path above: "verifyMemberInAuthToken()"
+    { preHandler: fastify.verifyBearerAuth },
+    async ({ memberId }) => generateAuthTokensPair(memberId),
+  );
+
+  fastify.get<{ Querystring: { t: string } }>(
+    '/deep-link',
+    { schema: mdeepLink },
+    async ({ query: { t } }, reply) => {
+      reply.type('text/html');
+      // TODO: this can be improved
+      return `
+          <!DOCTYPE html>
+          <html>
+            <body style="display: flex; justify-content: center; align-items: center; height: 100vh;
+              font-family: sans-serif;">
+              <a style="background-color: #5050d2;
+                color: white;
+                padding: 1em 1.5em;
+                text-decoration: none;"
+                href="graasp://auth?t=${t}">Open with Graasp app</>
+            </body>
+          </html>
+        `;
+    },
+  );
+};
+
+export default plugin;

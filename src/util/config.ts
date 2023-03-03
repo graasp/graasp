@@ -1,7 +1,9 @@
 import S3 from 'aws-sdk/clients/s3';
 import dotenv from 'dotenv';
 
-import { Context, FileItemType, ItemSettings, ItemType } from '@graasp/sdk';
+import { Context, FileItemType, ItemType, S3FileConfiguration } from '@graasp/sdk';
+
+import { ItemSettings } from '../services/item/entities/Item';
 
 enum Environment {
   production = 'production',
@@ -162,12 +164,11 @@ if ((DEV || TEST) && S3_FILE_ITEM_HOST) {
   });
 }
 
-export const S3_FILE_ITEM_PLUGIN_OPTIONS = {
+export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration = {
   s3Region: S3_FILE_ITEM_REGION,
   s3Bucket: S3_FILE_ITEM_BUCKET,
   s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
   s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
-  s3Instance: S3_INSTANCE,
 };
 
 export const H5P_CONTENT_PLUGIN_OPTIONS = {
@@ -175,7 +176,6 @@ export const H5P_CONTENT_PLUGIN_OPTIONS = {
   s3Bucket: H5P_CONTENT_BUCKET,
   s3AccessKeyId: H5P_CONTENT_ACCESS_KEY_ID,
   s3SecretAccessKey: H5P_CONTENT_SECRET_ACCESS_KEY,
-  s3Instance: S3_INSTANCE,
 };
 
 export const FILE_ITEM_TYPE: FileItemType = S3_FILE_ITEM_PLUGIN
@@ -228,17 +228,15 @@ export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };
 
 export const ITEMS_ROUTE_PREFIX = '/items';
-export const PUBLIC_ROUTE_PREFIX = '/p';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
 export const SUBSCRIPTION_ROUTE_PREFIX = '/subscriptions';
 
 export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
 
-export const DEFAULT_ITEM_SETTINGS: Partial<ItemSettings> = {
+export const DEFAULT_ITEM_SETTINGS: ItemSettings = {
   hasThumbnail: false,
 };
-export const DEFAULT_LANG = 'en';
 
 // Stripe
 export const SUBSCRIPTION_PLUGIN = process.env.SUBSCRIPTION_PLUGIN === 'true';
@@ -246,3 +244,6 @@ export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
 
 export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
+
+// used for hashing password
+export const SALT_ROUNDS = 10;

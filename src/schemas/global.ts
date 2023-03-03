@@ -1,3 +1,6 @@
+// we need this file used in classic json schema
+// duplicate of shared fluent-schema.ts
+
 export default {
   $id: 'http://graasp.org/',
   definitions: {

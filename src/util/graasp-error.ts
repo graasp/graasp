@@ -246,6 +246,16 @@ export class TokenExpired extends CoreError {
   }
 }
 
+export class ChallengeFailed extends CoreError {
+  constructor(data?: unknown) {
+    // this status code is custom for the browser to know it needs to refresh its token
+    super(
+      { code: 'GERR021', statusCode: StatusCodes.UNAUTHORIZED, message: 'challenge fail' },
+      data,
+    );
+  }
+}
+
 export class InvalidToken extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token

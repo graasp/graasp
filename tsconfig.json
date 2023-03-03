@@ -12,5 +12,12 @@
     "experimentalDecorators": true
   },
   "include": ["src/**/*"],
-  "exclude": ["src/**/__mocks__", "test/", "src/**/*.test.*"]
+  "exclude": [
+    "node_modules",
+    "src/**/__mocks__",
+    "test",
+    "src/**/*.test.ts",
+    "src/**/test/*.ts",
+    "migrations"
+  ]
 }

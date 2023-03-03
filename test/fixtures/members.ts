@@ -1,37 +1,38 @@
-import { v4 as uuidv4 } from 'uuid';
+import { DEFAULT_LANG, MemberType } from '@graasp/sdk';
 
-import { Member, MemberType, UnknownExtra } from '@graasp/sdk';
+import { Member } from '../../src/services/member/entities/member';
+import MemberRepository from '../../src/services/member/repository';
 
-export const buildMember = (options: {
-  id?: string;
-  name?: string;
-  email?: string;
-  extra?: UnknownExtra;
-  password?: string;
-}): Member => {
-  const id = uuidv4();
-  return {
-    id: options.id ?? id,
-    name: options.name ?? id,
-    email: options.email ?? `${options.name}@email.com`,
-    createdAt: '2021-03-29T08:46:52.939Z',
-    updatedAt: '2021-03-29T08:46:52.939Z',
-    extra: options.extra ?? {},
-    type: MemberType.Individual,
-    password: options.password,
-  };
+export const saveMember = async (m: Partial<Member>) => {
+  const member = MemberRepository.create(m);
+  const savedMember = await MemberRepository.save(member);
+
+  return savedMember;
 };
 
-export const ACTOR = buildMember({
-  name: 'actor',
-});
+export const saveMembers = async (members) => {
+  const promises = members.map((m) => saveMember(m));
+  return Promise.all(promises);
+};
 
-export const ANNA = buildMember({ name: 'anna' });
+export const expectMember = (m, validation) => {
+  if (!m) {
+    throw 'member does not exist';
+  }
+  expect(m.name).toEqual(validation.name);
+  expect(m.email).toEqual(validation.email);
+  expect(m.type).toEqual(validation.type ?? MemberType.Individual);
+  expect(m.extra).toEqual(validation.extra ?? { lang: DEFAULT_LANG });
+};
 
-export const BOB = buildMember({ name: 'bob', extra: { lang: 'fr' } });
+export const ANNA = { name: 'anna', email: 'anna@email.org' };
 
-export const LOUISA = buildMember({
+export const BOB = { name: 'bob', email: 'bob@email.org', extra: { lang: 'fr' } };
+
+export const LOUISA = {
   name: 'louisa',
+  email: 'louisa@email.org',
   extra: { lang: 'fr' },
-  password: '$2b$10$WFVpHW6qSpZrMnk06Qxmtuzu1OU2C3LqQby5szT0BboirsNx4cdD.',
-});
+};
+
+export const MEMBERS = [ANNA, BOB, LOUISA];

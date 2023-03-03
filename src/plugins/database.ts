@@ -1,12 +1,5 @@
-import { DataSource } from 'typeorm';
-
 import { FastifyPluginAsync } from 'fastify';
 
-import { Member } from '../services/members/member';
-import { MAXIMUM_POOL_SIZE } from '../util/config';
-import { Item } from '../services/items/entities/Item';
-import { ItemMembership } from '../services/item-memberships/entities/ItemMembership';
-import { MemberPassword } from './auth/entities/password';
 import { AppDataSource } from './datasource';
 
 export interface DatabasePluginOptions {
@@ -30,10 +23,11 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (fastify, { uri,
   // }
 
   // const pool = createPool(uri, options);
-
-  await AppDataSource.initialize();
-
-  fastify.decorate('db', AppDataSource);
+  const db = AppDataSource;
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
+  fastify.decorate('db', db);
 };
 
 export default plugin;

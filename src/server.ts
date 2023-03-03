@@ -1,24 +1,11 @@
 import * as Sentry from '@sentry/node';
-import { DataSource } from 'typeorm';
 
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 import registerAppPlugins from './app';
-import { Member } from './services/members/member';
 // import fastifyCompress from 'fastify-compress';
-import { CORS_ORIGIN_REGEX, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
-
-// TODO: REMOVE
-declare module 'fastify' {
-  interface FastifyInstance {
-    db: DataSource;
-  }
-
-  interface FastifyRequest {
-    member: Member;
-  }
-}
+import { CORS_ORIGIN_REGEX, DEV, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
 
 // Sentry
 Sentry.init({
@@ -28,7 +15,7 @@ Sentry.init({
 
 const start = async () => {
   const instance = fastify({
-    logger: !DISABLE_LOGS,
+    logger: DEV ?? DISABLE_LOGS,
     ajv: {
       customOptions: {
         // This allow routes that take array to correctly interpret single values as an array
@@ -37,19 +24,6 @@ const start = async () => {
       },
     },
   });
-  /*const instance = fastify({ 
-    logger: { 
-      prettyPrint: true, 
-      level: 'debug' 
-    },
-    ajv: {
-      customOptions: {
-        // This allow routes that take array to correctly interpret single values as an array
-        // https://github.com/fastify/fastify/blob/main/docs/Validation-and-Serialization.md
-        coerceTypes: 'array',
-      }
-    }
-  });*/
 
   // fastify Sentry hook
   instance.addHook('onError', (request, reply, error, done) => {
