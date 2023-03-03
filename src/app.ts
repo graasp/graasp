@@ -119,23 +119,23 @@ declare module 'fastify' {
 }
 
 export default async function (instance: FastifyInstance): Promise<void> {
-  instance.decorate('hosts', CLIENT_HOSTS);
+  // instance.decorate('hosts', CLIENT_HOSTS);
 
   // load some shared schema definitions
-  instance.addSchema(shared);
+  // instance.addSchema(shared);
 
   instance
+    .register(fp(metaPlugin))
     .register(fp(databasePlugin), {
       logs: DATABASE_LOGS,
-    })
-    .register(fp(decoratorPlugin))
-    .register(fp(metaPlugin))
-    .register(mailerPlugin, {
-      host: MAILER_CONFIG_SMTP_HOST,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
     });
+    // .register(fp(decoratorPlugin))
+    // .register(mailerPlugin, {
+    //   host: MAILER_CONFIG_SMTP_HOST,
+    //   username: MAILER_CONFIG_USERNAME,
+    //   password: MAILER_CONFIG_PASSWORD,
+    //   fromEmail: MAILER_CONFIG_FROM_EMAIL,
+    // });
 
   // // need to be defined before member and item for auth check
   // await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
