@@ -11,95 +11,46 @@ jobs:
   refactor-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
-    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/deploy-refactor.yml@main
 
     # abort previous deployment if a newer one is in progress
     concurrency:
       group: deploy-refactor
       cancel-in-progress: true
 
-    # ecs-task-definition with template file.
     with:
+      # workflow config
       ecs-task-definition: '.aws/refactor.json'
-      apps-plugin: true
-      chatbox-plugin: true
-      database-logs: false
-      embedded-link-item-plugin: true
-      etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_DEV }}
-      etherpad-url: ${{ vars.ETHERPAD_URL_DEV }}
-      hidden-items-plugin: true
-      node-env: production
-      node-env-iframely: production
-      public-plugin: true
-      roarr-log: false
-      s3-file-item-plugin: true
-      save-actions: true
-      subscriptions-plugin: true
-      token-based-auth: true
-      websockets-plugin: true
+      environment: refactor               
 
-    # required secrets
     secrets:
-      aws-access-key-id: ${{ secrets.TMP_AWS_ACCESS_KEY_ID_DEV }}
-      aws-secret-access-key: ${{ secrets.TMP_AWS_SECRET_ACCESS_KEY_DEV }}
-      aws-region: ${{ secrets.AWS_REGION_DEV }}
-      ecs-cluster: ${{ secrets.TMP_ECS_CLUSTER_REFACTOR }}
-      ecs-service: ${{ secrets.TMP_ECS_SERVICE_REFACTOR }}
-      ecr-repository: ${{ secrets.TMP_ECR_REPOSITORY_GRAASP_DEV }}
-      container-name-graasp: ${{ secrets.TMP_CONTAINER_NAME_REFACTOR }}
-      container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_DEV }}
-      container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
-      container-image-iframely: ${{ secrets.TMP_CONTAINER_IMAGE_IFRAMELY }}
-      container-image-classifier: ${{ secrets.TMP_CONTAINER_IMAGE_CLASSIFIER }}
-      analyzer-client-host: ''
-      apps-jwt-secret: ${{ secrets.TMP_APPS_JWT_SECRET_DEV }}
-      apps-publisher-id: ''
-      auth-client-host: ''
-      auth-token-expiration-in-minutes: ${{ secrets.TMP_AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
-      auth-token-jwt-secret: ${{ secrets.TMP_AUTH_TOKEN_JWT_SECRET_DEV }}
-      avatars-path-prefix: ''
-      builder-client-host: ''
-      client-host: ${{ secrets.TMP_CLIENT_HOST_DEV }}
-      cookie-domain: ${{ secrets.TMP_COOKIE_DOMAIN_DEV }}
-      cors-origin-regex: ${{ secrets.TMP_CORS_ORIGIN_REGEX_DEV }}
-      email-links-host: ''
-      embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
-      etherpad-api-key: ${{ secrets.TMP_ETHERPAD_API_KEY_DEV }}
-      explorer-client-host: ''
-      file-storage-root-path: ${{ secrets.TMP_FILE_STORAGE_ROOT_PATH }}
-      files-path-prefix: ${{ secrets.TMP_FILES_PATH_PREFIX }}
-      h5p-content-access-key-id: ${{ secrets.TMP_H5P_CONTENT_ACCESS_KEY_ID_DEV }}
-      h5p-content-bucket-name: ${{ secrets.TMP_H5P_CONTENT_BUCKET_DEV }}
-      h5p-content-region: ${{ secrets.TMP_H5P_CONTENT_REGION_DEV }}
-      h5p-content-secret-access-key: ${{ secrets.TMP_H5P_CONTENT_SECRET_ACCESS_KEY_DEV }}
-      h5p-path-prefix: ${{ secrets.TMP_H5P_PATH_PREFIX_DEV }}
-      hidden-tag-id: 'dont use anymore'
-      hostname: ${{ secrets.TMP_HOSTNAME_DEV}}
-      image-classifier-api: ${{ secrets.IMAGE_CLASSIFIER_API }}
-      jwt-secret: ${{ secrets.TMP_JWT_SECRET_DEV }}
-      login-item-tag-id: 'dont use anymore'
-      mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL_DEV }}
-      mailer-config-password: ${{ secrets.MAILER_CONFIG_PASSWORD_DEV }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET }}
+      auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET }}
+      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
+      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
+      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP }}
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP }}
+      etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY }}
+      h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID }}
+      h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET }}
+      h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
+      jwt-secret: ${{ secrets.JWT_SECRET }}
+      mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
+      mailer-config-password: ${{ secrets.MAILER_CONFIG_PASSWORD }}
       mailer-config-smtp-host: ${{ secrets.MAILER_CONFIG_SMTP_HOST }}
-      mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_DEV }}
-      pg-connection-uri: ${{ secrets.TMP_PG_CONNECTION_URI_DEV }}
-      pg-read-replicas-connection-uris: 'dont use yet'
-      player-client-host: ''
-      port: ${{ secrets.PORT }}
-      public-tag-id: 'dont use anymore'
-      published-tag-id: 'dont use anymore'
-      redis-host: ${{ secrets.TMP_REDIS_HOST_DEV }}
-      redis-port: ${{ secrets.TMP_REDIS_PORT }}
-      redis-username: ${{ secrets.TMP_REDIS_USERNAME }}
-      refresh-token-expiration-in-minutes: ${{ secrets.TMP_REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
-      refresh-token-jwt-secret: ${{ secrets.TMP_REFRESH_TOKEN_JWT_SECRET_DEV }}
-      s3-file-item-access-key-id: ${{ secrets.TMP_S3_FILE_ITEM_ACCESS_KEY_ID_DEV }}
-      s3-file-item-bucket: ${{ secrets.TMP_S3_FILE_ITEM_BUCKET_DEV }}
-      s3-file-item-region: ${{ secrets.TMP_S3_FILE_ITEM_REGION }}
-      s3-file-item-secret-access-key: ${{ secrets.TMP_S3_FILE_ITEM_SECRET_ACCESS_KEY_DEV }}
-      secure-session-secret-key: ${{ secrets.TMP_SECURE_SESSION_SECRET_KEY_DEV }}
-      sentry-dsn: ${{ secrets.TMP_SENTRY_DSN }}
-      stripe-secret-key: 'dont use yet'
-      stripe-default-plan-price-id: 'dont use yet'
-      thumbnails-path-prefix: ''
+      mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME }}
+      pg-connection-uri: ${{ secrets.PG_CONNECTION_URI }}
+      pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS }}
+      redis-host: ${{ secrets.REDIS_HOST }}
+      redis-port: ${{ secrets.REDIS_PORT }}
+      redis-password: ${{ secrets.REDIS_PASSWORD }}
+      redis-username: ${{ secrets.REDIS_USERNAME }}
+      refresh-token-jwt-secret: ${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
+      s3-file-item-access-key-id: ${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
+      s3-file-item-bucket: ${{ secrets.S3_FILE_ITEM_BUCKET }}
+      s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY }}
+      secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY }}
+      sentry-dsn: ${{ secrets.SENTRY_DSN }}
