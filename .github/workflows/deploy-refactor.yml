@@ -57,4 +57,4 @@ jobs:
       s3-file-item-bucket: ${{ secrets.S3_FILE_ITEM_BUCKET }}
       s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY }}
       secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY }}
-      sentry-dsn: 'novalue'
+      sentry-dsn: ${{ secrets.SENTRY_DSN }}
