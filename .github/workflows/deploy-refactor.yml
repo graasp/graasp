@@ -32,7 +32,11 @@ jobs:
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET }}
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET }}
+      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
+      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
       ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP }}
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP }}
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET }}
