@@ -211,20 +211,20 @@ export class ImportExportService {
         break;
       case ItemType.FOLDER: {
         // append description
-        const folderPath = path.join(archiveRootPath, item.name);
-        // eslint-disable-next-line no-case-declarations
-        const children = await repositories.itemRepository.getChildren(item);
-        await Promise.all(
-          children.map((child) =>
-            this._addItemToZip(actor, repositories, {
-              item: child,
-              archiveRootPath: folderPath,
-              archive,
-              fileStorage,
-              reply,
-            }),
-          ),
-        );
+        // const folderPath = path.join(archiveRootPath, item.name);
+        // // eslint-disable-next-line no-case-declarations
+        // const children = await repositories.itemRepository.getChildren(item);
+        // await Promise.all(
+        //   children.map((child) =>
+        //     this._addItemToZip(actor, repositories, {
+        //       item: child,
+        //       archiveRootPath: folderPath,
+        //       archive,
+        //       fileStorage,
+        //       reply,
+        //     }),
+        //   ),
+        // );
         break;
       }
     }

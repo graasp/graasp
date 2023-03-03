@@ -143,6 +143,9 @@ export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
 const S3_FILE_ITEM_HOST = process.env.S3_FILE_ITEM_HOST;
+if(S3_FILE_ITEM_PLUGIN && (!S3_FILE_ITEM_REGION || !S3_FILE_ITEM_BUCKET || !S3_FILE_ITEM_ACCESS_KEY_ID || !S3_FILE_ITEM_SECRET_ACCESS_KEY)) {
+  throw new Error('Missing one s3 config');
+}
 
 export const H5P_CONTENT_REGION = process.env.H5P_CONTENT_REGION;
 export const H5P_CONTENT_BUCKET = process.env.H5P_CONTENT_BUCKET;

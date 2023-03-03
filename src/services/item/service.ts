@@ -1,4 +1,6 @@
 import {
+  FolderItemType,
+  ItemType,
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
@@ -42,8 +44,12 @@ export class ItemService {
       await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
       inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
 
-      itemRepository.checkHierarchyDepth(parentItem);
+      if(parentItem.type !== ItemType.FOLDER) {
+        throw new Error('ITEM NOT FOLDER'); // TODO
+      }
 
+      itemRepository.checkHierarchyDepth(parentItem);
+      parentItem = parentItem as Item; // TODO: FolderItemType
       // check if there's too many children under the same parent
       const descendants = await itemRepository.getChildren(parentItem);
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {

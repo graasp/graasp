@@ -11,7 +11,7 @@ jobs:
   refactor-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    uses: graasp/graasp-deploy/.github/workflows/deploy-refactor.yml@main
+    uses: graasp/graasp-deploy/.github/workflows/deploy-refactor.yml@fix-refactor
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -30,6 +30,10 @@ jobs:
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET }}
       container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
       container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
+      db-host: ${{ secrets.DB_HOST }}
+      db-name: ${{ secrets.DB_NAME }}
+      db-password: ${{ secrets.DB_PASSWORD }}
+      db-username: ${{ secrets.DB_USERNAME }}
       ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP }}
       ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP }}
       ecs-service: ${{ secrets.ECS_SERVICE_GRAASP }}

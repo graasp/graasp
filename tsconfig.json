@@ -3,13 +3,17 @@
     "lib": ["es5", "es6", "esnext.asynciterable"],
     "target": "es6",
     "module": "commonjs",
-    // "strict": true,
+    // "strict": true, // TODO: enable
     "outDir": "dist",
-    "esModuleInterop": true,
+    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
+    "checkJs": false,
+    "allowJs": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */
+    // "strictNullChecks": true
   },
   "include": ["src/**/*"],
   "exclude": [

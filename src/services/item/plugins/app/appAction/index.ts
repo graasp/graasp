@@ -1,3 +1,4 @@
+import { preHandlerHookHandler } from 'fastify';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../../util/repositories';
@@ -15,14 +16,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {
-    fastify.addHook('preHandler', fastify.verifyBearerAuth);
+    fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
     // create app action
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppAction> }>(
       '/:itemId/app-action',
       { schema: create },
       async ({ authTokenSubject: requestDetails, params: { itemId }, body, log }) => {
-        const { memberId: id } = requestDetails;
+        const id = requestDetails && requestDetails.memberId;
 
         return db.transaction(async (manager) => {
           return appActionService.post(id, buildRepositories(manager), itemId, body);
@@ -35,7 +36,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-action',
       { schema: getForOne },
       async ({ authTokenSubject: requestDetails, params: { itemId }, query: filters, log }) => {
-        const { memberId: id } = requestDetails;
+        const id = requestDetails && requestDetails.memberId;
+
 
         return appActionService.getForItem(id, buildRepositories(), itemId, filters);
       },
@@ -46,7 +48,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/app-action',
       { schema: getForMany },
       async ({ authTokenSubject: requestDetails, query: filters, log }) => {
-        const { memberId: id } = requestDetails;
+        const id = requestDetails && requestDetails.memberId;
+
         return appActionService.getForManyItems(id, buildRepositories(), filters.itemId, filters);
       },
     );

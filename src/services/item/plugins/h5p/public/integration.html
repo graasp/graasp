@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="{{ & H5P_ASSETS_BASE_URL }}/main.bundle.js"></script>
+  </head>
+
+  <body>
+    <div id="h5p-root"></div>
+    <script type="text/javascript">
+      function initH5P() {
+        const targetOrigins = [
+          {{ #H5P_HOST_DOMAINS }}
+          '{{ & . }}',
+          {{ /H5P_HOST_DOMAINS }}
+        ];
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const contentId = decodeURIComponent(queryParams.get('content'));
+        const uuidRegex =
+          /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+        if (!contentId.match(uuidRegex)) {
+          return;
+        }
+
+        const options = {
+          h5pJsonPath: new URL(`{{ & H5P_CONTENT_BASE_URL }}/${contentId}/content`).href,
+          frameJs: '{{ & H5P_ASSETS_BASE_URL }}/frame.bundle.js',
+          frameCss: '{{ & H5P_ASSETS_BASE_URL }}/styles/h5p.css',
+        };
+        const el = document.getElementById('h5p-root');
+        new H5PStandalone.H5P(el, options);
+
+        const targets = targetOrigins.map((o) => new URL(o).origin);
+        const resizeObserver = new ResizeObserver((entries) => {
+          for (let entry of entries) {
+            for (let target of targets) {
+              const height = entry.contentRect.height;
+              window.parent.postMessage({ contentId, height }, target);
+            }
+          }
+        });
+        resizeObserver.observe(el);
+      }
+
+      initH5P();
+    </script>
+  </body>
+</html>

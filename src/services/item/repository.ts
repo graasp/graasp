@@ -88,7 +88,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return ids;
   },
 
-  async get(id: string, options = { withDeleted: false }) {
+  async get(id: string, options = { withDeleted: false }): Promise<Item> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     // TODO: improve
@@ -127,7 +127,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return query.getMany();
   },
 
-  async getChildren(parent: FolderItemType, ordered?: boolean) {
+  async getChildren(parent: Item, ordered?: boolean) {
     if (parent.type !== ItemType.FOLDER) {
       // TODO
       throw new Error('Item is not a folder');
