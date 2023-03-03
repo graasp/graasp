@@ -6,14 +6,14 @@ import { MAXIMUM_POOL_SIZE } from '../util/config';
 import { AppDataSource } from './datasource';
 
 export interface DatabasePluginOptions {
-  uri: string;
+  // uri: string;
   readReplicaUris?: Array<string>;
   logs: boolean;
 }
 
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
   fastify,
-  { uri, readReplicaUris, logs },
+  {  readReplicaUris, logs },
 ) => {
   const db = AppDataSource;
   if (!AppDataSource.isInitialized) {

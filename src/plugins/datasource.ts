@@ -28,7 +28,7 @@ import { ItemPublished } from '../services/published/entities/itemPublished';
 // TODO: USE DB OPTIONS
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
+  host: process.env.DB_HOST,
   port: 5432,
 
   // replication: {
@@ -55,12 +55,16 @@ export const AppDataSource = new DataSource({
   // }
 
   // cache: true, // TODO
-  username: 'docker',
-  password: 'docker',
-  database: 'typeorm',
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   logging: ['error'],
-  // dropSchema: true,
-  // synchronize: true,
+
+  // TODO: REMOVE
+  dropSchema: true,
+  synchronize: true,
+
+  
   entities: [
     Member,
     Item,
@@ -87,6 +91,6 @@ export const AppDataSource = new DataSource({
     ItemValidationGroup,
     ItemValidationReview,
   ],
-  migrations: ['migrations/*.js'],
-  migrationsTableName: 'custom_migration1_table',
+  // migrations: ['migrations/*.js'],
+  // migrationsTableName: 'custom_migration1_table',
 });
