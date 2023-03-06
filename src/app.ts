@@ -119,35 +119,35 @@ declare module 'fastify' {
 }
 
 export default async function (instance: FastifyInstance): Promise<void> {
-  // instance.decorate('hosts', CLIENT_HOSTS);
+  instance.decorate('hosts', CLIENT_HOSTS);
 
   // load some shared schema definitions
-  // instance.addSchema(shared);
+  instance.addSchema(shared);
 
   instance
     .register(fp(metaPlugin))
     .register(fp(databasePlugin), {
       logs: DATABASE_LOGS,
+    })
+    .register(fp(decoratorPlugin))
+    .register(mailerPlugin, {
+      host: MAILER_CONFIG_SMTP_HOST,
+      username: MAILER_CONFIG_USERNAME,
+      password: MAILER_CONFIG_PASSWORD,
+      fromEmail: MAILER_CONFIG_FROM_EMAIL,
     });
-    // .register(fp(decoratorPlugin))
-    // .register(mailerPlugin, {
-    //   host: MAILER_CONFIG_SMTP_HOST,
-    //   username: MAILER_CONFIG_USERNAME,
-    //   password: MAILER_CONFIG_PASSWORD,
-    //   fromEmail: MAILER_CONFIG_FROM_EMAIL,
-    // });
 
-  // // need to be defined before member and item for auth check
-  // await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
+  // need to be defined before member and item for auth check
+  await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
 
-  // // file
-  // await instance.register(fp(filePlugin), {
-  //   fileItemType: FILE_ITEM_TYPE,
-  //   fileConfigurations: {
-  //     s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-  //     local: FILE_ITEM_PLUGIN_OPTIONS,
-  //   },
-  // });
+  // file
+  await instance.register(fp(filePlugin), {
+    fileItemType: FILE_ITEM_TYPE,
+    fileConfigurations: {
+      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+      local: FILE_ITEM_PLUGIN_OPTIONS,
+    },
+  });
 
   // if (WEBSOCKETS_PLUGIN) {
   //   await instance.register(graaspWebSockets, {
@@ -165,15 +165,11 @@ export default async function (instance: FastifyInstance): Promise<void> {
 
   instance.register(async (instance) => {
     // core API modules
-    // await instance
-    //   .register(fp(MemberServiceApi))
-    //   .register(fp(ItemServiceApi))
-    //   .register(fp(ItemMembershipServiceApi));
+    await instance
+      .register(fp(MemberServiceApi))
+      .register(fp(ItemServiceApi))
+      .register(fp(ItemMembershipServiceApi));
 
-    //   // if (PUBLIC_PLUGIN) {
-    //   //   await instance.register(publicPlugin);
-    //   // }
-    // });
 
     // instance.register(
     //   async (instance) => {
