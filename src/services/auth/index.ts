@@ -81,6 +81,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   const { sessionCookieDomain: domain } = options;
   const { log, mailer } = fastify;
 
+  // add CORS support
+  if (fastify.corsPluginOptions) {
+    await fastify.register(fastifyCors, fastify.corsPluginOptions);
+  }
+
   // cookie based auth
   await fastify.register(fastifySecureSession, {
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),

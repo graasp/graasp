@@ -3,11 +3,11 @@ import { FastifyPluginAsync } from 'fastify';
 import { FileProperties, HttpMethod, IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../util/repositories';
+import { Item } from '../../entities/Item';
 import { download, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from './utils/errors';
-import { Item } from '../../entities/Item';
 
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
@@ -110,7 +110,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
           // postHook: create items from file properties
           // get metadata from upload task
-          const items:Item[] = [];
+          const items: Item[] = [];
           for (const { filename, filepath, mimetype, size } of fileProperties) {
             const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
             const item = {

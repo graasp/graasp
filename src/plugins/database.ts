@@ -13,7 +13,7 @@ export interface DatabasePluginOptions {
 
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
   fastify,
-  {  readReplicaUris, logs },
+  { readReplicaUris, logs },
 ) => {
   const db = AppDataSource;
   if (!AppDataSource.isInitialized) {

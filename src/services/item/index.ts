@@ -93,9 +93,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(
     async function (fastify) {
       // add CORS support
-      // if (fastify.corsPluginOptions) {
-      //   fastify.register(fastifyCors, fastify.corsPluginOptions);
-      // }
+      if (fastify.corsPluginOptions) {
+        fastify.register(fastifyCors, fastify.corsPluginOptions);
+      }
 
       // // plugins that don't require authentication
       fastify.register(graaspItemLogin);

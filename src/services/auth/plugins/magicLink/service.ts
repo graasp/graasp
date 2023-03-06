@@ -2,8 +2,7 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 import jwt, { Secret, TokenExpiredError, VerifyOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 
-import { FastifyInstance } from 'fastify';
-import { FastifyLoggerInstance } from 'fastify';
+import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import { DEFAULT_LANG } from '@graasp/sdk';
 
@@ -26,7 +25,7 @@ const promisifiedJwtVerify = promisify<
 >(jwt.verify);
 
 export class MagicLinkService {
-  log: FastifyLoggerInstance;
+  log: FastifyBaseLogger;
   fastify: FastifyInstance;
 
   constructor(fastify, log) {

@@ -170,7 +170,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(ItemServiceApi))
       .register(fp(ItemMembershipServiceApi));
 
-
     // instance.register(
     //   async (instance) => {
     //     // add CORS support

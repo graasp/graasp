@@ -1,10 +1,11 @@
-import { ItemType } from '@graasp/sdk';
 import fs from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import tmp, { DirectoryResult } from 'tmp-promise';
 
 import fastify, { FastifyInstance } from 'fastify';
+
+import { ItemType } from '@graasp/sdk';
 
 import { DEFAULT_H5P_ASSETS_ROUTE, DEFAULT_H5P_CONTENT_ROUTE } from '../src/constants';
 import publicPlugin from '../src/public-api';

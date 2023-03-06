@@ -44,7 +44,7 @@ export class ItemService {
       await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
       inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
 
-      if(parentItem.type !== ItemType.FOLDER) {
+      if (parentItem.type !== ItemType.FOLDER) {
         throw new Error('ITEM NOT FOLDER'); // TODO
       }
 

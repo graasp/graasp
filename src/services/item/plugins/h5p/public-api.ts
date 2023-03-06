@@ -1,10 +1,11 @@
-import { ItemType } from '@graasp/sdk';
 import { readFile } from 'fs/promises';
 import path from 'path';
 
 import fastifyStatic from '@fastify/static';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
+
+import { ItemType } from '@graasp/sdk';
 
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
@@ -17,7 +18,7 @@ import { validatePluginOptions } from './utils';
 
 const publicPlugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) => {
   validatePluginOptions(options);
-  const {  pathPrefix, routes, host } = options;
+  const { pathPrefix, routes, host } = options;
 
   const h5pService = new H5PService(null, pathPrefix);
   fastify.decorate('h5p', h5pService);

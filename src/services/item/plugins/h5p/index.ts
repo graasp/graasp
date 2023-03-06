@@ -1,4 +1,3 @@
-import { Actor, H5PExtra, Item, ItemType, PermissionLevel, Task } from '@graasp/sdk';
 import extract from 'extract-zip';
 import fs from 'fs';
 import { lstat, mkdir, readdir } from 'fs/promises';
@@ -9,9 +8,14 @@ import tmp from 'tmp-promise';
 import { v4 } from 'uuid';
 
 import fastifyMultipart from '@fastify/multipart';
-import { FastifyBaseLogger,  FastifyPluginAsync } from 'fastify';
+import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { Actor, H5PExtra, Item, ItemType, PermissionLevel, Task } from '@graasp/sdk';
+
+import { Repositories, buildRepositories } from '../../../../util/repositories';
+import { validatePermission } from '../../../authorization';
+import { Member } from '../../../member/entities/member';
 import {
   DEFAULT_MIME_TYPE,
   H5P_FILE_DOT_EXTENSION,
@@ -26,9 +30,6 @@ import { H5PService } from './service';
 import { H5PPluginOptions } from './types';
 import { buildContentPath, buildH5PPath, buildRootPath, validatePluginOptions } from './utils';
 import { H5PValidator } from './validation/h5p-validator';
-import { buildRepositories, Repositories } from '../../../../util/repositories';
-import { Member } from '../../../member/entities/member';
-import { validatePermission } from '../../../authorization';
 
 const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) => {
   // get services from server instance
@@ -36,7 +37,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
     items: { service: itemService },
     db,
     log,
-    files: { service: fileService }
+    files: { service: fileService },
   } = fastify;
 
   validatePluginOptions(options);
@@ -129,11 +130,13 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
       type: ItemType.H5P,
       extra: buildH5PExtra(contentId, filename),
     };
-    return db.transaction(
-      async (manager) => {
-        return itemService.create(member, buildRepositories(manager), { item: metadata, parentId, creator: member });
-      }
-    );
+    return db.transaction(async (manager) => {
+      return itemService.create(member, buildRepositories(manager), {
+        item: metadata,
+        parentId,
+        creator: member,
+      });
+    });
   }
 
   /*
@@ -159,8 +162,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
           query: { parentId },
         } = request;
 
-        return db.transaction(async manager => {
-
+        return db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
 
           // validate write permission in parent if it exists
@@ -204,7 +206,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
 
             const result = await h5pValidator.validatePackage(contentFolder);
             if (!result.isValid) {
-              throw new InvalidH5PFileError((result as {error:string}).error);
+              throw new InvalidH5PFileError((result as { error: string }).error);
             }
 
             // try-catch block for remote storage cleanup
@@ -243,51 +245,60 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
     /**
      * Delete H5P assets on item delete
      */
-    itemService.hooks.setPostHook('delete', async (actor: Member, repositories: Repositories, { item }: {item:Item}) => {
-      if (item.type !== ItemType.H5P) {
-        return;
-      }
-      await fileService.deleteFolder(actor, {
-        folderPath: buildRootPath(pathPrefix, item.extra.h5p.contentId),
-      });
-    });
+    itemService.hooks.setPostHook(
+      'delete',
+      async (actor: Member, repositories: Repositories, { item }: { item: Item }) => {
+        if (item.type !== ItemType.H5P) {
+          return;
+        }
+        await fileService.deleteFolder(actor, {
+          folderPath: buildRootPath(pathPrefix, item.extra.h5p.contentId),
+        });
+      },
+    );
 
     /**
      * Copy H5P assets on item copy
      */
-    itemService.hooks.setPostHook('delete', async (actor:Member, repositories: Repositories, { original: item, copy }:{ original: Item, copy:Item }) => {
-      // only execute this handler for H5P item types
-      if (item.type !== ItemType.H5P) {
-        return;
-      }
-      if (!item.name) {
-        throw new Error('Invalid state: missing previous H5P item name on copy');
-      }
-      if (!item.extra?.h5p) {
-        throw new Error('Invalid state: missing previous H5P item extra on copy');
-      }
+    itemService.hooks.setPostHook(
+      'delete',
+      async (
+        actor: Member,
+        repositories: Repositories,
+        { original: item, copy }: { original: Item; copy: Item },
+      ) => {
+        // only execute this handler for H5P item types
+        if (item.type !== ItemType.H5P) {
+          return;
+        }
+        if (!item.name) {
+          throw new Error('Invalid state: missing previous H5P item name on copy');
+        }
+        if (!item.extra?.h5p) {
+          throw new Error('Invalid state: missing previous H5P item extra on copy');
+        }
 
-      const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
-      const copySuffix = '-1';
-      const newName = `${baseName}${copySuffix}`;
+        const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
+        const copySuffix = '-1';
+        const newName = `${baseName}${copySuffix}`;
 
-      const newContentId = v4();
-      const remoteRootPath = buildRootPath(pathPrefix, newContentId);
+        const newContentId = v4();
+        const remoteRootPath = buildRootPath(pathPrefix, newContentId);
 
-      // copy .h5p file
-      await fileService.copy(actor, {
-        originalPath: path.join(pathPrefix, item.extra.h5p.h5pFilePath),
-        newFilePath: buildH5PPath(remoteRootPath, newName),
-      });
-      // copy content folder
-      await fileService.copyFolder(actor, {
-        originalFolderPath: path.join(pathPrefix, item.extra.h5p.contentFilePath),
-        newFolderPath: buildContentPath(remoteRootPath),
-      });
+        // copy .h5p file
+        await fileService.copy(actor, {
+          originalPath: path.join(pathPrefix, item.extra.h5p.h5pFilePath),
+          newFilePath: buildH5PPath(remoteRootPath, newName),
+        });
+        // copy content folder
+        await fileService.copyFolder(actor, {
+          originalFolderPath: path.join(pathPrefix, item.extra.h5p.contentFilePath),
+          newFolderPath: buildContentPath(remoteRootPath),
+        });
 
-      item.name = buildH5PPath('', newName);
-      item.extra.h5p = buildH5PExtra(newContentId, newName).h5p;
-    },
+        item.name = buildH5PPath('', newName);
+        item.extra.h5p = buildH5PExtra(newContentId, newName).h5p;
+      },
     );
   });
 };

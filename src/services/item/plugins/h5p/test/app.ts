@@ -1,13 +1,3 @@
-import {
-  Actor,
-  DatabaseTransactionHandler,
-  Item,
-  ItemMembershipTaskManager,
-  ItemTaskManager,
-  ItemType,
-  TaskRunner,
-  UnknownExtra,
-} from '@graasp/sdk';
 import cs from 'checksum';
 import FormData from 'form-data';
 import fs from 'fs';
@@ -18,6 +8,17 @@ import { createMock } from 'ts-auto-mock';
 import util from 'util';
 
 import fastify, { FastifyInstance, FastifyLoggerInstance } from 'fastify';
+
+import {
+  Actor,
+  DatabaseTransactionHandler,
+  Item,
+  ItemMembershipTaskManager,
+  ItemTaskManager,
+  ItemType,
+  TaskRunner,
+  UnknownExtra,
+} from '@graasp/sdk';
 
 import plugin from '../src/service-api';
 import {

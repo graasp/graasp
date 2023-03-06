@@ -20,6 +20,11 @@ import common, { deleteOne, getCurrent, getMany, getManyBy, getOne, updateOne } 
 const ROUTES_PREFIX = '/members';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
+  // add CORS support
+  if (fastify.corsPluginOptions) {
+    await fastify.register(fastifyCors, fastify.corsPluginOptions);
+  }
+
   // schemas
   fastify.addSchema(common);
 

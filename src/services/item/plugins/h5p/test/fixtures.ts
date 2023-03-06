@@ -1,3 +1,7 @@
+import path from 'path';
+
+import { FastifyLoggerInstance } from 'fastify';
+
 import {
   Actor,
   DatabaseTransactionHandler,
@@ -11,9 +15,6 @@ import {
   Task,
   TaskStatus,
 } from '@graasp/sdk';
-import path from 'path';
-
-import { FastifyLoggerInstance } from 'fastify';
 
 import { H5PPluginOptions } from '../src/types';
 

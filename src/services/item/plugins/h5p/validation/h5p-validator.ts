@@ -55,7 +55,7 @@ export class H5PValidator {
     // Check if h5p.json manifest file has expected JSON structure
     const manifestJSON = await readFile(manifestPath, { encoding: 'utf-8' });
     let manifest = secureJSON.safeParse(manifestJSON);
-    
+
     // TODO: enable back
     // if (manifest === null || !this.isValidManifest(manifest)) {
     //   const errors = this.isValidManifest.errors
@@ -67,7 +67,7 @@ export class H5PValidator {
     //   };
     // }
 
-    manifest = manifest as {preloadedDependencies:any, mainLibrary:any};
+    manifest = manifest as { preloadedDependencies: any; mainLibrary: any };
     // The 'preloadedDependencies' field must at least contain the main library of the package
     if (!manifest.preloadedDependencies.find((dep) => dep.machineName === manifest.mainLibrary)) {
       return {

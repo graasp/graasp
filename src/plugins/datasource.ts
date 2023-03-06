@@ -64,7 +64,6 @@ export const AppDataSource = new DataSource({
   dropSchema: true,
   synchronize: true,
 
-  
   entities: [
     Member,
     Item,

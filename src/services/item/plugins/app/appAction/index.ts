@@ -38,7 +38,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       async ({ authTokenSubject: requestDetails, params: { itemId }, query: filters, log }) => {
         const id = requestDetails && requestDetails.memberId;
 
-
         return appActionService.getForItem(id, buildRepositories(), itemId, filters);
       },
     );

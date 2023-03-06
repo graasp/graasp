@@ -58,7 +58,12 @@ class FileItemService {
       await validatePermission(repositories, PermissionLevel.Write, actor, item);
     }
 
-    const promises:Promise<{ filepath:string, filename:string, size:number, mimetype:string }>[] = [];
+    const promises: Promise<{
+      filepath: string;
+      filename: string;
+      size: number;
+      mimetype: string;
+    }>[] = [];
     for (const fileObject of files) {
       const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
       const file = fs.createReadStream(tmpPath);
