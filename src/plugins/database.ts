@@ -17,8 +17,11 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
 ) => {
   console.log('DB START');
   const db = AppDataSource;
+  console.log(db);
   if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize().catch(e => console.log(e));
+    await AppDataSource.initialize().then((e)=>{
+      console.log('then',e);
+    }).catch(e => {console.log(e);});
   }
   fastify.decorate('db', db);
 
