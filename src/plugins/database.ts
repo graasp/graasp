@@ -15,17 +15,11 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
   fastify,
   {  readReplicaUris, logs },
 ) => {
-  console.log('DB START');
   const db = AppDataSource;
-  console.log(db);
   if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize().then((e)=>{
-      console.log('then',e);
-    }).catch(e => {console.log(e);});
+    await AppDataSource.initialize();
   }
   fastify.decorate('db', db);
-
-  console.log('DB END');
 
   const options: Partial<ClientConfiguration> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
