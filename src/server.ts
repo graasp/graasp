@@ -1,12 +1,12 @@
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
+
 import registerAppPlugins from './app';
 import { initSentry } from './sentry';
 // import fastifyCompress from 'fastify-compress';
 import { CORS_ORIGIN_REGEX, DEV, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
 
 const start = async () => {
-
   const instance = fastify({
     logger: DEV ?? DISABLE_LOGS,
     ajv: {

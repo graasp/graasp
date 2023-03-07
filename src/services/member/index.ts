@@ -20,68 +20,68 @@ import common, { deleteOne, getCurrent, getMany, getManyBy, getOne, updateOne } 
 const ROUTES_PREFIX = '/members';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  // add CORS support
-  if (fastify.corsPluginOptions) {
-    await fastify.register(fastifyCors, fastify.corsPluginOptions);
-  }
-
   // schemas
   fastify.addSchema(common);
 
-  // routes
   fastify.register(
-    memberController,
-    // async function (fastify) {
-    // add CORS support
-    // if (fastify.corsPluginOptions) {
-    //   fastify.register(fastifyCors, fastify.corsPluginOptions);
-    // }
+    async function (fastify) {
+      // add CORS support
+      if (fastify.corsPluginOptions) {
+        await fastify.register(fastifyCors, fastify.corsPluginOptions);
+      }
 
-    // // auth plugin session validation
-    // fastify.addHook('preHandler', fastify.verifyAuthentication);
+      // routes
+      fastify.register(
+        memberController,
+        // async function (fastify) {
 
-    // fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
-    // fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
+        // // auth plugin session validation
+        // fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-    // fastify.register(thumbnailsPlugin, {
-    //   fileItemType: FILE_ITEM_TYPE,
-    //   fileConfigurations: {
-    //     s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-    //     local: FILE_ITEM_PLUGIN_OPTIONS,
-    //   },
-    //   pathPrefix: AVATARS_PATH_PREFIX,
+        // fastify.decorate('s3FileItemPluginOptions', S3_FILE_ITEM_PLUGIN_OPTIONS);
+        // fastify.decorate('fileItemPluginOptions', FILE_ITEM_PLUGIN_OPTIONS);
 
-    //   uploadPreHookTasks: async ({ parentId: id }, { member }) => {
-    //     if (member.id !== id) {
-    //       throw new CannotModifyOtherMembers(member.id);
-    //     }
-    //     return [taskManager.createGetTask(member, id)];
-    //   },
-    //   downloadPreHookTasks: async ({ itemId: id, filename }, { member }) => {
-    //     const task = taskManager.createGetTask(member, id);
-    //     task.getResult = () => ({
-    //       filepath: buildFilePathWithPrefix({
-    //         itemId: (task.result as Member).id,
-    //         pathPrefix: AVATARS_PATH_PREFIX,
-    //         filename,
-    //       }),
-    //       mimetype: THUMBNAIL_MIMETYPE,
-    //     });
+        // fastify.register(thumbnailsPlugin, {
+        //   fileItemType: FILE_ITEM_TYPE,
+        //   fileConfigurations: {
+        //     s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+        //     local: FILE_ITEM_PLUGIN_OPTIONS,
+        //   },
+        //   pathPrefix: AVATARS_PATH_PREFIX,
 
-    //     return [task];
-    //   },
+        //   uploadPreHookTasks: async ({ parentId: id }, { member }) => {
+        //     if (member.id !== id) {
+        //       throw new CannotModifyOtherMembers(member.id);
+        //     }
+        //     return [taskManager.createGetTask(member, id)];
+        //   },
+        //   downloadPreHookTasks: async ({ itemId: id, filename }, { member }) => {
+        //     const task = taskManager.createGetTask(member, id);
+        //     task.getResult = () => ({
+        //       filepath: buildFilePathWithPrefix({
+        //         itemId: (task.result as Member).id,
+        //         pathPrefix: AVATARS_PATH_PREFIX,
+        //         filename,
+        //       }),
+        //       mimetype: THUMBNAIL_MIMETYPE,
+        //     });
 
-    //   prefix: '/avatars',
-    // });
+        //     return [task];
+        //   },
 
-    // if (SUBSCRIPTION_PLUGIN) {
-    //   fastify.register(subscriptionsPlugin, {
-    //     stripeSecretKey: STRIPE_SECRET_KEY,
-    //     stripeDefaultProductId: STRIPE_DEFAULT_PLAN_PRICE_ID,
-    //     prefix: SUBSCRIPTION_ROUTE_PREFIX,
-    //   });
-    // }
-    // }
+        //   prefix: '/avatars',
+        // });
+
+        // if (SUBSCRIPTION_PLUGIN) {
+        //   fastify.register(subscriptionsPlugin, {
+        //     stripeSecretKey: STRIPE_SECRET_KEY,
+        //     stripeDefaultProductId: STRIPE_DEFAULT_PLAN_PRICE_ID,
+        //     prefix: SUBSCRIPTION_ROUTE_PREFIX,
+        //   });
+        // }
+        // }
+      );
+    },
     { prefix: ROUTES_PREFIX },
   );
 };

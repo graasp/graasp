@@ -81,11 +81,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   const { sessionCookieDomain: domain } = options;
   const { log, mailer } = fastify;
 
-  // add CORS support
-  if (fastify.corsPluginOptions) {
-    await fastify.register(fastifyCors, fastify.corsPluginOptions);
-  }
-
   // cookie based auth
   await fastify.register(fastifySecureSession, {
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
@@ -251,9 +246,15 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   fastify.decorate('generateLoginLinkAndEmailIt', generateLoginLinkAndEmailIt);
 
-  fastify.register(magicLinkController);
-  fastify.register(passwordController);
-  fastify.register(mobileController, { prefix: '/m' });
+  fastify.register(async function (fastify) {
+    // add CORS support
+    if (fastify.corsPluginOptions) {
+      await fastify.register(fastifyCors, fastify.corsPluginOptions);
+    }
+    fastify.register(magicLinkController);
+    fastify.register(passwordController);
+    fastify.register(mobileController, { prefix: '/m' });
+  });
 };
 
 export default plugin;

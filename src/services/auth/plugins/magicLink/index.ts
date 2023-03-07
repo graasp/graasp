@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG } from '@graasp/sdk';
@@ -23,11 +22,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // cookie based auth and api endpoints
   await fastify.register(async function (fastify) {
-    // add CORS support
-    if (fastify.corsPluginOptions) {
-      await fastify.register(fastifyCors, fastify.corsPluginOptions);
-    }
-
     // register
     fastify.post<{ Body: { name: string; email: string }; Querystring: { lang?: string } }>(
       '/register',
