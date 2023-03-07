@@ -153,12 +153,12 @@ const getManyBy = {
   },
 };
 
-// schema for updating a member
+// schema for updating own member
 const updateOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   body: { $ref: 'http://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
-    200: { $ref: 'http://graasp.org/members/#/definitions/member' },
+    200: { $ref: 'http://graasp.org/members/#/definitions/currentMember' },
   },
 };
 

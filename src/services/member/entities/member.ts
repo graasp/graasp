@@ -41,7 +41,6 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
 
   @Column({
     nullable: false,
-    select: false,
     default: MemberType.Individual,
   })
   type: MemberType;
@@ -51,7 +50,6 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
 
   @CreateDateColumn({
     update: false,
-    select: false,
     name: 'created_at',
     nullable: false,
   })
@@ -59,12 +57,12 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
 
   @UpdateDateColumn({
     update: false,
-    select: false,
     name: 'updated_at',
     nullable: false,
   })
   updatedAt: Date;
 
+  // TODO: USED?
   get isPseudonymized(): boolean {
     return isPseudonymizedMember(this.email);
   }

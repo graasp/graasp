@@ -114,7 +114,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   async getAncestors(item: Item, memberId?: string, options = { bypass: false }) {
     const query = this.createQueryBuilder('item')
       .where('item.path @> :path', { path: item.path })
-      .andWhere('id != :id', { id: item.id });
+      .andWhere('item.id != :id', { id: item.id });
 
     if (!options.bypass) {
       query
