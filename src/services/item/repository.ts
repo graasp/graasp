@@ -63,10 +63,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       creator,
     } = args;
     // TODO: extra
-    const defaultExtra = { [ItemType.FOLDER]: {} };
-    const parsedExtra = extra
-      ? JSON.parse(JSON.stringify(extra ?? defaultExtra))
-      : ({} as ItemExtra);
+    // folder's extra can be empty
+    const parsedExtra = extra ? JSON.parse(JSON.stringify(extra)) : ({} as ItemExtra);
     const id = v4();
 
     const item = this.create({
@@ -119,7 +117,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     if (!options.bypass) {
       query
         .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-        .andWhere('im.permission.member.id = :memberId', {
+        .andWhere('im.member_id = :memberId', {
           memberId,
         });
     }

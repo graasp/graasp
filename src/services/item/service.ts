@@ -131,7 +131,7 @@ export class ItemService {
   async patch(actor, repositories: Repositories, itemId: UUID, body) {
     const { itemRepository } = repositories;
 
-    // TODO: check memberships
+    // check memberships
     const item = await itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Write, actor, item);
     return itemRepository.patch(itemId, body);

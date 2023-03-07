@@ -9,7 +9,7 @@ import { InvalidApplicationOrigin } from './util/graasp-apps-error';
 export const AppRepository = AppDataSource.getRepository(App).extend({
   async getAll(publisherId?: string) {
     // TODO: undefined should get all
-    return this.findBy({ publisherId });
+    return this.findBy({ publisher: { id: publisherId } });
   },
 
   async isValidAppOrigin(appDetails: { key: string; origin: string }) {

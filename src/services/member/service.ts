@@ -56,7 +56,7 @@ export class MemberService {
     }
 
     const m = await memberRepository.get(id);
-    const extra = Object.assign({}, body?.extra, m.extra);
+    const extra = Object.assign({}, m.extra, body?.extra);
 
     return memberRepository.patch(id, { name: body.name, email: body.email, extra });
   }
