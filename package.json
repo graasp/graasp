@@ -51,6 +51,7 @@
     "@fastify/secure-session": "6.0.0",
     "@fastify/static": "6.9.0",
     "@fastify/view": "7.4.1",
+    "@graasp/sdk": "github:graasp/graasp-sdk#typeorm",
     "@graasp/translations": "github:graasp/graasp-translations#89-email",
     "@sentry/node": "7.39.0",
     "@sentry/profiling-node": "0.2.2",
@@ -121,7 +122,6 @@
   },
   "packageManager": "yarn@3.2.4",
   "resolutions": {
-    "@graasp/sdk": "github:graasp/graasp-sdk#typeorm",
     "fastify": "4.10.2"
   }
 }
