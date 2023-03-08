@@ -53,7 +53,7 @@ import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import graaspFileItem from './plugins/file';
-import graaspRecycledItem from './plugins/recycled';
+import graaspRecycledItemData from './plugins/recycled';
 import thumbnailsPlugin from './plugins/thumbnail';
 
 // import { registerItemWsHooks } from './ws/hooks';
@@ -155,7 +155,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemFlags);
 
-        fastify.register(graaspRecycledItem);
+        fastify.register(graaspRecycledItemData);
 
         // fastify.register(graaspValidationPlugin, {
         //   // this api needs to be defined from .env

@@ -18,7 +18,6 @@ const download = {
         default: false,
       },
     },
-    required: ['size'],
     additionalProperties: false,
   },
 };

@@ -14,7 +14,7 @@ import { Item } from '../../entities/Item';
 
 @Entity()
 @Unique('recycled-item', ['item'])
-export class RecycledItem extends BaseEntity {
+export class RecycledItemData extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

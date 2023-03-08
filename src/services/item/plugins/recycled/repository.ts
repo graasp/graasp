@@ -5,11 +5,11 @@ import { PermissionLevel } from '@graasp/sdk';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
-import { RecycledItem } from './RecycledItem';
+import { RecycledItemData } from './RecycledItemData';
 import { CannotRestoreNonDeletedItem } from './errors';
 
-export const RecycledItemRepository = AppDataSource.getRepository(RecycledItem).extend({
-  async getOwnRecycledItems(member: Member) {
+export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledItemData).extend({
+  async getOwnRecycledItemDatas(member: Member) {
     // get only with admin membership
     const recycledItemEntries = await this.createQueryBuilder('recycledItem')
       .withDeleted()

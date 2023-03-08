@@ -9,7 +9,7 @@ export class RecycledBinService {
     const { recycledItemRepository } = repositories;
     // TODO: check member is connected
 
-    return recycledItemRepository.getOwnRecycledItems(actor);
+    return recycledItemRepository.getOwnRecycledItemDatas(actor);
   }
 
   async recycle(actor: Member, repositories: Repositories, itemId: string) {

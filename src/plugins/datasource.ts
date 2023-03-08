@@ -10,7 +10,7 @@ import { AppData } from '../services/item/plugins/app/appData/appData';
 import { AppSetting } from '../services/item/plugins/app/appSetting/appSettings';
 import { App } from '../services/item/plugins/app/entities/app';
 import { Publisher } from '../services/item/plugins/app/entities/publisher';
-import { RecycledItem } from '../services/item/plugins/recycled/RecycledItem';
+import { RecycledItemData } from '../services/item/plugins/recycled/RecycledItemData';
 import { ItemValidation } from '../services/item/plugins/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../services/item/plugins/validation/entities/ItemValidationGroup';
 import { ItemValidationReview } from '../services/item/plugins/validation/entities/itemValidationReview';
@@ -79,7 +79,7 @@ export const AppDataSource = new DataSource({
     ChatMessage,
     ChatMention,
     ItemPublished,
-    RecycledItem,
+    RecycledItemData,
     ItemLike,
     ItemTag,
     Category,

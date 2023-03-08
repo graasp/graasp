@@ -10,12 +10,12 @@ import { AppData } from '../../services/item/plugins/app/appData/appData';
 import { AppSetting } from '../../services/item/plugins/app/appSetting/appSettings';
 import { App } from '../../services/item/plugins/app/entities/app';
 import { Publisher } from '../../services/item/plugins/app/entities/publisher';
-import { RecycledItem } from '../../services/item/plugins/recycled/RecycledItem';
 import { ItemValidation } from '../../services/item/plugins/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../../services/item/plugins/validation/entities/ItemValidationGroup';
 import { ItemValidationReview } from '../../services/item/plugins/validation/entities/itemValidationReview';
 import { Category } from '../../services/itemCategory/entities/Category';
 import { ItemCategory } from '../../services/itemCategory/entities/ItemCategory';
+import { RecycledItemData } from '../../services/item/plugins/recycled/RecycledItemData';
 import { ItemFlag } from '../../services/itemFlag/itemFlag';
 import { ItemLike } from '../../services/itemLike/itemLike';
 import { ItemLogin } from '../../services/itemLogin/entities/itemLogin';
@@ -52,7 +52,7 @@ export const AppDataSource = new DataSource({
     AppAction,
     AppSetting,
     ChatMessage,
-    RecycledItem,
+    RecycledItemData,
     ChatMention,
     ItemLike,
     ItemTag,

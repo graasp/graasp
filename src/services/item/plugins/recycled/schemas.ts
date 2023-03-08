@@ -38,7 +38,7 @@ export default {
 };
 
 // schema for getting recycled items
-const getRecycledItems = {
+const getRecycledItemDatas = {
   response: {
     200: {
       type: 'array',
@@ -122,7 +122,7 @@ const deleteMany = (maxItems: number) => ({
 });
 
 export {
-  getRecycledItems,
+  getRecycledItemDatas,
   recycleOne,
   recycleMany,
   restoreOne,

@@ -12,7 +12,7 @@ import {
 
 import { buildRepositories } from '../../../../util/repositories';
 import schemas, {
-  getRecycledItems,
+  getRecycledItemDatas,
   recycleMany,
   recycleOne,
   restoreMany,
@@ -20,7 +20,7 @@ import schemas, {
 } from './schemas';
 import { RecycledBinService } from './service';
 
-export interface RecycledItemOptions {
+export interface RecycledItemDataOptions {
   /** Max number of items to recycle in a request.
    * A number above this value will trigger an immediate bad request (400). Defaults to `10`. */
   maxItemsInRequest: number;
@@ -33,7 +33,7 @@ export interface RecycledItemOptions {
   recycleItemPostHook?: PostHookHandlerType<string>;
 }
 
-const plugin: FastifyPluginAsync<RecycledItemOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, options) => {
   const { db } = fastify;
   const {
     maxItemsInRequest = MAX_TARGETS_FOR_READ_REQUEST,
@@ -53,7 +53,7 @@ const plugin: FastifyPluginAsync<RecycledItemOptions> = async (fastify, options)
   // get own recycled items
   fastify.get<{ Params: IdParam }>(
     '/recycled',
-    { schema: getRecycledItems },
+    { schema: getRecycledItemDatas },
     async ({ member, log }) => {
       return recycleBinService.getAll(member, buildRepositories());
     },

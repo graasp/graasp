@@ -9,7 +9,7 @@ import { AppDataRepository } from '../services/item/plugins/app/appData/reposito
 import { AppSettingRepository } from '../services/item/plugins/app/appSetting/repository';
 import { PublisherRepository } from '../services/item/plugins/app/publisherRepository';
 import { AppRepository } from '../services/item/plugins/app/repository';
-import { RecycledItemRepository } from '../services/item/plugins/recycled/repository';
+import { RecycledItemDataRepository } from '../services/item/plugins/recycled/repository';
 import { ItemValidationGroupRepository } from '../services/item/plugins/validation/repositories/ItemValidationGroup';
 import { ItemValidationRepository } from '../services/item/plugins/validation/repositories/itemValidation';
 import { ItemValidationReviewRepository } from '../services/item/plugins/validation/repositories/itemValidationReview';
@@ -46,7 +46,7 @@ export type Repositories = {
   mentionRepository: typeof ChatMentionRepository;
   itemPublishedRepository: typeof ItemPublishedRepository;
   publisherRepository: typeof PublisherRepository;
-  recycledItemRepository: typeof RecycledItemRepository;
+  recycledItemRepository: typeof RecycledItemDataRepository;
   itemValidationRepository: typeof ItemValidationRepository;
   itemValidationReviewRepository: typeof ItemValidationReviewRepository;
   itemValidationGroupRepository: typeof ItemValidationGroupRepository;
@@ -78,8 +78,8 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
     : AppSettingRepository,
   publisherRepository: manager ? manager.withRepository(PublisherRepository) : PublisherRepository,
   recycledItemRepository: manager
-    ? manager.withRepository(RecycledItemRepository)
-    : RecycledItemRepository,
+    ? manager.withRepository(RecycledItemDataRepository)
+    : RecycledItemDataRepository,
   itemLikeRepository: manager ? manager.withRepository(ItemLikeRepository) : ItemLikeRepository,
   itemFlagRepository: manager ? manager.withRepository(ItemFlagRepository) : ItemFlagRepository,
   invitationRepository: manager

@@ -3,7 +3,7 @@ import { In } from 'typeorm';
 import { AppDataSource } from '../../plugins/datasource';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { InvitationNotFound } from './errors';
+import { InvitationNotFound, DuplicateInvitationError } from './errors';
 import { Invitation } from './invitation';
 
 /**
@@ -19,6 +19,12 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
     creator: Member,
     itemId: string,
   ): Promise<Invitation> {
+
+    const existingEntry=await this.findOneBy({ email: invitation.email});
+    if(existingEntry) {
+      throw new DuplicateInvitationError({invitation});
+    }
+
     return this.insert({ ...invitation, creator, item: { itemId } });
   },
 
@@ -27,8 +33,11 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * @param invitation Invitation to create
    */
   async postMany(invitations: Partial<Invitation>[], itemId: string, creator: Member) {
+    const existingEntries = await this.find({where:{ email: In(invitations.map(i => i.email))}, relations:{item:true}});
+
     const insertResult = await this.insert(
-      invitations.map((invitation) => ({ ...invitation, item: { id: itemId }, creator })),
+      invitations.filter(i => !existingEntries.find(({email, item})=> email === i.email && item.id === itemId))
+      .map((invitation) => ({ ...invitation, item: { id: itemId }, creator })),
     );
     // TODO: optimize
     return this.getMany(insertResult.identifiers.map(({ id }) => id));

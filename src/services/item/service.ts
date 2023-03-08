@@ -125,7 +125,7 @@ export class ItemService {
     const item = await this.get(actor, repositories, itemId);
 
     // TODO optimize?
-    return await itemRepository.getAncestors(item);
+    return itemRepository.getAncestors(item, actor.id);
   }
 
   async patch(actor, repositories: Repositories, itemId: UUID, body) {
