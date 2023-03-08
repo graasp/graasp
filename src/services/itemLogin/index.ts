@@ -5,7 +5,7 @@ import { Actor, ItemLoginSchemaType } from '@graasp/sdk';
 import { buildRepositories } from '../../util/repositories';
 import { Member } from '../member/entities/member';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
-import { credentials, getLoginSchema, login, updateLoginSchema } from './schemas/schemas';
+import { credentials, getLoginSchema, getLoginSchemaType, login, updateLoginSchema } from './schemas/schemas';
 import { ItemLoginService } from './service';
 
 export interface GraaspItemLoginOptions {
@@ -19,13 +19,28 @@ const plugin: FastifyPluginAsync<GraaspItemLoginOptions> = async (fastify, optio
 
   const iLService = new ItemLoginService(fastify);
 
-  // get login schema for item
+  // get login schema type for item
+  // used to trigger item login for student
   // public endpoint
   fastify.get<{ Params: { id: string } }>(
-    '/:id/login-schema',
-    { schema: getLoginSchema },
+    '/:id/login-schema-type',
+    { schema: getLoginSchemaType },
     async ({ log, params: { id: itemId } }) => {
-      return iLService.getSchemaType(null, buildRepositories(), itemId);
+      
+      const value = await iLService.getSchemaType(null, buildRepositories(), itemId) ?? null;
+      return value; },
+  );
+
+  // get login schema for item
+  fastify.get<{ Params: { id: string } }>(
+    '/:id/login-schema',
+    { 
+      schema: getLoginSchema ,
+      preHandler: fastify.verifyAuthentication,
+    },
+    async ({ member, params: { id: itemId } }) => {
+      const value = await iLService.get(member, buildRepositories(), itemId) ?? {};
+    return value;
     },
   );
 

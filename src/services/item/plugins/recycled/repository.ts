@@ -13,8 +13,9 @@ export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledIt
     // get only with admin membership
     const recycledItemEntries = await this.createQueryBuilder('recycledItem')
       .withDeleted()
-      .leftJoinAndSelect('recycledItem.item', 'item')
       .leftJoinAndSelect('recycledItem.creator', 'member')
+      .leftJoinAndSelect('recycledItem.item', 'item')
+      .leftJoinAndSelect('item.creator', 'itemMember')
       .innerJoin(
         'item_membership',
         'im',

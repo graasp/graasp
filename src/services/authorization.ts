@@ -42,7 +42,6 @@ export const validatePermission = async (
     highest &&
     (ownItemAbility(member).can(permission, item) ||
       permissionMapping[highest].includes(permission));
-
   let tags;
   if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
     tags = await itemTagRepository.hasMany(item, [ItemTagType.PUBLIC, ItemTagType.HIDDEN]);

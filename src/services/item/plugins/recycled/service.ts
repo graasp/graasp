@@ -20,7 +20,9 @@ export class RecycledBinService {
 
     await validatePermission(repositories, PermissionLevel.Admin, actor, item);
 
-    await itemRepository.softRemove(item);
+    // remove all descendants
+    const descendants = await itemRepository.getDescendants(item);
+    await itemRepository.softRemove(descendants);
 
     return recycledItemRepository.recycleOne(item, actor);
   }
@@ -35,7 +37,10 @@ export class RecycledBinService {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-    await itemRepository.softRemove(Object.values(items));
+// get descendants of all items
+const descendants = await itemRepository.getManyDescendants(Object.values(items));
+   
+    await itemRepository.softRemove([...descendants, ...Object.values(items)]);
 
     return recycledItemRepository.recycleMany(Object.values(items), actor);
   }

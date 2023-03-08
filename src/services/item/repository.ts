@@ -159,6 +159,19 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
+  async getManyDescendants(items: Item[]) {
+    // TODO: LEVEL depth
+    const query = this.createQueryBuilder('item')
+    .where('id != :id', { id: In(items.map(({id})=>id)) });
+    
+    items.forEach(item => {
+      const key = `path-${item.id}`;
+      query.andWhere(`item.path <@ :${key}`, { [key]: item.path });
+    });
+    
+    return query.getMany();
+  },
+
   async getMany(ids: string[], args: { throwOnError?: boolean; withDeleted?: boolean } = {}) {
     const { throwOnError = false } = args;
     const items = await this.find({

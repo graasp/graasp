@@ -3,6 +3,7 @@ import S from 'fluent-json-schema';
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
 import { error, idParam, uuid } from '../../../schemas/fluent-schema';
+import { item } from '../../item/fluent-schema';
 
 export const credentials = S.object()
   .additionalProperties(false)
@@ -16,7 +17,7 @@ const loginSchemaType = S.string().enum(Object.values(ItemLoginSchemaType));
 export const loginSchema = S.object()
   .additionalProperties(false)
   .prop('type', loginSchemaType)
-  .required(['type']);
+  .prop('item', item);
 
 export const login = {
   params: idParam,
@@ -30,10 +31,19 @@ export const login = {
   },
 };
 
+export const getLoginSchemaType = {
+  params: idParam,
+  response: {
+    '2xx': S.oneOf([loginSchemaType, S.null()]),
+    '4xx': error,
+    '5xx': error,
+  },
+};
+
 export const getLoginSchema = {
   params: idParam,
   response: {
-    '2xx': loginSchemaType,
+    '2xx': loginSchema,
     '4xx': error,
     '5xx': error,
   },

@@ -235,8 +235,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     const html = `
     ${mailer.buildText(translated(MAIL.GREETINGS))}
     ${mailer.buildText(translated(MAIL.SIGN_IN_TEXT))}
-    ${mailer.buildButton(link, translated(MAIL.SIGN_UP_BUTTON_TEXT))}
-    ${mailer.buildText(translated(MAIL.SIGN_UP_NOT_REQUESTED))}`;
+    ${mailer.buildButton(link, translated(MAIL.SIGN_IN_BUTTON_TEXT))}
+    ${mailer.buildText(translated(MAIL.SIGN_IN_NOT_REQUESTED))}`;
 
     // don't wait for mailer's response; log error and link if it fails.
     fastify.mailer

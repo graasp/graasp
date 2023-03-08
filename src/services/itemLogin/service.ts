@@ -21,6 +21,13 @@ export class ItemLoginService {
     this.fastify = fastify;
   }
 
+  async get(actor: Member, repositories: Repositories, itemId: string) {
+    const item = await repositories.itemRepository.get(itemId);
+    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path);
+    return itemLoginSchema;
+  }
+
   async getSchemaType(actor: Member, repositories: Repositories, itemId: string) {
     const item = await repositories.itemRepository.get(itemId);
     // do not need permission to get item login schema

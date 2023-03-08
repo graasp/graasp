@@ -239,6 +239,7 @@ const copyMany = {
 };
 
 export {
+  item,
   getOne,
   getChildren,
   getDescendants,
