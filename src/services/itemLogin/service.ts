@@ -24,7 +24,7 @@ export class ItemLoginService {
   async get(actor: Member, repositories: Repositories, itemId: string) {
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, item);
-    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path);
+    const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path, {shouldExist:true});
     return itemLoginSchema;
   }
 

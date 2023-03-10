@@ -55,6 +55,7 @@ import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import graaspFileItem from './plugins/file';
 import graaspRecycledItemData from './plugins/recycled';
 import thumbnailsPlugin from './plugins/thumbnail';
+import graaspValidationPlugin from './plugins/validation';
 
 // import { registerItemWsHooks } from './ws/hooks';
 
@@ -102,7 +103,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspCategoryPlugin);
 
-      await fastify.register(graaspItemPublish, {
+      fastify.register(graaspItemPublish, {
         // publishedTagId: PUBLISHED_TAG_ID,
         // publicTagId: PUBLIC_TAG_ID,
         // graaspActor: GRAASP_ACTOR,
@@ -157,15 +158,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspRecycledItemData);
 
-        // fastify.register(graaspValidationPlugin, {
-        //   // this api needs to be defined from .env
-        //   classifierApi: IMAGE_CLASSIFIER_API,
-        //   fileItemType: FILE_ITEM_TYPE,
-        //   fileConfigurations: {
-        //     s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-        //     local: FILE_ITEM_PLUGIN_OPTIONS,
-        //   },
-        // });
+        fastify.register(graaspValidationPlugin, {
+          // this api needs to be defined from .env
+          imageClassifierApi: IMAGE_CLASSIFIER_API,
+        });
 
         fastify.register(graaspItemLikes);
 

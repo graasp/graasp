@@ -31,8 +31,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { itemId: string } }>(
     '/collections/:itemId/informations',
     {
-      preHandler: fastify.verifyAuthentication,
-      schema: publishItem,
+      preHandler: fastify.fetchMemberInSession,
+      // schema,
     },
     async ({ params, member }) => {
       return pIS.get(member, buildRepositories(), params.itemId);

@@ -112,7 +112,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // update items
+  // update item
   fastify.patch<{ Params: IdParam; Body: Partial<Item> }>(
     '/:id',
     { schema: items.extendExtrasUpdateSchema() },
@@ -139,22 +139,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  // TODO: REMOVE - deleting an item could delete a big tree and take time -> better to use many
   // delete item
-  fastify.delete<{ Params: IdParam }>(
-    '/:id',
-    { schema: deleteOne },
-    async ({ member, params: { id }, log }, reply) => {
-      db.transaction((manager) => {
-        // TODO: implement queue
-        return itemService.delete(member, buildRepositories(manager), id);
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
-      });
-      reply.status(StatusCodes.ACCEPTED);
-      return id;
-    },
-  );
+  // fastify.delete<{ Params: IdParam }>(
+  //   '/:id',
+  //   { schema: deleteOne },
+  //   async ({ member, params: { id }, log }, reply) => {
+  //     db.transaction((manager) => {
+  //       // TODO: implement queue
+  //       return itemService.delete(member, buildRepositories(manager), id);
+  //     }).catch((e) => {
+  //       // TODO: return feedback in queue
+  //       console.error(e);
+  //     });
+  //     reply.status(StatusCodes.ACCEPTED);
+  //     return id;
+  //   },
+  // );
 
   fastify.delete<{ Querystring: IdsParams }>(
     '/',
@@ -174,22 +175,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  // TODO: REMOVE - moving an item could delete a big tree and take time -> better to use many
   // move item
-  fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
-    '/:id/move',
-    { schema: moveOne },
-    async ({ member, params: { id }, body: { parentId }, log }, reply) => {
-      // TODO: implement queue
-      db.transaction(async (manager) => {
-        return itemService.move(member, buildRepositories(manager), id, parentId);
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
-      });
-      reply.status(StatusCodes.ACCEPTED);
-      return id;
-    },
-  );
+  // fastify.post<{ Params: IdParam; Body: ParentIdParam }>(
+  //   '/:id/move',
+  //   { schema: moveOne },
+  //   async ({ member, params: { id }, body: { parentId }, log }, reply) => {
+  //     // TODO: implement queue
+  //     db.transaction(async (manager) => {
+  //       return itemService.move(member, buildRepositories(manager), id, parentId);
+  //     }).catch((e) => {
+  //       // TODO: return feedback in queue
+  //       console.error(e);
+  //     });
+  //     reply.status(StatusCodes.ACCEPTED);
+  //     return id;
+  //   },
+  // );
 
   fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
     '/move',
@@ -207,24 +209,25 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  // TODO: REMOVE - copying an item could copy a big tree and take time -> better to use many
   // copy item
-  fastify.post<{ Params: IdParam; Body: { parentId: string } }>(
-    '/:id/copy',
-    { schema: copyOne },
-    async ({ member, params: { id }, body: { parentId }, log }, reply) => {
-      // TODO: implement queue
-      db.transaction(async (manager) => {
-        return itemService.copy(member, buildRepositories(manager), id, {
-          parentId,
-        });
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
-      });
-      reply.status(StatusCodes.ACCEPTED);
-      return id;
-    },
-  );
+  // fastify.post<{ Params: IdParam; Body: { parentId: string } }>(
+  //   '/:id/copy',
+  //   { schema: copyOne },
+  //   async ({ member, params: { id }, body: { parentId }, log }, reply) => {
+  //     // TODO: implement queue
+  //     db.transaction(async (manager) => {
+  //       return itemService.copy(member, buildRepositories(manager), id, {
+  //         parentId,
+  //       });
+  //     }).catch((e) => {
+  //       // TODO: return feedback in queue
+  //       console.error(e);
+  //     });
+  //     reply.status(StatusCodes.ACCEPTED);
+  //     return id;
+  //   },
+  // );
 
   fastify.post<{
     Querystring: IdsParams;

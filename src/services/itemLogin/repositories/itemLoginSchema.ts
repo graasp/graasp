@@ -21,11 +21,10 @@ export const ItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSc
       .where('item.path <@ :path', { path: itemPath })
       .getOne();
 
-    if (shouldExist) {
-      if (!result) {
-        throw new Error('no item login');
+    if (shouldExist && !result) {
+        throw new ItemLoginSchemaNotFound({itemPath});
       }
-    }
+    
 
     return result;
   },
@@ -46,13 +45,19 @@ export const ItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSc
   },
 
   async put(item: Item, type: ItemLoginSchemaType = ItemLoginSchemaType.USERNAME) {
-    return this.save({ item, type });
+    const entry = this.create({item, type});
+    await this.upsert(entry,
+      {
+          conflictPaths: ['item'],
+          skipUpdateIfNoValuesChanged: true, // supported by postgres, skips update if it would not change row values
+      },);
+      return entry;
   },
 
   async validateItemLogin(itemId: string, passwordProvided: string): Promise<void> {
     // check item for the necessary tag
     const itemDetails = await this.get(itemId);
-    if (!itemDetails) throw new MissingItemLoginTag();
+    if (!itemDetails) {throw new MissingItemLoginTag();}
 
     // TODO: remove? type cannot be empty
     // fail (unexpected) if there's no item-login specific "extras"
