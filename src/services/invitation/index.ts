@@ -38,15 +38,22 @@ const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastif
 
   // get an invitation by id
   // do not require authentication
-  fastify.get<{ Params: IdParam }>('/invitations/:id', { schema: getById }, async ({ params }) => {
-    const { id } = params;
-    return iS.get(null, buildRepositories(), id);
-  });
+  fastify.get<{ Params: IdParam }>(
+    '/invitations/:id',
+    { schema: getById, preHandler: fastify.fetchMemberInSession },
+    async ({ member, params }) => {
+      const { id } = params;
+      const aa = await iS.get(member, buildRepositories(), id);
+      console.log(aa);
+      return aa;
+    },
+  );
 
   fastify.post<{ Params: IdParam; Body: { invitations: Partial<Invitation>[] } }>(
     '/:id/invite',
     {
       schema: invite,
+      preHandler: fastify.verifyAuthentication,
     },
     async ({ member, body, params, log }) => {
       return db.transaction(async (manager) => {
@@ -58,7 +65,7 @@ const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastif
   // get all invitations for an item
   fastify.get<{ Params: IdParam }>(
     '/:id/invitations',
-    { schema: getForItem },
+    { schema: getForItem, preHandler: fastify.verifyAuthentication },
     async ({ member, params }) => {
       const { id: itemId } = params;
       return iS.getForItem(member, buildRepositories(), itemId);
@@ -68,7 +75,7 @@ const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastif
   // update invitation
   fastify.patch<{ Params: { id: string; invitationId: string }; Body: Partial<Invitation> }>(
     '/:id/invitations/:invitationId',
-    { schema: updateOne },
+    { schema: updateOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params, body }) => {
       const { id: itemId, invitationId } = params;
 
@@ -81,7 +88,7 @@ const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastif
   // delete invitation
   fastify.delete<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId',
-    { schema: deleteOne },
+    { schema: deleteOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params }) => {
       const { id: itemId, invitationId } = params;
 
@@ -94,7 +101,7 @@ const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastif
   // resend invitation mail
   fastify.post<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId/send',
-    { schema: sendOne },
+    { schema: sendOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params, log }, reply) => {
       const { id: itemId, invitationId } = params;
 

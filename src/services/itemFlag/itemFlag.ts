@@ -1,4 +1,3 @@
-import { FlagType } from '@graasp/sdk';
 import {
   BaseEntity,
   Column,
@@ -11,9 +10,10 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { FlagType } from '@graasp/sdk';
+
 import { Item } from '../item/entities/Item';
 import { Member } from '../member/entities/member';
-
 
 @Entity()
 @Unique('id', ['id'])

@@ -95,7 +95,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
 
     fastify.get<{ Params: { itemId: string } }>(
       '/:itemId/chat',
-      { schema: getChat },
+      { schema: getChat, preHandler: fastify.fetchMemberInSession },
       async ({ member, params: { itemId }, log }) => {
         return chatService.getForItem(member, buildRepositories(), itemId);
       },
@@ -106,7 +106,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
       Body: { body: string; mentions: string[] };
     }>(
       '/:itemId/chat',
-      { schema: publishMessage },
+      { schema: publishMessage, preHandler: fastify.verifyAuthentication },
       async ({ member, params: { itemId }, body, log }) => {
         return db.transaction(async (manager) => {
           return chatService.postOne(member, buildRepositories(manager), itemId, body);
@@ -120,7 +120,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
       Body: { body: string };
     }>(
       '/:itemId/chat/:messageId',
-      { schema: patchMessage },
+      { schema: patchMessage, preHandler: fastify.verifyAuthentication },
       async ({ member, params: { itemId, messageId }, body, log }) => {
         return db.transaction(async (manager) => {
           return chatService.patchOne(member, buildRepositories(manager), itemId, messageId, body);
@@ -131,7 +131,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     // delete message
     fastify.delete<{ Params: { itemId: string; messageId: string } }>(
       '/:itemId/chat/:messageId',
-      { schema: deleteMessage },
+      { schema: deleteMessage, preHandler: fastify.verifyAuthentication },
       async ({ member, params: { itemId, messageId }, log }) => {
         return db.transaction(async (manager) => {
           return chatService.deleteOne(member, buildRepositories(manager), itemId, messageId);
@@ -142,7 +142,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     // clear chat
     fastify.delete<{ Params: { itemId: string } }>(
       '/:itemId/chat',
-      { schema: clearChat },
+      { schema: clearChat, preHandler: fastify.verifyAuthentication },
       async ({ member, params: { itemId }, log }) => {
         return db.transaction(async (manager) => {
           return chatService.clear(member, buildRepositories(manager), itemId);

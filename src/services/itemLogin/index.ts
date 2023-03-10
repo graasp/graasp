@@ -3,9 +3,14 @@ import { FastifyPluginAsync } from 'fastify';
 import { Actor, ItemLoginSchemaType } from '@graasp/sdk';
 
 import { buildRepositories } from '../../util/repositories';
-import { Member } from '../member/entities/member';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
-import { credentials, getLoginSchema, getLoginSchemaType, login, updateLoginSchema } from './schemas/schemas';
+import {
+  credentials,
+  getLoginSchema,
+  getLoginSchemaType,
+  login,
+  updateLoginSchema,
+} from './schemas/schemas';
 import { ItemLoginService } from './service';
 
 export interface GraaspItemLoginOptions {
@@ -24,23 +29,23 @@ const plugin: FastifyPluginAsync<GraaspItemLoginOptions> = async (fastify, optio
   // public endpoint
   fastify.get<{ Params: { id: string } }>(
     '/:id/login-schema-type',
-    { schema: getLoginSchemaType },
-    async ({ log, params: { id: itemId } }) => {
-      
-      const value = await iLService.getSchemaType(null, buildRepositories(), itemId) ?? null;
-      return value; },
+    { schema: getLoginSchemaType, preHandler: fastify.fetchMemberInSession },
+    async ({ member, log, params: { id: itemId } }) => {
+      const value = (await iLService.getSchemaType(member, buildRepositories(), itemId)) ?? null;
+      return value;
+    },
   );
 
   // get login schema for item
   fastify.get<{ Params: { id: string } }>(
     '/:id/login-schema',
-    { 
-      schema: getLoginSchema ,
+    {
+      schema: getLoginSchema,
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { id: itemId } }) => {
-      const value = await iLService.get(member, buildRepositories(), itemId) ?? {};
-    return value;
+      const value = (await iLService.get(member, buildRepositories(), itemId)) ?? {};
+      return value;
     },
   );
 
@@ -55,9 +60,7 @@ const plugin: FastifyPluginAsync<GraaspItemLoginOptions> = async (fastify, optio
     {
       schema: login,
       // set member in request if exists without throwing
-      preHandler: async (request) => {
-        await fastify.fetchMemberInSession(request);
-      },
+      preHandler: fastify.fetchMemberInSession,
     },
     async ({ body, query, member, session, params }) => {
       return db.transaction(async (manager) => {

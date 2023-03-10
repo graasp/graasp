@@ -125,7 +125,23 @@ export class ItemService {
     const item = await this.get(actor, repositories, itemId);
 
     // TODO optimize?
-    return itemRepository.getAncestors(item, actor.id);
+    const parents = await itemRepository.getAncestors(item);
+
+    let lastIdx = parents.length;
+    // filter out if does not have membership
+    for (let i = 0; i < parents.length; i++) {
+      try {
+        await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          actor,
+          parents[parents.length - i],
+        );
+        lastIdx = i;
+      } catch (e) {
+        return parents.slice(parents.length - lastIdx, parents.length);
+      }
+    }
   }
 
   async patch(actor, repositories: Repositories, itemId: UUID, body) {

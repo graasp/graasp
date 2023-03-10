@@ -48,7 +48,7 @@ export class InvitationService {
   }
 
   async get(actor: Member, repositories: Repositories, invitationId: string) {
-    return repositories.invitationRepository.get(invitationId);
+    return repositories.invitationRepository.get(invitationId, actor);
   }
 
   async getForItem(actor: Member, repositories: Repositories, itemId: string) {

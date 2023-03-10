@@ -13,7 +13,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemValidation } from './ItemValidation';
 
@@ -33,7 +32,6 @@ export class ItemValidationGroup extends BaseEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: string;
 
-  @OneToMany(() => ItemValidation, (iv) => iv.id)
-  // @JoinColumn({ name: 'item_validation_ids' })
+  @OneToMany(() => ItemValidation, (iv) => iv.itemValidationGroup)
   itemValidations: ItemValidation[];
 }

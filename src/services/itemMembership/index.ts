@@ -34,9 +34,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      // auth plugin session validation
-      fastify.addHook('preHandler', fastify.verifyAuthentication);
-
       // if (WEBSOCKETS_PLUGIN) {
       //   registerItemMembershipWsHooks(
       //     websockets,
@@ -53,7 +50,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // returns empty for item not found
       fastify.get<{ Querystring: { itemId: string[] } }>(
         '/',
-        { schema: getItems },
+        { schema: getItems, preHandler: fastify.fetchMemberInSession },
         async ({ member, query: { itemId: ids }, log }) => {
           return itemMembershipService.getForManyItems(member, buildRepositories(), ids);
         },
@@ -63,15 +60,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.post<{
         Querystring: { itemId: string };
         Body: { permission: PermissionLevel; memberId: string };
-      }>('/', { schema: create }, async ({ member, query: { itemId }, body, log }) => {
-        return db.transaction((manager) => {
-          return itemMembershipService.post(member, buildRepositories(manager), {
-            permission: body.permission,
-            itemId,
-            memberId: body.memberId,
+      }>(
+        '/',
+        { schema: create, preHandler: fastify.verifyAuthentication },
+        async ({ member, query: { itemId }, body, log }) => {
+          return db.transaction((manager) => {
+            return itemMembershipService.post(member, buildRepositories(manager), {
+              permission: body.permission,
+              itemId,
+              memberId: body.memberId,
+            });
           });
-        });
-      });
+        },
+      );
 
       // create many item memberships
       fastify.post<{
@@ -79,7 +80,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         Body: { memberships: { permission; memberId }[] };
       }>(
         '/:itemId',
-        { schema: createMany },
+        { schema: createMany, preHandler: fastify.verifyAuthentication },
         async ({ member, params: { itemId }, body, log }, reply) => {
           db.transaction((manager) => {
             // TODO: implement queue
@@ -103,6 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:id',
         {
           schema: updateOne,
+          preHandler: fastify.verifyAuthentication,
         },
         async ({ member, params: { id }, body, log }) => {
           return db.transaction((manager) => {
@@ -114,7 +116,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // delete item membership
       fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
         '/:id',
-        { schema: deleteOne },
+        { schema: deleteOne, preHandler: fastify.verifyAuthentication },
         async ({ member, params: { id }, query: { purgeBelow }, log }) => {
           return db.transaction((manager) => {
             return itemMembershipService.deleteOne(member, buildRepositories(manager), id, {

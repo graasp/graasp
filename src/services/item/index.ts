@@ -116,9 +116,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // core routes - require authentication
       fastify.register(async function (fastify) {
-        // auth plugin session validation
-        fastify.addHook('preHandler', fastify.verifyAuthentication);
-
         // // H5P plugin must be registered before ZIP
         // fastify.register(graaspItemH5P, {
         //   pathPrefix: H5P_PATH_PREFIX,

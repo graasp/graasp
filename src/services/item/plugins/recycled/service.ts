@@ -37,9 +37,9 @@ export class RecycledBinService {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-// get descendants of all items
-const descendants = await itemRepository.getManyDescendants(Object.values(items));
-   
+    // get descendants of all items
+    const descendants = await itemRepository.getManyDescendants(Object.values(items));
+
     await itemRepository.softRemove([...descendants, ...Object.values(items)]);
 
     return recycledItemRepository.recycleMany(Object.values(items), actor);

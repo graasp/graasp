@@ -11,6 +11,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
+
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemValidationGroup } from './ItemValidationGroup';
@@ -36,18 +38,6 @@ import { ItemValidationGroup } from './ItemValidationGroup';
 //   value: string;
 // };
 
-export enum ItemValidationStatus {
-  Success = 'success',
-  Failure = 'failure',
-  Pending = 'pending',
-}
-
-export enum ItemValidationProcess {
-  BadWordsDetection = 'bad-words-detection',
-  AggressiveAndHateSpeech = 'aggressive-langauge-classification',
-  ImageChecking = 'image-classification',
-}
-
 @Entity()
 @Unique('id', ['id'])
 export class ItemValidation extends BaseEntity {
@@ -70,7 +60,7 @@ export class ItemValidation extends BaseEntity {
   @Column({
     nullable: false,
   })
-  status: string;
+  status: ItemValidationStatus;
 
   @Column({
     nullable: true,

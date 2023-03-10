@@ -1,8 +1,11 @@
+import { ItemValidationStatus } from '@graasp/sdk';
+
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemValidation, ItemValidationStatus } from '../entities/ItemValidation';
 import { ItemValidationGroup } from '../entities/ItemValidationGroup';
 
-export const ItemValidationGroupRepository = AppDataSource.getRepository(ItemValidation).extend({
+export const ItemValidationGroupRepository = AppDataSource.getRepository(
+  ItemValidationGroup,
+).extend({
   /**
    * Get item validation groups of given iVId
    * @param {string} iVId id of the item being checked
@@ -16,6 +19,12 @@ export const ItemValidationGroupRepository = AppDataSource.getRepository(ItemVal
    * @param {string} itemId id of the item being checked
    */
   async getLastForItem(itemId: string): Promise<ItemValidationGroup> {
+    // return this.createQueryBuilder('iVG')
+    // .leftJoinAndSelect('iVG.item', 'item')
+    // .leftJoinAndSelect('iVG.itemValidations', 'itemValidation')
+    // .where('item.id = :itemId', {itemId})
+    // .orderBy('iVG.createdAt', 'DESC')
+    // .getOne();
     return this.findOne({
       where: { item: { id: itemId } },
       order: { createdAt: 'desc' },

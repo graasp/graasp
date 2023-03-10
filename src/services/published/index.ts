@@ -12,6 +12,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/collections',
     {
       schema: getCollections,
+      preHandler: fastify.fetchMemberInSession,
     },
     async ({ query, member }) => {
       return pIS.getItemsByCategories(member, buildRepositories(), query.categoryId);

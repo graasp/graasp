@@ -53,12 +53,11 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // get own recycled items
   fastify.get<{ Params: IdParam }>(
     '/recycled',
-    { schema: getRecycledItemDatas },
+    { schema: getRecycledItemDatas, preHandler: fastify.verifyAuthentication },
     async ({ member, log }) => {
       return recycleBinService.getAll(member, buildRepositories());
     },
   );
-
 
   // TO RECYCLE: restore one item could restore a whole tree
   // recycle item
@@ -75,7 +74,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // recycle multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
-    { schema: recycleMany(maxItemsInRequest) },
+    { schema: recycleMany(maxItemsInRequest), preHandler: fastify.verifyAuthentication },
     async ({ member, query: { id: ids }, log }, reply) => {
       db.transaction(async (manager) => {
         return recycleBinService.recycleMany(member, buildRepositories(manager), ids);
@@ -105,7 +104,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // restore multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/restore',
-    { schema: restoreMany(maxItemsInRequest) },
+    { schema: restoreMany(maxItemsInRequest), preHandler: fastify.verifyAuthentication },
     async ({ member, query: { id: ids }, log }, reply) => {
       log.info(`Restoring items ${ids}`);
 

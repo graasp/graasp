@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../util/repositories';
@@ -23,6 +25,8 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     '/:itemId/validations/latest',
     {
       // schema: itemValidation
+
+      preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemId }, log }) => {
       return validationService.getLastItemValidationGroupForItem(
@@ -38,6 +42,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     '/:itemId/validations/:itemValidationGroupId',
     {
       // schema: itemValidationGroup
+      preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemValidationGroupId }, log }) => {
       return validationService.getItemValidationGroup(
@@ -50,19 +55,23 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
 
   // validate item with given itemId in param
   fastify.post<{ Params: { itemId: string } }>(
-    '/:itemId/validations',
+    '/:itemId/validate',
     {
       // schema: itemValidation
+      preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemId }, log }, reply) => {
-      return db.transaction(async (manager) => {
+      db.transaction(async (manager) => {
         // we do not wait
-        validationService.post(member, buildRepositories(manager), itemId);
+        await validationService.post(member, buildRepositories(manager), itemId);
 
-        // the process could take long time, so let the process run in the background and return the itemId instead
-        reply.status(202);
-        return itemId;
+        // the process could take long time, so let the process run in the background and kreturn the itemId instead
+      }).catch((e) => {
+        // TODO: return feedback in queue
+        console.error(e);
       });
+      reply.status(StatusCodes.ACCEPTED);
+      return itemId;
     },
   );
 

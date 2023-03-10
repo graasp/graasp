@@ -3,7 +3,7 @@ import { In } from 'typeorm';
 import { AppDataSource } from '../../plugins/datasource';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { InvitationNotFound, DuplicateInvitationError } from './errors';
+import { DuplicateInvitationError, InvitationNotFound } from './errors';
 import { Invitation } from './invitation';
 
 /**
@@ -11,54 +11,27 @@ import { Invitation } from './invitation';
  */
 export const InvitationRepository = AppDataSource.getRepository(Invitation).extend({
   /**
-   * Create invitation and return it.
-   * @param invitation Invitation to create
-   */
-  async postOne(
-    invitation: Partial<Invitation>,
-    creator: Member,
-    itemId: string,
-  ): Promise<Invitation> {
-
-    const existingEntry=await this.findOneBy({ email: invitation.email});
-    if(existingEntry) {
-      throw new DuplicateInvitationError({invitation});
-    }
-
-    return this.insert({ ...invitation, creator, item: { itemId } });
-  },
-
-  /**
-   * Create invitation and return it.
-   * @param invitation Invitation to create
-   */
-  async postMany(invitations: Partial<Invitation>[], itemId: string, creator: Member) {
-    const existingEntries = await this.find({where:{ email: In(invitations.map(i => i.email))}, relations:{item:true}});
-
-    const insertResult = await this.insert(
-      invitations.filter(i => !existingEntries.find(({email, item})=> email === i.email && item.id === itemId))
-      .map((invitation) => ({ ...invitation, item: { id: itemId }, creator })),
-    );
-    // TODO: optimize
-    return this.getMany(insertResult.identifiers.map(({ id }) => id));
-  },
-
-  /**
    * Get invitation by id or null if it is not found
    * @param id Invitation id
    */
-  async get(id: string): Promise<Invitation> {
-    return this.findOne({ where: { id }, relations: { item: true, creator: true } });
+  async get(id: string, actor?: Member): Promise<Invitation> {
+    const opts = actor ? { creator: true } : {};
+    const invitation = await this.findOne({ where: { id }, relations: { item: true, ...opts } });
+    if (!invitation) {
+      throw new InvitationNotFound(id);
+    }
+    return invitation;
   },
 
   /**
    * Get invitations map by id
    * @param ids Invitation ids
    */
-  async getMany(ids: string[]) {
+  async getMany(ids: string[], actor?: Member) {
+    const opts = actor ? { creator: true } : {};
     const invitations = await this.find({
       where: { id: In(ids) },
-      relations: { item: true, creator: true },
+      relations: { item: true, ...opts },
     });
 
     return mapById({
@@ -77,6 +50,45 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
       .leftJoinAndSelect('invitation.item', 'item')
       .where(':path <@ item.path', { path: itemPath })
       .getMany();
+  },
+
+  /**
+   * Create invitation and return it.
+   * @param invitation Invitation to create
+   */
+  async postOne(
+    invitation: Partial<Invitation>,
+    creator: Member,
+    itemId: string,
+  ): Promise<Invitation> {
+    const existingEntry = await this.findOneBy({ email: invitation.email });
+    if (existingEntry) {
+      throw new DuplicateInvitationError({ invitation });
+    }
+
+    return this.insert({ ...invitation, creator, item: { itemId } });
+  },
+
+  /**
+   * Create invitation and return it.
+   * @param invitation Invitation to create
+   */
+  async postMany(invitations: Partial<Invitation>[], itemId: string, creator: Member) {
+    const existingEntries = await this.find({
+      where: { email: In(invitations.map((i) => i.email)) },
+      relations: { item: true },
+    });
+
+    const insertResult = await this.insert(
+      invitations
+        .filter(
+          (i) =>
+            !existingEntries.find(({ email, item }) => email === i.email && item.id === itemId),
+        )
+        .map((invitation) => ({ ...invitation, item: { id: itemId }, creator })),
+    );
+    // TODO: optimize
+    return this.getMany(insertResult.identifiers.map(({ id }) => id));
   },
 
   /**

@@ -1,9 +1,7 @@
+import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
+
 import { AppDataSource } from '../../../../../plugins/datasource';
-import {
-  ItemValidation,
-  ItemValidationProcess,
-  ItemValidationStatus,
-} from '../entities/ItemValidation';
+import { ItemValidation } from '../entities/ItemValidation';
 
 export const ItemValidationRepository = AppDataSource.getRepository(ItemValidation).extend({
   async get(id: string): Promise<ItemValidation> {
@@ -24,7 +22,12 @@ export const ItemValidationRepository = AppDataSource.getRepository(ItemValidati
     process: ItemValidationProcess,
     status = ItemValidationStatus.Pending,
   ): Promise<ItemValidation> {
-    const entry = this.create({ itemId, itemValidationGroupId, process, status });
+    const entry = this.create({
+      item: { id: itemId },
+      itemValidationGroup: { id: itemValidationGroupId },
+      process,
+      status,
+    });
     await this.insert(entry);
     return entry;
   },

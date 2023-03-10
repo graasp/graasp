@@ -116,7 +116,7 @@ export class ItemLoginSchemaNotFound extends GraaspItemLoginError {
     super(
       {
         code: 'GILERR009',
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.NOT_FOUND,
         message: 'Item login schema not found for item',
       },
       data,

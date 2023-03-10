@@ -11,15 +11,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemValidation } from './ItemValidation';
+import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-export enum ItemValidationReviewStatus {
-  Accepted = 'accepted',
-  Rejected = 'rejected',
-  Pending = 'pending',
-}
+import { Member } from '../../../../member/entities/member';
+import { ItemValidation } from './ItemValidation';
 
 @Entity()
 @Unique('id', ['id'])

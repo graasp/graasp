@@ -2,7 +2,15 @@ import { mkdirSync, rmSync } from 'fs';
 import mime from 'mime-types';
 import path from 'path';
 
-import { ItemType, LocalFileItemExtra, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
+import {
+  ItemType,
+  ItemValidationProcess,
+  ItemValidationReviewStatus,
+  ItemValidationStatus,
+  LocalFileItemExtra,
+  PermissionLevel,
+  S3FileItemExtra,
+} from '@graasp/sdk';
 
 import { Repositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';
@@ -10,9 +18,7 @@ import FileService from '../../../file/service';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { IMAGE_FILE_EXTENSIONS } from './constants';
-import { ItemValidationProcess, ItemValidationStatus } from './entities/ItemValidation';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
-import { ItemValidationReviewStatus } from './entities/itemValidationReview';
 import {
   InvalidFileItemError,
   ItemValidationError,
@@ -37,10 +43,13 @@ export class ItemValidationService {
   async getLastItemValidationGroupForItem(actor, repositories: Repositories, itemId: string) {
     const { itemValidationGroupRepository } = repositories;
 
+    // get item
+    const item = await this.itemService.get(actor, repositories, itemId);
+
     const group = await itemValidationGroupRepository.getLastForItem(itemId);
 
     // check permissions
-    await validatePermission(repositories, PermissionLevel.Admin, actor, group.item);
+    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
 
     return group;
   }

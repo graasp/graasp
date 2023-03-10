@@ -109,20 +109,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   /**
    * options.bypass {boolean} if true, return parents even if the user does not have membership
    * */
-  async getAncestors(item: Item, memberId?: string, options = { bypass: false }) {
-    const query = this.createQueryBuilder('item')
+  async getAncestors(item: Item) {
+    return this.createQueryBuilder('item')
       .where('item.path @> :path', { path: item.path })
-      .andWhere('item.id != :id', { id: item.id });
-
-    if (!options.bypass) {
-      query
-        .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-        .andWhere('im.member_id = :memberId', {
-          memberId,
-        });
-    }
-
-    return query.getMany();
+      .andWhere('item.id != :id', { id: item.id })
+      .getMany();
   },
 
   async getChildren(parent: Item, ordered?: boolean) {
@@ -161,14 +152,15 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   async getManyDescendants(items: Item[]) {
     // TODO: LEVEL depth
-    const query = this.createQueryBuilder('item')
-    .where('id != :id', { id: In(items.map(({id})=>id)) });
-    
-    items.forEach(item => {
+    const query = this.createQueryBuilder('item').where('id != :id', {
+      id: In(items.map(({ id }) => id)),
+    });
+
+    items.forEach((item) => {
       const key = `path-${item.id}`;
       query.andWhere(`item.path <@ :${key}`, { [key]: item.path });
     });
-    
+
     return query.getMany();
   },
 

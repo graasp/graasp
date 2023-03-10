@@ -1,8 +1,11 @@
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ItemValidation } from '../entities/ItemValidation';
-import { ItemValidationReview, ItemValidationReviewStatus } from '../entities/itemValidationReview';
+import { ItemValidationReviewStatus } from '@graasp/sdk';
 
-export const ItemValidationReviewRepository = AppDataSource.getRepository(ItemValidation).extend({
+import { AppDataSource } from '../../../../../plugins/datasource';
+import { ItemValidationReview } from '../entities/itemValidationReview';
+
+export const ItemValidationReviewRepository = AppDataSource.getRepository(
+  ItemValidationReview,
+).extend({
   /**
    * Create an entry for manual review
    * @param validationId id of the validation record needs manual review
