@@ -1,4 +1,4 @@
-import { FlagType } from './itemFlag';
+import { FlagType } from '@graasp/sdk';
 
 export default {
   $id: 'http://graasp.org/item-flags/',
@@ -23,7 +23,7 @@ export default {
           id: { type: 'string' },
           name: { type: 'string' },
         },
-        flagType: { $ref: 'http://graasp.org/item-flags/#/definitions/flag' },
+        type: { $ref: 'http://graasp.org/item-flags/#/definitions/flag' },
         creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
       },
@@ -33,9 +33,9 @@ export default {
     // item flag properties required at creation
     createPartialItemFlag: {
       type: 'object',
-      required: ['flagType'],
+      required: ['type'],
       properties: {
-        flagType: { $ref: 'http://graasp.org/item-flags/#/definitions/flag' },
+        type: { $ref: 'http://graasp.org/item-flags/#/definitions/flag' },
       },
       additionalProperties: false,
     },
