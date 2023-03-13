@@ -2,6 +2,7 @@ version: '3'
 
 services:
   app:
+    container_name: graasp-core
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,10 +34,11 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
+    container_name: graasp-postgres
     build:
       context: ../
       dockerfile: .devcontainer/db/Dockerfile
-    restart: unless-stopped
+    restart: on-failure
     ports:
       - 5432:5432
     volumes:
@@ -54,12 +56,7 @@ services:
   redis:
     container_name: graasp-redis
     image: redis
-    # For this to work a .env file needs to be provided in the .devcontainer folder
-    # with the value of the variable set.
-    command: redis-server --requirepass $REDIS_PASSWORD
-    restart: unless-stopped
-    ports:
-      - 6379:6379
+    restart: on-failure
 
   etherpad:
     container_name: graasp-etherpad
@@ -84,7 +81,7 @@ services:
       # only API can create pads
       - EDIT_ONLY=true
     # restart the container until db has created tables
-    restart: unless-stopped
+    restart: on-failure
     depends_on:
       - db
 
@@ -107,6 +104,7 @@ services:
 
   # necessary for graasp-embedded-link-item
   iframely:
+    container_name: graasp-iframely
     image: graasp/iframely:latest
     environment:
       NODE_ENV: staging
