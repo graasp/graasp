@@ -5690,9 +5690,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip#34-fallback-set-header":
+"graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
   version: 0.1.0
-  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=aeaea49f04e7147321f3e649f109d96c5865b690"
+  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=2a9b76cd8532af4e122a66685d2112b6aef8a5e1"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5871,7 +5871,7 @@ __metadata:
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
     graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
-    graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip#34-fallback-set-header"
+    graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-search: "github:graasp/graasp-plugin-search"
