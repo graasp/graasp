@@ -1,11 +1,7 @@
-export enum ThumbnailSize {
-  Small = 'small',
-  Medium = 'medium',
-  Large = 'large',
-  Original = 'original',
-}
+import { ThumbnailSize } from '@graasp/sdk';
 
-export const THUMBNAIL_SIZES = {
+
+export const ThumbnailSizeFormat = {
   [ThumbnailSize.Small]: 200,
   [ThumbnailSize.Medium]: 400,
   [ThumbnailSize.Large]: 600,

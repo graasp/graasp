@@ -4,12 +4,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam,  } from '@graasp/sdk';
 
-import { THUMBNAILS_ROUTE_PREFIX } from '../../../../util/config';
 import { buildRepositories } from '../../../../util/repositories';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../file/utils/errors';
 import { upload } from './schemas';
-import { FileThumbnailService } from './service';
+import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
+import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../../item/plugins/file/utils/errors';
 
 
 type GraaspThumbnailsOptions = {
@@ -21,15 +20,15 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
   const {
     log: defaultLogger,
     files: { service: fileService },
-    items: { service: itemService },
+    members:{service:memberService},
     db,
   } = fastify;
 
 
-  const thumbnailService = new FileThumbnailService(itemService, fileService, shouldRedirectOnDownload);
+  const thumbnailService = new MemberThumbnailService(memberService, fileService, shouldRedirectOnDownload);
 
   fastify.post<{ Params: IdParam }>(
-    `/:id${THUMBNAILS_ROUTE_PREFIX}`,
+    '/avatar',
     {
       schema: upload,
       preHandler: fastify.verifyAuthentication,
@@ -37,7 +36,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     async (request, reply) => {
       const {
         member,
-        params: { id: itemId },
         log,
       } = request;
 
@@ -53,7 +51,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), itemId, file);
+          await thumbnailService.upload(member, buildRepositories(manager),  file);
 
 
           reply.status(StatusCodes.NO_CONTENT);
@@ -71,14 +69,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
   // TODO: use ThumbnailSizeVariant
   fastify.get<{ Params: IdParam & { size: string }; Querystring: { replyUrl?: boolean } }>(
-    `/:id${THUMBNAILS_ROUTE_PREFIX}/:size`,
+    '/:id/avatar/:size',
     {
       // schema: download,
       preHandler: fastify.fetchMemberInSession,
     },
-    async ({ member, params: { size, id: itemId }, query: { replyUrl }, log }, reply) => {
+    async ({ member, params: { size, id: memberId }, query: { replyUrl }, log }, reply) => {
       return thumbnailService
-        .download(member, buildRepositories(), { reply, itemId, replyUrl, size })
+        .download(member, buildRepositories(), { reply, memberId, replyUrl, size })
         .catch((e) => {
           if (e.code) {
             throw e;

@@ -3,9 +3,6 @@ import { ThumbnailSize } from '@graasp/sdk';
 const upload = {
   params: {
     type: 'object',
-    properties: {
-      id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-    },
     additionalProperties: false,
   },
 };

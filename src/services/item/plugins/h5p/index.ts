@@ -11,7 +11,7 @@ import fastifyMultipart from '@fastify/multipart';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { Actor, H5PExtra, Item, ItemType, PermissionLevel, Task } from '@graasp/sdk';
+import { Actor, H5PItemExtra, Item, ItemType, PermissionLevel,  } from '@graasp/sdk';
 
 import { Repositories, buildRepositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';
@@ -101,7 +101,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
   /**
    * Helper to create H5P extra
    */
-  function buildH5PExtra(contentId: string, filename: string): H5PExtra {
+  function buildH5PExtra(contentId: string, filename: string): H5PItemExtra {
     return {
       h5p: {
         contentId,
@@ -124,7 +124,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
     contentId: string,
     member: Member,
     parentId?: string,
-  ): Promise<Item<H5PExtra>> {
+  ): Promise<Item<H5PItemExtra>> {
     const metadata = {
       name: buildH5PPath('', filename),
       type: ItemType.H5P,
