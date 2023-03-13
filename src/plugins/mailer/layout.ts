@@ -1,6 +1,6 @@
 export const applyLayout = (body: string) => {
   return `
-  b<!doctype html>
+  <!doctype html>
 <html>
 
 <head>

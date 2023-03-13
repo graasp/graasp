@@ -32,16 +32,15 @@ export class InvitationService {
 
     const t = this.fastify.mailer.translate(lang);
 
-    const text = t('invitationText {{itemName}} {{creatorName}}', {
+    const text = t(MAIL.INVITATION_TEXT, {
       itemName: item.name,
       creatorName: actor.name,
     });
     const html = `
-      ${this.fastify.mailer.buildText(t(MAIL.GREETINGS))}
       ${this.fastify.mailer.buildText(text)}
       ${this.fastify.mailer.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
     `;
-    const title = t(MAIL.INVITATION_TITLE);
+    const title = t(MAIL.INVITATION_TITLE, {itemName:item.name});
     this.fastify.mailer.sendEmail(title, email, link, html).catch((err) => {
       this.log.warn(err, `mailer failed. invitation link: ${link}`);
     });

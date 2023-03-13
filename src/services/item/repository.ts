@@ -257,9 +257,10 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     this.targetId = item.id;
 
     // only allow for item type specific changes in extra
-    if (extraChanges) {
-      if (Object.keys(extraChanges).length === 1 && extraChanges[item.type]) {
-        data.extra = Object.assign({}, item.extra, extraChanges);
+    const extraForType = extraChanges?.[item.type];
+    if (extraForType) {
+      if (Object.keys(extraForType).length === 1) {
+        data.extra[item.type] = Object.assign({}, item.extra[item.type], extraForType);
       } else {
         delete data.extra;
       }
@@ -273,8 +274,12 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       }
     }
 
+    // TODO: check schema
+
     // update only if data is not empty
-    Object.keys(data).length ? await this.update(id, data) : item;
+    if(Object.keys(data).length) { 
+      await this.update(id, data);
+    } 
 
     // TODO: optimize
     return this.get(id);

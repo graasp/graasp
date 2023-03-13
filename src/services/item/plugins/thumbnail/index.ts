@@ -64,7 +64,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
           // update item that should have thumbnail
           await itemService.patch(member, repositories, itemId, {
-            extra: { [item.type]: { hasThumbnail: true } },
+            settings: { hasThumbnail: true  },
           });
 
           reply.status(StatusCodes.NO_CONTENT);
