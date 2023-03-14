@@ -132,7 +132,7 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  async downloadFile({ reply, filepath, itemId, fileStorage, expiration, replyUrl }) {
+  async downloadFile({ reply, filepath, id, fileStorage, expiration, replyUrl }) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -164,7 +164,7 @@ export class S3FileRepository implements FileRepository {
       else if (fileStorage) {
         // fetch and save file in temporary path
         const res = await fetch(url);
-        const tmpPath = path.join(fileStorage, itemId);
+        const tmpPath = path.join(fileStorage, id);
         const fileStream = fs.createWriteStream(tmpPath);
         await new Promise((resolve, reject) => {
           res.body.pipe(fileStream);
@@ -188,7 +188,7 @@ export class S3FileRepository implements FileRepository {
       }
     } catch (e) {
       if (e.statusCode === StatusCodes.NOT_FOUND) {
-        throw new S3FileNotFound({ filepath, itemId });
+        throw new S3FileNotFound({ filepath, id });
       }
 
       throw e;

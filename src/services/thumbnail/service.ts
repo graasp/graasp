@@ -68,6 +68,7 @@ prefix:string;
       replyUrl,
       path:this.buildFilePath(id, size),
       mimetype: THUMBNAIL_MIMETYPE,
+      id
     });
 
     return result;

@@ -86,19 +86,19 @@ class FileService {
     data: {
       reply?: FastifyReply;
       path?: string;
-      itemId?: string;
       mimetype?: string;
       fileStorage?: string;
       expiration?: number;
       replyUrl?: boolean;
+      id:string
     },
   ): Promise<any> {
-    const { reply, itemId, path: filepath, mimetype, fileStorage, expiration, replyUrl } = data;
-    if (!filepath || !itemId) {
+    const { reply, id,path: filepath, mimetype, fileStorage, expiration, replyUrl } = data;
+    if (!filepath || id ) {
       throw new DownloadFileInvalidParameterError({
-        itemId,
         filepath,
         mimetype,
+        id
       });
     }
 
@@ -106,11 +106,10 @@ class FileService {
       this.repository.downloadFile({
         reply,
         filepath,
-        itemId,
         mimetype,
         fileStorage,
         expiration,
-        replyUrl,
+        replyUrl,id
       }) || null
     );
   }

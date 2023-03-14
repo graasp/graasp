@@ -19,11 +19,11 @@ export interface FileRepository {
   downloadFile(args: {
     reply?: FastifyReply;
     filepath: string;
-    itemId: string;
     mimetype?: string;
     fileStorage?: string;
     expiration?: number;
     replyUrl?: boolean;
+    id:string;
   }): Promise<ReadStream | string | void>;
 
   uploadFile(args: {

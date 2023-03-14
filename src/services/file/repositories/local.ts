@@ -53,13 +53,13 @@ export class LocalFileRepository implements FileRepository {
     await rm(this.buildFullPath(folderPath), { recursive: true });
   }
 
-  async downloadFile({ reply, filepath, itemId, mimetype, replyUrl }) {
+  async downloadFile({ reply, filepath, id, mimetype, replyUrl }) {
     // ensure the file exists, if not throw error
     try {
       await access(this.buildFullPath(filepath));
     } catch (e) {
       if (e.code === 'ENOENT') {
-        throw new LocalFileNotFound({ itemId, filepath });
+        throw new LocalFileNotFound({ id, filepath });
       }
       throw e;
     }
@@ -74,7 +74,7 @@ export class LocalFileRepository implements FileRepository {
       reply.type(mimetype);
       // this header will make the browser download the file with 'name'
       // instead of simply opening it and showing it
-      reply.header('Content-Disposition', contentDisposition(itemId));
+      reply.header('Content-Disposition', contentDisposition(id));
     }
     return fs.createReadStream(this.buildFullPath(filepath));
   }

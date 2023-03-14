@@ -194,7 +194,7 @@ export class ItemValidationService {
           } else {
             const filePath = await this.fileService.download(actor, {
               path: filepath,
-              itemId: item?.id,
+              id: item?.id,
               mimetype,
               fileStorage,
             });
