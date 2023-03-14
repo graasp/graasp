@@ -5692,7 +5692,7 @@ __metadata:
 
 "graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
   version: 0.1.0
-  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=4b7d116fa1f1c438f65c1b59d2f62506d2dd897c"
+  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=2a9b76cd8532af4e122a66685d2112b6aef8a5e1"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5710,7 +5710,7 @@ __metadata:
     qs: 6.10.3
     slugify: 1.6.5
     stream-promise: 3.2.0
-  checksum: 133c1a1fdc12af5430d660af2d7524155522dc906e7d10ad3ba6cbaee8a49c2fef16db18e2309c9e1352ac0542a8fa26207bc0449c8dc1f39fd7544237f162a0
+  checksum: ba9cb7e648e2a1765fe47ea83c30f15602ff33bbc8e7d5a1920a5a5a62f680bd9a7b7c3cfb079f8830774af7f749449440134502255dcff43911483581a12a54
   languageName: node
   linkType: hard
 
