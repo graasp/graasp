@@ -94,7 +94,7 @@ class FileService {
     },
   ): Promise<any> {
     const { reply, id,path: filepath, mimetype, fileStorage, expiration, replyUrl } = data;
-    if (!filepath || id ) {
+    if (!filepath || !id ) {
       throw new DownloadFileInvalidParameterError({
         filepath,
         mimetype,
