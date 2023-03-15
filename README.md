@@ -218,14 +218,6 @@ AUTH_CLIENT_HOST=<value>
 IMAGE_CLASSIFIER_API=<url>
 ````
 
-> ⚠️ ** Warning ** ⚠️: By default, the Redis database will use a password. This password must be defined inside `.devcontainer/.env`. It must be the same as in the `.env.development` file because this is where the code will fetch the password. At the moment no easy way was found to de-duplicate this env variable.
-
-```
-REDIS_PASSWORD=<your password here>
-```
-
-If you wish to disable password auth for the Redis database, you should comment out the `command: redis-server --requirepass $REDIS_PASSWORD` line in `.devcontainer/docker-compose.yml`.
-
 ## Running
 
 To run the application, use `yarn watch`. If any file change, the application will automatically reload.
