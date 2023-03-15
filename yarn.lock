@@ -3396,13 +3396,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-type@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "content-type@npm:1.0.4"
-  checksum: 3d93585fda985d1554eca5ebd251994327608d2e200978fdbfba21c0c679914d5faf266d17027de44b34a72c7b0745b18584ecccaa7e1fdfb6a68ac7114f12e0
-  languageName: node
-  linkType: hard
-
 "conventional-changelog-angular@npm:^5.0.11, conventional-changelog-angular@npm:^5.0.12":
   version: 5.0.13
   resolution: "conventional-changelog-angular@npm:5.0.13"
@@ -4588,6 +4581,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-content-type-parse@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "fast-content-type-parse@npm:1.0.0"
+  checksum: 9e9187be17bea18a2ee715c5737b983181cbe84f286a291db0595e421e04b578da10ca10845639be08664a4db6a793f7709822935cf38cfdf9ecba38d84ead9e
+  languageName: node
+  linkType: hard
+
 "fast-decode-uri-component@npm:^1.0.1":
   version: 1.0.1
   resolution: "fast-decode-uri-component@npm:1.0.1"
@@ -4800,15 +4800,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:3.29.4":
-  version: 3.29.4
-  resolution: "fastify@npm:3.29.4"
+"fastify@npm:3.29.5":
+  version: 3.29.5
+  resolution: "fastify@npm:3.29.5"
   dependencies:
     "@fastify/ajv-compiler": ^1.0.0
     "@fastify/error": ^2.0.0
     abstract-logging: ^2.0.0
     avvio: ^7.1.2
-    content-type: ^1.0.4
+    fast-content-type-parse: ^1.0.0
     fast-json-stringify: ^2.5.2
     find-my-way: ^4.5.0
     flatstr: ^1.0.12
@@ -4820,7 +4820,7 @@ __metadata:
     secure-json-parse: ^2.0.0
     semver: ^7.3.2
     tiny-lru: ^8.0.1
-  checksum: add73f5bccf87c86f8edc08cad13b7ed942f7639ecaf3caa0502f069d9c9d39c3dd1257d403d3d845c7fa3099eee25ad4d1023223d6116f82bce84f0e724169a
+  checksum: 6f97e67c25c509c584529aad2ffe0d4bf8943a860f09d847bf34a4736586cf73f5748bde154e0199c022b97ff76aba35c3094006e62b07100ab10c63205541e3
   languageName: node
   linkType: hard
 
@@ -5692,7 +5692,7 @@ __metadata:
 
 "graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
   version: 0.1.0
-  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=4b7d116fa1f1c438f65c1b59d2f62506d2dd897c"
+  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=2a9b76cd8532af4e122a66685d2112b6aef8a5e1"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5710,7 +5710,7 @@ __metadata:
     qs: 6.10.3
     slugify: 1.6.5
     stream-promise: 3.2.0
-  checksum: 133c1a1fdc12af5430d660af2d7524155522dc906e7d10ad3ba6cbaee8a49c2fef16db18e2309c9e1352ac0542a8fa26207bc0449c8dc1f39fd7544237f162a0
+  checksum: ba9cb7e648e2a1765fe47ea83c30f15602ff33bbc8e7d5a1920a5a5a62f680bd9a7b7c3cfb079f8830774af7f749449440134502255dcff43911483581a12a54
   languageName: node
   linkType: hard
 
@@ -5848,7 +5848,7 @@ __metadata:
     dotenv: 16.0.0
     eslint: 8.14.0
     eslint-config-prettier: 8.5.0
-    fastify: 3.29.4
+    fastify: 3.29.5
     fastify-cors: 6.1.0
     fastify-plugin: 3.0.1
     fastify-secure-session: 3.2.0
