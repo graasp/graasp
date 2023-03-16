@@ -1117,23 +1117,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#110-fix-core":
-  version: 0.9.1
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=5edf3f4f2f54a7903976f16299b3b950cab91e90"
-  dependencies:
-    "@fastify/secure-session": 5.3.0
-    aws-sdk: 2.1310.0
-    fastify: 3.29.5
-    fluent-json-schema: 3.1.0
-    immutable: 4.2.4
-    js-cookie: 3.0.1
-    qs: 6.11.0
-    slonik: 28.1.1
-    uuid: 9.0.0
-  checksum: 84ab1c6b351e209597988507ef448f43c39f829b4a8bc839c5d82b251633190fd336cf6976a295340abdfccb261cfc05af53586e5b52c9a2dab3b498648a5e62
-  languageName: node
-  linkType: hard
-
 "@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
   version: 0.1.0
   resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=3c6bf828279719895489d8237c4a53dfc430b2a8"
@@ -1148,6 +1131,23 @@ __metadata:
     slonik: 28.1.1
     uuid: 8.3.2
   checksum: 71c6aff2c43403915751aa111a83d71d6d8c8737f3441c0843556cee61c8bf0729c199a27c8ca8d137f25cfbfbc53b566b456fec0206c583917fee4d04a79d88
+  languageName: node
+  linkType: hard
+
+"@graasp/sdk@npm:0.9.2":
+  version: 0.9.2
+  resolution: "@graasp/sdk@npm:0.9.2"
+  dependencies:
+    "@fastify/secure-session": 5.3.0
+    aws-sdk: 2.1310.0
+    fastify: 3.29.5
+    fluent-json-schema: 3.1.0
+    immutable: 4.2.4
+    js-cookie: 3.0.1
+    qs: 6.11.0
+    slonik: 28.1.1
+    uuid: 9.0.0
+  checksum: 49daf48b8877b1a0bdd0612c5a88be22860de4e94c494978732add26d38b5d0a6784df8eb8caedd7972b2767c78258c056c89889c73eeeb3971f2ff989a7f1e0
   languageName: node
   linkType: hard
 
@@ -5887,7 +5887,7 @@ __metadata:
     "@fastify/cors": 7.0.0
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
-    "@graasp/sdk": "github:graasp/graasp-sdk#110-fix-core"
+    "@graasp/sdk": 0.9.2
     "@graasp/translations": 1.2.1
     "@sentry/node": 7.39.0
     "@sentry/profiling-node": 0.2.2
