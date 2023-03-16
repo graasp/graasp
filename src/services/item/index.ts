@@ -84,8 +84,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // because graaspApps extends the schemas
     await fastify.register(graaspApps, {
       jwtSecret: APPS_JWT_SECRET,
-      fileItemType: FILE_ITEM_TYPE,
-      thumbnailsPrefix: THUMBNAILS_PATH_PREFIX,
       prefix: APP_ITEMS_PREFIX,
       publisherId: APPS_PUBLISHER_ID,
     });

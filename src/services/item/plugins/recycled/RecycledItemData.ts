@@ -30,6 +30,7 @@ export class RecycledItemData extends BaseEntity {
 
   @ManyToOne(() => Item, (item) => item.path, {
     onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
     nullable: false,
   })
   @JoinColumn({ name: 'item_path' })

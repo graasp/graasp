@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { FileItemType, FileProperties, IdParam, ItemType } from '@graasp/sdk';
+import {IdParam,  } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../util/repositories';
 import { AppSetting } from './appSettings';
@@ -8,19 +8,16 @@ import { InputAppSetting } from './interfaces/app-setting';
 import common, { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppSettingService } from './service';
 
-interface PluginOptions {
-  fileItemType: FileItemType;
-}
 
-const plugin: FastifyPluginAsync<PluginOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync = async (fastify, ) => {
   const {
-    // file: { s3Config, localConfig },
+    files: { service:fS },
     db,
   } = fastify;
 
   const appSettingService = new AppSettingService();
 
-  const { fileItemType } = options;
+  const fileItemType = fS.type;
   // const fTM = new FileTaskManager({ s3: s3Config, local: localConfig }, fileItemType);
 
   // const taskManager = new TaskManager(aSS, iS, iMS, iTM, iMTM, fileItemType, fTM);

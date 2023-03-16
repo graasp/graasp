@@ -11,12 +11,9 @@ import { InputAppData } from './interfaces/app-data';
 import common, { create, deleteOne, getForMany, getForOne, updateOne } from './schemas';
 import { AppDataService } from './service';
 
-interface PluginOptions {
-  fileItemType: FileItemType;
-}
-
-const appDataPlugin: FastifyPluginAsync<PluginOptions> = async (fastify, options) => {
-  const { db } = fastify;
+const appDataPlugin: FastifyPluginAsync = async (fastify) => {
+  const { db, files: {service:fS} } = fastify;
+  const fileItemType = fS.type;
 
   fastify.addSchema(common);
 

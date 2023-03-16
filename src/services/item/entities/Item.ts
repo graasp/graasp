@@ -1,17 +1,12 @@
 import {
-  AfterLoad,
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
-  OneToMany,
-  OneToOne,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
@@ -88,7 +83,7 @@ export class Item extends BaseEntity {
 
   // cosmetic settings
   @Column('simple-json', { nullable: false, default: '{}' })
-  settings: any;
+  settings: ItemSettings;
 
   // return path
   // https://github.com/typeorm/typeorm/issues/4232#issuecomment-585162991

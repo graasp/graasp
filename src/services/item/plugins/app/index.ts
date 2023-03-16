@@ -22,14 +22,9 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
   const {
     jwtSecret,
     jwtExpiration = DEFAULT_JWT_EXPIRATION,
-    fileItemType,
-    thumbnailsPrefix,
     publisherId,
   } = options;
 
-  if (!thumbnailsPrefix) {
-    throw new Error('thumbnail prefix is not defined!');
-  }
   if (!jwtSecret) {
     throw new Error('jwtSecret is not defined!');
   }
@@ -182,13 +177,13 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       fastify.addHook('preHandler', fastify.verifyBearerAuth);
 
       // register app data plugin
-      fastify.register(appDataPlugin, { fileItemType });
+      fastify.register(appDataPlugin);
 
       // register app action plugin
       fastify.register(appActionPlugin);
 
       // register app settings plugin
-      fastify.register(appSettingPlugin, { fileItemType });
+      fastify.register(appSettingPlugin);
     });
   });
 };
