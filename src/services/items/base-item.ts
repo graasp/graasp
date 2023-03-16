@@ -7,27 +7,27 @@ import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
 export const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
 const underscoreToDash = (value: string) => value.replace(/_/g, '-');
 
-export class BaseItem<E extends UnknownExtra> implements Item<E> {
+export class BaseItem<E extends UnknownExtra> implements Item {
   // static propagatingProperties: (keyof Item)[] = []; // TODO: incomplete. remove?
 
-  readonly id: string;
-  name: string;
-  description: string;
-  type: ItemType;
-  path: string;
+  readonly id: Item['id'];
+  name: Item['name'];
+  description: Item['description'];
+  type: Item['type'];
+  path: Item['path'];
   extra: E;
-  settings: ItemSettings;
-  readonly creator: string;
-  readonly createdAt: string;
-  readonly updatedAt: string;
+  settings: Item['settings'];
+  readonly creator: Item['creator'];
+  readonly createdAt: Item['createdAt'];
+  readonly updatedAt: Item['updatedAt'];
 
   constructor(
-    name: string,
-    description: string = null,
-    type: ItemType = ItemType.FOLDER,
+    name: Item['name'],
+    description: Item['description'] = null,
+    type: Item['type'] = ItemType.FOLDER,
     extra: E,
     settings: ItemSettings,
-    creator: string,
+    creator: Item['creator'],
     parent?: Item,
   ) {
     this.id = uuidv4();
