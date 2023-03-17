@@ -90,15 +90,15 @@ class FileService {
       fileStorage?: string;
       expiration?: number;
       replyUrl?: boolean;
-      id:string
+      id: string;
     },
   ): Promise<any> {
-    const { reply, id,path: filepath, mimetype, fileStorage, expiration, replyUrl } = data;
-    if (!filepath || !id ) {
+    const { reply, id, path: filepath, mimetype, fileStorage, expiration, replyUrl } = data;
+    if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
         filepath,
         mimetype,
-        id
+        id,
       });
     }
 
@@ -109,7 +109,8 @@ class FileService {
         mimetype,
         fileStorage,
         expiration,
-        replyUrl,id
+        replyUrl,
+        id,
       }) || null
     );
   }

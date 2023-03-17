@@ -1,9 +1,9 @@
 import fs, { ReadStream } from 'fs';
 import sharp from 'sharp';
 
-import { ThumbnailSizeFormat, THUMBNAIL_FORMAT } from './constants';
+import { THUMBNAIL_FORMAT, ThumbnailSizeFormat } from './constants';
 
- const buildThumbnailPath = (name, itemId, folderPath) => `${folderPath}/${itemId}-${name}`;
+const buildThumbnailPath = (name, itemId, folderPath) => `${folderPath}/${itemId}-${name}`;
 
 export const createThumbnails = async (imagePath: string, itemId: string, folderPath: string) => {
   // generate sizes for given image

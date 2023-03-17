@@ -4,25 +4,19 @@ import { mkdir, readFile } from 'fs/promises';
 import mime from 'mime-types';
 import mmm from 'mmmagic';
 import path from 'path';
-import slugify from 'slugify';
 import util from 'util';
 
-import {
-  EmbeddedLinkItemType,
-  Item,
-  ItemType,
-  LocalFileItemExtra,
-  S3FileItemExtra,
-} from '@graasp/sdk';
+import { EmbeddedLinkItemType, ItemType, LocalFileItemExtra, S3FileItemExtra } from '@graasp/sdk';
 
 import { Repositories } from '../../../../util/repositories';
+import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
   LINK_EXTENSION,
-  TMP_FOLDER_PATH,
+  TMP_EXPORT_ZIP_FOLDER_PATH,
   URL_PREFIX,
   ZIP_FILE_MIME_TYPES,
 } from './constants';
@@ -102,7 +96,7 @@ export class ImportExportService {
             url,
           },
         },
-      } as Partial<EmbeddedLinkItemType>;
+      };
     }
     // documents
     else if (filename.endsWith(GRAASP_DOCUMENT_EXTENSION)) {
@@ -146,10 +140,9 @@ export class ImportExportService {
       item: Item;
       archiveRootPath: string;
       archive: Archiver;
-      fileStorage: string;
     },
   ) {
-    const { item, archiveRootPath, archive, fileStorage, reply } = args;
+    const { item, archiveRootPath, archive, reply } = args;
 
     // save description in file
     if (item.description) {
@@ -211,20 +204,21 @@ export class ImportExportService {
         break;
       case ItemType.FOLDER: {
         // append description
-        // const folderPath = path.join(archiveRootPath, item.name);
-        // // eslint-disable-next-line no-case-declarations
-        // const children = await repositories.itemRepository.getChildren(item);
-        // await Promise.all(
-        //   children.map((child) =>
-        //     this._addItemToZip(actor, repositories, {
-        //       item: child,
-        //       archiveRootPath: folderPath,
-        //       archive,
-        //       fileStorage,
-        //       reply,
-        //     }),
-        //   ),
-        // );
+        const folderPath = path.join(archiveRootPath, item.name);
+        // eslint-disable-next-line no-case-declarations
+        // TODO: UPDATE TYPE
+        const children = await repositories.itemRepository.getChildren(item as Item);
+        console.log(children);
+        await Promise.all(
+          children.map((child) =>
+            this._addItemToZip(actor, repositories, {
+              item: child,
+              archiveRootPath: folderPath,
+              archive,
+              reply,
+            }),
+          ),
+        );
         break;
       }
     }
@@ -248,7 +242,7 @@ export class ImportExportService {
     });
 
     // path to save files temporarly and save archive
-    const fileStorage = path.join(__dirname, TMP_FOLDER_PATH, item.id);
+    const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, item.id);
     await mkdir(fileStorage, { recursive: true });
     const zipPath = path.join(fileStorage, item.id + '.zip');
     const zipStream = fs.createWriteStream(zipPath);
@@ -263,14 +257,16 @@ export class ImportExportService {
       reply,
       archiveRootPath: rootPath,
       archive,
-      fileStorage,
     }).catch((error) => {
       throw new UnexpectedExportError(error);
     });
 
     // wait for zip to be completely created and send it
-    const sendBufferPromise = new Promise((resolve, reject) => {
-      zipStream.on('error', reject);
+    return new Promise((resolve, reject) => {
+      zipStream.on('error', (e) => {
+        console.error(e);
+        reject(e);
+      });
 
       zipStream.on('close', () => {
         // set reply headers depending zip file and return file
@@ -280,31 +276,26 @@ export class ImportExportService {
             'Content-Disposition',
             `filename="${encodeURIComponent(item.name)}.zip"`,
           );
-        } catch(e) {
+        } catch (e) {
           // TODO: send sentry error
           console.error(e);
-          reply.raw.setHeader(
-            'Content-Disposition',
-            'filename="download.zip"',
-          );
+          reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
         }
         reply.raw.setHeader('Content-Length', Buffer.byteLength(buffer));
         reply.type('application/zip');
+
+        // delete tmp files after endpoint responded
+        if (fs.existsSync(fileStorage)) {
+          fs.rmSync(fileStorage, { recursive: true });
+        } else {
+          //  log?.error(`${fileStorage} was not found, and was not deleted`);
+        }
+
         resolve(buffer);
       });
+
+      archive.finalize();
     });
-
-    archive.finalize();
-
-    // TODO: SEND BUFFER
-    // return sendBufferPromise;
-
-    // delete tmp files after endpoint responded
-    if (fs.existsSync(fileStorage)) {
-      fs.rmSync(fileStorage, { recursive: true });
-    } else {
-      //  log?.error(`${fileStorage} was not found, and was not deleted`);
-    }
   }
 
   /**

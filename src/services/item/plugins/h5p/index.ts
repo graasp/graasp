@@ -11,7 +11,7 @@ import fastifyMultipart from '@fastify/multipart';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { Actor, H5PItemExtra,  Item, ItemType, PermissionLevel,  } from '@graasp/sdk';
+import { Actor, H5PItemExtra, Item, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { Repositories, buildRepositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';

@@ -157,7 +157,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     });
 
     items.forEach((item) => {
-      const key = `path-${item.id}`;
+      const key = `path_${item.path}`;
       query.andWhere(`item.path <@ :${key}`, { [key]: item.path });
     });
 
@@ -277,9 +277,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     // TODO: check schema
 
     // update only if data is not empty
-    if(Object.keys(data).length) { 
+    if (Object.keys(data).length) {
       await this.update(id, data);
-    } 
+    }
 
     // TODO: optimize
     return this.get(id);

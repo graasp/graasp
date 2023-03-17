@@ -1,5 +1,6 @@
 import S3 from 'aws-sdk/clients/s3';
 import dotenv from 'dotenv';
+import path from 'path';
 
 import { Context, FileItemType, ItemType, S3FileConfiguration } from '@graasp/sdk';
 
@@ -267,3 +268,5 @@ export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
 
 // used for hashing password
 export const SALT_ROUNDS = 10;
+
+export const TMP_FOLDER = path.resolve(__dirname, '../..', 'tmp');

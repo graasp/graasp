@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import {IdParam,  } from '@graasp/sdk';
+import { IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../util/repositories';
 import { AppSetting } from './appSettings';
@@ -8,10 +8,9 @@ import { InputAppSetting } from './interfaces/app-setting';
 import common, { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppSettingService } from './service';
 
-
-const plugin: FastifyPluginAsync = async (fastify, ) => {
+const plugin: FastifyPluginAsync = async (fastify) => {
   const {
-    files: { service:fS },
+    files: { service: fS },
     db,
   } = fastify;
 

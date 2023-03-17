@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Querystring: { parentId?: string } }>(
     '/zip-import',
-    { schema: zipImport },
+    { schema: zipImport, preHandler: fastify.verifyAuthentication },
     async (request, reply) => {
       const {
         member,
@@ -60,14 +60,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     method: 'GET',
     url: '/zip-export/:itemId',
     schema: zipExport,
+    preHandler: fastify.fetchMemberInSession,
     handler: async ({ member, params: { itemId } }, reply) => {
-      // do not wait
-      importExportService.export(member, buildRepositories(), {
+      return importExportService.export(member, buildRepositories(), {
         itemId,
         reply,
       });
-
-      reply.status(StatusCodes.ACCEPTED);
     },
   });
 };

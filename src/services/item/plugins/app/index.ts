@@ -19,11 +19,7 @@ import { AppsPluginOptions } from './types';
 import { DEFAULT_JWT_EXPIRATION } from './util/constants';
 
 const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) => {
-  const {
-    jwtSecret,
-    jwtExpiration = DEFAULT_JWT_EXPIRATION,
-    publisherId,
-  } = options;
+  const { jwtSecret, jwtExpiration = DEFAULT_JWT_EXPIRATION, publisherId } = options;
 
   if (!jwtSecret) {
     throw new Error('jwtSecret is not defined!');

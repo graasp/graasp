@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam,  } from '@graasp/sdk';
+import { IdParam } from '@graasp/sdk';
 
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../util/config';
 import { buildRepositories } from '../../../../util/repositories';
@@ -10,7 +10,6 @@ import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../file/
 import { upload } from './schemas';
 import { FileThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
-
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;
@@ -25,8 +24,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     db,
   } = fastify;
 
-
-  const thumbnailService = new FileThumbnailService(itemService, fileService, shouldRedirectOnDownload);
+  const thumbnailService = new FileThumbnailService(
+    itemService,
+    fileService,
+    shouldRedirectOnDownload,
+  );
 
   fastify.post<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
@@ -54,7 +56,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
           }
 
           await thumbnailService.upload(member, buildRepositories(manager), itemId, file);
-
 
           reply.status(StatusCodes.NO_CONTENT);
         })

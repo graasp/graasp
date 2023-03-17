@@ -2,14 +2,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam,  } from '@graasp/sdk';
+import { IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../util/repositories';
+import {
+  DownloadFileUnexpectedError,
+  UploadFileUnexpectedError,
+} from '../../../item/plugins/file/utils/errors';
 import { upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../../item/plugins/file/utils/errors';
-
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;
@@ -20,12 +22,15 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
   const {
     log: defaultLogger,
     files: { service: fileService },
-    members:{service:memberService},
+    members: { service: memberService },
     db,
   } = fastify;
 
-
-  const thumbnailService = new MemberThumbnailService(memberService, fileService, shouldRedirectOnDownload);
+  const thumbnailService = new MemberThumbnailService(
+    memberService,
+    fileService,
+    shouldRedirectOnDownload,
+  );
 
   fastify.post<{ Params: IdParam }>(
     '/avatar',
@@ -34,10 +39,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: fastify.verifyAuthentication,
     },
     async (request, reply) => {
-      const {
-        member,
-        log,
-      } = request;
+      const { member, log } = request;
 
       return db
         .transaction(async (manager) => {
@@ -51,8 +53,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager),  file);
-
+          await thumbnailService.upload(member, buildRepositories(manager), file);
 
           reply.status(StatusCodes.NO_CONTENT);
         })

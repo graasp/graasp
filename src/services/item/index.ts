@@ -53,6 +53,7 @@ import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import graaspFileItem from './plugins/file';
+import graaspZipPlugin from './plugins/importExport';
 import graaspRecycledItemData from './plugins/recycled';
 import thumbnailsPlugin from './plugins/thumbnail';
 import graaspValidationPlugin from './plugins/validation';
@@ -124,14 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         //   },
         // });
 
-        // fastify.register(graaspItemZip, {
-        //   pathPrefix: FILES_PATH_PREFIX,
-        //   fileItemType: FILE_ITEM_TYPE,
-        //   fileConfigurations: {
-        //     s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-        //     local: FILE_ITEM_PLUGIN_OPTIONS,
-        //   },
-        // });
+        fastify.register(graaspZipPlugin);
 
         fastify.register(thumbnailsPlugin);
 

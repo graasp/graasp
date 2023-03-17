@@ -1004,7 +1004,7 @@ describe('Item routes tests', () => {
           ...item,
           ...payload,
           // BUG: folder extra should not contain extra
-          extra: { folder:{...item.extra.folder,  ...payload.extra.folder} },
+          extra: { folder: { ...item.extra.folder, ...payload.extra.folder } },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -1040,7 +1040,6 @@ describe('Item routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-
 
       it('Cannot update not found item given id', async () => {
         const payload = {

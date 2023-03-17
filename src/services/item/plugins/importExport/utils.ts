@@ -13,14 +13,14 @@ import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
   LINK_EXTENSION,
-  TMP_FOLDER_PATH,
+  TMP_IMPORT_ZIP_FOLDER_PATH,
   URL_PREFIX,
 } from './constants';
 
 export const prepareZip = async (file) => {
   // read and prepare folder for zip and content
   const tmpId = v4();
-  const targetFolder = path.join(__dirname, TMP_FOLDER_PATH, tmpId);
+  const targetFolder = path.join(TMP_IMPORT_ZIP_FOLDER_PATH, tmpId);
   await mkdir(targetFolder, { recursive: true });
   const zipPath = path.join(targetFolder, `${tmpId}.zip`);
   const folderPath = path.join(targetFolder, 'content');

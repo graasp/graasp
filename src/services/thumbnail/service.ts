@@ -3,18 +3,18 @@ import { rm } from 'fs/promises';
 import path from 'path';
 
 import { SavedMultipartFile } from '@fastify/multipart';
+import { FastifyReply } from 'fastify';
 
 import FileService from '../file/service';
 import { THUMBNAIL_MIMETYPE, TMP_FOLDER } from './constants';
 import { createThumbnails } from './helpers';
-import { FastifyReply } from 'fastify';
 
 export class ThumbnailService {
   fileService: FileService;
   shouldRedirectOnDownload: boolean;
-prefix:string;
+  prefix: string;
 
-  constructor(fileService: FileService, shouldRedirectOnDownload:boolean, prefix :string) {
+  constructor(fileService: FileService, shouldRedirectOnDownload: boolean, prefix: string) {
     this.shouldRedirectOnDownload = shouldRedirectOnDownload;
     this.fileService = fileService;
     this.prefix = prefix ?? 'thumbnails';
@@ -22,17 +22,15 @@ prefix:string;
 
   buildFilePath(itemId: string, name: string) {
     // TODO: CHANGE ??
-    return path.join(this.prefix , itemId, name);
+    return path.join(this.prefix, itemId, name);
   }
 
-  async upload(actor,  id:string,  file: SavedMultipartFile) {
- 
+  async upload(actor, id: string, file: SavedMultipartFile) {
     // ?? it might not be saved correctly in the original upload
     const fileStorage = path.join(__dirname, TMP_FOLDER, id);
     mkdirSync(fileStorage, { recursive: true });
-    
-    try {
 
+    try {
       // create thumbnails from image
       // Warning: assume stream is defined with a filepath
       const thumbnails = await createThumbnails(file.filepath as string, id, fileStorage);
@@ -61,14 +59,21 @@ prefix:string;
     }
   }
 
-  async download(actor,  { reply, id, size,  replyUrl }:  { reply:FastifyReply, size:string, id:string, replyUrl:boolean }) {
-    
+  async download(
+    actor,
+    {
+      reply,
+      id,
+      size,
+      replyUrl,
+    }: { reply: FastifyReply; size: string; id: string; replyUrl: boolean },
+  ) {
     const result = await this.fileService.download(actor, {
       reply: this.shouldRedirectOnDownload ? reply : null,
       replyUrl,
-      path:this.buildFilePath(id, size),
+      path: this.buildFilePath(id, size),
       mimetype: THUMBNAIL_MIMETYPE,
-      id
+      id,
     });
 
     return result;

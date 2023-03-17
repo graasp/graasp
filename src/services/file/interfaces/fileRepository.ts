@@ -23,7 +23,7 @@ export interface FileRepository {
     fileStorage?: string;
     expiration?: number;
     replyUrl?: boolean;
-    id:string;
+    id: string;
   }): Promise<ReadStream | string | void>;
 
   uploadFile(args: {

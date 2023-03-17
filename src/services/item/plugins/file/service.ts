@@ -14,8 +14,8 @@ import { StorageExceeded } from './utils/errors';
 const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 
 class FileItemService {
-  fileService:FileService;
-  shouldRedirectOnDownload:boolean;
+  fileService: FileService;
+  shouldRedirectOnDownload: boolean;
   options: {
     maxMemberStorage: number;
   };
@@ -110,7 +110,7 @@ class FileItemService {
 
     const result = await this.fileService.download(actor, {
       reply: this.shouldRedirectOnDownload ? reply : null,
-      id:itemId,
+      id: itemId,
       replyUrl,
       ...item.extra[this.fileService.type],
     });

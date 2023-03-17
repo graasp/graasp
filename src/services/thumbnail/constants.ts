@@ -1,6 +1,5 @@
 import { ThumbnailSize } from '@graasp/sdk';
 
-
 export const ThumbnailSizeFormat = {
   [ThumbnailSize.Small]: 200,
   [ThumbnailSize.Medium]: 400,

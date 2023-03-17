@@ -12,7 +12,10 @@ import common, { create, deleteOne, getForMany, getForOne, updateOne } from './s
 import { AppDataService } from './service';
 
 const appDataPlugin: FastifyPluginAsync = async (fastify) => {
-  const { db, files: {service:fS} } = fastify;
+  const {
+    db,
+    files: { service: fS },
+  } = fastify;
   const fileItemType = fS.type;
 
   fastify.addSchema(common);

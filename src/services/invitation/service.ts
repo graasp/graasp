@@ -40,7 +40,7 @@ export class InvitationService {
       ${this.fastify.mailer.buildText(text)}
       ${this.fastify.mailer.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
     `;
-    const title = t(MAIL.INVITATION_TITLE, {itemName:item.name});
+    const title = t(MAIL.INVITATION_TITLE, { itemName: item.name });
     this.fastify.mailer.sendEmail(title, email, link, html).catch((err) => {
       this.log.warn(err, `mailer failed. invitation link: ${link}`);
     });
