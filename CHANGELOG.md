@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/graasp/graasp/compare/v0.5.3...v0.6.0) (2023-03-17)
+
+
+### Features
+
+* bump fastify to 3.29.5 ([#349](https://github.com/graasp/graasp/issues/349)) ([e0c393a](https://github.com/graasp/graasp/commit/e0c393ac442c3fa3389d244e4b634625b32d663f))
+* upgrade websockets with @graasp/plugin-websockets bump ([#355](https://github.com/graasp/graasp/issues/355)) ([0bce308](https://github.com/graasp/graasp/commit/0bce30844124d610d37358fa7d1e47c260cd5ff0))
+
+
+### Bug Fixes
+
+* update types from SDK ([#352](https://github.com/graasp/graasp/issues/352)) ([d68777c](https://github.com/graasp/graasp/commit/d68777c1e2ce84c9a7ae6ec5d5f64f5c2e9e2fc7))
+
 ## [0.5.3](https://github.com/graasp/graasp/compare/v0.5.2...v0.5.3) (2023-03-13)
 
 
