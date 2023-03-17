@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemBase, ItemType, UnknownExtra } from '@graasp/sdk';
+import {  ItemType, UnknownExtra } from '@graasp/sdk';
 
 import { Member } from '../../member/entities/member';
 import { DocumentExtra } from '../plugins/document';

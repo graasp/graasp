@@ -245,61 +245,61 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
     /**
      * Delete H5P assets on item delete
      */
-    itemService.hooks.setPostHook(
-      'delete',
-      async (actor: Member, repositories: Repositories, { item }: { item: Item }) => {
-        if (item.type !== ItemType.H5P) {
-          return;
-        }
-        await fileService.deleteFolder(actor, {
-          folderPath: buildRootPath(pathPrefix, item.extra.h5p.contentId),
-        });
-      },
-    );
+    // itemService.hooks.setPostHook(
+    //   'delete',
+    //   async (actor: Member, repositories: Repositories, { item }: { item: Item }) => {
+    //     if (item.type !== ItemType.H5P) {
+    //       return;
+    //     }
+    //     await fileService.deleteFolder(actor, {
+    //       folderPath: buildRootPath(pathPrefix, item.extra.h5p.contentId),
+    //     });
+    //   },
+    // );
 
     /**
      * Copy H5P assets on item copy
      */
-    itemService.hooks.setPostHook(
-      'delete',
-      async (
-        actor: Member,
-        repositories: Repositories,
-        { original: item, copy }: { original: Item; copy: Item },
-      ) => {
-        // only execute this handler for H5P item types
-        if (item.type !== ItemType.H5P) {
-          return;
-        }
-        if (!item.name) {
-          throw new Error('Invalid state: missing previous H5P item name on copy');
-        }
-        if (!item.extra?.h5p) {
-          throw new Error('Invalid state: missing previous H5P item extra on copy');
-        }
+    // itemService.hooks.setPostHook(
+    //   'delete',
+    //   async (
+    //     actor: Member,
+    //     repositories: Repositories,
+    //     { original: item, copy }: { original: Item; copy: Item },
+    //   ) => {
+    //     // only execute this handler for H5P item types
+    //     if (item.type !== ItemType.H5P) {
+    //       return;
+    //     }
+    //     if (!item.name) {
+    //       throw new Error('Invalid state: missing previous H5P item name on copy');
+    //     }
+    //     if (!item.extra?.h5p) {
+    //       throw new Error('Invalid state: missing previous H5P item extra on copy');
+    //     }
 
-        const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
-        const copySuffix = '-1';
-        const newName = `${baseName}${copySuffix}`;
+    //     const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
+    //     const copySuffix = '-1';
+    //     const newName = `${baseName}${copySuffix}`;
 
-        const newContentId = v4();
-        const remoteRootPath = buildRootPath(pathPrefix, newContentId);
+    //     const newContentId = v4();
+    //     const remoteRootPath = buildRootPath(pathPrefix, newContentId);
 
-        // copy .h5p file
-        await fileService.copy(actor, {
-          originalPath: path.join(pathPrefix, item.extra.h5p.h5pFilePath),
-          newFilePath: buildH5PPath(remoteRootPath, newName),
-        });
-        // copy content folder
-        await fileService.copyFolder(actor, {
-          originalFolderPath: path.join(pathPrefix, item.extra.h5p.contentFilePath),
-          newFolderPath: buildContentPath(remoteRootPath),
-        });
+    //     // copy .h5p file
+    //     await fileService.copy(actor, {
+    //       originalPath: path.join(pathPrefix, item.extra.h5p.h5pFilePath),
+    //       newFilePath: buildH5PPath(remoteRootPath, newName),
+    //     });
+    //     // copy content folder
+    //     await fileService.copyFolder(actor, {
+    //       originalFolderPath: path.join(pathPrefix, item.extra.h5p.contentFilePath),
+    //       newFolderPath: buildContentPath(remoteRootPath),
+    //     });
 
-        item.name = buildH5PPath('', newName);
-        item.extra.h5p = buildH5PExtra(newContentId, newName).h5p;
-      },
-    );
+    //     item.name = buildH5PPath('', newName);
+    //     item.extra.h5p = buildH5PExtra(newContentId, newName).h5p;
+    //   },
+    // );
   });
 };
 

@@ -44,7 +44,7 @@ describe('Utils', () => {
         },
       };
       expect(() => validatePluginOptions(options)).toThrow(
-        "H5P routes must start and end with a forward slash ('/') !",
+        'H5P routes must start and end with a forward slash (\'/\') !',
       );
     });
 
@@ -57,7 +57,7 @@ describe('Utils', () => {
         },
       };
       expect(() => validatePluginOptions(options)).toThrow(
-        "H5P routes must start and end with a forward slash ('/') !",
+        'H5P routes must start and end with a forward slash (\'/\') !',
       );
     });
   });
