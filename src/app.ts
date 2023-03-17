@@ -2,9 +2,9 @@ import fastifyCors from '@fastify/cors';
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
+import graaspWebsockets from '@graasp/plugin-websockets';
 import mailerPlugin from 'graasp-mailer';
 import graaspPluginActions from 'graasp-plugin-actions';
-import graaspWebSockets from 'graasp-plugin-websockets';
 
 import authPlugin from './plugins/auth/auth';
 import databasePlugin from './plugins/database';
@@ -60,7 +60,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
   await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
 
   if (WEBSOCKETS_PLUGIN) {
-    await instance.register(graaspWebSockets, {
+    await instance.register(graaspWebsockets, {
       prefix: '/ws',
       redis: {
         config: {
