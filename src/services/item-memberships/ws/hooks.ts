@@ -6,9 +6,10 @@ import {
   ItemMembershipTaskManager,
   ItemService,
   TaskRunner,
+  Websocket,
+  WebsocketService,
   getChildFromPath,
 } from '@graasp/sdk';
-import { AccessDenied, NotFound, WebSocketService } from 'graasp-plugin-websockets';
 
 import { SharedItemsEvent, memberItemsTopic } from '../../items/ws/events';
 import { ItemMembershipEvent, itemMembershipsTopic } from './events';
@@ -23,7 +24,7 @@ import { ItemMembershipEvent, itemMembershipsTopic } from './events';
  * @param validationDbHandler Database transaction handler used to validate subscriptions
  */
 export function registerItemMembershipWsHooks(
-  websockets: WebSocketService,
+  websockets: WebsocketService,
   runner: TaskRunner<Actor>,
   itemService: ItemService,
   itemMembershipService: ItemMembershipService,
@@ -35,12 +36,12 @@ export function registerItemMembershipWsHooks(
     // item must exist
     const item = await itemService.get(itemId, validationDbHandler);
     if (!item) {
-      reject(NotFound());
+      reject(new Websocket.NotFoundError());
     }
     // member must have at least read access to item
     const allowed = await itemMembershipService.canRead(member.id, item, validationDbHandler);
     if (!allowed) {
-      reject(AccessDenied());
+      reject(new Websocket.AccessDeniedError());
     }
   });
 

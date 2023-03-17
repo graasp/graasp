@@ -1081,6 +1081,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/websocket@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@fastify/websocket@npm:5.0.1"
+  dependencies:
+    fastify-plugin: ^3.0.0
+    ws: ^8.0.0
+  checksum: 72c25a7c3a9ded0c5ae23c4f89bc1d43e34800b0366a5eeff2c5ad6aaac32cf15b7458a51585d92dd3b23a7d6317a042a83f360d7192e4fcfaca4da61c3409d5
+  languageName: node
+  linkType: hard
+
 "@gar/promisify@npm:^1.1.3":
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
@@ -1117,6 +1127,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graasp/plugin-websockets@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@graasp/plugin-websockets@npm:1.0.0"
+  dependencies:
+    "@fastify/websocket": 5.0.1
+    "@graasp/sdk": 0.9.0
+    ajv: 8.12.0
+    dotenv: 16.0.3
+    fastify: 3.29.5
+    fastify-plugin: 3.0.1
+    ioredis: 5.3.1
+  checksum: 409cb28c9e48fb1e4cadfe56b33731b93bbfc9e54c88f00241e0b51654e638d5f1be629368b0b6fa4789e5309d9ad76decae8e6c9ce189ac652ddd77bb09bbbf
+  languageName: node
+  linkType: hard
+
 "@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
   version: 0.1.0
   resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=3c6bf828279719895489d8237c4a53dfc430b2a8"
@@ -1131,6 +1156,23 @@ __metadata:
     slonik: 28.1.1
     uuid: 8.3.2
   checksum: 71c6aff2c43403915751aa111a83d71d6d8c8737f3441c0843556cee61c8bf0729c199a27c8ca8d137f25cfbfbc53b566b456fec0206c583917fee4d04a79d88
+  languageName: node
+  linkType: hard
+
+"@graasp/sdk@npm:0.9.0":
+  version: 0.9.0
+  resolution: "@graasp/sdk@npm:0.9.0"
+  dependencies:
+    "@fastify/secure-session": 5.3.0
+    aws-sdk: 2.1310.0
+    fastify: 3.29.5
+    fluent-json-schema: 3.1.0
+    immutable: 4.2.4
+    js-cookie: 3.0.1
+    qs: 6.11.0
+    slonik: 28.1.1
+    uuid: 9.0.0
+  checksum: 1fc427f9075450d9aac51efd9949516d8fd65670bae795c535ce813f36023ec514d445e78e90b6681a7c18a297b51bc2e5e15e54d381711f3a890ffd19ead8a1
   languageName: node
   linkType: hard
 
@@ -1191,6 +1233,13 @@ __metadata:
   version: 3.0.2
   resolution: "@hutson/parse-repository-url@npm:3.0.2"
   checksum: 39992c5f183c5ca3d761d6ed9dfabcb79b5f3750bf1b7f3532e1dc439ca370138bbd426ee250fdaba460bc948e6761fbefd484b8f4f36885d71ded96138340d1
+  languageName: node
+  linkType: hard
+
+"@ioredis/commands@npm:^1.1.1":
+  version: 1.2.0
+  resolution: "@ioredis/commands@npm:1.2.0"
+  checksum: 9b20225ba36ef3e5caf69b3c0720597c3016cc9b1e157f519ea388f621dd9037177f84cfe7e25c4c32dad7dd90c70ff9123cd411f747e053cf292193c9c461e2
   languageName: node
   linkType: hard
 
@@ -2372,6 +2421,18 @@ __metadata:
     require-from-string: ^2.0.2
     uri-js: ^4.2.2
   checksum: 5e0ff226806763be73e93dd7805b634f6f5921e3e90ca04acdf8db81eed9d8d3f0d4c5f1213047f45ebbf8047ffe0c840fa1ef2ec42c3a644899f69aa72b5bef
+  languageName: node
+  linkType: hard
+
+"ajv@npm:8.12.0":
+  version: 8.12.0
+  resolution: "ajv@npm:8.12.0"
+  dependencies:
+    fast-deep-equal: ^3.1.1
+    json-schema-traverse: ^1.0.0
+    require-from-string: ^2.0.2
+    uri-js: ^4.2.2
+  checksum: 4dc13714e316e67537c8b31bc063f99a1d9d9a497eb4bbd55191ac0dcd5e4985bbb71570352ad6f1e76684fb6d790928f96ba3b2d4fd6e10024be9612fe3f001
   languageName: node
   linkType: hard
 
@@ -3841,7 +3902,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3":
+"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -3963,6 +4024,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"denque@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "denque@npm:2.1.0"
+  checksum: 1d4ae1d05e59ac3a3481e7b478293f4b4c813819342273f3d5b826c7ffa9753c520919ba264f377e09108d24ec6cf0ec0ac729a5686cbb8f32d797126c5dae74
+  languageName: node
+  linkType: hard
+
 "depd@npm:2.0.0":
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
@@ -4050,6 +4118,13 @@ __metadata:
   version: 16.0.0
   resolution: "dotenv@npm:16.0.0"
   checksum: 664cebb51f0a9a1d1b930f51f0271e72e26d62feaecc9dc03df39453dd494b4e724809ca480fb3ec3213382b1ed3f791aaeb83569a137f9329ce58efd4853dbf
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:16.0.3":
+  version: 16.0.3
+  resolution: "dotenv@npm:16.0.3"
+  checksum: afcf03f373d7a6d62c7e9afea6328e62851d627a4e73f2e12d0a8deae1cd375892004f3021883f8aec85932cd2834b091f568ced92b4774625b321db83b827f8
   languageName: node
   linkType: hard
 
@@ -5847,20 +5922,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-websockets@github:graasp/graasp-plugin-websockets":
-  version: 1.0.0
-  resolution: "graasp-plugin-websockets@https://github.com/graasp/graasp-plugin-websockets.git#commit=3977527ed1dd6d4c8b90681c586897243d4f49cf"
-  dependencies:
-    ajv: ^8.11.0
-    dotenv: ^9.0.2
-    fastify: ^3.29.1
-    fastify-plugin: ^3.0.1
-    fastify-websocket: ^3.2.2
-    ioredis: ^4.28.5
-  checksum: 696c25bd4cee69e16a6245190a86db84e5870caf14ff80679edcead921737cc12a5141c2fa43d48fa063414c15279dc952b498345af957b42105c5b0f5b0a365
-  languageName: node
-  linkType: hard
-
 "graasp-websockets@github:graasp/graasp-websockets":
   version: 1.0.0
   resolution: "graasp-websockets@https://github.com/graasp/graasp-websockets.git#commit=3977527ed1dd6d4c8b90681c586897243d4f49cf"
@@ -5887,6 +5948,7 @@ __metadata:
     "@fastify/cors": 7.0.0
     "@fastify/helmet": 8.0.0
     "@fastify/secure-session": 4.0.0
+    "@graasp/plugin-websockets": 1.0.0
     "@graasp/sdk": 0.9.2
     "@graasp/translations": 1.2.1
     "@sentry/node": 7.39.0
@@ -5938,7 +6000,6 @@ __metadata:
     graasp-plugin-subscriptions: "github:graasp/graasp-plugin-subscriptions"
     graasp-plugin-thumbnails: "github:graasp/graasp-plugin-thumbnails"
     graasp-plugin-validation: "github:graasp/graasp-plugin-validation"
-    graasp-plugin-websockets: "github:graasp/graasp-plugin-websockets"
     http-status-codes: 2.2.0
     husky: 7.0.4
     jest: 29.4.1
@@ -6422,6 +6483,23 @@ __metadata:
     from2: ^2.3.0
     p-is-promise: ^3.0.0
   checksum: 8df24c9eadd7cdd1cbc160bc20914b961dfd0ca29767785b69e698f799e85466b6f7c637d237dca1472d09d333399f70cc05a2fb8d08cb449dc9a80d92193980
+  languageName: node
+  linkType: hard
+
+"ioredis@npm:5.3.1":
+  version: 5.3.1
+  resolution: "ioredis@npm:5.3.1"
+  dependencies:
+    "@ioredis/commands": ^1.1.1
+    cluster-key-slot: ^1.1.0
+    debug: ^4.3.4
+    denque: ^2.1.0
+    lodash.defaults: ^4.2.0
+    lodash.isarguments: ^3.1.0
+    redis-errors: ^1.2.0
+    redis-parser: ^3.0.0
+    standard-as-callback: ^2.1.0
+  checksum: 6c98cb8f8772ad4bb2b6b7a0a224e4a63f4759f9a28e84205f18788552f08221d51f391c10892dca01a1b10b2804d0a7e6082b0b7decd65538a5fb6b0f4f1f82
   languageName: node
   linkType: hard
 
@@ -11583,6 +11661,21 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: c3c100a181b731f40b7f2fddf004aa023f79d64f489706a28bc23ff88e87f6a64b3c6651fbec3a84a53960b75159574d7a7385709847a62ddb7ad6af76f49138
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.0.0":
+  version: 8.13.0
+  resolution: "ws@npm:8.13.0"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 53e991bbf928faf5dc6efac9b8eb9ab6497c69feeb94f963d648b7a3530a720b19ec2e0ec037344257e05a4f35bd9ad04d9de6f289615ffb133282031b18c61c
   languageName: node
   linkType: hard
 

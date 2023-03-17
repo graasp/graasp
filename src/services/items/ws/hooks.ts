@@ -6,9 +6,10 @@ import {
   ItemService,
   ItemTaskManager,
   TaskRunner,
+  Websocket,
+  WebsocketService,
   getParentFromPath,
 } from '@graasp/sdk';
-import { AccessDenied, NotFound, WebSocketService } from 'graasp-plugin-websockets';
 
 import {
   ChildItemEvent,
@@ -23,7 +24,7 @@ import {
  * helper to register item topic
  */
 function registerItemTopic(
-  websockets: WebSocketService,
+  websockets: WebsocketService,
   runner: TaskRunner<Actor>,
   itemService: ItemService,
   itemMembershipService: ItemMembershipService,
@@ -35,12 +36,12 @@ function registerItemTopic(
     // item must exist
     const item = await itemService.get(itemId, validationDbHandler);
     if (!item) {
-      reject(NotFound());
+      reject(new Websocket.NotFoundError());
     }
     // member must have at least read access to item
     const allowed = await itemMembershipService.canRead(member.id, item, validationDbHandler);
     if (!allowed) {
-      reject(AccessDenied());
+      reject(new Websocket.AccessDeniedError());
     }
   });
 
@@ -119,7 +120,7 @@ function registerItemTopic(
  * helper to register items of member topic
  */
 function registerMemberItemsTopic(
-  websockets: WebSocketService,
+  websockets: WebsocketService,
   runner: TaskRunner<Actor>,
   itemService: ItemService,
   itemTaskManager: ItemTaskManager,
@@ -128,7 +129,7 @@ function registerMemberItemsTopic(
     const { channel: memberId, member, reject } = req;
     // requeted memberId channel must be current member
     if (memberId !== member.id) {
-      reject(AccessDenied());
+      reject(new Websocket.AccessDeniedError());
     }
   });
 
@@ -242,7 +243,7 @@ function registerMemberItemsTopic(
  * @param validationDbHandler Database transaction handler used to validate subscriptions
  */
 export function registerItemWsHooks(
-  websockets: WebSocketService,
+  websockets: WebsocketService,
   runner: TaskRunner<Actor>,
   itemService: ItemService,
   itemMembershipService: ItemMembershipService,
