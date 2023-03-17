@@ -4421,6 +4421,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"french-badwords-list@npm:1.0.6":
+  version: 1.0.6
+  resolution: "french-badwords-list@npm:1.0.6"
+  checksum: 510233e5aa5607e277a31370d52b2340e9a8c0c9b8660e82488ac9d5287f813980725ee4f1d1895afa2278d9a28e4e66bbce0406794f980d482460bc8090c833
+  languageName: node
+  linkType: hard
+
 "from2@npm:^2.3.0":
   version: 2.3.0
   resolution: "from2@npm:2.3.0"
@@ -4819,6 +4826,7 @@ __metadata:
     fastify-secure-session: 3.2.0
     fluent-json-schema: 3.1.0
     form-data: 4.0.0
+    french-badwords-list: 1.0.6
     http-status-codes: 2.2.0
     husky: 7.0.4
     jest: 29.4.1
