@@ -162,6 +162,7 @@ export class ItemValidationService {
             suspiciousFields.length > 0
               ? ItemValidationStatus.Failure
               : ItemValidationStatus.Success;
+          break;
 
         case ItemValidationProcess.ImageChecking:
           let filepath = '';
@@ -201,6 +202,7 @@ export class ItemValidationService {
             const isSafe = await classifyImage(this.imageClassifierApi, filePath);
             status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
           }
+          break;
 
         default:
           // TODO: update validation entry
