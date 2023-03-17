@@ -3,7 +3,10 @@ import { createWriteStream } from 'fs';
 import { mkdir, readFile } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream';
+import util from 'util';
 import { v4 } from 'uuid';
+
+import { BusboyFileStream } from '@fastify/busboy';
 
 import { ItemType } from '@graasp/sdk';
 
@@ -17,7 +20,9 @@ import {
   URL_PREFIX,
 } from './constants';
 
-export const prepareZip = async (file) => {
+const pump = util.promisify(pipeline);
+
+export const prepareZip = async (file: BusboyFileStream) => {
   // read and prepare folder for zip and content
   const tmpId = v4();
   const targetFolder = path.join(TMP_IMPORT_ZIP_FOLDER_PATH, tmpId);
@@ -26,8 +31,7 @@ export const prepareZip = async (file) => {
   const folderPath = path.join(targetFolder, 'content');
 
   // save graasp zip
-  await pipeline(file, createWriteStream(zipPath));
-
+  await pump(file, createWriteStream(zipPath));
   await extract(zipPath, { dir: folderPath });
 
   return { folderPath };

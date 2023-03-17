@@ -46,10 +46,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // create items from folder
       // does not wait
-      importExportService.import(member, buildRepositories(), {
-        zipFile,
-        parentId,
-      });
+      importExportService
+        .import(member, buildRepositories(), {
+          zipFile,
+          parentId,
+        })
+        .catch((e) => {
+          console.error(e);
+        });
 
       reply.status(StatusCodes.ACCEPTED);
     },

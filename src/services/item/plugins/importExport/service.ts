@@ -6,6 +6,8 @@ import mmm from 'mmmagic';
 import path from 'path';
 import util from 'util';
 
+import { MultipartFile } from '@fastify/multipart';
+
 import { EmbeddedLinkItemType, ItemType, LocalFileItemExtra, S3FileItemExtra } from '@graasp/sdk';
 
 import { Repositories } from '../../../../util/repositories';
@@ -160,7 +162,7 @@ export class ImportExportService {
           (item.extra[ItemType.LOCAL_FILE] as LocalFileItemExtra);
         const fileStream = await this.fileItemService.download(actor, repositories, {
           reply,
-          item: item.id,
+          itemId: item.id,
         });
 
         // build filename with extension if does not exist
@@ -304,7 +306,7 @@ export class ImportExportService {
    * @param repositories
    * @param param2
    */
-  async _import(actor, repositories, { parentId, folderPath }) {
+  async _import(actor, repositories, { parent, folderPath }) {
     const filenames = fs.readdirSync(folderPath);
     const folderName = path.basename(folderPath);
 
@@ -323,7 +325,7 @@ export class ImportExportService {
           folderName,
           items,
           updateParentDescription: (description) =>
-            repositories.itemRepository.patch(parentId, { description }),
+            repositories.itemRepository.patch(parent.id, { description }),
         });
       }
       // add new item
@@ -331,7 +333,7 @@ export class ImportExportService {
         const item = await this._buildItemFromFilename(actor, repositories, {
           filename,
           folderPath,
-          parentId,
+          parentId: parent.id,
         });
         // .catch( (e)=> {
         //   if (e instanceof UploadEmptyFileError) {
@@ -347,32 +349,40 @@ export class ImportExportService {
 
     // create the items
     const newItems = await Promise.all(
-      items.map(async (item) => repositories.itemRepository.post(actor, item, parentId)),
+      items.map(async (item) => repositories.itemRepository.post(item, actor, parent)),
     );
 
     // recursively create children in folders
-    for (const { type, name, id } of newItems) {
+    for (const newItem of newItems) {
+      const { type, name } = newItem;
       if (type === ItemType.FOLDER) {
         await this._import(actor, repositories, {
           folderPath: path.join(folderPath, name),
-          parentId: id,
+          parent: newItem,
         });
       }
     }
   }
 
-  async import(actor, repositories, { zipFile, parentId }): Promise<void> {
+  async import(
+    actor,
+    repositories,
+    { zipFile, parentId }: { zipFile: MultipartFile; parentId?: string },
+  ): Promise<void> {
     // throw if file is not a zip
     if (!ZIP_FILE_MIME_TYPES.includes(zipFile.mimetype)) {
       throw new FileIsInvalidArchiveError(zipFile.mimetype);
     }
 
-    // check item permission
-    await this.itemService.get(actor, repositories, parentId);
-
     const { folderPath } = await prepareZip(zipFile.file);
 
-    await this._import(actor, repositories, { parentId, folderPath });
+    let parent;
+    if (parentId) {
+      // check item permission
+      parent = await this.itemService.get(actor, repositories, parentId);
+    }
+
+    await this._import(actor, repositories, { parent, folderPath });
 
     // delete zip and content
     fs.rmSync(folderPath, { recursive: true });

@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { SavedMultipartFile } from '@fastify/multipart';
+import { FastifyReply } from 'fastify';
 
 import { ItemType, LocalFileItemExtra, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
 
@@ -102,7 +103,11 @@ class FileItemService {
     return Promise.all(promises);
   }
 
-  async download(actor, repositories: Repositories, { reply, itemId, replyUrl }) {
+  async download(
+    actor,
+    repositories: Repositories,
+    { reply, itemId, replyUrl }: { reply: FastifyReply; itemId: string; replyUrl: boolean },
+  ) {
     // prehook: get item and input in download call ?
     // check rights
     const item = await repositories.itemRepository.get(itemId);
