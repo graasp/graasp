@@ -203,7 +203,7 @@ export class ItemValidationService {
             status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
           }
           break;
-
+          
         default:
           // TODO: update validation entry
           throw new ProcessNotFoundError(process);
