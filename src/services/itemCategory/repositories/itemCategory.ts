@@ -1,6 +1,3 @@
-import uniqBy from 'lodash.uniqby';
-import { In, QueryFailedError } from 'typeorm';
-
 import { AppDataSource } from '../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../util/typeormError';
 import { Item } from '../../item/entities/Item';
