@@ -16,3 +16,16 @@ export class ItemLikeNotFound extends GraaspItemLikeError {
     );
   }
 }
+
+export class CannotGetOthersLikes extends GraaspItemLikeError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPILERR002',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'You cannot get other members\' likes',
+      },
+      data,
+    );
+  }
+}

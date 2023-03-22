@@ -3,12 +3,18 @@ import { PermissionLevel } from '@graasp/sdk';
 import { Repositories } from '../../util/repositories';
 import { validatePermission } from '../authorization';
 import { Member } from '../member/entities/member';
+import { CannotGetOthersLikes } from './errors';
 
 export class ItemLikeService {
   async getItemsForMember(actor: Member, repositories: Repositories, memberId: string) {
     const { itemLikeRepository } = repositories;
 
-    // check member is signed in?
+    // only own items
+    // it might change later
+    if(memberId !== actor.id) {
+      throw new CannotGetOthersLikes(memberId);
+    }
+
     return itemLikeRepository.getItemsForMember(memberId);
   }
 

@@ -24,10 +24,14 @@ export default {
   },
 };
 
-export const getLikedItems = {
-  params: {
+export const getLikesForMember = {
+  querystring: {
+    type: 'object',
+    properties: {
     memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
   },
+  additionalProperties: false,
+},
   response: {
     200: {
       type: 'array',
@@ -35,7 +39,7 @@ export const getLikedItems = {
   },
 };
 
-export const getLikeCount = {
+export const getLikesForItem = {
   params: {
     itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
   },

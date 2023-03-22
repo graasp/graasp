@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../util/repositories';
-import common, { create, deleteOne, getLikeCount, getLikedItems } from './schemas/schemas';
+import common, { create, deleteOne, getLikesForMember, getLikesForItem } from './schemas/schemas';
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -10,11 +10,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const itemLikeService = new ItemLikeService();
 
   fastify.addSchema(common);
-  //get items of liked items
-  fastify.get<{ Params: { memberId: string } }>(
-    '/:memberId/liked',
-    { schema: getLikedItems, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { memberId }, log }) => {
+  //get liked entry for member
+  // BUG: hide item you dont have membership (you liked then lose membership)
+  fastify.get<{ Querystring: { memberId: string } }>(
+    '/liked',
+    { schema: getLikesForMember, preHandler: fastify.verifyAuthentication },
+    async ({ member, query: { memberId }, log }) => {
       return itemLikeService.getItemsForMember(member, buildRepositories(), memberId);
     },
   );
@@ -23,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // TODO: anonymize private members
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/likes',
-    { schema: getLikeCount, preHandler: fastify.fetchMemberInSession },
+    { schema: getLikesForItem, preHandler: fastify.fetchMemberInSession },
     async ({ member, params: { itemId }, log }) => {
       return itemLikeService.getForItem(member, buildRepositories(), itemId);
     },

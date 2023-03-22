@@ -18,7 +18,7 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
       where: { creator: { id: memberId } },
       relations: { item: true },
     });
-    return itemLikes.map(({ item }) => item);
+    return itemLikes;
   },
 
   /**

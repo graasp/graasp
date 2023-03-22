@@ -50,7 +50,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
 
   // API endpoints
 
-  // get own recycled items
+  // get own recycled items data
   fastify.get<{ Params: IdParam }>(
     '/recycled',
     { schema: getRecycledItemDatas, preHandler: fastify.verifyAuthentication },

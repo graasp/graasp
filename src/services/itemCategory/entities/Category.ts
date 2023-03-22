@@ -5,6 +5,7 @@ import { CategoryType } from '@graasp/sdk';
 
 @Entity()
 @Unique('id', ['id'])
+@Unique('category-name-type', ['name', 'type'])
 export class Category extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
