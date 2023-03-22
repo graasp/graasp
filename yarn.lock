@@ -1001,6 +1001,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fastify/deepmerge@npm:^1.1.0":
+  version: 1.3.0
+  resolution: "@fastify/deepmerge@npm:1.3.0"
+  checksum: 33ec927905dca320d7ae9535a1521909f7c82339706345324ab6287ad100589a799b8257c15b0e582c7bb74e2aa4883d82ba0228d7b116aa8789ada4f78d6974
+  languageName: node
+  linkType: hard
+
 "@fastify/error@npm:^2.0.0":
   version: 2.0.0
   resolution: "@fastify/error@npm:2.0.0"
@@ -5115,6 +5122,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fluent-json-schema@npm:4.1.0":
+  version: 4.1.0
+  resolution: "fluent-json-schema@npm:4.1.0"
+  dependencies:
+    "@fastify/deepmerge": ^1.1.0
+  checksum: 955cdfa1470668132be00b7ca1844cff811a16a3c611ad73e56d281b2768162cfbb6399b8fc166adf0162d052fede64f73325827c2b976922b2d190e705acfb2
+  languageName: node
+  linkType: hard
+
 "follow-redirects@npm:^1.14.8":
   version: 1.15.2
   resolution: "follow-redirects@npm:1.15.2"
@@ -5997,7 +6013,7 @@ __metadata:
     fastify-cors: 6.1.0
     fastify-plugin: 3.0.1
     fastify-secure-session: 3.2.0
-    fluent-json-schema: 3.1.0
+    fluent-json-schema: 4.1.0
     graasp-apps: "github:graasp/graasp-apps"
     graasp-document-item: "github:graasp/graasp-document-item"
     graasp-embedded-link-item: "github:graasp/graasp-embedded-link-item"
