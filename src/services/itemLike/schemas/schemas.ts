@@ -28,10 +28,10 @@ export const getLikesForMember = {
   querystring: {
     type: 'object',
     properties: {
-    memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    },
+    additionalProperties: false,
   },
-  additionalProperties: false,
-},
   response: {
     200: {
       type: 'array',

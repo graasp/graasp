@@ -12,9 +12,8 @@ export class MemberPasswordService {
     this.log = log;
   }
 
-  async patch(actor, repositories: Repositories, currentPassword: string, newPassword: string) {
+  async patch(actor, repositories: Repositories, newPassword: string, currentPassword?: string) {
     const { memberPasswordRepository } = repositories;
-
     // verify that input current password is the same as the stored one
     await memberPasswordRepository.validatePassword(actor.id, currentPassword);
     await memberPasswordRepository.patch(actor.id, newPassword);

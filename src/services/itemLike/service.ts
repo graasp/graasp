@@ -11,7 +11,7 @@ export class ItemLikeService {
 
     // only own items
     // it might change later
-    if(memberId !== actor.id) {
+    if (memberId !== actor.id) {
       throw new CannotGetOthersLikes(memberId);
     }
 

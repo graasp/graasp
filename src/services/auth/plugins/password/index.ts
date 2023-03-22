@@ -37,8 +37,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         return memberPasswordService.patch(
           member,
           buildRepositories(manager),
-          currentPassword,
           password,
+          currentPassword,
         );
       });
     },

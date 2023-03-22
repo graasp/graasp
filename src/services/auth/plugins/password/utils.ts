@@ -31,7 +31,7 @@ export async function verifyCurrentPassword(memberPassword: MemberPassword, pass
   if they do not match, verified is false
   */
   // if the member already has a password set: return verified
-  if (memberPassword.password) {
+  if (memberPassword?.password) {
     const verified = bcrypt
       .compare(password, memberPassword.password)
       .then((res) => res)
