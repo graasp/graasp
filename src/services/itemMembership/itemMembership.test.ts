@@ -114,6 +114,7 @@ describe('Membership routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
+      // TODO: it should return one error and all the other data
       it('Throws if one item is not found', async () => {
         await saveItemAndMembership({ member: actor });
         const itemId = v4();

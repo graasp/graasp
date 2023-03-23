@@ -111,7 +111,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     '/mentions/:mentionId',
     { schema: patchMention },
     async ({ member, params: { mentionId }, body: { status }, log }) => {
-      return mentionService.patch(member, buildRepositories(), mentionId, status);
+      return db.transaction(async (manager) => {
+        return mentionService.patch(member, buildRepositories(manager), mentionId, status);
+      });
     },
   );
 

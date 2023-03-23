@@ -47,7 +47,13 @@ export class ItemMembershipService {
     const { data, errors } = await itemMembershipRepository.getMany(ids, { throwOnError: true });
     await Promise.all(
       Object.values(data).map(async ({ item }) => {
-        validatePermission(repositories, PermissionLevel.Read, actor, item);
+        try {
+          validatePermission(repositories, PermissionLevel.Read, actor, item);
+        } catch(e) {
+          // if does not have permission, remove data and add error
+          delete data.data[item.id];
+          data.errors.push(e);
+        }
       }),
     );
 

@@ -45,7 +45,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       //   );
       // }
 
-      // TODO: public???
       // get many item's memberships
       // returns empty for item not found
       fastify.get<{ Querystring: { itemId: string[] } }>(
