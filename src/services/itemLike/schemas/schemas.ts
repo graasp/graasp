@@ -7,12 +7,17 @@ export default {
         id: {
           $ref: 'http://graasp.org/#/definitions/uuid',
         },
-        itemId: {
-          $ref: 'http://graasp.org/#/definitions/uuid',
+        // TODO: use ref
+        item: {
+          type:'object',
+          properties: {
+            id: { $ref: 'http://graasp.org/#/definitions/uuid'}
+          }
         },
-        memberId: {
-          $ref: 'http://graasp.org/#/definitions/uuid',
-        },
+        // warning: do not include for privacy for now
+        // member: {
+        //   $ref: 'http://graasp.org/#/definitions/uuid',
+        // },
         createdAt: {},
       },
       additionalProperties: false,
@@ -35,6 +40,9 @@ export const getLikesForMember = {
   response: {
     200: {
       type: 'array',
+      items: {
+        $ref: 'http://graasp.org/itemlikes/#/definitions/itemLike',
+      }
     },
   },
 };
@@ -45,7 +53,10 @@ export const getLikesForItem = {
   },
   response: {
     200: {
-      $ref: 'http://graasp.org/itemlikes/#/definitions/likeCount',
+      type: 'array',
+      items: {
+        $ref: 'http://graasp.org/itemlikes/#/definitions/itemLike',
+      }
     },
   },
 };

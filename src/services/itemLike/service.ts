@@ -25,7 +25,7 @@ export class ItemLikeService {
 
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
-    return itemLikeRepository.getForItem(actor.id);
+    return itemLikeRepository.getForItem(itemId);
   }
 
   async removeOne(actor: Member, repositories: Repositories, itemId: string) {
