@@ -27,14 +27,14 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   },
 
   // return public item entry? contains when it was published
-  async getOwnItems(member: Member) {
+  async getItemsForMember(memberId: string) {
     // get for membership write and admin -> createquerybuilder
     return this.createQueryBuilder()
       .select(['item'])
       .from(Item, 'item')
-      .innerJoin('published_item', 'pi', 'pi.item_path = item.path')
+      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-      .where('im.member_id = :memberId', { memberId: member.id })
+      .where('im.member_id = :memberId', { memberId })
       .andWhere('im.permission IN (:...permissions)', {
         permissions: [PermissionLevel.Admin, PermissionLevel.Write],
       })

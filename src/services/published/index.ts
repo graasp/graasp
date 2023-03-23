@@ -1,7 +1,8 @@
+import { UUID } from '@graasp/sdk';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../util/repositories';
-import { getCollections, publishItem, unpublishItem } from './schemas';
+import { getCollections, publishItem, unpublishItem , getCollectionsForMember} from './schemas';
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -19,13 +20,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get<{ Querystring: { category: string[] } }>(
-    '/collections/own',
+  fastify.get<{ Params: { memberId: UUID } }>(
+    '/collections/members/:memberId',
     {
+      schema: getCollectionsForMember,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ query, member }) => {
-      return pIS.getOwnItems(member, buildRepositories());
+    async ({  member, params: {memberId} }) => {
+      return pIS.getItemsForMember(member, buildRepositories(), memberId);
     },
   );
 

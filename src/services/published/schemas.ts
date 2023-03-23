@@ -65,6 +65,25 @@ export const getCollections = {
   },
 };
 
+export const getCollectionsForMember = {
+  params: {
+    type: 'object',
+    properties: {
+      memberId: {
+        $ref: 'http://graasp.org/#/definitions/uuid',
+      },
+    },
+    required: ['memberId']
+  },
+
+  response: {
+    200: {
+      type: 'array',
+      items: item,
+    },
+  },
+};
+
 export const publishItem = {
   params: {
     type: 'object',
@@ -73,6 +92,7 @@ export const publishItem = {
         $ref: 'http://graasp.org/#/definitions/uuid',
       },
     },
+    required: ['itemId']
   },
 
   response: {
@@ -88,6 +108,7 @@ export const unpublishItem = {
         $ref: 'http://graasp.org/#/definitions/uuid',
       },
     },
+    required: ['itemId']
   },
 
   response: {

@@ -1,4 +1,4 @@
-import { ItemTagType, PermissionLevel } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../util/repositories';
 import { validatePermission } from '../authorization';
@@ -37,9 +37,9 @@ export class ItemPublishedService {
     return itemPublishedRepository.deleteForItem(item);
   }
 
-  async getOwnItems(actor, repositories) {
+  async getItemsForMember(actor, repositories, memberId:UUID) {
     const { itemPublishedRepository } = repositories;
-    return itemPublishedRepository.getOwnItems(actor);
+    return itemPublishedRepository.getItemsForMember(memberId);
   }
 
   // filter out by categories, not defined will return all items
