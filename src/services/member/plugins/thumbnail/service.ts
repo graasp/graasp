@@ -8,11 +8,9 @@ import { MemberService } from '../../service';
 
 export class MemberThumbnailService {
   thumbnailService: ThumbnailService;
-  shouldRedirectOnDownload: boolean;
   memberService: MemberService;
 
-  constructor(memberService: MemberService, fileService: FileService, shouldRedirectOnDownload) {
-    this.shouldRedirectOnDownload = shouldRedirectOnDownload;
+  constructor(memberService: MemberService, fileService: FileService) {
     this.thumbnailService = new ThumbnailService(fileService, true, 'avatars');
     this.memberService = memberService;
   }
@@ -39,7 +37,7 @@ export class MemberThumbnailService {
     }: { reply: FastifyReply; memberId: string; size: string; replyUrl: boolean },
   ) {
     const result = await this.thumbnailService.download(actor, {
-      reply: this.shouldRedirectOnDownload ? reply : null,
+      reply,
       replyUrl,
       size,
       id: memberId,

@@ -1,8 +1,9 @@
-import { UUID } from '@graasp/sdk';
 import { FastifyPluginAsync } from 'fastify';
 
+import { UUID } from '@graasp/sdk';
+
 import { buildRepositories } from '../../util/repositories';
-import { getCollections, publishItem, unpublishItem , getCollectionsForMember} from './schemas';
+import { getCollections, getCollectionsForMember, publishItem, unpublishItem } from './schemas';
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -26,7 +27,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getCollectionsForMember,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({  member, params: {memberId} }) => {
+    async ({ member, params: { memberId } }) => {
       return pIS.getItemsForMember(member, buildRepositories(), memberId);
     },
   );

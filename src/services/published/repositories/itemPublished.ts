@@ -2,8 +2,6 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
 import { Item } from '../../item/entities/Item';
-import { Member } from '../../member/entities/member';
-import { mapById } from '../../utils';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 

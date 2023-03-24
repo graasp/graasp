@@ -26,6 +26,8 @@ export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledIt
       )
       .getMany();
 
+    console.log(recycledItemEntries);
+
     return recycledItemEntries;
   },
 
@@ -43,6 +45,7 @@ export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledIt
   // should we move to core item?
   async recycleMany(items: Item[], creator: Member) {
     const recycled = items.map((item) => this.create({ item, creator }));
+    console.log(recycled);
     this.insert(recycled);
     return recycled;
   },

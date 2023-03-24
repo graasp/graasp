@@ -49,7 +49,7 @@ export class ItemMembershipService {
       Object.values(data).map(async ({ item }) => {
         try {
           validatePermission(repositories, PermissionLevel.Read, actor, item);
-        } catch(e) {
+        } catch (e) {
           // if does not have permission, remove data and add error
           delete data.data[item.id];
           data.errors.push(e);

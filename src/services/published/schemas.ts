@@ -73,7 +73,7 @@ export const getCollectionsForMember = {
         $ref: 'http://graasp.org/#/definitions/uuid',
       },
     },
-    required: ['memberId']
+    required: ['memberId'],
   },
 
   response: {
@@ -92,7 +92,7 @@ export const publishItem = {
         $ref: 'http://graasp.org/#/definitions/uuid',
       },
     },
-    required: ['itemId']
+    required: ['itemId'],
   },
 
   response: {
@@ -108,7 +108,7 @@ export const unpublishItem = {
         $ref: 'http://graasp.org/#/definitions/uuid',
       },
     },
-    required: ['itemId']
+    required: ['itemId'],
   },
 
   response: {
