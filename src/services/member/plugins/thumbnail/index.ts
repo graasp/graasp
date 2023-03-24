@@ -6,6 +6,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../util/repositories';
+import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
@@ -13,7 +14,6 @@ import {
 import { upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
-import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;
