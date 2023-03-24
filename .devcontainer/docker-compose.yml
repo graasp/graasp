@@ -2,6 +2,7 @@ version: '3'
 
 services:
   app:
+    container_name: graasp-core
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,7 +12,6 @@ services:
         # On Linux, you may need to update USER_UID and USER_GID below if not your local UID is not 1000.
         USER_UID: 1000
         USER_GID: 1000
-
     environment:
       HOSTNAME: localhost
       PG_CONNECTION_URI: "postgresql://docker:docker@localhost:5432/docker"
@@ -24,10 +24,8 @@ services:
     volumes:
       - ..:/workspace:cached
       - ../tmp:/tmp/graasp-file-item-storage
-
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
-
     # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
     network_mode: service:db
     # Uncomment the next line to use a non-root user for all processes.
@@ -37,10 +35,9 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
-    build:
-      context: ../
-      dockerfile: .devcontainer/db/Dockerfile
-    restart: unless-stopped
+    container_name: graasp-postgres
+    image: postgres:14
+    restart: on-failure
     ports:
       - 5432:5432
     volumes:
@@ -49,21 +46,13 @@ services:
       POSTGRES_DB: docker
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
-      POSTGRES_ETHERPAD_DB: etherpad
-      POSTGRES_ETHERPAD_USER: etherpad
-      POSTGRES_ETHERPAD_PASSWORD: etherpad
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward MongoDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   redis:
     container_name: graasp-redis
     image: redis
-    # For this to work a .env file needs to be provided in the .devcontainer folder
-    # with the value of the variable set.
-    command: redis-server --requirepass $REDIS_PASSWORD
-    restart: unless-stopped
-    ports:
-      - 6379:6379
+    restart: on-failure
 
   etherpad:
     container_name: graasp-etherpad
@@ -78,7 +67,7 @@ services:
       - 9001:9001
     environment:
       - DB_TYPE=postgres
-      - DB_HOST=db
+      - DB_HOST=etherpad-db
       - DB_PORT=5432
       - DB_NAME=etherpad
       - DB_USER=etherpad
@@ -88,9 +77,22 @@ services:
       # only API can create pads
       - EDIT_ONLY=true
     # restart the container until db has created tables
-    restart: unless-stopped
+    restart: on-failure
     depends_on:
       - db
+
+  etherpad-db:
+    container_name: graasp-postgres-etherpad
+    image: postgres:14
+    restart: on-failure
+    ports:
+      - 5433:5432
+    volumes:
+      - postgres-data-etherpad:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: etherpad
+      POSTGRES_USER: etherpad
+      POSTGRES_PASSWORD: etherpad
 
   # Localstack is used to test aws services locally
   localstack:
@@ -100,7 +102,6 @@ services:
       - ${TMPDIR}/localstack:/tmp/graasp-localstack
       - ./localstack:/docker-entrypoint-initaws.d
       - /var/run/docker.sock:/var/run/docker.sock
-
     environment:
       - SERVICES=s3
       - DEBUG=1
@@ -111,6 +112,7 @@ services:
 
   # necessary for graasp-embedded-link-item
   iframely:
+    container_name: graasp-iframely
     image: graasp/iframely:latest
     environment:
       NODE_ENV: staging
@@ -118,4 +120,5 @@ services:
       - 8061:8061
 
 volumes:
-  postgres-data: null
+  postgres-data:
+  postgres-data-etherpad:
