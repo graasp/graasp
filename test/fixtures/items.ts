@@ -11,7 +11,7 @@ const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padSta
 export const getDummyItem = (
   options: {
     name?: string;
-    type?: ItemType;
+    type?: Item['type'];
     path?: string;
     description?: string;
     id?: string;

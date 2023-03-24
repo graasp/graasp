@@ -9,10 +9,10 @@ export default {
         },
         // TODO: use ref
         item: {
-          type:'object',
+          type: 'object',
           properties: {
-            id: { $ref: 'http://graasp.org/#/definitions/uuid'}
-          }
+            id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+          },
         },
         // warning: do not include for privacy for now
         // member: {
@@ -42,7 +42,7 @@ export const getLikesForMember = {
       type: 'array',
       items: {
         $ref: 'http://graasp.org/itemlikes/#/definitions/itemLike',
-      }
+      },
     },
   },
 };
@@ -56,7 +56,7 @@ export const getLikesForItem = {
       type: 'array',
       items: {
         $ref: 'http://graasp.org/itemlikes/#/definitions/itemLike',
-      }
+      },
     },
   },
 };

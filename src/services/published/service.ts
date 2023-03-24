@@ -37,7 +37,7 @@ export class ItemPublishedService {
     return itemPublishedRepository.deleteForItem(item);
   }
 
-  async getItemsForMember(actor, repositories, memberId:UUID) {
+  async getItemsForMember(actor, repositories, memberId: UUID) {
     const { itemPublishedRepository } = repositories;
     return itemPublishedRepository.getItemsForMember(memberId);
   }
