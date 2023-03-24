@@ -37,7 +37,6 @@ export type ItemSettings = {
 };
 
 @Entity()
-@Unique('id', ['id'])
 export class Item extends BaseEntity {
   // we do not generate by default because if need to generate
   // the id to define the path

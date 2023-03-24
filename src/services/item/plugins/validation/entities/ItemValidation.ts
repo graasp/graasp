@@ -39,7 +39,6 @@ import { ItemValidationGroup } from './ItemValidationGroup';
 // };
 
 @Entity()
-@Unique('id', ['id'])
 export class ItemValidation extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

@@ -13,7 +13,7 @@ import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
-@Unique('id', ['id'])
+@Unique('item', ['item'])
 export class ItemPublished extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

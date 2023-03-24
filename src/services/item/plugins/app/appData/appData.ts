@@ -21,7 +21,6 @@ import { Item } from '../../../entities/Item';
 import { AppDataVisibility } from '../interfaces/app-details';
 
 @Entity()
-@Unique('id', ['id'])
 export class AppData extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

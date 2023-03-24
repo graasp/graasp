@@ -17,7 +17,6 @@ import { Item } from '../../../entities/Item';
 import { ItemValidation } from './ItemValidation';
 
 @Entity()
-@Unique('id', ['id'])
 export class ItemValidationGroup extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

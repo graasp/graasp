@@ -25,7 +25,6 @@ import { ItemTag } from '../services/itemTag/ItemTag';
 import { Member } from '../services/member/entities/member';
 import { ItemPublished } from '../services/published/entities/itemPublished';
 
-// TODO: USE DB OPTIONS
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
@@ -59,6 +58,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   logging: ['error'],
+  // migrationsRun: true;
 
   // TODO: REMOVE
   // dropSchema: true,
@@ -90,6 +90,5 @@ export const AppDataSource = new DataSource({
     ItemValidationGroup,
     ItemValidationReview,
   ],
-  // migrations: ['migrations/*.js'],
-  // migrationsTableName: 'custom_migration1_table',
+  migrations: ['migrations/*.ts'],
 });

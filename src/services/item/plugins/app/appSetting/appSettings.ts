@@ -17,7 +17,6 @@ import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 
 @Entity()
-@Unique('id', ['id'])
 export class AppSetting extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

@@ -10,7 +10,7 @@ import {
 import { v4 } from 'uuid';
 
 @Entity()
-@Unique('id', ['id'])
+@Unique('name', ['name'])
 export class Publisher extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

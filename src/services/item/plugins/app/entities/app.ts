@@ -18,7 +18,6 @@ export type AppExtra = {
 };
 
 @Entity()
-@Unique('id', ['id'])
 export class App extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

@@ -16,7 +16,7 @@ import { Item } from '../item/entities/Item';
 import { Member } from '../member/entities/member';
 
 @Entity()
-@Unique('id', ['id'])
+@Unique('item-tag', ['item', 'type'])
 export class ItemTag extends BaseEntity implements GraaspItemTag {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

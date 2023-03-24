@@ -21,7 +21,7 @@ export type MemberExtra = {
 };
 
 @Entity()
-@Unique('id', ['id'])
+@Unique('email', ['email'])
 export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

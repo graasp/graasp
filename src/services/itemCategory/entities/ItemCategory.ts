@@ -16,7 +16,6 @@ import { Member } from '../../member/entities/member';
 import { Category } from './Category';
 
 @Entity()
-@Unique('id', ['id'])
 @Unique('category-item', ['category', 'item'])
 export class ItemCategory extends BaseEntity implements GraaspItemCategory {
   // we do not generate by default because if need to generate

@@ -17,7 +17,6 @@ import { Member } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
 
 @Entity()
-@Unique('id', ['id'])
 export class ChatMention extends BaseEntity {
   // we do not generate by default because if need to generate
   // the id to define the path
