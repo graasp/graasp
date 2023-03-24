@@ -11,11 +11,9 @@ import ItemService from '../../service';
 
 export class FileThumbnailService {
   thumbnailService: ThumbnailService;
-  shouldRedirectOnDownload: boolean;
   itemService: ItemService;
 
-  constructor(itemService: ItemService, fileService: FileService, shouldRedirectOnDownload) {
-    this.shouldRedirectOnDownload = shouldRedirectOnDownload;
+  constructor(itemService: ItemService, fileService: FileService) {
     this.thumbnailService = new ThumbnailService(fileService, true, 'thumbnails');
     this.itemService = itemService;
   }
@@ -50,7 +48,7 @@ export class FileThumbnailService {
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
     const result = await this.thumbnailService.download(actor, {
-      reply: this.shouldRedirectOnDownload ? reply : null,
+      reply,
       replyUrl,
       size,
       id: itemId,

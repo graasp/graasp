@@ -1,11 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
 
+import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam } from '@graasp/sdk';
 
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../util/config';
 import { buildRepositories } from '../../../../util/repositories';
+import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../file/utils/errors';
 import { upload } from './schemas';
 import { FileThumbnailService } from './service';
@@ -13,10 +15,11 @@ import { UploadFileNotImageError } from './utils/errors';
 
 type GraaspThumbnailsOptions = {
   shouldRedirectOnDownload?: boolean;
+  maxFileSize?: number; // max size for an uploaded file in bytes
 };
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
-  const { shouldRedirectOnDownload = true } = options;
+  const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
   const {
     log: defaultLogger,
     files: { service: fileService },
@@ -24,11 +27,19 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     db,
   } = fastify;
 
-  const thumbnailService = new FileThumbnailService(
-    itemService,
-    fileService,
-    shouldRedirectOnDownload,
-  );
+  fastify.register(fastifyMultipart, {
+    limits: {
+      // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
+      // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
+      // fields: 5, // Max number of non-file fields (Default: Infinity).
+      // allow some fields for app data and app setting
+      fileSize: maxFileSize, // For multipart forms, the max file size (Default: Infinity).
+      files: 1, // Max number of file fields (Default: Infinity).
+      // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
+    },
+  });
+
+  const thumbnailService = new FileThumbnailService(itemService, fileService);
 
   fastify.post<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
