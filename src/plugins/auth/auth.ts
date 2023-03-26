@@ -31,10 +31,12 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
   SECURE_SESSION_SECRET_KEY,
+  SIGN_UP_EMAIL_WHITE_LIST,
   STAGING,
   TOKEN_BASED_AUTH,
 } from '../../util/config';
 import {
+  EmailNotAllowed,
   EmptyCurrentPassword,
   IncorrectPassword,
   InvalidPassword,
@@ -290,31 +292,36 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       { schema: register },
       async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
 
-        return reply.status(StatusCodes.FORBIDDEN);
+        const email = body.email.toLowerCase();
 
-        // // The email is lowercased when the user registers
-        // // To every subsequents call, it is to the client to ensure the email is sent in lowercase
-        // // the servers always do a 1:1 match to retrieve the member by email.
-        // const email = body.email.toLowerCase();
+        // temporary fix: allow only a subset of email to register
+        // do not use schema to prevent leaking information to bypass the registration
+        if(SIGN_UP_EMAIL_WHITE_LIST?.length && !SIGN_UP_EMAIL_WHITE_LIST.some(pattern => email.match(pattern))){
+            throw new EmailNotAllowed(email);  
+        }
 
-        // // check if member w/ email already exists
-        // const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-        // const [member] = await runner.runSingle(task, log);
+        // The email is lowercased when the user registers
+        // To every subsequents call, it is to the client to ensure the email is sent in lowercase
+        // the servers always do a 1:1 match to retrieve the member by email.
 
-        // if (!member) {
-        //   const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
-        //     ...body,
-        //     extra: { lang },
-        //   });
-        //   const member = await runner.runSingle(task, log);
+        // check if member w/ email already exists
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const [member] = await runner.runSingle(task, log);
 
-        //   await generateRegisterLinkAndEmailIt(member);
-        //   reply.status(StatusCodes.NO_CONTENT);
-        // } else {
-        //   log.warn(`Member re-registration attempt for email '${email}'`);
-        //   await generateLoginLinkAndEmailIt(member, true, null, lang);
-        //   throw new MemberAlreadySignedUp({ email });
-        // }
+        if (!member) {
+          const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
+            ...body,
+            extra: { lang },
+          });
+          const member = await runner.runSingle(task, log);
+
+          await generateRegisterLinkAndEmailIt(member);
+          reply.status(StatusCodes.NO_CONTENT);
+        } else {
+          log.warn(`Member re-registration attempt for email '${email}'`);
+          await generateLoginLinkAndEmailIt(member, true, null, lang);
+          throw new MemberAlreadySignedUp({ email });
+        }
       },
     );
 

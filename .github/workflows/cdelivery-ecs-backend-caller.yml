@@ -35,6 +35,7 @@ jobs:
       roarr-log: false
       s3-file-item-plugin: true
       save-actions: true
+      sign-up-email-white-list: ${{ vars.SIGN_UP_EMAIL_WHITE_LIST }}
       subscriptions-plugin: true
       token-based-auth: true
       websockets-plugin: true

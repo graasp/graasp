@@ -257,3 +257,5 @@ export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
 
 export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
+
+export const SIGN_UP_EMAIL_WHITE_LIST = process.env.SIGN_UP_EMAIL_WHITE_LIST.split(',').map((email)=>email.trim());

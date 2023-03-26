@@ -17,7 +17,7 @@ jobs:
     # repository name
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
-    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@177-email-white-list
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -40,9 +40,11 @@ jobs:
       roarr-log: false
       s3-file-item-plugin: true
       save-actions: true
+      sign-up-email-white-list: ${{ vars.SIGN_UP_EMAIL_WHITE_LIST }}
       subscriptions-plugin: true
       token-based-auth: true
       websockets-plugin: true
+
 
     # required secrets
     secrets:
