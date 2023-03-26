@@ -18,89 +18,89 @@ describe('Auth routes tests', () => {
     jest.clearAllMocks();
   });
 
-  describe('POST /register', () => {
-    it('Sign Up successfully', async () => {
-      const email = 'someemail@email.com';
-      const name = 'anna';
-      const mockCreate = mockMemberServiceCreate();
-      const app = await build();
-      const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
-      const response = await app.inject({
-        method: HttpMethod.POST,
-        url: '/register',
-        payload: { email, name },
-      });
+  // describe('POST /register', () => {
+  //   it('Sign Up successfully', async () => {
+  //     const email = 'someemail@email.com';
+  //     const name = 'anna';
+  //     const mockCreate = mockMemberServiceCreate();
+  //     const app = await build();
+  //     const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
+  //     const response = await app.inject({
+  //       method: HttpMethod.POST,
+  //       url: '/register',
+  //       payload: { email, name },
+  //     });
 
-      expect(mockSendRegisterEmail).toHaveBeenCalled();
-      expect(mockCreate).toHaveBeenCalledWith(
-        { email, name, extra: expect.objectContaining({ lang: DEFAULT_LANG }) },
-        expect.anything(),
-      );
-      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-      app.close();
-    });
-    it('Sign Up successfully with given lang', async () => {
-      const email = 'someemail@email.com';
-      const name = 'anna';
-      const lang = 'fr';
-      const mockCreate = mockMemberServiceCreate();
-      const app = await build();
-      const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
-      const response = await app.inject({
-        method: HttpMethod.POST,
-        url: `/register?lang=${lang}`,
-        payload: { email, name },
-      });
+  //     expect(mockSendRegisterEmail).toHaveBeenCalled();
+  //     expect(mockCreate).toHaveBeenCalledWith(
+  //       { email, name, extra: expect.objectContaining({ lang: DEFAULT_LANG }) },
+  //       expect.anything(),
+  //     );
+  //     expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+  //     app.close();
+  //   });
+  //   it('Sign Up successfully with given lang', async () => {
+  //     const email = 'someemail@email.com';
+  //     const name = 'anna';
+  //     const lang = 'fr';
+  //     const mockCreate = mockMemberServiceCreate();
+  //     const app = await build();
+  //     const mockSendRegisterEmail = jest.spyOn(app.mailer, 'sendRegisterEmail');
+  //     const response = await app.inject({
+  //       method: HttpMethod.POST,
+  //       url: `/register?lang=${lang}`,
+  //       payload: { email, name },
+  //     });
 
-      expect(mockSendRegisterEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        lang,
-      );
-      expect(mockCreate).toHaveBeenCalledWith(
-        { email, name, extra: expect.objectContaining({ lang }) },
-        expect.anything(),
-      );
-      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
-      app.close();
-    });
-    it('Sign Up fallback to login for already register member', async () => {
-      const member = MEMBERS_FIXTURES.BOB;
-      const app = await build();
-      const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
-      mockMemberServiceGetMatching([member]);
-      const mockCreate = mockMemberServiceCreate();
-      const response = await app.inject({
-        method: HttpMethod.POST,
-        url: '/register',
-        payload: member,
-      });
+  //     expect(mockSendRegisterEmail).toHaveBeenCalledWith(
+  //       expect.anything(),
+  //       expect.anything(),
+  //       lang,
+  //     );
+  //     expect(mockCreate).toHaveBeenCalledWith(
+  //       { email, name, extra: expect.objectContaining({ lang }) },
+  //       expect.anything(),
+  //     );
+  //     expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+  //     app.close();
+  //   });
+  //   it('Sign Up fallback to login for already register member', async () => {
+  //     const member = MEMBERS_FIXTURES.BOB;
+  //     const app = await build();
+  //     const mockSendLoginEmail = jest.spyOn(app.mailer, 'sendLoginEmail');
+  //     mockMemberServiceGetMatching([member]);
+  //     const mockCreate = mockMemberServiceCreate();
+  //     const response = await app.inject({
+  //       method: HttpMethod.POST,
+  //       url: '/register',
+  //       payload: member,
+  //     });
 
-      expect(mockSendLoginEmail).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        member.extra.lang,
-      );
-      expect(mockCreate).not.toHaveBeenCalled();
-      expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
-      app.close();
-    });
-    it('Bad request for invalid email', async () => {
-      const email = 'wrongemail';
-      const name = 'anna';
-      const app = await build();
-      const response = await app.inject({
-        method: HttpMethod.POST,
-        url: '/register',
-        payload: { email, name },
-      });
+  //     expect(mockSendLoginEmail).toHaveBeenCalledWith(
+  //       expect.anything(),
+  //       expect.anything(),
+  //       expect.anything(),
+  //       member.extra.lang,
+  //     );
+  //     expect(mockCreate).not.toHaveBeenCalled();
+  //     expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
+  //     app.close();
+  //   });
+  //   it('Bad request for invalid email', async () => {
+  //     const email = 'wrongemail';
+  //     const name = 'anna';
+  //     const app = await build();
+  //     const response = await app.inject({
+  //       method: HttpMethod.POST,
+  //       url: '/register',
+  //       payload: { email, name },
+  //     });
 
-      expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-      app.close();
-    });
-  });
+  //     expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+  //     expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+  //     app.close();
+  //   });
+  // });
 
   describe('POST /login', () => {
     it('Sign In successfully', async () => {

@@ -289,29 +289,32 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       '/register',
       { schema: register },
       async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
-        // The email is lowercased when the user registers
-        // To every subsequents call, it is to the client to ensure the email is sent in lowercase
-        // the servers always do a 1:1 match to retrieve the member by email.
-        const email = body.email.toLowerCase();
 
-        // check if member w/ email already exists
-        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-        const [member] = await runner.runSingle(task, log);
+        return reply.status(StatusCodes.FORBIDDEN);
 
-        if (!member) {
-          const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
-            ...body,
-            extra: { lang },
-          });
-          const member = await runner.runSingle(task, log);
+        // // The email is lowercased when the user registers
+        // // To every subsequents call, it is to the client to ensure the email is sent in lowercase
+        // // the servers always do a 1:1 match to retrieve the member by email.
+        // const email = body.email.toLowerCase();
 
-          await generateRegisterLinkAndEmailIt(member);
-          reply.status(StatusCodes.NO_CONTENT);
-        } else {
-          log.warn(`Member re-registration attempt for email '${email}'`);
-          await generateLoginLinkAndEmailIt(member, true, null, lang);
-          throw new MemberAlreadySignedUp({ email });
-        }
+        // // check if member w/ email already exists
+        // const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        // const [member] = await runner.runSingle(task, log);
+
+        // if (!member) {
+        //   const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
+        //     ...body,
+        //     extra: { lang },
+        //   });
+        //   const member = await runner.runSingle(task, log);
+
+        //   await generateRegisterLinkAndEmailIt(member);
+        //   reply.status(StatusCodes.NO_CONTENT);
+        // } else {
+        //   log.warn(`Member re-registration attempt for email '${email}'`);
+        //   await generateLoginLinkAndEmailIt(member, true, null, lang);
+        //   throw new MemberAlreadySignedUp({ email });
+        // }
       },
     );
 
