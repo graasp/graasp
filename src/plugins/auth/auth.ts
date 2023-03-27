@@ -14,7 +14,7 @@ import forwarded from '@fastify/forwarded';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyLoggerInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
 
-import { Member, RecaptchaActionType, RecaptchaAction } from '@graasp/sdk';
+import { Member, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
 import {
@@ -286,7 +286,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  const validateCaptcha = async (request: FastifyRequest, captcha: string, actionType: RecaptchaActionType) => {
+  const validateCaptcha = async (
+    request: FastifyRequest,
+    captcha: string,
+    actionType: RecaptchaActionType,
+  ) => {
     if (!captcha) {
       console.error('The captcha verification has thrown: token is undefined');
       throw new AuthenticationError();
@@ -308,7 +312,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     )}`;
 
     const response = await fetch(verificationURL);
-    const data: { success?: boolean; action?: RecaptchaActionType; score?: number } = await response.json();
+    const data: { success?: boolean; action?: RecaptchaActionType; score?: number } =
+      await response.json();
 
     // success: comes from my website
     // action: triggered from the correct endpoint
@@ -319,7 +324,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       data.action !== actionType ||
       data.score < RECAPTCHA_SCORE_THRESHOLD
     ) {
-      console.error(`The captcha verification has thrown with value: '${data}'`);
+      console.error(`The captcha verification has thrown with value: '${JSON.stringify(data)}'`);
       throw new AuthenticationError();
     }
   };
@@ -365,7 +370,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
       if (!member) {
         const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
-          email, name:body.name,
+          email,
+          name: body.name,
           extra: { lang },
         });
         const member = await runner.runSingle(task, log);
@@ -394,7 +400,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
         await validateCaptcha(request, captcha, RecaptchaAction.SignIn);
 
-        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, {email});
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         const [member] = await runner.runSingle(task, log);
 
         if (member) {
@@ -603,40 +609,38 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       });
 
       // login with password
-      fastify.post<{ Body: { email: string; challenge: string; password: string; captcha: string } }>(
-        '/login-password',
-        { schema: mPasswordLogin },
-        async (request, reply) => {
-          const { body, log } = request;
-          const { challenge, captcha } = body;
+      fastify.post<{
+        Body: { email: string; challenge: string; password: string; captcha: string };
+      }>('/login-password', { schema: mPasswordLogin }, async (request, reply) => {
+        const { body, log } = request;
+        const { challenge, captcha } = body;
 
-          await validateCaptcha(request, captcha, RecaptchaAction.SignInWithPasswordMobile);
+        await validateCaptcha(request, captcha, RecaptchaAction.SignInWithPasswordMobile);
 
-          const email = body.email.toLowerCase();
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          const [member] = await runner.runSingle(task, log);
+        const email = body.email.toLowerCase();
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const [member] = await runner.runSingle(task, log);
 
-          if (!member) {
-            const { email } = body;
-            log.warn(`Login attempt with non-existent email '${email}'`);
-            throw new MemberNotSignedUp({ email });
-          }
-          if (!member.password) {
-            log.warn('Login attempt with non-existent password');
-            throw new MemberWithoutPassword({ email });
-          }
-          const verified = await verifyCredentials(member, body, log);
-          if (!verified) {
-            throw new IncorrectPassword(body);
-          } else {
-            const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
-              expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-            });
-            // token for graasp mobile app
-            reply.status(StatusCodes.OK).send({ t: token });
-          }
-        },
-      );
+        if (!member) {
+          const { email } = body;
+          log.warn(`Login attempt with non-existent email '${email}'`);
+          throw new MemberNotSignedUp({ email });
+        }
+        if (!member.password) {
+          log.warn('Login attempt with non-existent password');
+          throw new MemberWithoutPassword({ email });
+        }
+        const verified = await verifyCredentials(member, body, log);
+        if (!verified) {
+          throw new IncorrectPassword(body);
+        } else {
+          const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
+            expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+          });
+          // token for graasp mobile app
+          reply.status(StatusCodes.OK).send({ t: token });
+        }
+      });
 
       fastify.post<{ Body: { t: string; verifier: string } }>(
         '/auth',
