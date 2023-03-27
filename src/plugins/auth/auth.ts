@@ -3,15 +3,17 @@ import crypto from 'crypto';
 import { StatusCodes } from 'http-status-codes';
 import jwt, { Secret, SignOptions, TokenExpiredError, VerifyOptions } from 'jsonwebtoken';
 import { JsonWebTokenError } from 'jsonwebtoken';
+import qs from 'qs';
 import { promisify } from 'util';
 
 import fastifyAuth from '@fastify/auth';
 import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from '@fastify/cors';
+import forwarded from '@fastify/forwarded';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyLoggerInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
 
-import { Member } from '@graasp/sdk';
+import { Member, RecaptchaActionType } from '@graasp/sdk';
 
 import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
 import {
@@ -26,6 +28,9 @@ import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PROD,
   PROTOCOL,
+  RECAPTCHA_SCORE_THRESHOLD,
+  RECAPTCHA_SECRET_ACCESS_KEY,
+  RECAPTCHA_VERIFY_LINK,
   REDIRECT_URL,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
@@ -36,6 +41,7 @@ import {
   TOKEN_BASED_AUTH,
 } from '../../util/config';
 import {
+  AuthenticationError,
   EmailNotAllowed,
   EmptyCurrentPassword,
   IncorrectPassword,
@@ -279,6 +285,44 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
+  const validateCaptcha = async (request: FastifyRequest, token: string, actionType: string) => {
+    if (!token) {
+      console.error('The captcha verification has thrown: token is undefined');
+      throw new AuthenticationError();
+    }
+
+    // warning: addresses might contained spoofed ips
+    const addresses = forwarded(request.raw);
+    const ip = addresses.pop();
+
+    const verificationURL = `${RECAPTCHA_VERIFY_LINK}${qs.stringify(
+      {
+        response: token,
+        secret: RECAPTCHA_SECRET_ACCESS_KEY,
+        remoteip: ip,
+      },
+      {
+        addQueryPrefix: true,
+      },
+    )}`;
+
+    const response = await fetch(verificationURL);
+    const data = await response.json();
+
+    // success: comes from my website
+    // action: triggered from the correct endpoint
+    // score: how probable the user is legit
+    if (
+      !data ||
+      !data.success ||
+      data.action !== actionType ||
+      data.score < RECAPTCHA_SCORE_THRESHOLD
+    ) {
+      console.error(`The captcha verification has thrown with value: '${data}'`);
+      throw new AuthenticationError();
+    }
+  };
+
   // cookie based auth and api endpoints
   await fastify.register(async function (fastify) {
     // add CORS support
@@ -287,49 +331,66 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     }
 
     // register
-    fastify.post<{ Body: { name: string; email: string }; Querystring: { lang?: string } }>(
-      '/register',
-      { schema: register },
-      async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
+    fastify.post<{
+      Body: { name: string; email: string; token: string };
+      Querystring: { lang?: string };
+    }>('/register', { schema: register }, async (request, reply) => {
+      const {
+        body,
+        query: { lang = DEFAULT_LANG },
+        log,
+      } = request;
 
-        const email = body.email.toLowerCase();
+      await validateCaptcha(request, body.token, RecaptchaActionType.SignUp);
 
-        // temporary fix: allow only a subset of email to register
-        // do not use schema to prevent leaking information to bypass the registration
-        if(SIGN_UP_EMAIL_WHITE_LIST?.length && !SIGN_UP_EMAIL_WHITE_LIST.some(pattern => email.match(pattern))){
-            throw new EmailNotAllowed(email);  
-        }
+      const email = body.email.toLowerCase();
 
-        // The email is lowercased when the user registers
-        // To every subsequents call, it is to the client to ensure the email is sent in lowercase
-        // the servers always do a 1:1 match to retrieve the member by email.
+      // temporary fix: allow only a subset of email to register
+      // do not use schema to prevent leaking information to bypass the registration
+      if (
+        SIGN_UP_EMAIL_WHITE_LIST?.length &&
+        !SIGN_UP_EMAIL_WHITE_LIST.some((pattern) => email.match(pattern))
+      ) {
+        throw new EmailNotAllowed(email);
+      }
 
-        // check if member w/ email already exists
-        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-        const [member] = await runner.runSingle(task, log);
+      // The email is lowercased when the user registers
+      // To every subsequents call, it is to the client to ensure the email is sent in lowercase
+      // the servers always do a 1:1 match to retrieve the member by email.
 
-        if (!member) {
-          const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
-            ...body,
-            extra: { lang },
-          });
-          const member = await runner.runSingle(task, log);
+      // check if member w/ email already exists
+      const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+      const [member] = await runner.runSingle(task, log);
 
-          await generateRegisterLinkAndEmailIt(member);
-          reply.status(StatusCodes.NO_CONTENT);
-        } else {
-          log.warn(`Member re-registration attempt for email '${email}'`);
-          await generateLoginLinkAndEmailIt(member, true, null, lang);
-          throw new MemberAlreadySignedUp({ email });
-        }
-      },
-    );
+      if (!member) {
+        const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
+          ...body,
+          extra: { lang },
+        });
+        const member = await runner.runSingle(task, log);
+
+        await generateRegisterLinkAndEmailIt(member);
+        reply.status(StatusCodes.NO_CONTENT);
+      } else {
+        log.warn(`Member re-registration attempt for email '${email}'`);
+        await generateLoginLinkAndEmailIt(member, true, null, lang);
+        throw new MemberAlreadySignedUp({ email });
+      }
+    });
 
     // login
-    fastify.post<{ Body: { email: string }; Querystring: { lang?: string } }>(
+    fastify.post<{ Body: { email: string; token: string }; Querystring: { lang?: string } }>(
       '/login',
       { schema: login },
-      async ({ body, log, query: { lang } }, reply) => {
+      async (request, reply) => {
+        const {
+          body,
+          log,
+          query: { lang },
+        } = request;
+
+        await validateCaptcha(request, body.token, RecaptchaActionType.SignIn);
+
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
         const [member] = await runner.runSingle(task, log);
 
@@ -345,10 +406,14 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     );
 
     // login with password
-    fastify.post<{ Body: { email: string; password: string } }>(
+    fastify.post<{ Body: { email: string; password: string; token: string } }>(
       '/login-password',
       { schema: passwordLogin },
-      async ({ body, log }, reply) => {
+      async (request, reply) => {
+        const { body, log } = request;
+
+        await validateCaptcha(request, body.token, RecaptchaActionType.SignInWithPassword);
+
         const email = body.email.toLowerCase();
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         const [member] = await runner.runSingle(task, log);
@@ -464,67 +529,88 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       fastify.decorateRequest('memberId', null);
 
       fastify.post<{
-        Body: { name: string; email: string; challenge: string };
+        Body: { name: string; email: string; challenge: string; token: string };
         Querystring: { lang?: string };
-      }>(
-        '/register',
-        { schema: mregister },
-        async (
-          { body: { name, email, challenge }, query: { lang = DEFAULT_LANG }, log },
-          reply,
-        ) => {
-          // The email is lowercased when the user registers
-          // To every subsequents call, it is to the client to ensure the email is sent in lowercase
-          // the servers always do a 1:1 match to retrieve the member by email.
-          email = email.toLowerCase();
+      }>('/register', { schema: mregister }, async (request, reply) => {
+        const {
+          body,
+          query: { lang = DEFAULT_LANG },
+          log,
+        } = request;
+        const { name, challenge, token } = body;
 
-          // check if member w/ email already exists
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          const [member] = await runner.runSingle(task, log);
+        await validateCaptcha(request, token, RecaptchaActionType.SignUpMobile);
 
-          if (!member) {
-            const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
-              name,
-              email,
-              extra: { lang },
-            });
-            const member = await runner.runSingle(task, log);
+        // The email is lowercased when the user registers
+        // To every subsequents call, it is to the client to ensure the email is sent in lowercase
+        // the servers always do a 1:1 match to retrieve the member by email.
+        const email = body.email.toLowerCase();
 
-            await generateRegisterLinkAndEmailIt(member, challenge);
-            reply.status(StatusCodes.NO_CONTENT);
-          } else {
-            log.warn(`Member re-registration attempt for email '${email}'`);
-            await generateLoginLinkAndEmailIt(member, true, challenge, lang);
-            throw new MemberAlreadySignedUp({ email });
-          }
-        },
-      );
+        // temporary fix: allow only a subset of email to register
+        // do not use schema to prevent leaking information to bypass the registration
+        if (
+          SIGN_UP_EMAIL_WHITE_LIST?.length &&
+          !SIGN_UP_EMAIL_WHITE_LIST.some((pattern) => email.match(pattern))
+        ) {
+          throw new EmailNotAllowed(email);
+        }
+        // check if member w/ email already exists
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const [member] = await runner.runSingle(task, log);
 
-      fastify.post<{ Body: { email: string; challenge: string }; Querystring: { lang?: string } }>(
-        '/login',
-        { schema: mlogin },
-        async ({ body, log, query: { lang } }, reply) => {
-          const { email, challenge } = body;
-          const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
-          const [member] = await runner.runSingle(task, log);
+        if (!member) {
+          const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
+            name,
+            email,
+            extra: { lang },
+          });
+          const member = await runner.runSingle(task, log);
 
-          if (member) {
-            await generateLoginLinkAndEmailIt(member, false, challenge, lang);
-            reply.status(StatusCodes.NO_CONTENT);
-          } else {
-            log.warn(`Login attempt with non-existent email '${email}'`);
-            throw new MemberNotSignedUp({ email });
-          }
-        },
-      );
+          await generateRegisterLinkAndEmailIt(member, challenge);
+          reply.status(StatusCodes.NO_CONTENT);
+        } else {
+          log.warn(`Member re-registration attempt for email '${email}'`);
+          await generateLoginLinkAndEmailIt(member, true, challenge, lang);
+          throw new MemberAlreadySignedUp({ email });
+        }
+      });
+
+      fastify.post<{
+        Body: { email: string; challenge: string; token: string };
+        Querystring: { lang?: string };
+      }>('/login', { schema: mlogin }, async (request, reply) => {
+        const {
+          body,
+          log,
+          query: { lang },
+        } = request;
+        const { email, challenge, token } = body;
+
+        await validateCaptcha(request, token, RecaptchaActionType.SignInMobile);
+
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
+        const [member] = await runner.runSingle(task, log);
+
+        if (member) {
+          await generateLoginLinkAndEmailIt(member, false, challenge, lang);
+          reply.status(StatusCodes.NO_CONTENT);
+        } else {
+          log.warn(`Login attempt with non-existent email '${email}'`);
+          throw new MemberNotSignedUp({ email });
+        }
+      });
 
       // login with password
-      fastify.post<{ Body: { email: string; challenge: string; password: string } }>(
+      fastify.post<{ Body: { email: string; challenge: string; password: string; token: string } }>(
         '/login-password',
         { schema: mPasswordLogin },
-        async ({ body, log }, reply) => {
+        async (request, reply) => {
+          const { body, log } = request;
+          const { challenge, token } = body;
+
+          await validateCaptcha(request, token, RecaptchaActionType.SignInWithPasswordMobile);
+
           const email = body.email.toLowerCase();
-          const { challenge } = body;
           const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
           const [member] = await runner.runSingle(task, log);
 
