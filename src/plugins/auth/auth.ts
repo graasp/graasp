@@ -14,7 +14,7 @@ import forwarded from '@fastify/forwarded';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyLoggerInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
 
-import { Member, RecaptchaActionType } from '@graasp/sdk';
+import { Member, RecaptchaActionType, RecaptchaAction } from '@graasp/sdk';
 
 import { TaskManager as MemberTaskManager } from '../../services/members/task-manager';
 import {
@@ -286,7 +286,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  const validateCaptcha = async (request: FastifyRequest, captcha: string, actionType: string) => {
+  const validateCaptcha = async (request: FastifyRequest, captcha: string, actionType: RecaptchaActionType) => {
     if (!captcha) {
       console.error('The captcha verification has thrown: token is undefined');
       throw new AuthenticationError();
@@ -308,7 +308,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     )}`;
 
     const response = await fetch(verificationURL);
-    const data: { success?: boolean; action?: string; score?: number } = await response.json();
+    const data: { success?: boolean; action?: RecaptchaActionType; score?: number } = await response.json();
 
     // success: comes from my website
     // action: triggered from the correct endpoint
@@ -342,7 +342,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         log,
       } = request;
 
-      await validateCaptcha(request, body.captcha, RecaptchaActionType.SignUp);
+      await validateCaptcha(request, body.captcha, RecaptchaAction.SignUp);
 
       const email = body.email.toLowerCase();
 
@@ -365,7 +365,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
       if (!member) {
         const task = memberTaskManager.createCreateTask(GRAASP_ACTOR, {
-          ...body,
+          email, name:body.name,
           extra: { lang },
         });
         const member = await runner.runSingle(task, log);
@@ -390,16 +390,17 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           query: { lang },
         } = request;
 
-        await validateCaptcha(request, body.captcha, RecaptchaActionType.SignIn);
+        const { email, captcha } = body;
 
-        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
+        await validateCaptcha(request, captcha, RecaptchaAction.SignIn);
+
+        const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, {email});
         const [member] = await runner.runSingle(task, log);
 
         if (member) {
           await generateLoginLinkAndEmailIt(member, null, null, lang);
           reply.status(StatusCodes.NO_CONTENT);
         } else {
-          const { email } = body;
           log.warn(`Login attempt with non-existent email '${email}'`);
           throw new MemberNotSignedUp({ email });
         }
@@ -413,7 +414,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       async (request, reply) => {
         const { body, log } = request;
 
-        await validateCaptcha(request, body.captcha, RecaptchaActionType.SignInWithPassword);
+        await validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword);
 
         const email = body.email.toLowerCase();
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
@@ -540,7 +541,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         } = request;
         const { name, challenge, captcha } = body;
 
-        await validateCaptcha(request, captcha, RecaptchaActionType.SignUpMobile);
+        await validateCaptcha(request, captcha, RecaptchaAction.SignUpMobile);
 
         // The email is lowercased when the user registers
         // To every subsequents call, it is to the client to ensure the email is sent in lowercase
@@ -587,7 +588,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         } = request;
         const { email, challenge, captcha } = body;
 
-        await validateCaptcha(request, captcha, RecaptchaActionType.SignInMobile);
+        await validateCaptcha(request, captcha, RecaptchaAction.SignInMobile);
 
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         const [member] = await runner.runSingle(task, log);
@@ -609,7 +610,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           const { body, log } = request;
           const { challenge, captcha } = body;
 
-          await validateCaptcha(request, captcha, RecaptchaActionType.SignInWithPasswordMobile);
+          await validateCaptcha(request, captcha, RecaptchaAction.SignInWithPasswordMobile);
 
           const email = body.email.toLowerCase();
           const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });

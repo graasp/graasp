@@ -153,31 +153,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // auth plugin session validation
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
-        // H5P plugin must be registered before ZIP
-        fastify.register(graaspItemH5P, {
-          pathPrefix: H5P_PATH_PREFIX,
-          fileItemType: FILE_ITEM_TYPE,
-          fileConfigurations: {
-            s3: H5P_CONTENT_PLUGIN_OPTIONS,
-            local: FILE_ITEM_PLUGIN_OPTIONS,
-          },
-        });
-
-        fastify.register(graaspItemEtherpad, {
-          url: ETHERPAD_URL,
-          apiKey: ETHERPAD_API_KEY,
-          publicUrl: ETHERPAD_PUBLIC_URL,
-          cookieDomain: ETHERPAD_COOKIE_DOMAIN,
-        });
-
-        fastify.register(graaspItemZip, {
-          pathPrefix: FILES_PATH_PREFIX,
-          fileItemType: FILE_ITEM_TYPE,
-          fileConfigurations: {
-            s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-            local: FILE_ITEM_PLUGIN_OPTIONS,
-          },
-        });
 
         fastify.register(thumbnailsPlugin, {
           fileItemType: FILE_ITEM_TYPE,

@@ -1151,7 +1151,7 @@ __metadata:
 
 "@graasp/sdk@github:graasp/graasp-sdk#122-add-actiontype-for-recaptcha":
   version: 0.9.3
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=04af6ccec3fe3bbbde497ddac42741d2f3702d6d"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=5ba96b93a5d8db2ebcb63c3e6550626d5a8d9d67"
   dependencies:
     "@fastify/secure-session": 5.3.0
     aws-sdk: 2.1310.0
@@ -1162,7 +1162,7 @@ __metadata:
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 9.0.0
-  checksum: 03a1e69dca2ca525b2938b0efbbef9019ba00ee3dbc1fb6c11b5b451f1635655a591fae3c7be13a7fe05b992ed449e61d84b95173a74d881c5ec6b8c20e6a388
+  checksum: f6d15d443f276ecd0fea3b433f3de2aec660ef4347b05d71d385355f83045cc9d4169d988931e4b4d4315e77e69f0e3337233f91157488aa09377a3a95f1555e
   languageName: node
   linkType: hard
 
