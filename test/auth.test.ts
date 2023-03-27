@@ -16,7 +16,6 @@ jest.mock('../src/plugins/decorator');
 jest.mock('node-fetch');
 
 const mockCaptchaValidation = (action:RecaptchaActionType) => {
-  // @ts-ignore
   fetch.mockImplementation(() => {
     return { json:async ()=>({ success: true, action, score: 1 })};
   });
