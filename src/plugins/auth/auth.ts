@@ -286,8 +286,8 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       .catch((err) => log.warn(err, `mailer failed. link: ${link}`));
   }
 
-  const validateCaptcha = async (request: FastifyRequest, token: string, actionType: string) => {
-    if (!token) {
+  const validateCaptcha = async (request: FastifyRequest, captcha: string, actionType: string) => {
+    if (!captcha) {
       console.error('The captcha verification has thrown: token is undefined');
       throw new AuthenticationError();
     }
@@ -298,7 +298,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     const verificationURL = `${RECAPTCHA_VERIFY_LINK}${qs.stringify(
       {
-        response: token,
+        response: captcha,
         secret: RECAPTCHA_SECRET_ACCESS_KEY,
         remoteip: ip,
       },
@@ -333,7 +333,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // register
     fastify.post<{
-      Body: { name: string; email: string; token: string };
+      Body: { name: string; email: string; captcha: string };
       Querystring: { lang?: string };
     }>('/register', { schema: register }, async (request, reply) => {
       const {
@@ -342,7 +342,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
         log,
       } = request;
 
-      await validateCaptcha(request, body.token, RecaptchaActionType.SignUp);
+      await validateCaptcha(request, body.captcha, RecaptchaActionType.SignUp);
 
       const email = body.email.toLowerCase();
 
@@ -380,7 +380,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     });
 
     // login
-    fastify.post<{ Body: { email: string; token: string }; Querystring: { lang?: string } }>(
+    fastify.post<{ Body: { email: string; captcha: string }; Querystring: { lang?: string } }>(
       '/login',
       { schema: login },
       async (request, reply) => {
@@ -390,7 +390,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           query: { lang },
         } = request;
 
-        await validateCaptcha(request, body.token, RecaptchaActionType.SignIn);
+        await validateCaptcha(request, body.captcha, RecaptchaActionType.SignIn);
 
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, body);
         const [member] = await runner.runSingle(task, log);
@@ -407,13 +407,13 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     );
 
     // login with password
-    fastify.post<{ Body: { email: string; password: string; token: string } }>(
+    fastify.post<{ Body: { email: string; password: string; captcha: string } }>(
       '/login-password',
       { schema: passwordLogin },
       async (request, reply) => {
         const { body, log } = request;
 
-        await validateCaptcha(request, body.token, RecaptchaActionType.SignInWithPassword);
+        await validateCaptcha(request, body.captcha, RecaptchaActionType.SignInWithPassword);
 
         const email = body.email.toLowerCase();
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
@@ -530,7 +530,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       fastify.decorateRequest('memberId', null);
 
       fastify.post<{
-        Body: { name: string; email: string; challenge: string; token: string };
+        Body: { name: string; email: string; challenge: string; captcha: string };
         Querystring: { lang?: string };
       }>('/register', { schema: mregister }, async (request, reply) => {
         const {
@@ -538,9 +538,9 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           query: { lang = DEFAULT_LANG },
           log,
         } = request;
-        const { name, challenge, token } = body;
+        const { name, challenge, captcha } = body;
 
-        await validateCaptcha(request, token, RecaptchaActionType.SignUpMobile);
+        await validateCaptcha(request, captcha, RecaptchaActionType.SignUpMobile);
 
         // The email is lowercased when the user registers
         // To every subsequents call, it is to the client to ensure the email is sent in lowercase
@@ -577,7 +577,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       });
 
       fastify.post<{
-        Body: { email: string; challenge: string; token: string };
+        Body: { email: string; challenge: string; captcha: string };
         Querystring: { lang?: string };
       }>('/login', { schema: mlogin }, async (request, reply) => {
         const {
@@ -585,9 +585,9 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
           log,
           query: { lang },
         } = request;
-        const { email, challenge, token } = body;
+        const { email, challenge, captcha } = body;
 
-        await validateCaptcha(request, token, RecaptchaActionType.SignInMobile);
+        await validateCaptcha(request, captcha, RecaptchaActionType.SignInMobile);
 
         const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
         const [member] = await runner.runSingle(task, log);
@@ -602,14 +602,14 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
       });
 
       // login with password
-      fastify.post<{ Body: { email: string; challenge: string; password: string; token: string } }>(
+      fastify.post<{ Body: { email: string; challenge: string; password: string; captcha: string } }>(
         '/login-password',
         { schema: mPasswordLogin },
         async (request, reply) => {
           const { body, log } = request;
-          const { challenge, token } = body;
+          const { challenge, captcha } = body;
 
-          await validateCaptcha(request, token, RecaptchaActionType.SignInWithPasswordMobile);
+          await validateCaptcha(request, captcha, RecaptchaActionType.SignInWithPasswordMobile);
 
           const email = body.email.toLowerCase();
           const task = memberTaskManager.createGetByTask(GRAASP_ACTOR, { email });
