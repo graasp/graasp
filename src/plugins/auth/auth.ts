@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { StatusCodes } from 'http-status-codes';
 import jwt, { Secret, SignOptions, TokenExpiredError, VerifyOptions } from 'jsonwebtoken';
 import { JsonWebTokenError } from 'jsonwebtoken';
+import fetch from 'node-fetch';
 import qs from 'qs';
 import { promisify } from 'util';
 
@@ -307,7 +308,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     )}`;
 
     const response = await fetch(verificationURL);
-    const data = await response.json();
+    const data: { success?: boolean; action?: string; score?: number } = await response.json();
 
     // success: comes from my website
     // action: triggered from the correct endpoint

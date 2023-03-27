@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, RecaptchaActionType } from '@graasp/sdk';
 
 import { DEFAULT_LANG, JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../src/util/config';
 import build from './app';
@@ -19,6 +19,13 @@ describe('Auth routes tests', () => {
   });
 
   describe('POST /register', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      jest.mock('node-fetch', () => {
+        return { success: true, actionType: RecaptchaActionType.SignUp, score: 1 };
+      });
+    });
+
     it('Sign Up successfully', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
@@ -103,6 +110,12 @@ describe('Auth routes tests', () => {
   });
 
   describe('POST /login', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      jest.mock('node-fetch', () => {
+        return { success: true, actionType: RecaptchaActionType.SignIn, score: 1 };
+      });
+    });
     it('Sign In successfully', async () => {
       const member = MEMBERS_FIXTURES.BOB;
       mockMemberServiceGetMatching([member]);
@@ -176,6 +189,13 @@ describe('Auth routes tests', () => {
   });
 
   describe('POST /login-password', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      jest.mock('node-fetch', () => {
+        return { success: true, actionType: RecaptchaActionType.SignInWithPassword, score: 1 };
+      });
+    });
+
     it('Sign In successfully', async () => {
       const member = MEMBERS_FIXTURES.LOUISA;
       const clearPassword = 'asd';
@@ -295,6 +315,12 @@ describe('Auth routes tests', () => {
     const challenge = 'challenge';
 
     describe('POST /m/register', () => {
+      beforeEach(() => {
+        // mock captcha validation
+        jest.mock('node-fetch', () => {
+          return { success: true, actionType: RecaptchaActionType.SignUpMobile, score: 1 };
+        });
+      });
       it('Sign Up successfully', async () => {
         const email = 'someemail@email.com';
         const name = 'anna';
@@ -379,6 +405,12 @@ describe('Auth routes tests', () => {
     });
 
     describe('POST /m/login', () => {
+      beforeEach(() => {
+        // mock captcha validation
+        jest.mock('node-fetch', () => {
+          return { success: true, actionType: RecaptchaActionType.SignInMobile, score: 1 };
+        });
+      });
       it('Sign In successfully', async () => {
         const member = MEMBERS_FIXTURES.BOB;
         mockMemberServiceGetMatching([member]);
@@ -451,6 +483,16 @@ describe('Auth routes tests', () => {
     });
 
     describe('POST /m/login-password', () => {
+      beforeEach(() => {
+        // mock captcha validation
+        jest.mock('node-fetch', () => {
+          return {
+            success: true,
+            actionType: RecaptchaActionType.SignInWithPasswordMobile,
+            score: 1,
+          };
+        });
+      });
       it('Sign In successfully', async () => {
         const member = MEMBERS_FIXTURES.LOUISA;
         const clearPassword = 'asd';
