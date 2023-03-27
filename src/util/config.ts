@@ -257,3 +257,16 @@ export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
 
 export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
+
+export const SIGN_UP_EMAIL_WHITE_LIST =
+  process.env.SIGN_UP_EMAIL_WHITE_LIST && process.env.SIGN_UP_EMAIL_WHITE_LIST !== ''
+    ? process.env.SIGN_UP_EMAIL_WHITE_LIST.split(',').map((email) => email.trim())
+    : null;
+
+export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_KEY;
+if (!RECAPTCHA_SECRET_ACCESS_KEY) {
+  console.error('RECAPTCHA_SECRET_ACCESS_KEY environment variable missing.');
+  process.exit(1);
+}
+export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
+export const RECAPTCHA_SCORE_THRESHOLD = 0.5;

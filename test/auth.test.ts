@@ -1,8 +1,9 @@
 import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
+import fetch from 'node-fetch';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import { DEFAULT_LANG, JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../src/util/config';
 import build from './app';
@@ -13,12 +14,27 @@ import { mockMemberServiceCreate, mockMemberServiceGetMatching } from './mocks';
 jest.mock('../src/plugins/database');
 jest.mock('../src/plugins/decorator');
 
+jest.mock('node-fetch');
+
+const mockCaptchaValidation = (action: RecaptchaActionType) => {
+  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+    return { json: async () => ({ success: true, action, score: 1 }) } as any;
+  });
+};
+
+const MOCK_CAPTCHA = 'mockedCaptcha';
+
 describe('Auth routes tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('POST /register', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignUp);
+    });
+
     it('Sign Up successfully', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
@@ -28,7 +44,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: { email, name },
+        payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendRegisterEmail).toHaveBeenCalled();
@@ -49,7 +65,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/register?lang=${lang}`,
-        payload: { email, name },
+        payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendRegisterEmail).toHaveBeenCalledWith(
@@ -73,7 +89,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: member,
+        payload: { ...member, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendLoginEmail).toHaveBeenCalledWith(
@@ -103,6 +119,11 @@ describe('Auth routes tests', () => {
   });
 
   describe('POST /login', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignIn);
+    });
+
     it('Sign In successfully', async () => {
       const member = MEMBERS_FIXTURES.BOB;
       mockMemberServiceGetMatching([member]);
@@ -111,7 +132,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login',
-        payload: { email: member.email },
+        payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendLoginEmail).toHaveBeenCalledWith(
@@ -133,7 +154,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/login?lang=${lang}`,
-        payload: { email: member.email },
+        payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendLoginEmail).toHaveBeenCalledWith(
@@ -153,7 +174,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login',
-        payload: { email },
+        payload: { email, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendLoginEmail).not.toHaveBeenCalled();
@@ -176,6 +197,11 @@ describe('Auth routes tests', () => {
   });
 
   describe('POST /login-password', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignInWithPassword);
+    });
+
     it('Sign In successfully', async () => {
       const member = MEMBERS_FIXTURES.LOUISA;
       const clearPassword = 'asd';
@@ -184,7 +210,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email: member.email, password: clearPassword },
+        payload: { email: member.email, password: clearPassword, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.json()).toHaveProperty('resource');
@@ -199,7 +225,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email: member.email, password: clearWrongPassword },
+        payload: { email: member.email, password: clearWrongPassword, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -214,7 +240,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email: member.email, password: clearPassword },
+        payload: { email: member.email, password: clearPassword, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
       expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
@@ -228,7 +254,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email, password },
+        payload: { email, password, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
@@ -243,7 +269,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email, password },
+        payload: { email, password, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -295,6 +321,10 @@ describe('Auth routes tests', () => {
     const challenge = 'challenge';
 
     describe('POST /m/register', () => {
+      beforeEach(() => {
+        // mock captcha validation
+        mockCaptchaValidation(RecaptchaAction.SignUpMobile);
+      });
       it('Sign Up successfully', async () => {
         const email = 'someemail@email.com';
         const name = 'anna';
@@ -304,7 +334,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/register',
-          payload: { email, name, challenge },
+          payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
         });
 
         expect(mockSendRegisterEmail).toHaveBeenCalled();
@@ -325,7 +355,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/m/register?lang=${lang}`,
-          payload: { email, name, challenge },
+          payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
         });
 
         expect(mockSendRegisterEmail).toHaveBeenCalledWith(
@@ -349,7 +379,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/register',
-          payload: { ...member, challenge },
+          payload: { ...member, challenge, captcha: MOCK_CAPTCHA },
         });
 
         expect(mockSendLoginEmail).toHaveBeenCalledWith(
@@ -369,7 +399,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/register',
-          payload: { email, name },
+          payload: { email, name, captcha: MOCK_CAPTCHA },
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -379,6 +409,10 @@ describe('Auth routes tests', () => {
     });
 
     describe('POST /m/login', () => {
+      beforeEach(() => {
+        // mock captcha validation
+        mockCaptchaValidation(RecaptchaAction.SignInMobile);
+      });
       it('Sign In successfully', async () => {
         const member = MEMBERS_FIXTURES.BOB;
         mockMemberServiceGetMatching([member]);
@@ -387,7 +421,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login',
-          payload: { email: member.email, challenge },
+          payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
         });
 
         expect(mockSendLoginEmail).toHaveBeenCalledWith(
@@ -409,7 +443,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/m/login?lang=${lang}`,
-          payload: { email: member.email, challenge },
+          payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
         });
         expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
         expect(mockSendLoginEmail).toHaveBeenCalledWith(
@@ -428,7 +462,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login',
-          payload: { email, challenge },
+          payload: { email, challenge, captcha: MOCK_CAPTCHA },
         });
 
         expect(mockSendLoginEmail).not.toHaveBeenCalled();
@@ -441,7 +475,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login',
-          payload: { email, challenge },
+          payload: { email, challenge, captcha: MOCK_CAPTCHA },
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -451,6 +485,10 @@ describe('Auth routes tests', () => {
     });
 
     describe('POST /m/login-password', () => {
+      beforeEach(() => {
+        // mock captcha validation
+        mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
+      });
       it('Sign In successfully', async () => {
         const member = MEMBERS_FIXTURES.LOUISA;
         const clearPassword = 'asd';
@@ -459,7 +497,12 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login-password',
-          payload: { email: member.email, challenge, password: clearPassword },
+          payload: {
+            email: member.email,
+            challenge,
+            password: clearPassword,
+            captcha: MOCK_CAPTCHA,
+          },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(response.json()).toHaveProperty('t');
@@ -474,7 +517,12 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login-password',
-          payload: { email: member.email, challenge, password: clearWrongPassword },
+          payload: {
+            email: member.email,
+            challenge,
+            password: clearWrongPassword,
+            captcha: MOCK_CAPTCHA,
+          },
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
         expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -489,7 +537,12 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login-password',
-          payload: { email: member.email, challenge, password: clearPassword },
+          payload: {
+            email: member.email,
+            challenge,
+            password: clearPassword,
+            captcha: MOCK_CAPTCHA,
+          },
         });
         expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
         expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
@@ -503,7 +556,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login-password',
-          payload: { email, challenge, password },
+          payload: { email, challenge, password, captcha: MOCK_CAPTCHA },
         });
 
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
@@ -518,7 +571,7 @@ describe('Auth routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/m/login-password',
-          payload: { email, challenge, password },
+          payload: { email, challenge, password, captcha: MOCK_CAPTCHA },
         });
 
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);

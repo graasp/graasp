@@ -1,10 +1,11 @@
 const register = {
   body: {
     type: 'object',
-    required: ['name', 'email'],
+    required: ['name', 'email', 'captcha'],
     properties: {
       name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
       email: { type: 'string', format: 'email' },
+      captcha: { type: 'string' },
     },
     additionalProperties: false,
   },
@@ -20,10 +21,11 @@ const register = {
 const mregister = {
   body: {
     type: 'object',
-    required: ['name', 'email', 'challenge'],
+    required: ['name', 'email', 'challenge', 'captcha'],
     properties: {
       name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
       email: { type: 'string', format: 'email' },
+      captcha: { type: 'string' },
       challenge: { type: 'string' },
     },
     additionalProperties: false,
@@ -40,9 +42,10 @@ const mregister = {
 const login = {
   body: {
     type: 'object',
-    required: ['email'],
+    required: ['email', 'captcha'],
     properties: {
       email: { type: 'string', format: 'email' },
+      captcha: { type: 'string' },
     },
     additionalProperties: false,
   },
@@ -57,10 +60,11 @@ const login = {
 const passwordLogin = {
   body: {
     type: 'object',
-    required: ['email', 'password'],
+    required: ['email', 'password', 'captcha'],
     properties: {
       email: { type: 'string', format: 'email' },
       password: { type: 'string' },
+      captcha: { type: 'string' },
     },
     additionalProperties: false,
   },
@@ -91,10 +95,11 @@ const updatePassword = {
 const mlogin = {
   body: {
     type: 'object',
-    required: ['email', 'challenge'],
+    required: ['email', 'challenge', 'captcha'],
     properties: {
       email: { type: 'string', format: 'email' },
       challenge: { type: 'string' },
+      captcha: { type: 'string' },
     },
     additionalProperties: false,
   },
@@ -110,11 +115,12 @@ const mlogin = {
 const mPasswordLogin = {
   body: {
     type: 'object',
-    required: ['email', 'challenge', 'password'],
+    required: ['email', 'challenge', 'password', 'captcha'],
     properties: {
       email: { type: 'string', format: 'email' },
       challenge: { type: 'string' },
       password: { type: 'string' },
+      captcha: { type: 'string' },
     },
     additionalProperties: false,
   },
