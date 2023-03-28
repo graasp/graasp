@@ -90,6 +90,7 @@ jobs:
       port: ${{ secrets.PORT }}
       public-tag-id: ${{ secrets.PUBLIC_TAG_ID }}
       published-tag-id: ${{ secrets.PUBLISHED_TAG_ID }}
+      recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       redis-host: ${{ secrets.REDIS_HOST_STAGE }}
       redis-port: ${{ secrets.REDIS_PORT }}
       redis-username: ${{ secrets.REDIS_USERNAME }}

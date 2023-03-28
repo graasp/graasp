@@ -1,11 +1,11 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
+import { publicPlugin as publicEtherpadPlugin } from '@graasp/plugin-etherpad';
 import { publicPlugin as publicAppsPlugin } from 'graasp-apps';
 import { ItemTagService } from 'graasp-item-tags';
 import { publicPlugin as publicCategoriesPlugin } from 'graasp-plugin-categories';
 import { publicPlugin as publicChatboxPlugin } from 'graasp-plugin-chatbox';
-import { publicPlugin as publicEtherpadPlugin } from 'graasp-plugin-etherpad';
 import { publicPlugin as publicFileItemPlugin } from 'graasp-plugin-file-item';
 import { publicPlugin as publicH5PPlugin } from 'graasp-plugin-h5p';
 import { publicPlugin as publicZipPlugin } from 'graasp-plugin-item-zip';
