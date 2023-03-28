@@ -23,7 +23,7 @@ import {
 } from 'graasp-plugin-actions';
 import graaspCategoryPlugin from 'graasp-plugin-categories';
 import graaspChatbox from 'graasp-plugin-chatbox';
-import graaspItemEtherpad from 'graasp-plugin-etherpad';
+import graaspItemEtherpad from '@graasp/plugin-etherpad';
 import fileItemPlugin from 'graasp-plugin-file-item';
 import graaspItemH5P from 'graasp-plugin-h5p';
 import graaspHidden from 'graasp-plugin-hidden-items';
