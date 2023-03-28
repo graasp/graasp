@@ -47,7 +47,7 @@
     "@fastify/cors": "7.0.0",
     "@fastify/helmet": "8.1.0",
     "@fastify/secure-session": "4.1.1",
-    "@graasp/plugin-etherpad": "1.0.0",
+    "@graasp/plugin-etherpad": "1.0.1",
     "@graasp/plugin-websockets": "1.0.0",
     "@graasp/sdk": "0.9.3",
     "@graasp/translations": "1.10.0",
