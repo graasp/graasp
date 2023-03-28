@@ -1115,7 +1115,7 @@ __metadata:
     http-errors: ^1.7.1
     request: ^2.88.0
     request-promise-native: ^1.0.5
-  checksum: 08546e913628071fccb538c7492d3e82d441b42032701fe13b57b263cfda1a1bc085965303832f83d2661d9bcfffc02782b1191c8190b989384e3a57c3168dab
+  checksum: 34085327c76e0129a7b250426e4b3ef9fe9a3fbd1e9268e3cd623ea09f9df2ca96d8ff00fc37bdfcbb2af19703d6b3a751b66ec102dc4b6a9c987d3378d9189a
   languageName: node
   linkType: hard
 
@@ -5737,7 +5737,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-etherpad@github:graasp/graasp-plugin-etherpad":
+"graasp-plugin-etherpad@github:graasp/graasp-plugin-etherpad#d73ecfb3a292f5ecc4d8191414ae0f26b5fc9ea7":
   version: 0.1.0
   resolution: "graasp-plugin-etherpad@https://github.com/graasp/graasp-plugin-etherpad.git#commit=d73ecfb3a292f5ecc4d8191414ae0f26b5fc9ea7"
   dependencies:
@@ -5792,7 +5792,7 @@ __metadata:
     secure-json-parse: 2.4.0
     tmp-promise: 3.0.3
     uuid: 8.3.2
-  checksum: 51e977a08275a4c635a80efe447e4932e373875dae34966ca885b61f5b845dc824f1e41a7a1ec2e6423eda6fe9370701700dd5ae2544aa05a4ec78899b20d7ec
+  checksum: 868688e6ae01b7e777d4a82fbb424bbed2c969ef90da588bcefc0b99a36790fb3995143f5aecd7a8ac3e97376123aed0949ad7bf6620484007574ac5433e278b
   languageName: node
   linkType: hard
 
@@ -6014,7 +6014,7 @@ __metadata:
     graasp-plugin-actions: "github:graasp/graasp-plugin-actions"
     graasp-plugin-categories: "github:graasp/graasp-plugin-categories"
     graasp-plugin-chatbox: "github:graasp/graasp-plugin-chatbox"
-    graasp-plugin-etherpad: "github:graasp/graasp-plugin-etherpad"
+    graasp-plugin-etherpad: "github:graasp/graasp-plugin-etherpad#d73ecfb3a292f5ecc4d8191414ae0f26b5fc9ea7"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-h5p: "github:graasp/graasp-plugin-h5p"
