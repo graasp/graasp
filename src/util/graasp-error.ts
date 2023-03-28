@@ -316,6 +316,28 @@ export class EmptyCurrentPassword extends CoreError {
   }
 }
 
+export class EmailNotAllowed extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      { code: 'GERR027', statusCode: 403, message: 'Your email is not allowed to sign up' },
+      data,
+    );
+  }
+}
+
+export class AuthenticationError extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR028',
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: 'The authentication failed',
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);
