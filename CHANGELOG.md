@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/graasp/graasp/compare/v0.7.0...v0.8.0) (2023-03-28)
+
+
+### Features
+
+* add recaptcha ([#365](https://github.com/graasp/graasp/issues/365)) ([#370](https://github.com/graasp/graasp/issues/370)) ([6fe5ecc](https://github.com/graasp/graasp/commit/6fe5eccb83c24fc4d76ff4cfd1f5b3cdcbe69b91))
+
+
+### Bug Fixes
+
+* add recaptcha in workflows ([#366](https://github.com/graasp/graasp/issues/366)) ([8c3d563](https://github.com/graasp/graasp/commit/8c3d56384bd3afd96bbd28dc0f8663b752a22a84))
+* bump @graasp/plugin-etherpad ([#369](https://github.com/graasp/graasp/issues/369)) ([ff05d43](https://github.com/graasp/graasp/commit/ff05d435fa869c9726bcca8e77a9d984e6db018e))
+
 ## [0.7.0](https://github.com/graasp/graasp/compare/v0.6.0...v0.7.0) (2023-03-22)
 
 
