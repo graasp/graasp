@@ -48,7 +48,7 @@
     "@fastify/forwarded": "2.2.0",
     "@fastify/helmet": "8.1.0",
     "@fastify/secure-session": "4.1.1",
-    "@graasp/plugin-etherpad": "1.0.0",
+    "@graasp/plugin-etherpad": "1.0.1",
     "@graasp/plugin-websockets": "1.0.0",
     "@graasp/sdk": "0.10.0",
     "@graasp/translations": "1.10.0",

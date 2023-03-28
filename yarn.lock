@@ -1139,9 +1139,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/etherpad-api@github:graasp/etherpad-api":
-  version: 2.0.0
-  resolution: "@graasp/etherpad-api@https://github.com/graasp/etherpad-api.git#commit=6b7f284e447ec3cfac387c7c0bf151a89f630fd7"
+"@graasp/etherpad-api@npm:2.0.1":
+  version: 2.0.1
+  resolution: "@graasp/etherpad-api@npm:2.0.1"
   dependencies:
     "@types/http-errors": ^1.6.1
     "@types/request-promise-native": ^1.0.15
@@ -1149,20 +1149,20 @@ __metadata:
     http-errors: ^1.7.1
     request: ^2.88.0
     request-promise-native: ^1.0.5
-  checksum: 34085327c76e0129a7b250426e4b3ef9fe9a3fbd1e9268e3cd623ea09f9df2ca96d8ff00fc37bdfcbb2af19703d6b3a751b66ec102dc4b6a9c987d3378d9189a
+  checksum: ff9e45325b675195141220490a59091e9fc1f5f71f81ec1aa2d2bd3ecc9b89886c7ba3ad0dbd02c3210dcec30f80cf4979c8f24eb9f71222e73ce49923c43719
   languageName: node
   linkType: hard
 
-"@graasp/plugin-etherpad@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@graasp/plugin-etherpad@npm:1.0.0"
+"@graasp/plugin-etherpad@npm:1.0.1":
+  version: 1.0.1
+  resolution: "@graasp/plugin-etherpad@npm:1.0.1"
   dependencies:
     "@fastify/cookie": 6.0.0
-    "@graasp/etherpad-api": "github:graasp/etherpad-api"
+    "@graasp/etherpad-api": 2.0.1
     http-status-codes: 2.2.0
     luxon: 3.3.0
     uuid: 9.0.0
-  checksum: 2211eb3e07d86c5a7be575684adc9bbcbd22e392924d3ef9436107d2fbf052c9185ddd4fce5ee02ca04c69fb926b3fdde810ccdbebe1772115d960f4715f19a8
+  checksum: c790ffb0cc06afeabd97a506a1ecbd802692ae2ba46a589a76ab9ab10ca0c7f87cf29bfeaec87be7e88b03f8f76930e8d3f102d7852ce0497760bc994a630231
   languageName: node
   linkType: hard
 
@@ -6025,7 +6025,7 @@ __metadata:
     "@fastify/forwarded": 2.2.0
     "@fastify/helmet": 8.1.0
     "@fastify/secure-session": 4.1.1
-    "@graasp/plugin-etherpad": 1.0.0
+    "@graasp/plugin-etherpad": 1.0.1
     "@graasp/plugin-websockets": 1.0.0
     "@graasp/sdk": 0.10.0
     "@graasp/translations": 1.10.0
