@@ -95,7 +95,6 @@ jobs:
       redis-host: ${{ secrets.REDIS_HOST_PROD }}
       redis-port: ${{ secrets.REDIS_PORT }}
       redis-username: ${{ secrets.REDIS_USERNAME }}
-      recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       refresh-token-expiration-in-minutes: ${{ secrets.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
       refresh-token-jwt-secret: ${{ secrets.REFRESH_TOKEN_JWT_SECRET_PROD }}
       s3-file-item-access-key-id: ${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID_PROD }}
