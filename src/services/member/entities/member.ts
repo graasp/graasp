@@ -28,13 +28,13 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
 
   @Column({
     nullable: false,
-    length: 100,
+    length: 300,
   })
   name: string;
 
   @Column({
     nullable: false,
-    length: 100,
+    length: 150,
     unique: true,
   })
   email: string;

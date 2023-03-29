@@ -32,17 +32,20 @@ export class App extends BaseEntity {
 
   @Column({
     nullable: false,
+    length: 250
   })
   name: string;
 
   @Column({
-    nullable: true,
+    nullable: false,
+    length: 250
   })
   description: string;
 
   @Column({
     nullable: false,
     unique: true,
+    length: 250
   })
   url: string;
 

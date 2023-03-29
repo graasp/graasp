@@ -45,7 +45,7 @@ export class Invitation extends BaseEntity {
     onUpdate: 'CASCADE',
     nullable: false,
   })
-  @JoinColumn({ name: 'item_path' })
+  @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;
 
   @CreateDateColumn({ name: 'created_at' })

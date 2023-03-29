@@ -31,6 +31,7 @@ export class ItemLogin extends BaseEntity {
   @ManyToOne(() => ItemLoginSchema, (iLS) => iLS.id, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'item_login_schema_id' })
   itemLoginSchema: ItemLoginSchema;
 
   // @ManyToOne(() => Item, (item) => item.path, {

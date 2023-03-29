@@ -13,7 +13,7 @@ import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 
 @Entity()
-@Unique('recycled-item', ['item'])
+@Unique('recycled-item-data', ['item'])
 export class RecycledItemData extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();

@@ -56,13 +56,13 @@ export const AppDataSource = new DataSource({
   // cache: true, // TODO
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  database: 'docker', //process.env.DB_NAME,
   logging: ['error'],
-  // migrationsRun: true;
+  // migrationsRun: true,
 
   // TODO: REMOVE
-  // dropSchema: true,
-  // synchronize: true,
+  dropSchema: true,
+  synchronize: true,
 
   entities: [
     Member,
@@ -90,5 +90,6 @@ export const AppDataSource = new DataSource({
     ItemValidationGroup,
     ItemValidationReview,
   ],
-  migrations: ['migrations/*.ts'],
+  // refer to built files in js because it cannot run ts files
+  migrations: ['dist/migrations/*.js'],
 });

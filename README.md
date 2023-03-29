@@ -69,7 +69,9 @@ Then open the folder locally and run the following command to install the requir
 The application will run migrations on start. 
 
 #### Create a migration
-Run
+Migrations are saved in `src/migrations/*.ts`. They are then transformed into js files so typeorm can run them.
+
+Run the generate and run command to create and apply the migration.
 ```` bash
 yarn migration:generate
 yarn migration:run

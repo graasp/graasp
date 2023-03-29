@@ -55,6 +55,14 @@ jobs:
         run: |
           yarn
           yarn build
+
+        # TODO: verify migrations are sync with the codebase
+      # - name: apply migrations to db
+      #   run: |
+      #     yarn
+      #     yarn build
+
+
       - name: yarn test
         run: 
           yarn test

@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -13,7 +14,7 @@ import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
-@Unique('item', ['item'])
+@Unique('published-item', ['item'])
 export class ItemPublished extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
@@ -28,7 +29,7 @@ export class ItemPublished extends BaseEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @ManyToOne(() => Item, (item) => item.path, {
+  @OneToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     nullable: false,

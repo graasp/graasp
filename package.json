@@ -38,12 +38,13 @@
     "release:major": "standard-version -a --release-as major",
     "release:patch": "standard-version -a --release-as patch",
     "migration:create": "typeorm migration:create ./migrations/migrations",
-    "migration:generate": "npx typeorm-ts-node-commonjs migration:generate migrations/migrations -d src/plugins/datasource.ts",
+    "migration:generate": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations -d src/plugins/datasource.ts && yarn build-ts",
     "migration:run": "npx typeorm-ts-node-commonjs migration:run -d src/plugins/datasource.ts",
     "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d src/plugins/datasource.ts",
     "migration:fake": "yarn migration:run:fake && migration:revert:fake",
     "migration:run:fake": "npx typeorm-ts-node-commonjs  migration:run --fake",
-    "migration:revert:fake": "npx typeorm-ts-node-commonjs migration:revert --fake"
+    "migration:revert:fake": "npx typeorm-ts-node-commonjs migration:revert --fake",
+    "migration:check": "npx typeorm-ts-node-commonjs schema:log -d src/plugins/datasource.ts"
   },
   "dependencies": {
     "@casl/ability": "6.3.3",

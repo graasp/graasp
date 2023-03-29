@@ -44,14 +44,14 @@ export class Item extends BaseEntity {
   id: string = v4();
 
   @Column({
-    length: 100,
+    length: 500,
     nullable: false,
   })
   name: string;
 
   @Column({
     nullable: true,
-    length: 100,
+    length: 5000,
   })
   description: string;
 
