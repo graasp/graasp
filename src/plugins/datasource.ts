@@ -56,12 +56,12 @@ export const AppDataSource = new DataSource({
   // cache: true, // TODO
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME, // 'docker'
+  database: 'docker' ,//process.env.DB_NAME, // 'docker'
   logging: ['error'],
-  // migrationsRun: true,
+  migrationsRun: true,
 
   // TODO: REMOVE
-  // dropSchema: true,
+  dropSchema: true,
   // synchronize: true,
 
   entities: [

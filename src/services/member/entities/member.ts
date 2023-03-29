@@ -28,7 +28,7 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
 
   @Column({
     nullable: false,
-    length: 300,
+    length: 100,
   })
   name: string;
 

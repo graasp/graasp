@@ -26,7 +26,7 @@ export class ChatMessage extends BaseEntity {
   item: Item;
 
   @ManyToOne(() => Member, (member) => member.id, { onDelete: 'SET NULL', nullable: true })
-  @JoinColumn({ name: 'member_id' })
+  @JoinColumn({ name: 'creator_id' })
   creator: Member;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })

@@ -58,6 +58,7 @@ export class Item extends BaseEntity {
   @Column({
     default: ItemType.FOLDER,
     nullable: false,
+    enum: Object.values(ItemType)
   })
   type: `${ItemType}`;
 

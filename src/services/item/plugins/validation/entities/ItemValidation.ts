@@ -53,11 +53,13 @@ export class ItemValidation extends BaseEntity {
 
   @Column({
     nullable: false,
+    enum: Object.values(ItemValidationProcess)
   })
   process: ItemValidationProcess;
 
   @Column({
     nullable: false,
+    enum: Object.values(ItemValidationStatus)
   })
   status: ItemValidationStatus;
 
@@ -68,15 +70,17 @@ export class ItemValidation extends BaseEntity {
 
   @ManyToOne(() => ItemValidationGroup, (ivg) => ivg.id, {
     onDelete: 'CASCADE',
+    nullable:false
   })
   @JoinColumn({ name: 'item_validation_group_id' })
   itemValidationGroup: ItemValidationGroup;
-
+  
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: string;
+ 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: string;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: string;
 }
 
 // export type FullValidationRecord = {

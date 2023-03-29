@@ -27,6 +27,7 @@ export class App extends BaseEntity {
     generated: 'uuid',
     unique: true,
     select: false,
+    nullable:false
   })
   key: string = v4();
 

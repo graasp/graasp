@@ -23,7 +23,7 @@ export class ItemFlag extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 
-  @Column({ name: 'flag_type' })
+  @Column({ name: 'type' })
   type: FlagType;
 
   @ManyToOne(() => Item, (item) => item.id, {

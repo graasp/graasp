@@ -40,6 +40,7 @@ export class AppAction extends BaseEntity {
 
   @Column({
     nullable: false,
+    length: 25,
   })
   type: string;
 

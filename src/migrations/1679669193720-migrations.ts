@@ -13,7 +13,7 @@ export class migrations1679669193720 implements MigrationInterface {
           "name" character varying(300) NOT NULL,
           "email" character varying(150) UNIQUE NOT NULL,
           "password" character(60) DEFAULT NULL,
-          "type" member_type_enum DEFAULT 'individual' NOT NULL,
+          "type" member_type_enum  NOT NULL DEFAULT 'individual',
           "extra" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
         
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
@@ -311,9 +311,7 @@ export class migrations1679669193720 implements MigrationInterface {
         await queryRunner.query('INSERT INTO "tag" ("id", "name", "nested") VALUES (\'6230a72d-59c2-45c2-a8eb-e2a01a3ac05b\', \'item-login\', \'fail\')');
 
         await queryRunner.query(`CREATE TABLE "item_member_login" (
-            -- delete row if item is deleted
             "item_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE,
-            -- delete row if member is deleted
             "member_id" uuid REFERENCES "member" ("id") ON DELETE CASCADE,
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             PRIMARY KEY ("item_id", "member_id")
@@ -457,16 +455,10 @@ export class migrations1679669193720 implements MigrationInterface {
 
         await queryRunner.query(`CREATE TABLE "app_action" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-        
-            -- delete row if member is deleted
             "member_id" uuid REFERENCES "member" ("id") ON DELETE CASCADE NOT NULL,
-        
-            -- delete row if item is deleted
             "item_id" uuid REFERENCES "item" ("id") ON DELETE CASCADE NOT NULL,
-        
             "data" jsonb NOT NULL DEFAULT '{}'::jsonb,
             "type" character varying(25),
-        
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
         await queryRunner.query('CREATE INDEX "app_action_item_id_idx" ON app_action("item_id")');
@@ -507,38 +499,45 @@ export class migrations1679669193720 implements MigrationInterface {
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         // drop all tables
-        await queryRunner.query('DROP TABLE action');
-        await queryRunner.query('DROP TABLE action_request_export');
+        await queryRunner.query('DROP TABLE IF EXISTS action');
+        await queryRunner.query('DROP TABLE IF EXISTS action_request_export');
         await queryRunner.query('DROP TABLE IF EXISTS admin_role');
-        await queryRunner.query('DROP TABLE app');
-        await queryRunner.query('DROP TABLE app_data');
-        await queryRunner.query('DROP TABLE app_action');
-        await queryRunner.query('DROP TABLE app_setting');
-        await queryRunner.query('DROP TABLE chat_mention');
-        await queryRunner.query('DROP TABLE chat_message');
-        await queryRunner.query('DROP TABLE invitation');
-        await queryRunner.query('DROP TABLE item_category');
-        await queryRunner.query('DROP TABLE item_flag');
-        await queryRunner.query('DROP TABLE flag');
-        await queryRunner.query('DROP TABLE item_like');
-        await queryRunner.query('DROP TABLE item_member_login');
-        await queryRunner.query('DROP TABLE item_membership');
-        await queryRunner.query('DROP TABLE item_tag');
-        await queryRunner.query('DROP TABLE category');
-        await queryRunner.query('DROP TABLE category_type');
-        await queryRunner.query('DROP TABLE item_validation_group');
-        await queryRunner.query('DROP TABLE item_validation_review');
-        await queryRunner.query('DROP TABLE item_validation_process');
-        await queryRunner.query('DROP TABLE item_validation_status');
-        await queryRunner.query('DROP TABLE item_validation_review_status');
-        await queryRunner.query('DROP TABLE item_validation');
+        await queryRunner.query('DROP TABLE IF EXISTS app');
+        await queryRunner.query('DROP TABLE IF EXISTS app_data');
+        await queryRunner.query('DROP TABLE IF EXISTS app_action');
+        await queryRunner.query('DROP TABLE IF EXISTS app_setting');
+        await queryRunner.query('DROP TABLE IF EXISTS chat_mention');
+        await queryRunner.query('DROP TABLE IF EXISTS chat_message');
+        await queryRunner.query('DROP TABLE IF EXISTS invitation');
+        await queryRunner.query('DROP TABLE IF EXISTS item_category');
+        await queryRunner.query('DROP TABLE IF EXISTS item_flag');
+        await queryRunner.query('DROP TABLE IF EXISTS flag');
+        await queryRunner.query('DROP TABLE IF EXISTS item_like');
+        await queryRunner.query('DROP TABLE IF EXISTS item_member_login');
+        await queryRunner.query('DROP TABLE IF EXISTS item_membership');
+        await queryRunner.query('DROP TABLE IF EXISTS item_tag');
+        await queryRunner.query('DROP TABLE IF EXISTS category');
+        await queryRunner.query('DROP TABLE IF EXISTS category_type');
+        await queryRunner.query('DROP TABLE IF EXISTS item_validation_group');
+        await queryRunner.query('DROP TABLE IF EXISTS item_validation_review');
+        await queryRunner.query('DROP TABLE IF EXISTS item_validation_process');
+        await queryRunner.query('DROP TABLE IF EXISTS item_validation_status');
+        await queryRunner.query('DROP TABLE IF EXISTS item_validation_review_status');
+        await queryRunner.query('DROP TABLE IF EXISTS item_validation');
         await queryRunner.query('DROP TABLE IF EXISTS permission');
-        await queryRunner.query('DROP TABLE publisher');
-        await queryRunner.query('DROP TABLE recycled_item');
+        await queryRunner.query('DROP TABLE IF EXISTS publisher');
+        await queryRunner.query('DROP TABLE IF EXISTS recycled_item');
         await queryRunner.query('DROP TABLE IF EXISTS role_permission');
-        await queryRunner.query('DROP TABLE tag');
-        await queryRunner.query('DROP TABLE item');
-        await queryRunner.query('DROP TABLE member');
+        await queryRunner.query('DROP TABLE IF EXISTS tag');
+        await queryRunner.query('DROP TABLE IF EXISTS item');
+        await queryRunner.query('DROP TABLE IF EXISTS member');
+
+        await queryRunner.query('DROP TYPE IF EXISTS "permissions_enum"');
+        await queryRunner.query('DROP TYPE IF EXISTS mention_status');
+        await queryRunner.query('DROP TYPE IF EXISTS "app_data_visibility_enum"');
+        await queryRunner.query('DROP TYPE IF EXISTS "nested_tag_enum"');
+        await queryRunner.query('DROP TYPE IF EXISTS "member_type_enum"');
+
     }
 
 }

@@ -16,7 +16,7 @@ import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
-@Unique('item-member', ['item', 'member'])
+@Unique('item_membership-item-member', ['item', 'member'])
 export class ItemMembership extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -24,6 +24,7 @@ export class ItemMembership extends BaseEntity {
   @Column({
     length: 100,
     nullable: false,
+    enum: Object.values(PermissionLevel),
   })
   permission: PermissionLevel;
 
