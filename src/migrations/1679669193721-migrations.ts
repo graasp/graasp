@@ -9,12 +9,13 @@ export class migrations1679669193721 implements MigrationInterface {
         await queryRunner.query('RENAME TABLE action TO action_old');
         await queryRunner.query('RENAME TABLE action_request_export TO action_request_export_old');
         // don't use we never used admin_role anymore
+        await queryRunner.query('DROP TABLE IF EXISTS admin_role');
         await queryRunner.query('RENAME TABLE app TO app_old');
         await queryRunner.query('RENAME TABLE app_data TO app_data_old');
         await queryRunner.query('RENAME TABLE app_action TO app_action_old');
         await queryRunner.query('RENAME TABLE app_setting TO app_setting_old');
         await queryRunner.query('RENAME TABLE category TO category_old');
-        // don't use category_types anymore
+        await queryRunner.query('RENAME TABLE category_type TO category_type_old');
         await queryRunner.query('RENAME TABLE chat_mention TO chat_mention_old');
         await queryRunner.query('RENAME TABLE chat_message TO chat_message_old');
         await queryRunner.query('RENAME TABLE flag TO flag_old');
@@ -30,13 +31,15 @@ export class migrations1679669193721 implements MigrationInterface {
         await queryRunner.query('RENAME TABLE item_validation_group TO item_validation_group_old');
         await queryRunner.query('RENAME TABLE item_validation_review TO item_validation_review_old');
         await queryRunner.query('RENAME TABLE item_validation_process TO item_validation_process_old');
-        // don't use item_validation_review_status 
-        // don't use item_validation_status anymore
+        await queryRunner.query('RENAME TABLE item_validation_status TO item_validation_status_old');
+        await queryRunner.query('RENAME TABLE item_validation_review_status TO item_validation_review_status_old');
         await queryRunner.query('RENAME TABLE member TO member_old');
         // don't use permission (admin?)
+        await queryRunner.query('DROP TABLE IF EXISTS permission');
         await queryRunner.query('RENAME TABLE publisher TO publisher_old');
         await queryRunner.query('RENAME TABLE recycled_item TO recycled_item_old');
         // don't use role and role_permission (admin)
+        await queryRunner.query('DROP TABLE IF EXISTS role_permission');
         await queryRunner.query('RENAME TABLE tag TO tag_old');
  
         // ----- create new tables and insert data from old

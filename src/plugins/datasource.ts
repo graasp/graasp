@@ -61,8 +61,8 @@ export const AppDataSource = new DataSource({
   // migrationsRun: true,
 
   // TODO: REMOVE
-  dropSchema: true,
-  synchronize: true,
+  // dropSchema: true,
+  // synchronize: true,
 
   entities: [
     Member,
