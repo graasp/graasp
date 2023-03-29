@@ -56,7 +56,7 @@ export const AppDataSource = new DataSource({
   // cache: true, // TODO
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
-  database: 'docker', //process.env.DB_NAME,
+  database: process.env.DB_NAME, // 'docker'
   logging: ['error'],
   // migrationsRun: true,
 
