@@ -7,17 +7,17 @@ export class migrations1679669193720 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
 
         // -- CREATE everything
-        await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM ("individual", "group")');
+        await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
         await queryRunner.query(`CREATE TABLE "member" (
           "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
           "name" character varying(300) NOT NULL,
           "email" character varying(150) UNIQUE NOT NULL,
           "password" character(60) DEFAULT NULL,
-          "type" member_type_enum DEFAULT "individual" NOT NULL,
-          "extra" jsonb NOT NULL DEFAULT "{}"::jsonb,
+          "type" member_type_enum DEFAULT 'individual' NOT NULL,
+          "extra" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
         
-          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE "utc"),
-          "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE "utc")`
+          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
+          "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'))`
         );
 
         await queryRunner.query(`CREATE TABLE "item" (
@@ -26,19 +26,19 @@ export class migrations1679669193720 implements MigrationInterface {
             "description" character varying(5000),
             "type" character varying(100),
             "path" ltree UNIQUE NOT NULL,
-            "extra" jsonb NOT NULL DEFAULT "{}"::jsonb,
-            "settings" jsonb NOT NULL DEFAULT "{}"::jsonb,
+            "extra" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
+            "settings" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
           
             "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, 
-            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE "utc"),
-            "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE "utc")
+            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
+            "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\')
             )`
         );
         await queryRunner.query('CREATE INDEX "item_path_idx" ON "item" USING gist ("path")');
         await queryRunner.query('CREATE INDEX "item_creator_idx" ON item("creator")');
         await queryRunner.query(' CREATE INDEX "item_type_idx" ON item("type")');
 
-        await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM ("read", "write", "admin")');
+        await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
         await queryRunner.query(`CREATE TABLE "item_membership" (
           "id" uuid UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
           -- delete row if member is deleted
@@ -48,17 +48,17 @@ export class migrations1679669193720 implements MigrationInterface {
           "permission" permissions_enum NOT NULL,
           "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don"t remove - set creator to NULL
         
-          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE "utc"),
-          "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE "utc"),
+          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
+          "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
             PRIMARY KEY ("member_id", "item_path")
             )`);
         await queryRunner.query(' CREATE INDEX "item_membership_item_path_idx" ON "item_membership" USING gist ("item_path")');
 
         // -- Tables timestamps
-        await queryRunner.query(` CREATE FUNCTION trigger_set_timestamp()
+        await queryRunner.query(` CREATE OR REPLACE FUNCTION trigger_set_timestamp()
             RETURNS TRIGGER AS $$
             BEGIN
-            NEW.updated_at = (NOW() AT TIME ZONE "utc");
+            NEW.updated_at = (NOW() AT TIME ZONE \'utc\');
             RETURN NEW;
             END;
             $$ LANGUAGE plpgsql`);
@@ -80,7 +80,7 @@ export class migrations1679669193720 implements MigrationInterface {
 
         // -- Graasp member
         await queryRunner.query(` INSERT INTO "member" ("id", "name", "email")
-            VALUES ("12345678-1234-1234-1234-123456789012", "Graasp", "graasp@graasp.org")`);
+            VALUES ('12345678-1234-1234-1234-123456789012', 'Graasp', 'graasp@graasp.org')`);
 
         await queryRunner.query(`CREATE TABLE "action" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -514,31 +514,31 @@ export class migrations1679669193720 implements MigrationInterface {
         await queryRunner.query('DROP TABLE app_data');
         await queryRunner.query('DROP TABLE app_action');
         await queryRunner.query('DROP TABLE app_setting');
-        await queryRunner.query('DROP TABLE category');
-        await queryRunner.query('DROP TABLE category_type');
         await queryRunner.query('DROP TABLE chat_mention');
         await queryRunner.query('DROP TABLE chat_message');
-        await queryRunner.query('DROP TABLE flag');
         await queryRunner.query('DROP TABLE invitation');
-        await queryRunner.query('DROP TABLE item');
         await queryRunner.query('DROP TABLE item_category');
         await queryRunner.query('DROP TABLE item_flag');
+        await queryRunner.query('DROP TABLE flag');
         await queryRunner.query('DROP TABLE item_like');
         await queryRunner.query('DROP TABLE item_member_login');
         await queryRunner.query('DROP TABLE item_membership');
         await queryRunner.query('DROP TABLE item_tag');
-        await queryRunner.query('DROP TABLE item_validation');
+        await queryRunner.query('DROP TABLE category');
+        await queryRunner.query('DROP TABLE category_type');
         await queryRunner.query('DROP TABLE item_validation_group');
         await queryRunner.query('DROP TABLE item_validation_review');
         await queryRunner.query('DROP TABLE item_validation_process');
         await queryRunner.query('DROP TABLE item_validation_status');
         await queryRunner.query('DROP TABLE item_validation_review_status');
-        await queryRunner.query('DROP TABLE member');
+        await queryRunner.query('DROP TABLE item_validation');
         await queryRunner.query('DROP TABLE IF EXISTS permission');
         await queryRunner.query('DROP TABLE publisher');
         await queryRunner.query('DROP TABLE recycled_item');
         await queryRunner.query('DROP TABLE IF EXISTS role_permission');
         await queryRunner.query('DROP TABLE tag');
+        await queryRunner.query('DROP TABLE item');
+        await queryRunner.query('DROP TABLE member');
     }
 
 }

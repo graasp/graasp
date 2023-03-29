@@ -5,7 +5,7 @@ export class migrations1679669193721 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
 
-        // move all tables to old
+        // rename all tables to old
         await queryRunner.query('RENAME TABLE action TO action_old');
         await queryRunner.query('RENAME TABLE action_request_export TO action_request_export_old');
         // don't use we never used admin_role anymore
@@ -465,8 +465,33 @@ export class migrations1679669193721 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        // do nothing
         
+        // DROP TABLE app;
+        // DROP TABLE app_action;
+        // DROP TABLE app_data;
+        // DROP TABLE app_setting;
+        // DROP TABLE publisher;
+        // DROP TABLE item_category;
+        // DROP TABLE category;
+        // DROP TABLE chat_mention;
+        // DROP TABLE chat_message;
+        // DROP TABLE invitation;
+        // DROP TABLE item_flag;
+        // DROP TABLE item_like;
+        // DROP TABLE item_login;
+        // DROP TABLE item_login_schema;
+        // DROP TABLE item_membership;
+        // DROP TABLE item_published;
+        // DROP TABLE item_tag;
+        // DROP TABLE item_validation_review;
+        // DROP TABLE item_validation;
+        // DROP TABLE item_validation_group;
+        // DROP TABLE member_password;
+        // DROP TABLE recycled_item_data;
+        // DROP TABLE item;
+        // DROP TABLE member;
+
+
        }
 
 }
