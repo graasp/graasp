@@ -8,7 +8,6 @@ import { BOB, saveMember } from '../../../test/fixtures/members';
 import { saveItemAndMembership } from '../../../test/fixtures/memberships';
 import { MemberCannotAccess } from '../../util/graasp-error';
 import { Item } from '../item/entities/Item';
-import { ItemTagRepository } from '../itemTag/repository';
 import { setItemPublic } from '../itemTag/test/fixtures';
 import { Member } from '../member/entities/member';
 import { ItemLikeNotFound } from './errors';

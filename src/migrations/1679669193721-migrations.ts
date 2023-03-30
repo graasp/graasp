@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class migrations1679669193721 implements MigrationInterface {
+export class Migrations1679669193721 implements MigrationInterface {
     name = 'migrations1679669193721';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -161,8 +161,7 @@ export class migrations1679669193721 implements MigrationInterface {
             "creator_id" uuid REFERENCES member("id") ON DELETE SET NULL,
             item_path ltree REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE,
             category_id uuid REFERENCES category("id") ON DELETE CASCADE,
-            "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-            PRIMARY KEY(item_path, category_id)
+            "created_at" TIMESTAMP NOT NULL DEFAULT now()
         )`);
         await queryRunner.query(`INSERT INTO "item_category" (item_path, creator_id, category_id) 
         SELECT i.path, NULL, c.id FROM item_category_old as ic
@@ -183,7 +182,7 @@ export class migrations1679669193721 implements MigrationInterface {
             SELECT chat_id, creator, created_at, updated_at, body FROM chat_message_old 
             `);
 
-            await queryRunner.query('CREATE TYPE "public"."chat_mention_status_enum" AS ENUM(\'unread\', \'read\')');
+        await queryRunner.query('CREATE TYPE "public"."chat_mention_status_enum" AS ENUM(\'unread\', \'read\')');
         await queryRunner.query(`CREATE TABLE "chat_mention"  (
                 "id"         uuid UNIQUE    NOT NULL DEFAULT uuid_generate_v4(),
                 "message_id" uuid REFERENCES "chat_message" ("id") ON DELETE CASCADE,     
@@ -247,8 +246,7 @@ export class migrations1679669193721 implements MigrationInterface {
             "email" character varying(100) NOT NULL,
             "permission" character varying NOT NULL,
             "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-            "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-            PRIMARY KEY ("item_path","email")
+            "updated_at" TIMESTAMP NOT NULL DEFAULT now()
         )`);
         await queryRunner.query(`INSERT INTO "invitation" (item_path, creator_id, created_at, updated_at,name,email,permission) 
             SELECT item_path, creator, created_at, updated_at,name,email,permission FROM invitation_old 
@@ -259,8 +257,7 @@ export class migrations1679669193721 implements MigrationInterface {
           "type" character varying NOT NULL,
           "item_path" ltree REFERENCES "item" ("path") ON DELETE CASCADE ON UPDATE CASCADE,
           "creator_id" uuid REFERENCES "member" ("id") ON DELETE SET NULL, -- don't remove - set creator to NULL
-          "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-          PRIMARY KEY ("type", "item_path")
+          "created_at" TIMESTAMP NOT NULL DEFAULT now()
             )`);
 
         await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item-tag" UNIQUE ("item_path", "type")');
@@ -344,112 +341,112 @@ export class migrations1679669193721 implements MigrationInterface {
                 LEFT JOIN item_validation_old as iv on iv.id= ivr.item_validation_id
                 `);
 
-                await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT "chat_message_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT "chat_message_item_id_fkey"');
-                await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT "chat_mention_member_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT "chat_mention_message_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_item_path_fkey1"');
-                await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT "app_action_item_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT "app_action_member_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT "app_data_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT "app_data_item_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT "app_data_member_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT "app_setting_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT "app_setting_item_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "app" DROP CONSTRAINT "app_publisher_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "recycled_item_data" DROP CONSTRAINT "recycled_item_data_item_path_fkey"');
-                await queryRunner.query('ALTER TABLE "item_validation_group" DROP CONSTRAINT "item_validation_group_item_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT "item_validation_item_validation_group_id_fkey"');
-                await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT "item_validation_item_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT "item_validation_review_reviewer_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT "item_validation_review_item_validation_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_category_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_item_path_fkey"');
-                await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT "item_flag_item_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT "item_flag_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "item_like" DROP CONSTRAINT "item_like_item_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_login_schema" DROP CONSTRAINT "item_login_schema_item_path_fkey"');
-                await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "item_membership_member_id_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "item_membership_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "item_membership_item_path_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_creator_id_fkey"');
-                await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_item_path_fkey1"');
-                await queryRunner.query('ALTER TABLE "item_published" DROP CONSTRAINT "item_published_item_path_fkey"');
-                await queryRunner.query('ALTER TABLE "member" ALTER COLUMN "type" SET DEFAULT \'individual\'');
-                await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_pkey1"');
-                await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("email", "item_path", "id")');
-                await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_id_key1"');
-                await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_pkey1"');
-                await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("item_path", "id")');
-                await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_pkey1"');
-                await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "PK_beb994737756c0f18a1c1f8669c" PRIMARY KEY ("id")');
-                await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "category-item"');
-                await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_pkey1"');
-                await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "category_id", "id")');
-                await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_pkey1"');
-                await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "id")');
-                await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_pkey1"');
-                await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "PK_91ba90f150e8804bdaad7b17ff8" PRIMARY KEY ("id")');
-                await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "item_membership-item-member"');
-                await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8"');
-                await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8" PRIMARY KEY ("member_id", "item_path", "id")');
-                await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8"');
-                await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_fbfb92f094949a9071156e16906" PRIMARY KEY ("id", "item_path")');
-                await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "PK_fbfb92f094949a9071156e16906"');
-                await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_4697b5e1247909f5c884cc12ec3" PRIMARY KEY ("id")');
-                await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item-tag"');
-                await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_pkey1"');
-                await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "type", "id")');
-                await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_id_key1"');
-                await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_pkey1"');
-                await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "id")');
-                await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_pkey1"');
-                await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "PK_5cff999fc1b42609c37d868dc8a" PRIMARY KEY ("id")');
-                await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "item-email" UNIQUE ("item_path", "email")');
-                await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "category-item" UNIQUE ("category_id", "item_path")');
-                await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership-item-member" UNIQUE ("item_path", "member_id")');
-                await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item-tag" UNIQUE ("item_path", "type")');
-                await queryRunner.query('ALTER TABLE "item" ADD CONSTRAINT "FK_bdc46717fadc2f04f3093e51fd5" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "FK_b31e627ea7a4787672e265a1579" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "FK_71fdcb9038eca1b903102bdfd17" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "FK_e5199951167b722215127651e7c" FOREIGN KEY ("message_id") REFERENCES "chat_message"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "FK_f22de4941ca58910967a5626755" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "FK_7ad4a490d5b9f79a677827b641c" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "FK_dc1d92accde1c2fbb7e729e4dcc" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-                await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "FK_c415fc186dda51fa260d338d776" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "FK_7750f85aef0f67acdbcb904395a" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "FK_8c3e2463c67d9865658941c9e2d" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "FK_27cb180cb3f372e4cf55302644a" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "FK_b8c8a36a32850e3096451a8b727" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "FK_f5922b885e2680beab8add96008" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "FK_22d3d051ee6f94932c1373a3d09" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "app" ADD CONSTRAINT "FK_37eb7baab82e11150157ec0b5a6" FOREIGN KEY ("publisher_id") REFERENCES "publisher"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "recycled_item_data" ADD CONSTRAINT "FK_3e3650ebd5c49843013429d510a" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "recycled_item_data" ADD CONSTRAINT "FK_f8a4db4476e3d81e18de5d63c42" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-                await queryRunner.query('ALTER TABLE "item_validation_group" ADD CONSTRAINT "FK_a9e83cf5f53c026b774b53d3c60" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "FK_d60969d5e478e7c844532ac4e7f" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "FK_e92da280941f666acf87baedc65" FOREIGN KEY ("item_validation_group_id") REFERENCES "item_validation_group"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "FK_59fd000835c70c728e525d82950" FOREIGN KEY ("item_validation_id") REFERENCES "item_validation"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "FK_44bf14fee580ae08702d70e622e" FOREIGN KEY ("reviewer_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "FK_638552fc7d9a2035c2b53182d8a" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "FK_9a34a079b5b24f4396462546d26" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "FK_5681d1785eea699e9cae8818fe0" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-                await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "FK_b04d0adf4b73d82537c92fa55ea" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "FK_bde9b9ab1da1483a71c9b916dd2" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_like" ADD CONSTRAINT "FK_4a56eba1ce30dc93f118a51ff26" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_like" ADD CONSTRAINT "FK_159827eb667d019dc71372d7463" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_login_schema" ADD CONSTRAINT "FK_b4a263d8c8392a73e0a1febf7d3" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-                await queryRunner.query('ALTER TABLE "item_login" ADD CONSTRAINT "FK_342f83bdd41dbd854c1328cd684" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_login" ADD CONSTRAINT "FK_d2a1fec675a75e8ae1b2a73b0c0" FOREIGN KEY ("item_login_schema_id") REFERENCES "item_login_schema"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "FK_25b6506de99e92886ed97174ab8" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "FK_da1b92e08975efd46df22512884" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "FK_d935785e7ecc015ed3ca048ff05" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-                await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "FK_354758ae1c8199f9b4a66ffb6a3" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "FK_9efd997d733334e84e22410592c" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-                await queryRunner.query('ALTER TABLE "item_published" ADD CONSTRAINT "FK_bfeeeb8d1257029e4d7f7ec1375" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-                await queryRunner.query('ALTER TABLE "item_published" ADD CONSTRAINT "FK_490fddd9099ee7ddcccf8c776a1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT IF EXISTS "chat_message_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT IF EXISTS "chat_message_item_id_fkey"');
+        await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT IF EXISTS "chat_mention_member_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT IF EXISTS "chat_mention_message_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_item_path_fkey1"');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT IF EXISTS "app_action_item_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT IF EXISTS "app_action_member_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT IF EXISTS "app_data_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT IF EXISTS "app_data_item_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT IF EXISTS "app_data_member_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT IF EXISTS "app_setting_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT IF EXISTS "app_setting_item_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "app" DROP CONSTRAINT IF EXISTS "app_publisher_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "recycled_item_data" DROP CONSTRAINT IF EXISTS "recycled_item_data_item_path_fkey"');
+        await queryRunner.query('ALTER TABLE "item_validation_group" DROP CONSTRAINT IF EXISTS "item_validation_group_item_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT IF EXISTS "item_validation_item_validation_group_id_fkey"');
+        await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT IF EXISTS "item_validation_item_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT IF EXISTS "item_validation_review_reviewer_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT IF EXISTS "item_validation_review_item_validation_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_category_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_item_path_fkey"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT IF EXISTS "item_flag_item_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT IF EXISTS "item_flag_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "item_like" DROP CONSTRAINT IF EXISTS "item_like_item_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_login_schema" DROP CONSTRAINT IF EXISTS "item_login_schema_item_path_fkey"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "item_membership_member_id_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "item_membership_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "item_membership_item_path_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_creator_id_fkey"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_item_path_fkey1"');
+        await queryRunner.query('ALTER TABLE "item_published" DROP CONSTRAINT IF EXISTS "item_published_item_path_fkey"');
+        await queryRunner.query('ALTER TABLE "member" ALTER COLUMN "type" SET DEFAULT \'individual\'');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_pkey1"');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("email", "item_path", "id")');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_id_key1"');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_pkey1"');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("item_path", "id")');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_pkey1"');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "PK_beb994737756c0f18a1c1f8669c" PRIMARY KEY ("id")');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "category-item"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "category_id", "id")');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "id")');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "PK_91ba90f150e8804bdaad7b17ff8" PRIMARY KEY ("id")');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "item_membership-item-member"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "PK_ccc0ff5b7c575e40d57b48e77a8"');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8" PRIMARY KEY ("member_id", "item_path", "id")');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "PK_ccc0ff5b7c575e40d57b48e77a8"');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_fbfb92f094949a9071156e16906" PRIMARY KEY ("id", "item_path")');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "PK_fbfb92f094949a9071156e16906"');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_4697b5e1247909f5c884cc12ec3" PRIMARY KEY ("id")');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item-tag"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "type", "id")');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_id_key1"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "id")');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "PK_5cff999fc1b42609c37d868dc8a" PRIMARY KEY ("id")');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "item-email" UNIQUE ("item_path", "email")');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "category-item" UNIQUE ("category_id", "item_path")');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership-item-member" UNIQUE ("item_path", "member_id")');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item-tag" UNIQUE ("item_path", "type")');
+        await queryRunner.query('ALTER TABLE "item" ADD CONSTRAINT "FK_bdc46717fadc2f04f3093e51fd5" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "FK_b31e627ea7a4787672e265a1579" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "FK_71fdcb9038eca1b903102bdfd17" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "FK_e5199951167b722215127651e7c" FOREIGN KEY ("message_id") REFERENCES "chat_message"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "FK_f22de4941ca58910967a5626755" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "FK_7ad4a490d5b9f79a677827b641c" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "FK_dc1d92accde1c2fbb7e729e4dcc" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "FK_c415fc186dda51fa260d338d776" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "FK_7750f85aef0f67acdbcb904395a" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "FK_8c3e2463c67d9865658941c9e2d" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "FK_27cb180cb3f372e4cf55302644a" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "FK_b8c8a36a32850e3096451a8b727" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "FK_f5922b885e2680beab8add96008" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "FK_22d3d051ee6f94932c1373a3d09" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app" ADD CONSTRAINT "FK_37eb7baab82e11150157ec0b5a6" FOREIGN KEY ("publisher_id") REFERENCES "publisher"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "recycled_item_data" ADD CONSTRAINT "FK_3e3650ebd5c49843013429d510a" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "recycled_item_data" ADD CONSTRAINT "FK_f8a4db4476e3d81e18de5d63c42" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_validation_group" ADD CONSTRAINT "FK_a9e83cf5f53c026b774b53d3c60" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "FK_d60969d5e478e7c844532ac4e7f" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "FK_e92da280941f666acf87baedc65" FOREIGN KEY ("item_validation_group_id") REFERENCES "item_validation_group"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "FK_59fd000835c70c728e525d82950" FOREIGN KEY ("item_validation_id") REFERENCES "item_validation"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "FK_44bf14fee580ae08702d70e622e" FOREIGN KEY ("reviewer_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "FK_638552fc7d9a2035c2b53182d8a" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "FK_9a34a079b5b24f4396462546d26" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "FK_5681d1785eea699e9cae8818fe0" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "FK_b04d0adf4b73d82537c92fa55ea" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "FK_bde9b9ab1da1483a71c9b916dd2" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_like" ADD CONSTRAINT "FK_4a56eba1ce30dc93f118a51ff26" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_like" ADD CONSTRAINT "FK_159827eb667d019dc71372d7463" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_login_schema" ADD CONSTRAINT "FK_b4a263d8c8392a73e0a1febf7d3" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_login" ADD CONSTRAINT "FK_342f83bdd41dbd854c1328cd684" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_login" ADD CONSTRAINT "FK_d2a1fec675a75e8ae1b2a73b0c0" FOREIGN KEY ("item_login_schema_id") REFERENCES "item_login_schema"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "FK_25b6506de99e92886ed97174ab8" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "FK_da1b92e08975efd46df22512884" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "FK_d935785e7ecc015ed3ca048ff05" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "FK_354758ae1c8199f9b4a66ffb6a3" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "FK_9efd997d733334e84e22410592c" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_published" ADD CONSTRAINT "FK_bfeeeb8d1257029e4d7f7ec1375" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_published" ADD CONSTRAINT "FK_490fddd9099ee7ddcccf8c776a1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
 
         await queryRunner.query('DROP TABLE action_old');
         await queryRunner.query('DROP TABLE action_request_export_old');
@@ -485,119 +482,131 @@ export class migrations1679669193721 implements MigrationInterface {
         await queryRunner.query('DROP TABLE member_old');
 
 
+
+        await queryRunner.query('DROP TYPE IF EXISTS "permissions_enum"');
+        await queryRunner.query('DROP TYPE IF EXISTS mention_status');
+        await queryRunner.query('DROP TYPE IF EXISTS "app_data_visibility_enum"');
+        await queryRunner.query('DROP TYPE IF EXISTS "nested_tag_enum"');
+        await queryRunner.query('DROP TYPE IF EXISTS "member_type_enum"');
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
 
-        // await queryRunner.query('ALTER TABLE "item_published" DROP CONSTRAINT "FK_490fddd9099ee7ddcccf8c776a1"');
-        // await queryRunner.query('ALTER TABLE "item_published" DROP CONSTRAINT "FK_bfeeeb8d1257029e4d7f7ec1375"');
-        // await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "FK_9efd997d733334e84e22410592c"');
-        // await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "FK_354758ae1c8199f9b4a66ffb6a3"');
-        // await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "FK_d935785e7ecc015ed3ca048ff05"');
-        // await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "FK_da1b92e08975efd46df22512884"');
-        // await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "FK_25b6506de99e92886ed97174ab8"');
-        // await queryRunner.query('ALTER TABLE "item_login" DROP CONSTRAINT "FK_d2a1fec675a75e8ae1b2a73b0c0"');
-        // await queryRunner.query('ALTER TABLE "item_login" DROP CONSTRAINT "FK_342f83bdd41dbd854c1328cd684"');
-        // await queryRunner.query('ALTER TABLE "item_login_schema" DROP CONSTRAINT "FK_b4a263d8c8392a73e0a1febf7d3"');
-        // await queryRunner.query('ALTER TABLE "item_like" DROP CONSTRAINT "FK_159827eb667d019dc71372d7463"');
-        // await queryRunner.query('ALTER TABLE "item_like" DROP CONSTRAINT "FK_4a56eba1ce30dc93f118a51ff26"');
-        // await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT "FK_bde9b9ab1da1483a71c9b916dd2"');
-        // await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT "FK_b04d0adf4b73d82537c92fa55ea"');
-        // await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "FK_5681d1785eea699e9cae8818fe0"');
-        // await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "FK_9a34a079b5b24f4396462546d26"');
-        // await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "FK_638552fc7d9a2035c2b53182d8a"');
-        // await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT "FK_44bf14fee580ae08702d70e622e"');
-        // await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT "FK_59fd000835c70c728e525d82950"');
-        // await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT "FK_e92da280941f666acf87baedc65"');
-        // await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT "FK_d60969d5e478e7c844532ac4e7f"');
-        // await queryRunner.query('ALTER TABLE "item_validation_group" DROP CONSTRAINT "FK_a9e83cf5f53c026b774b53d3c60"');
-        // await queryRunner.query('ALTER TABLE "recycled_item_data" DROP CONSTRAINT "FK_f8a4db4476e3d81e18de5d63c42"');
-        // await queryRunner.query('ALTER TABLE "recycled_item_data" DROP CONSTRAINT "FK_3e3650ebd5c49843013429d510a"');
-        // await queryRunner.query('ALTER TABLE "app" DROP CONSTRAINT "FK_37eb7baab82e11150157ec0b5a6"');
-        // await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT "FK_22d3d051ee6f94932c1373a3d09"');
-        // await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT "FK_f5922b885e2680beab8add96008"');
-        // await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT "FK_b8c8a36a32850e3096451a8b727"');
-        // await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT "FK_27cb180cb3f372e4cf55302644a"');
-        // await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT "FK_8c3e2463c67d9865658941c9e2d"');
-        // await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT "FK_7750f85aef0f67acdbcb904395a"');
-        // await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT "FK_c415fc186dda51fa260d338d776"');
-        // await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "FK_dc1d92accde1c2fbb7e729e4dcc"');
-        // await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "FK_7ad4a490d5b9f79a677827b641c"');
-        // await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT "FK_f22de4941ca58910967a5626755"');
-        // await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT "FK_e5199951167b722215127651e7c"');
-        // await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT "FK_71fdcb9038eca1b903102bdfd17"');
-        // await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT "FK_b31e627ea7a4787672e265a1579"');
-        // await queryRunner.query('ALTER TABLE "item" DROP CONSTRAINT "FK_bdc46717fadc2f04f3093e51fd5"');
-        // await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item-tag"');
-        // await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "item_membership-item-member"');
-        // await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "category-item"');
-        // await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "item-email"');
-        // await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "PK_5cff999fc1b42609c37d868dc8a"');
-        // await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "id")');
-        // await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_pkey1"');
-        // await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "id", "type")');
-        // await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_id_key1" UNIQUE ("id")');
-        // await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT "item_tag_pkey1"');
-        // await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "type")');
-        // await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item-tag" UNIQUE ("type", "item_path")');
-        // await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "PK_4697b5e1247909f5c884cc12ec3"');
-        // await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_fbfb92f094949a9071156e16906" PRIMARY KEY ("id", "item_path")');
-        // await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "PK_fbfb92f094949a9071156e16906"');
-        // await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8" PRIMARY KEY ("member_id", "id", "item_path")');
-        // await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8"');
-        // await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8" PRIMARY KEY ("member_id", "item_path")');
-        // await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership-item-member" UNIQUE ("item_path", "member_id")');
-        // await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "PK_91ba90f150e8804bdaad7b17ff8"');
-        // await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "id")');
-        // await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_pkey1"');
-        // await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "category_id", "id")');
-        // await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT "item_category_pkey1"');
-        // await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "category_id")');
-        // await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "category-item" UNIQUE ("item_path", "category_id")');
-        // await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "PK_beb994737756c0f18a1c1f8669c"');
-        // await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("item_path", "id")');
-        // await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_pkey1"');
-        // await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("email", "item_path", "id")');
-        // await queryRunner.query('ALTER TABLE "invitation" ALTER COLUMN "name" SET DEFAULT NULL');
-        // await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_id_key1" UNIQUE ("id")');
-        // await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT "invitation_pkey1"');
-        // await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("email", "item_path")');
-        // await queryRunner.query('ALTER TABLE "member" ALTER COLUMN "type" DROP DEFAULT');
-        // await queryRunner.query('ALTER TABLE "item_published" ADD CONSTRAINT "item_published_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-        // await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_item_path_fkey1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-        // await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_item_path_fkey1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-        // await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_login_schema" ADD CONSTRAINT "item_login_schema_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-        // await queryRunner.query('ALTER TABLE "item_like" ADD CONSTRAINT "item_like_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "item_flag_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "item_flag_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-        // await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_category_id_fkey1" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "item_validation_review_item_validation_id_fkey1" FOREIGN KEY ("item_validation_id") REFERENCES "item_validation"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "item_validation_review_reviewer_id_fkey1" FOREIGN KEY ("reviewer_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "item_validation_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "item_validation_item_validation_group_id_fkey" FOREIGN KEY ("item_validation_group_id") REFERENCES "item_validation_group"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "item_validation_group" ADD CONSTRAINT "item_validation_group_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "recycled_item_data" ADD CONSTRAINT "recycled_item_data_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-        // await queryRunner.query('ALTER TABLE "app" ADD CONSTRAINT "app_publisher_id_fkey1" FOREIGN KEY ("publisher_id") REFERENCES "publisher"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "app_setting_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "app_setting_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "app_data_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "app_data_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "app_data_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "app_action_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "app_action_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_item_path_fkey1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
-        // await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "chat_mention_message_id_fkey1" FOREIGN KEY ("message_id") REFERENCES "chat_message"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "chat_mention_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
-        // await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
-  
-        
+        await queryRunner.query('ALTER TABLE "item_published" DROP CONSTRAINT IF EXISTS "FK_490fddd9099ee7ddcccf8c776a1"');
+        await queryRunner.query('ALTER TABLE "item_published" DROP CONSTRAINT IF EXISTS "FK_bfeeeb8d1257029e4d7f7ec1375"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "FK_9efd997d733334e84e22410592c"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "FK_354758ae1c8199f9b4a66ffb6a3"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "FK_d935785e7ecc015ed3ca048ff05"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "FK_da1b92e08975efd46df22512884"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "FK_25b6506de99e92886ed97174ab8"');
+        await queryRunner.query('ALTER TABLE "item_login" DROP CONSTRAINT IF EXISTS "FK_d2a1fec675a75e8ae1b2a73b0c0"');
+        await queryRunner.query('ALTER TABLE "item_login" DROP CONSTRAINT IF EXISTS "FK_342f83bdd41dbd854c1328cd684"');
+        await queryRunner.query('ALTER TABLE "item_login_schema" DROP CONSTRAINT IF EXISTS "FK_b4a263d8c8392a73e0a1febf7d3"');
+        await queryRunner.query('ALTER TABLE "item_like" DROP CONSTRAINT IF EXISTS "FK_159827eb667d019dc71372d7463"');
+        await queryRunner.query('ALTER TABLE "item_like" DROP CONSTRAINT IF EXISTS "FK_4a56eba1ce30dc93f118a51ff26"');
+        await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT IF EXISTS "FK_bde9b9ab1da1483a71c9b916dd2"');
+        await queryRunner.query('ALTER TABLE "item_flag" DROP CONSTRAINT IF EXISTS "FK_b04d0adf4b73d82537c92fa55ea"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "FK_5681d1785eea699e9cae8818fe0"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "FK_9a34a079b5b24f4396462546d26"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "FK_638552fc7d9a2035c2b53182d8a"');
+        await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT IF EXISTS "FK_44bf14fee580ae08702d70e622e"');
+        await queryRunner.query('ALTER TABLE "item_validation_review" DROP CONSTRAINT IF EXISTS "FK_59fd000835c70c728e525d82950"');
+        await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT IF EXISTS "FK_e92da280941f666acf87baedc65"');
+        await queryRunner.query('ALTER TABLE "item_validation" DROP CONSTRAINT IF EXISTS "FK_d60969d5e478e7c844532ac4e7f"');
+        await queryRunner.query('ALTER TABLE "item_validation_group" DROP CONSTRAINT IF EXISTS "FK_a9e83cf5f53c026b774b53d3c60"');
+        await queryRunner.query('ALTER TABLE "recycled_item_data" DROP CONSTRAINT IF EXISTS "FK_f8a4db4476e3d81e18de5d63c42"');
+        await queryRunner.query('ALTER TABLE "recycled_item_data" DROP CONSTRAINT IF EXISTS "FK_3e3650ebd5c49843013429d510a"');
+        await queryRunner.query('ALTER TABLE "app" DROP CONSTRAINT IF EXISTS "FK_37eb7baab82e11150157ec0b5a6"');
+        await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT IF EXISTS "FK_22d3d051ee6f94932c1373a3d09"');
+        await queryRunner.query('ALTER TABLE "app_setting" DROP CONSTRAINT IF EXISTS "FK_f5922b885e2680beab8add96008"');
+        await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT IF EXISTS "FK_b8c8a36a32850e3096451a8b727"');
+        await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT IF EXISTS "FK_27cb180cb3f372e4cf55302644a"');
+        await queryRunner.query('ALTER TABLE "app_data" DROP CONSTRAINT IF EXISTS "FK_8c3e2463c67d9865658941c9e2d"');
+        await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT IF EXISTS "FK_7750f85aef0f67acdbcb904395a"');
+        await queryRunner.query('ALTER TABLE "app_action" DROP CONSTRAINT IF EXISTS "FK_c415fc186dda51fa260d338d776"');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "FK_dc1d92accde1c2fbb7e729e4dcc"');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "FK_7ad4a490d5b9f79a677827b641c"');
+        await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT IF EXISTS "FK_f22de4941ca58910967a5626755"');
+        await queryRunner.query('ALTER TABLE "chat_mention" DROP CONSTRAINT IF EXISTS "FK_e5199951167b722215127651e7c"');
+        await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT IF EXISTS "FK_71fdcb9038eca1b903102bdfd17"');
+        await queryRunner.query('ALTER TABLE "chat_message" DROP CONSTRAINT IF EXISTS "FK_b31e627ea7a4787672e265a1579"');
+        await queryRunner.query('ALTER TABLE "item" DROP CONSTRAINT IF EXISTS "FK_bdc46717fadc2f04f3093e51fd5"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item-tag"');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "item_membership-item-member"');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "category-item"');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "item-email"');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "PK_5cff999fc1b42609c37d868dc8a"');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "id")');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "id", "type")');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_id_key1" UNIQUE ("id")');
+        await queryRunner.query('ALTER TABLE "item_tag" DROP CONSTRAINT IF EXISTS "item_tag_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_pkey1" PRIMARY KEY ("item_path", "type")');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item-tag" UNIQUE ("type", "item_path")');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "PK_4697b5e1247909f5c884cc12ec3"');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_fbfb92f094949a9071156e16906" PRIMARY KEY ("id", "item_path")');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "PK_fbfb92f094949a9071156e16906"');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8" PRIMARY KEY ("member_id", "id", "item_path")');
+        await queryRunner.query('ALTER TABLE "item_membership" DROP CONSTRAINT IF EXISTS "PK_ccc0ff5b7c575e40d57b48e77a8"');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "PK_ccc0ff5b7c575e40d57b48e77a8" PRIMARY KEY ("member_id", "item_path")');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership-item-member" UNIQUE ("item_path", "member_id")');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "PK_91ba90f150e8804bdaad7b17ff8"');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "id")');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "category_id", "id")');
+        await queryRunner.query('ALTER TABLE "item_category" DROP CONSTRAINT IF EXISTS "item_category_pkey1"');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_pkey1" PRIMARY KEY ("item_path", "category_id")');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "category-item" UNIQUE ("item_path", "category_id")');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "PK_beb994737756c0f18a1c1f8669c"');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("item_path", "id")');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_pkey1"');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("email", "item_path", "id")');
+        await queryRunner.query('ALTER TABLE "invitation" ALTER COLUMN "name" SET DEFAULT NULL');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_id_key1" UNIQUE ("id")');
+        await queryRunner.query('ALTER TABLE "invitation" DROP CONSTRAINT IF EXISTS "invitation_pkey1"');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_pkey1" PRIMARY KEY ("email", "item_path")');
+        await queryRunner.query('ALTER TABLE "member" ALTER COLUMN "type" DROP DEFAULT');
+        await queryRunner.query('ALTER TABLE "item_published" ADD CONSTRAINT "item_published_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_item_path_fkey1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_tag" ADD CONSTRAINT "item_tag_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_item_path_fkey1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_login_schema" ADD CONSTRAINT "item_login_schema_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_like" ADD CONSTRAINT "item_like_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "item_flag_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_flag" ADD CONSTRAINT "item_flag_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "item_category" ADD CONSTRAINT "item_category_category_id_fkey1" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "item_validation_review_item_validation_id_fkey1" FOREIGN KEY ("item_validation_id") REFERENCES "item_validation"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation_review" ADD CONSTRAINT "item_validation_review_reviewer_id_fkey1" FOREIGN KEY ("reviewer_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "item_validation_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation" ADD CONSTRAINT "item_validation_item_validation_group_id_fkey" FOREIGN KEY ("item_validation_group_id") REFERENCES "item_validation_group"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "item_validation_group" ADD CONSTRAINT "item_validation_group_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "recycled_item_data" ADD CONSTRAINT "recycled_item_data_item_path_fkey" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "app" ADD CONSTRAINT "app_publisher_id_fkey1" FOREIGN KEY ("publisher_id") REFERENCES "publisher"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "app_setting_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_setting" ADD CONSTRAINT "app_setting_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "app_data_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "app_data_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_data" ADD CONSTRAINT "app_data_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "app_action_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "app_action" ADD CONSTRAINT "app_action_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "invitation" ADD CONSTRAINT "invitation_item_path_fkey1" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE');
+        await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "chat_mention_message_id_fkey1" FOREIGN KEY ("message_id") REFERENCES "chat_message"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "chat_mention" ADD CONSTRAINT "chat_mention_member_id_fkey1" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION');
+        await queryRunner.query('ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION');
+
+        await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
+        await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
+
+        await queryRunner.query('CREATE TYPE "nested_tag_enum" AS ENUM (\'allow\', \'fail\')');
+        await queryRunner.query('CREATE TYPE mention_status AS ENUM (\'unread\', \'read\')');
+        await queryRunner.query('CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')');
+
         // -- CREATE everything
         await queryRunner.query(`CREATE TABLE "member_old" (
           "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -628,7 +637,7 @@ export class migrations1679669193721 implements MigrationInterface {
             )`
         );
         await queryRunner.query('INSERT INTO "item_old" (id, name, type, description, path, creator, extra, settings, created_at, updated_at) SELECT id, name, type, description, path, creator_id, extra::jsonb, settings::jsonb, created_at, updated_at from item');
-        
+
         await queryRunner.query(`CREATE TABLE "item_membership_old" (
           "id" uuid UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
           -- delete row if member is deleted
@@ -642,7 +651,7 @@ export class migrations1679669193721 implements MigrationInterface {
           "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
             PRIMARY KEY ("member_id", "item_path")
             )`);
-            
+
         await queryRunner.query('INSERT INTO "item_membership_old" (item_path, member_id, creator, permission, created_at, updated_at) SELECT item_path, member_id, creator_id, permission::permissions_enum, created_at, updated_at from item_membership');
 
 
@@ -670,7 +679,7 @@ export class migrations1679669193721 implements MigrationInterface {
             FOR EACH ROW
             EXECUTE PROCEDURE trigger_set_timestamp()`);
 
-            
+
         await queryRunner.query(`CREATE TABLE "action_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
             "member_id" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
@@ -691,7 +700,7 @@ export class migrations1679669193721 implements MigrationInterface {
           item_path ltree REFERENCES "item_old" ("path") ON DELETE SET NULL ON UPDATE CASCADE,
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-            // TODO
+        // TODO
 
 
 
@@ -709,7 +718,7 @@ export class migrations1679669193721 implements MigrationInterface {
         await queryRunner.query(`INSERT INTO "invitation_old" (item_path, creator, created_at, updated_at,name,email,permission) 
             SELECT item_path, creator_id, created_at, updated_at,name,email,permission::permissions_enum FROM invitation 
             `);
-            
+
 
         await queryRunner.query(` CREATE TABLE "recycled_item_old" (
             "id" uuid PRIMARY KEY UNIQUE NOT NULL DEFAULT uuid_generate_v4(), -- generated programatically and passed on insertion
@@ -718,7 +727,7 @@ export class migrations1679669193721 implements MigrationInterface {
             "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL, -- don't remove item - set creator to NULL
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-            await queryRunner.query('INSERT INTO "recycled_item_old" (creator, item_path, created_at) SELECT creator_id, item_path, created_at FROM recycled_item_data');
+        await queryRunner.query('INSERT INTO "recycled_item_old" (creator, item_path, created_at) SELECT creator_id, item_path, created_at FROM recycled_item_data');
 
         await queryRunner.query(`CREATE TABLE "tag_old" (
           "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -727,7 +736,7 @@ export class migrations1679669193721 implements MigrationInterface {
           -- "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL, -- don't remove - set creator to NULL
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-            await queryRunner.query(`INSERT INTO "tag_old" (name) 
+        await queryRunner.query(`INSERT INTO "tag_old" (name) 
             SELECT DISTINCT type FROM item_tag 
             `);
 
@@ -742,28 +751,28 @@ export class migrations1679669193721 implements MigrationInterface {
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
           PRIMARY KEY ("tag_id", "item_path")
             )`);
-            await queryRunner.query(`INSERT INTO "item_tag_old" (tag_id, item_path, creator, created_at) 
+        await queryRunner.query(`INSERT INTO "item_tag_old" (tag_id, item_path, creator, created_at) 
                     SELECT t.id, item_path, creator_id, it.created_at FROM item_tag as it 
-                    INNER JOIN tag_old as t ON t.name = it.name 
+                    INNER JOIN tag_old as t ON t.name = it.type 
                     `);
 
         await queryRunner.query(`CREATE TABLE IF NOT EXISTS category_type_old (
             id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
             name VARCHAR(20)
             )`);
-            await queryRunner.query(`INSERT INTO "category_type_old" (name) 
-            SELECT DISTINCT  c.type FROM category
+        await queryRunner.query(`INSERT INTO "category_type_old" (name) 
+            SELECT DISTINCT  c.type FROM category as c
             `);
-            
+
         await queryRunner.query(`CREATE TABLE IF NOT EXISTS category_old (
             id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
             name VARCHAR(50),
             type uuid,
             FOREIGN KEY (type) REFERENCES category_type_old("id") ON DELETE CASCADE
         )`);
-        await queryRunner.query(`INSERT INTO "category_old" (name) 
+        await queryRunner.query(`INSERT INTO "category_old" (name, type) 
         SELECT DISTINCT  c.name, t.id FROM category as c
-        INNER JOIN category_type as t ON c.name = it.name 
+        INNER JOIN category_type_old as t ON c.name = t.name 
         `);
 
         // -- CREATE item_category table
@@ -788,17 +797,17 @@ export class migrations1679669193721 implements MigrationInterface {
             name VARCHAR(100) NOT NULL,
             enabled BOOLEAN NOT NULL
             )`);
-            await queryRunner.query(`INSERT INTO "item_validation_process_old" ( name, enabled) 
+        await queryRunner.query(`INSERT INTO "item_validation_process_old" ( name, enabled) 
             SELECT DISTINCT process, true FROM item_validation 
             `);
 
-            
+
         // -- create tables for validation and review statuses
         await queryRunner.query(`CREATE TABLE IF NOT EXISTS item_validation_status_old (
             id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
             name VARCHAR(50) NOT NULL
             )`);
-            await queryRunner.query(`INSERT INTO "item_validation_status_old" ( name) 
+        await queryRunner.query(`INSERT INTO "item_validation_status_old" ( name) 
             SELECT DISTINCT status FROM item_validation 
             `);
 
@@ -806,10 +815,10 @@ export class migrations1679669193721 implements MigrationInterface {
             id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
             name VARCHAR(50) NOT NULL
             )`);
-            await queryRunner.query(`INSERT INTO "item_validation_review_status_old" ( name) 
+        await queryRunner.query(`INSERT INTO "item_validation_review_status_old" ( name) 
             SELECT DISTINCT status FROM item_validation_review 
             `);
-            
+
 
         // -- create table for automatic validation records
         // -- one record for each validation attempt
@@ -818,7 +827,7 @@ export class migrations1679669193721 implements MigrationInterface {
             item_id UUID NOT NULL REFERENCES item_old("id") ON DELETE CASCADE,
             created_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-            await queryRunner.query(`INSERT INTO "item_validation_old" (id, item_id,created_at) 
+        await queryRunner.query(`INSERT INTO "item_validation_old" (id, item_id,created_at) 
                     SELECT id, item_id,created_at FROM item_validation_group
                     `);
 
@@ -833,12 +842,12 @@ export class migrations1679669193721 implements MigrationInterface {
             updated_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             created_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-            await queryRunner.query(`INSERT INTO "item_validation_group_old" (id, item_id,item_validation_process_id,status_id,created_at,updated_at,result, item_validation_id) 
+        await queryRunner.query(`INSERT INTO "item_validation_group_old" (id, item_id,item_validation_process_id,status_id,created_at,updated_at,result, item_validation_id) 
                             SELECT iv.id, iv.item_id,p.id,ivgs.id,iv.created_at,iv.updated_at,result, ivg.id 
                             FROM item_validation as iv
                             LEFT JOIN item_validation_process_old as p ON p.name = iv.process 
                             LEFT JOIN item_validation_group as ivg ON ivg.id = iv.item_validation_group_id 
-                            LEFT JOIN item_validation_status as ivgs ON ivgs.name = iv.status 
+                            LEFT JOIN item_validation_status_old as ivgs ON ivgs.name = iv.status 
                             `);
 
         // -- create table for manual validation records
@@ -852,20 +861,20 @@ export class migrations1679669193721 implements MigrationInterface {
             updated_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             created_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-            await queryRunner.query(`INSERT INTO "item_validation_review_old" (id, item_validation_id, reviewer_id,status_id,created_at,updated_at, reason) 
+        await queryRunner.query(`INSERT INTO "item_validation_review_old" (id, item_validation_id, reviewer_id,status_id,created_at,updated_at, reason) 
                     SELECT ivr.id, item_validation_id, reviewer_id,s.id,ivr.created_at,ivr.updated_at, reason 
                     FROM item_validation_review as ivr
-                    LEFT JOIN item_validation_review_status as s on s.name= ivr.status
+                    LEFT JOIN item_validation_review_status_old as s on s.name= ivr.status
                     LEFT JOIN item_validation as iv on iv.id= ivr.item_validation_id
                     `);
-            
+
         await queryRunner.query(`CREATE TABLE "item_member_login_old" (
             "item_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE,
             "member_id" uuid REFERENCES "member_old" ("id") ON DELETE CASCADE,
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             PRIMARY KEY ("item_id", "member_id")
             )`);
-            // TODO
+        // TODO
 
         await queryRunner.query(`CREATE TABLE "chat_message_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,                
@@ -878,7 +887,7 @@ export class migrations1679669193721 implements MigrationInterface {
         await queryRunner.query(`INSERT INTO "chat_message_old" (chat_id, creator, created_at, updated_at, body) 
             SELECT item_id, creator_id, created_at, updated_at, body FROM chat_message 
             `);
-        
+
 
         await queryRunner.query(`CREATE TABLE "chat_mention_old" 
             (
@@ -893,17 +902,20 @@ export class migrations1679669193721 implements MigrationInterface {
                 PRIMARY KEY ("id")
             )`);
 
-            await queryRunner.query(`INSERT INTO "chat_mention_old" (item_path, message_id, member_id, creator, created_at, updated_at, status) 
-            SELECT i.path, message_id, member_id, m.creator_id, created_at, updated_at, status::text::chat_mention_status_enum FROM chat_mention as cm
+        await queryRunner.query(`INSERT INTO "chat_mention_old" (item_path, message_id, member_id, creator, created_at, updated_at, status) 
+            SELECT i.path, message_id, member_id, m.creator_id, cm.created_at, cm.updated_at, status::text::mention_status FROM chat_mention as cm
             LEFT JOIN chat_message as m on m.id = cm.message_id
-            LEFT JOIN item as i on item.id = m.item_id
+            LEFT JOIN item as i on i.id = m.item_id
             `);
-            
+
 
         await queryRunner.query(`CREATE TABLE "flag_old" (
                 "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
                 "name" character varying(100) NOT NULL
               )`);
+        await queryRunner.query(`INSERT INTO "flag_old" (name) 
+              SELECT DISTINCT type FROM item_flag
+              `);
 
         await queryRunner.query(`CREATE TABLE "item_flag_old" (
                 "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -912,14 +924,20 @@ export class migrations1679669193721 implements MigrationInterface {
                 "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
                 "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
               )`);
+        await queryRunner.query(`INSERT INTO "item_flag_old" (flag_id, creator, item_id, created_at) 
+          SELECT f.id, if.creator_id, if.item_id, if.created_at FROM item_flag as if
+          LEFT JOIN flag_old as f ON f.name=if.type
+          `);
 
-              
         await queryRunner.query(`CREATE TABLE "publisher_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
             "name" character varying(250) NOT NULL,
             "origins" character varying(100)[],
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
+        await queryRunner.query(`INSERT INTO "publisher_old" (id, name, created_at,origins) 
+            SELECT id, name, created_at,origins FROM publisher
+            `);
 
         await queryRunner.query(`CREATE TABLE "app_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -933,11 +951,10 @@ export class migrations1679669193721 implements MigrationInterface {
         
             "extra" jsonb NOT NULL DEFAULT '{}'::jsonb
         )`);
+        await queryRunner.query(`INSERT INTO "app_old" (id, name, description,url,created_at,extra) 
+                SELECT id, name, description,url,created_at,extra::jsonb FROM app
+                `);
 
-        /**
-         * the same as above
-         */
-        await queryRunner.query('CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')');
 
         await queryRunner.query(`CREATE TABLE "app_data_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -965,8 +982,9 @@ export class migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-        
-
+        await queryRunner.query(`INSERT INTO "app_data_old" (item_id, creator, created_at, updated_at, member_id,type,visibility,data) 
+                SELECT item_id, creator_id, created_at, updated_at, member_id,type,visibility::text::app_data_visibility_enum,data::jsonb FROM app_data
+                `);
 
         await queryRunner.query(`CREATE TABLE "app_action_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -976,8 +994,9 @@ export class migrations1679669193721 implements MigrationInterface {
             "type" character varying(25),
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-        await queryRunner.query('CREATE INDEX "app_action_item_id_idx" ON app_action("item_id")');
-
+        await queryRunner.query(`INSERT INTO "app_action_old" (item_id,  created_at,  member_id,data) 
+                    SELECT item_id, created_at,  member_id,data::jsonb FROM app_action 
+                    `);
 
         await queryRunner.query(`CREATE TABLE "app_setting_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -995,7 +1014,11 @@ export class migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-        
+        await queryRunner.query(`INSERT INTO "app_setting_old" (item_id,    creator, created_at, updated_at,name,data) 
+                        SELECT item_id, creator_id, created_at, updated_at, name,data::jsonb FROM app_setting
+                        `);
+
+
         await queryRunner.query(`CREATE TABLE item_like_old (
             id uuid DEFAULT uuid_generate_v4(),
             item_id uuid NOT NULL REFERENCES item_old("id") ON DELETE CASCADE,
@@ -1004,12 +1027,41 @@ export class migrations1679669193721 implements MigrationInterface {
                 PRIMARY KEY (item_id, member_id)
                 )`);
 
+        await queryRunner.query('INSERT INTO "item_like_old" (member_id, item_id, created_at) SELECT creator_id, item_id, created_at FROM item_like');
 
 
 
+        await queryRunner.query(`CREATE TABLE "action" (
+            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+            "member_id" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
+            "item_id" uuid REFERENCES "item_old" ("id") ON DELETE SET NULL,
+            "member_type" character varying(100),
+            "item_type" character varying(100),
+            "action_type" character varying(100),
+            "view" character varying(100),
+            "geolocation" jsonb DEFAULT '{}'::jsonb,
+            "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
+            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+        )`);
 
-        
-// drop new table
+        await queryRunner.query(`CREATE TABLE "action_request_export" (
+          "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+          "member_id" uuid REFERENCES "member_old" ("id") ON DELETE CASCADE,
+          "item_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE,
+          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
+            )`);
+
+        await queryRunner.query(`ALTER TABLE action
+            ADD item_path ltree REFERENCES "item_old" ("path") ON DELETE SET NULL ON UPDATE CASCADE`);
+
+        await queryRunner.query(`UPDATE action as a1 SET item_path = 
+            (SELECT path FROM item WHERE a1.item_id = item.id)`);
+// TODO
+
+
+        // drop new table
+        await queryRunner.query('DROP TABLE action');
+        await queryRunner.query('DROP TABLE action_request_export');
         await queryRunner.query('DROP TABLE app');
         await queryRunner.query('DROP TABLE app_action');
         await queryRunner.query('DROP TABLE app_data');
@@ -1032,14 +1084,14 @@ export class migrations1679669193721 implements MigrationInterface {
         await queryRunner.query('DROP TABLE item_validation_group');
         await queryRunner.query('DROP TABLE member_password');
         await queryRunner.query('DROP TABLE recycled_item_data');
-        await queryRunner.query(' DROP TABLE item');
+        await queryRunner.query('DROP TABLE item');
         await queryRunner.query('DROP TABLE member');
 
 
         // rename all tables to old
         await queryRunner.query('ALTER TABLE action_old RENAME TO action');
         await queryRunner.query('ALTER TABLE action_request_export_old RENAME TO action_request_export');
-        
+
         await queryRunner.query('ALTER TABLE app_old RENAME TO app');
         await queryRunner.query('ALTER TABLE app_data_old RENAME TO app_data');
         await queryRunner.query('ALTER TABLE app_action_old RENAME TO app_action');
@@ -1064,12 +1116,13 @@ export class migrations1679669193721 implements MigrationInterface {
         await queryRunner.query('ALTER TABLE item_validation_status_old RENAME TO item_validation_status');
         await queryRunner.query('ALTER TABLE item_validation_review_status_old RENAME TO item_validation_review_status');
         await queryRunner.query('ALTER TABLE member_old RENAME TO member');
-        
+
         await queryRunner.query('ALTER TABLE publisher_old RENAME TO publisher');
         await queryRunner.query('ALTER TABLE recycled_item_old RENAME TO recycled_item');
-        
+
         await queryRunner.query('DROP TABLE IF EXISTS role_permission');
-        await queryRunner.query('ALTER TABLE tag RENAME TO tag');
+        await queryRunner.query('ALTER TABLE tag_old RENAME TO tag');
+        await queryRunner.query('DROP TYPE "public"."chat_mention_status_enum"');
     }
 
 }

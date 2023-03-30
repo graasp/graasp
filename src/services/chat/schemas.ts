@@ -41,6 +41,16 @@ export default {
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
         body: { type: 'string' },
+        item: {
+          id: { type: 'string' },
+          name: { type: 'string' },
+          description: { type: 'string' },
+          path: { type: 'string' },
+          type: { type: 'string' },
+          creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+          createdAt: { type: 'string' },
+          updatedAt: { type: 'string' },
+        }
       },
       additionalProperties: false,
     },

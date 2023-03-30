@@ -35,7 +35,9 @@ export const AppDataSource = new DataSource({
   username: 'docker',
   password: 'docker',
   database: 'typeorm',
-  schema: 'test', // IMPORTANT: this ensure we don't use the same table as the prod/dev one
+  // IMPORTANT: this ensure we don't use the same table as the prod/dev one
+  // does not work for test since migrations are based on 'public'
+  // schema: 'test', 
   dropSchema: true,
   synchronize: true,
   logging: ['error'],
@@ -65,4 +67,7 @@ export const AppDataSource = new DataSource({
     ItemValidationGroup,
     ItemValidationReview,
   ],
+  // refer to built files in js because it cannot run ts files
+  migrations: ['dist/migrations/*.js'],
+
 });

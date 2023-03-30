@@ -10,7 +10,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
   async getForItem(itemId: string): Promise<ChatMessage[]> {
     return this.find({
       where: { item: { id: itemId } },
-      relations: { creator: true },
+      relations: { creator: true, item: true },
       order: { createdAt: 'ASC' },
     });
   },

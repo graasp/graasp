@@ -14,10 +14,10 @@ export class migrations1679669193720 implements MigrationInterface {
           "email" character varying(150) UNIQUE NOT NULL,
           "password" character(60) DEFAULT NULL,
           "type" member_type_enum  NOT NULL DEFAULT 'individual',
-          "extra" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
+          "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
         
-          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
-          "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'))`
+          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+          "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'))`
         );
 
         await queryRunner.query(`CREATE TABLE "item" (
@@ -26,12 +26,12 @@ export class migrations1679669193720 implements MigrationInterface {
             "description" character varying(5000),
             "type" character varying(100),
             "path" ltree UNIQUE NOT NULL,
-            "extra" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
-            "settings" jsonb NOT NULL DEFAULT \'{}\'::jsonb,
+            "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
+            "settings" jsonb NOT NULL DEFAULT '{}'::jsonb,
           
             "creator" uuid REFERENCES "member" ("id") ON DELETE SET NULL, 
-            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\'),
-            "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE \'utc\')
+            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
+            "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`
         );
         await queryRunner.query('CREATE INDEX "item_path_idx" ON "item" USING gist ("path")');
