@@ -2,7 +2,8 @@ import fastify from 'fastify';
 
 import registerAppPlugins from '../src/app';
 import { Member } from '../src/services/member/entities/member';
-import { saveMember } from './fixtures/members';
+import { saveMember } from '../src/services/member/test/fixtures/members';
+import { DB_TEST_SCHEMA } from './constants';
 
 const ACTOR = {
   name: 'actor',
@@ -54,7 +55,9 @@ export const clearDatabase = async (db) => {
   const entities = db.entityMetadatas;
   for (const entity of entities) {
     const repository = await db.getRepository(entity.name);
-    await repository.query(`TRUNCATE test.${entity.tableName} RESTART IDENTITY CASCADE;`);
+    await repository.query(
+      `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
+    );
   }
 };
 

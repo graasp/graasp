@@ -2,9 +2,9 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import * as MEMBERS_FIXTURES from '../../../../../test/fixtures/members';
-import { MOCK_PASSWORD, saveMemberAndPassword } from '../../../../../test/fixtures/password';
+import build, { clearDatabase } from '../../../../../../test/app';
+import * as MEMBERS_FIXTURES from '../../../../member/test/fixtures/members';
+import { MOCK_PASSWORD, saveMemberAndPassword } from './fixtures/password';
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');

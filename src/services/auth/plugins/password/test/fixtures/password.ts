@@ -1,5 +1,5 @@
-import { MemberPasswordRepository } from '../../src/services/auth/plugins/password/repository';
-import { saveMember } from './members';
+import { saveMember } from '../../../../../member/test/fixtures/members';
+import { MemberPasswordRepository } from '../../repository';
 
 export const MOCK_PASSWORD = {
   password: 'asd',

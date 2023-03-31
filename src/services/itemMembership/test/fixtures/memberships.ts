@@ -1,9 +1,9 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Item } from '../../src/services/item/entities/Item';
-import { ItemMembershipRepository } from '../../src/services/itemMembership/repository';
-import { Member } from '../../src/services/member/entities/member';
-import { getDummyItem, saveItem } from './items';
+import { Item } from '../../../item/entities/Item';
+import { getDummyItem, saveItem } from '../../../item/test/fixtures/items';
+import { Member } from '../../../member/entities/member';
+import { ItemMembershipRepository } from '../../repository';
 
 export const saveMembership = ({ item, member, permission = PermissionLevel.Admin }) => {
   return ItemMembershipRepository.save({ item, member, permission });

@@ -50,7 +50,7 @@ export default {
           creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
           createdAt: { type: 'string' },
           updatedAt: { type: 'string' },
-        }
+        },
       },
       additionalProperties: false,
     },

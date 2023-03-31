@@ -23,21 +23,21 @@ export class ItemValidationReview extends BaseEntity {
 
   @ManyToOne(() => ItemValidation, (iv) => iv.id, {
     onDelete: 'CASCADE',
-    nullable:false
+    nullable: false,
   })
   @JoinColumn({ name: 'item_validation_id' })
   itemValidation: ItemValidation;
 
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'SET NULL',
-    nullable:true
+    nullable: true,
   })
   @JoinColumn({ name: 'reviewer_id' })
   reviewer: Member;
 
   @Column({
     nullable: false,
-    enum: Object.values(ItemValidationReviewStatus)
+    enum: Object.values(ItemValidationReviewStatus),
   })
   status: ItemValidationReviewStatus;
 

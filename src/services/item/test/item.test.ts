@@ -16,11 +16,8 @@ import {
   PermissionLevel,
 } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../test/constants';
-import { expectItem, getDummyItem, saveItem, saveItems } from '../../../test/fixtures/items';
-import * as MEMBERS_FIXTURES from '../../../test/fixtures/members';
-import { saveItemAndMembership, saveMembership } from '../../../test/fixtures/memberships';
+import build, { clearDatabase } from '../../../../test/app';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import {
   HierarchyTooDeep,
   ItemNotFound,
@@ -28,12 +25,18 @@ import {
   MemberCannotWriteItem,
   TooManyChildren,
   TooManyDescendants,
-} from '../../util/graasp-error';
-import { ItemMembershipRepository } from '../itemMembership/repository';
-import { Member } from '../member/entities/member';
-import { Item } from './entities/Item';
-import { ItemRepository } from './repository';
-import { pathToId } from './utils';
+} from '../../../util/graasp-error';
+import { ItemMembershipRepository } from '../../itemMembership/repository';
+import {
+  saveItemAndMembership,
+  saveMembership,
+} from '../../itemMembership/test/fixtures/memberships';
+import { Member } from '../../member/entities/member';
+import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
+import { Item } from '../entities/Item';
+import { ItemRepository } from '../repository';
+import { pathToId } from '../utils';
+import { expectItem, getDummyItem, saveItem, saveItems } from './fixtures/items';
 
 // mock datasource
 jest.mock('../../plugins/datasource');

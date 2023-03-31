@@ -27,26 +27,26 @@ export class App extends BaseEntity {
     generated: 'uuid',
     unique: true,
     select: false,
-    nullable:false
+    nullable: false,
   })
   key: string = v4();
 
   @Column({
     nullable: false,
-    length: 250
+    length: 250,
   })
   name: string;
 
   @Column({
     nullable: false,
-    length: 250
+    length: 250,
   })
   description: string;
 
   @Column({
     nullable: false,
     unique: true,
-    length: 250
+    length: 250,
   })
   url: string;
 

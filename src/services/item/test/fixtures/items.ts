@@ -2,9 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ItemType, UnknownExtra, buildPathFromIds } from '@graasp/sdk';
 
-import { Item, ItemSettings } from '../../src/services/item/entities/Item';
-import { ItemRepository } from '../../src/services/item/repository';
-import { Member } from '../../src/services/member/entities/member';
+import { Member } from '../../../member/entities/member';
+import { Item, ItemSettings } from '../../entities/Item';
+import { ItemRepository } from '../../repository';
 
 const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 

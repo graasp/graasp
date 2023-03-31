@@ -36,7 +36,7 @@ export class ItemTag extends BaseEntity implements GraaspItemTag {
   @ManyToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
-    nullable: false
+    nullable: false,
   })
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;

@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 
+import { DB_TEST_SCHEMA } from '../../../test/constants';
 import { MemberPassword } from '../../services/auth/plugins/password/entities/password';
 import { ChatMessage } from '../../services/chat/chatMessage';
 import { ChatMention } from '../../services/chat/plugins/mentions/chatMention';
@@ -37,7 +38,7 @@ export const AppDataSource = new DataSource({
   database: 'typeorm',
   // IMPORTANT: this ensure we don't use the same table as the prod/dev one
   // does not work for test since migrations are based on 'public'
-  // schema: 'test', 
+  schema: DB_TEST_SCHEMA,
   dropSchema: true,
   synchronize: true,
   logging: ['error'],
@@ -69,5 +70,4 @@ export const AppDataSource = new DataSource({
   ],
   // refer to built files in js because it cannot run ts files
   migrations: ['dist/migrations/*.js'],
-
 });

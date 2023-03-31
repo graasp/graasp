@@ -18,7 +18,7 @@ export class Publisher extends BaseEntity {
   @Column({
     unique: true,
     nullable: false,
-    length: 250
+    length: 250,
   })
   name: string;
 

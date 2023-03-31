@@ -1,7 +1,7 @@
 import { DEFAULT_LANG, MemberType } from '@graasp/sdk';
 
-import { Member } from '../../src/services/member/entities/member';
-import MemberRepository from '../../src/services/member/repository';
+import { Member } from '../../entities/member';
+import MemberRepository from '../../repository';
 
 export const saveMember = async (m: Partial<Member>) => {
   const member = MemberRepository.create(m);

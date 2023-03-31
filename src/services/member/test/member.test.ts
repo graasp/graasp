@@ -3,10 +3,10 @@ import qs from 'qs';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import * as MEMBERS_FIXTURES from '../../../test/fixtures/members';
-import { CannotModifyOtherMembers, MemberNotFound } from '../../util/graasp-error';
-import MemberRepository from './repository';
+import build, { clearDatabase } from '../../../../test/app';
+import { CannotModifyOtherMembers, MemberNotFound } from '../../../util/graasp-error';
+import MemberRepository from '../repository';
+import * as MEMBERS_FIXTURES from './fixtures/members';
 
 const { saveMember, saveMembers } = MEMBERS_FIXTURES;
 

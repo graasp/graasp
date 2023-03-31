@@ -270,3 +270,5 @@ export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
 export const SALT_ROUNDS = 10;
 
 export const TMP_FOLDER = path.resolve(__dirname, '../..', 'tmp');
+
+export const VIEW_UNKNOWN_NAME = 'unknown';

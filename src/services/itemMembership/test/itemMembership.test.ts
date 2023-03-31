@@ -3,14 +3,8 @@ import { v4 } from 'uuid';
 
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../test/constants';
-import * as MEMBERS_FIXTURES from '../../../test/fixtures/members';
-import {
-  expectMembership,
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../test/fixtures/memberships';
+import build, { clearDatabase } from '../../../../test/app';
+import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -19,8 +13,10 @@ import {
   MemberCannotAccess,
   MemberCannotAdminItem,
   ModifyExisting,
-} from '../../util/graasp-error';
-import { ItemMembershipRepository } from './repository';
+} from '../../../util/graasp-error';
+import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
+import { ItemMembershipRepository } from '../repository';
+import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
 
 // mock datasource
 jest.mock('../../plugins/datasource');
@@ -375,7 +371,7 @@ describe('Membership routes tests', () => {
             const newCount = await ItemMembershipRepository.count();
             expect(newCount).toEqual(initialCount + 2);
             const { data: savedMembershispForItem } =
-              await ItemMembershipRepository.getForManyItems([item.id]);
+              await ItemMembershipRepository.getForManyItems([item]);
             const savedMemberships = savedMembershispForItem[item.id];
 
             newMemberships.forEach((m, idx) => {

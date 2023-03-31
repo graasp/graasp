@@ -20,8 +20,9 @@
     "node_modules",
     "src/**/__mocks__",
     "test",
+    "src/**/test/*.ts",
     "src/**/*.test.ts",
     "src/**/test/*.ts",
-    "migrations"
+    "src/migrations"
   ]
 }
