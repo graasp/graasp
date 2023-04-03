@@ -57,7 +57,7 @@ jobs:
           yarn build
 
       - name: check migrations are synced with the current codebase
-        run: yarn migration:run & migration:check
+        run: yarn migration:run & yarn migration:check
 
       - name: yarn test
         run: 
