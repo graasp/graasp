@@ -42,6 +42,7 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
   @Column({
     nullable: false,
     default: MemberType.Individual,
+    enum: Object.values(MemberType),
   })
   type: MemberType;
 

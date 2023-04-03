@@ -56,12 +56,8 @@ jobs:
           yarn
           yarn build
 
-        # TODO: verify migrations are sync with the codebase
-      # - name: apply migrations to db
-      #   run: |
-      #     yarn
-      #     yarn build
-
+      - name: check migrations are synced with the current codebase
+        run: yarn migration:run & migration:check
 
       - name: yarn test
         run: 

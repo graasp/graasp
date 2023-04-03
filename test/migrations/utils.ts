@@ -7,16 +7,22 @@ export const getNumberOfTables = async (app) => {
   return +result[0].count;
 };
 
+export const getTableNames = async (db) => {
+  const result = await db.query(`select table_name
+      from information_schema.tables
+      where table_schema = '${DB_TEST_SCHEMA}'`);
+  return result.map(({ table_name }) => table_name);
+};
+
 export const checkDatabaseIsEmpty = async (app) => {
   const result = await getNumberOfTables(app);
   expect(result).toEqual(0);
 };
 
 export const parseValue = (v) => {
-  if(Array.isArray(v)) {
-    return '\'{'+ v.map(str => `"${str}"`).join(',')+'}\'';
-  }
-  else if (typeof v === 'object') {
+  if (Array.isArray(v)) {
+    return '\'{' + v.map((str) => `"${str}"`).join(',') + '}\'';
+  } else if (typeof v === 'object') {
     return '\'' + JSON.stringify(v) + '\'';
   }
   return `'${v}'`;

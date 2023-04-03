@@ -144,6 +144,7 @@ export const values = {
   ],
   item_validation_review: [
     {
+      id: '0f901df0-d246-4672-bb01-34269f4c0fed',
       item_validation_id: 'e244bf4f-19e1-4674-b2a2-06bb5ac6e11c',
       reviewer_id: memberId,
       status_id: 'e244bf4f-19e0-4674-b2a2-06bb5ac6e11c',
@@ -162,6 +163,7 @@ export const values = {
   ],
   item_member_login: [
     {
+      id: 'ae901df0-d246-4673-bb01-34269f4c0fed',
       item_id: itemId,
       member_id: memberId,
     },
@@ -210,7 +212,7 @@ export const values = {
     {
       id: 'e245bf4f-32e2-4672-b2a2-06bb3ac6e11c',
       name: 'mypublisher',
-      origins: ['someorigin']
+      origins: ['someorigin'],
     },
   ],
   app: [
@@ -272,7 +274,6 @@ export const values = {
 export const expected = {
   member: async (m: any, idx: number) => {
     const expected = values.member[idx];
-    console.log(idx, m, expected);
     expect(m.id).toEqual(expected.id);
     expect(m.name).toEqual(expected.name);
     expect(m.email).toEqual(expected.email);
@@ -319,7 +320,6 @@ export const expected = {
   },
   action: async (action: any, idx: number) => {
     const expected = values.action[idx];
-    console.log(action, expected);
     expect(action.id).toEqual(expected.id);
     expect(action.item_path).toEqual(expected.item_path);
     expect(action.member_id).toEqual(expected.member_id);
@@ -409,7 +409,6 @@ export const expected = {
     expect(ivr.reason).toEqual(expected.reason);
     expect(ivr.created_at).toBeTruthy();
     expect(ivr.updated_at).toBeTruthy();
-    
   },
   item_validation_group: async (ivg: any, idx: number) => {
     const expected = values.item_validation_group[idx];
@@ -436,7 +435,6 @@ export const expected = {
     expect(cm.body).toEqual(expected.body);
     expect(cm.created_at).toBeTruthy();
     expect(cm.updated_at).toBeTruthy();
-    
   },
   chat_mention: async (cm: any, idx: number) => {
     const expected = values.chat_mention[idx];
@@ -448,8 +446,6 @@ export const expected = {
     expect(cm.status).toEqual(expected.status ?? 'unread');
     expect(cm.created_at).toBeTruthy();
     expect(cm.updated_at).toBeTruthy();
-
-    
   },
   flag: async (flag: any, idx: number) => {
     const expected = values.flag[idx];
@@ -491,7 +487,6 @@ export const expected = {
     expect(ad.visibility).toEqual(expected.visibility);
     expect(ad.data).toEqual(expected.data);
     expect(ad.created_at).toBeTruthy();
-    
   },
   app_action: async (aa: any, idx: number) => {
     const expected = values.app_action[idx];

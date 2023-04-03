@@ -210,7 +210,6 @@ export class ImportExportService {
         // eslint-disable-next-line no-case-declarations
         // TODO: UPDATE TYPE
         const children = await repositories.itemRepository.getChildren(item as Item);
-        console.log(children);
         await Promise.all(
           children.map((child) =>
             this._addItemToZip(actor, repositories, {

@@ -60,7 +60,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             "name" character varying(100) NOT NULL,
             "email" character varying(150) NOT NULL UNIQUE, 
             "extra" text NOT NULL DEFAULT '{}', 
-            "type" character varying NOT NULL,
+            "type" character varying  DEFAULT 'individual' NOT NULL,
             "created_at" TIMESTAMP NOT NULL DEFAULT now(), 
             "updated_at" TIMESTAMP NOT NULL DEFAULT now(), 
             CONSTRAINT "PK_dcc0ff5b7c575e40d57b48e77b8" PRIMARY KEY ("id"))
@@ -103,7 +103,7 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership-item-member" UNIQUE ("item_path", "member_id")',
     );
     await queryRunner.query(
-      'INSERT INTO "item_membership" (item_path, member_id, creator_id, permission, created_at, updated_at) SELECT item_path, member_id, creator, permission, created_at, updated_at from item_membership_old',
+      'INSERT INTO "item_membership" (id,item_path, member_id, creator_id, permission, created_at, updated_at) SELECT id,item_path, member_id, creator, permission, created_at, updated_at from item_membership_old',
     );
 
     // member password
@@ -123,7 +123,7 @@ export class Migrations1679669193721 implements MigrationInterface {
       'CREATE TABLE "recycled_item_data" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid NOT NULL, "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "recycled-item-data" UNIQUE ("item_path"), CONSTRAINT "PK_d6f781e5054e98174c35c87c225" PRIMARY KEY ("id"))',
     );
     await queryRunner.query(
-      'INSERT INTO "recycled_item_data" (creator_id, item_path, created_at) SELECT creator, item_path, created_at FROM recycled_item_old',
+      'INSERT INTO "recycled_item_data" (id, creator_id, item_path, created_at) SELECT id, creator, item_path, created_at FROM recycled_item_old',
     );
 
     // item like
@@ -131,7 +131,7 @@ export class Migrations1679669193721 implements MigrationInterface {
       'CREATE TABLE "item_like" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid NOT NULL, "item_id" uuid NOT NULL REFERENCES item("id") ON DELETE CASCADE, CONSTRAINT "id" UNIQUE ("creator_id", "item_id"), CONSTRAINT "PK_3cca97fd246db52b4a34049b6a1" PRIMARY KEY ("id"))',
     );
     await queryRunner.query(
-      'INSERT INTO "item_like" (creator_id, item_id, created_at) SELECT member_id, item_id, created_at FROM item_like_old',
+      'INSERT INTO "item_like" (id,creator_id, item_id, created_at) SELECT id,member_id, item_id, created_at FROM item_like_old',
     );
 
     // item login schema
@@ -145,18 +145,18 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'CREATE TABLE "item_login" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "password" character varying(100), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "member_id" uuid NOT NULL, "item_login_schema_id" uuid, CONSTRAINT "item-login-member" UNIQUE ("item_login_schema_id", "member_id"), CONSTRAINT "PK_5fa834add54f1c5262a1b012e50" PRIMARY KEY ("id"))',
     );
-    // TODO
+
     await queryRunner.query(`INSERT INTO "item_login" (password, member_id, item_login_schema_id, created_at, updated_at) 
         SELECT (extra->>\'itemLogin\')::jsonb->>\'password\', m.id, ils.id, im.created_at , im.created_at 
         FROM member_old as m 
-        INNER JOIN item_membership im ON im.member_id = m.id
-        INNER JOIN item_login_schema ils ON ils.item_path = im.item_path 
+        INNER JOIN item_membership as im ON im.member_id = m.id
+        INNER JOIN item_login_schema as ils ON ils.item_path = im.item_path 
         
         `);
 
     // TODO: action
 
-    //         // item published
+    // item published
     await queryRunner.query(
       'CREATE TABLE "item_published" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid, "item_path" ltree NOT NULL  REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "published-item" UNIQUE ("item_path"), CONSTRAINT "REL_490fddd9099ee7ddcccf8c776a" UNIQUE ("item_path"), CONSTRAINT "PK_3f196048ad22161a430250561f9" PRIMARY KEY ("id"))',
     );
@@ -176,8 +176,8 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "item_flag" ADD CONSTRAINT "item-flag-creator" UNIQUE ("item_id", "type", "creator_id")',
     );
-    await queryRunner.query(`INSERT INTO "item_flag" (type, creator_id, item_id, created_at) 
-          SELECT f.name, if.creator, if.item_id, if.created_at FROM item_flag_old as if
+    await queryRunner.query(`INSERT INTO "item_flag" (id,type, creator_id, item_id, created_at) 
+          SELECT if.id, f.name, if.creator, if.item_id, if.created_at FROM item_flag_old as if
           LEFT JOIN flag_old as f ON f.id=if.flag_id
           `);
 
@@ -201,8 +201,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             category_id uuid REFERENCES category("id") ON DELETE CASCADE,
             "created_at" TIMESTAMP NOT NULL DEFAULT now()
         )`);
-    await queryRunner.query(`INSERT INTO "item_category" (item_path, creator_id, category_id) 
-        SELECT i.path, NULL, c.id FROM item_category_old as ic
+    await queryRunner.query(`INSERT INTO "item_category" (id,item_path, creator_id, category_id) 
+        SELECT ic.id,i.path, NULL, c.id FROM item_category_old as ic
         LEFT JOIN item_old as i ON i.id=ic.item_id
         LEFT JOIN category_old as c ON c.id=ic.category_id
         `);
@@ -218,8 +218,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
             "body" character varying(500) NOT NULL
         )`);
-    await queryRunner.query(`INSERT INTO "chat_message" (item_id, creator_id, created_at, updated_at, body) 
-            SELECT chat_id, creator, created_at, updated_at, body FROM chat_message_old 
+    await queryRunner.query(`INSERT INTO "chat_message" (id,item_id, creator_id, created_at, updated_at, body) 
+            SELECT id,chat_id, creator, created_at, updated_at, body FROM chat_message_old 
             `);
 
     await queryRunner.query(
@@ -234,8 +234,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "status" "public"."chat_mention_status_enum" NOT NULL DEFAULT 'unread',
                 PRIMARY KEY ("id")
             )`);
-    await queryRunner.query(`INSERT INTO "chat_mention" (message_id, member_id, created_at, updated_at, status) 
-            SELECT message_id, member_id, created_at, updated_at, status::text::chat_mention_status_enum FROM chat_mention_old 
+    await queryRunner.query(`INSERT INTO "chat_mention" (id,message_id, member_id, created_at, updated_at, status) 
+            SELECT id,message_id, member_id, created_at, updated_at, status::text::chat_mention_status_enum FROM chat_mention_old 
             `);
 
     await queryRunner.query(`CREATE TABLE "app_data" (
@@ -249,8 +249,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "created_at" TIMESTAMP NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now()
             )`);
-    await queryRunner.query(`INSERT INTO "app_data" (item_id, creator_id, created_at, updated_at, member_id,type,visibility,data) 
-                SELECT item_id, creator, created_at, updated_at, member_id,type,visibility,data FROM app_data_old 
+    await queryRunner.query(`INSERT INTO "app_data" (id,item_id, creator_id, created_at, updated_at, member_id,type,visibility,data) 
+                SELECT id,item_id, creator, created_at, updated_at, member_id,type,visibility,data FROM app_data_old 
                 `);
 
     await queryRunner.query(`CREATE TABLE "app_action" (
@@ -261,8 +261,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                     "type" character varying(25)  NOT NULL,
                     "created_at" TIMESTAMP NOT NULL DEFAULT now()
                 )`);
-    await queryRunner.query(`INSERT INTO "app_action" (item_id,  created_at,  member_id,data) 
-                    SELECT item_id, created_at,  member_id,data FROM app_action_old 
+    await queryRunner.query(`INSERT INTO "app_action" (id,type,item_id,  created_at,  member_id,data) 
+                    SELECT id, type,item_id, created_at,  member_id,data FROM app_action_old 
                     `);
 
     await queryRunner.query(
@@ -276,8 +276,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now()
             )`,
     );
-    await queryRunner.query(`INSERT INTO "app_setting" (item_id, creator_id, created_at, updated_at,name,data) 
-                        SELECT item_id, creator, created_at, updated_at, name,data FROM app_setting_old 
+    await queryRunner.query(`INSERT INTO "app_setting" (id,item_id, creator_id, created_at, updated_at,name,data) 
+                        SELECT id,item_id, creator, created_at, updated_at, name,data FROM app_setting_old 
                         `);
 
     await queryRunner.query(`CREATE TABLE "invitation" (
@@ -290,8 +290,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" TIMESTAMP NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP NOT NULL DEFAULT now()
         )`);
-    await queryRunner.query(`INSERT INTO "invitation" (item_path, creator_id, created_at, updated_at,name,email,permission) 
-            SELECT item_path, creator, created_at, updated_at,name,email,permission FROM invitation_old 
+    await queryRunner.query(`INSERT INTO "invitation" (id,item_path, creator_id, created_at, updated_at,name,email,permission) 
+            SELECT id,item_path, creator, created_at, updated_at,name,email,permission FROM invitation_old 
             `);
 
     await queryRunner.query(`CREATE TABLE "item_tag" (
@@ -305,8 +305,8 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "item_tag" ADD CONSTRAINT "item-tag" UNIQUE ("item_path", "type")',
     );
-    await queryRunner.query(`INSERT INTO "item_tag" (item_path, creator_id, created_at, type) 
-                SELECT item_path, creator, it.created_at, t.name FROM item_tag_old as it 
+    await queryRunner.query(`INSERT INTO "item_tag" (id,item_path, creator_id, created_at, type) 
+                SELECT it.id,item_path, creator, it.created_at, t.name FROM item_tag_old as it 
                 INNER JOIN tag_old as t ON t.id = it.tag_id 
                 `);
 
@@ -335,8 +335,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             
                 "extra" text NOT NULL DEFAULT '{}'
             )`);
-    await queryRunner.query(`INSERT INTO "app" (id, name, description,url,created_at,extra) 
-                SELECT id, name, description,url,created_at,extra FROM app_old
+    await queryRunner.query(`INSERT INTO "app" (id, name, description,url,created_at,extra, publisher_id) 
+                SELECT id, name, description,url,created_at,extra, publisher_id FROM app_old
                 `);
 
     await queryRunner.query(`CREATE TABLE item_validation_group (
@@ -375,12 +375,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" TIMESTAMP NOT NULL DEFAULT now(),
             "updated_at" TIMESTAMP NOT NULL DEFAULT now()
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_review" (id, item_validation_id, reviewer_id,status,created_at,updated_at, reason) 
-                SELECT ivr.id, item_validation_id, reviewer_id,s.name,ivr.created_at,ivr.updated_at, reason 
-                FROM item_validation_review_old as ivr
-                LEFT JOIN item_validation_review_status_old as s on s.id= ivr.status_id
-                LEFT JOIN item_validation_old as iv on iv.id= ivr.item_validation_id
-                `);
+    // in any case no review was handled -> no reason data
 
     await queryRunner.query(
       'ALTER TABLE "chat_message" DROP CONSTRAINT IF EXISTS "chat_message_creator_id_fkey"',
@@ -1038,13 +1033,13 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION',
     );
 
-    await queryRunner.query("CREATE TYPE \"member_type_enum\" AS ENUM ('individual', 'group')");
-    await queryRunner.query("CREATE TYPE \"permissions_enum\" AS ENUM ('read', 'write', 'admin')");
+    await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
+    await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
 
-    await queryRunner.query("CREATE TYPE \"nested_tag_enum\" AS ENUM ('allow', 'fail')");
-    await queryRunner.query("CREATE TYPE mention_status AS ENUM ('unread', 'read')");
+    await queryRunner.query('CREATE TYPE "nested_tag_enum" AS ENUM (\'allow\', \'fail\')');
+    await queryRunner.query('CREATE TYPE mention_status AS ENUM (\'unread\', \'read\')');
     await queryRunner.query(
-      "CREATE TYPE \"app_data_visibility_enum\" AS ENUM ('member', 'item'); --, 'app', 'publisher')",
+      'CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')',
     );
 
     // -- CREATE everything
@@ -1097,7 +1092,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             )`);
 
     await queryRunner.query(
-      'INSERT INTO "item_membership_old" (item_path, member_id, creator, permission, created_at, updated_at) SELECT item_path, member_id, creator_id, permission::permissions_enum, created_at, updated_at from item_membership',
+      'INSERT INTO "item_membership_old" (id,item_path, member_id, creator, permission, created_at, updated_at) SELECT id,item_path, member_id, creator_id, permission::permissions_enum, created_at, updated_at from item_membership',
     );
 
     // -- Tables timestamps
@@ -1157,8 +1152,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             PRIMARY KEY ("item_path","email")
         )`);
-    await queryRunner.query(`INSERT INTO "invitation_old" (item_path, creator, created_at, updated_at,name,email,permission) 
-            SELECT item_path, creator_id, created_at, updated_at,name,email,permission::permissions_enum FROM invitation 
+    await queryRunner.query(`INSERT INTO "invitation_old" (id,item_path, creator, created_at, updated_at,name,email,permission) 
+            SELECT id,item_path, creator_id, created_at, updated_at,name,email,permission::permissions_enum FROM invitation 
             `);
 
     await queryRunner.query(` CREATE TABLE "recycled_item_old" (
@@ -1169,7 +1164,9 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
     await queryRunner.query(
-      'INSERT INTO "recycled_item_old" (creator, item_path, created_at) SELECT creator_id, item_path, created_at FROM recycled_item_data',
+      `INSERT INTO "recycled_item_old" (id,creator, item_path, item_id, created_at) SELECT rid.id, rid.creator_id, item_path, i.id, rid.created_at FROM recycled_item_data as rid
+      INNER JOIN item as i on path=item_path
+      `,
     );
 
     await queryRunner.query(`CREATE TABLE "tag_old" (
@@ -1177,11 +1174,14 @@ export class Migrations1679669193721 implements MigrationInterface {
           -- 'name' might not be the final label for the user but a (recognizable) short english label that behaves as a key for translation
           "name" character varying(100) NOT NULL,
           -- "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL, -- don't remove - set creator to NULL
+          "nested" nested_tag_enum DEFAULT NULL,
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
     await queryRunner.query(`INSERT INTO "tag_old" (name) 
             SELECT DISTINCT type FROM item_tag 
             `);
+    await queryRunner.query(`INSERT INTO "tag_old" ("id", "name", "nested")
+            VALUES ('ea9a3b4e-7b67-44c2-a9df-528b6ae5424f', 'published-item', 'allow')`);
 
     await queryRunner.query(`CREATE TABLE "item_tag_old" (
           "id" uuid UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
@@ -1194,10 +1194,15 @@ export class Migrations1679669193721 implements MigrationInterface {
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
           PRIMARY KEY ("tag_id", "item_path")
             )`);
-    await queryRunner.query(`INSERT INTO "item_tag_old" (tag_id, item_path, creator, created_at) 
-                    SELECT t.id, item_path, creator_id, it.created_at FROM item_tag as it 
+    await queryRunner.query(`INSERT INTO "item_tag_old" (id,tag_id, item_path, creator, created_at) 
+                    SELECT it.id,t.id, item_path, creator_id, it.created_at FROM item_tag as it 
                     INNER JOIN tag_old as t ON t.name = it.type 
                     `);
+    // published items
+
+    await queryRunner.query(`INSERT INTO "item_tag_old" (id,tag_id, item_path, creator, created_at) 
+    SELECT ip.id,'ea9a3b4e-7b67-44c2-a9df-528b6ae5424f', item_path, creator_id, ip.created_at FROM item_published as ip 
+    `);
 
     await queryRunner.query(`CREATE TABLE IF NOT EXISTS category_type_old (
             id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -1213,9 +1218,9 @@ export class Migrations1679669193721 implements MigrationInterface {
             type uuid,
             FOREIGN KEY (type) REFERENCES category_type_old("id") ON DELETE CASCADE
         )`);
-    await queryRunner.query(`INSERT INTO "category_old" (name, type) 
-        SELECT DISTINCT  c.name, t.id FROM category as c
-        INNER JOIN category_type_old as t ON c.name = t.name 
+    await queryRunner.query(`INSERT INTO "category_old" (id, name, type) 
+        SELECT c.id, c.name, t.id FROM category as c
+        INNER JOIN category_type_old as t ON c.type = t.name 
         `);
 
     // -- CREATE item_category table
@@ -1227,8 +1232,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             FOREIGN KEY(item_id) REFERENCES item_old(id) ON DELETE CASCADE,
             FOREIGN KEY(category_id) REFERENCES category_old(id) ON DELETE CASCADE
         )`);
-    await queryRunner.query(`INSERT INTO "item_category_old" (item_id, category_id) 
-        SELECT i.id, ic.category_id FROM item_category as ic
+    await queryRunner.query(`INSERT INTO "item_category_old" (id,item_id, category_id) 
+        SELECT ic.id,i.id, ic.category_id FROM item_category as ic
         INNER JOIN item as i  ON i.path = ic.item_path 
         `);
 
@@ -1301,12 +1306,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             updated_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             created_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-    await queryRunner.query(`INSERT INTO "item_validation_review_old" (id, item_validation_id, reviewer_id,status_id,created_at,updated_at, reason) 
-                    SELECT ivr.id, item_validation_id, reviewer_id,s.id,ivr.created_at,ivr.updated_at, reason 
-                    FROM item_validation_review as ivr
-                    LEFT JOIN item_validation_review_status_old as s on s.name= ivr.status
-                    LEFT JOIN item_validation as iv on iv.id= ivr.item_validation_id
-                    `);
+    // empty table
 
     await queryRunner.query(`CREATE TABLE "item_member_login_old" (
             "item_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE,
@@ -1314,7 +1314,12 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             PRIMARY KEY ("item_id", "member_id")
             )`);
-    // TODO
+    await queryRunner.query(`INSERT INTO "item_member_login_old" (item_id,member_id,created_at) 
+                                    SELECT i.id, member_id, item_login.created_at
+                                    FROM item_login
+                                    INNER JOIN item_login_schema as ils on item_login_schema_id=ils.id
+                                    INNER JOIN item as i on i.path = ils.item_path
+                                    `);
 
     await queryRunner.query(`CREATE TABLE "chat_message_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,                
@@ -1324,8 +1329,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             updated_at timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "body" character varying(500)
         )`);
-    await queryRunner.query(`INSERT INTO "chat_message_old" (chat_id, creator, created_at, updated_at, body) 
-            SELECT item_id, creator_id, created_at, updated_at, body FROM chat_message 
+    await queryRunner.query(`INSERT INTO "chat_message_old" (id,chat_id, creator, created_at, updated_at, body) 
+            SELECT id,item_id, creator_id, created_at, updated_at, body FROM chat_message 
             `);
 
     await queryRunner.query(`CREATE TABLE "chat_mention_old" 
@@ -1341,8 +1346,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                 PRIMARY KEY ("id")
             )`);
 
-    await queryRunner.query(`INSERT INTO "chat_mention_old" (item_path, message_id, member_id, creator, created_at, updated_at, status) 
-            SELECT i.path, message_id, member_id, m.creator_id, cm.created_at, cm.updated_at, status::text::mention_status FROM chat_mention as cm
+    await queryRunner.query(`INSERT INTO "chat_mention_old" (id,item_path, message_id, member_id, creator, created_at, updated_at, status) 
+            SELECT cm.id,i.path, message_id, member_id, m.creator_id, cm.created_at, cm.updated_at, status::text::mention_status FROM chat_mention as cm
             LEFT JOIN chat_message as m on m.id = cm.message_id
             LEFT JOIN item as i on i.id = m.item_id
             `);
@@ -1362,8 +1367,8 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "creator" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
                 "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
               )`);
-    await queryRunner.query(`INSERT INTO "item_flag_old" (flag_id, creator, item_id, created_at) 
-          SELECT f.id, if.creator_id, if.item_id, if.created_at FROM item_flag as if
+    await queryRunner.query(`INSERT INTO "item_flag_old" (id,flag_id, creator, item_id, created_at) 
+          SELECT if.id, f.id, if.creator_id, if.item_id, if.created_at FROM item_flag as if
           LEFT JOIN flag_old as f ON f.name=if.type
           `);
 
@@ -1389,8 +1394,8 @@ export class Migrations1679669193721 implements MigrationInterface {
         
             "extra" jsonb NOT NULL DEFAULT '{}'::jsonb
         )`);
-    await queryRunner.query(`INSERT INTO "app_old" (id, name, description,url,created_at,extra) 
-                SELECT id, name, description,url,created_at,extra::jsonb FROM app
+    await queryRunner.query(`INSERT INTO "app_old" (id, name, description,url,created_at,extra,publisher_id) 
+                SELECT id, name, description,url,created_at,extra::jsonb, publisher_id FROM app
                 `);
 
     await queryRunner.query(`CREATE TABLE "app_data_old" (
@@ -1419,8 +1424,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "app_data_old" (item_id, creator, created_at, updated_at, member_id,type,visibility,data) 
-                SELECT item_id, creator_id, created_at, updated_at, member_id,type,visibility::text::app_data_visibility_enum,data::jsonb FROM app_data
+    await queryRunner.query(`INSERT INTO "app_data_old" (id,item_id, creator, created_at, updated_at, member_id,type,visibility,data) 
+                SELECT id,item_id, creator_id, created_at, updated_at, member_id,type,visibility::text::app_data_visibility_enum,data::jsonb FROM app_data
                 `);
 
     await queryRunner.query(`CREATE TABLE "app_action_old" (
@@ -1431,8 +1436,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "type" character varying(25),
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "app_action_old" (item_id,  created_at,  member_id,data) 
-                    SELECT item_id, created_at,  member_id,data::jsonb FROM app_action 
+    await queryRunner.query(`INSERT INTO "app_action_old" (id,item_id, type, created_at,  member_id,data) 
+                    SELECT id,item_id, type,created_at,  member_id,data::jsonb FROM app_action 
                     `);
 
     await queryRunner.query(`CREATE TABLE "app_setting_old" (
@@ -1451,8 +1456,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "app_setting_old" (item_id,    creator, created_at, updated_at,name,data) 
-                        SELECT item_id, creator_id, created_at, updated_at, name,data::jsonb FROM app_setting
+    await queryRunner.query(`INSERT INTO "app_setting_old" (id,item_id,    creator, created_at, updated_at,name,data) 
+                        SELECT id,item_id, creator_id, created_at, updated_at, name,data::jsonb FROM app_setting
                         `);
 
     await queryRunner.query(`CREATE TABLE item_like_old (
@@ -1464,7 +1469,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 )`);
 
     await queryRunner.query(
-      'INSERT INTO "item_like_old" (member_id, item_id, created_at) SELECT creator_id, item_id, created_at FROM item_like',
+      'INSERT INTO "item_like_old" (id,member_id, item_id, created_at) SELECT id,creator_id, item_id, created_at FROM item_like',
     );
 
     await queryRunner.query(`CREATE TABLE "action" (

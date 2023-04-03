@@ -42,6 +42,8 @@ export default {
         updatedAt: { type: 'string' },
         body: { type: 'string' },
         item: {
+          type: 'object',
+          properties: {
           id: { type: 'string' },
           name: { type: 'string' },
           description: { type: 'string' },
@@ -49,7 +51,8 @@ export default {
           type: { type: 'string' },
           creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
           createdAt: { type: 'string' },
-          updatedAt: { type: 'string' },
+          updatedAt: { type: 'string' },},
+          additionalProperties: false,
         },
       },
       additionalProperties: false,

@@ -14,8 +14,6 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemType, UnknownExtra } from '@graasp/sdk';
-
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 

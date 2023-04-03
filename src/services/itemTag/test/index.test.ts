@@ -265,7 +265,6 @@ describe('Tags', () => {
           method: HttpMethod.POST,
           url: `${ITEMS_ROUTE}/${item.id}/tags/${type}`,
         });
-        console.log(res);
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json().type).toEqual(type);
       });

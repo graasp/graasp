@@ -44,7 +44,6 @@ const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastif
     async ({ member, params }) => {
       const { id } = params;
       const aa = await iS.get(member, buildRepositories(), id);
-      console.log(aa);
       return aa;
     },
   );
