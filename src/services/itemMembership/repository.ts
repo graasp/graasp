@@ -1,28 +1,16 @@
-import { defineAbility } from '@casl/ability';
-import { CONSOLE_LEVELS } from '@sentry/utils';
-import { Brackets, In, Not } from 'typeorm';
+import { In, Not } from 'typeorm';
 
-import {
-  MAX_NUMBER_OF_CHILDREN,
-  MAX_TREE_LEVELS,
-  PermissionLevel,
-  PermissionLevelCompare,
-} from '@graasp/sdk';
+import { PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
-  MemberCannotAccess,
-  MemberCannotAdminItem,
-  MemberCannotReadItem,
-  MemberCannotWriteItem,
   ModifyExisting,
-  TooManyChildren,
 } from '../../util/graasp-error';
 import { Item } from '../item/entities/Item';
-import { dashToUnderscore, pathToId } from '../item/utils';
+import { pathToId } from '../item/utils';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
@@ -196,7 +184,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         member: { id: actor.id },
         item: { creator: Not(actor.id) },
       },
-      relations: { item: true },
+      relations: { item: true, creator: true },
     });
     const items = sharedMemberships.map(({ item }) => item);
     // TODO: optimize

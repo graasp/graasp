@@ -490,8 +490,7 @@ const expected = {
     expect(itemTag.created_at.toISOString()).toEqual(expected.created_at);
 
     // item_published
-    const tag = values.tag.find(({ id }) => id === expected.tag_id);
-    if (tag?.name === 'published') {
+    if (expected.tag_id === 'ea9a3b4e-7b67-44c2-a9df-528b6ae5424f') {
       const [itemPublished] = await db.query(
         `SELECT * FROM item_published WHERE item_path= '${expected.item_path}'`,
       );

@@ -7,8 +7,8 @@ import { getCollections, getCollectionsForMember, publishItem, unpublishItem } f
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db } = fastify;
-  const pIS = new ItemPublishedService();
+  const { db, items } = fastify;
+  const pIS = new ItemPublishedService(items.service);
 
   fastify.get<{ Querystring: { categoryId: string[] } }>(
     '/collections',

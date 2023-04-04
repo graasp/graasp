@@ -6,9 +6,9 @@ import common, { create, getFlags } from './schemas';
 import { ItemFlagService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db } = fastify;
+  const { db , items} = fastify;
 
-  const iFS = new ItemFlagService();
+  const iFS = new ItemFlagService(items.service);
 
   // schemas
   fastify.addSchema(common);

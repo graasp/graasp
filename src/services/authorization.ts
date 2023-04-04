@@ -87,18 +87,32 @@ export const validatePermission = async (
 };
 
 // filtering functions, that takes out limited items (eg. hidden children)
-export const filterOutItems = async (repositories, items: Item[], parentItem?: Item) => {
+export const filterOutItems = async (repositories, items: Item[]) => {
+  const { itemMembershipRepository } = repositories;
   // TODO: optimize with on query
-  const memberships = await repositories.itemMembershipRepository.getAllBelow(parentItem);
+  const memberships = await itemMembershipRepository.getForManyItems(items);
   const isHidden = await repositories.itemTagRepository.hasForMany(items, ItemTagType.HIDDEN);
   return items
     .filter((item) => {
-      // cannot read hidden items if you don't have write access
       // TODO: get best permission
-      const permission = memberships.filter(({ path }) => path === item.path);
-      if (PermissionLevelCompare.lt(permission, PermissionLevel.Write)) {
-        return !isHidden ? item : null;
-      }
+      const permission = PermissionLevelCompare.getHighest(
+        memberships.data[item.id].map(({ permission }) => permission),
+      );
+      // return item if has at least write permission or is not hidden
+      return (
+        PermissionLevelCompare.gte(permission, PermissionLevel.Write) || !isHidden.data[item.id]
+      );
     })
     .filter(Boolean);
+};
+
+// filter out children based on tag only -> does not show hidden for admin as well
+// useful for published items
+export const filterOutHiddenItems = async (repositories, items: Item[]) => {
+  const { itemTagRepository } = repositories;
+
+  const isHidden = await itemTagRepository.hasForMany(items, ItemTagType.HIDDEN);
+  return items.filter((item) => {
+    return isHidden.data[item.id];
+  });
 };

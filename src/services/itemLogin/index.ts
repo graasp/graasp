@@ -20,9 +20,9 @@ export interface GraaspItemLoginOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspItemLoginOptions> = async (fastify, options) => {
-  const { db } = fastify;
+  const { db, items } = fastify;
 
-  const iLService = new ItemLoginService(fastify);
+  const iLService = new ItemLoginService(fastify, items.service);
 
   // get login schema type for item
   // used to trigger item login for student

@@ -4,6 +4,7 @@ import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../util/repositories';
 import { validatePermission } from '../authorization';
+import ItemService from '../item/service';
 import { Member } from '../member/entities/member';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
@@ -16,14 +17,15 @@ import {
 
 export class ItemLoginService {
   fastify: FastifyInstance;
+  private itemService: ItemService;
 
-  constructor(fastify: FastifyInstance) {
+  constructor(fastify: FastifyInstance, itemService: ItemService) {
     this.fastify = fastify;
+    this.itemService = itemService;
   }
 
   async get(actor: Member, repositories: Repositories, itemId: string) {
-    const item = await repositories.itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
     const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path, {
       shouldExist: true,
     });
@@ -145,19 +147,17 @@ export class ItemLoginService {
   }
 
   async put(actor, repositories: Repositories, itemId: string, type?: ItemLoginSchemaType) {
-    const { itemRepository, itemLoginSchemaRepository } = repositories;
+    const { itemLoginSchemaRepository } = repositories;
 
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     return itemLoginSchemaRepository.put(item, type);
   }
 
   async delete(actor, repositories: Repositories, itemId: string) {
-    const { itemRepository, itemLoginSchemaRepository } = repositories;
+    const { itemLoginSchemaRepository } = repositories;
 
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     return itemLoginSchemaRepository.deleteForItem(item);
   }

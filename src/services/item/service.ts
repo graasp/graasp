@@ -74,10 +74,15 @@ export class ItemService {
     return createdItem;
   }
 
-  async get(actor, repositories: Repositories, id: string) {
+  async get(
+    actor,
+    repositories: Repositories,
+    id: string,
+    permission: PermissionLevel = PermissionLevel.Read,
+  ) {
     const item = await repositories.itemRepository.get(id);
 
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    await validatePermission(repositories, permission, actor, item);
 
     return item;
   }
@@ -99,16 +104,19 @@ export class ItemService {
     return itemRepository.getOwn(actor.id);
   }
 
-  async getShared(actor, { itemMembershipRepository }: Repositories, permission?: PermissionLevel) {
-    return itemMembershipRepository.getSharedItems(actor, permission);
+  async getShared(actor, repositories: Repositories, permission?: PermissionLevel) {
+    const { itemMembershipRepository } = repositories;
+    const items = await itemMembershipRepository.getSharedItems(actor, permission);
+    // TODO optimize?
+    return filterOutItems(repositories, items);
   }
 
   async getChildren(actor: Member, repositories: Repositories, itemId: string, ordered?: boolean) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
-    return await itemRepository.getChildren(item, ordered);
-    // return filterOutItems(repositories, await itemRepository.getChildren(item, ordered), item);
+    // TODO optimize?
+    return filterOutItems(repositories, await itemRepository.getChildren(item, ordered));
   }
 
   async getDescendants(actor, repositories: Repositories, itemId: UUID) {
@@ -116,8 +124,7 @@ export class ItemService {
     const item = await this.get(actor, repositories, itemId);
 
     // TODO optimize?
-    return await itemRepository.getDescendants(item);
-    // return filterOutItems(repositories, await itemRepository.getDescendants(item), item);
+    return filterOutItems(repositories, await itemRepository.getDescendants(item));
   }
 
   async getParents(actor, repositories: Repositories, itemId: UUID) {

@@ -18,7 +18,7 @@ export interface GraaspPluginInvitationsOptions {
 
 const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastify, options) => {
   const { buildInvitationLink } = options;
-  const { mailer, db, log, members } = fastify;
+  const { mailer, db, log, members, items } = fastify;
 
   if (!mailer) {
     throw new Error('Mailer plugin is not defined');
@@ -26,7 +26,7 @@ const plugin: FastifyPluginAsync<GraaspPluginInvitationsOptions> = async (fastif
 
   fastify.addSchema(definitions);
 
-  const iS = new InvitationService(log, fastify, buildInvitationLink);
+  const iS = new InvitationService(log, fastify, items.service, buildInvitationLink);
 
   // post hook: remove invitations on member creation
   const hook = async (actor, repositories, args: { member: Member }) => {

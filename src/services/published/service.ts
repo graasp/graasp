@@ -1,14 +1,20 @@
 import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../util/repositories';
-import { validatePermission } from '../authorization';
+import { filterOutHiddenItems, validatePermission } from '../authorization';
+import ItemService from '../item/service';
 
 export class ItemPublishedService {
-  async get(actor, repositories, itemId: string) {
-    const { itemPublishedRepository, itemTagRepository, itemRepository } = repositories;
+  private itemService: ItemService;
 
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+  constructor(itemService: ItemService) {
+    this.itemService = itemService;
+  }
+
+  async get(actor, repositories, itemId: string) {
+    const { itemPublishedRepository, itemTagRepository } = repositories;
+
+    const item = await this.itemService.get(actor, repositories, itemId);
 
     // item should be public first
     await itemTagRepository.getType(item, ItemTagType.PUBLIC, { shouldThrow: true });
@@ -17,10 +23,9 @@ export class ItemPublishedService {
   }
 
   async post(actor, repositories, itemId: string) {
-    const { itemPublishedRepository, itemTagRepository, itemRepository } = repositories;
+    const { itemPublishedRepository, itemTagRepository } = repositories;
 
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     // item should be public first
     await itemTagRepository.getType(item, ItemTagType.PUBLIC, { shouldThrow: true });
@@ -29,10 +34,9 @@ export class ItemPublishedService {
   }
 
   async delete(actor, repositories, itemId: string) {
-    const { itemPublishedRepository, itemRepository } = repositories;
+    const { itemPublishedRepository } = repositories;
 
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     return itemPublishedRepository.deleteForItem(item);
   }
@@ -48,12 +52,12 @@ export class ItemPublishedService {
 
     if (!categoryIds?.length) {
       const items = await itemPublishedRepository.getAllItems();
-      return items;
+      return filterOutHiddenItems(repositories, items);
     }
 
     // get by categories
     const items = await itemPublishedRepository.getByCategories(categoryIds);
 
-    return items;
+    return filterOutHiddenItems(repositories, items);
   }
 }

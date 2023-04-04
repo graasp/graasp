@@ -5,9 +5,9 @@ import common, { create, deleteOne, getLikesForItem, getLikesForMember } from '.
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db } = fastify;
+  const { db, items } = fastify;
 
-  const itemLikeService = new ItemLikeService();
+  const itemLikeService = new ItemLikeService(items.service);
 
   fastify.addSchema(common);
   //get liked entry for member

@@ -6,7 +6,7 @@ import { IdParam, IdsParams, ItemTagType } from '@graasp/sdk';
 
 import { buildRepositories } from '../../util/repositories';
 import { Item } from '../item/entities/Item';
-import common, { create, deleteOne, getItemTags, getMany, getTags } from './schemas/schemas';
+import common, { create, deleteOne, getItemTags, getMany } from './schemas/schemas';
 import { ItemTagService } from './service';
 
 /**
@@ -22,7 +22,7 @@ import { ItemTagService } from './service';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;
 
-  const iTS = new ItemTagService();
+  const iTS = new ItemTagService(items.service);
 
   // schemas
   fastify.addSchema(common);

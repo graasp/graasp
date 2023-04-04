@@ -1,11 +1,15 @@
-import { PermissionLevel } from '@graasp/sdk';
-
 import { Repositories } from '../../util/repositories';
-import { validatePermission } from '../authorization';
+import ItemService from '../item/service';
 import { Member } from '../member/entities/member';
 import { CannotGetOthersLikes } from './errors';
 
 export class ItemLikeService {
+  private itemService: ItemService;
+
+  constructor(itemService: ItemService) {
+    this.itemService = itemService;
+  }
+
   async getItemsForMember(actor: Member, repositories: Repositories, memberId: string) {
     const { itemLikeRepository } = repositories;
 
@@ -19,33 +23,27 @@ export class ItemLikeService {
   }
 
   async getForItem(actor: Member, repositories: Repositories, itemId: string) {
-    const { itemLikeRepository, itemRepository } = repositories;
+    const { itemLikeRepository } = repositories;
 
-    const item = await itemRepository.get(itemId);
-
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    await this.itemService.get(actor, repositories, itemId);
 
     return itemLikeRepository.getForItem(itemId);
   }
 
   async removeOne(actor: Member, repositories: Repositories, itemId: string) {
-    const { itemLikeRepository, itemRepository } = repositories;
-
-    const item = await itemRepository.get(itemId);
+    const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId);
 
     return itemLikeRepository.deleteOne(actor, item);
   }
 
   async post(actor: Member, repositories: Repositories, itemId: string) {
-    const { itemLikeRepository, itemRepository } = repositories;
-
-    const item = await itemRepository.get(itemId);
+    const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId);
     return itemLikeRepository.post(actor.id, item.id);
   }
 }

@@ -1,25 +1,25 @@
-import groupby from 'lodash.groupby';
-
-import { FastifyInstance, FastifyLoggerInstance } from 'fastify';
+import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import { DEFAULT_LANG, PermissionLevel } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import { Repositories } from '../../util/repositories';
 import { validatePermission } from '../authorization';
+import ItemService from '../item/service';
 import { Member } from '../member/entities/member';
 import { Invitation } from './invitation';
 
 export class InvitationService {
-  log: FastifyLoggerInstance;
+  log: FastifyBaseLogger;
   fastify: FastifyInstance; // TODO
   buildInvitationLink: any; // TODO
+  itemService: ItemService;
   // TODO
 
-  constructor(log, fastify, buildInvitationLink) {
+  constructor(log, fastify, itemService: ItemService, buildInvitationLink) {
     this.log = log;
     this.fastify = fastify;
-
+    this.itemService = itemService;
     this.buildInvitationLink = buildInvitationLink;
   }
 
@@ -51,9 +51,8 @@ export class InvitationService {
   }
 
   async getForItem(actor: Member, repositories: Repositories, itemId: string) {
-    const { itemRepository, invitationRepository } = repositories;
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const { invitationRepository } = repositories;
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
     return invitationRepository.getForItem(item.path);
   }
 
@@ -63,9 +62,8 @@ export class InvitationService {
     itemId: string,
     invitations: Partial<Invitation>[],
   ) {
-    const { itemRepository, invitationRepository } = repositories;
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const { invitationRepository } = repositories;
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     const completeInvitations = await invitationRepository.postMany(invitations, itemId, actor);
 

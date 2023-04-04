@@ -52,6 +52,9 @@ export class Migrations1679669193721 implements MigrationInterface {
     // don't use role and role_permission (admin)
     await queryRunner.query('DROP TABLE IF EXISTS role_permission');
     await queryRunner.query('ALTER TABLE tag RENAME TO tag_old');
+    // don't use member_plan and plan
+    await queryRunner.query('DROP TABLE IF EXISTS member_plan');
+    await queryRunner.query('DROP TABLE IF EXISTS plan');
 
     // ----- create new tables and insert data from old
 
@@ -162,7 +165,7 @@ export class Migrations1679669193721 implements MigrationInterface {
     );
     // TODO: production tag
     await queryRunner.query(
-      'INSERT INTO "item_published" (creator_id, item_path, created_at) SELECT creator, item_path, created_at FROM item_tag_old WHERE id=\'ea9a3b4e-7b67-44c2-a9df-528b6ae5424f\'',
+      'INSERT INTO "item_published" (creator_id, item_path, created_at) SELECT creator, item_path, created_at FROM item_tag_old WHERE tag_id=\'ea9a3b4e-7b67-44c2-a9df-528b6ae5424f\'',
     );
 
     await queryRunner.query(`CREATE TABLE "item_flag" (
@@ -250,7 +253,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 "updated_at" TIMESTAMP NOT NULL DEFAULT now()
             )`);
     await queryRunner.query(`INSERT INTO "app_data" (id,item_id, creator_id, created_at, updated_at, member_id,type,visibility,data) 
-                SELECT id,item_id, creator, created_at, updated_at, member_id,type,visibility,data FROM app_data_old 
+                SELECT id,item_id, creator, created_at, updated_at, member_id,type,visibility,data FROM app_data_old where type is not null
                 `);
 
     await queryRunner.query(`CREATE TABLE "app_action" (
@@ -723,6 +726,7 @@ export class Migrations1679669193721 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    
     await queryRunner.query(
       'ALTER TABLE "item_published" DROP CONSTRAINT IF EXISTS "FK_490fddd9099ee7ddcccf8c776a1"',
     );

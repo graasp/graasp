@@ -14,8 +14,8 @@ import { CategoryService } from './services/category';
 import { ItemCategoryService } from './services/itemCategory';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db } = fastify;
-  const itemCategoryService = new ItemCategoryService();
+  const { db, items } = fastify;
+  const itemCategoryService = new ItemCategoryService(items.service);
   const categoryService = new CategoryService();
 
   // schemas
