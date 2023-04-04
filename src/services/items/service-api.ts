@@ -1,5 +1,6 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
 import graaspItemEtherpad from '@graasp/plugin-etherpad';
 import {
@@ -240,7 +241,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemTags);
 
-        await fastify.register(graaspItemPublishPlugin, {
+        await fastify.register(fp(graaspItemPublishPlugin), {
           publishedTagId: PUBLISHED_TAG_ID,
           publicTagId: PUBLIC_TAG_ID,
           graaspActor: GRAASP_ACTOR,
