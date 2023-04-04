@@ -971,16 +971,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/cookie@npm:^7.0.0":
-  version: 7.4.0
-  resolution: "@fastify/cookie@npm:7.4.0"
-  dependencies:
-    cookie: ^0.5.0
-    fastify-plugin: ^4.0.0
-  checksum: cf710f8fcf07d1655bdd76b86076e32d343fdea9291534e0b87b909d978520333663c2aed63609f84c2eec46ac0e9068f462a4b63b5d124e3d31c873adaa66d7
-  languageName: node
-  linkType: hard
-
 "@fastify/cookie@npm:^8.0.0":
   version: 8.3.0
   resolution: "@fastify/cookie@npm:8.3.0"
@@ -1071,19 +1061,6 @@ __metadata:
   bin:
     secure-session: genkey.js
   checksum: 2c5c96117070322ed65bf7ef16c64c231c74c6752d53d50562ed0879577dd77ea517adbe3494cc9322630a23c1df6f95afa6e6754bc071b36742f3b9dac9f769
-  languageName: node
-  linkType: hard
-
-"@fastify/secure-session@npm:5.2.0":
-  version: 5.2.0
-  resolution: "@fastify/secure-session@npm:5.2.0"
-  dependencies:
-    "@fastify/cookie": ^7.0.0
-    fastify-plugin: ^3.0.0
-    sodium-native: ^3.0.0
-  bin:
-    secure-session: genkey.js
-  checksum: 3366155760af949e677cf41ad37863e49cac60ab98c519767c6aeafcce7147c2cb2594909ea03513885ff758b082db3f4ccd00ec5906af09a4a4ceabca3f7852
   languageName: node
   linkType: hard
 
@@ -1189,20 +1166,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
-  version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=3c6bf828279719895489d8237c4a53dfc430b2a8"
+"@graasp/sdk@github:graasp/graasp-sdk#112-publish-service":
+  version: 0.10.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=bf7e1099830000e885b5561ff537f2c99845235f"
   dependencies:
-    "@fastify/secure-session": 5.2.0
-    aws-sdk: 2.1111.0
-    fastify: 3.29.1
+    "@fastify/secure-session": 5.3.0
+    aws-sdk: 2.1310.0
+    fastify: 3.29.5
     fluent-json-schema: 3.1.0
-    immutable: 4.1.0
+    immutable: 4.2.4
     js-cookie: 3.0.1
     qs: 6.11.0
     slonik: 28.1.1
-    uuid: 8.3.2
-  checksum: 71c6aff2c43403915751aa111a83d71d6d8c8737f3441c0843556cee61c8bf0729c199a27c8ca8d137f25cfbfbc53b566b456fec0206c583917fee4d04a79d88
+    uuid: 9.0.0
+  checksum: 0753cc1a59df6bdcf880fdf4d892b1449f558d9c57abf3669451cd232b0165c363761f5d087cea6976620593a41bbde93922f3738426a8252a37a37fd730e702
+  languageName: node
+  linkType: hard
+
+"@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
+  version: 0.10.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=d70d55c20cb9dda8ab813b9b51001ea77c7e0128"
+  dependencies:
+    "@fastify/secure-session": 5.3.0
+    aws-sdk: 2.1310.0
+    fastify: 3.29.5
+    fluent-json-schema: 3.1.0
+    immutable: 4.2.4
+    js-cookie: 3.0.1
+    qs: 6.11.0
+    slonik: 28.1.1
+    uuid: 9.0.0
+  checksum: 47663c331c9b3e2006f613f115ed36ccd722f4b53dde208cab867ab878d3dfc76571473bc46037124b0d32ad1a9df00ce958fe4281688e2941292163c2661928
   languageName: node
   linkType: hard
 
@@ -1220,23 +1214,6 @@ __metadata:
     slonik: 28.1.1
     uuid: 9.0.0
   checksum: 1fc427f9075450d9aac51efd9949516d8fd65670bae795c535ce813f36023ec514d445e78e90b6681a7c18a297b51bc2e5e15e54d381711f3a890ffd19ead8a1
-  languageName: node
-  linkType: hard
-
-"@graasp/sdk@npm:0.9.3":
-  version: 0.9.3
-  resolution: "@graasp/sdk@npm:0.9.3"
-  dependencies:
-    "@fastify/secure-session": 5.3.0
-    aws-sdk: 2.1310.0
-    fastify: 3.29.5
-    fluent-json-schema: 3.1.0
-    immutable: 4.2.4
-    js-cookie: 3.0.1
-    qs: 6.11.0
-    slonik: 28.1.1
-    uuid: 9.0.0
-  checksum: 222e8d7e00f5c4fbfb23d596899edd0afcaa0640c540ae90f85d6cd6f92b1bb7832bf50504fecd4aafe1a185b79ecae42a75163bd5fca5975e535fbeb84c3049
   languageName: node
   linkType: hard
 
@@ -5858,9 +5835,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-item-publish@github:graasp/graasp-plugin-item-publish":
+"graasp-plugin-item-publish@github:graasp/graasp-plugin-item-publish#publish-service":
   version: 0.1.0
-  resolution: "graasp-plugin-item-publish@https://github.com/graasp/graasp-plugin-item-publish.git#commit=b2602a8afeaa4c25bcbbf5d413a80914aff7fd91"
+  resolution: "graasp-plugin-item-publish@https://github.com/graasp/graasp-plugin-item-publish.git#commit=0d119aa1043b485aa487a51d1b6a05cd1dc1e648"
   dependencies:
     "@fastify/cors": 7.0.0
     graasp-item-tags: "github:graasp/graasp-item-tags"
@@ -5869,7 +5846,7 @@ __metadata:
     http-status-codes: 2.2.0
     qs: 6.10.3
     slonik: 28.1.0
-  checksum: 9f2334e9ca67077c0a8a36e98babdf254f65d7cc6bc04f24b214a15b80a5ee46549f6ad347688676dff86c1afe6100d670b9825a98ec386c4ac8ba9e5f253ff7
+  checksum: 58a50654a27dc8719684b1bf3b1cc897f343a4262d25f9efdc3e6757f605b2a3eff2ff619fb55367b0842da8e31ce7007d206da7d48895a2fbfa3d34221d2fa6
   languageName: node
   linkType: hard
 
@@ -5998,7 +5975,7 @@ __metadata:
     "@fastify/secure-session": 4.1.1
     "@graasp/plugin-etherpad": 1.0.0
     "@graasp/plugin-websockets": 1.0.0
-    "@graasp/sdk": 0.9.3
+    "@graasp/sdk": "github:graasp/graasp-sdk#112-publish-service"
     "@graasp/translations": 1.10.0
     "@sentry/node": 7.44.2
     "@sentry/profiling-node": 0.3.0
@@ -6040,7 +6017,7 @@ __metadata:
     graasp-plugin-invitations: "github:graasp/graasp-plugin-invitations"
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
-    graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
+    graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish#publish-service"
     graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
@@ -6408,13 +6385,6 @@ __metadata:
   version: 5.2.0
   resolution: "ignore@npm:5.2.0"
   checksum: 6b1f926792d614f64c6c83da3a1f9c83f6196c2839aa41e1e32dd7b8d174cef2e329d75caabb62cb61ce9dc432f75e67d07d122a037312db7caa73166a1bdb77
-  languageName: node
-  linkType: hard
-
-"immutable@npm:4.1.0":
-  version: 4.1.0
-  resolution: "immutable@npm:4.1.0"
-  checksum: b9bc1f14fb18eb382d48339c064b24a1f97ae4cf43102e0906c0a6e186a27afcd18b55ca4a0b63c98eefb58143e2b5ebc7755a5fb4da4a7ad84b7a6096ac5b13
   languageName: node
   linkType: hard
 

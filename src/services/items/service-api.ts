@@ -291,6 +291,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
 
+        // search plugin
+        await fastify.register(async (instance) => {
+          const { publish, items } = instance;
+          const { taskManager: publishTaskManager } = publish;
+          const { dbService: itemService } = items;
+          const { taskRunner } = instance;
+          const publishItemTaskName = publishTaskManager.getPublishItemTaskName();
+          taskRunner.setTaskPostHookHandler(
+            publishItemTaskName,
+            async (item, member, { log, handler }) => {
+              log.info(item);
+            },
+          );
+        });
+
         // isolate the core actions using fastify.register
         fastify.register(async function (fastify) {
           // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
