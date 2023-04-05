@@ -1,10 +1,7 @@
-import S3 from 'aws-sdk/clients/s3';
 import dotenv from 'dotenv';
 import path from 'path';
 
-import { Context, FileItemType, ItemType, S3FileConfiguration } from '@graasp/sdk';
-
-import { ItemSettings } from '../services/item/entities/Item';
+import { Context, FileItemType, ItemSettings, ItemType, S3FileConfiguration } from '@graasp/sdk';
 
 enum Environment {
   production = 'production',
@@ -39,33 +36,32 @@ export const STAGING = ENVIRONMENT === Environment.staging;
 export const DEV = ENVIRONMENT === Environment.development;
 export const TEST = ENVIRONMENT === Environment.test;
 
+const DEFAULT_HOST = 'http://localhost:3000';
+
 export const CLIENT_HOSTS = [
   {
     name: Context.BUILDER,
-    hostname: new URL(process.env.BUILDER_CLIENT_HOST).hostname,
+    hostname: new URL(process.env.BUILDER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
   },
   {
     name: Context.PLAYER,
-    hostname: new URL(process.env.PLAYER_CLIENT_HOST).hostname,
+    hostname: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
   },
   {
     name: Context.LIBRARY,
-    hostname: new URL(process.env.EXPLORER_CLIENT_HOST).hostname,
+    hostname: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
   },
 ];
-
-const { PORT: port } = process.env;
-
-if (!port && !TEST) {
-  console.error('PORT environment variable missing.');
-  process.exit(1);
-}
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
-export const PORT = port;
+export const PORT = process.env.PORT ? +process.env.PORT : 3000;
 export const HOST = `${HOSTNAME}:${PORT}`;
+
+if (!process.env.COOKIE_DOMAIN) {
+  throw new Error('COOKIE_DOMAIN is undefined');
+}
 
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
@@ -89,6 +85,9 @@ export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 /**
  * Session cookie key
  */
+if (!process.env.SECURE_SESSION_SECRET_KEY) {
+  throw new Error('SECURE_SESSION_SECRET_KEY is not defined');
+}
 export const SECURE_SESSION_SECRET_KEY = process.env.SECURE_SESSION_SECRET_KEY;
 /**
  * Graasp's "internal" actor
@@ -108,11 +107,13 @@ export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
 export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
-export const AUTH_TOKEN_EXPIRATION_IN_MINUTES =
-  +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES || 10080;
+export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES
+  ? +process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES
+  : 10080;
 /** Refresh token expiration, in minutes */
-export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES =
-  +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES || 86400;
+export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
+  ? +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
+  : 86400;
 
 // Graasp limits
 
@@ -126,6 +127,19 @@ export const MAXIMUM_POOL_SIZE = process.env.MAXIMUM_POOL_SIZE
   : 20;
 
 // Graasp mailer config
+if (
+  !process.env.MAILER_CONFIG_SMTP_HOST ||
+  !process.env.MAILER_CONFIG_USERNAME ||
+  !process.env.MAILER_CONFIG_PASSWORD
+) {
+  throw new Error(
+    `Email config is not fully defined: ${JSON.stringify({
+      host: process.env.MAILER_CONFIG_SMTP_HOST,
+      username: process.env.MAILER_CONFIG_USERNAME,
+      password: process.env.MAILER_CONFIG_PASSWORD,
+    })}`,
+  );
+}
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
@@ -143,15 +157,25 @@ export const S3_FILE_ITEM_REGION = process.env.S3_FILE_ITEM_REGION;
 export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
-const S3_FILE_ITEM_HOST = process.env.S3_FILE_ITEM_HOST;
-if (
-  S3_FILE_ITEM_PLUGIN &&
-  (!S3_FILE_ITEM_REGION ||
+
+export let S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration;
+
+if (S3_FILE_ITEM_PLUGIN) {
+  if (
+    !S3_FILE_ITEM_REGION ||
     !S3_FILE_ITEM_BUCKET ||
     !S3_FILE_ITEM_ACCESS_KEY_ID ||
-    !S3_FILE_ITEM_SECRET_ACCESS_KEY)
-) {
-  throw new Error('Missing one s3 config');
+    !S3_FILE_ITEM_SECRET_ACCESS_KEY
+  ) {
+    throw new Error('Missing one s3 config');
+  }
+
+  S3_FILE_ITEM_PLUGIN_OPTIONS = {
+    s3Region: S3_FILE_ITEM_REGION,
+    s3Bucket: S3_FILE_ITEM_BUCKET,
+    s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
+    s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
+  };
 }
 
 export const H5P_CONTENT_REGION = process.env.H5P_CONTENT_REGION;
@@ -163,34 +187,6 @@ export const ETHERPAD_URL = process.env.ETHERPAD_URL;
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
-
-let S3_INSTANCE: S3;
-
-// Enable localstack, only create the instance in test or dev environments
-// Use the provided endpoint or the aws s3 backend
-if ((DEV || TEST) && S3_FILE_ITEM_HOST) {
-  S3_INSTANCE = new S3({
-    region: S3_FILE_ITEM_REGION,
-    useAccelerateEndpoint: false,
-    credentials: {
-      accessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
-      secretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
-    },
-    // this is necessary because localstack doesn't support hostnames eg: <bucket>.s3.<region>.amazonaws.com/<key>
-    // so it we must use pathStyle buckets eg: localhost:4566/<bucket>/<key>
-    s3ForcePathStyle: true,
-    // this is necessary to use the localstack instance running on graasp-localstack or localhost
-    // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
-    endpoint: S3_FILE_ITEM_HOST,
-  });
-}
-
-export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration = {
-  s3Region: S3_FILE_ITEM_REGION,
-  s3Bucket: S3_FILE_ITEM_BUCKET,
-  s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
-  s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
-};
 
 export const H5P_CONTENT_PLUGIN_OPTIONS = {
   s3Region: H5P_CONTENT_REGION,
@@ -206,12 +202,20 @@ export const FILE_ITEM_TYPE: FileItemType = S3_FILE_ITEM_PLUGIN
 // Graasp embedded link item
 // TODO: should this be here?
 export const EMBEDDED_LINK_ITEM_PLUGIN = process.env.EMBEDDED_LINK_ITEM_PLUGIN === 'true';
-export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN =
-  process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
+export let EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
+if (EMBEDDED_LINK_ITEM_PLUGIN) {
+  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
+}
 
 // Graasp apps
 export const APPS_PLUGIN = process.env.APPS_PLUGIN === 'true';
-export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
+export let APPS_JWT_SECRET;
+if (APPS_PLUGIN) {
+  if (!process.env.APPS_JWT_SECRET) {
+    throw new Error('APPS_JWT_SECRET is not defined');
+  }
+  APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
+}
 
 // Graasp websockets
 export const WEBSOCKETS_PLUGIN = process.env.WEBSOCKETS_PLUGIN === 'true';
@@ -246,13 +250,16 @@ export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
 export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
 export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 
-export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH };
+export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root' };
 
 export const ITEMS_ROUTE_PREFIX = '/items';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
 export const SUBSCRIPTION_ROUTE_PREFIX = '/subscriptions';
 
+if (!process.env.APPS_PUBLISHER_ID) {
+  throw new Error('APPS_PUBLISHER_ID is not defined');
+}
 export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
 
 export const DEFAULT_ITEM_SETTINGS: ItemSettings = {

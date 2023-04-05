@@ -6,7 +6,7 @@ import { buildRepositories } from '../../../../util/repositories';
 import { ItemValidationService } from './service';
 
 type GraaspPluginValidationOptions = {
-  imageClassifierApi: string;
+  imageClassifierApi?: string;
 };
 
 const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify, options) => {

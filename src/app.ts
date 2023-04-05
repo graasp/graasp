@@ -19,7 +19,7 @@ import FileItemService from './services/item/plugins/file/service';
 import ItemService from './services/item/service';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
-import { Member } from './services/member/entities/member';
+import { Actor, Member } from './services/member/entities/member';
 import { MemberService } from './services/member/service';
 import {
   CLIENT_HOSTS,
@@ -64,9 +64,8 @@ declare module 'fastify' {
     }>;
     generateLoginLinkAndEmailIt: (
       member: Member,
-      idontknow: boolean,
-      challenge: string,
-      lang: string,
+      challenge?: string,
+      lang?: string,
     ) => Promise<{
       authToken: string;
       refreshToken: string;
@@ -103,7 +102,7 @@ declare module 'fastify' {
   }
 
   interface FastifyRequest {
-    member: Member;
+    member: Actor;
     memberId: string;
     authTokenSubject?: AuthTokenSubject;
   }
@@ -129,7 +128,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     });
 
   // need to be defined before member and item for auth check
-  await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN ?? null });
+  await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
 
   // file
   await instance.register(fp(filePlugin), {

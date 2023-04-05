@@ -4,11 +4,11 @@ import { FastifyReply } from 'fastify';
 
 export interface FileRepository {
   copyFile(args: {
-    newId: string;
+    newId?: string;
     memberId: string;
     originalPath: string;
     newFilePath: string;
-    mimetype: string;
+    mimetype?: string;
   }): Promise<string>;
 
   copyFolder(args: { originalFolderPath: string; newFolderPath: string }): Promise<string>;
@@ -30,7 +30,7 @@ export interface FileRepository {
     fileStream: ReadStream;
     memberId: string;
     filepath: string;
-    mimetype: string;
+    mimetype?: string;
     size?: string;
   }): Promise<void>;
   // eslint-disable-next-line semi

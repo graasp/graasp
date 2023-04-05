@@ -13,6 +13,7 @@ import fp from 'fastify-plugin';
 
 import { Actor, H5PItemExtra, Item, ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../util/graasp-error';
 import { Repositories, buildRepositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
@@ -131,10 +132,9 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
       extra: buildH5PExtra(contentId, filename),
     };
     return db.transaction(async (manager) => {
-      return itemService.create(member, buildRepositories(manager), {
+      return itemService.post(member, buildRepositories(manager), {
         item: metadata,
         parentId,
-        creator: member,
       });
     });
   }
@@ -163,6 +163,10 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
         } = request;
 
         return db.transaction(async (manager) => {
+          if (!member) {
+            throw new UnauthorizedMember(member);
+          }
+
           const repositories = buildRepositories(manager);
 
           // validate write permission in parent if it exists

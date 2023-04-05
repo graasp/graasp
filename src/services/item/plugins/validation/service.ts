@@ -32,9 +32,9 @@ import { buildStoragePath, stripHtml } from './utils';
 export class ItemValidationService {
   itemService: ItemService;
   fileService: FileService;
-  imageClassifierApi: string;
+  imageClassifierApi?: string;
 
-  constructor(itemService: ItemService, fileService: FileService, imageClassifierApi: string) {
+  constructor(itemService: ItemService, fileService: FileService, imageClassifierApi?: string) {
     this.itemService = itemService;
     this.fileService = fileService;
     this.imageClassifierApi = imageClassifierApi;
@@ -149,7 +149,7 @@ export class ItemValidationService {
     const itemValidation = await itemValidationRepository.post(item?.id, groupId, process);
 
     let status = ItemValidationStatus.Pending;
-    let result = undefined;
+    let result: string | undefined = undefined;
     try {
       switch (process) {
         case ItemValidationProcess.BadWordsDetection:
@@ -157,7 +157,7 @@ export class ItemValidationService {
             { name: 'name', value: item.name },
             { name: 'description', value: stripHtml(item.description) },
           ]);
-          result = suspiciousFields;
+          result = suspiciousFields.join(', ');
           status =
             suspiciousFields.length > 0
               ? ItemValidationStatus.Failure
@@ -193,6 +193,9 @@ export class ItemValidationService {
             // TODO: update validation entry
             status = ItemValidationStatus.Success;
           } else {
+            if (!this.imageClassifierApi) {
+              throw new Error('imageClassifierApi is not defined');
+            }
             const filePath = await this.fileService.download(actor, {
               path: filepath,
               id: item?.id,

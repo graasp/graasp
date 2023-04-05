@@ -2,10 +2,10 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../util/graasp-error';
 import { Repositories } from '../../util/repositories';
-import { validatePermission } from '../authorization';
 import ItemService from '../item/service';
-import { Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import { encryptPassword, generateRandomEmail } from './util/aux';
@@ -24,7 +24,7 @@ export class ItemLoginService {
     this.itemService = itemService;
   }
 
-  async get(actor: Member, repositories: Repositories, itemId: string) {
+  async get(actor: Actor, repositories: Repositories, itemId: string) {
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
     const itemLoginSchema = await repositories.itemLoginSchemaRepository.getForItemPath(item.path, {
       shouldExist: true,
@@ -32,7 +32,7 @@ export class ItemLoginService {
     return itemLoginSchema;
   }
 
-  async getSchemaType(actor: Member, repositories: Repositories, itemId: string) {
+  async getSchemaType(actor: Actor, repositories: Repositories, itemId: string) {
     const item = await repositories.itemRepository.get(itemId);
     // do not need permission to get item login schema
     // we need to know the schema to display the correct form
@@ -41,7 +41,7 @@ export class ItemLoginService {
   }
 
   async login(
-    actor: Member,
+    actor: Actor,
     repositories: Repositories,
     itemId: string,
     credentials: ItemLoginMemberCredentials,
@@ -68,14 +68,22 @@ export class ItemLoginService {
     return bondMember;
   }
 
-  async loginWithUsername(actor, repositories: Repositories, itemId, { username, password }) {
+  async loginWithUsername(
+    actor: Actor,
+    repositories: Repositories,
+    itemId,
+    { username, password },
+  ) {
     const { memberRepository, itemLoginRepository, itemRepository, itemLoginSchemaRepository } =
       repositories;
 
     const item = await itemRepository.get(itemId);
 
     // initial validation
-    const itemLoginSchema = await itemLoginSchemaRepository.getForItemPath(item.path);
+    // this throws if does not exist
+    const itemLoginSchema = (await itemLoginSchemaRepository.getForItemPath(item.path, {
+      shouldExist: true,
+    })) as ItemLoginSchema;
 
     const itemLogin = await itemLoginRepository.getForItemAndUsername(item, username);
     let bondMember = itemLogin?.member;
@@ -87,7 +95,7 @@ export class ItemLoginService {
     // create a new item login
     else {
       // create member w/ `username`
-      const data: Partial<Member> = {
+      const data: Partial<Member> & Pick<Member, 'email' | 'name'> = {
         name: username,
         email: generateRandomEmail(),
       };
@@ -107,7 +115,12 @@ export class ItemLoginService {
     return bondMember;
   }
 
-  async loginWithMemberId(actor, repositories: Repositories, itemId, { memberId, password }) {
+  async loginWithMemberId(
+    actor: Actor,
+    repositories: Repositories,
+    itemId,
+    { memberId, password },
+  ) {
     const { memberRepository, itemRepository, itemLoginRepository, itemLoginSchemaRepository } =
       repositories;
 
@@ -120,9 +133,9 @@ export class ItemLoginService {
     }
 
     // initial validation
-    const itemLoginSchema = await itemLoginSchemaRepository.getForItemPath(item.path, {
+    const itemLoginSchema = (await itemLoginSchemaRepository.getForItemPath(item.path, {
       shouldExist: true,
-    });
+    })) as ItemLoginSchema;
 
     const itemLogin = await itemLoginRepository.getForItemAndMemberId(item, memberId);
 
@@ -146,7 +159,10 @@ export class ItemLoginService {
     return bondMember;
   }
 
-  async put(actor, repositories: Repositories, itemId: string, type?: ItemLoginSchemaType) {
+  async put(actor: Actor, repositories: Repositories, itemId: string, type?: ItemLoginSchemaType) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemLoginSchemaRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
@@ -154,7 +170,10 @@ export class ItemLoginService {
     return itemLoginSchemaRepository.put(item, type);
   }
 
-  async delete(actor, repositories: Repositories, itemId: string) {
+  async delete(actor: Actor, repositories: Repositories, itemId: string) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemLoginSchemaRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
@@ -163,7 +182,7 @@ export class ItemLoginService {
   }
 
   async linkMember(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     itemLoginSchema: ItemLoginSchema,
     member: Member,
@@ -180,7 +199,7 @@ export class ItemLoginService {
     await itemMembershipRepository.post({
       item,
       member,
-      creator: actor,
+      creator: member,
       permission: PermissionLevel.Read,
     });
   }

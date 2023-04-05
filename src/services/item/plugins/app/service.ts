@@ -1,11 +1,8 @@
 import uniqBy from 'lodash.uniqby';
 
-import { FastifyRequest } from 'fastify';
-
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../util/repositories';
-import { generateToken } from '../../../auth/token';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
@@ -136,8 +133,8 @@ export class AppService {
 
   // TODO: doesn't seem the most performant solution
   private sortedListToTree(
-    item: Partial<Item> & { children?: Partial<Item>[] },
-    items: Partial<Item>[],
+    item: Partial<Item> & { children?: Partial<Item>[] } & Pick<Item, 'type' | 'path'>,
+    items: (Partial<Item> & Pick<Item, 'type' | 'path'>)[],
     startAt: number,
   ) {
     const { path, type } = item;

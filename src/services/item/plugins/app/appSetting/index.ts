@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
 import { IdParam } from '@graasp/sdk';
 
@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // TODO: allow CORS but only the origins in the table from approved publishers - get all
     // origins from the publishers table an build a rule with that.
 
-    fastify.addHook('preHandler', fastify.verifyBearerAuth);
+    fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
     // fastify.register(GraaspFilePlugin, {
     //   prefix: '/app-settings',
@@ -152,7 +152,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         schema: create,
       },
       async ({ authTokenSubject: requestDetails, params: { itemId }, body, log }) => {
-        const { memberId } = requestDetails;
+        const memberId = requestDetails?.memberId;
         return db.transaction(async (manager) => {
           return appSettingService.post(memberId, buildRepositories(manager), itemId, body);
         });
@@ -169,7 +169,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body,
         log,
       }) => {
-        const { memberId } = requestDetails;
+        const memberId = requestDetails?.memberId;
         return db.transaction(async (manager) => {
           return appSettingService.patch(
             memberId,
@@ -187,7 +187,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-settings/:id',
       { schema: deleteOne },
       async ({ authTokenSubject: requestDetails, params: { itemId, id: appSettingId }, log }) => {
-        const { memberId } = requestDetails;
+        const memberId = requestDetails?.memberId;
 
         return db.transaction(async (manager) => {
           return appSettingService.deleteOne(
@@ -205,7 +205,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-settings',
       { schema: getForOne },
       async ({ authTokenSubject: requestDetails, params: { itemId }, log }) => {
-        const { memberId } = requestDetails;
+        const memberId = requestDetails?.memberId;
         return appSettingService.getForItem(memberId, buildRepositories(), itemId);
       },
     );

@@ -17,7 +17,7 @@ export const checkBadWords = (
   const contents = documents?.filter(Boolean);
   const badWordsFilter = new BadWordsFilter();
   buildWordList(badWordsFilter);
-  const suspiciousFields = [];
+  const suspiciousFields: string[] = [];
   for (const index in contents) {
     if (badWordsFilter.isProfane(contents[index].value)) {
       suspiciousFields.push(contents[index].name);

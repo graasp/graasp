@@ -169,9 +169,9 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return result;
   },
 
-  async getSharedItems(actor: Member, permission?: PermissionLevel) {
+  async getSharedItems(actorId: UUID, permission?: PermissionLevel) {
     // TODO: refactor
-    let permissions = null;
+    let permissions: PermissionLevel[];
     switch (permission) {
       case PermissionLevel.Admin:
         permissions = [PermissionLevel.Admin];
@@ -189,10 +189,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const sharedMemberships = await this.find({
       where: {
         permission: In(permissions),
-        member: { id: actor.id },
-        item: { creator: Not(actor.id) },
+        member: { id: actorId },
+        item: { creator: Not(actorId) },
       },
-      relations: ['item','item.creator']
+      relations: ['item', 'item.creator'],
     });
     const items = sharedMemberships.map(({ item }) => item);
     // TODO: optimize
@@ -229,7 +229,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     // check existing memberships lower in the tree
     const membershipsBelow = await this.getAllBelow(item, memberOfMembership.id);
-    let tasks = [];
+    let tasks: Promise<void>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>
@@ -278,7 +278,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     // check existing memberships lower in the tree
     const membershipsBelow = await this.getAllBelow(item, member.id);
-    let tasks = [];
+    let tasks: Promise<void>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>
@@ -375,7 +375,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const { path: newParentItemPath } = newParentItem;
     const index = item.path.lastIndexOf('.');
 
-    const parentItemPath = index > -1 ? item.path.slice(0, index) : null;
+    const parentItemPath = index > -1 ? item.path.slice(0, index) : undefined;
     const itemIdAsPath = index > -1 ? item.path.slice(index + 1) : item.path;
 
     const { rows } = await this.query(`

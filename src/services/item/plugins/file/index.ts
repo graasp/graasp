@@ -17,7 +17,6 @@ export interface GraaspPluginFileOptions {
   maxMemberStorage?: number; // max storage space for a user
 }
 
-const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
 export const DEFAULT_MAX_STORAGE = 1024 * 1024 * 1024 * 5; // 5GB;
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
@@ -53,9 +52,14 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   // }
 
   // TODO: define in decorators??
-  const fileItemService = new FileItemService(fileService, shouldRedirectOnDownload, {
-    maxMemberStorage,
-  });
+  const fileItemService = new FileItemService(
+    fileService,
+    items.service,
+    shouldRedirectOnDownload,
+    {
+      maxMemberStorage,
+    },
+  );
   items.files = { service: fileItemService };
 
   // register post delete handler to remove the file object after item delete
@@ -103,7 +107,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     handler: async (request) => {
       const {
         member,
-        authTokenSubject,
         query: { id: parentId },
         log,
       } = request;
@@ -111,49 +114,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       // THEN WE SHOULD MOVE THE TRANSACTION
       return db
         .transaction(async (manager) => {
-          // need auth token?
-          const actor = member || { id: authTokenSubject?.memberId };
           const repositories = buildRepositories(manager);
 
           // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
           const files = await request.saveRequestFiles();
-          const fileProperties = await fileItemService.upload(actor, repositories, files, parentId);
-
-          // postHook: create items from file properties
-          // get metadata from upload task
-          const items: Item[] = [];
-          for (const { filename, filepath, mimetype, size } of fileProperties) {
-            const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
-            const item = {
-              name,
-              type: fileService.type,
-              extra: {
-                [fileService.type]: {
-                  name: filename,
-                  path: filepath,
-                  mimetype,
-                  size,
-                },
-              },
-              settings: {
-                // image files get automatically generated thumbnails
-                hasThumbnail: mimetype.startsWith('image'),
-              },
-              parentId,
-              creator: member,
-            };
-
-            items.push(
-              await itemService.create(actor, repositories, {
-                item,
-                parentId,
-                creator: member,
-              }),
-            );
-          }
-          return items;
+          return fileItemService.upload(member, repositories, files, parentId);
         })
         .catch((e) => {
           console.error(e);

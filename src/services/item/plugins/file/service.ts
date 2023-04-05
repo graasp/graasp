@@ -4,18 +4,32 @@ import path from 'path';
 import { SavedMultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
-import { ItemType, LocalFileItemExtra, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
+import {
+  FileItemProperties,
+  FileItemType,
+  ItemType,
+  LocalFileItemExtra,
+  LocalFileItemType,
+  PermissionLevel,
+  S3FileItemExtra,
+} from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../util/graasp-error';
 import { Repositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
-import { Member } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
+import { Item } from '../../entities/Item';
+import ItemService from '../../service';
 import { StorageExceeded } from './utils/errors';
 
 const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 
+const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
+
 class FileItemService {
   fileService: FileService;
+  itemService: ItemService;
   shouldRedirectOnDownload: boolean;
   options: {
     maxMemberStorage: number;
@@ -27,8 +41,14 @@ class FileItemService {
     return path.join('files', filepath);
   }
 
-  constructor(fileService: FileService, shouldRedirectOnDownload: boolean, options) {
+  constructor(
+    fileService: FileService,
+    itemService: ItemService,
+    shouldRedirectOnDownload: boolean,
+    options,
+  ) {
     this.fileService = fileService;
+    this.itemService = itemService;
     this.shouldRedirectOnDownload = shouldRedirectOnDownload;
     this.options = options;
   }
@@ -52,7 +72,17 @@ class FileItemService {
     }
   }
 
-  async upload(actor, repositories: Repositories, files: SavedMultipartFile[], parentId: string) {
+  async upload(
+    actor: Actor,
+    repositories: Repositories,
+    files: (Partial<SavedMultipartFile> &
+      Pick<SavedMultipartFile, 'filename' | 'mimetype' | 'filepath'>)[],
+    parentId: string,
+  ) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     // TODO: check rights
     if (parentId) {
       const item = await repositories.itemRepository.get(parentId);
@@ -72,12 +102,14 @@ class FileItemService {
       const filepath = this.buildFilePath(); // parentId, filename
 
       // compute body data from file's fields
-      const fileBody = Object.fromEntries(
-        Object.keys(fields).map((key) => [
-          key,
-          (fields[key] as unknown as { value: string })?.value,
-        ]),
-      );
+      if (fields) {
+        const fileBody = Object.fromEntries(
+          Object.keys(fields).map((key) => [
+            key,
+            (fields[key] as unknown as { value: string })?.value,
+          ]),
+        );
+      }
       // check member storage limit
       await this.checkRemainingStorage(actor, repositories, size);
 
@@ -100,24 +132,57 @@ class FileItemService {
 
     // TODO: CHUNK TO AVOID FLOODING
     // fallback?
-    return Promise.all(promises);
+    const fileProperties = await Promise.all(promises);
+
+    const items: Item[] = [];
+    // postHook: create items from file properties
+    // get metadata from upload task
+    for (const { filename, filepath, mimetype, size } of fileProperties) {
+      const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
+      const item = {
+        name,
+        type: this.fileService.type,
+        extra: {
+          [this.fileService.type]: {
+            name: filename,
+            path: filepath,
+            mimetype,
+            size,
+          },
+        } as any,
+        settings: {
+          // image files get automatically generated thumbnails
+          hasThumbnail: mimetype.startsWith('image'),
+        },
+        parentId,
+        creator: actor,
+      };
+
+      items.push(
+        await this.itemService.post(actor, repositories, {
+          item,
+          parentId,
+        }),
+      );
+    }
+    return items;
   }
 
   async download(
     actor,
     repositories: Repositories,
-    { reply, itemId, replyUrl }: { reply: FastifyReply; itemId: string; replyUrl: boolean },
+    { reply, itemId, replyUrl }: { reply: FastifyReply; itemId: string; replyUrl?: boolean },
   ) {
     // prehook: get item and input in download call ?
     // check rights
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
-
+    const extraData = item.extra[this.fileService.type] as FileItemProperties;
     const result = await this.fileService.download(actor, {
-      reply: this.shouldRedirectOnDownload ? reply : null,
+      reply: this.shouldRedirectOnDownload ? reply : undefined,
       id: itemId,
       replyUrl,
-      ...item.extra[this.fileService.type],
+      ...extraData,
     });
 
     return result;

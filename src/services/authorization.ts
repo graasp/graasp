@@ -11,7 +11,7 @@ import {
 import { Repositories } from '../util/repositories';
 import { Item } from './item/entities/Item';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
-import { Member } from './member/entities/member';
+import { Actor, Member } from './member/entities/member';
 
 const ownItemAbility = (member) =>
   defineAbility((can, cannot) => {
@@ -29,7 +29,7 @@ const permissionMapping = {
 export const validatePermission = async (
   { itemMembershipRepository, itemTagRepository }: Repositories,
   permission: PermissionLevel,
-  member: Member,
+  member: Actor,
   item: Item,
 ): Promise<ItemMembership> => {
   // get best permission for user
@@ -88,7 +88,7 @@ export const validatePermission = async (
 
 // filtering functions, that takes out limited items (eg. hidden children)
 // actor can be undefined...
-export const filterOutItems = async (actor: Member|undefined, repositories, items: Item[]) => {
+export const filterOutItems = async (actor: Member | undefined, repositories, items: Item[]) => {
   const { itemMembershipRepository } = repositories;
 
   if (!items.length) {
@@ -108,7 +108,8 @@ export const filterOutItems = async (actor: Member|undefined, repositories, item
       );
       // return item if has at least write permission or is not hidden
       return (
-        PermissionLevelCompare.gte(permission, PermissionLevel.Write) || !isHidden.data[item.id]
+        (permission && PermissionLevelCompare.gte(permission, PermissionLevel.Write)) ||
+        !isHidden.data[item.id]
       );
     })
     .filter(Boolean);

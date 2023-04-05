@@ -34,7 +34,7 @@ export const ItemValidationRepository = AppDataSource.getRepository(ItemValidati
 
   async patch(
     itemValidationId: string,
-    args: { result: string; status: ItemValidationStatus },
+    args: { result?: string; status: ItemValidationStatus },
   ): Promise<ItemValidation> {
     await this.update(itemValidationId, args);
     // TODO: optimize

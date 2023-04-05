@@ -7,7 +7,6 @@ import { DEFAULT_LANG } from '@graasp/sdk';
 import { AUTH_CLIENT_HOST, CLIENT_HOST, REDIRECT_URL } from '../../../../util/config';
 import { MemberAlreadySignedUp } from '../../../../util/graasp-error';
 import { buildRepositories } from '../../../../util/repositories';
-import MemberRepository from '../../../member/repository';
 import { auth, login, register } from '../../schemas';
 import { MagicLinkService } from './service';
 
@@ -31,7 +30,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         return db.transaction(async (manager) => {
           try {
             // we use member service to allow post hook for invitation
-            const member = await memberService.post(null, buildRepositories(manager), body, lang);
+            const member = await memberService.post(
+              undefined,
+              buildRepositories(manager),
+              body,
+              lang,
+            );
 
             await magicLinkService.sendRegisterMail(null, buildRepositories(manager), member);
             reply.status(StatusCodes.NO_CONTENT);

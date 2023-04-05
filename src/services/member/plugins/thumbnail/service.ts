@@ -34,7 +34,7 @@ export class MemberThumbnailService {
       size,
       memberId,
       replyUrl,
-    }: { reply: FastifyReply; memberId: string; size: string; replyUrl: boolean },
+    }: { reply: FastifyReply; memberId: string; size: string; replyUrl?: boolean },
   ) {
     const result = await this.thumbnailService.download(actor, {
       reply,

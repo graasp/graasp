@@ -1,6 +1,7 @@
+import { UnauthorizedMember } from '../../util/graasp-error';
 import { Repositories } from '../../util/repositories';
 import ItemService from '../item/service';
-import { Member } from '../member/entities/member';
+import { Actor } from '../member/entities/member';
 import { CannotGetOthersLikes } from './errors';
 
 export class ItemLikeService {
@@ -10,7 +11,10 @@ export class ItemLikeService {
     this.itemService = itemService;
   }
 
-  async getItemsForMember(actor: Member, repositories: Repositories, memberId: string) {
+  async getItemsForMember(actor: Actor, repositories: Repositories, memberId: string) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemLikeRepository } = repositories;
 
     // only own items
@@ -22,7 +26,7 @@ export class ItemLikeService {
     return itemLikeRepository.getItemsForMember(memberId);
   }
 
-  async getForItem(actor: Member, repositories: Repositories, itemId: string) {
+  async getForItem(actor: Actor, repositories: Repositories, itemId: string) {
     const { itemLikeRepository } = repositories;
 
     await this.itemService.get(actor, repositories, itemId);
@@ -30,7 +34,10 @@ export class ItemLikeService {
     return itemLikeRepository.getForItem(itemId);
   }
 
-  async removeOne(actor: Member, repositories: Repositories, itemId: string) {
+  async removeOne(actor: Actor, repositories: Repositories, itemId: string) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?
@@ -39,7 +46,10 @@ export class ItemLikeService {
     return itemLikeRepository.deleteOne(actor, item);
   }
 
-  async post(actor: Member, repositories: Repositories, itemId: string) {
+  async post(actor: Actor, repositories: Repositories, itemId: string) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemLikeRepository } = repositories;
 
     // QUESTION: allow public to be liked?

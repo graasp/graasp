@@ -1,18 +1,25 @@
 import { PermissionLevel } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../util/graasp-error';
 import { Repositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';
-import { Member } from '../../../member/entities/member';
+import { Actor } from '../../../member/entities/member';
 
 export class RecycledBinService {
-  async getAll(actor: Member, repositories: Repositories) {
+  async getAll(actor: Actor, repositories: Repositories) {
     const { recycledItemRepository } = repositories;
-    // TODO: check member is connected
+    // check member is connected
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
 
     return recycledItemRepository.getOwnRecycledItemDatas(actor);
   }
 
-  async recycle(actor: Member, repositories: Repositories, itemId: string) {
+  async recycle(actor: Actor, repositories: Repositories, itemId: string) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemRepository, recycledItemRepository } = repositories;
 
     // if item is already deleted, it will throw not found here
@@ -27,7 +34,10 @@ export class RecycledBinService {
     return recycledItemRepository.recycleOne(item, actor);
   }
 
-  async recycleMany(actor: Member, repositories: Repositories, itemIds: string[]) {
+  async recycleMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemRepository, recycledItemRepository } = repositories;
 
     const { data: items } = await itemRepository.getMany(itemIds, { throwOnError: true });
@@ -45,7 +55,10 @@ export class RecycledBinService {
     return recycledItemRepository.recycleMany(Object.values(items), actor);
   }
 
-  async restoreOne(actor: Member, repositories: Repositories, itemId: string) {
+  async restoreOne(actor: Actor, repositories: Repositories, itemId: string) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemRepository, recycledItemRepository } = repositories;
 
     const item = await itemRepository.get(itemId, { withDeleted: true });
@@ -57,7 +70,10 @@ export class RecycledBinService {
     return recycledItemRepository.restoreOne(item);
   }
 
-  async restoreMany(actor: Member, repositories: Repositories, itemIds: string[]) {
+  async restoreMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemRepository, recycledItemRepository } = repositories;
 
     const { data: items } = await itemRepository.getMany(itemIds, {

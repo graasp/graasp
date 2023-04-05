@@ -44,6 +44,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       const zipFile = await request.file();
 
+      if (!zipFile) {
+        throw new Error('Zip file is undefined');
+      }
+
       // create items from folder
       // does not wait
       importExportService

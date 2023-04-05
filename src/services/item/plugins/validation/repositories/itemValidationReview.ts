@@ -15,7 +15,7 @@ export const ItemValidationReviewRepository = AppDataSource.getRepository(
     itemValidationId: string,
     status: ItemValidationReviewStatus,
   ): Promise<ItemValidationReview> {
-    const entry = this.create({ itemValidation:{id:itemValidationId}, status });
+    const entry = this.create({ itemValidation: { id: itemValidationId }, status });
     await this.insert(entry);
     return entry;
   },

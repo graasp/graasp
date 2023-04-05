@@ -1,6 +1,7 @@
+import { UnauthorizedMember } from '../../util/graasp-error';
 import { Repositories } from '../../util/repositories';
 import ItemService from '../item/service';
-import { Member } from '../member/entities/member';
+import { Actor } from '../member/entities/member';
 import { ItemFlag } from './itemFlag';
 
 export class ItemFlagService {
@@ -10,12 +11,15 @@ export class ItemFlagService {
     this.itemService = itemService;
   }
 
-  async getAllFlags(actor: Member, repositories: Repositories) {
+  async getAllFlags(actor: Actor, repositories: Repositories) {
     const { itemFlagRepository } = repositories;
     return itemFlagRepository.getAllFlags();
   }
 
-  async post(actor: Member, repositories: Repositories, itemId: string, body: Partial<ItemFlag>) {
+  async post(actor: Actor, repositories: Repositories, itemId: string, body: Partial<ItemFlag>) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemFlagRepository } = repositories;
 
     // only register member can report

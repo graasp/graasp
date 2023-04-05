@@ -2,6 +2,7 @@ import { defineAbility } from '@casl/ability';
 
 import { PermissionLevel } from '@graasp/sdk';
 
+import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../util/graasp-error';
 import { Repositories } from '../../../../../util/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
@@ -14,7 +15,7 @@ import { InputAppData } from './interfaces/app-data';
 const adaptFilters = (
   filters: Partial<InputAppData>,
   permission: PermissionLevel,
-  actorId: string,
+  actorId?: string,
 ) => {
   // TODO: optimize
   // admin can get all app data from everyone
@@ -64,13 +65,16 @@ const permissionMapping = {
 
 export class AppDataService {
   async post(
-    actorId: string,
+    actorId: string | undefined,
     repositories: Repositories,
     itemId: string,
     body: Partial<InputAppData>,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
-    // TODO: check member exists
+    // check member exists
+    if (!actorId) {
+      throw new MemberCannotWriteItem();
+    }
     const member = await memberRepository.get(actorId);
 
     // check item exists? let post fail?
@@ -100,14 +104,17 @@ export class AppDataService {
   }
 
   async patch(
-    memberId: string,
+    memberId: string | undefined,
     repositories: Repositories,
     itemId: string,
     appDataId: string,
     body: Partial<AppData>,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
-    // TODO: check member exists
+    // check member exists
+    if (!memberId) {
+      throw new MemberCannotWriteItem();
+    }
     const member = await memberRepository.get(memberId);
 
     // check item exists? let post fail?
@@ -135,9 +142,17 @@ export class AppDataService {
     return appDataRepository.patch(itemId, appDataId, body);
   }
 
-  async deleteOne(memberId: string, repositories: Repositories, itemId: string, appDataId: string) {
+  async deleteOne(
+    memberId: string | undefined,
+    repositories: Repositories,
+    itemId: string,
+    appDataId: string,
+  ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
-    // TODO: check member exists
+    // check member exists
+    if (!memberId) {
+      throw new MemberCannotWriteItem();
+    }
     const member = await memberRepository.get(memberId);
 
     // check item exists? let post fail?
@@ -166,14 +181,16 @@ export class AppDataService {
   }
 
   async getForItem(
-    memberId: string,
+    memberId: string | undefined,
     repositories: Repositories,
     itemId: string,
     filters: Partial<InputAppData>,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
 
-    const member = await memberRepository.get(memberId);
+    // get member if exists
+    // item can be public
+    const member = memberId ? await memberRepository.get(memberId) : undefined;
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -189,7 +206,7 @@ export class AppDataService {
 
   // TODO: check for many items
   async getForManyItems(
-    memberId: string,
+    memberId: string | undefined,
     repositories: Repositories,
     itemIds: string[],
     filters: Partial<InputAppData>,
@@ -197,17 +214,29 @@ export class AppDataService {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
 
     // check member exists
-    const member = await memberRepository.get(memberId);
+    // item can be public
+    const member = memberId ? await memberRepository.get(memberId) : undefined;
 
     // check item exists? let post fail?
-    const item = await itemRepository.get(itemIds[0]);
+    const items = await itemRepository.getMany(itemIds);
 
     // posting an app data is allowed to readers
-    const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
-    const finalFilters = adaptFilters(filters, membership.permission, memberId);
+    const result = { data: {}, errors: items.errors };
+    for (const itemId of itemIds) {
+      const item = items.data[itemId];
+      if (!item) {
+        // errors already contained from getMany
+        return result;
+      }
+      // TODO: optimize
+      const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
+      const finalFilters = adaptFilters(filters, membership.permission, memberId);
+      const appData = await appDataRepository.getForItem(itemId, finalFilters);
+      result.data[itemId] = appData;
+      return result;
+    }
 
     // TODO: get only memberId or with visibility
-    return appDataRepository.getForManyItems(itemIds, finalFilters);
   }
 
   // TODO: check
@@ -222,7 +251,8 @@ export class AppDataService {
       // inheritedMembership?.permission &&
       ownAppDataAbility(member).can(permission, appData) ||
       itemVisibilityAppDataAbility(member).can(permission, appData) ||
-      permissionMapping[inheritedMembership.permission].includes(permission);
+      (inheritedMembership &&
+        permissionMapping[inheritedMembership.permission].includes(permission));
 
     return isValid;
   }

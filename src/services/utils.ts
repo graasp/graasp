@@ -1,6 +1,5 @@
 export function mapById<T>({
   keys,
-  defaultValue,
   findElement,
   buildError,
 }: {
@@ -10,7 +9,7 @@ export function mapById<T>({
   buildError?: (key: string) => Error;
 }) {
   const data: { [key: string]: T } = {};
-  const errors = [];
+  const errors: Error[] = [];
   keys.forEach((key) => {
     const m = findElement(key);
     if (m) {

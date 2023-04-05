@@ -23,7 +23,7 @@ export const verifyCredentials = (
   return verified;
 };
 
-export async function verifyCurrentPassword(memberPassword: MemberPassword, password: string) {
+export async function verifyCurrentPassword(memberPassword: MemberPassword, password?: string) {
   /* verified: stores the output of bcrypt.compare().
   bcrypt.compare() allows to compare the provided password with a stored hash. 
   It deduces the salt from the hash and is able to then hash the provided password correctly for comparison

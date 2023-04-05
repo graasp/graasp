@@ -25,19 +25,25 @@ import {
 class FileService {
   repository: FileRepository;
   /** file type */
-  type;
+  type: FileItemType;
 
   constructor(
-    options: { s3: S3FileConfiguration; local: LocalFileConfiguration },
+    options: { s3?: S3FileConfiguration; local?: LocalFileConfiguration },
     fileItemType: FileItemType,
   ) {
     this.type = fileItemType;
     switch (fileItemType) {
       case ItemType.S3_FILE:
+        if (!options.s3) {
+          throw new Error('S3 config is not defined');
+        }
         this.repository = new S3FileRepository(options.s3);
         break;
       case ItemType.LOCAL_FILE:
       default:
+        if (!options.local) {
+          throw new Error('local config is not defined');
+        }
         this.repository = new LocalFileRepository(options.local);
         break;
     }
@@ -47,7 +53,7 @@ class FileService {
     member: Actor,
     data?: { file: ReadStream; size: number; filepath: string; mimetype: string },
   ): Promise<any> {
-    const { file, size, filepath, mimetype } = data;
+    const { file, size, filepath, mimetype } = data ?? {};
 
     if (!file || !filepath) {
       throw new UploadFileInvalidParameterError({
@@ -152,7 +158,7 @@ class FileService {
       mimetype?: string;
     },
   ): Promise<any> {
-    const { originalPath, newFilePath, newId, mimetype } = data;
+    const { originalPath, newFilePath, newId, mimetype } = data ?? {};
 
     if (!originalPath) {
       throw new CopyFileInvalidPathError(originalPath);

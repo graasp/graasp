@@ -1,7 +1,7 @@
-import { ILike, In, Not } from 'typeorm';
+import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { FolderItemType, ItemType, MAX_TREE_LEVELS } from '@graasp/sdk';
+import { FolderItemType, ItemSettings, ItemType, MAX_TREE_LEVELS } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
@@ -13,7 +13,7 @@ import {
 } from '../../util/graasp-error';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { FolderExtra, Item, ItemExtra, ItemSettings } from './entities/Item';
+import { Item, ItemExtra } from './entities/Item';
 import {
   _fixChildrenOrder,
   dashToUnderscore,
@@ -130,10 +130,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
 
     if (ordered) {
-      const {
-        extra: { folder: { childrenOrder = [] } = {} },
-      } = parent;
-
+      const { extra: { folder } = {} } = parent as FolderItemType;
+      const childrenOrder = folder?.childrenOrder ?? [];
       if (childrenOrder.length) {
         const compareFn = sortChildrenWith(childrenOrder);
         children.sort(compareFn);
@@ -258,7 +256,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
     // only allow for item type specific changes in extra
     const extraForType = extraChanges?.[item.type];
-    if (extraForType) {
+    if (data.extra && extraForType) {
       if (Object.keys(extraForType).length === 1) {
         data.extra[item.type] = Object.assign({}, item.extra[item.type], extraForType);
       } else {
@@ -296,7 +294,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   /////// -------- COPY
-  async copy(item: Item, creator: Member, parentItem: Item, args) {
+  async copy(item: Item, creator: Member, parentItem?: Item) {
     const descendants = await this.getDescendants(item);
 
     // copy (memberships from origin are not copied/kept)
@@ -326,7 +324,12 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       const original = tree[i];
       const { name, description, type, path, extra, settings } = original;
       const pathSplit = path.split('.');
-      const oldId_ = pathToId(pathSplit.pop());
+      const oldPath = pathSplit.pop();
+      // this shouldn't happen
+      if (!oldPath) {
+        throw new Error('Path is not defined');
+      }
+      const oldId_ = pathToId(oldPath);
       let copiedItem: Item;
 
       if (i === 0) {
@@ -340,7 +343,18 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
           parent: parentItem,
         });
       } else {
-        const oldParentId_ = pathToId(pathSplit.pop());
+        const oldParentPath = pathSplit.pop();
+        // this shouldn't happen
+        if (!oldParentPath) {
+          throw new Error('Path is not defined');
+        }
+        const oldParentId_ = pathToId(oldParentPath);
+        const oldParentObject = old2New.get(oldParentId_);
+        // this shouldn't happen
+        if (!oldParentObject) {
+          throw new Error('Old parent is not defined');
+        }
+
         copiedItem = this.createOne({
           name,
           description,
@@ -348,7 +362,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
           extra,
           settings,
           creator,
-          parent: old2New.get(oldParentId_).copy,
+          parent: oldParentObject.copy,
         });
       }
 

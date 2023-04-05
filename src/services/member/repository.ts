@@ -83,7 +83,7 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     return this.get(id);
   },
 
-  async post(data: Partial<Member>) {
+  async post(data: Partial<Member> & Pick<Member, 'email'>) {
     const email = data.email.toLowerCase();
     const createdMember = await this.insert({ ...data, email });
 

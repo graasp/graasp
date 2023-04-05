@@ -1,9 +1,10 @@
 import { PermissionLevel } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../util/graasp-error';
 import { Repositories } from '../../util/repositories';
 import { validatePermission } from '../authorization';
 import ItemService from '../item/service';
-import { Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 
 export class ItemMembershipService {
   itemService: ItemService;
@@ -13,10 +14,13 @@ export class ItemMembershipService {
   }
 
   async create(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     im: { permission: PermissionLevel; itemId: string; memberId: string },
   ) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
 
     const item = await itemRepository.findOneByOrFail({ id: im.itemId });
@@ -31,16 +35,16 @@ export class ItemMembershipService {
     });
   }
 
-  async get(actor, repositories: Repositories, id: string) {
+  async get(actor: Actor, repositories: Repositories, id: string) {
     // TODO: check memberships
     const { itemMembershipRepository } = repositories;
 
     const membership = await itemMembershipRepository.get(id);
-    await validatePermission(repositories, PermissionLevel.Read, membership.item, actor);
+    await validatePermission(repositories, PermissionLevel.Read, actor, membership.item);
     return membership;
   }
 
-  async getMany(actor, repositories: Repositories, ids: string[]) {
+  async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
     const { itemMembershipRepository } = repositories;
     // TODO: optimize? groupby item?
     // check memberships for all diff items
@@ -60,7 +64,7 @@ export class ItemMembershipService {
     return { data, errors };
   }
 
-  async getForManyItems(actor, repositories: Repositories, itemIds: string[]) {
+  async getForManyItems(actor: Actor, repositories: Repositories, itemIds: string[]) {
     // get memberships, containing item
 
     const { itemMembershipRepository } = repositories;
@@ -71,7 +75,10 @@ export class ItemMembershipService {
     return itemMembershipRepository.getForManyItems(Object.values(items.data));
   }
 
-  async post(actor: Member, repositories: Repositories, { permission, itemId, memberId }) {
+  async post(actor: Actor, repositories: Repositories, { permission, itemId, memberId }) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
     // check memberships
     const member = await memberRepository.get(memberId);
@@ -82,11 +89,14 @@ export class ItemMembershipService {
   }
 
   async postMany(
-    actor: Member,
+    actor: Actor,
     repositories: Repositories,
     memberships: { permission; memberId }[],
     itemId,
   ) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
     // check memberships
     const item = await itemRepository.get(itemId);
@@ -100,7 +110,10 @@ export class ItemMembershipService {
     );
   }
 
-  async patch(actor: Member, repositories: Repositories, itemMembershipId: string, data) {
+  async patch(actor: Actor, repositories: Repositories, itemMembershipId: string, data) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemRepository, itemMembershipRepository } = repositories;
     // check memberships
     const iM = await itemMembershipRepository.get(itemMembershipId);
@@ -111,11 +124,14 @@ export class ItemMembershipService {
   }
 
   async deleteOne(
-    actor: Member,
+    actor: Actor,
     repositories: Repositories,
     itemMembershipId: string,
     args: { purgeBelow?: boolean } = { purgeBelow: false },
   ) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemMembershipRepository } = repositories;
     // TODO: access item?
     // TODO: check memberships

@@ -41,7 +41,7 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     subject: string,
     to: string,
     text: string,
-    html?: string,
+    html: string,
     from: string = fromEmail,
   ) {
     // TODO: does it make sense to return the return value of nodemailer?

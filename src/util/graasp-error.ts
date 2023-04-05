@@ -326,6 +326,20 @@ export class EmptyCurrentPassword extends CoreError {
   }
 }
 
+export class UnauthorizedMember extends CoreError {
+  constructor(data?: unknown) {
+    // this status code is custom for the browser to know it needs to refresh its token
+    super(
+      {
+        code: 'GERR027',
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: 'Unauthorized member',
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);

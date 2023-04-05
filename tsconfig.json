@@ -12,8 +12,8 @@
     "skipLibCheck": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */
-    // "strictNullChecks": true
+    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+    "strictNullChecks": true
   },
   "include": ["src/**/*"],
   "exclude": [

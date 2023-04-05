@@ -8,8 +8,8 @@ export interface GraaspPluginFileOptions {
   fileItemType: FileItemType; // S3 or local
 
   fileConfigurations: {
-    s3: S3FileConfiguration;
-    local: LocalFileConfiguration;
+    s3?: S3FileConfiguration;
+    local?: LocalFileConfiguration;
   };
 }
 

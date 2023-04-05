@@ -62,22 +62,22 @@ export function initSentry(instance: FastifyInstance): {
     },
   });
 
-  if (SentryConfig.enablePerformance) {
-    // fastify Sentry hooks
-    // https://www.fastify.io/docs/latest/Reference/Decorators/
-    instance.decorateRequest('metrics', {
-      sentry: {},
-    });
-    instance.addHook('onRequest', async (request, reply) => {
-      request.metrics.sentry.transaction = Sentry.startTransaction({
-        op: 'request',
-        name: `${request.routerMethod ?? request.method} ${request.routerPath ?? request.url}`,
-      });
-    });
-    instance.addHook('onResponse', async (request, reply) => {
-      request.metrics.sentry.transaction.finish();
-    });
-  }
+  // if (SentryConfig.enablePerformance) {
+  //   // fastify Sentry hooks
+  //   // https://www.fastify.io/docs/latest/Reference/Decorators/
+  //   instance.decorateRequest('metrics', {
+  //     sentry: {},
+  //   });
+  //   instance.addHook('onRequest', async (request, reply) => {
+  //     request.metrics.sentry.transaction = Sentry.startTransaction({
+  //       op: 'request',
+  //       name: `${request.routerMethod ?? request.method} ${request.routerPath ?? request.url}`,
+  //     });
+  //   });
+  //   instance.addHook('onResponse', async (request, reply) => {
+  //     request.metrics.sentry.transaction.finish();
+  //   });
+  // }
 
   instance.addHook('onError', async (request, reply, error) => {
     Sentry.withScope((scope) => {

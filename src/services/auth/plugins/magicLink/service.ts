@@ -43,7 +43,7 @@ export class MagicLinkService {
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.fastify.generateLoginLinkAndEmailIt(member, null, null, lang);
+      await this.fastify.generateLoginLinkAndEmailIt(member, undefined, lang);
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });

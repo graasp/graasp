@@ -57,7 +57,7 @@ export class MobileService {
       await this.fastify.generateRegisterLinkAndEmailIt(newMember, challenge);
     } else {
       this.log.warn(`Member re-registration attempt for email '${email}'`);
-      await this.fastify.generateLoginLinkAndEmailIt(member, true, challenge, lang);
+      await this.fastify.generateLoginLinkAndEmailIt(member, challenge, lang);
       throw new MemberAlreadySignedUp({ email });
     }
   }
@@ -68,7 +68,7 @@ export class MobileService {
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.fastify.generateLoginLinkAndEmailIt(member, false, challenge, lang);
+      await this.fastify.generateLoginLinkAndEmailIt(member, challenge, lang);
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });

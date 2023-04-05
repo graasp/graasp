@@ -40,10 +40,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ member, query: { parentId }, body: data, log }) => {
       return db.transaction(async (manager) => {
-        return itemService.create(member, buildRepositories(manager), {
+        return itemService.post(member, buildRepositories(manager), {
           item: data,
           parentId,
-          creator: member,
         });
       });
     },

@@ -1,4 +1,10 @@
-import { S3, HeadObjectOutput, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  CopyObjectCommandInput,
+  GetObjectCommand,
+  HeadObjectOutput,
+  PutObjectCommandInput,
+  S3,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
@@ -49,7 +55,7 @@ export class S3FileRepository implements FileRepository {
       Object.entries({ item: newId, member: memberId }).filter(([k, v]) => v),
     );
 
-    const params = {
+    const params: CopyObjectCommandInput = {
       CopySource: `${bucket}/${originalPath}`,
       Bucket: bucket,
       Key: newFilePath,
@@ -69,24 +75,25 @@ export class S3FileRepository implements FileRepository {
   async copyFolder({ originalFolderPath, newFolderPath }): Promise<string> {
     const { s3Bucket: bucket } = this.options;
 
-    const { Contents } = await this.s3Instance
-      .listObjectsV2({
-        Bucket: bucket,
-        Prefix: originalFolderPath,
-      });
+    const { Contents } = await this.s3Instance.listObjectsV2({
+      Bucket: bucket,
+      Prefix: originalFolderPath,
+    });
 
-    const paths = Contents.map(({ Key }) => Key);
+    const paths = Contents?.map(({ Key }) => Key);
 
-    if (paths.length) {
+    if (paths?.length) {
       const copyTasks = paths.map((filepath) => {
-        const params = {
-          CopySource: `${bucket}/${filepath}`,
-          Bucket: bucket,
-          Key: filepath.replace(originalFolderPath, newFolderPath),
-          MetadataDirective: 'COPY',
-          CacheControl: 'no-cache', // TODO: improve?
-        };
-        return this.s3Instance.copyObject(params);
+        if (filepath) {
+          const params = {
+            CopySource: `${bucket}/${filepath}`,
+            Bucket: bucket,
+            Key: filepath.replace(originalFolderPath, newFolderPath),
+            MetadataDirective: 'COPY',
+            CacheControl: 'no-cache', // TODO: improve?
+          };
+          return this.s3Instance.copyObject(params);
+        }
       });
       await Promise.all(copyTasks);
     }
@@ -96,11 +103,10 @@ export class S3FileRepository implements FileRepository {
 
   async deleteFile({ filepath }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
-    await this.s3Instance
-      .deleteObject({
-        Bucket: bucket,
-        Key: filepath,
-      });
+    await this.s3Instance.deleteObject({
+      Bucket: bucket,
+      Key: filepath,
+    });
   }
 
   // delete all content in a folder
@@ -109,22 +115,24 @@ export class S3FileRepository implements FileRepository {
 
     // get all objects in a key
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
-    const { Contents } = await this.s3Instance
-      .listObjectsV2({ Bucket: bucket, Prefix: folderPath });
+    const { Contents } = await this.s3Instance.listObjectsV2({
+      Bucket: bucket,
+      Prefix: folderPath,
+    });
 
-    const filepaths = Contents.map(({ Key }) => Key);
+    const filepaths = Contents?.map(({ Key }) => Key);
+    const nonEmptyPaths = filepaths?.filter(Boolean);
 
-    if (filepaths.length) {
-      await this.s3Instance
-        .deleteObjects({
-          Bucket: bucket,
-          Delete: {
-            Objects: filepaths.map((filepath) => ({
-              Key: filepath,
-            })),
-            Quiet: false,
-          },
-        });
+    if (nonEmptyPaths?.length) {
+      await this.s3Instance.deleteObjects({
+        Bucket: bucket,
+        Delete: {
+          Objects: nonEmptyPaths.map((filepath) => ({
+            Key: filepath,
+          })),
+          Quiet: false,
+        },
+      });
     }
   }
 
@@ -202,7 +210,7 @@ export class S3FileRepository implements FileRepository {
   async uploadFile({ fileStream, memberId, filepath, mimetype }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
-    const params = {
+    const params: PutObjectCommandInput = {
       Bucket: bucket,
       Key: filepath,
       Metadata: {

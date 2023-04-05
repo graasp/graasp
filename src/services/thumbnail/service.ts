@@ -66,10 +66,10 @@ export class ThumbnailService {
       id,
       size,
       replyUrl,
-    }: { reply: FastifyReply; size: string; id: string; replyUrl: boolean },
+    }: { reply: FastifyReply; size: string; id: string; replyUrl?: boolean },
   ) {
     const result = await this.fileService.download(actor, {
-      reply: this.shouldRedirectOnDownload ? reply : null,
+      reply: this.shouldRedirectOnDownload ? reply : undefined,
       replyUrl,
       path: this.buildFilePath(id, size),
       mimetype: THUMBNAIL_MIMETYPE,

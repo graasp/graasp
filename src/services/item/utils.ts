@@ -1,13 +1,12 @@
-import { ItemType } from '@graasp/sdk';
+import { FolderItemExtra, ItemType, UUID } from '@graasp/sdk';
 
-import { Member } from '../member/entities/member';
-import { FolderExtra, Item } from './entities/Item';
+import { Item } from './entities/Item';
 
 export const itemDepth = (item: Item): number => {
   return item.path.split('.').length;
 };
 
-export const parentPath = (item: Item): string => {
+export const parentPath = (item: Item): string | null => {
   const index = item.path.lastIndexOf('.');
   return index === -1 ? null : item.path.slice(0, index);
 };
@@ -32,10 +31,12 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
         copy.extra.folder = {};
       }
 
-      const childrenOrder = (original.extra as FolderExtra)?.folder?.childrenOrder || [];
+      const childrenOrder = (original.extra as FolderItemExtra)?.folder?.childrenOrder || [];
 
       // change previous ids to copied item ids
-      const copyOrder = childrenOrder.map((oldId) => itemsMap.get(oldId)?.copy?.id).filter(Boolean);
+      const copyOrder = childrenOrder
+        .map((oldId) => itemsMap.get(oldId)?.copy?.id)
+        .filter(Boolean) as UUID[];
 
       // get direct children
       const children = copyItemsArray.filter(({ id, path }) => {
@@ -46,7 +47,7 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
       children.sort(sortChildrenWith(copyOrder));
       const completeOrder = children.map(({ id }) => id);
 
-      (copy.extra as FolderExtra).folder.childrenOrder = completeOrder;
+      (copy.extra as FolderItemExtra).folder.childrenOrder = completeOrder;
     }
 
     return value;

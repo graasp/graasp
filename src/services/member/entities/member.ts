@@ -10,12 +10,11 @@ import {
 
 import {
   Member as GraaspMember,
+  MemberExtra,
   MemberType,
   UnknownExtra,
   isPseudonymizedMember,
-  MemberExtra,
 } from '@graasp/sdk';
-
 
 @Entity()
 @Unique('email', ['email'])
@@ -65,3 +64,5 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
     return isPseudonymizedMember(this.email);
   }
 }
+
+export type Actor = Member | undefined;

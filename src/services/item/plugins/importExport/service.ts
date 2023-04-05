@@ -8,7 +8,14 @@ import util from 'util';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { EmbeddedLinkItemType, ItemType, LocalFileItemExtra, S3FileItemExtra } from '@graasp/sdk';
+import {
+  AppItemExtraProperties,
+  DocumentItemExtraProperties,
+  EmbeddedLinkItemExtraProperties,
+  ItemType,
+  LocalFileItemExtra,
+  S3FileItemExtra,
+} from '@graasp/sdk';
 
 import { Repositories } from '../../../../util/repositories';
 import { Item } from '../../entities/Item';
@@ -29,9 +36,9 @@ const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
-  fileItemService;
+  fileItemService: FileItemService;
   // h5pService;
-  itemService;
+  itemService: ItemService;
 
   constructor(
     fileItemService: FileItemService,
@@ -89,16 +96,29 @@ export class ImportExportService {
 
       // get if app in content -> url is either a link or an app
       const type = linkType.includes('1') ? ItemType.APP : ItemType.LINK;
-
-      return {
-        name: filename.slice(0, -LINK_EXTENSION.length),
-        type,
-        extra: {
-          [ItemType.LINK]: {
-            url,
+      if (type === ItemType.APP) {
+        return {
+          name: filename.slice(0, -LINK_EXTENSION.length),
+          type,
+          extra: {
+            [type]: {
+              url,
+            },
           },
-        },
-      };
+        } as Partial<Item>;
+      } else if (type === ItemType.LINK) {
+        return {
+          name: filename.slice(0, -LINK_EXTENSION.length),
+          type,
+          extra: {
+            [type]: {
+              url,
+            },
+          },
+        } as Partial<Item>;
+      } else {
+        throw new Error(`${type} is not handled`);
+      }
     }
     // documents
     else if (filename.endsWith(GRAASP_DOCUMENT_EXTENSION)) {
@@ -119,12 +139,14 @@ export class ImportExportService {
       const mimetype = await asyncDetectFile(filepath);
 
       // upload file
-      await this.fileItemService.upload(
+      const [item] = await this.fileItemService.upload(
         actor,
         repositories,
-        { filename, mimetype, filepath },
+        [{ filename, mimetype, filepath }],
         parentId,
       );
+
+      return item;
     }
   }
 
@@ -190,19 +212,28 @@ export class ImportExportService {
         break;
       }
       case ItemType.DOCUMENT:
-        archive.append(item.extra.document?.content, {
+        archive.append((item.extra.document as DocumentItemExtraProperties)?.content, {
           name: path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
         });
         break;
       case ItemType.LINK:
-        archive.append(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK), {
-          name: path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-        });
+        archive.append(
+          buildTextContent(
+            (item.extra.embeddedLink as EmbeddedLinkItemExtraProperties)?.url,
+            ItemType.LINK,
+          ),
+          {
+            name: path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
+          },
+        );
         break;
       case ItemType.APP:
-        archive.append(buildTextContent(item.extra.app?.url, ItemType.APP), {
-          name: path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-        });
+        archive.append(
+          buildTextContent((item.extra.app as AppItemExtraProperties)?.url, ItemType.APP),
+          {
+            name: path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
+          },
+        );
         break;
       case ItemType.FOLDER: {
         // append description
@@ -311,7 +342,7 @@ export class ImportExportService {
 
     // we save item in batch for optimization, but also because
     // order and descriptions are saved separately
-    const items = [];
+    const items: Partial<Item>[] = [];
 
     for (const filename of filenames) {
       const filepath = path.join(folderPath, filename);
@@ -342,7 +373,9 @@ export class ImportExportService {
         //     throw e;
         //   }
         // });
-        items.push(item);
+        if (!item && item !== null) {
+          items.push(item);
+        }
       }
     }
 

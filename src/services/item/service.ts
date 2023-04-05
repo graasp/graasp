@@ -1,5 +1,4 @@
 import {
-  FolderItemType,
   ItemType,
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
@@ -14,29 +13,26 @@ import {
   MemberCannotWriteItem,
   TooManyChildren,
   TooManyDescendants,
+  UnauthorizedMember,
 } from '../../util/graasp-error';
 import HookManager from '../../util/hook';
 import { Repositories } from '../../util/repositories';
 import { filterOutItems, validatePermission } from '../authorization';
-import { Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item } from './entities/Item';
 
 export class ItemService {
   hooks = new HookManager();
 
-  async create(
-    actor,
-    repositories: Repositories,
-    args: { item: Partial<Item>; parentId?: string; creator: Member },
-  ) {
+  async post(actor, repositories: Repositories, args: { item: Partial<Item>; parentId?: string }) {
     const { itemRepository, itemMembershipRepository } = repositories;
 
     const { item, parentId } = args;
     let createdItem = itemRepository.create({ ...item, creator: actor });
 
     let inheritedMembership;
-    let parentItem = null;
+    let parentItem: Item | undefined = undefined;
     // TODO: HOOK?
     // check permission over parent
     if (parentId) {
@@ -104,14 +100,17 @@ export class ItemService {
     return itemRepository.getOwn(actor.id);
   }
 
-  async getShared(actor: Member|undefined, repositories: Repositories, permission?: PermissionLevel) {
+  async getShared(actor: Actor, repositories: Repositories, permission?: PermissionLevel) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     const { itemMembershipRepository } = repositories;
-    const items = await itemMembershipRepository.getSharedItems(actor, permission);
+    const items = await itemMembershipRepository.getSharedItems(actor.id, permission);
     // TODO optimize?
     return filterOutItems(actor, repositories, items);
   }
 
-  async getChildren(actor: Member|undefined, repositories: Repositories, itemId: string, ordered?: boolean) {
+  async getChildren(actor: Actor, repositories: Repositories, itemId: string, ordered?: boolean) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
@@ -119,7 +118,7 @@ export class ItemService {
     return filterOutItems(actor, repositories, await itemRepository.getChildren(item, ordered));
   }
 
-  async getDescendants(actor: Member|undefined, repositories: Repositories, itemId: UUID) {
+  async getDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
@@ -127,7 +126,7 @@ export class ItemService {
     return filterOutItems(actor, repositories, await itemRepository.getDescendants(item));
   }
 
-  async getParents(actor, repositories: Repositories, itemId: UUID) {
+  async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
@@ -239,7 +238,7 @@ export class ItemService {
   async move(actor, repositories: Repositories, itemId, toItemId?: string) {
     const { itemRepository } = repositories;
     // TODO: check memberships
-    let parentItem = null;
+    let parentItem;
     if (toItemId) {
       parentItem = await itemRepository.get(toItemId);
       await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
@@ -313,7 +312,7 @@ export class ItemService {
     await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_COPY);
 
     // TODO: check memberships
-    let parentItem = null;
+    let parentItem;
     if (args.parentId) {
       parentItem = await itemRepository.get(args.parentId);
       await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
@@ -326,7 +325,8 @@ export class ItemService {
     // TODO: post hook - for loop on descendants
     await this.hooks.runPreHooks('copy', actor, repositories, { item });
 
-    const result = await itemRepository.copy(item, actor, parentItem, args);
+    // TODO: args?
+    const result = await itemRepository.copy(item, actor, parentItem);
 
     // TODO: post hook - for loop on descendants
     await this.hooks.runPostHooks('copy', actor, repositories, { original: item, copy: result });

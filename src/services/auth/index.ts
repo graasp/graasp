@@ -1,8 +1,4 @@
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
-import { StatusCodes } from 'http-status-codes';
-import jwt, { Secret, SignOptions, TokenExpiredError, VerifyOptions } from 'jsonwebtoken';
-import { JsonWebTokenError } from 'jsonwebtoken';
+import jwt, { Secret, SignOptions, VerifyOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 
 import fastifyAuth from '@fastify/auth';
@@ -11,21 +7,16 @@ import fastifyCors from '@fastify/cors';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyPluginAsync, FastifyRequest } from 'fastify';
 
-import { DEFAULT_LANG } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import {
-  AUTH_CLIENT_HOST,
   AUTH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_TOKEN_JWT_SECRET,
-  CLIENT_HOST,
   EMAIL_LINKS_HOST,
-  GRAASP_ACTOR,
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PROD,
   PROTOCOL,
-  REDIRECT_URL,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
@@ -33,36 +24,13 @@ import {
   STAGING,
   TOKEN_BASED_AUTH,
 } from '../../util/config';
-import {
-  EmptyCurrentPassword,
-  IncorrectPassword,
-  InvalidPassword,
-  InvalidSession,
-  InvalidToken,
-  MemberAlreadySignedUp,
-  MemberNotSignedUp,
-  MemberWithoutPassword,
-  OrphanSession,
-  TokenExpired,
-} from '../../util/graasp-error';
+import { InvalidSession, OrphanSession } from '../../util/graasp-error';
 import { Member } from '../member/entities/member';
 import MemberRepository from '../member/repository';
 import { AuthPluginOptions } from './interfaces/auth';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
 import passwordController from './plugins/password';
-import {
-  auth,
-  login,
-  mPasswordLogin,
-  mauth,
-  mdeepLink,
-  mlogin,
-  mregister,
-  passwordLogin,
-  register,
-  updatePassword,
-} from './schemas';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -117,8 +85,9 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     // TODO: do we really need to get the user from the DB? (or actor: { id } is enough?)
     // maybe when the groups are implemented it will be necessary.
-    request.member = await MemberRepository.findOneBy({ id: memberId });
+    request.member = (await MemberRepository.findOneBy({ id: memberId })) ?? undefined;
   }
+
   fastify.decorate('fetchMemberInSession', fetchMemberInSession);
 
   fastify.decorate('validateSession', verifyMemberInSession);
@@ -154,6 +123,10 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     keys: new Set<string>(),
     auth: verifyMemberInAuthToken,
   });
+
+  if (!fastify.verifyBearerAuth) {
+    throw new Error();
+  }
 
   fastify.decorate(
     'attemptVerifyAuthentication',

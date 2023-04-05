@@ -49,11 +49,11 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     return this.findOneBy({ id });
   },
 
-  getForItem(itemId: string, filters: Partial<AppData>) {
+  getForItem(itemId: string, filters: Partial<AppData> = {}) {
     return this.findBy({ item: { id: itemId }, ...filters });
   },
 
-  async getForManyItems(itemIds: string[], filters: Partial<AppData>) {
+  async getForManyItems(itemIds: string[], filters: Partial<AppData> = {}) {
     const appDatas = await this.findBy({ item: { id: In(itemIds) }, ...filters });
 
     return mapById({

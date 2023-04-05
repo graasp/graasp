@@ -7,34 +7,37 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemType, UnknownExtra } from '@graasp/sdk';
+import {
+  AppItemExtra,
+  EtherpadItemExtra,
+  FolderItemExtra,
+  H5PItemExtra,
+  ItemSettings,
+  ItemType,
+  LocalFileItemExtra,
+  S3FileItemExtra,
+  ShortcutItemExtra,
+  UnknownExtra,
+} from '@graasp/sdk';
 
 import { Member } from '../../member/entities/member';
 import { DocumentExtra } from '../plugins/document';
 import { EmbeddedLinkItemExtra } from '../plugins/embeddedLink';
 
-export interface FolderExtra extends UnknownExtra {
-  [ItemType.FOLDER]: {
-    childrenOrder?: string[];
-  };
-}
-
-// TODO: add in sdk?
-export type ItemExtra = FolderExtra | DocumentExtra | EmbeddedLinkItemExtra;
-
-export type ItemSettings = {
-  tags?: string[];
-  isPinned?: boolean;
-  showChatbox?: boolean;
-  hasThumbnail?: boolean;
-  isResizable?: boolean;
-  isCollapsible?: boolean;
-};
+export type ItemExtra =
+  | DocumentExtra
+  | FolderItemExtra
+  | EmbeddedLinkItemExtra
+  | H5PItemExtra
+  | LocalFileItemExtra
+  | ShortcutItemExtra
+  | EtherpadItemExtra
+  | S3FileItemExtra
+  | AppItemExtra;
 
 @Entity()
 export class Item extends BaseEntity {
@@ -79,7 +82,7 @@ export class Item extends BaseEntity {
 
   // type dependent properties
   @Column('simple-json', { nullable: false })
-  extra: any;
+  extra: ItemExtra;
 
   // cosmetic settings
   @Column('simple-json', { nullable: false, default: '{}' })

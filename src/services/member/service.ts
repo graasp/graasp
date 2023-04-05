@@ -1,26 +1,30 @@
-import { DEFAULT_LANG } from '@graasp/sdk';
+import { DEFAULT_LANG, UUID } from '@graasp/sdk';
 
 import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../util/graasp-error';
 import HookManager from '../../util/hook';
 import { Repositories } from '../../util/repositories';
-import { Member } from './entities/member';
+import { Actor } from './entities/member';
 
 export class MemberService {
   hooks = new HookManager();
 
-  async get(actor: Member, { memberRepository }: Repositories, id: string) {
+  async get(actor: Actor, { memberRepository }: Repositories, id: string) {
     return memberRepository.get(id);
   }
 
-  async getMany(actor: Member, { memberRepository }: Repositories, ids: string[]) {
+  async getMany(actor: Actor, { memberRepository }: Repositories, ids: string[]) {
     return memberRepository.getMany(ids);
   }
 
-  async getManyByEmail(actor: Member, { memberRepository }: Repositories, ids: string[]) {
+  async getManyByEmail(actor: Actor, { memberRepository }: Repositories, ids: string[]) {
     return memberRepository.getManyByEmail(ids);
   }
 
-  async post(actor, repositories: Repositories, body, lang = DEFAULT_LANG) {
+  async post(actor: Actor, repositories: Repositories, body, lang = DEFAULT_LANG) {
+    if (!actor) {
+      throw new Error('Cannot post new member');
+    }
+
     const { memberRepository } = repositories;
 
     // The email is lowercased when the user registers
@@ -50,8 +54,8 @@ export class MemberService {
     // TODO: refactor
   }
 
-  async patch(actor: Member, { memberRepository }: Repositories, id, body) {
-    if (actor.id !== id) {
+  async patch(actor: Actor, { memberRepository }: Repositories, id: UUID, body) {
+    if (!actor || actor.id !== id) {
       throw new CannotModifyOtherMembers(id);
     }
 
@@ -61,8 +65,8 @@ export class MemberService {
     return memberRepository.patch(id, { name: body.name, email: body.email, extra });
   }
 
-  async deleteOne(actor: Member, { memberRepository }: Repositories, id) {
-    if (actor.id !== id) {
+  async deleteOne(actor: Actor, { memberRepository }: Repositories, id: UUID) {
+    if (!actor || actor.id !== id) {
       throw new CannotModifyOtherMembers(id);
     }
 

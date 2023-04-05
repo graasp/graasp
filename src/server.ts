@@ -33,26 +33,26 @@ const start = async () => {
 
   await registerAppPlugins(instance);
 
-  const mainMetric = SentryConfig.enable
-    ? Sentry.startTransaction({
-        op: 'main',
-        name: 'Main server listen',
-      })
-    : null;
+  // const mainMetric = SentryConfig.enable
+  //   ? Sentry.startTransaction({
+  //       op: 'main',
+  //       name: 'Main server listen',
+  //     })
+  //   : null;
 
   try {
-    await instance.listen({ port: +PORT, host: HOSTNAME });
+    await instance.listen({ port: PORT, host: HOSTNAME });
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);
     Sentry?.withScope((scope) => {
-      scope.setSpan(mainMetric);
-      scope.setTransactionName(mainMetric.name);
+      // scope.setSpan(mainMetric);
+      // scope.setTransactionName(mainMetric.name);
       Sentry?.captureException(err);
     });
     process.exit(1);
   } finally {
-    mainMetric?.finish();
+    // mainMetric?.finish();
   }
 };
 

@@ -28,7 +28,7 @@ export const ItemValidationGroupRepository = AppDataSource.getRepository(
     return this.findOne({
       where: { item: { id: itemId } },
       order: { createdAt: 'desc' },
-      relations: { item: true, itemValidations: true },
+      relations: ['item', 'itemValidations', 'itemValidations.item'],
     });
   },
 

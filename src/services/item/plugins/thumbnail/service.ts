@@ -40,7 +40,7 @@ export class FileThumbnailService {
       size,
       itemId,
       replyUrl,
-    }: { reply: FastifyReply; size: string; itemId: string; replyUrl: boolean },
+    }: { reply: FastifyReply; size: string; itemId: string; replyUrl?: boolean },
   ) {
     // prehook: get item and input in download call ?
     // check rights

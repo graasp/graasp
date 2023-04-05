@@ -4,25 +4,21 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import { HttpMethod, PermissionLevel, ItemTagType } from '@graasp/sdk';
+import { HttpMethod, ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import {
-  expectItem,
-  expectManyItems,
-  getDummyItem,
-} from '../../../../item/test/fixtures/items';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../util/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../util/graasp-error';
 import {
   DownloadFileInvalidParameterError,
   UploadEmptyFileError,
 } from '../../../../file/utils/errors';
+import { expectItem, expectManyItems, getDummyItem } from '../../../../item/test/fixtures/items';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { ItemTagRepository } from '../../../../itemTag/repository';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../utils/errors';
