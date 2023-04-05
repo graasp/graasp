@@ -192,7 +192,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         member: { id: actor.id },
         item: { creator: Not(actor.id) },
       },
-      relations: { item: true, creator: true },
+      relations: ['item','item.creator']
     });
     const items = sharedMemberships.map(({ item }) => item);
     // TODO: optimize

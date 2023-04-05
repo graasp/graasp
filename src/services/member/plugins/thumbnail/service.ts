@@ -21,7 +21,7 @@ export class MemberThumbnailService {
 
     // update item that should have thumbnail
     await this.memberService.patch(actor, repositories, actor.id, {
-      extra: { hasThumbnail: true },
+      extra: { hasAvatar: true },
     });
   }
 

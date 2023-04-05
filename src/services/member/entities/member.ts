@@ -13,12 +13,9 @@ import {
   MemberType,
   UnknownExtra,
   isPseudonymizedMember,
+  MemberExtra,
 } from '@graasp/sdk';
 
-export type MemberExtra = {
-  hasThumbnail?: boolean;
-  lang?: string;
-};
 
 @Entity()
 @Unique('email', ['email'])

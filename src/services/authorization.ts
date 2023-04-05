@@ -88,7 +88,7 @@ export const validatePermission = async (
 
 // filtering functions, that takes out limited items (eg. hidden children)
 // actor can be undefined...
-export const filterOutItems = async (actor: Member, repositories, items: Item[]) => {
+export const filterOutItems = async (actor: Member|undefined, repositories, items: Item[]) => {
   const { itemMembershipRepository } = repositories;
 
   if (!items.length) {
@@ -104,7 +104,7 @@ export const filterOutItems = async (actor: Member, repositories, items: Item[])
     .filter((item) => {
       // TODO: get best permission
       const permission = PermissionLevelCompare.getHighest(
-        memberships[item.id].map(({ permission }) => permission),
+        memberships[item.id]?.map(({ permission }) => permission),
       );
       // return item if has at least write permission or is not hidden
       return (

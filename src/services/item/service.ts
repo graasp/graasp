@@ -104,15 +104,14 @@ export class ItemService {
     return itemRepository.getOwn(actor.id);
   }
 
-  async getShared(actor: Member, repositories: Repositories, permission?: PermissionLevel) {
+  async getShared(actor: Member|undefined, repositories: Repositories, permission?: PermissionLevel) {
     const { itemMembershipRepository } = repositories;
     const items = await itemMembershipRepository.getSharedItems(actor, permission);
     // TODO optimize?
     return filterOutItems(actor, repositories, items);
   }
 
-  // actor can be undefined........
-  async getChildren(actor: Member, repositories: Repositories, itemId: string, ordered?: boolean) {
+  async getChildren(actor: Member|undefined, repositories: Repositories, itemId: string, ordered?: boolean) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
@@ -120,7 +119,7 @@ export class ItemService {
     return filterOutItems(actor, repositories, await itemRepository.getChildren(item, ordered));
   }
 
-  async getDescendants(actor: Member, repositories: Repositories, itemId: UUID) {
+  async getDescendants(actor: Member|undefined, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
