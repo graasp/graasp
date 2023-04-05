@@ -6,16 +6,19 @@ import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { MemberCannotAdminItem } from '../../../util/graasp-error';
 import { Item } from '../../item/entities/Item';
+import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
+import {
+  saveItemAndMembership,
+  saveMembership,
+} from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
+import { BOB, expectMember, saveMember } from '../../member/test/fixtures/members';
 import { ItemLogin } from '../entities/itemLogin';
-import { ItemLoginSchema,  } from '../entities/itemLoginSchema';
+import { ItemLoginSchema } from '../entities/itemLoginSchema';
 import ItemLoginRepository from '../repositories/itemLogin';
 import { encryptPassword, generateRandomEmail } from '../util/aux';
 import { ValidMemberSession } from '../util/graasp-item-login-error';
 import { USERNAME_LOGIN } from './fixtures';
-import { BOB, expectMember, saveMember } from '../../member/test/fixtures/members';
-import { saveItemAndMembership, saveMembership } from '../../itemMembership/test/fixtures/memberships';
-import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -432,7 +435,11 @@ describe('Item Login Tests', () => {
             const m = await savePseudonymizedMember('pseudonymized');
 
             const payload = { memberId: m.id };
-            await saveItemLogin({ item, member: m, type: ItemLoginSchemaType.USERNAME_AND_PASSWORD });
+            await saveItemLogin({
+              item,
+              member: m,
+              type: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
+            });
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             // set up second item

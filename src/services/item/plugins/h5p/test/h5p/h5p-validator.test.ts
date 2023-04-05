@@ -80,7 +80,7 @@ describe('H5PValidator', () => {
         injected: { title: 2 },
       },
       {
-        error: 'must have required property \'mainLibrary\'',
+        error: "must have required property 'mainLibrary'",
         injected: { mainLibrary: undefined },
       },
       {

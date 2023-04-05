@@ -1,12 +1,10 @@
 import FormData from 'form-data';
 import fs from 'fs';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import path from 'path';
-import qs from 'qs';
-import { In, Not } from 'typeorm';
-import { v4 as uuidv4, v4 } from 'uuid';
+import { In } from 'typeorm';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel, ItemTagType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
@@ -14,10 +12,9 @@ import {
   expectItem,
   expectManyItems,
   getDummyItem,
-  saveItem,
-} from '../../../../../../test/fixtures/items';
-import { BOB, saveMember } from '../../../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../../../test/fixtures/memberships';
+} from '../../../../item/test/fixtures/items';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../util/config';
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../util/graasp-error';
 import {
@@ -25,7 +22,6 @@ import {
   UploadEmptyFileError,
 } from '../../../../file/utils/errors';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { ItemTagType } from '../../../../itemTag/ItemTag';
 import { ItemTagRepository } from '../../../../itemTag/repository';
 import { ItemRepository } from '../../../repository';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
@@ -41,8 +37,7 @@ const deleteObjectMock = jest.fn(async () => console.log('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.log('copyObjectMock'));
 const headObjectMock = jest.fn(async () => console.log('headObjectMock'));
 const MOCK_SIGNED_URL = 'signed-url';
-jest.mock('aws-sdk/clients/s3', () => {
-  const getSignedUrlPromise = jest.fn(async () => MOCK_SIGNED_URL);
+jest.mock('@aws-sdk/client-s3', () => {
   return function () {
     return {
       copyObject: () => ({
@@ -57,7 +52,14 @@ jest.mock('aws-sdk/clients/s3', () => {
       headObject: () => ({
         promise: headObjectMock,
       }),
-      getSignedUrlPromise: getSignedUrlPromise,
+    };
+  };
+});
+jest.mock('@aws-sdk/s3-request-presigner', () => {
+  const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
+  return function () {
+    return {
+      getSignedUrl,
     };
   };
 });

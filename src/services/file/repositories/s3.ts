@@ -1,4 +1,5 @@
-import S3 from 'aws-sdk/clients/s3';
+import { S3, HeadObjectOutput, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
@@ -7,7 +8,6 @@ import path from 'path';
 
 import { S3FileConfiguration } from '@graasp/sdk';
 
-import { DownloadFileUnexpectedError } from '../../item/plugins/file/utils/errors';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import { S3FileNotFound } from '../utils/errors';
@@ -61,7 +61,7 @@ export class S3FileRepository implements FileRepository {
     };
 
     // TODO: the Cache-Control policy metadata is lost. try to set a global policy for the bucket in aws.
-    await this.s3Instance.copyObject(params).promise();
+    await this.s3Instance.copyObject(params);
 
     return newFilePath;
   }
@@ -73,8 +73,7 @@ export class S3FileRepository implements FileRepository {
       .listObjectsV2({
         Bucket: bucket,
         Prefix: originalFolderPath,
-      })
-      .promise();
+      });
 
     const paths = Contents.map(({ Key }) => Key);
 
@@ -87,7 +86,7 @@ export class S3FileRepository implements FileRepository {
           MetadataDirective: 'COPY',
           CacheControl: 'no-cache', // TODO: improve?
         };
-        return this.s3Instance.copyObject(params).promise();
+        return this.s3Instance.copyObject(params);
       });
       await Promise.all(copyTasks);
     }
@@ -101,8 +100,7 @@ export class S3FileRepository implements FileRepository {
       .deleteObject({
         Bucket: bucket,
         Key: filepath,
-      })
-      .promise();
+      });
   }
 
   // delete all content in a folder
@@ -112,8 +110,7 @@ export class S3FileRepository implements FileRepository {
     // get all objects in a key
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
     const { Contents } = await this.s3Instance
-      .listObjectsV2({ Bucket: bucket, Prefix: folderPath })
-      .promise();
+      .listObjectsV2({ Bucket: bucket, Prefix: folderPath });
 
     const filepaths = Contents.map(({ Key }) => Key);
 
@@ -127,8 +124,7 @@ export class S3FileRepository implements FileRepository {
             })),
             Quiet: false,
           },
-        })
-        .promise();
+        });
     }
   }
 
@@ -139,12 +135,14 @@ export class S3FileRepository implements FileRepository {
       await this.getMetadata(filepath);
 
       const param = {
-        Bucket: bucket,
-        Key: filepath,
-        Expires: expiration ?? S3_PRESIGNED_EXPIRATION,
+        expiresIn: expiration ?? S3_PRESIGNED_EXPIRATION,
       };
 
-      const url = await this.s3Instance.getSignedUrlPromise('getObject', param);
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: filepath,
+      });
+      const url = await getSignedUrl(this.s3Instance, command, param);
 
       // Redirect to the object presigned url
       if (reply) {
@@ -195,9 +193,9 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  async getMetadata(key: string): Promise<S3.Types.HeadObjectOutput> {
+  async getMetadata(key: string): Promise<HeadObjectOutput> {
     const { s3Bucket: Bucket } = this.options;
-    const metadata = await this.s3Instance.headObject({ Bucket, Key: key }).promise();
+    const metadata = await this.s3Instance.headObject({ Bucket, Key: key });
     return metadata;
   }
 
@@ -217,6 +215,6 @@ export class S3FileRepository implements FileRepository {
 
     // TO CHANGE: use signed url ? but difficult to set up callback
 
-    await this.s3Instance.putObject(params).promise();
+    await this.s3Instance.putObject(params);
   }
 }

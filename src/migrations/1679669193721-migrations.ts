@@ -726,7 +726,6 @@ export class Migrations1679669193721 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    
     await queryRunner.query(
       'ALTER TABLE "item_published" DROP CONSTRAINT IF EXISTS "FK_490fddd9099ee7ddcccf8c776a1"',
     );
@@ -1037,13 +1036,13 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION',
     );
 
-    await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
-    await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
+    await queryRunner.query("CREATE TYPE \"member_type_enum\" AS ENUM ('individual', 'group')");
+    await queryRunner.query("CREATE TYPE \"permissions_enum\" AS ENUM ('read', 'write', 'admin')");
 
-    await queryRunner.query('CREATE TYPE "nested_tag_enum" AS ENUM (\'allow\', \'fail\')');
-    await queryRunner.query('CREATE TYPE mention_status AS ENUM (\'unread\', \'read\')');
+    await queryRunner.query("CREATE TYPE \"nested_tag_enum\" AS ENUM ('allow', 'fail')");
+    await queryRunner.query("CREATE TYPE mention_status AS ENUM ('unread', 'read')");
     await queryRunner.query(
-      'CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')',
+      "CREATE TYPE \"app_data_visibility_enum\" AS ENUM ('member', 'item'); --, 'app', 'publisher')",
     );
 
     // -- CREATE everything

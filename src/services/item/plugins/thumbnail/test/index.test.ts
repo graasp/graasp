@@ -8,11 +8,11 @@ import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../util/config';
 import { MemberCannotAccess } from '../../../../../util/graasp-error';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { FolderExtra } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { UploadFileNotImageError } from '../utils/errors';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 
 const filepath = path.resolve(__dirname, './fixtures/image.png');
 const textPath = path.resolve(__dirname, './fixtures/emptyFile');

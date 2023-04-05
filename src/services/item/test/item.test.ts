@@ -32,13 +32,13 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../itemMembership/test/fixtures/memberships';
+import { ItemTagRepository } from '../../itemTag/repository';
 import { Member } from '../../member/entities/member';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ItemRepository } from '../repository';
 import { pathToId } from '../utils';
 import { expectItem, expectManyItems, getDummyItem, saveItem, saveItems } from './fixtures/items';
-import { ItemTagRepository } from '../../itemTag/repository';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -797,7 +797,11 @@ describe('Item routes tests', () => {
       });
       it('Filter out hidden children on read permission', async () => {
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const { item: parent } = await saveItemAndMembership({ member:actor, creator:member, permission: PermissionLevel.Read });
+        const { item: parent } = await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Read,
+        });
         const { item: child1 } = await saveItemAndMembership({
           item: getDummyItem({ name: 'child1' }),
           member,
@@ -808,9 +812,9 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({ item:child1, creator:actor, type: ItemTagType.HIDDEN });
+        await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.HIDDEN });
 
-        const children = [ child2];
+        const children = [child2];
 
         // create child of child that shouldn't be returned
         await saveItemAndMembership({ member: actor, parentItem: child1 });
@@ -931,7 +935,11 @@ describe('Item routes tests', () => {
       });
       it('Filter out hidden items for read rights', async () => {
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const { item: parent } = await saveItemAndMembership({ member:actor, creator:member, permission: PermissionLevel.Read });
+        const { item: parent } = await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Read,
+        });
         const { item: child1 } = await saveItemAndMembership({
           item: getDummyItem({ name: 'child1' }),
           member,
@@ -942,7 +950,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({item:child1, creator:member , type: ItemTagType.HIDDEN});
+        await ItemTagRepository.save({ item: child1, creator: member, type: ItemTagType.HIDDEN });
 
         await saveItemAndMembership({
           member,
@@ -962,7 +970,7 @@ describe('Item routes tests', () => {
           method: HttpMethod.GET,
           url: `/items/${parent.id}/descendants`,
         });
-        
+
         const result = response.json();
         expectManyItems(result, descendants);
         expect(response.statusCode).toBe(StatusCodes.OK);

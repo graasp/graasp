@@ -54,19 +54,20 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
   },
 
   async hasManyForMany(items: Item[], tagTypes: ItemTagType[]) {
-
     const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
 
     query.where(
       new Brackets((qb) => {
-      items.forEach(({ path }, idx) => {
-        const key = `${path}_${idx}`;
-          qb.orWhere(`item.path @> :${key}`, { [key]:path });
+        items.forEach(({ path }, idx) => {
+          const key = `${path}_${idx}`;
+          qb.orWhere(`item.path @> :${key}`, { [key]: path });
         });
       }),
     );
 
-    const hasTags = await query.andWhere('itemTag.type IN (:...types)', { types: tagTypes }).getOne();
+    const hasTags = await query
+      .andWhere('itemTag.type IN (:...types)', { types: tagTypes })
+      .getOne();
 
     return mapById({
       keys: tagTypes,
@@ -75,32 +76,30 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
   },
 
   async hasForMany(items: Item[], tagType: ItemTagType) {
-
     const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
 
     query.where(
       new Brackets((qb) => {
-      items.forEach(({ path }, idx) => {
-        const key = `${path}_${idx}`;
-          qb.orWhere(`item.path @> :${key}`, { [key]:path });
+        items.forEach(({ path }, idx) => {
+          const key = `${path}_${idx}`;
+          qb.orWhere(`item.path @> :${key}`, { [key]: path });
         });
       }),
     );
 
     const haveTag = await query.andWhere('itemTag.type = :type', { type: tagType }).getMany();
 
-    
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
       findElement: (path) => Boolean(haveTag.find((itemTag) => path.includes(itemTag.item.path))),
     });
-    
+
     // use id as key
     const idToItemTags = Object.fromEntries(
       Object.entries(mapByPath.data).map(([key, value]) => [pathToId(key), value]),
-      );
+    );
 
-    return {data:idToItemTags, errors:mapByPath.errors};
+    return { data: idToItemTags, errors: mapByPath.errors };
   },
   /**
    * Save an item tag for item with given type

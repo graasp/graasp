@@ -91,19 +91,21 @@ export const validatePermission = async (
 export const filterOutItems = async (actor: Member, repositories, items: Item[]) => {
   const { itemMembershipRepository } = repositories;
 
-  if(!items.length) {
+  if (!items.length) {
     return [];
   }
 
   // TODO: optimize with on query
-  const {data:memberships} = actor  ? await itemMembershipRepository.getForManyItems(items, actor.id):{data:[]};
+  const { data: memberships } = actor
+    ? await itemMembershipRepository.getForManyItems(items, actor.id)
+    : { data: [] };
   const isHidden = await repositories.itemTagRepository.hasForMany(items, ItemTagType.HIDDEN);
   return items
     .filter((item) => {
       // TODO: get best permission
       const permission = PermissionLevelCompare.getHighest(
         memberships[item.id].map(({ permission }) => permission),
-        );
+      );
       // return item if has at least write permission or is not hidden
       return (
         PermissionLevelCompare.gte(permission, PermissionLevel.Write) || !isHidden.data[item.id]
@@ -117,7 +119,7 @@ export const filterOutItems = async (actor: Member, repositories, items: Item[])
 export const filterOutHiddenItems = async (repositories, items: Item[]) => {
   const { itemTagRepository } = repositories;
 
-  if(!items.length) {
+  if (!items.length) {
     return [];
   }
 

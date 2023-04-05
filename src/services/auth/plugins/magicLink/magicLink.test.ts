@@ -8,7 +8,6 @@ import { JWT_SECRET } from '../../../../util/config';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, expectMember, saveMember } from '../../../member/test/fixtures/members';
 
-
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');
 

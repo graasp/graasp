@@ -83,19 +83,21 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       .leftJoinAndSelect('item_membership.item', 'item')
       .leftJoinAndSelect('item_membership.member', 'member');
 
-      query.where(
-        new Brackets((qb) => {
+    query.where(
+      new Brackets((qb) => {
         items.forEach(({ path }, idx) => {
           // if (idx === 0) {
           //   qb.where(`item.path @> :path_${path}`, { [`path_${path}`]: path });
           // } else {
-            qb.orWhere(`item.path @> :path_${path}`, { [`path_${path}`]: path });
+          qb.orWhere(`item.path @> :path_${path}`, { [`path_${path}`]: path });
           // }
         });
-      }));
+      }),
+    );
 
-    if(memberId){
-    query.andWhere('member.id = :memberId', {memberId});}
+    if (memberId) {
+      query.andWhere('member.id = :memberId', { memberId });
+    }
 
     const memberships = await query.getMany();
 

@@ -47,6 +47,8 @@
     "migration:check": "npx typeorm-ts-node-commonjs schema:log -d src/plugins/datasource.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.306.0",
+    "@aws-sdk/s3-request-presigner": "3.306.0",
     "@casl/ability": "6.3.3",
     "@fastify/auth": "4.2.0",
     "@fastify/bearer-auth": "9.0.0",
@@ -64,7 +66,6 @@
     "@sentry/tracing": "7.44.2",
     "@types/sharp": "0.31.1",
     "archiver": "5.3.1",
-    "aws-sdk": "2.1341.0",
     "bad-words": "3.0.4",
     "bcrypt": "5.1.0",
     "content-disposition": "0.5.4",

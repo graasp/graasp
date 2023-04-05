@@ -5,17 +5,17 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../util/graasp-error';
 import { Item } from '../../item/entities/Item';
+import { expectManyItems } from '../../item/test/fixtures/items';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { ItemTagRepository } from '../../itemTag/repository';
 import { ItemTagNotFound } from '../../itemTag/util/graasp-item-tags-error';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
 import { ItemPublishedNotFound } from '../errors';
-import { expectManyItems } from '../../item/test/fixtures/items';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 // mock datasource
@@ -74,7 +74,11 @@ describe('Item Published', () => {
       });
       it('Get all published collections without hidden', async () => {
         const hiddenCollection = collections[0];
-        await ItemTagRepository.save({item:hiddenCollection, creator: actor, type: ItemTagType.HIDDEN});
+        await ItemTagRepository.save({
+          item: hiddenCollection,
+          creator: actor,
+          type: ItemTagType.HIDDEN,
+        });
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections`,
