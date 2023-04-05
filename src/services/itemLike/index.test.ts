@@ -3,9 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
-import { expectManyItems } from '../../../test/fixtures/items';
-import { BOB, saveMember } from '../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../test/fixtures/memberships';
 import { MemberCannotAccess } from '../../util/graasp-error';
 import { Item } from '../item/entities/Item';
 import { setItemPublic } from '../itemTag/test/fixtures';
@@ -13,6 +10,9 @@ import { Member } from '../member/entities/member';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 import { ItemLikeRepository } from './repository';
+import { BOB, saveMember } from '../member/test/fixtures/members';
+import { saveItemAndMembership } from '../itemMembership/test/fixtures/memberships';
+import { expectManyItems } from '../item/test/fixtures/items';
 
 // mock datasource
 jest.mock('../../plugins/datasource');
@@ -129,7 +129,7 @@ describe('Item Like', () => {
     });
 
     // TODO: public - enable when prehook is removed
-    //   it.only('Get like entries for public item', async () => {
+    //   it('Get like entries for public item', async () => {
 
     //     const {item} = await saveItemAndMembership({member});
     //     await setItemPublic(item, member);

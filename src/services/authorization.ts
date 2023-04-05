@@ -87,17 +87,23 @@ export const validatePermission = async (
 };
 
 // filtering functions, that takes out limited items (eg. hidden children)
-export const filterOutItems = async (repositories, items: Item[]) => {
+// actor can be undefined...
+export const filterOutItems = async (actor: Member, repositories, items: Item[]) => {
   const { itemMembershipRepository } = repositories;
+
+  if(!items.length) {
+    return [];
+  }
+
   // TODO: optimize with on query
-  const memberships = await itemMembershipRepository.getForManyItems(items);
+  const {data:memberships} = actor  ? await itemMembershipRepository.getForManyItems(items, actor.id):{data:[]};
   const isHidden = await repositories.itemTagRepository.hasForMany(items, ItemTagType.HIDDEN);
   return items
     .filter((item) => {
       // TODO: get best permission
       const permission = PermissionLevelCompare.getHighest(
-        memberships.data[item.id].map(({ permission }) => permission),
-      );
+        memberships[item.id].map(({ permission }) => permission),
+        );
       // return item if has at least write permission or is not hidden
       return (
         PermissionLevelCompare.gte(permission, PermissionLevel.Write) || !isHidden.data[item.id]
@@ -111,8 +117,12 @@ export const filterOutItems = async (repositories, items: Item[]) => {
 export const filterOutHiddenItems = async (repositories, items: Item[]) => {
   const { itemTagRepository } = repositories;
 
+  if(!items.length) {
+    return [];
+  }
+
   const isHidden = await itemTagRepository.hasForMany(items, ItemTagType.HIDDEN);
   return items.filter((item) => {
-    return isHidden.data[item.id];
+    return !isHidden.data[item.id];
   });
 };

@@ -4,11 +4,10 @@ import jwt from 'jsonwebtoken';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import * as MEMBERS_FIXTURES from '../../../../../test/fixtures/members';
 import { JWT_SECRET } from '../../../../util/config';
 import MemberRepository from '../../../member/repository';
+import { ANNA, BOB, expectMember, saveMember } from '../../../member/test/fixtures/members';
 
-const { saveMember } = MEMBERS_FIXTURES;
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');
@@ -38,7 +37,7 @@ describe('Auth routes tests', () => {
       });
       const m = await MemberRepository.findOneBy({ email, name });
 
-      MEMBERS_FIXTURES.expectMember(m, { name, email });
+      expectMember(m, { name, email });
 
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -68,13 +67,13 @@ describe('Auth routes tests', () => {
         expect.anything(),
       );
       const m = await MemberRepository.findOneBy({ email, name });
-      MEMBERS_FIXTURES.expectMember(m, { name, email, extra: { lang } });
+      expectMember(m, { name, email, extra: { lang } });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign Up fallback to login for already register member', async () => {
       // register already existing member
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
       const response = await app.inject({
@@ -92,7 +91,7 @@ describe('Auth routes tests', () => {
 
       const members = await MemberRepository.findBy({ email: member.email });
       expect(members).toHaveLength(1);
-      MEMBERS_FIXTURES.expectMember(member, members[0]);
+      expectMember(member, members[0]);
 
       expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
     });
@@ -116,7 +115,7 @@ describe('Auth routes tests', () => {
 
   describe('POST /login', () => {
     it('Sign In successfully', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -134,7 +133,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Sign In successfully with given lang', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.ANNA);
+      const member = await saveMember(ANNA);
       const { lang } = member.extra;
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
@@ -182,7 +181,7 @@ describe('Auth routes tests', () => {
 
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const t = jwt.sign({ id: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -192,7 +191,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Fail to authenticate if token is invalid', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const t = jwt.sign({ id: member.id }, 'secret');
       const response = await app.inject({
         method: HttpMethod.GET,

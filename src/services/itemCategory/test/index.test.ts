@@ -1,22 +1,20 @@
 import { StatusCodes } from 'http-status-codes';
-import qs from 'qs';
 import { v4 } from 'uuid';
 
-import { HttpMethod } from '@graasp/sdk';
+import { CategoryType, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { saveItem } from '../../../../test/fixtures/items';
-import { BOB, saveMember } from '../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { MemberCannotAccess } from '../../../util/graasp-error';
 import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
-import { Category, CategoryType } from '../entities/Category';
+import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
 import { CategoryRepository } from '../repositories/category';
 import { ItemCategoryRepository } from '../repositories/itemCategory';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

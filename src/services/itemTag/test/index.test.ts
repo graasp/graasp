@@ -5,19 +5,17 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemTagType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { BOB, saveMember } from '../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../test/fixtures/memberships';
 import { ItemNotFound, MemberCannotAccess } from '../../../util/graasp-error';
-import { ITEMS_ROUTE } from '../../item/plugins/thumbnail/utils/constants';
 import { ItemTag } from '../ItemTag';
 import { ItemTagRepository } from '../repository';
 import {
   CannotModifyParentTag,
   ConflictingTagsInTheHierarchy,
-  ItemHasTag,
   ItemTagNotFound,
 } from '../util/graasp-item-tags-error';
-import { ITEM_TAGS, TAGS } from './constants';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
+import { ITEMS_ROUTE } from '../../thumbnail/constants';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -25,7 +23,7 @@ jest.mock('../../../plugins/datasource');
 const saveTagsForItem = async ({ item, creator }) => {
   const itemTags: ItemTag[] = [];
   itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.HIDDEN }));
-  itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.PINNED }));
+  itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.PUBLIC }));
 
   return itemTags;
 };
@@ -381,14 +379,14 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.DELETE,
-          url: `${ITEMS_ROUTE}/${itemWithoutTag.id}/tags/${ItemTagType.PINNED}`,
+          url: `${ITEMS_ROUTE}/${itemWithoutTag.id}/tags/${ItemTagType.HIDDEN}`,
         });
         expect(res.json()).toMatchObject(new ItemTagNotFound(expect.anything()));
       });
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.DELETE,
-          url: `${ITEMS_ROUTE}/invalid-id/tags/${ItemTagType.PINNED}`,
+          url: `${ITEMS_ROUTE}/invalid-id/tags/${ItemTagType.HIDDEN}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });

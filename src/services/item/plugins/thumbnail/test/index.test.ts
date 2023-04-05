@@ -3,17 +3,16 @@ import { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { BOB, saveMember } from '../../../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../util/config';
 import { MemberCannotAccess } from '../../../../../util/graasp-error';
 import { FolderExtra } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
-import { ThumbnailSize } from '../utils/constants';
 import { UploadFileNotImageError } from '../utils/errors';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 
 const filepath = path.resolve(__dirname, './fixtures/image.png');
 const textPath = path.resolve(__dirname, './fixtures/emptyFile');
@@ -47,7 +46,7 @@ jest.mock('aws-sdk/clients/s3', () => {
   };
 });
 
-describe.only('Thumbnail Plugin Tests', () => {
+describe('Thumbnail Plugin Tests', () => {
   let app;
   let actor;
 

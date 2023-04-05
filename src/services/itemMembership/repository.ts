@@ -1,6 +1,6 @@
-import { In, Not } from 'typeorm';
+import { Brackets, In, Not } from 'typeorm';
 
-import { PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
+import { PermissionLevel, PermissionLevelCompare, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import {
@@ -78,18 +78,24 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       .getMany();
   },
 
-  async getForManyItems(items: Item[]) {
+  async getForManyItems(items: Item[], memberId?: UUID) {
     const query = this.createQueryBuilder('item_membership')
       .leftJoinAndSelect('item_membership.item', 'item')
       .leftJoinAndSelect('item_membership.member', 'member');
 
-    items.forEach(({ path }, idx) => {
-      if (idx === 0) {
-        query.where(`item.path @> :path_${path}`, { [`path_${path}`]: path });
-      } else {
-        query.orWhere(`item.path @> :path_${path}`, { [`path_${path}`]: path });
-      }
-    });
+      query.where(
+        new Brackets((qb) => {
+        items.forEach(({ path }, idx) => {
+          // if (idx === 0) {
+          //   qb.where(`item.path @> :path_${path}`, { [`path_${path}`]: path });
+          // } else {
+            qb.orWhere(`item.path @> :path_${path}`, { [`path_${path}`]: path });
+          // }
+        });
+      }));
+
+    if(memberId){
+    query.andWhere('member.id = :memberId', {memberId});}
 
     const memberships = await query.getMany();
 

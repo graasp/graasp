@@ -2,22 +2,21 @@ import { StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { v4 } from 'uuid';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { expectManyItems } from '../../../../test/fixtures/items';
-import { BOB, saveMember } from '../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../test/fixtures/memberships';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../util/graasp-error';
 import { Item } from '../../item/entities/Item';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
-import { ItemTagType } from '../../itemTag/ItemTag';
 import { ItemTagRepository } from '../../itemTag/repository';
 import { ItemTagNotFound } from '../../itemTag/util/graasp-item-tags-error';
 import { ItemPublishedNotFound } from '../errors';
-import { ItemPublishedRepository } from '../repositories/publishedItem';
+import { expectManyItems } from '../../item/test/fixtures/items';
+import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -51,7 +50,7 @@ describe('Item Published', () => {
   describe('GET /collections', () => {
     describe('Signed Out', () => {
       let member;
-      let collections;
+      let collections: Item[];
       let categories;
 
       beforeEach(async () => {
@@ -72,6 +71,16 @@ describe('Item Published', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectManyItems(res.json(), collections);
+      });
+      it('Get all published collections without hidden', async () => {
+        const hiddenCollection = collections[0];
+        await ItemTagRepository.save({item:hiddenCollection, creator: actor, type: ItemTagType.HIDDEN});
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectManyItems(res.json(), collections.slice(1));
       });
       it('Get collections for one category', async () => {
         // set categories to collections

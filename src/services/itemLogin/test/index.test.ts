@@ -1,22 +1,21 @@
 import { StatusCodes } from 'http-status-codes';
-import { v4 } from 'uuid';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { getDummyItem, saveItem } from '../../../../test/fixtures/items';
-import { BOB, expectMember, saveMember } from '../../../../test/fixtures/members';
-import { saveItemAndMembership, saveMembership } from '../../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { MemberCannotAdminItem } from '../../../util/graasp-error';
 import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 import { ItemLogin } from '../entities/itemLogin';
-import { ItemLoginSchema, ItemLoginSchemaType } from '../entities/itemLoginSchema';
+import { ItemLoginSchema,  } from '../entities/itemLoginSchema';
 import ItemLoginRepository from '../repositories/itemLogin';
 import { encryptPassword, generateRandomEmail } from '../util/aux';
 import { ValidMemberSession } from '../util/graasp-item-login-error';
 import { USERNAME_LOGIN } from './fixtures';
+import { BOB, expectMember, saveMember } from '../../member/test/fixtures/members';
+import { saveItemAndMembership, saveMembership } from '../../itemMembership/test/fixtures/memberships';
+import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -24,7 +23,7 @@ jest.mock('../../../plugins/datasource');
 const saveItemLogin = async ({
   item,
   password,
-  type = ItemLoginSchemaType.Username,
+  type = ItemLoginSchemaType.USERNAME,
   member,
 }: {
   item: Item;
@@ -131,7 +130,7 @@ describe('Item Login Tests', () => {
       });
     });
 
-    describe(ItemLoginSchemaType.Username, () => {
+    describe(ItemLoginSchemaType.USERNAME, () => {
       describe('Signed Out', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
@@ -140,7 +139,7 @@ describe('Item Login Tests', () => {
         });
 
         // TODO
-        // it.only('Generate tokens for mobile', async () => {
+        // it('Generate tokens for mobile', async () => {
         //   const payload = MEMBER_ID_LOGIN;
         //   const result = { id: v4(), name: 'myname' };
 
@@ -271,7 +270,7 @@ describe('Item Login Tests', () => {
       });
     });
 
-    describe(ItemLoginSchemaType.UsernameAndPassword, () => {
+    describe(ItemLoginSchemaType.USERNAME_AND_PASSWORD, () => {
       const payload = { ...USERNAME_LOGIN, password: 'password' };
 
       describe('Signed Out', () => {
@@ -282,7 +281,7 @@ describe('Item Login Tests', () => {
         });
 
         // TODO
-        // it.only('Generate tokens for mobile', async () => {
+        // it('Generate tokens for mobile', async () => {
         //   const payload = MEMBER_ID_LOGIN;
         //   const result = { id: v4(), name: 'myname' };
 
@@ -312,7 +311,7 @@ describe('Item Login Tests', () => {
           it('Successfully create item login with username and password', async () => {
             await saveItemLogin({
               item,
-              type: ItemLoginSchemaType.UsernameAndPassword,
+              type: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
               password: payload.password,
             });
             expect(await ItemLoginRepository.find()).toHaveLength(0);
@@ -333,7 +332,7 @@ describe('Item Login Tests', () => {
             await saveItemLogin({
               item,
               member: m,
-              type: ItemLoginSchemaType.UsernameAndPassword,
+              type: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
               password: payload.password,
             });
 
@@ -350,7 +349,7 @@ describe('Item Login Tests', () => {
           it('Throws if item login with username and wrong password', async () => {
             await saveItemLogin({
               item,
-              type: ItemLoginSchemaType.UsernameAndPassword,
+              type: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
               password: payload.password,
             });
             expect(await ItemLoginRepository.find()).toHaveLength(0);
@@ -368,7 +367,7 @@ describe('Item Login Tests', () => {
 
         describe('Member Id', () => {
           it('Successfully create item login with member id and password', async () => {
-            await saveItemLogin({ item, type: ItemLoginSchemaType.UsernameAndPassword });
+            await saveItemLogin({ item, type: ItemLoginSchemaType.USERNAME_AND_PASSWORD });
             const pseudonymizedMember = await savePseudonymizedMember('pseudonymized');
             expect(await ItemLoginRepository.find()).toHaveLength(0);
 
@@ -389,7 +388,7 @@ describe('Item Login Tests', () => {
             await saveItemLogin({
               item,
               member: m,
-              type: ItemLoginSchemaType.UsernameAndPassword,
+              type: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
               password: payload.password,
             });
             expect(await ItemLoginRepository.find()).toHaveLength(1);
@@ -412,7 +411,7 @@ describe('Item Login Tests', () => {
             await saveItemLogin({
               item,
               member: m,
-              type: ItemLoginSchemaType.UsernameAndPassword,
+              type: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
               password: payload.password,
             });
             expect(await ItemLoginRepository.find()).toHaveLength(1);
@@ -433,12 +432,12 @@ describe('Item Login Tests', () => {
             const m = await savePseudonymizedMember('pseudonymized');
 
             const payload = { memberId: m.id };
-            await saveItemLogin({ item, member: m, type: ItemLoginSchemaType.UsernameAndPassword });
+            await saveItemLogin({ item, member: m, type: ItemLoginSchemaType.USERNAME_AND_PASSWORD });
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             // set up second item
             const newItem = await saveItem({ item: getDummyItem(), actor: member });
-            await saveItemLogin({ item: newItem, type: ItemLoginSchemaType.UsernameAndPassword });
+            await saveItemLogin({ item: newItem, type: ItemLoginSchemaType.USERNAME_AND_PASSWORD });
 
             const res = await app.inject({
               method: HttpMethod.POST,
@@ -469,7 +468,7 @@ describe('Item Login Tests', () => {
 
   describe('PUT /:id/login-schema', () => {
     const payload = {
-      type: ItemLoginSchemaType.UsernameAndPassword,
+      type: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
     };
 
     it('Throws if signed out', async () => {
@@ -524,7 +523,7 @@ describe('Item Login Tests', () => {
       it('Throws if id is invalid', async () => {
         const id = 'valid-id';
         const payload = {
-          loginSchema: ItemLoginSchemaType.UsernameAndPassword,
+          loginSchema: ItemLoginSchemaType.USERNAME_AND_PASSWORD,
         };
 
         const res = await app.inject({
