@@ -111,5 +111,24 @@ services:
     ports:
       - 8061:8061
 
+  meilisearch:
+    container_name: meilisearch-service
+    image: getmeili/meilisearch:v1.0
+    volumes:
+      - ../meili_data:/meili_data
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    env_file:
+      - ./meilisearch/meilisearch.env
+# meilisearch:
+#   image: "getmeili/meilisearch:v1.0"
+#   restart: unless-stopped
+#   ports:
+#     - "7700:7700"
+#   volumes:
+#     - ../meili_data:/meili_data
+#   env_file:
+#     - /meilisearch/meilisearch.env
 volumes:
   postgres-data: null

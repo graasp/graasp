@@ -40,6 +40,10 @@ import thumbnailsPlugin, {
 } from 'graasp-plugin-thumbnails';
 import graaspValidationPlugin from 'graasp-plugin-validation';
 
+
+import {ItemType} from '/workspace/node_modules/@graasp/sdk/dist/constants/itemType';
+import { MeiliSearch } from 'meilisearch';
+
 import {
   APPS_JWT_SECRET,
   APPS_PLUGIN,
@@ -294,15 +298,65 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         // search plugin
         await fastify.register(async (instance) => {
+
+          //create indexes to store different filesmm
           const { publish, items } = instance;
           const { taskManager: publishTaskManager } = publish;
           const { dbService: itemService } = items;
           const { taskRunner } = instance;
           const publishItemTaskName = publishTaskManager.getPublishItemTaskName();
-          taskRunner.setTaskPostHookHandler(
+          
+          const meilisearchClient = new MeiliSearch({
+            host: 'http://meilisearch:8080',
+            apiKey: '',
+          });
+
+          const status = await meilisearchClient.isHealthy();
+          if (status) {
+
+            const itemTypes = Object.values(ItemType);
+            itemTypes.forEach(itemType => {
+              console.log(itemType);
+              meilisearchClient.getIndex(itemType).catch(() => {
+                meilisearchClient.createIndex(itemType).then(res => {
+                  console.log('Create new index:' + itemType);
+                })
+                .catch(err => {
+                   console.log('Error creating index:' + itemType + ' err: ' + err);
+                });
+              });
+  
+            });
+          }
+
+          taskRunner.setTaskPostHookHandler<Item>(
             publishItemTaskName,
             async (item, member, { log, handler }) => {
-              log.info(item);
+              console.log(item);
+              console.log(item);
+
+              (itemService.getDescendants(item, handler)).then(children=>{
+
+                children.forEach(childItem => {
+
+                  meilisearchClient.isHealthy().then(() => {
+                    meilisearchClient.getIndex(childItem.type).catch(err => {
+                      console.log('Document can not be added: ' + err);
+                    });
+                    
+                    // const jsonChildItem = JSON.string
+                    meilisearchClient.index(childItem.type).addDocuments([childItem]).then(() => {
+                      console.log('Item added to meilisearch');
+                    }).catch(err => {
+                      console.log('There was a problem adding ' + childItem + 'to meilisearch ' + err);
+                    });
+
+                  }).catch(err => {
+                    console.log('Server is not healthy' + err);
+                  });
+
+                });
+              });
             },
           );
         });

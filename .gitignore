@@ -51,3 +51,6 @@ types
 
 # Secrets
 secret-key
+
+# meili_data
+meili_data/*
