@@ -59,12 +59,19 @@ jobs:
           yarn
           yarn build
 
+      - name: apply migrations on empty database
+        env:
+          DB_PASSWORD: docker
+          DB_USERNAME: docker
+          DB_NAME: typeorm
+        run: yarn migration:run
+        
       - name: check migrations are synced with the current codebase
         env:
           DB_PASSWORD: docker
           DB_USERNAME: docker
           DB_NAME: typeorm
-        run: yarn migration:run && yarn migration:check
+        run: yarn migration:check
 
       - name: yarn test
         run: 

@@ -399,7 +399,7 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "action_request_export" ADD CONSTRAINT "FK_fea823c4374f507a68cf8f926a4" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE',
     );
-
+await queryRunner.query('ALTER TABLE "action_request_export" ADD CONSTRAINT "FK_bc85ef3298df8c7974b33081b47" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION;');
     // no necessary data to keep
 
     await queryRunner.query(
