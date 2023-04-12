@@ -2,6 +2,7 @@ import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
 import memberController from './controller';
+import actionMemberPlugin from './plugins/action';
 import memberThumbnailPlugin from './plugins/thumbnail';
 import common from './schemas';
 
@@ -17,6 +18,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       if (fastify.corsPluginOptions) {
         await fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
+
+      fastify.register(actionMemberPlugin);
 
       // routes
       fastify.register(memberController);

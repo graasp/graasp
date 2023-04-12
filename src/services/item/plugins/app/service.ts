@@ -1,10 +1,10 @@
 import uniqBy from 'lodash.uniqby';
 
-import { ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';
-import { Member } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { checkTargetItemAndTokenItemMatch } from './util/utils';
 
@@ -18,11 +18,11 @@ export class AppService {
     this.promisifiedJwtSign = promisifiedJwtSign;
   }
 
-  async getAllValidAppOrigins(actor, repositories: Repositories) {
+  async getAllValidAppOrigins(actor: Actor, repositories: Repositories) {
     return repositories.publisherRepository.getAllValidAppOrigins();
   }
 
-  async getAllApps(actor, repositories: Repositories, publisherId: string) {
+  async getAllApps(actor: Actor, repositories: Repositories, publisherId: string) {
     return repositories.appRepository.getAll(publisherId);
   }
 
@@ -106,7 +106,7 @@ export class AppService {
 
   // used in apps: get members from tree
   async getItemAndParentMembers(
-    actorId,
+    actorId: UUID,
     repositories: Repositories,
     item: Item,
   ): Promise<Member[]> {

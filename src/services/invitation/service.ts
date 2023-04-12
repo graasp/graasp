@@ -31,7 +31,7 @@ export class InvitationService {
     const { item, email } = invitation;
 
     // factor out
-    const lang = actor.extra.lang ?? DEFAULT_LANG;
+    const lang = actor.lang;
     const link = this.buildInvitationLink(invitation);
 
     const t = this.fastify.mailer.translate(lang);

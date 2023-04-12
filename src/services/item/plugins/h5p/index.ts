@@ -11,12 +11,12 @@ import fastifyMultipart from '@fastify/multipart';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { Actor, H5PItemExtra, Item, ItemType, PermissionLevel } from '@graasp/sdk';
+import { H5PItemExtra, Item, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../util/graasp-error';
-import { Repositories, buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../util/repositories';
 import { validatePermission } from '../../../authorization';
-import { Member } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import {
   DEFAULT_MIME_TYPE,
   H5P_FILE_DOT_EXTENSION,
@@ -62,6 +62,10 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
     member: Actor,
     log: FastifyBaseLogger,
   ): Promise<Array<string>> {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
     const children = await readdir(folder);
 
     // we will flatMap with promises: first map

@@ -8,27 +8,13 @@ import {
   APP_ITEMS_PREFIX,
   AUTH_CLIENT_HOST,
   CHATBOX_PLUGIN,
-  CLIENT_HOSTS,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   EMBEDDED_LINK_ITEM_PLUGIN,
-  FILES_PATH_PREFIX,
   FILE_ITEM_PLUGIN_OPTIONS,
-  FILE_ITEM_TYPE,
-  GRAASP_ACTOR,
-  H5P_CONTENT_PLUGIN_OPTIONS,
-  H5P_PATH_PREFIX,
-  HIDDEN_ITEMS_PLUGIN,
-  HIDDEN_TAG_ID,
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
-  LOGIN_ITEM_TAG_ID,
   PROTOCOL,
-  PUBLIC_TAG_ID,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-  SAVE_ACTIONS,
-  THUMBNAILS_PATH_PREFIX,
-  THUMBNAILS_ROUTE_PREFIX,
-  WEBSOCKETS_PLUGIN,
 } from '../../util/config';
 import graaspChatbox from '../chat';
 import graaspInvitationsPlugin from '../invitation';
@@ -47,6 +33,7 @@ import {
   shortcutItemCreate,
   updateOne,
 } from './fluent-schema';
+import actionItemPlugin from './plugins/action';
 // import { itemActionHandler } from './handler/item-action-handler';
 import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
@@ -168,37 +155,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         //   );
         // }
 
-        // isolate the core actions using fastify.register
-        fastify.register(async function (fastify) {
-          // onResponse hook that executes createAction in graasp-plugin-actions every time there is response
-          // it is used to save the actions of the items
-          // if (SAVE_ACTIONS) {
-          //   const actionService = new ActionService();
-          //   const actionTaskManager = new ActionTaskManager(
-          //     actionService,
-          //     taskManager,
-          //     membership,
-          //     mTM,
-          //     CLIENT_HOSTS,
-          //   );
-          //   fastify.addHook('onResponse', async (request, reply) => {
-          //     // todo: save public actions?
-          //     if (request.member) {
-          //       // wrap the itemActionHandler in a new function to provide it with the properties we already have
-          //       const actionHandler = (actionInput: ActionHandlerInput): Promise<BaseAction[]> =>
-          //         itemActionHandler(dbService, actionInput);
-          //       const createActionTask = actionTaskManager.createCreateTask(request.member, {
-          //         request,
-          //         reply,
-          //         handler: actionHandler,
-          //       });
-          //       await runner.runSingle(createActionTask);
-          //     }
-          //   });
-          // }
+        fastify.register(actionItemPlugin);
 
-          fastify.register(itemController);
-        });
+        fastify.register(itemController);
       });
     },
     { prefix: ITEMS_ROUTE_PREFIX },

@@ -10,6 +10,7 @@ import decoratorPlugin from './plugins/decorator';
 import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
+import { ActionService } from './services/action/services/action';
 import authPlugin from './services/auth';
 import { MentionService } from './services/chat/plugins/mentions/service';
 import filePlugin from './services/file';
@@ -48,6 +49,7 @@ declare module 'fastify' {
       };
     };
     members: { service: MemberService };
+    actions: { service: ActionService };
     corsPluginOptions: any;
 
     fetchMemberInSession: (request: FastifyRequest) => Promise<void>;

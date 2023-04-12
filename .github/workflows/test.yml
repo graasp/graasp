@@ -41,22 +41,29 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
+          
       - name: Get yarn cache directory
         id: yarn-cache-dir-path
         run: |
           echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
       - uses: actions/cache@v3
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+
       - name: yarn install and build
         run: |
           yarn
           yarn build
 
       - name: check migrations are synced with the current codebase
+        env:
+          DB_PASSWORD: docker
+          DB_USERNAME: docker
+          DB_NAME: typeorm
         run: yarn migration:run & yarn migration:check
 
       - name: yarn test
@@ -70,11 +77,8 @@ jobs:
           REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_DEFAULT_PLAN_PRICE_ID: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
           FILE_STORAGE_ROOT_PATH: /
           H5P_PATH_PREFIX: h5p
-          HIDDEN_ITEMS_PLUGIN: false
-          SAVE_ACTIONS: true
           BUILDER_CLIENT_HOST: 'http://localhost:3111'
           PLAYER_CLIENT_HOST: 'http://localhost:3112'
           EXPLORER_CLIENT_HOST: 'http://localhost:3113'

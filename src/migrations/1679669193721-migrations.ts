@@ -381,6 +381,30 @@ export class Migrations1679669193721 implements MigrationInterface {
     // in any case no review was handled -> no reason data
 
     await queryRunner.query(
+      'CREATE TABLE "action" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "view" character varying NOT NULL, "type" character varying NOT NULL, "extra" text NOT NULL, "geolocation" text, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "member_id" uuid, "item_path" ltree, CONSTRAINT "PK_2d9db9cf5edfbbae74eb56e3a39" PRIMARY KEY ("id"))',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "action" ADD CONSTRAINT "FK_266df04a901f13e3c666504a0fb" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "action" ADD CONSTRAINT "FK_d1e204f54e77573838087f3c153" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE SET NULL ON UPDATE CASCADE',
+    );
+
+    await queryRunner.query(`INSERT INTO "action" (id, view,type,extra,created_at,geolocation,member_id, item_path) 
+        SELECT id, view,action_type,extra,created_at,geolocation,member_id, item_path 
+        FROM action_old
+        `);
+
+    await queryRunner.query(
+      'CREATE TABLE "action_request_export" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "member_id" uuid NOT NULL, "item_path" ltree, CONSTRAINT "PK_cce524d4aa89d5a2e8eff55f980" PRIMARY KEY ("id"))',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "action_request_export" ADD CONSTRAINT "FK_fea823c4374f507a68cf8f926a4" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE',
+    );
+
+    // no necessary data to keep
+
+    await queryRunner.query(
       'ALTER TABLE "chat_message" DROP CONSTRAINT IF EXISTS "chat_message_creator_id_fkey"',
     );
     await queryRunner.query(
@@ -1122,27 +1146,13 @@ export class Migrations1679669193721 implements MigrationInterface {
             FOR EACH ROW
             EXECUTE PROCEDURE trigger_set_timestamp()`);
 
-    await queryRunner.query(`CREATE TABLE "action_old" (
-            "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-            "member_id" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
-            "item_id" uuid REFERENCES "item_old" ("id") ON DELETE SET NULL,
-            "member_type" character varying(100),
-            "item_type" character varying(100),
-            "action_type" character varying(100),
-            "view" character varying(100),
-            "geolocation" jsonb DEFAULT '{}'::jsonb,
-            "extra" jsonb NOT NULL DEFAULT '{}'::jsonb,
-            "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
-        )`);
-    // TODO
-
     await queryRunner.query(`CREATE TABLE "action_request_export_old" (
           "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
           "member_id" uuid REFERENCES "member_old" ("id") ON DELETE CASCADE,
           item_path ltree REFERENCES "item_old" ("path") ON DELETE SET NULL ON UPDATE CASCADE,
           "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
-    // TODO
+    // no necessary data to keep
 
     await queryRunner.query(`CREATE TABLE "invitation_old" (
             "id" uuid UNIQUE DEFAULT uuid_generate_v4(),
@@ -1475,7 +1485,7 @@ export class Migrations1679669193721 implements MigrationInterface {
       'INSERT INTO "item_like_old" (id,member_id, item_id, created_at) SELECT id,creator_id, item_id, created_at FROM item_like',
     );
 
-    await queryRunner.query(`CREATE TABLE "action" (
+    await queryRunner.query(`CREATE TABLE "action_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
             "member_id" uuid REFERENCES "member_old" ("id") ON DELETE SET NULL,
             "item_id" uuid REFERENCES "item_old" ("id") ON DELETE SET NULL,
@@ -1488,19 +1498,19 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
 
-    await queryRunner.query(`CREATE TABLE "action_request_export" (
-          "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-          "member_id" uuid REFERENCES "member_old" ("id") ON DELETE CASCADE,
-          "item_id" uuid REFERENCES "item_old" ("id") ON DELETE CASCADE,
-          "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
-            )`);
-
-    await queryRunner.query(`ALTER TABLE action
+    await queryRunner.query(`ALTER TABLE action_old
             ADD item_path ltree REFERENCES "item_old" ("path") ON DELETE SET NULL ON UPDATE CASCADE`);
 
-    await queryRunner.query(`UPDATE action as a1 SET item_path = 
+    await queryRunner.query(`UPDATE action_old as a1 SET item_path = 
             (SELECT path FROM item WHERE a1.item_id = item.id)`);
     // TODO
+
+    await queryRunner.query(`INSERT INTO "action_old" (id, view,action_type,extra,created_at,geolocation,member_id, item_path, member_type, item_type) 
+    SELECT action.id, view,action.type,action.extra::jsonb,action.created_at,geolocation::jsonb,member_id,item_path , member.type, item.type
+    FROM action
+    LEFT JOIN item ON item.path = item_path
+    LEFT JOIN member ON member.id = member_id
+    `);
 
     // drop new table
     await queryRunner.query('DROP TABLE action');

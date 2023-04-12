@@ -5,12 +5,11 @@ import { FastifyPluginAsync } from 'fastify';
 import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
 
 import { buildRepositories } from '../../util/repositories';
+import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
 import {
   copyMany,
-  copyOne,
   deleteMany,
-  deleteOne,
   getChildren,
   getDescendants,
   getMany,
@@ -18,17 +17,24 @@ import {
   getOwn,
   getShared,
   moveMany,
-  moveOne,
   updateMany,
 } from './fluent-schema';
-// import { itemActionHandler } from './handler/item-action-handler';
 import { Ordered } from './interfaces/requests';
+import { ActionItemService } from './plugins/action/service';
 
 // import { registerItemWsHooks } from './ws/hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const {
+    db,
+    items,
+    members: { service: memberService },
+    actions: { service: actionService },
+    hosts,
+  } = fastify;
   const itemService = items.service;
+
+  const actionItemService = new ActionItemService(actionService, itemService, memberService, hosts);
 
   // create item
   // question: add link hook here? or have another endpoint?
@@ -37,6 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: items.extendCreateSchema(),
       preHandler: fastify.verifyAuthentication,
+      onSend: actionItemService.postPostAction,
     },
     async ({ member, query: { parentId }, body: data, log }) => {
       return db.transaction(async (manager) => {
@@ -123,7 +130,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // update item
   fastify.patch<{ Params: IdParam; Body: Partial<Item> }>(
     '/:id',
-    { schema: items.extendExtrasUpdateSchema(), preHandler: fastify.verifyAuthentication },
+    {
+      schema: items.extendExtrasUpdateSchema(),
+      preHandler: fastify.verifyAuthentication,
+      onSend: actionItemService.postPatchAction,
+    },
     async ({ member, params: { id }, body, log }) => {
       return db.transaction((manager) => {
         return itemService.patch(member, buildRepositories(manager), id, body);
@@ -137,14 +148,25 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: updateMany(items.extendExtrasUpdateSchema()),
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, query: { id: ids }, body, log }, reply) => {
+    async (request, reply) => {
+      const {
+        member,
+        query: { id: ids },
+        body,
+        log,
+      } = request;
       db.transaction((manager) => {
         // TODO: implement queue
         return itemService.patchMany(member, buildRepositories(manager), ids, body);
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
-      });
+      })
+        .then((items) => {
+          // do not wait
+          actionItemService.postManyPatchAction(request, reply, resultOfToList(items));
+        })
+        .catch((e) => {
+          // TODO: return feedback in queue
+          console.error(e);
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -173,15 +195,26 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: deleteMany,
       preHandler: fastify.verifyAuthentication,
+      onSend: actionItemService.postManyDeleteAction,
     },
-    async ({ member, query: { id: ids }, log }, reply) => {
+    async (request, reply) => {
+      const {
+        member,
+        query: { id: ids },
+        log,
+      } = request;
       db.transaction((manager) => {
         // TODO: implement queue
         return itemService.deleteMany(member, buildRepositories(manager), ids);
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
-      });
+      })
+        .then((items) => {
+          // do not wait
+          actionItemService.postManyDeleteAction(request, reply, items);
+        })
+        .catch((e) => {
+          // TODO: return feedback in queue
+          console.error(e);
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -208,14 +241,25 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
     '/move',
     { schema: moveMany, preHandler: fastify.verifyAuthentication },
-    async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
+    async (request, reply) => {
+      const {
+        member,
+        query: { id: ids },
+        body: { parentId },
+        log,
+      } = request;
       // TODO: implement queue
       db.transaction(async (manager) => {
         return itemService.moveMany(member, buildRepositories(manager), ids, parentId);
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
-      });
+      })
+        .then((items) => {
+          // we do not wait
+          actionItemService.postManyMoveAction(request, reply, items);
+        })
+        .catch((e) => {
+          // TODO: return feedback in queue
+          console.error(e);
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -247,16 +291,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }>(
     '/copy',
     { schema: copyMany, preHandler: fastify.verifyAuthentication },
-    async ({ member, query: { id: ids }, body: { parentId }, log }, reply) => {
+    async (request, reply) => {
+      const {
+        member,
+        query: { id: ids },
+        body: { parentId },
+        log,
+      } = request;
       // TODO: implement queue
       db.transaction(async (manager) => {
         return itemService.copyMany(member, buildRepositories(manager), ids, {
           parentId,
         });
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
-      });
+      })
+        .then((items) => {
+          // do not wait
+          actionItemService.postManyCopyAction(request, reply, items);
+        })
+        .catch((e) => {
+          // TODO: return feedback in queue
+          console.error(e);
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },

@@ -1,11 +1,13 @@
 import { DataSource } from 'typeorm';
 
 import { DB_TEST_SCHEMA } from '../../../test/constants';
+import { Action } from '../../services/action/entities/action';
 import { MemberPassword } from '../../services/auth/plugins/password/entities/password';
 import { ChatMessage } from '../../services/chat/chatMessage';
 import { ChatMention } from '../../services/chat/plugins/mentions/chatMention';
 import { Invitation } from '../../services/invitation/invitation';
 import { Item } from '../../services/item/entities/Item';
+import { ActionRequestExport } from '../../services/item/plugins/action/requestExport/requestExport';
 import { AppAction } from '../../services/item/plugins/app/appAction/appAction';
 import { AppData } from '../../services/item/plugins/app/appData/appData';
 import { AppSetting } from '../../services/item/plugins/app/appSetting/appSettings';
@@ -67,6 +69,8 @@ export const AppDataSource = new DataSource({
     ItemValidation,
     ItemValidationGroup,
     ItemValidationReview,
+    Action,
+    ActionRequestExport,
   ],
   // refer to built files in js because it cannot run ts files
   migrations: ['dist/migrations/*.js'],

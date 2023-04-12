@@ -2,7 +2,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { SearchFields } from '.';
 import { Repositories } from '../../util/repositories';
-import { filterOutItems, validatePermission } from '../authorization';
+import { filterOutHiddenItems, validatePermission } from '../authorization';
 
 // this file is not quite necessary, it could be merged with published items
 // but we might change the search logic, so let's not mix everything
@@ -30,7 +30,7 @@ export class SearchService {
 
     // TODO
     // if(tags) {
-    //   query.andWhere("item.name = :name", {name})
+    //   query.andWhere("item.settings.tags = :name", {name})
     // }
 
     if (creator) {
@@ -58,10 +58,10 @@ export class SearchService {
 
     const publishedItemValues = await query.getMany();
 
-    return publishedItemValues.map(({ item }) => item);
-    // return filterOutItems(
-    //   repositories,
-    //   publishedItemValues.map(({ item }) => item),
-    // );
+    // remove hidden items
+    return filterOutHiddenItems(
+      repositories,
+      publishedItemValues.map(({ item }) => item),
+    );
   }
 }

@@ -110,29 +110,28 @@ const values = {
       updated_at: '2023-01-31T13:40:04.571Z',
     },
   ],
-  // TODO
-  // action: [
-  //   {
-  //     id: '0f901df1-d246-d672-bb01-34269f4c0fed',
-  //     item_path: itemPath,
-  //     member_id: memberId,
-  //     item_type: 'folder',
-  //     action_type: 'view',
-  //     member_type: 'individual',
-  //     view: 'builder',
-  //     extra: { someData: 'invitation name' },
-  //     geolocation: { some: 'geolocation' },
-  //     created_at:'2023-03-31T13:40:04.571Z',
-  //   },
-  // ],
-  // action_request_export: [
-  //   {
-  //     id: '0f901df1-d246-d671-bb01-34269f4c0fed',
-  //     member_id: memberId,
-  //     item_id: itemId,
-  //     created_at:'2022-03-31T12:40:04.571Z',
-  //   },
-  // ],
+  action: [
+    {
+      id: '0f901df1-d246-d672-bb01-34269f4c0fed',
+      item_path: itemPath,
+      member_id: memberId,
+      item_type: 'folder',
+      action_type: 'view',
+      member_type: 'individual',
+      view: 'builder',
+      extra: { someData: 'invitation name' },
+      geolocation: { some: 'geolocation' },
+      created_at: '2023-03-31T13:40:04.571Z',
+    },
+  ],
+  action_request_export: [
+    {
+      id: '0f901df1-d246-d671-bb01-34269f4c0fed',
+      member_id: memberId,
+      item_id: itemId,
+      created_at: '2022-03-31T12:40:04.571Z',
+    },
+  ],
   recycled_item: [
     {
       id: '3f901df1-d246-d672-bb01-34269f4c0fed',
@@ -445,25 +444,21 @@ const expected = {
     expect(invitation.created_at.toISOString()).toEqual(expected.created_at);
     expect(invitation.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  // TODO
-  // action: async (action: any, idx: number) => {
-  //   const expected = values.action[idx];
-  //   expect(action.id).toEqual(expected.id);
-  //   expect(action.item_id).toEqual(expected.item_path);
-  //   expect(action.member_id).toEqual(expected.member_id);
-  //   expect(action.geolocation).toEqual(expected.geolocation);
-  //   expect(action.type).toEqual(expected.action_type);
-  //   expect(action.extra).toEqual(expected.extra);
-  //   expect(action.view).toEqual(expected.view);
-  //   expect(action.created_at.toISOString()).toEqual(expected.created_at);
-  // },
-  // action_request_export: async (a: any, idx: number) => {
-  //   const expected = values.action_request_export[idx];
-  //   expect(a.id).toEqual(expected.id);
-  //   expect(a.item_id).toEqual(expected.item_id);
-  //   expect(a.member_id).toEqual(expected.member_id);
-  //   expect(a.created_at.toISOString()).toEqual(expected.created_at);
-  // },
+  action: async (action: any, idx: number) => {
+    const expected = values.action[idx];
+    expect(action.id).toEqual(expected.id);
+    expect(action.item_path).toEqual(expected.item_path);
+    expect(action.member_id).toEqual(expected.member_id);
+    expect(JSON.parse(action.geolocation)).toEqual(expected.geolocation);
+    expect(action.type).toEqual(expected.action_type);
+    expect(JSON.parse(action.extra)).toEqual(expected.extra);
+    expect(action.view).toEqual(expected.view);
+    expect(action.created_at.toISOString()).toEqual(expected.created_at);
+  },
+  action_request_export: async (a: any, idx: number) => {
+    // we don't keep the data
+    // but we make sure inserting the data works
+  },
   recycled_item: async (recycledItem: any, idx: number, db: DataSource) => {
     const expected = values.recycled_item[idx];
 
@@ -494,8 +489,9 @@ const expected = {
       const [itemPublished] = await db.query(
         `SELECT * FROM item_published WHERE item_path= '${expected.item_path}'`,
       );
+      console.log(itemPublished);
       expect(itemPublished.id).toBeTruthy();
-      expect(itemPublished.creator_id).toEqual(itemTag.creator);
+      expect(itemPublished.creator_id).toEqual(itemTag.creator_id);
       expect(itemPublished.created_at).toEqual(itemTag.created_at);
     }
   },
@@ -777,29 +773,26 @@ const downValues = {
       updated_at: '2023-01-31T13:40:04.571Z',
     },
   ],
-  // TODO
-  // action: [
-  //   {
-  //     id: '0f901df1-d246-d672-bb01-34269f4c0fed',
-  //     item_path: itemPath,
-  //     member_id: memberId,
-  //     item_type: 'folder',
-  //     action_type: 'view',
-  //     member_type: 'individual',
-  //     view: 'builder',
-  //     extra: { someData: 'invitation name' },
-  //     geolocation: { some: 'geolocation' },
-  //     created_at:'2023-03-31T13:40:04.571Z',
-  //   },
-  // ],
-  // action_request_export: [
-  //   {
-  //     id: '0f901df1-d246-d671-bb01-34269f4c0fed',
-  //     member_id: memberId,
-  //     item_id: itemId,
-  //     created_at:'2022-03-31T12:40:04.571Z',
-  //   },
-  // ],
+  action: [
+    {
+      id: '0f901df1-d246-d672-bb01-34269f4c0fed',
+      item_path: itemPath,
+      member_id: memberId,
+      type: 'view',
+      view: 'builder',
+      extra: { someData: 'invitation name' },
+      geolocation: { some: 'geolocation' },
+      created_at: '2023-03-31T13:40:04.571Z',
+    },
+  ],
+  action_request_export: [
+    {
+      id: '0f901df1-d246-d671-bb01-34269f4c0fed',
+      member_id: memberId,
+      item_path: itemPath,
+      created_at: '2022-03-31T12:40:04.571Z',
+    },
+  ],
   item_published: [
     {
       id: '3f901df1-d246-d671-bb01-34269f4c0fed',
@@ -1060,25 +1053,23 @@ const downExpected = {
     expect(invitation.created_at.toISOString()).toEqual(expected.created_at);
     expect(invitation.updated_at.toISOString()).toEqual(expected.updated_at);
   },
-  // TODO
-  // action: async (action: any, idx: number) => {
-  //   const expected = downValues.action[idx];
-  //   expect(action.id).toEqual(expected.id);
-  //   expect(action.item_id).toEqual(expected.item_path);
-  //   expect(action.member_id).toEqual(expected.member_id);
-  //   expect(action.geolocation).toEqual(expected.geolocation);
-  //   expect(action.type).toEqual(expected.action_type);
-  //   expect(action.extra).toEqual(expected.extra);
-  //   expect(action.view).toEqual(expected.view);
-  //   expect(action.created_at.toISOString()).toEqual(expected.created_at);
-  // },
-  // action_request_export: async (a: any, idx: number) => {
-  //   const expected = downValues.action_request_export[idx];
-  //   expect(a.id).toEqual(expected.id);
-  //   expect(a.item_id).toEqual(expected.item_id);
-  //   expect(a.member_id).toEqual(expected.member_id);
-  //   expect(a.created_at.toISOString()).toEqual(expected.created_at);
-  // },
+  action: async (action: any, idx: number) => {
+    const expected = downValues.action[idx];
+    const memberType = values.member.find(({ id }) => id === expected.member_id)?.type;
+    expect(action.id).toEqual(expected.id);
+    expect(action.item_path).toEqual(expected.item_path);
+    expect(action.member_id).toEqual(expected.member_id);
+    expect(action.member_type).toEqual(memberType);
+    expect(action.geolocation).toEqual(expected.geolocation);
+    expect(action.action_type).toEqual(expected.type);
+    expect(action.extra).toEqual(expected.extra);
+    expect(action.view).toEqual(expected.view);
+    expect(action.created_at.toISOString()).toEqual(expected.created_at);
+  },
+  action_request_export: async (a: any, idx: number) => {
+    // we don't keep the data
+    // but we make sure inserting the data works
+  },
   item_published: async (ip: any, idx: number, db: DataSource) => {
     // becomes tag
     const expected = downValues.item_published[idx];

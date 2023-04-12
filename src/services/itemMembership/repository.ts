@@ -70,12 +70,21 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return item;
   },
 
-  async getAllBelow(item: Item, memberId: string) {
-    return this.createQueryBuilder('item_membership')
-      .where('item_membership.member = :id', { id: memberId })
+  async getAllBelow(item: Item, memberId?: string) {
+    const query = this.createQueryBuilder('item_membership')
       .andWhere('item_membership.item_path <@ :path', { path: item.path })
-      .andWhere('item_membership.item_path != :path', { path: item.path })
-      .getMany();
+      .andWhere('item_membership.item_path != :path', { path: item.path });
+
+    // if member is specified, select only this user
+    if (memberId) {
+      query.where('item_membership.member = :id', { id: memberId });
+    }
+    // otherwise return members' info
+    else {
+      query.leftJoinAndSelect('item_membership.member', 'member');
+    }
+
+    return query.getMany();
   },
 
   async getForManyItems(items: Item[], memberId?: UUID) {

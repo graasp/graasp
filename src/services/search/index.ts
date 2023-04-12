@@ -19,13 +19,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // search for items with keyword
   // range: title, tag, all, author
-  // fastify.get<{ Querystring: SearchFields }>(
-  //   '/search',
-  //   { schema: search },
-  //   async ({ query, log }) => {
-  //     return searchService.search(null, buildRepositories(), query);
-  //   },
-  // );
+  fastify.get<{ Querystring: SearchFields }>(
+    '/search',
+    { schema: search },
+    async ({ query, log }) => {
+      return searchService.search(null, buildRepositories(), query);
+    },
+  );
 };
 
 export default plugin;

@@ -2,14 +2,10 @@ import { ReadStream } from 'fs';
 
 import { FastifyReply } from 'fastify';
 
-import {
-  Actor,
-  FileItemType,
-  ItemType,
-  LocalFileConfiguration,
-  S3FileConfiguration,
-} from '@graasp/sdk';
+import { FileItemType, ItemType, LocalFileConfiguration, S3FileConfiguration } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../util/graasp-error';
+import { Actor } from '../member/entities/member';
 import { FileRepository } from './interfaces/fileRepository';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
@@ -53,6 +49,10 @@ class FileService {
     member: Actor,
     data?: { file: ReadStream; size: number; filepath: string; mimetype: string },
   ): Promise<any> {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
     const { file, size, filepath, mimetype } = data ?? {};
 
     if (!file || !filepath) {
@@ -158,6 +158,10 @@ class FileService {
       mimetype?: string;
     },
   ): Promise<any> {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
     const { originalPath, newFilePath, newId, mimetype } = data ?? {};
 
     if (!originalPath) {

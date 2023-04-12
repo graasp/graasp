@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import {
+  DEFAULT_LANG,
   Member as GraaspMember,
   MemberExtra,
   MemberType,
@@ -62,6 +63,10 @@ export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity
   // TODO: USED?
   get isPseudonymized(): boolean {
     return isPseudonymizedMember(this.email);
+  }
+
+  get lang(): string {
+    return (this.extra.lang as string) ?? DEFAULT_LANG;
   }
 }
 

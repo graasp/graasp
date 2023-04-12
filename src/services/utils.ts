@@ -1,3 +1,5 @@
+import { ResultOf } from '@graasp/sdk';
+
 export function mapById<T>({
   keys,
   findElement,
@@ -23,4 +25,8 @@ export function mapById<T>({
     }
   });
   return { data, errors };
+}
+
+export function resultOfToList<T>(resultOf: ResultOf<T>): T[] {
+  return Object.values(resultOf.data);
 }

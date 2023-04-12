@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
     // proper authentication
     const { corsPluginOptions } = fastify;
     if (corsPluginOptions) {
-      const allowedOrigins = await aS.getAllValidAppOrigins(null, buildRepositories());
+      const allowedOrigins = await aS.getAllValidAppOrigins(undefined, buildRepositories());
 
       const graaspAndAppsOrigins = corsPluginOptions.origin.concat(allowedOrigins);
       fastify.register(

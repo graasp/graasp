@@ -1,9 +1,11 @@
 import { EntityManager } from 'typeorm';
 
+import { ActionRepository } from '../services/action/repositories/action';
 import { MemberPasswordRepository } from '../services/auth/plugins/password/repository';
 import { ChatMentionRepository } from '../services/chat/plugins/mentions/repository';
 import { ChatMessageRepository } from '../services/chat/repository';
 import { InvitationRepository } from '../services/invitation/repository';
+import { ActionRequestExportRepository } from '../services/item/plugins/action/requestExport/repository';
 import { AppActionRepository } from '../services/item/plugins/app/appAction/repository';
 import { AppDataRepository } from '../services/item/plugins/app/appData/repository';
 import { AppSettingRepository } from '../services/item/plugins/app/appSetting/repository';
@@ -26,6 +28,8 @@ import MemberRepository from '../services/member/repository';
 import { ItemPublishedRepository } from '../services/published/repositories/itemPublished';
 
 export type Repositories = {
+  actionRequestExportRepository: typeof ActionRequestExportRepository;
+  actionRepository: typeof ActionRepository;
   appActionRepository: typeof AppActionRepository;
   appDataRepository: typeof AppDataRepository;
   appRepository: typeof AppRepository;
@@ -105,4 +109,9 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemValidationGroupRepository: manager
     ? manager.withRepository(ItemValidationGroupRepository)
     : ItemValidationGroupRepository,
+
+  actionRepository: manager ? manager.withRepository(ActionRepository) : ActionRepository,
+  actionRequestExportRepository: manager
+    ? manager.withRepository(ActionRequestExportRepository)
+    : ActionRequestExportRepository,
 });
