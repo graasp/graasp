@@ -39,6 +39,8 @@ export class ActionItemService {
     this.itemService = itemService;
     // this.itemMembershipsService = itemMembershipsService;
     this.memberService = memberService;
+
+    console.log('weiofj',this.actionService );
   }
 
   // async postMany(
@@ -132,6 +134,8 @@ export class ActionItemService {
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
+    console.log('erg',this);
+    console.log('erg',this.actionService);
     await this.actionService.postMany(member, buildRepositories(), request, [action]);
   }
 

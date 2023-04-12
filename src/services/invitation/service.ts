@@ -129,9 +129,7 @@ export class InvitationService {
   }
 
   async createToMemberships(actor: Actor, repositories: Repositories, member: Member) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+    // invitations to memberships is triggered on register: no actor available
     const { invitationRepository, itemMembershipRepository } = repositories;
     const invitations = await invitationRepository.find({
       where: { email: member.email },

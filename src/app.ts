@@ -34,6 +34,7 @@ import {
   MAILER_CONFIG_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './util/config';
+import { ActionItemService } from './services/item/plugins/action/service';
 
 // TODO: REMOVE
 declare module 'fastify' {
@@ -47,6 +48,9 @@ declare module 'fastify' {
       files: {
         service: FileItemService;
       };
+      actions: {
+        service: ActionItemService
+      }
     };
     members: { service: MemberService };
     actions: { service: ActionService };

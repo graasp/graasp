@@ -4,6 +4,7 @@ import { Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
+  FolderItemExtraProperties,
   FolderItemType,
   HttpMethod,
   ItemTagType,
@@ -1062,7 +1063,7 @@ describe('Item routes tests', () => {
           item: getDummyItem({
             extra: {
               [ItemType.FOLDER]: {
-                extraValue: 'value',
+                childrenOrder: ['value'],
               },
             },
           }),
@@ -1091,7 +1092,7 @@ describe('Item routes tests', () => {
           ...item,
           ...payload,
           // BUG: folder extra should not contain extra
-          extra: { folder: { ...item.extra.folder, ...payload.extra.folder } },
+          extra: { folder: { ...(item.extra.folder as FolderItemExtraProperties), ...payload.extra.folder } },
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

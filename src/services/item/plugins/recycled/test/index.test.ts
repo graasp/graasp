@@ -12,9 +12,6 @@ import {
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { expectManyItems, getDummyItem } from '../../../../../../test/fixtures/items';
-import { BOB, saveMember } from '../../../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../util/config';
 import {
   ItemNotFound,
@@ -25,15 +22,18 @@ import { ItemMembershipRepository } from '../../../../itemMembership/repository'
 import { Member } from '../../../../member/entities/member';
 import { ItemRepository } from '../../../repository';
 import { CannotRestoreNonDeletedItem } from '../errors';
-import { RecycledItemRepository } from '../repository';
+import { RecycledItemDataRepository } from '../repository';
 import { expectManyRecycledItems, expectRecycledItem } from './fixtures';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { expectManyItems, getDummyItem } from '../../../test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
 const saveRecycledItem = async (member: Member) => {
   const { item } = await saveItemAndMembership({ member });
-  await RecycledItemRepository.recycleOne(item, member);
+  await RecycledItemDataRepository.recycleOne(item, member);
   await ItemRepository.softRemove(item);
   return item;
 };
@@ -208,7 +208,7 @@ describe('Recycle Bin Tests', () => {
               expect(savedNotDeleted).toHaveLength(0);
 
               // check recycle item entries
-              const savedEntries = await RecycledItemRepository.find({
+              const savedEntries = await RecycledItemDataRepository.find({
                 where: { item: { path: In(items.map(({ path }) => path)) } },
               });
               expectManyRecycledItems(savedEntries, saved);
@@ -237,7 +237,7 @@ describe('Recycle Bin Tests', () => {
               expect(savedNotDeleted).toHaveLength(items.length);
 
               // check NO recycle item entries
-              const savedEntries = await RecycledItemRepository.find({
+              const savedEntries = await RecycledItemDataRepository.find({
                 where: { item: { path: In(items.map(({ path }) => path)) } },
               });
               expect(savedEntries).toHaveLength(0);
@@ -298,14 +298,14 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Successfully restore an item', async () => {
-          const initialCount = (await RecycledItemRepository.find()).length;
+          const initialCount = (await RecycledItemDataRepository.find()).length;
 
           const response = await app.inject({
             method: HttpMethod.POST,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
           });
           expect(response.statusCode).toBe(StatusCodes.OK);
-          expect(await RecycledItemRepository.find()).toHaveLength(initialCount - 1);
+          expect(await RecycledItemDataRepository.find()).toHaveLength(initialCount - 1);
           expect(response.json().id).toBeTruthy();
           expectManyRecycledItems([response.json()], [item], actor);
         });
@@ -471,7 +471,7 @@ describe('Recycle Bin Tests', () => {
             permission: PermissionLevel.Write,
           });
           const initialCount = await ItemRepository.find();
-          const initialCountRecycled = await RecycledItemRepository.find();
+          const initialCountRecycled = await RecycledItemDataRepository.find();
 
           const res = await app.inject({
             method: HttpMethod.POST,
@@ -487,7 +487,7 @@ describe('Recycle Bin Tests', () => {
             setTimeout(async () => {
               const allItems = await ItemRepository.find();
               expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemRepository.find()).toHaveLength(initialCountRecycled.length);
+              expect(await RecycledItemDataRepository.find()).toHaveLength(initialCountRecycled.length);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
@@ -495,7 +495,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Throws if one item does not exist', async () => {
           const initialCount = await ItemRepository.find();
-          const initialCountRecycled = await RecycledItemRepository.find();
+          const initialCountRecycled = await RecycledItemDataRepository.find();
 
           const res = await app.inject({
             method: HttpMethod.POST,
@@ -511,7 +511,7 @@ describe('Recycle Bin Tests', () => {
             setTimeout(async () => {
               const allItems = await ItemRepository.find();
               expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemRepository.find()).toHaveLength(initialCountRecycled.length);
+              expect(await RecycledItemDataRepository.find()).toHaveLength(initialCountRecycled.length);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });

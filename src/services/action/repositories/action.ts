@@ -48,6 +48,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
 
     const query = this.createQueryBuilder('action')
       .leftJoinAndSelect('action.item', 'item')
+      .leftJoinAndSelect('action.member', 'member')
       .where('item.path <@ :path', { path: itemPath })
       .limit(size);
 

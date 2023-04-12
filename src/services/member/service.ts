@@ -21,9 +21,7 @@ export class MemberService {
   }
 
   async post(actor: Actor, repositories: Repositories, body, lang = DEFAULT_LANG) {
-    if (!actor) {
-      throw new Error('Cannot post new member');
-    }
+    // actor may not exist on register
 
     const { memberRepository } = repositories;
 

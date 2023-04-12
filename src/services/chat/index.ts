@@ -73,12 +73,14 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
       {
         schema: publishMessage,
         preHandler: fastify.verifyAuthentication,
-        onSend: actionChatService.postPostMessageAction,
       },
-      async ({ member, params: { itemId }, body, log }) => {
-        return db.transaction(async (manager) => {
+      async (request,reply) => {
+        const { member, params: { itemId }, body, log } =request;
+        const message =await db.transaction(async (manager) => {
           return chatService.postOne(member, buildRepositories(manager), itemId, body);
         });
+        actionChatService.postPostMessageAction(request, reply, message);
+      return message;
       },
     );
 
@@ -91,12 +93,16 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
       {
         schema: patchMessage,
         preHandler: fastify.verifyAuthentication,
-        onSend: actionChatService.postPatchMessageAction,
+        
       },
-      async ({ member, params: { itemId, messageId }, body, log }) => {
-        return db.transaction(async (manager) => {
+      async (request, reply) => {
+        const { member, params: { itemId, messageId }, body, log }  = request;
+        const message = await db.transaction(async (manager) => {
           return chatService.patchOne(member, buildRepositories(manager), itemId, messageId, body);
         });
+        actionChatService.postPatchMessageAction(request,reply,message);
+        return message;
+
       },
     );
 
@@ -106,12 +112,14 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
       {
         schema: deleteMessage,
         preHandler: fastify.verifyAuthentication,
-        onSend: actionChatService.postDeleteMessageAction,
       },
-      async ({ member, params: { itemId, messageId }, log }) => {
-        return db.transaction(async (manager) => {
+      async (request, reply) => {
+        const  { member, params: { itemId, messageId }, log } = request;
+        const message = await db.transaction(async (manager) => {
           return chatService.deleteOne(member, buildRepositories(manager), itemId, messageId);
         });
+        actionChatService.postDeleteMessageAction(request, reply, message);
+        return message;
       },
     );
 
@@ -121,12 +129,14 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
       {
         schema: clearChat,
         preHandler: fastify.verifyAuthentication,
-        onSend: actionChatService.postClearMessageAction,
       },
-      async ({ member, params: { itemId }, log }) => {
-        return db.transaction(async (manager) => {
+      async (request, reply) => {
+        const { member, params: { itemId }, log } = request;
+        await db.transaction(async (manager) => {
           return chatService.clear(member, buildRepositories(manager), itemId);
         });
+        actionChatService.postClearMessageAction(request, reply,itemId);
+        return ;
       },
     );
   });

@@ -33,8 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     hosts,
   } = fastify;
   const itemService = items.service;
-
-  const actionItemService = new ActionItemService(actionService, itemService, memberService, hosts);
+  const actionItemService = items.actions.service;
 
   // create item
   // question: add link hook here? or have another endpoint?
@@ -43,15 +42,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: items.extendCreateSchema(),
       preHandler: fastify.verifyAuthentication,
-      onSend: actionItemService.postPostAction,
     },
-    async ({ member, query: { parentId }, body: data, log }) => {
-      return db.transaction(async (manager) => {
+    async (request, reply) => {
+      const { member, query: { parentId }, body: data, log } = request;
+      const item = await db.transaction(async (manager) => {
         return itemService.post(member, buildRepositories(manager), {
           item: data,
           parentId,
         });
       });
+      actionItemService.postPostAction(request, reply, item);
+      return item;
     },
   );
 
@@ -119,7 +120,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/parents',
     {
       // schema: getDescendants
-
       preHandler: fastify.fetchMemberInSession,
     },
     async ({ member, params: { id }, log }) => {
@@ -133,12 +133,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: items.extendExtrasUpdateSchema(),
       preHandler: fastify.verifyAuthentication,
-      onSend: actionItemService.postPatchAction,
     },
-    async ({ member, params: { id }, body, log }) => {
-      return db.transaction((manager) => {
+    async (request, reply) => {
+      const { member, params: { id }, body, log } =request;
+      const item = await db.transaction((manager) => {
         return itemService.patch(member, buildRepositories(manager), id, body);
       });
+      actionItemService.postPatchAction(request, reply, item);
+      return item;
     },
   );
 
@@ -195,7 +197,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: deleteMany,
       preHandler: fastify.verifyAuthentication,
-      onSend: actionItemService.postManyDeleteAction,
     },
     async (request, reply) => {
       const {

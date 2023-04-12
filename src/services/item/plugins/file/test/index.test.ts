@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import { HttpMethod, ItemTagType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
@@ -60,20 +60,26 @@ jest.mock('@aws-sdk/s3-request-presigner', () => {
   };
 });
 
+// TODO: S3 file??
 const MOCK_FILE_ITEM = getDummyItem({
-  type: FILE_ITEM_TYPE,
+  type: ItemType.LOCAL_FILE,
   extra: {
-    [FILE_ITEM_TYPE]: {
+    [ItemType.LOCAL_FILE]: {
+      name:'name',
+      mimetype:'mimetype',
       path: 'filepath',
       size: 10,
     },
   },
 });
 
+// TODO: S3 file??
 const MOCK_HUGE_FILE_ITEM = getDummyItem({
-  type: FILE_ITEM_TYPE,
+  type: ItemType.LOCAL_FILE,
   extra: {
-    [FILE_ITEM_TYPE]: {
+    [ItemType.LOCAL_FILE]: {
+      name:'name',
+      mimetype:'mimetype',
       path: 'filepath',
       size: DEFAULT_MAX_STORAGE,
     },
