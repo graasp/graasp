@@ -1073,7 +1073,7 @@ const downExpected = {
   item_published: async (ip: any, idx: number, db: DataSource) => {
     // becomes tag
     const expected = downValues.item_published[idx];
-    const [publishedTag] = await db.query('SELECT * FROM tag WHERE name= \'published-item\'');
+    const [publishedTag] = await db.query("SELECT * FROM tag WHERE name= 'published-item'");
     const [itemTag] = await db.query(
       `SELECT * FROM item_tag WHERE tag_id= '${publishedTag.id}' AND item_path='${expected.item_path}'`,
     );

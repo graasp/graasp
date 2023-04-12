@@ -26,7 +26,7 @@ export class AppSetting extends BaseEntity {
     nullable: false,
   })
   @JoinColumn({ name: 'item_id' })
-  item: string;
+  item: Item;
 
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'SET NULL',

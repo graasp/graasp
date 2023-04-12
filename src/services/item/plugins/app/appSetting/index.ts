@@ -1,27 +1,32 @@
 import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
-import { IdParam } from '@graasp/sdk';
+import { IdParam, ItemType } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../util/repositories';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
+import appSettingFilePlugin from './plugins/file';
 import common, { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppSettingService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
-    files: { service: fS },
+    items: { service: itemService },
     db,
   } = fastify;
 
-  const appSettingService = new AppSettingService();
-
-  const fileItemType = fS.type;
-  // const fTM = new FileTaskManager({ s3: s3Config, local: localConfig }, fileItemType);
-
-  // const taskManager = new TaskManager(aSS, iS, iMS, iTM, iMTM, fileItemType, fTM);
-
+  // TODO: still necessary??
   fastify.addSchema(common);
+
+  const appSettingService = new AppSettingService(itemService);
+
+  // copy app settings and related files on item copy
+  const hook = async (actor, repositories, { original, copy }) => {
+    if (original.type !== ItemType.APP) return;
+
+    await appSettingService.copyForItem(actor, repositories, original, copy);
+  };
+  itemService.hooks.setPostHook('copy', hook);
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {
@@ -30,120 +35,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
-    // fastify.register(GraaspFilePlugin, {
-    //   prefix: '/app-settings',
-    //   shouldRedirectOnDownload: false,
-    //   uploadMaxFileNb: 1,
-    //   fileItemType,
-    //   fileConfigurations: {
-    //     s3: s3Config,
-    //     local: localConfig,
-    //   },
-    //   buildFilePath,
-
-    //   uploadPreHookTasks: async ({ parentId: itemId }, { token }) => {
-    //     const { memberId: id } = token;
-    //     return taskManager.createGetTaskSequence({ id }, itemId, token);
-    //   },
-    //   uploadPostHookTasks: async (
-    //     { filename, itemId, filepath, size, mimetype },
-    //     { token },
-    //     requestBody,
-    //   ) => {
-    //     const { memberId: id } = token;
-
-    //     const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
-    //     const data = buildFileItemData({
-    //       name,
-    //       type: fileItemType,
-    //       filename,
-    //       filepath,
-    //       size,
-    //       mimetype,
-    //     });
-
-    //     const tasks = taskManager.createCreateTaskSequence(
-    //       { id },
-    //       {
-    //         name: requestBody?.name ?? 'file',
-    //         data: {
-    //           ...data,
-    //         },
-    //       },
-    //       itemId,
-    //       token,
-    //     );
-
-    //     return tasks;
-    //   },
-
-    //   downloadPreHookTasks: async ({ itemId: appSettingId }, { token }) => {
-    //     return [
-    //       taskManager.createGetFileTask(
-    //         { id: token.memberId },
-    //         { appSettingId, fileItemType },
-    //         token,
-    //       ),
-    //     ];
-    //   },
-    // });
-
-    // TODO
-    // copy app settings and related files on item copy
-    // const copyTaskName = iTM.getCopyTaskName();
-    // runner.setTaskPostHookHandler<Item>(
-    //   copyTaskName,
-    //   async ({ id: newId, type }, actor, { log, handler }, { original }) => {
-    //     try {
-    //       if (!newId || type !== ItemType.APP) return;
-
-    //       const appSettings = await aSS.getForItem(original.id, handler);
-    //       for (const appS of appSettings) {
-    //         const copyData = {
-    //           name: appS.name,
-    //           data: appS.data,
-    //           itemId: newId,
-    //           creator: actor.id,
-    //         };
-    //         const newSetting = await aSS.create(copyData, handler);
-
-    //         // copy file only if content is a file
-    //         const isFileSetting = appS.data.type === fileItemType;
-    //         if (isFileSetting) {
-    //           // create file data object
-    //           const newFilePath = buildFilePath();
-    //           const newFileData = buildFileItemData({
-    //             filepath: newFilePath,
-    //             name: appS.data.name,
-    //             type: appS.data.type,
-    //             filename: appS.data.extra[fileItemType].name,
-    //             size: appS.data.extra[fileItemType].size,
-    //             mimetype: appS.data.extra[fileItemType].mimetype,
-    //           });
-
-    //           // set to new app setting
-    //           copyData.data = newFileData;
-
-    //           // run copy task
-    //           const originalFileExtra = appS.data.extra[fileItemType] as FileProperties;
-    //           const fileCopyData = {
-    //             newId: newSetting.id,
-    //             newFilePath,
-    //             originalPath: originalFileExtra.path,
-    //             mimetype: originalFileExtra.mimetype,
-    //           };
-    //           const fileCopyTask = fTM.createCopyFileTask(actor, fileCopyData);
-    //           await runner.runSingle(fileCopyTask);
-
-    //           // update new setting with file data
-    //           await aSS.update(newSetting.id, { data: newFileData }, handler);
-    //         }
-    //       }
-    //     } catch (err) {
-    //       log.error(err);
-    //     }
-    //   },
-    // );
+    fastify.register(appSettingFilePlugin, { appSettingService });
 
     // create app setting
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppSetting> }>(

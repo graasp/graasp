@@ -16,6 +16,7 @@ import { MentionService } from './services/chat/plugins/mentions/service';
 import filePlugin from './services/file';
 import FileService from './services/file/service';
 import ItemServiceApi from './services/item';
+import { ActionItemService } from './services/item/plugins/action/service';
 import FileItemService from './services/item/plugins/file/service';
 import ItemService from './services/item/service';
 import ItemMembershipServiceApi from './services/itemMembership';
@@ -34,7 +35,6 @@ import {
   MAILER_CONFIG_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './util/config';
-import { ActionItemService } from './services/item/plugins/action/service';
 
 // TODO: REMOVE
 declare module 'fastify' {
@@ -49,8 +49,8 @@ declare module 'fastify' {
         service: FileItemService;
       };
       actions: {
-        service: ActionItemService
-      }
+        service: ActionItemService;
+      };
     };
     members: { service: MemberService };
     actions: { service: ActionService };

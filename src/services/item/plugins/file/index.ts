@@ -4,7 +4,6 @@ import { FastifyPluginAsync } from 'fastify';
 import { FileProperties, HttpMethod, IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../util/repositories';
-import { Item } from '../../entities/Item';
 import { download, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
@@ -39,7 +38,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
-      fields: 5, // Max number of non-file fields (Default: Infinity).
+      fields: 0, // Max number of non-file fields (Default: Infinity).
       // allow some fields for app data and app setting
       fileSize: maxFileSize, // For multipart forms, the max file size (Default: Infinity).
       files: uploadMaxFileNb, // Max number of file fields (Default: Infinity).
@@ -51,7 +50,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   //   throw new Error('graasp-plugin-file: buildFilePath is not defined');
   // }
 
-  // TODO: define in decorators??
   const fileItemService = new FileItemService(
     fileService,
     items.service,
@@ -148,17 +146,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     async (request, reply) => {
       const {
         member,
-        authTokenSubject,
         params: { id: itemId },
         query: { size, replyUrl },
         log,
       } = request;
 
-      // need auth token?
-      const actor = member || { id: authTokenSubject?.memberId };
-
       return fileItemService
-        .download(actor, buildRepositories(), { reply, itemId, replyUrl })
+        .download(member, buildRepositories(), { reply, itemId, replyUrl })
         .catch((e) => {
           if (e.code) {
             throw e;

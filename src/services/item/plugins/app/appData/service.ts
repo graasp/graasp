@@ -1,8 +1,9 @@
 import { defineAbility } from '@casl/ability';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../util/graasp-error';
+import { MemberCannotWriteItem } from '../../../../../util/graasp-error';
+import HookManager from '../../../../../util/hook';
 import { Repositories } from '../../../../../util/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
@@ -64,6 +65,8 @@ const permissionMapping = {
 };
 
 export class AppDataService {
+  hooks = new HookManager();
+
   async post(
     actorId: string | undefined,
     repositories: Repositories,
@@ -177,7 +180,46 @@ export class AppDataService {
       inheritedMembership,
     );
 
-    return appDataRepository.deleteOne(itemId, appDataId);
+    const result = await appDataRepository.deleteOne(itemId, appDataId);
+
+    await this.hooks.runPostHooks('delete', member, repositories, appData);
+
+    return result;
+  }
+
+  async get(
+    memberId: string | undefined,
+    repositories: Repositories,
+    itemId: UUID,
+    appDataId: UUID,
+  ) {
+    const { appDataRepository, memberRepository, itemRepository } = repositories;
+
+    // get member if exists
+    // item can be public
+    const member = memberId ? await memberRepository.get(memberId) : undefined;
+
+    // check item exists? let post fail?
+    const item = await itemRepository.get(itemId);
+
+    // posting an app data is allowed to readers
+    const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
+
+    const appData = await appDataRepository.get(appDataId);
+
+    if (
+      !this.validateAppDataPermission(
+        repositories,
+        member,
+        appData,
+        PermissionLevel.Read,
+        membership,
+      )
+    ) {
+      throw new AppDataNotAccessible({ appDataId, memberId });
+    }
+
+    return appData;
   }
 
   async getForItem(

@@ -19,14 +19,14 @@ import {
   MemberCannotAdminItem,
 } from '../../../../../util/graasp-error';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
+import { expectManyItems, getDummyItem } from '../../../test/fixtures/items';
 import { CannotRestoreNonDeletedItem } from '../errors';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyRecycledItems, expectRecycledItem } from './fixtures';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
-import { expectManyItems, getDummyItem } from '../../../test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -487,7 +487,9 @@ describe('Recycle Bin Tests', () => {
             setTimeout(async () => {
               const allItems = await ItemRepository.find();
               expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemDataRepository.find()).toHaveLength(initialCountRecycled.length);
+              expect(await RecycledItemDataRepository.find()).toHaveLength(
+                initialCountRecycled.length,
+              );
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
@@ -511,7 +513,9 @@ describe('Recycle Bin Tests', () => {
             setTimeout(async () => {
               const allItems = await ItemRepository.find();
               expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemDataRepository.find()).toHaveLength(initialCountRecycled.length);
+              expect(await RecycledItemDataRepository.find()).toHaveLength(
+                initialCountRecycled.length,
+              );
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });

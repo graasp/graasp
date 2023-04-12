@@ -65,8 +65,8 @@ const MOCK_FILE_ITEM = getDummyItem({
   type: ItemType.LOCAL_FILE,
   extra: {
     [ItemType.LOCAL_FILE]: {
-      name:'name',
-      mimetype:'mimetype',
+      name: 'name',
+      mimetype: 'mimetype',
       path: 'filepath',
       size: 10,
     },
@@ -78,8 +78,8 @@ const MOCK_HUGE_FILE_ITEM = getDummyItem({
   type: ItemType.LOCAL_FILE,
   extra: {
     [ItemType.LOCAL_FILE]: {
-      name:'name',
-      mimetype:'mimetype',
+      name: 'name',
+      mimetype: 'mimetype',
       path: 'filepath',
       size: DEFAULT_MAX_STORAGE,
     },

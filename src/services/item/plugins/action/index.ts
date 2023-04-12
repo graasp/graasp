@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
 import {
   Context,
@@ -14,7 +15,6 @@ import {
 import { buildRepositories } from '../../../../util/repositories';
 import { ActionRequestExportService } from './requestExport/service';
 import { ActionItemService } from './service';
-import fp from 'fastify-plugin';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
@@ -35,7 +35,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
   } = fastify;
 
   const actionItemService = new ActionItemService(actionService, itemService, memberService, hosts);
-  fastify.items.actions = {service : actionItemService};
+  fastify.items.actions = { service: actionItemService };
 
   const requestExportService = new ActionRequestExportService(
     actionService,

@@ -1,9 +1,10 @@
 import { FastifyReply } from 'fastify';
 
+import { UUID } from '@graasp/sdk';
+
 import { buildRepositories } from '../../../../util/repositories';
 import { ActionService } from '../../../action/services/action';
 import { ChatMessage } from '../../chatMessage';
-import { UUID } from '@graasp/sdk';
 
 enum ChatActionType {
   Create = 'chat_create',
@@ -53,7 +54,7 @@ export class ActionChatService {
     const { member } = request;
     const action = {
       type: ChatActionType.Clear,
-      extra: {itemId},
+      extra: { itemId },
     };
     await this.actionService.postMany(member, buildRepositories(), request, [action]);
   }

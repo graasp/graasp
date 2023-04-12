@@ -23,24 +23,18 @@ export class ActionItemService {
   itemService: ItemService;
   memberService: MemberService;
   actionService: ActionService;
-  // itemMembershipsService: ItemMembershipService;
   hosts: Hostname[];
 
   constructor(
     actionService: ActionService,
     itemService: ItemService,
-
-    // itemMembershipsService: ItemMembershipService,
     memberService: MemberService,
     hosts: Hostname[],
   ) {
     this.actionService = actionService;
     this.hosts = hosts;
     this.itemService = itemService;
-    // this.itemMembershipsService = itemMembershipsService;
     this.memberService = memberService;
-
-    console.log('weiofj',this.actionService );
   }
 
   // async postMany(
@@ -107,7 +101,6 @@ export class ActionItemService {
     const itemMemberships = await repositories.itemMembershipRepository.getAllBelow(item);
     const allMemberships = [...inheritedMemberships, ...itemMemberships];
     // get members
-    console.log(allMemberships);
     const members = allMemberships.map(({ member }) => member);
 
     // get descendants items
@@ -134,8 +127,6 @@ export class ActionItemService {
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
-    console.log('erg',this);
-    console.log('erg',this.actionService);
     await this.actionService.postMany(member, buildRepositories(), request, [action]);
   }
 

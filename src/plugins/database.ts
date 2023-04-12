@@ -18,10 +18,11 @@ const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
   }
 
   // check schema is sync
-const databaseUpQueries = (await db.driver.createSchemaBuilder().log()).upQueries;
-if (databaseUpQueries.length > 0) {
-  console.log(`${databaseUpQueries.length} schema differences detected in current connection.`);
-}
+  // const databaseUpQueries = (await db.driver.createSchemaBuilder().log()).upQueries;
+  // if (databaseUpQueries.length > 0) {
+  //   console.error(`${databaseUpQueries.length} schema differences detected in current connection.`);
+  //   throw new Error(`${databaseUpQueries.length} schema differences detected in current connection.`);
+  // }
 
   fastify.decorate('db', db);
 };

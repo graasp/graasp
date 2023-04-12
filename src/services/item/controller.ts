@@ -44,7 +44,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.verifyAuthentication,
     },
     async (request, reply) => {
-      const { member, query: { parentId }, body: data, log } = request;
+      const {
+        member,
+        query: { parentId },
+        body: data,
+        log,
+      } = request;
       const item = await db.transaction(async (manager) => {
         return itemService.post(member, buildRepositories(manager), {
           item: data,
@@ -135,7 +140,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.verifyAuthentication,
     },
     async (request, reply) => {
-      const { member, params: { id }, body, log } =request;
+      const {
+        member,
+        params: { id },
+        body,
+        log,
+      } = request;
       const item = await db.transaction((manager) => {
         return itemService.patch(member, buildRepositories(manager), id, body);
       });

@@ -1,23 +1,19 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { FileItemType, IdParam } from '@graasp/sdk';
+import { IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../util/repositories';
-import { AppDataVisibility } from '../interfaces/app-details';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { APP_DATA_TYPE_FILE } from '../util/constants';
 import { AppData } from './appData';
 import { InputAppData } from './interfaces/app-data';
+import appDataFilePlugin from './plugins/file';
 import common, { create, deleteOne, getForMany, getForOne, updateOne } from './schemas';
 import { AppDataService } from './service';
 
 const appDataPlugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    files: { service: fS },
-  } = fastify;
-  const fileItemType = fS.type;
+  const { db } = fastify;
 
+  // TODO: still necessary??
   fastify.addSchema(common);
 
   const appDataService = new AppDataService();
@@ -27,74 +23,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     // TODO: allow CORS but only the origins in the table from approved publishers - get all
     // origins from the publishers table an build a rule with that.
 
-    // TODO: FILE DATA
-
-    // fastify.register(GraaspFilePlugin, {
-    //   fileItemType,
-    //   uploadMaxFileNb: 1,
-    //   shouldRedirectOnDownload: false,
-    //   fileConfigurations: fileOptions,
-    //   buildFilePath,
-
-    //   uploadPreHookTasks: async ({ parentId: itemId }, { token }) => {
-    //     const { member: id } = token;
-    //     return [
-    //       taskManager.createGetTask(
-    //         { id },
-    //         itemId,
-    //         { visibility: AppDataVisibility.MEMBER },
-    //         token,
-    //       ),
-    //     ];
-    //   },
-    //   uploadPostHookTasks: async (
-    //     { filename, itemId, filepath, size, mimetype },
-    //     { token },
-    //     fileBody = {},
-    //   ) => {
-    //     const { member: id } = token;
-
-    //     // remove undefined values
-    //     const values = { ...fileBody };
-    //     Object.keys(values).forEach((key) => values[key] === undefined && delete values[key]);
-
-    //     const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
-    //     const data = buildFileItemData({
-    //       name,
-    //       type: fileItemType,
-    //       filename,
-    //       filepath,
-    //       size,
-    //       mimetype,
-    //     });
-
-    //     const tasks = taskManager.createCreateTaskSequence(
-    //       { id },
-    //       {
-    //         data: {
-    //           ...data,
-    //         },
-    //         type: APP_DATA_TYPE_FILE,
-    //         visibility: 'member',
-    //         ...values,
-    //       },
-    //       itemId,
-    //       token,
-    //     );
-
-    //     return tasks;
-    //   },
-
-    //   downloadPreHookTasks: async ({ itemId }, { token }) => {
-    //     return [
-    //       taskManager.createGetFileTask(
-    //         { id: token.member },
-    //         { appDataId: itemId, fileItemType },
-    //         token,
-    //       ),
-    //     ];
-    //   },
-    // });
+    fastify.register(appDataFilePlugin, { appDataService });
 
     // create app data
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppData> }>(

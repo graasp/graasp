@@ -1,5 +1,3 @@
-import { In, Not } from 'typeorm';
-
 import { ItemType } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';

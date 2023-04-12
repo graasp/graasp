@@ -399,7 +399,9 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "action_request_export" ADD CONSTRAINT "FK_fea823c4374f507a68cf8f926a4" FOREIGN KEY ("item_path") REFERENCES "item"("path") ON DELETE CASCADE ON UPDATE CASCADE',
     );
-await queryRunner.query('ALTER TABLE "action_request_export" ADD CONSTRAINT "FK_bc85ef3298df8c7974b33081b47" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION;');
+    await queryRunner.query(
+      'ALTER TABLE "action_request_export" ADD CONSTRAINT "FK_bc85ef3298df8c7974b33081b47" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION',
+    );
     // no necessary data to keep
 
     await queryRunner.query(
@@ -1058,13 +1060,13 @@ await queryRunner.query('ALTER TABLE "action_request_export" ADD CONSTRAINT "FK_
       'ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION',
     );
 
-    await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
-    await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
+    await queryRunner.query("CREATE TYPE \"member_type_enum\" AS ENUM ('individual', 'group')");
+    await queryRunner.query("CREATE TYPE \"permissions_enum\" AS ENUM ('read', 'write', 'admin')");
 
-    await queryRunner.query('CREATE TYPE "nested_tag_enum" AS ENUM (\'allow\', \'fail\')');
-    await queryRunner.query('CREATE TYPE mention_status AS ENUM (\'unread\', \'read\')');
+    await queryRunner.query("CREATE TYPE \"nested_tag_enum\" AS ENUM ('allow', 'fail')");
+    await queryRunner.query("CREATE TYPE mention_status AS ENUM ('unread', 'read')");
     await queryRunner.query(
-      'CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')',
+      "CREATE TYPE \"app_data_visibility_enum\" AS ENUM ('member', 'item'); --, 'app', 'publisher')",
     );
 
     // -- CREATE everything
