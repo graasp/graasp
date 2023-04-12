@@ -64,7 +64,7 @@ jobs:
           DB_PASSWORD: docker
           DB_USERNAME: docker
           DB_NAME: typeorm
-        run: yarn migration:run & yarn migration:check
+        run: yarn migration:run && yarn migration:check
 
       - name: yarn test
         run: 

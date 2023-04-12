@@ -157,8 +157,6 @@ export class Migrations1679669193721 implements MigrationInterface {
         
         `);
 
-    // TODO: action
-
     // item published
     await queryRunner.query(
       'CREATE TABLE "item_published" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid, "item_path" ltree NOT NULL  REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "published-item" UNIQUE ("item_path"), CONSTRAINT "REL_490fddd9099ee7ddcccf8c776a" UNIQUE ("item_path"), CONSTRAINT "PK_3f196048ad22161a430250561f9" PRIMARY KEY ("id"))',
@@ -1060,13 +1058,13 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION',
     );
 
-    await queryRunner.query("CREATE TYPE \"member_type_enum\" AS ENUM ('individual', 'group')");
-    await queryRunner.query("CREATE TYPE \"permissions_enum\" AS ENUM ('read', 'write', 'admin')");
+    await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
+    await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
 
-    await queryRunner.query("CREATE TYPE \"nested_tag_enum\" AS ENUM ('allow', 'fail')");
-    await queryRunner.query("CREATE TYPE mention_status AS ENUM ('unread', 'read')");
+    await queryRunner.query('CREATE TYPE "nested_tag_enum" AS ENUM (\'allow\', \'fail\')');
+    await queryRunner.query('CREATE TYPE mention_status AS ENUM (\'unread\', \'read\')');
     await queryRunner.query(
-      "CREATE TYPE \"app_data_visibility_enum\" AS ENUM ('member', 'item'); --, 'app', 'publisher')",
+      'CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')',
     );
 
     // -- CREATE everything
