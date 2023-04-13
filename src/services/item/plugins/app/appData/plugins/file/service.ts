@@ -15,6 +15,7 @@ import { Actor } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { AppDataVisibility } from '../../../interfaces/app-details';
 import { APP_DATA_TYPE_FILE } from '../../../util/constants';
+import { ItemNotFound } from '../../../util/graasp-apps-error';
 import { AppData } from '../../appData';
 import { AppDataService } from '../../service';
 
@@ -24,7 +25,7 @@ class AppDataFileService {
   itemService: ItemService;
 
   buildFilePath(itemId: UUID, appDataId: UUID) {
-    return path.join('app-data', itemId, appDataId);
+    return path.join('apps', 'app-data', itemId, appDataId);
   }
 
   constructor(appDataService: AppDataService, fileService: FileService, itemService: ItemService) {
@@ -34,22 +35,26 @@ class AppDataFileService {
   }
 
   async upload(
-    actor: Actor,
+    actorId: string | undefined,
     repositories: Repositories,
     fileObject: Partial<SavedMultipartFile> &
       Pick<SavedMultipartFile, 'filename' | 'mimetype' | 'filepath'>,
-    itemId: string,
+    itemId?: string,
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
+    const { memberRepository } = repositories;
+
+    if (!actorId) {
+      throw new UnauthorizedMember(actorId);
     }
+    const member = await memberRepository.get(actorId);
 
     // TODO: check rights
-    if (itemId) {
-      const item = await repositories.itemRepository.get(itemId);
-      // posting an app data is allowed to readers
-      await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    if (!itemId) {
+      throw new ItemNotFound(itemId);
     }
+    const item = await repositories.itemRepository.get(itemId);
+    // posting an app data is allowed to readers
+    await validatePermission(repositories, PermissionLevel.Read, member, item);
 
     const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
     const file = fs.createReadStream(tmpPath);
@@ -68,7 +73,7 @@ class AppDataFileService {
     // }
 
     const fileProperties = await this.fileService
-      .upload(actor, {
+      .upload(member, {
         file,
         filepath,
         mimetype,
@@ -87,7 +92,7 @@ class AppDataFileService {
 
     // const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
 
-    const appData = await repositories.appDataRepository.post(itemId, actor.id, {
+    const appData = await repositories.appDataRepository.post(itemId, member.id, {
       id: appDataId,
       type: APP_DATA_TYPE_FILE,
       visibility: AppDataVisibility.MEMBER,
@@ -100,20 +105,28 @@ class AppDataFileService {
   }
 
   async download(
-    actor,
+    actorId: string | undefined,
     repositories: Repositories,
     {
       reply,
       itemId,
       appDataId,
       replyUrl,
-    }: { reply: FastifyReply; itemId: UUID; appDataId: UUID; replyUrl?: boolean },
+    }: { reply: FastifyReply; itemId?: UUID; appDataId: UUID; replyUrl?: boolean },
   ) {
+    const { memberRepository } = repositories;
+    let member;
+    if (actorId) {
+      member = await memberRepository.get(actorId);
+    }
     // prehook: get item and input in download call ?
     // check rights
-    await this.itemService.get(actor, repositories, itemId);
-    const appData = await this.appDataService.get(actor, repositories, itemId, appDataId);
-    const result = await this.fileService.download(actor, {
+    if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
+    await this.itemService.get(member, repositories, itemId);
+    const appData = await this.appDataService.get(member, repositories, itemId, appDataId);
+    const result = await this.fileService.download(member, {
       reply: replyUrl ? undefined : reply,
       id: appData.id,
       replyUrl,

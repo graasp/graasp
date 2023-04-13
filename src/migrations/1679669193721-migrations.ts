@@ -253,6 +253,10 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(`INSERT INTO "app_data" (id,item_id, creator_id, created_at, updated_at, member_id,type,visibility,data) 
                 SELECT id,item_id, creator, created_at, updated_at, member_id,type,visibility,data FROM app_data_old where type is not null
                 `);
+    // update downloaded file shape
+    await queryRunner.query(
+      "UPDATE \"app_data\" SET data = data::jsonb->'extra' WHERE data::jsonb->'extra' is not null",
+    );
 
     await queryRunner.query(`CREATE TABLE "app_action" (
                     "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -278,8 +282,12 @@ export class Migrations1679669193721 implements MigrationInterface {
             )`,
     );
     await queryRunner.query(`INSERT INTO "app_setting" (id,item_id, creator_id, created_at, updated_at,name,data) 
-                        SELECT id,item_id, creator, created_at, updated_at, name,data FROM app_setting_old 
+                        SELECT id, item_id, creator, created_at, updated_at, name, data FROM app_setting_old 
                         `);
+    // update downloaded file shape
+    await queryRunner.query(
+      "UPDATE \"app_setting\" SET data = data::jsonb->'extra' WHERE data::jsonb->'extra' is not null",
+    );
 
     await queryRunner.query(`CREATE TABLE "invitation" (
             "id" uuid UNIQUE DEFAULT uuid_generate_v4() NOT NULL,
@@ -1440,6 +1448,9 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(`INSERT INTO "app_data_old" (id,item_id, creator, created_at, updated_at, member_id,type,visibility,data) 
                 SELECT id,item_id, creator_id, created_at, updated_at, member_id,type,visibility::text::app_data_visibility_enum,data::jsonb FROM app_data
                 `);
+    await queryRunner.query(
+      "UPDATE \"app_data_old\" SET data = to_json('{ \"extra\": '::text||(data)||' }'::text) WHERE data::jsonb->'s3File' is not null",
+    );
 
     await queryRunner.query(`CREATE TABLE "app_action_old" (
             "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -1469,9 +1480,18 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
             "updated_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
         )`);
-    await queryRunner.query(`INSERT INTO "app_setting_old" (id,item_id,    creator, created_at, updated_at,name,data) 
+    await queryRunner.query(`INSERT INTO "app_setting_old" (id,item_id, creator, created_at, updated_at,name,data) 
                         SELECT id,item_id, creator_id, created_at, updated_at, name,data::jsonb FROM app_setting
                         `);
+
+    await queryRunner.query(
+      "UPDATE \"app_setting_old\" SET data = to_json('{ \"extra\": '::text||(data)||' }'::text) WHERE data::jsonb->'s3File' is not null",
+    );
+
+    // update downloaded file shape
+    await queryRunner.query(
+      "UPDATE \"app_setting\" SET data = data::jsonb->'extra' WHERE data::jsonb->'extra' is not null",
+    );
 
     await queryRunner.query(`CREATE TABLE item_like_old (
             id uuid DEFAULT uuid_generate_v4(),

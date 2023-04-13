@@ -340,12 +340,22 @@ const values = {
       item_id: itemId,
       data: { some: 'data' },
       type: 'some type',
-
       creator: memberId,
-
       visibility: 'member',
       created_at: '2022-01-31T12:10:04.571Z',
       updated_at: '2022-03-21T12:40:04.571Z',
+    },
+    // files
+    {
+      id: 'e244bf3f-32e2-4672-b2a2-06bb3ac6e12c',
+      member_id: memberId,
+      creator: memberId,
+      item_id: itemId,
+      visibility: 'member',
+      data: { extra: { s3File: { path: 'data', mimetype: 'mimetype', name: 'name' } } },
+      type: 'some type',
+      created_at: '2022-02-11T11:10:04.571Z',
+      updated_at: '2022-03-21T11:40:04.571Z',
     },
   ],
   app_action: [
@@ -364,6 +374,16 @@ const values = {
       creator: memberId,
       item_id: itemId,
       data: { some: 'data' },
+      name: 'some type',
+      created_at: '2022-02-11T11:10:04.571Z',
+      updated_at: '2022-03-21T11:40:04.571Z',
+    },
+    // files
+    {
+      id: 'e244bf4f-32e2-4672-b2a2-06bb3ac6e12c',
+      creator: memberId,
+      item_id: itemId,
+      data: { extra: { s3File: { path: 'data', mimetype: 'mimetype', name: 'name' } } },
       name: 'some type',
       created_at: '2022-02-11T11:10:04.571Z',
       updated_at: '2022-03-21T11:40:04.571Z',
@@ -645,8 +665,14 @@ const expected = {
     expect(ad.creator_id).toEqual(expected.creator);
     expect(ad.type).toEqual(expected.type);
     expect(ad.visibility).toEqual(expected.visibility);
-    expect(JSON.parse(ad.data)).toEqual(expected.data);
     expect(ad.created_at.toISOString()).toEqual(expected.created_at);
+    // file specific
+    if (expected.data?.extra?.s3File) {
+      console.log(ad, expected);
+      expect(JSON.parse(ad.data).s3File).toMatchObject(expected.data.extra.s3File);
+    } else {
+      expect(JSON.parse(ad.data)).toEqual(expected.data);
+    }
   },
   app_action: async (aa: any, idx: number) => {
     const expected = values.app_action[idx];
@@ -663,9 +689,15 @@ const expected = {
     expect(as.creator_id).toEqual(expected.creator);
     expect(as.item_id).toEqual(expected.item_id);
     expect(as.name).toEqual(expected.name);
-    expect(JSON.parse(as.data)).toEqual(expected.data);
     expect(as.created_at.toISOString()).toEqual(expected.created_at);
     expect(as.updated_at.toISOString()).toEqual(expected.updated_at);
+    // file specific
+    if (expected.data?.extra?.s3File) {
+      console.log(as, expected);
+      expect(JSON.parse(as.data).s3File).toMatchObject(expected.data.extra.s3File);
+    } else {
+      expect(JSON.parse(as.data)).toEqual(expected.data);
+    }
   },
   item_like: async (il: any, idx: number) => {
     const expected = values.item_like[idx];
@@ -961,6 +993,18 @@ const downValues = {
       created_at: '2022-01-31T12:10:04.571Z',
       updated_at: '2022-03-21T12:40:04.571Z',
     },
+    // file
+    {
+      id: 'e245bf4f-32e2-4632-b2a2-06bb3ac6e12c',
+      member_id: memberId,
+      item_id: itemId,
+      data: { s3File: { path: 'data', mimetype: 'mimetype', name: 'name' } },
+      type: 'some type',
+      creator_id: memberId,
+      visibility: 'member',
+      created_at: '2022-01-31T12:10:04.571Z',
+      updated_at: '2022-03-21T12:40:04.571Z',
+    },
   ],
   app_action: [
     {
@@ -978,6 +1022,17 @@ const downValues = {
       creator_id: memberId,
       item_id: itemId,
       data: { some: 'data' },
+      name: 'some type',
+      created_at: '2022-02-11T11:10:04.571Z',
+      updated_at: '2022-03-21T11:40:04.571Z',
+    },
+
+    // files
+    {
+      id: 'e244bf4f-32e2-4672-b2a2-06bb3ac6e12c',
+      creator_id: memberId,
+      item_id: itemId,
+      data: { s3File: { path: 'data', mimetype: 'mimetype', name: 'name' } },
       name: 'some type',
       created_at: '2022-02-11T11:10:04.571Z',
       updated_at: '2022-03-21T11:40:04.571Z',
@@ -1234,7 +1289,12 @@ const downExpected = {
     expect(ad.creator).toEqual(expected.creator_id);
     expect(ad.type).toEqual(expected.type);
     expect(ad.visibility).toEqual(expected.visibility);
-    expect(ad.data).toEqual(expected.data);
+    // file migrations
+    if (expected.data.s3File) {
+      expect(JSON.parse(ad.data).extra.s3File).toMatchObject(expected.data.s3File);
+    } else {
+      expect(ad.data).toEqual(expected.data);
+    }
     expect(ad.created_at.toISOString()).toEqual(expected.created_at);
   },
   app_action: async (aa: any, idx: number) => {
@@ -1252,9 +1312,14 @@ const downExpected = {
     expect(as.creator).toEqual(expected.creator_id);
     expect(as.item_id).toEqual(expected.item_id);
     expect(as.name).toEqual(expected.name);
-    expect(as.data).toEqual(expected.data);
     expect(as.created_at.toISOString()).toEqual(expected.created_at);
     expect(as.updated_at.toISOString()).toEqual(expected.updated_at);
+    // file migrations
+    if (expected.data.s3File) {
+      expect(JSON.parse(as.data).extra.s3File).toMatchObject(expected.data.s3File);
+    } else {
+      expect(as.data).toEqual(expected.data);
+    }
   },
   item_like: async (il: any, idx: number) => {
     const expected = downValues.item_like[idx];

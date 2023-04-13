@@ -12,6 +12,7 @@ import { Repositories } from '../../../../../../../util/repositories';
 import FileService from '../../../../../../file/service';
 import { Actor } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
+import { ItemNotFound } from '../../../util/graasp-apps-error';
 import { AppSetting } from '../../appSettings';
 import { AppSettingService } from '../../service';
 
@@ -23,7 +24,7 @@ class AppSettingFileService {
   itemService: ItemService;
 
   buildFilePath(itemId: UUID, appSettingId: UUID) {
-    return path.join('app-setting', itemId, appSettingId);
+    return path.join('apps', 'app-setting', itemId, appSettingId);
   }
 
   constructor(
@@ -41,7 +42,7 @@ class AppSettingFileService {
     repositories: Repositories,
     fileObject: Partial<SavedMultipartFile> &
       Pick<SavedMultipartFile, 'filename' | 'mimetype' | 'filepath'>,
-    itemId: string,
+    itemId?: string,
   ) {
     const { memberRepository } = repositories;
 
@@ -51,6 +52,9 @@ class AppSettingFileService {
     const member = await memberRepository.get(actorId);
 
     // posting an app data is allowed to readers
+    if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
     const item = await this.itemService.get(member, repositories, itemId);
 
     const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
@@ -111,9 +115,12 @@ class AppSettingFileService {
       itemId,
       appSettingId,
       replyUrl,
-    }: { reply: FastifyReply; itemId: UUID; appSettingId: UUID; replyUrl?: boolean },
+    }: { reply: FastifyReply; itemId?: UUID; appSettingId: UUID; replyUrl?: boolean },
   ) {
     // check rights
+    if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
     await this.itemService.get(actor, repositories, itemId);
     const appSetting = await this.appSettingService.get(actor, repositories, itemId, appSettingId);
     const result = await this.fileService.download(actor, {

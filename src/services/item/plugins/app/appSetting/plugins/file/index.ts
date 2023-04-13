@@ -67,17 +67,14 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   };
   appSettingService.hooks.setPostHook('copyMany', hook);
 
-  fastify.route<{ Body: any; Params: { itemId: UUID } }>({
+  fastify.route<{ Body: any }>({
     method: HttpMethod.POST,
-    url: '/:itemId/app-settings/upload',
+    url: '/app-settings/upload',
     schema: upload,
     handler: async (request) => {
-      const {
-        authTokenSubject: requestDetails,
-        params: { itemId },
-        log,
-      } = request;
+      const { authTokenSubject: requestDetails, log } = request;
       const memberId = requestDetails?.memberId;
+      const itemId = requestDetails?.itemId;
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK
       // THEN WE SHOULD MOVE THE TRANSACTION
       return db
@@ -107,22 +104,23 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   fastify.get<{
-    Params: { itemId: UUID; id: UUID };
+    Params: { id: UUID };
     Querystring: { size?: string; replyUrl?: boolean };
   }>(
-    '/:itemId/app-settings/:id/download',
+    '/app-settings/:id/download',
     {
       schema: download,
     },
     async (request, reply) => {
       const {
         authTokenSubject: requestDetails,
-        params: { itemId, id: appSettingId },
+        params: { id: appSettingId },
         query: { size, replyUrl },
         log,
       } = request;
 
       const memberId = requestDetails?.memberId;
+      const itemId = requestDetails?.itemId;
 
       return appSettingFileService
         .download(memberId, buildRepositories(), { reply, itemId, appSettingId, replyUrl })

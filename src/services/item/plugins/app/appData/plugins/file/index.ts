@@ -57,14 +57,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   fastify.route<{ Querystring: IdParam; Body: any }>({
     method: HttpMethod.POST,
-    url: '/:itemId/app-data/upload',
+    url: '/app-data/upload',
     schema: upload,
     handler: async (request) => {
-      const {
-        member,
-        query: { id: itemId },
-        log,
-      } = request;
+      const { authTokenSubject: requestDetails, log } = request;
+      const memberId = requestDetails?.memberId;
+      const itemId = requestDetails?.itemId;
+
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK
       // THEN WE SHOULD MOVE THE TRANSACTION
       return db
@@ -75,7 +74,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
           const files = await request.saveRequestFiles();
-          return appDataFileService.upload(member, repositories, files[0], itemId);
+          return appDataFileService.upload(memberId, repositories, files[0], itemId);
         })
         .catch((e) => {
           console.error(e);
@@ -94,27 +93,25 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   fastify.get<{
-    Params: { itemId: UUID; id: UUID };
+    Params: { id: UUID };
     Querystring: { size?: string; replyUrl?: boolean };
   }>(
-    '/:itemId/app-data/:id/download',
+    '/app-data/:id/download',
     {
       schema: download,
     },
     async (request, reply) => {
       const {
-        member,
-        authTokenSubject,
-        params: { id: appDataId, itemId },
+        authTokenSubject: requestDetails,
+        params: { id: appDataId },
         query: { size, replyUrl },
         log,
       } = request;
-
-      // need auth token?
-      const actor = member || { id: authTokenSubject?.memberId };
+      const memberId = requestDetails?.memberId;
+      const itemId = requestDetails?.itemId;
 
       return appDataFileService
-        .download(actor, buildRepositories(), { reply, itemId, appDataId, replyUrl })
+        .download(memberId, buildRepositories(), { reply, itemId, appDataId, replyUrl })
         .catch((e) => {
           if (e.code) {
             throw e;
