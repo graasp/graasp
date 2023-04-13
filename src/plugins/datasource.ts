@@ -27,38 +27,31 @@ import { ItemTag } from '../services/itemTag/ItemTag';
 import { Member } from '../services/member/entities/member';
 import { ItemPublished } from '../services/published/entities/itemPublished';
 
+const slaves = process.env.DB_READ_REPLICA_HOST ? [
+  {
+    host: process.env.DB_READ_REPLICA_HOST,
+    port: 5432,
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  }
+] : [];
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST,
-  port: 5432,
-
-  // replication: {
-  //   master: {
-  //     host: "server1",
-  //     port: 3306,
-  //     username: "test",
-  //     password: "test",
-  //     database: "test"
-  //   },
-  //   slaves: [{
-  //     host: "server2",
-  //     port: 3306,
-  //     username: "test",
-  //     password: "test",
-  //     database: "test"
-  //   }, {
-  //     host: "server3",
-  //     port: 3306,
-  //     username: "test",
-  //     password: "test",
-  //     database: "test"
-  //   }]
-  // }
+  replication: {
+    master: {
+      host: process.env.DB_HOST,
+      port: 5432,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+    },
+    slaves
+  },
 
   // cache: true, // TODO
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+
   logging: true,
   migrationsRun: true,
 

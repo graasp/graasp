@@ -34,6 +34,7 @@ jobs:
       db-name: ${{ secrets.DB_NAME }}
       db-password: ${{ secrets.DB_PASSWORD }}
       db-username: ${{ secrets.DB_USERNAME }}
+      db-read-replica-host : ${{ secrets.DB_READ_REPLICA_HOST }}
       ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP }}
       ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP }}
       ecs-service: ${{ secrets.ECS_SERVICE_GRAASP }}
