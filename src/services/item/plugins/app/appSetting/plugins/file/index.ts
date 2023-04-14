@@ -9,10 +9,10 @@ import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
+import { PreventUpdateAppSettingFile } from '../../../util/graasp-apps-error';
 import type { AppSettingService } from '../../service';
 import { download, upload } from './schema';
 import AppSettingFileService from './service';
-import { PreventUpdateAppSettingFile } from '../../../util/graasp-apps-error';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes
@@ -68,9 +68,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   };
   appSettingService.hooks.setPostHook('copyMany', hook);
 
-  // prevent patch on app setting file 
+  // prevent patch on app setting file
   const patchPreHook = async (actor, repositories: Repositories, appSetting) => {
-    if(appSetting.data[fileService.type]) {
+    if (appSetting.data[fileService.type]) {
       throw new PreventUpdateAppSettingFile(appSetting);
     }
   };
@@ -132,7 +132,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const itemId = requestDetails?.itemId;
 
       return appSettingFileService
-        .download(memberId, buildRepositories(), {  itemId, appSettingId })
+        .download(memberId, buildRepositories(), { itemId, appSettingId })
         .catch((e) => {
           if (e.code) {
             throw e;

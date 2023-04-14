@@ -3,7 +3,6 @@ import path from 'path';
 import { v4 } from 'uuid';
 
 import { SavedMultipartFile } from '@fastify/multipart';
-import { FastifyReply } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
@@ -12,7 +11,7 @@ import { Repositories } from '../../../../../../../util/repositories';
 import FileService from '../../../../../../file/service';
 import { Actor, Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
-import {  NotAppSettingFile } from '../../../util/graasp-apps-error';
+import { NotAppSettingFile } from '../../../util/graasp-apps-error';
 import { AppSetting } from '../../appSettings';
 import { AppSettingService } from '../../service';
 
@@ -108,18 +107,15 @@ class AppSettingFileService {
   }
 
   async download(
-    actorId: string|undefined,
+    actorId: string | undefined,
     repositories: Repositories,
-    {
-      itemId,
-      appSettingId,
-    }: {  itemId?: UUID; appSettingId: UUID },
+    { itemId, appSettingId }: { itemId?: UUID; appSettingId: UUID },
   ) {
     const { memberRepository } = repositories;
 
-    let member:Member|undefined;
+    let member: Member | undefined;
     if (actorId) {
-       member = await memberRepository.get(actorId);
+      member = await memberRepository.get(actorId);
     }
 
     // check rights
@@ -129,8 +125,13 @@ class AppSettingFileService {
     await this.itemService.get(member, repositories, itemId);
 
     // get app setting and check it is a file
-    const appSetting = await this.appSettingService.get(actorId, repositories, itemId, appSettingId);
-    if(!appSetting.data[this.fileService.type]) {
+    const appSetting = await this.appSettingService.get(
+      actorId,
+      repositories,
+      itemId,
+      appSettingId,
+    );
+    if (!appSetting.data[this.fileService.type]) {
       throw new NotAppSettingFile(appSetting);
     }
 

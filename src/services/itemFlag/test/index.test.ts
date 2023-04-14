@@ -6,9 +6,9 @@ import { FlagType, HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { ItemNotFound } from '../../../util/graasp-error';
-import { ItemFlagRepository } from '../repository';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
+import { ItemFlagRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

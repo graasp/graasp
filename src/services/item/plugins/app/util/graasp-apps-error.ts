@@ -124,7 +124,6 @@ export class PreventUpdateAppSettingFile extends GraaspAppsError {
   }
 }
 
-
 export class NotAppDataFile extends GraaspAppsError {
   constructor(data?: unknown) {
     super(

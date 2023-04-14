@@ -1,14 +1,14 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
-import {  HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { EmbeddedLinkItemExtra } from '.';
 import build, { clearDatabase } from '../../../../../test/app';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
 import { expectItem, getDummyItem } from '../../test/fixtures/items';
-import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { EmbeddedLinkItemExtra } from '.';
-import { BOB, saveMember } from '../../../member/test/fixtures/members';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

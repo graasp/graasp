@@ -2,40 +2,41 @@ import { defineAbility } from '@casl/ability';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MemberCannotWriteItem } from '../../../../../util/graasp-error';
+import { MemberCannotWriteItem, UnauthorizedMember } from '../../../../../util/graasp-error';
 import HookManager from '../../../../../util/hook';
 import { Repositories } from '../../../../../util/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Actor, Member } from '../../../../member/entities/member';
+import { Actor,  } from '../../../../member/entities/member';
 import { AppDataVisibility } from '../interfaces/app-details';
 import { AppDataNotAccessible } from '../util/graasp-apps-error';
-import { AppData } from './appData';
+import { AppData, Filters } from './appData';
 import { InputAppData } from './interfaces/app-data';
 
+
 const adaptFilters = (
-  filters: Partial<InputAppData>,
+  filters: Filters,
   permission: PermissionLevel,
-  actorId?: string,
+  actorId: string,
 ) => {
   // TODO: optimize
   // admin can get all app data from everyone
   // otherwise get member's AppData or others' AppData w/ visibility 'item'
-  const finalFilters = { ...filters };
-  const { memberId: fMemberId, visibility: fVisibility } = finalFilters;
+  let finalFilters = { ...filters };
+  const { member:fMember, visibility: fVisibility } = finalFilters;
   if (permission !== PermissionLevel.Admin) {
     let op;
 
-    if (!fMemberId) {
+    if (!fMember?.id) {
       if (fVisibility !== AppDataVisibility.ITEM) {
-        finalFilters.memberId = actorId; // get member's AppData
+        finalFilters={...finalFilters, member:{id : actorId}}; // get member's AppData
         if (!fVisibility) {
           // + any AppData w/ visibility 'item'
           finalFilters.visibility = AppDataVisibility.ITEM;
           op = 'OR';
         }
       }
-    } else if (fMemberId !== actorId) {
+    } else if (fMember?.id !== actorId) {
       if (fVisibility !== AppDataVisibility.ITEM) {
         if (fVisibility === AppDataVisibility.MEMBER) throw new AppDataNotAccessible();
         finalFilters.visibility = AppDataVisibility.ITEM; // force 'item' visibility while fetching others' AppData
@@ -228,13 +229,15 @@ export class AppDataService {
     memberId: string | undefined,
     repositories: Repositories,
     itemId: string,
-    filters: Partial<InputAppData>,
+    filters: Filters,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
 
-    // get member if exists
-    // item can be public
-    const member = memberId ? await memberRepository.get(memberId) : undefined;
+    // get member 
+    if(!memberId) {
+      throw new UnauthorizedMember(memberId);
+    }
+    const member = await memberRepository.get(memberId); 
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -253,13 +256,15 @@ export class AppDataService {
     memberId: string | undefined,
     repositories: Repositories,
     itemIds: string[],
-    filters: Partial<InputAppData>,
+    filters: Filters,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
 
-    // check member exists
-    // item can be public
-    const member = memberId ? await memberRepository.get(memberId) : undefined;
+    // get member 
+    if(!memberId) {
+      throw new UnauthorizedMember(memberId);
+    }
+    const member = await memberRepository.get(memberId); 
 
     // check item exists? let post fail?
     const items = await itemRepository.getMany(itemIds);

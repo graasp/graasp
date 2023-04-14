@@ -5,9 +5,9 @@ import { DocumentItemExtraProperties, HttpMethod, ItemType, PermissionLevel } fr
 import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { ItemRepository } from '../../repository';
 import { expectItem, getDummyItem } from '../../test/fixtures/items';
-import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');

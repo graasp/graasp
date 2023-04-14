@@ -11,13 +11,13 @@ import { ItemNotFound, UnauthorizedMember } from '../../../../../../../util/graa
 import { Repositories } from '../../../../../../../util/repositories';
 import { validatePermission } from '../../../../../../authorization';
 import FileService from '../../../../../../file/service';
+import { Actor, Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { AppDataVisibility } from '../../../interfaces/app-details';
 import { APP_DATA_TYPE_FILE } from '../../../util/constants';
-import {  NotAppDataFile } from '../../../util/graasp-apps-error';
+import { NotAppDataFile } from '../../../util/graasp-apps-error';
 import { AppData } from '../../appData';
 import { AppDataService } from '../../service';
-import { Actor, Member } from '../../../../../../member/entities/member';
 
 class AppDataFileService {
   appDataService: AppDataService;
@@ -53,7 +53,7 @@ class AppDataFileService {
       throw new ItemNotFound(itemId);
     }
     // posting an app data is allowed to readers
-     await this.itemService.get(member, repositories, itemId);
+    await this.itemService.get(member, repositories, itemId);
 
     const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
     const file = fs.createReadStream(tmpPath);
@@ -106,13 +106,10 @@ class AppDataFileService {
   async download(
     actorId: string | undefined,
     repositories: Repositories,
-    {
-      itemId,
-      appDataId,
-    }: { itemId?: UUID; appDataId: UUID },
+    { itemId, appDataId }: { itemId?: UUID; appDataId: UUID },
   ) {
     const { memberRepository } = repositories;
-    let member:Actor;
+    let member: Actor;
     if (actorId) {
       member = await memberRepository.get(actorId);
     }
@@ -124,7 +121,7 @@ class AppDataFileService {
 
     // get app data and check it is a file
     const appData = await this.appDataService.get(actorId, repositories, itemId, appDataId);
-    if(!appData.data[this.fileService.type]) {
+    if (!appData.data[this.fileService.type]) {
       throw new NotAppDataFile(appData);
     }
 

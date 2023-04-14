@@ -10,7 +10,6 @@ import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
-
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');
 

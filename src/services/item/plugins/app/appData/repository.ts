@@ -5,7 +5,7 @@ import { ItemType } from '@graasp/sdk';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { mapById } from '../../../../utils';
 import { AppDataNotFound, PreventUpdateAppDataFile } from '../util/graasp-apps-error';
-import { AppData } from './appData';
+import { AppData, Filters } from './appData';
 import { InputAppData } from './interfaces/app-data';
 
 export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
@@ -49,12 +49,18 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     return this.findOneBy({ id });
   },
 
-  getForItem(itemId: string, filters: Partial<AppData> = {}) {
-    return this.find({ where:{ item: { id: itemId }, ...filters}, relations: {member:true, creator:true,item:true} });
+  async getForItem(itemId: string, filters: Filters = {}) {
+    return this.find({
+      where: { item: { id: itemId }, ...filters },
+      relations: { member: true, creator: true, item: true },
+    });
   },
 
-  async getForManyItems(itemIds: string[], filters: Partial<AppData> = {}) {
-    const appDatas = await this.findBy({ item: { id: In(itemIds) }, ...filters });
+  async getForManyItems(itemIds: string[], filters: Filters = {}) {
+    const appDatas = await this.find({
+      where: { item: { id: In(itemIds) }, ...filters },
+      relations: { member: true, creator: true, item: true },
+    });
 
     return mapById({
       keys: itemIds,

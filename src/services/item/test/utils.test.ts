@@ -1,7 +1,6 @@
 import { Item } from '../entities/Item';
 import { sortChildrenWith } from '../utils';
 
-
 const a = {
   id: 'a',
   createdAt: Date.now(),

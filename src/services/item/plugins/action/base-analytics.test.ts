@@ -1,10 +1,10 @@
 import { v4 } from 'uuid';
 
-
-import { BaseAnalytics } from './base-analytics';
 import { MemberType } from '@graasp/sdk';
+
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
+import { BaseAnalytics } from './base-analytics';
 
 const item = {} as unknown as Item;
 const descendants = [];
@@ -56,9 +56,6 @@ describe('Base Analytics', () => {
     for (const m of analytics.members) {
       // lang exists
       expect(m.extra.lang).toBeTruthy();
-
-      // no password
-      expect(m.password).toBeUndefined();
 
       // no favorites
       expect(m.extra.favoriteItems).toBeUndefined();

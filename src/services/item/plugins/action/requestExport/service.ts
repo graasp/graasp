@@ -74,7 +74,7 @@ export class ActionRequestExportService {
     // check if a previous request already created the file and send it back
     if (lastRequestExport) {
       await this._sendExportLinkInMail(member, item, lastRequestExport.createdAt);
-
+      return;
       // the previous exported data does not exist or
       // is outdated and a new version should be uploaded
     }

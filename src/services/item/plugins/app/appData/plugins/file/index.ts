@@ -8,10 +8,10 @@ import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
+import { PreventUpdateAppDataFile } from '../../../util/graasp-apps-error';
 import type { AppDataService } from '../../service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
-import { PreventUpdateAppDataFile } from '../../../util/graasp-apps-error';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes
@@ -58,7 +58,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   // prevent patch on app data file
   const patchPreHook = async (actor, repositories, appData) => {
-    if(appData.data[fileService.type]) {
+    if (appData.data[fileService.type]) {
       throw new PreventUpdateAppDataFile(appData);
     }
   };

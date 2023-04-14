@@ -3,7 +3,7 @@ import { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
-import {  HttpMethod, ThumbnailSize } from '@graasp/sdk';
+import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../util/config';
@@ -166,7 +166,7 @@ describe('Thumbnail Plugin Tests', () => {
         expect(putObjectMock).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
 
         const savedItem = await ItemRepository.findOneBy({ id: item.id });
-        expect((savedItem!.settings).hasThumbnail).toBeTruthy();
+        expect(savedItem!.settings.hasThumbnail).toBeTruthy();
       });
 
       it('Throw if try to upload for item without permission', async () => {
@@ -185,9 +185,7 @@ describe('Thumbnail Plugin Tests', () => {
         });
         expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
         const savedItem = await ItemRepository.findOneBy({ id: item.id });
-        expect(
-          ((savedItem!.settings))?.hasThumbnail,
-        ).toBeFalsy();
+        expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
       });
 
       it('Throw if try to upload a non-image file', async () => {
@@ -205,9 +203,7 @@ describe('Thumbnail Plugin Tests', () => {
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
         expect(res.json()).toEqual(new UploadFileNotImageError());
         const savedItem = await ItemRepository.findOneBy({ id: item.id });
-        expect(
-          ((savedItem!.settings))?.hasThumbnail,
-        ).toBeFalsy();
+        expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
       });
     });
   });

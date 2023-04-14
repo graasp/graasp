@@ -7,7 +7,6 @@
 
 // import { Item, ItemType } from '@graasp/sdk';
 
-
 // const DEFAULT_FILE_SERVICE_TYPE = 'file';
 // const DEFAULT_PARENT_ID = 'parentId';
 // const DEFAULT_LOGGER = {} as unknown as FastifyLoggerInstance;

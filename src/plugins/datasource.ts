@@ -27,15 +27,17 @@ import { ItemTag } from '../services/itemTag/ItemTag';
 import { Member } from '../services/member/entities/member';
 import { ItemPublished } from '../services/published/entities/itemPublished';
 
-const slaves = process.env.DB_READ_REPLICA_HOST ? [
-  {
-    host: process.env.DB_READ_REPLICA_HOST,
-    port: 5432,
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-  }
-] : [];
+const slaves = process.env.DB_READ_REPLICA_HOST
+  ? [
+      {
+        host: process.env.DB_READ_REPLICA_HOST,
+        port: 5432,
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+      },
+    ]
+  : [];
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -47,12 +49,11 @@ export const AppDataSource = new DataSource({
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
     },
-    slaves
+    slaves,
   },
-  
+
   // cache: true, // TODO
 
-  
   logging: true,
   migrationsRun: true,
 

@@ -8,11 +8,11 @@ import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { Item } from '../../item/entities/Item';
 import { generateRandomEmail } from '../../itemLogin/util/aux';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
 import { Invitation } from '../invitation';
 import { InvitationRepository } from '../repository';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

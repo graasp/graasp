@@ -1,7 +1,12 @@
 import Ajv from 'ajv';
 
 import { Action } from '../../../action/entities/action';
-import { actionsSchemaForAnalytics, descendantsSchemaForAnalytics, itemSchemaForAnalytics, memberSchemaForAnalytics } from '../../../action/schemas';
+import {
+  actionsSchemaForAnalytics,
+  descendantsSchemaForAnalytics,
+  itemSchemaForAnalytics,
+  memberSchemaForAnalytics,
+} from '../../../action/schemas';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
@@ -29,19 +34,19 @@ export class BaseAnalytics {
     };
   }) {
     // TODO: all other schemas
-    
+
     // validate and remove additional properties
     const ajv = new Ajv({ removeAdditional: 'all' });
 
     const validateMembers = ajv.compile(memberSchemaForAnalytics);
     validateMembers(args.members);
-    
+
     const validateItem = ajv.compile(itemSchemaForAnalytics);
     validateItem(args.item);
-    
+
     const validateDescendants = ajv.compile(descendantsSchemaForAnalytics);
     validateDescendants(args.descendants);
-    
+
     const validateActions = ajv.compile(actionsSchemaForAnalytics);
     validateActions(args.actions);
 

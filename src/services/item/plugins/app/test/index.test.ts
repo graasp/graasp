@@ -5,10 +5,10 @@ import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../util/config';
-import { MOCK_APP_ORIGIN, MOCK_TOKEN, saveApp, saveAppList } from './fixtures';
-import { BOB, expectMember, saveMember } from '../../../../member/test/fixtures/members';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { BOB, expectMember, saveMember } from '../../../../member/test/fixtures/members';
 import { expectItem } from '../../../test/fixtures/items';
+import { MOCK_APP_ORIGIN, MOCK_TOKEN, saveApp, saveAppList } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

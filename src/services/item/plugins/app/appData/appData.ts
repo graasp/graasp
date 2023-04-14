@@ -1,15 +1,11 @@
 import {
-  AfterLoad,
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
-  PrimaryColumn,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 } from 'uuid';
@@ -19,6 +15,12 @@ import { Anything } from '@graasp/sdk';
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { AppDataVisibility } from '../interfaces/app-details';
+
+
+export type Filters = {
+  visibility?: AppDataVisibility;
+  member?: Partial<Member>
+}
 
 @Entity()
 export class AppData extends BaseEntity {

@@ -113,13 +113,11 @@ export const memberSchemaForAnalytics = {
   items: memberSchema,
 };
 
-
 export const itemSchemaForAnalytics = itemSchema;
-
 
 export const descendantsSchemaForAnalytics = {
   type: 'array',
-  items: itemSchema
+  items: itemSchema,
 };
 
 export const actionsSchemaForAnalytics = {
@@ -137,7 +135,7 @@ export const actionsSchemaForAnalytics = {
         additionalProperties: true,
       },
       item: itemSchema,
-      member: memberSchema
+      member: memberSchema,
     },
-  }
+  },
 };
