@@ -67,21 +67,77 @@ export const exportAction = {
   },
 };
 
+const memberSchema = {
+  // copy of member's schema
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    id: { type: 'string' },
+    name: { type: 'string' },
+    email: { type: 'string' },
+    extra: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { lang: { type: 'string' } },
+    },
+  },
+};
+
+const itemSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    id: { type: 'string' },
+    path: { type: 'string' },
+    createdAt: { type: 'string' },
+    updatedAt: { type: 'string' },
+    deletedAt: { type: 'string' },
+    type: { type: 'string' },
+    name: { type: 'string' },
+    description: { type: 'string' },
+    creator: memberSchema,
+    // TODO
+    extra: {
+      type: 'object',
+      additionalProperties: true,
+    },
+    settings: {
+      type: 'object',
+      additionalProperties: true,
+    },
+  },
+};
+
 export const memberSchemaForAnalytics = {
   type: 'array',
+  items: memberSchema,
+};
+
+
+export const itemSchemaForAnalytics = itemSchema;
+
+
+export const descendantsSchemaForAnalytics = {
+  type: 'array',
+  items: itemSchema
+};
+
+export const actionsSchemaForAnalytics = {
+  type: 'array',
   items: {
-    // copy of member's schema
     type: 'object',
     additionalProperties: false,
     properties: {
       id: { type: 'string' },
-      name: { type: 'string' },
-      email: { type: 'string' },
-      extra: {
+      view: { type: 'string' },
+      type: { type: 'string' },
+      createdAt: { type: 'string' },
+      geolocation: {
         type: 'object',
-        additionalProperties: false,
-        properties: { lang: { type: 'string' } },
+        additionalProperties: true,
       },
+      item: itemSchema,
+      member: memberSchema
     },
-  },
+  }
 };

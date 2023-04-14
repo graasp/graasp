@@ -134,7 +134,7 @@ class AppSettingFileService {
       reply: replyUrl ? undefined : reply,
       id: appSetting.id,
       replyUrl,
-      ...appSetting.data,
+      ...appSetting.data[this.fileService.type],
     });
 
     return result;

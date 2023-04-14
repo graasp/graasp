@@ -129,7 +129,7 @@ class AppDataFileService {
       reply: replyUrl ? undefined : reply,
       id: appData.id,
       replyUrl,
-      ...appData.data,
+      ...appData.data[this.fileService.type],
     });
 
     return result;
