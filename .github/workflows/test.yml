@@ -92,3 +92,6 @@ jobs:
           ETHERPAD_URL: http://etherpad:9001
           ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           COOKIE_DOMAIN: localhost
+          MAILER_CONFIG_SMTP_HOST: localhost
+          MAILER_CONFIG_USERNAME: username
+          MAILER_CONFIG_PASSWORD: password

@@ -11,7 +11,6 @@ import { UnauthorizedMember } from '../../../../../../../util/graasp-error';
 import { Repositories } from '../../../../../../../util/repositories';
 import { validatePermission } from '../../../../../../authorization';
 import FileService from '../../../../../../file/service';
-import { Actor } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { AppDataVisibility } from '../../../interfaces/app-details';
 import { APP_DATA_TYPE_FILE } from '../../../util/constants';
@@ -119,7 +118,6 @@ class AppDataFileService {
     if (actorId) {
       member = await memberRepository.get(actorId);
     }
-    // prehook: get item and input in download call ?
     // check rights
     if (!itemId) {
       throw new ItemNotFound(itemId);

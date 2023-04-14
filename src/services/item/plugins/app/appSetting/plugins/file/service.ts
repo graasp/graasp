@@ -108,7 +108,7 @@ class AppSettingFileService {
   }
 
   async download(
-    actor,
+    actorId: string|undefined,
     repositories: Repositories,
     {
       reply,
@@ -117,13 +117,20 @@ class AppSettingFileService {
       replyUrl,
     }: { reply: FastifyReply; itemId?: UUID; appSettingId: UUID; replyUrl?: boolean },
   ) {
+    const { memberRepository } = repositories;
+
+    let member;
+    if (actorId) {
+       member = await memberRepository.get(actorId);
+    }
+
     // check rights
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
-    await this.itemService.get(actor, repositories, itemId);
-    const appSetting = await this.appSettingService.get(actor, repositories, itemId, appSettingId);
-    const result = await this.fileService.download(actor, {
+    await this.itemService.get(member, repositories, itemId);
+    const appSetting = await this.appSettingService.get(member, repositories, itemId, appSettingId);
+    const result = await this.fileService.download(member, {
       reply: replyUrl ? undefined : reply,
       id: appSetting.id,
       replyUrl,

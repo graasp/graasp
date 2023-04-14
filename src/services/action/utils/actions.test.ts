@@ -1,4 +1,4 @@
-import { CLIENT_HOSTS } from '../../test/constants';
+import { CLIENT_HOSTS } from '../../../util/config';
 import { VIEW_UNKNOWN_NAME } from '../constants/constants';
 import { getGeolocationIp, getView } from './actions';
 

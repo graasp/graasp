@@ -136,6 +136,7 @@ describe('Item Validation Tests', () => {
           permission: PermissionLevel.Read,
         });
 
+        const groupId = v4();
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${groupId}`,
@@ -153,6 +154,7 @@ describe('Item Validation Tests', () => {
           permission: PermissionLevel.Write,
         });
 
+        const groupId = v4();
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${groupId}`,

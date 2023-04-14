@@ -344,8 +344,8 @@ export class Migrations1679669193721 implements MigrationInterface {
             
                 "extra" text NOT NULL DEFAULT '{}'
             )`);
-    await queryRunner.query(`INSERT INTO "app" (id, name, description,url,created_at,extra, publisher_id) 
-                SELECT id, name, description,url,created_at,extra, publisher_id FROM app_old
+    await queryRunner.query(`INSERT INTO "app" (id, key,name, description,url,created_at,extra, publisher_id) 
+                SELECT id, id,name, description,url,created_at,extra, publisher_id FROM app_old
                 `);
 
     await queryRunner.query(`CREATE TABLE item_validation_group (
