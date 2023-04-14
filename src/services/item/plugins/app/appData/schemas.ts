@@ -5,8 +5,12 @@ export default {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        // memberId: { type: 'string' }, // TODO: probably interesting to have
-        // itemId: { type: 'string' },
+        member: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        // TODO
+        item: { 
+          type: 'object',
+          additionalProperties: true
+         },
         data: {},
         type: { type: 'string' },
         // ownership: { type: 'string' }, // TODO: should we always return this
