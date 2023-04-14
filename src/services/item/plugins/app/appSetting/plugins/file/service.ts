@@ -111,11 +111,9 @@ class AppSettingFileService {
     actorId: string|undefined,
     repositories: Repositories,
     {
-      reply,
       itemId,
       appSettingId,
-      replyUrl,
-    }: { reply: FastifyReply; itemId?: UUID; appSettingId: UUID; replyUrl?: boolean },
+    }: {  itemId?: UUID; appSettingId: UUID },
   ) {
     const { memberRepository } = repositories;
 
@@ -137,11 +135,12 @@ class AppSettingFileService {
     }
 
     const result = await this.fileService.download(member, {
-      reply: replyUrl ? undefined : reply,
       id: appSetting.id,
-      replyUrl,
       mimetype: appSetting.data[this.fileService.type].mimetype,
       path: appSetting.data[this.fileService.type].filepath,
+      // always return the url because redirection uses bearer token automatically
+      // and s3 prevent multiple auth methods
+      replyUrl: true,
     });
 
     return result;

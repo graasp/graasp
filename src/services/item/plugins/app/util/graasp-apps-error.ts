@@ -98,7 +98,6 @@ export class AppSettingNotFound extends GraaspAppsError {
   }
 }
 
-// TODO
 export class PreventUpdateAppDataFile extends GraaspAppsError {
   constructor(data?: unknown) {
     super(
@@ -112,7 +111,6 @@ export class PreventUpdateAppDataFile extends GraaspAppsError {
   }
 }
 
-// TODO
 export class PreventUpdateAppSettingFile extends GraaspAppsError {
   constructor(data?: unknown) {
     super(

@@ -142,6 +142,8 @@ export class AppDataService {
       inheritedMembership,
     );
 
+    await this.hooks.runPreHooks('patch', member, repositories, appData);
+
     return appDataRepository.patch(itemId, appDataId, body);
   }
 

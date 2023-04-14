@@ -11,6 +11,7 @@ import {
 import type { AppDataService } from '../../service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
+import { PreventUpdateAppDataFile } from '../../../util/graasp-apps-error';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes
@@ -55,6 +56,14 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
 
+  // prevent patch on app data file
+  const patchPreHook = async (actor, repositories, appData) => {
+    if(appData.data[fileService.type]) {
+      throw new PreventUpdateAppDataFile(appData);
+    }
+  };
+  appDataService.hooks.setPreHook('patch', patchPreHook);
+
   fastify.route<{ Querystring: IdParam; Body: any }>({
     method: HttpMethod.POST,
     url: '/app-data/upload',
@@ -94,24 +103,24 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   fastify.get<{
     Params: { id: UUID };
-    Querystring: { size?: string; replyUrl?: boolean };
+    Querystring: { size?: string };
   }>(
     '/app-data/:id/download',
     {
       schema: download,
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         authTokenSubject: requestDetails,
         params: { id: appDataId },
-        query: { size, replyUrl },
+        query: { size },
         log,
       } = request;
       const memberId = requestDetails?.memberId;
       const itemId = requestDetails?.itemId;
 
       return appDataFileService
-        .download(memberId, buildRepositories(), { reply, itemId, appDataId, replyUrl })
+        .download(memberId, buildRepositories(), { itemId, appDataId })
         .catch((e) => {
           if (e.code) {
             throw e;

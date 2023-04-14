@@ -52,7 +52,9 @@ export class AppSettingService {
     // patching requires admin rights
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    await appSettingRepository.get(appSettingId);
+    const appSetting = await appSettingRepository.get(appSettingId);
+
+    await this.hooks.runPreHooks('patch', member, repositories, appSetting);
 
     return appSettingRepository.patch(itemId, appSettingId, body);
   }

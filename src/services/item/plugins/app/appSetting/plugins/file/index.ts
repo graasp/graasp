@@ -12,6 +12,7 @@ import {
 import type { AppSettingService } from '../../service';
 import { download, upload } from './schema';
 import AppSettingFileService from './service';
+import { PreventUpdateAppSettingFile } from '../../../util/graasp-apps-error';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes
@@ -59,13 +60,21 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   // app setting copy hook
   const hook = async (actor, repositories: Repositories, newAppSettings) => {
     // copy file only if content is a file
-    const isFileSetting = (a) => a.data.type === fileService.type;
+    const isFileSetting = (a) => a.data[fileService.type];
     const toCopy = newAppSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(actor, repositories, toCopy);
     }
   };
   appSettingService.hooks.setPostHook('copyMany', hook);
+
+  // prevent patch on app setting file 
+  const patchPreHook = async (actor, repositories: Repositories, appSetting) => {
+    if(appSetting.data[fileService.type]) {
+      throw new PreventUpdateAppSettingFile(appSetting);
+    }
+  };
+  appSettingService.hooks.setPreHook('patch', patchPreHook);
 
   fastify.route<{ Body: any }>({
     method: HttpMethod.POST,
@@ -105,17 +114,17 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   fastify.get<{
     Params: { id: UUID };
-    Querystring: { size?: string; replyUrl?: boolean };
+    Querystring: { size?: string };
   }>(
     '/app-settings/:id/download',
     {
       schema: download,
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         authTokenSubject: requestDetails,
         params: { id: appSettingId },
-        query: { size, replyUrl },
+        query: { size },
         log,
       } = request;
 
@@ -123,7 +132,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const itemId = requestDetails?.itemId;
 
       return appSettingFileService
-        .download(memberId, buildRepositories(), { reply, itemId, appSettingId, replyUrl })
+        .download(memberId, buildRepositories(), {  itemId, appSettingId })
         .catch((e) => {
           if (e.code) {
             throw e;
