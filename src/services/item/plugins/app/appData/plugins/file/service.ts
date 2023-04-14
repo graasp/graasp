@@ -17,6 +17,7 @@ import { APP_DATA_TYPE_FILE } from '../../../util/constants';
 import { ItemNotFound } from '../../../util/graasp-apps-error';
 import { AppData } from '../../appData';
 import { AppDataService } from '../../service';
+import { Actor, Member } from '../../../../../../member/entities/member';
 
 class AppDataFileService {
   appDataService: AppDataService;
@@ -114,7 +115,7 @@ class AppDataFileService {
     }: { reply: FastifyReply; itemId?: UUID; appDataId: UUID; replyUrl?: boolean },
   ) {
     const { memberRepository } = repositories;
-    let member;
+    let member:Actor;
     if (actorId) {
       member = await memberRepository.get(actorId);
     }
@@ -123,7 +124,7 @@ class AppDataFileService {
       throw new ItemNotFound(itemId);
     }
     await this.itemService.get(member, repositories, itemId);
-    const appData = await this.appDataService.get(member, repositories, itemId, appDataId);
+    const appData = await this.appDataService.get(actorId, repositories, itemId, appDataId);
     const result = await this.fileService.download(member, {
       reply: replyUrl ? undefined : reply,
       id: appData.id,

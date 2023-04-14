@@ -6,7 +6,7 @@ import { AppDataSource } from '../../plugins/datasource';
 import { MemberNotFound } from '../../util/graasp-error';
 import { Item } from '../item/entities/Item';
 import { mapById } from '../utils';
-import { Member } from './entities/member';
+import { Actor, Member } from './entities/member';
 
 export const MemberRepository = AppDataSource.getRepository(Member).extend({
   async deleteOne(id: string) {
@@ -15,7 +15,7 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     return this.delete(id);
   },
 
-  async get(id: string) {
+  async get(id: string): Promise<Member> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     // TODO: improve

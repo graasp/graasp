@@ -10,7 +10,7 @@ import { UUID } from '@graasp/sdk';
 import { UnauthorizedMember } from '../../../../../../../util/graasp-error';
 import { Repositories } from '../../../../../../../util/repositories';
 import FileService from '../../../../../../file/service';
-import { Actor } from '../../../../../../member/entities/member';
+import { Actor, Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { ItemNotFound } from '../../../util/graasp-apps-error';
 import { AppSetting } from '../../appSettings';
@@ -119,7 +119,7 @@ class AppSettingFileService {
   ) {
     const { memberRepository } = repositories;
 
-    let member;
+    let member:Member|undefined;
     if (actorId) {
        member = await memberRepository.get(actorId);
     }
@@ -129,7 +129,7 @@ class AppSettingFileService {
       throw new ItemNotFound(itemId);
     }
     await this.itemService.get(member, repositories, itemId);
-    const appSetting = await this.appSettingService.get(member, repositories, itemId, appSettingId);
+    const appSetting = await this.appSettingService.get(actorId, repositories, itemId, appSettingId);
     const result = await this.fileService.download(member, {
       reply: replyUrl ? undefined : reply,
       id: appSetting.id,

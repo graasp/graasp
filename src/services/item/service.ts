@@ -71,7 +71,7 @@ export class ItemService {
   }
 
   async get(
-    actor,
+    actor:Actor,
     repositories: Repositories,
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
