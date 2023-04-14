@@ -7,14 +7,14 @@ import { FastifyReply } from 'fastify';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../../../../util/graasp-error';
+import { ItemNotFound, UnauthorizedMember } from '../../../../../../../util/graasp-error';
 import { Repositories } from '../../../../../../../util/repositories';
 import { validatePermission } from '../../../../../../authorization';
 import FileService from '../../../../../../file/service';
 import ItemService from '../../../../../service';
 import { AppDataVisibility } from '../../../interfaces/app-details';
 import { APP_DATA_TYPE_FILE } from '../../../util/constants';
-import { ItemNotFound } from '../../../util/graasp-apps-error';
+import {  NotAppDataFile } from '../../../util/graasp-apps-error';
 import { AppData } from '../../appData';
 import { AppDataService } from '../../service';
 import { Actor, Member } from '../../../../../../member/entities/member';
@@ -48,13 +48,12 @@ class AppDataFileService {
     }
     const member = await memberRepository.get(actorId);
 
-    // TODO: check rights
+    // check rights
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
-    const item = await repositories.itemRepository.get(itemId);
     // posting an app data is allowed to readers
-    await validatePermission(repositories, PermissionLevel.Read, member, item);
+     await this.itemService.get(member, repositories, itemId);
 
     const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
     const file = fs.createReadStream(tmpPath);
@@ -124,12 +123,19 @@ class AppDataFileService {
       throw new ItemNotFound(itemId);
     }
     await this.itemService.get(member, repositories, itemId);
+
+    // get app data and check it is a file
     const appData = await this.appDataService.get(actorId, repositories, itemId, appDataId);
+    if(!appData.data[this.fileService.type]) {
+      throw new NotAppDataFile(appData);
+    }
+
     const result = await this.fileService.download(member, {
       reply: replyUrl ? undefined : reply,
       id: appData.id,
       replyUrl,
-      ...appData.data[this.fileService.type],
+      mimetype: appData.data[this.fileService.type].mimetype,
+      path: appData.data[this.fileService.type].filepath,
     });
 
     return result;

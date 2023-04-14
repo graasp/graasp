@@ -8,6 +8,7 @@ import { ItemRepository } from '../../repository';
 import { expectItem, getDummyItem } from '../../test/fixtures/items';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { EmbeddedLinkItemExtra } from '.';
+import { BOB, saveMember } from '../../../member/test/fixtures/members';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -124,7 +125,8 @@ describe('Link Item tests', () => {
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const { item } = await saveItemAndMembership({ member: actor });
+      const member = await saveMember(BOB);
+      const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.PATCH,

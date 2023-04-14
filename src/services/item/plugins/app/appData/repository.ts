@@ -50,7 +50,7 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
   },
 
   getForItem(itemId: string, filters: Partial<AppData> = {}) {
-    return this.findBy({ item: { id: itemId }, ...filters });
+    return this.find({ where:{ item: { id: itemId }, ...filters}, relations: {member:true, creator:true,item:true} });
   },
 
   async getForManyItems(itemIds: string[], filters: Partial<AppData> = {}) {

@@ -7,12 +7,12 @@ import { FastifyReply } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../../../../util/graasp-error';
+import { ItemNotFound, UnauthorizedMember } from '../../../../../../../util/graasp-error';
 import { Repositories } from '../../../../../../../util/repositories';
 import FileService from '../../../../../../file/service';
 import { Actor, Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
-import { ItemNotFound } from '../../../util/graasp-apps-error';
+import {  NotAppSettingFile } from '../../../util/graasp-apps-error';
 import { AppSetting } from '../../appSettings';
 import { AppSettingService } from '../../service';
 
@@ -55,7 +55,7 @@ class AppSettingFileService {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
-    const item = await this.itemService.get(member, repositories, itemId);
+    await this.itemService.get(member, repositories, itemId);
 
     const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
     const file = fs.createReadStream(tmpPath);
@@ -129,12 +129,19 @@ class AppSettingFileService {
       throw new ItemNotFound(itemId);
     }
     await this.itemService.get(member, repositories, itemId);
+
+    // get app setting and check it is a file
     const appSetting = await this.appSettingService.get(actorId, repositories, itemId, appSettingId);
+    if(!appSetting.data[this.fileService.type]) {
+      throw new NotAppSettingFile(appSetting);
+    }
+
     const result = await this.fileService.download(member, {
       reply: replyUrl ? undefined : reply,
       id: appSetting.id,
       replyUrl,
-      ...appSetting.data[this.fileService.type],
+      mimetype: appSetting.data[this.fileService.type].mimetype,
+      path: appSetting.data[this.fileService.type].filepath,
     });
 
     return result;

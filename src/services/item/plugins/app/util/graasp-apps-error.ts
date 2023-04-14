@@ -98,6 +98,7 @@ export class AppSettingNotFound extends GraaspAppsError {
   }
 }
 
+// TODO
 export class PreventUpdateAppDataFile extends GraaspAppsError {
   constructor(data?: unknown) {
     super(
@@ -111,6 +112,7 @@ export class PreventUpdateAppDataFile extends GraaspAppsError {
   }
 }
 
+// TODO
 export class PreventUpdateAppSettingFile extends GraaspAppsError {
   constructor(data?: unknown) {
     super(
@@ -124,31 +126,29 @@ export class PreventUpdateAppSettingFile extends GraaspAppsError {
   }
 }
 
-export class FileServiceNotDefined extends GraaspAppsError {
+
+export class NotAppDataFile extends GraaspAppsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GAERR010',
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: FAILURE_MESSAGES.FILE_SERVICE_NOT_DEFINED,
+        code: 'GAERR009',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'App data is not a file',
       },
       data,
     );
   }
 }
 
-// TODO: these errors can be removed if we reuse the core tasks
-export class MemberCannotReadItem extends GraaspAppsError {
+export class NotAppSettingFile extends GraaspAppsError {
   constructor(data?: unknown) {
     super(
-      { code: 'GAERR011', statusCode: StatusCodes.FORBIDDEN, message: 'Member cannot read item' },
+      {
+        code: 'GAERR010',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'App setting is not a file',
+      },
       data,
     );
-  }
-}
-
-export class ItemNotFound extends GraaspAppsError {
-  constructor(data?: unknown) {
-    super({ code: 'GAERR012', statusCode: StatusCodes.NOT_FOUND, message: 'Item not found' }, data);
   }
 }

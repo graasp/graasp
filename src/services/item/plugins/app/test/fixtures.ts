@@ -2,13 +2,13 @@ import { v4 } from 'uuid';
 
 import { Actor, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { getDummyItem } from '../../../../../../test/fixtures/items';
-import { saveItemAndMembership, saveMembership } from '../../../../../../test/fixtures/memberships';
 import { APP_ITEMS_PREFIX } from '../../../../../util/config';
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { PublisherRepository } from '../publisherRepository';
 import { AppRepository } from '../repository';
+import { saveItemAndMembership, saveMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { getDummyItem } from '../../../test/fixtures/items';
 
 export const GRAASP_ACTOR: Actor = {
   id: 'actorid',
