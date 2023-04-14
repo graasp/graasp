@@ -7,7 +7,7 @@ import HookManager from '../../../../../util/hook';
 import { Repositories } from '../../../../../util/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Member } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
 import { AppDataVisibility } from '../interfaces/app-details';
 import { AppDataNotAccessible } from '../util/graasp-apps-error';
 import { AppData } from './appData';
@@ -284,7 +284,7 @@ export class AppDataService {
   // TODO: check
   async validateAppDataPermission(
     repositories: Repositories,
-    member: Member,
+    member: Actor,
     appData: AppData,
     permission: PermissionLevel,
     inheritedMembership?: ItemMembership,

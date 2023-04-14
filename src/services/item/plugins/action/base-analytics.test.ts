@@ -1,8 +1,10 @@
 import { v4 } from 'uuid';
 
-import { Item, Member, MemberType } from '@graasp/sdk';
 
 import { BaseAnalytics } from './base-analytics';
+import { MemberType } from '@graasp/sdk';
+import { Member } from '../../../member/entities/member';
+import { Item } from '../../entities/Item';
 
 const item = {} as unknown as Item;
 const descendants = [];
@@ -20,27 +22,25 @@ describe('Base Analytics', () => {
         id: v4(),
         name: 'member-1',
         email: 'member-1@email.com',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
         type: MemberType.Individual,
         extra: {
           lang: 'en',
           favoriteItems: [],
         },
-        password: 'my-password',
       },
       {
         id: v4(),
         name: 'member-1',
         email: 'member-1@email.com',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
         type: MemberType.Individual,
         extra: {
           lang: 'fr',
           favoriteItems: [],
         },
-        password: 'my-password-2',
       },
     ];
 
