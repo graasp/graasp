@@ -3,14 +3,13 @@ import { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
-import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
+import {  HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../util/config';
 import { MemberCannotAccess } from '../../../../../util/graasp-error';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
-import { FolderExtra } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { UploadFileNotImageError } from '../utils/errors';
 
@@ -167,7 +166,7 @@ describe('Thumbnail Plugin Tests', () => {
         expect(putObjectMock).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
 
         const savedItem = await ItemRepository.findOneBy({ id: item.id });
-        expect((savedItem!.extra.folder as FolderExtra).hasThumbnail).toBeTruthy();
+        expect((savedItem!.settings).hasThumbnail).toBeTruthy();
       });
 
       it('Throw if try to upload for item without permission', async () => {
@@ -187,7 +186,7 @@ describe('Thumbnail Plugin Tests', () => {
         expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
         const savedItem = await ItemRepository.findOneBy({ id: item.id });
         expect(
-          ((savedItem!.extra as FolderExtra)?.folder as { hasThumbnail: boolean })?.hasThumbnail,
+          ((savedItem!.settings))?.hasThumbnail,
         ).toBeFalsy();
       });
 
@@ -207,7 +206,7 @@ describe('Thumbnail Plugin Tests', () => {
         expect(res.json()).toEqual(new UploadFileNotImageError());
         const savedItem = await ItemRepository.findOneBy({ id: item.id });
         expect(
-          ((savedItem!.extra as FolderExtra)?.folder as { hasThumbnail: boolean })?.hasThumbnail,
+          ((savedItem!.settings))?.hasThumbnail,
         ).toBeFalsy();
       });
     });

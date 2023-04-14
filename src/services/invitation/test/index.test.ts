@@ -4,8 +4,6 @@ import { In } from 'typeorm';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { BOB, saveMember } from '../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { Item } from '../../item/entities/Item';
 import { generateRandomEmail } from '../../itemLogin/util/aux';
@@ -13,6 +11,8 @@ import { ItemMembershipRepository } from '../../itemMembership/repository';
 import { Member } from '../../member/entities/member';
 import { Invitation } from '../invitation';
 import { InvitationRepository } from '../repository';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

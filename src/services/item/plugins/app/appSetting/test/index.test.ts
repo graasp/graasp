@@ -4,14 +4,14 @@ import { v4 } from 'uuid';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
-import { BOB, saveMember } from '../../../../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../../../../test/fixtures/memberships';
 import { APP_ITEMS_PREFIX } from '../../../../../../util/config';
 import { MemberCannotAdminItem } from '../../../../../../util/graasp-error';
 import { setItemPublic } from '../../../../../itemTag/test/fixtures';
 import { Member } from '../../../../../member/entities/member';
 import { setUp } from '../../test/fixtures';
 import { AppSettingRepository } from '../repository';
+import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../../../../itemMembership/test/fixtures/memberships';
 
 const expectAppSettings = (values, expected) => {
   for (const expectValue of expected) {

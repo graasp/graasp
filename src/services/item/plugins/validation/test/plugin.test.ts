@@ -4,10 +4,10 @@ import { v4 } from 'uuid';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { BOB, saveMember } from '../../../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../util/config';
 import { MemberCannotAdminItem } from '../../../../../util/graasp-error';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -48,7 +48,7 @@ describe('Item Validation Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json()).toEqual(result);
+        expect(res.json()).toEqual(res);
       });
 
       it('Throws if has read permission', async () => {
@@ -125,7 +125,7 @@ describe('Item Validation Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json()).toEqual(result);
+        expect(res.json()).toEqual(res);
       });
 
       it('Throws if has read permission', async () => {

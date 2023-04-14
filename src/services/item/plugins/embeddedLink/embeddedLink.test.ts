@@ -1,12 +1,13 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import {  HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { expectItem, getDummyItem } from '../../../../../test/fixtures/items';
-import { saveItemAndMembership } from '../../../../../test/fixtures/memberships';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { ItemRepository } from '../../repository';
+import { expectItem, getDummyItem } from '../../test/fixtures/items';
+import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
+import { EmbeddedLinkItemExtra } from '.';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -15,7 +16,7 @@ const extra = {
   [ItemType.LINK]: {
     url: 'http://myurl.com',
   },
-};
+} as EmbeddedLinkItemExtra;
 
 // TODO: test iframely
 
@@ -90,7 +91,7 @@ describe('Link Item tests', () => {
       it('Fail to create if payload is invalid', async () => {
         const payload = getDummyItem({
           type: ItemType.DOCUMENT,
-          extra: { [ItemType.FOLDER]: { url: 'http://myurl.com' } },
+          extra: { [ItemType.FOLDER]: { url: 'http://myurl.com' } } as any,
         });
 
         const response = await app.inject({
@@ -105,7 +106,7 @@ describe('Link Item tests', () => {
       it('Fail to create if url of link is not an url', async () => {
         const payload1 = getDummyItem({
           type: ItemType.LINK,
-          extra: { [ItemType.LINK]: { url: 'someurl' } },
+          extra: { [ItemType.LINK]: { url: 'someurl' } } as any,
         });
 
         const response1 = await app.inject({
@@ -199,7 +200,7 @@ describe('Link Item tests', () => {
               [ItemType.LINK]: {
                 url: 'http://myurl.com',
               },
-            },
+            } as any,
           }),
           member: actor,
         });

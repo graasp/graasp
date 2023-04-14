@@ -19,7 +19,7 @@ import { ItemMembershipRepository } from '../repository';
 import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+jest.mock('../../../plugins/datasource');
 
 describe('Membership routes tests', () => {
   let app;

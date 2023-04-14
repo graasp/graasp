@@ -1,18 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { expectItem, getDummyItem } from '../../../../../../test/fixtures/items';
-import { BOB, expectMember, saveMember } from '../../../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../../../test/fixtures/memberships';
 import { APP_ITEMS_PREFIX } from '../../../../../util/config';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { PublisherRepository } from '../publisherRepository';
-import { AppRepository } from '../repository';
-import { MOCK_APPS, MOCK_APP_ORIGIN, MOCK_TOKEN } from './fixtures';
+import { MOCK_APP_ORIGIN, MOCK_TOKEN, saveApp, saveAppList } from './fixtures';
+import { BOB, expectMember, saveMember } from '../../../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { expectItem } from '../../../test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

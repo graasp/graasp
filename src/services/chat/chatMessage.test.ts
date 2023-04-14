@@ -4,9 +4,6 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
-import { getDummyItem } from '../../../test/fixtures/items';
-import { MEMBERS, saveMember } from '../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../util/config';
 import { ItemNotFound, MemberCannotAccess } from '../../util/graasp-error';
 import { Member } from '../member/entities/member';
@@ -15,6 +12,9 @@ import { ChatMessage } from './chatMessage';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { ChatMentionRepository } from './plugins/mentions/repository';
 import { ChatMessageRepository } from './repository';
+import { saveItemAndMembership } from '../itemMembership/test/fixtures/memberships';
+import { MEMBERS, saveMember } from '../member/test/fixtures/members';
+import { getDummyItem } from '../item/test/fixtures/items';
 
 // mock datasource
 jest.mock('../../plugins/datasource');

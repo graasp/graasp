@@ -11,7 +11,7 @@ import * as MEMBERS_FIXTURES from './fixtures/members';
 const { saveMember, saveMembers } = MEMBERS_FIXTURES;
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+jest.mock('../../../plugins/datasource');
 
 describe('Member routes tests', () => {
   let app;

@@ -1,15 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { HttpMethod } from '@graasp/sdk';
+import { FlagType, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { BOB, saveMember } from '../../../../test/fixtures/members';
-import { saveItemAndMembership } from '../../../../test/fixtures/memberships';
 import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
 import { ItemNotFound } from '../../../util/graasp-error';
-import { FlagType } from '../itemFlag';
 import { ItemFlagRepository } from '../repository';
+import { BOB, saveMember } from '../../member/test/fixtures/members';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -94,7 +93,7 @@ describe('Item Flag Tests', () => {
         const [flagContent] = await ItemFlagRepository.find({
           relations: { creator: true, item: true },
         });
-        expect(flagContent.flagType).toEqual(payload.flagType);
+        expect(flagContent.type).toEqual(payload.flagType);
         expectItemFlag(await response.json(), flagContent);
       });
 

@@ -4,12 +4,12 @@ import { v4 } from 'uuid';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
-import { BOB, saveMember } from '../../../../../../../test/fixtures/members';
 import { APP_ITEMS_PREFIX } from '../../../../../../util/config';
 import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
 import { setUp } from '../../test/fixtures';
 import { AppActionRepository } from '../repository';
+import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');

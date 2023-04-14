@@ -91,3 +91,4 @@ jobs:
           EXPLORER_CLIENT_HOST: 'http://localhost:3113'
           ETHERPAD_URL: http://etherpad:9001
           ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          COOKIE_DOMAIN: localhost

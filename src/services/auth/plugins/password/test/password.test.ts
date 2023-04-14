@@ -7,7 +7,7 @@ import * as MEMBERS_FIXTURES from '../../../../member/test/fixtures/members';
 import { MOCK_PASSWORD, saveMemberAndPassword } from './fixtures/password';
 
 // mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 describe('Password routes tests', () => {
   let app;

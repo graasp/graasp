@@ -49,9 +49,10 @@ export const AppDataSource = new DataSource({
     },
     slaves
   },
-
+  
   // cache: true, // TODO
 
+  
   logging: true,
   migrationsRun: true,
 

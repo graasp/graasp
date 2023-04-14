@@ -5,12 +5,11 @@ import jwt from 'jsonwebtoken';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import * as MEMBERS_FIXTURES from '../../../../../test/fixtures/members';
-import { MOCK_PASSWORD, saveMemberAndPassword } from '../../../../../test/fixtures/password';
 import { JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../../../../util/config';
 import MemberRepository from '../../../member/repository';
+import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
+import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
-const { saveMember } = MEMBERS_FIXTURES;
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');
@@ -42,7 +41,7 @@ describe('Mobile Endpoints', () => {
       });
 
       const m = await MemberRepository.findOneBy({ email });
-      MEMBERS_FIXTURES.expectMember(m, { email, name });
+      expectMember(m, { email, name });
 
       expect(mockSendEmail).toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -69,13 +68,13 @@ describe('Mobile Endpoints', () => {
       );
 
       const m = await MemberRepository.findOneBy({ email });
-      MEMBERS_FIXTURES.expectMember(m, member);
+      expectMember(m, member);
 
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
     it('Sign Up fallback to login for already register member', async () => {
-      const member = MEMBERS_FIXTURES.BOB;
+      const member = BOB;
       await saveMember(member);
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
@@ -92,7 +91,7 @@ describe('Mobile Endpoints', () => {
         expect.anything(),
       );
       const m = await MemberRepository.findOneBy({ email: member.email });
-      MEMBERS_FIXTURES.expectMember(m, member);
+      expectMember(m, member);
 
       expect(response.statusCode).toEqual(StatusCodes.CONFLICT);
     });
@@ -113,7 +112,7 @@ describe('Mobile Endpoints', () => {
 
   describe('POST /m/login', () => {
     it('Sign In successfully', async () => {
-      const member = MEMBERS_FIXTURES.BOB;
+      const member = BOB;
       await saveMember(member);
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
@@ -133,7 +132,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In successfully with given lang', async () => {
-      const member = MEMBERS_FIXTURES.ANNA;
+      const member = ANNA;
       const lang = 'de';
       await saveMember(member);
 
@@ -181,7 +180,7 @@ describe('Mobile Endpoints', () => {
 
   describe('POST /m/login-password', () => {
     it('Sign In successfully', async () => {
-      const member = MEMBERS_FIXTURES.LOUISA;
+      const member = LOUISA;
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
@@ -194,7 +193,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
-      const member = MEMBERS_FIXTURES.LOUISA;
+      const member = LOUISA;
       const wrongPassword = '1234';
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
@@ -208,7 +207,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In send not acceptable error when member does not have password', async () => {
-      const member = MEMBERS_FIXTURES.BOB;
+      const member = BOB;
       const clearPassword = 'asd';
       await saveMember(member);
 
@@ -252,7 +251,7 @@ describe('Mobile Endpoints', () => {
 
   describe('GET /m/auth', () => {
     it('Authenticate successfully', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const verifier = 'verifier';
       // compute challenge from verifier
       const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
@@ -277,7 +276,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Fail to authenticate if verifier and challenge do not match', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const t = jwt.sign({ id: member.id }, JWT_SECRET);
       const verifier = 'verifier';
       const response = await app.inject({
@@ -309,7 +308,7 @@ describe('Mobile Endpoints', () => {
 
   describe('GET /m/auth/refresh', () => {
     it('Refresh tokens successfully', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const t = jwt.sign({ id: member.id }, REFRESH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -323,7 +322,7 @@ describe('Mobile Endpoints', () => {
       expect(response.json()).toHaveProperty('authToken');
     });
     it('Fail if token is invalid', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const t = jwt.sign({ id: member.id }, 'REFRESH_TOKEN_JWT_SECRET');
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -338,7 +337,7 @@ describe('Mobile Endpoints', () => {
 
   describe('GET /m/deep-link', () => {
     it('Refresh tokens successfully', async () => {
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember(BOB);
       const t = jwt.sign({ id: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
