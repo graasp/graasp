@@ -7,10 +7,10 @@ export default {
         id: { type: 'string' },
         member: { $ref: 'http://graasp.org/members/#/definitions/member' },
         // TODO
-        item: { 
+        item: {
           type: 'object',
-          additionalProperties: true
-         },
+          additionalProperties: true,
+        },
         data: {},
         type: { type: 'string' },
         // ownership: { type: 'string' }, // TODO: should we always return this

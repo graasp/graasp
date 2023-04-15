@@ -2,11 +2,11 @@ import uniqBy from 'lodash.uniqby';
 
 import { ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../../../util/repositories';
+import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
-import { checkTargetItemAndTokenItemMatch } from './util/utils';
+import { checkTargetItemAndTokenItemMatch } from './utils';
 
 export class AppService {
   jwtExpiration: number;

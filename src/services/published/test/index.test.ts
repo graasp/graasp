@@ -5,18 +5,18 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
-import { ItemNotFound, MemberCannotAdminItem } from '../../../util/graasp-error';
 import { Item } from '../../item/entities/Item';
 import { expectManyItems } from '../../item/test/fixtures/items';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { ItemTagRepository } from '../../itemTag/repository';
-import { ItemTagNotFound } from '../../itemTag/util/graasp-item-tags-error';
 import { BOB, saveMember } from '../../member/test/fixtures/members';
 import { ItemPublishedNotFound } from '../errors';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { ItemTagNotFound } from '../../itemTag/errors';
+import { ItemNotFound, MemberCannotAdminItem } from '../../../utils/errors';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

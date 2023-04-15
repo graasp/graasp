@@ -1,7 +1,7 @@
 import { SavedMultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
-import { Repositories } from '../../../../util/repositories';
+import { Repositories } from '../../../../utils/repositories';
 import FileService from '../../../file/service';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { MemberService } from '../../service';

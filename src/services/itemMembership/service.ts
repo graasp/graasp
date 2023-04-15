@@ -1,7 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../util/graasp-error';
-import { Repositories } from '../../util/repositories';
+import { UnauthorizedMember } from '../../utils/errors';
+import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
@@ -56,7 +56,7 @@ export class ItemMembershipService {
         } catch (e) {
           // if does not have permission, remove data and add error
           delete data.data[item.id];
-          data.errors.push(e);
+          errors.push(e);
         }
       }),
     );

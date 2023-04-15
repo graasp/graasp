@@ -6,8 +6,9 @@ import { SavedMultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import FileService from '../file/service';
-import { THUMBNAIL_MIMETYPE, TMP_FOLDER } from './constants';
-import { createThumbnails } from './helpers';
+import { THUMBNAIL_MIMETYPE,  } from './constants';
+import { createThumbnails } from './utils';
+import { TMP_FOLDER } from '../../utils/config';
 
 export class ThumbnailService {
   fileService: FileService;
@@ -27,7 +28,7 @@ export class ThumbnailService {
 
   async upload(actor, id: string, file: SavedMultipartFile) {
     // ?? it might not be saved correctly in the original upload
-    const fileStorage = path.join(__dirname, TMP_FOLDER, id);
+    const fileStorage = path.join(TMP_FOLDER, 'thumbnails', id);
     mkdirSync(fileStorage, { recursive: true });
 
     try {

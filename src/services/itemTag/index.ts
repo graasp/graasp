@@ -4,9 +4,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams, ItemTagType } from '@graasp/sdk';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { Item } from '../item/entities/Item';
-import common, { create, deleteOne, getItemTags, getMany } from './schemas/schemas';
+import common, { create, deleteOne, getItemTags, getMany } from './schemas';
 import { ItemTagService } from './service';
 
 /**

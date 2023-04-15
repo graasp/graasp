@@ -3,7 +3,7 @@ import { In } from 'typeorm';
 import { FileItemType } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
-import { MemberNotFound } from '../../util/graasp-error';
+import { MemberNotFound } from '../../utils/errors';
 import { Item } from '../item/entities/Item';
 import { mapById } from '../utils';
 import { Actor, Member } from './entities/member';

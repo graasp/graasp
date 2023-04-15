@@ -2,12 +2,13 @@ import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../../../../util/config';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
+import { MOCK_CAPTCHA, mockCaptchaValidation } from '../captcha/test/utils';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
 // mock database and decorator plugins
@@ -28,6 +29,11 @@ describe('Mobile Endpoints', () => {
   });
 
   describe('POST /m/register', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignUpMobile);
+    });
+
     it('Sign Up successfully', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
@@ -36,7 +42,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/register',
-        payload: { email, name, challenge },
+        payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
       });
 
       const m = await MemberRepository.findOneBy({ email });
@@ -56,7 +62,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/m/register?lang=${lang}`,
-        payload: { email, name, challenge },
+        payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -80,7 +86,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/register',
-        payload: { ...member, challenge },
+        payload: { ...member, challenge, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -101,7 +107,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/register',
-        payload: { email, name },
+        payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -110,6 +116,10 @@ describe('Mobile Endpoints', () => {
   });
 
   describe('POST /m/login', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignInMobile);
+    });
     it('Sign In successfully', async () => {
       const member = BOB;
       await saveMember(member);
@@ -118,7 +128,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login',
-        payload: { email: member.email, challenge },
+        payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -139,7 +149,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/m/login?lang=${lang}`,
-        payload: { email: member.email, challenge },
+        payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -157,7 +167,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login',
-        payload: { email, challenge },
+        payload: { email, challenge, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).not.toHaveBeenCalled();
@@ -169,7 +179,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login',
-        payload: { email, challenge },
+        payload: { email, challenge, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
@@ -178,6 +188,10 @@ describe('Mobile Endpoints', () => {
   });
 
   describe('POST /m/login-password', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
+    });
     it('Sign In successfully', async () => {
       const member = LOUISA;
       await saveMemberAndPassword(member, MOCK_PASSWORD);
@@ -185,7 +199,12 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login-password',
-        payload: { email: member.email, challenge, password: MOCK_PASSWORD.password },
+        payload: {
+          email: member.email,
+          challenge,
+          password: MOCK_PASSWORD.password,
+          captcha: MOCK_CAPTCHA,
+        },
       });
       expect(response.statusCode).toEqual(StatusCodes.OK);
       expect(response.json()).toHaveProperty('t');
@@ -199,7 +218,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login-password',
-        payload: { email: member.email, challenge, password: wrongPassword },
+        payload: { email: member.email, challenge, password: wrongPassword, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -213,7 +232,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login-password',
-        payload: { email: member.email, challenge, password: clearPassword },
+        payload: { email: member.email, challenge, password: clearPassword, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
       expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
@@ -226,7 +245,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login-password',
-        payload: { email, challenge, password },
+        payload: { email, challenge, password, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
@@ -240,7 +259,7 @@ describe('Mobile Endpoints', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/m/login-password',
-        payload: { email, challenge, password },
+        payload: { email, challenge, password, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);

@@ -3,7 +3,7 @@ import { FastifyReply } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../../util/repositories';
+import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { ThumbnailService } from '../../../thumbnail/service';

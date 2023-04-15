@@ -1,16 +1,16 @@
 import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { FolderItemType, ItemSettings, ItemType, MAX_TREE_LEVELS } from '@graasp/sdk';
+import { FolderItemType, ItemSettings, ItemType, MAX_TREE_LEVELS, ResultOf, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
-import { DEFAULT_ITEM_SETTINGS } from '../../util/config';
+import { DEFAULT_ITEM_SETTINGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
   ItemNotFound,
   TooManyDescendants,
-} from '../../util/graasp-error';
+} from '../../utils/errors';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, ItemExtra } from './entities/Item';
@@ -52,7 +52,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     settings: ItemSettings;
     creator: Member;
     parent?: Item;
-  }) {
+  }):Item {
     const {
       name,
       description = null,
@@ -81,7 +81,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return item;
   },
 
-  async deleteMany(ids: string[]) {
+  async deleteMany(ids: string[]):Promise<UUID[]> {
     await this.delete(ids);
     return ids;
   },
@@ -109,14 +109,14 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   /**
    * options.bypass {boolean} if true, return parents even if the user does not have membership
    * */
-  async getAncestors(item: Item) {
+  async getAncestors(item: Item): Promise<Item[]> {
     return this.createQueryBuilder('item')
       .where('item.path @> :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id })
       .getMany();
   },
 
-  async getChildren(parent: Item, ordered?: boolean) {
+  async getChildren(parent: Item, ordered?: boolean): Promise<Item[]> {
     if (parent.type !== ItemType.FOLDER) {
       // TODO
       throw new Error('Item is not a folder');
@@ -140,7 +140,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return children;
   },
 
-  async getDescendants(item: Item) {
+  async getDescendants(item: Item): Promise<Item[]> {
     // TODO: LEVEL depth
     return this.createQueryBuilder('item')
       .where('item.path <@ :path', { path: item.path })
@@ -148,7 +148,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
-  async getManyDescendants(items: Item[]) {
+  async getManyDescendants(items: Item[]): Promise<Item[]> {
     // TODO: LEVEL depth
     const query = this.createQueryBuilder('item').where('id NOT IN(:...ids)', {
       ids: items.map(({ id }) => id),
@@ -162,7 +162,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return query.getMany();
   },
 
-  async getMany(ids: string[], args: { throwOnError?: boolean; withDeleted?: boolean } = {}) {
+  async getMany(ids: string[], args: { throwOnError?: boolean; withDeleted?: boolean } = {}): Promise<ResultOf<Item>> {
     const { throwOnError = false } = args;
     const items = await this.find({
       where: { id: In(ids) },
@@ -182,7 +182,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return result;
   },
 
-  async getNumberOfDescendants(path: string) {
+  async getNumberOfDescendants(path: string): Promise<number> {
     const result = await this.createQueryBuilder('item')
       .where('item.path @> :path', { path })
       .addSelect('COUNT(*)', 'count')
@@ -193,7 +193,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   // TODO: check result value
-  async getNumberOfLevelsToFarthestChild(item: Item) {
+  async getNumberOfLevelsToFarthestChild(item: Item): Promise<number> {
     return this.createQueryBuilder('item')
       .addSelect(`nlevel(path) - nlevel('${item.path}')`)
       .where('item.path <@ :path', { path: item.path })
@@ -203,7 +203,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getRawOne();
   },
 
-  async getOwn(memberId: string) {
+  async getOwn(memberId: string): Promise<Item[]> {
     return this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('creator.id = :id', { id: memberId })
@@ -212,7 +212,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
-  async move(item: Item, parentItem?: Item) {
+  async move(item: Item, parentItem?: Item): Promise<void> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -247,7 +247,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .execute();
   },
 
-  async patch(id: string, data: Partial<Item>) {
+  async patch(id: string, data: Partial<Item>): Promise<Item> {
     // TODO: extra + settings
     const item = await this.get(id);
 
@@ -294,7 +294,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   /////// -------- COPY
-  async copy(item: Item, creator: Member, parentItem?: Item) {
+  async copy(item: Item, creator: Member, parentItem?: Item): Promise<Item> {
     const descendants = await this.getDescendants(item);
 
     // copy (memberships from origin are not copied/kept)

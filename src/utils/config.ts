@@ -279,3 +279,9 @@ export const SALT_ROUNDS = 10;
 export const TMP_FOLDER = path.resolve(__dirname, '../..', 'tmp');
 
 export const VIEW_UNKNOWN_NAME = 'unknown';
+
+if (!process.env.RECAPTCHA_SECRET_ACCESS_KEY) {
+  console.error('RECAPTCHA_SECRET_ACCESS_KEY environment variable missing.');
+  process.exit(1);
+}
+export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_KEY;

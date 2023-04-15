@@ -1,7 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import HookManager from '../../../../util/hook';
-import { Repositories } from '../../../../util/repositories';
+import HookManager from '../../../../utils/hook';
+import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';

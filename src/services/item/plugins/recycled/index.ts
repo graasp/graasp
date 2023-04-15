@@ -10,7 +10,7 @@ import {
   PostHookHandlerType,
 } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import schemas, {
   getRecycledItemDatas,
   recycleMany,

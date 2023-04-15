@@ -3,25 +3,23 @@ import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 import { DEFAULT_LANG, PermissionLevel } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
-import { UnauthorizedMember } from '../../util/graasp-error';
-import { Repositories } from '../../util/repositories';
+import { UnauthorizedMember } from '../../utils/errors';
+import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { Invitation } from './invitation';
+import { buildInvitationLink } from './constants';
 
 export class InvitationService {
   log: FastifyBaseLogger;
   fastify: FastifyInstance; // TODO
-  buildInvitationLink: any; // TODO
   itemService: ItemService;
-  // TODO
 
-  constructor(log, fastify, itemService: ItemService, buildInvitationLink) {
+  constructor(log, fastify, itemService: ItemService) {
     this.log = log;
     this.fastify = fastify;
     this.itemService = itemService;
-    this.buildInvitationLink = buildInvitationLink;
   }
 
   async sendInvitationEmail({ actor, invitation }: { actor: Actor; invitation: Invitation }) {
@@ -32,7 +30,7 @@ export class InvitationService {
 
     // factor out
     const lang = actor.lang;
-    const link = this.buildInvitationLink(invitation);
+    const link = buildInvitationLink(invitation);
 
     const t = this.fastify.mailer.translate(lang);
 

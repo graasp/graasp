@@ -2,7 +2,7 @@ import archiver from 'archiver';
 import fs, { mkdirSync } from 'fs';
 import path from 'path';
 
-import { TMP_FOLDER } from '../../../util/config';
+import { TMP_FOLDER } from '../../../utils/config';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
 import { CannotWriteFileError } from './errors';
 

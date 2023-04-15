@@ -1,5 +1,5 @@
-import { UnauthorizedMember } from '../../util/graasp-error';
-import { Repositories } from '../../util/repositories';
+import { UnauthorizedMember } from '../../utils/errors';
+import { Repositories } from '../../utils/repositories';
 import ItemService from '../item/service';
 import { Actor } from '../member/entities/member';
 import { CannotGetOthersLikes } from './errors';
@@ -18,7 +18,7 @@ export class ItemLikeService {
     const { itemLikeRepository } = repositories;
 
     // only own items
-    // it might change later
+    // TODO: allow with future implementation 
     if (memberId !== actor.id) {
       throw new CannotGetOthersLikes(memberId);
     }

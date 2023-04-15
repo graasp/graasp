@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { TMP_FOLDER } from '../../../../util/config';
+import { TMP_FOLDER } from '../../../../utils/config';
 
 export const PLUGIN_NAME = 'graasp-plugin-item-zip';
 

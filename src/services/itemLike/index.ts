@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../util/repositories';
-import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas/schemas';
+import { buildRepositories } from '../../utils/repositories';
+import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {

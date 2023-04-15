@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
+import { randomHexOf4 } from '../utils';
 
-const randomHexOf4 = () => crypto.randomBytes(2).toString('hex');
 const saltRounds = 10;
 
+// TODO: reuse from password plugin?
 export const encryptPassword = async (password: string): Promise<string> =>
   bcrypt.hash(password, saltRounds);
 

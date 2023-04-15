@@ -5,7 +5,7 @@ import {
   EmptyCurrentPassword,
   IncorrectPassword,
   InvalidPassword,
-} from '../../../../util/graasp-error';
+} from '../../../../utils/errors';
 import { MemberPassword } from './entities/password';
 import { encryptPassword, verifyCredentials, verifyCurrentPassword } from './utils';
 

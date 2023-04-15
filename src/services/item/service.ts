@@ -6,6 +6,7 @@ import {
   MAX_NUMBER_OF_CHILDREN,
   PermissionLevel,
   PermissionLevelCompare,
+  ResultOf,
   UUID,
 } from '@graasp/sdk';
 
@@ -14,9 +15,9 @@ import {
   TooManyChildren,
   TooManyDescendants,
   UnauthorizedMember,
-} from '../../util/graasp-error';
-import HookManager from '../../util/hook';
-import { Repositories } from '../../util/repositories';
+} from '../../utils/errors';
+import HookManager from '../../utils/hook';
+import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
@@ -159,7 +160,7 @@ export class ItemService {
     return itemRepository.patch(itemId, body);
   }
 
-  async patchMany(actor, repositories: Repositories, itemIds: UUID[], body) {
+  async patchMany(actor, repositories: Repositories, itemIds: UUID[], body):Promise<ResultOf<Item>> {
     // TODO: extra + settings
     const ops = await Promise.all(
       itemIds.map(async (id) => this.patch(actor, repositories, id, body)),
@@ -187,7 +188,7 @@ export class ItemService {
     }
 
     const items = [...descendants, item];
-    await itemRepository.deleteMany(items);
+    await itemRepository.deleteMany(items.map((i)=>i.id));
 
     // post hook
     for (const item of items) {
@@ -224,7 +225,7 @@ export class ItemService {
     );
 
     const items = [...allDescendants.flat(), ...allItems];
-    await itemRepository.deleteMany(items);
+    await itemRepository.deleteMany(items.map((i)=>i.id));
 
     // post hook
     for (const item of items) {

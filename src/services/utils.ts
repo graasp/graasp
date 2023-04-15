@@ -1,4 +1,5 @@
 import { ResultOf } from '@graasp/sdk';
+import crypto from 'crypto';
 
 export function mapById<T>({
   keys,
@@ -7,9 +8,9 @@ export function mapById<T>({
 }: {
   defaultValue?: T;
   keys: string[];
-  findElement: (key: string) => T;
+  findElement: (key: string) => T|undefined;
   buildError?: (key: string) => Error;
-}) {
+}): ResultOf<T> {
   const data: { [key: string]: T } = {};
   const errors: Error[] = [];
   keys.forEach((key) => {
@@ -30,3 +31,6 @@ export function mapById<T>({
 export function resultOfToList<T>(resultOf: ResultOf<T>): T[] {
   return Object.values(resultOf.data);
 }
+
+// const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
+export const randomHexOf4 = () => crypto.randomBytes(2).toString('hex');

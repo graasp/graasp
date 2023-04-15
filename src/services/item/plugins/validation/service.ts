@@ -12,7 +12,7 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
-import { Repositories } from '../../../../util/repositories';
+import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Item } from '../../entities/Item';
@@ -201,7 +201,7 @@ export class ItemValidationService {
               id: item?.id,
               mimetype,
               fileStorage,
-            });
+            }) as string;
             const isSafe = await classifyImage(this.imageClassifierApi, filePath);
             status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
           }

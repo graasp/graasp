@@ -1,9 +1,10 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import * as MEMBERS_FIXTURES from '../../../../member/test/fixtures/members';
+import { MOCK_CAPTCHA, mockCaptchaValidation } from '../../captcha/test/utils';
 import { MOCK_PASSWORD, saveMemberAndPassword } from './fixtures/password';
 
 // mock database and decorator plugins
@@ -24,6 +25,11 @@ describe('Password routes tests', () => {
   });
 
   describe('POST /login-password', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignInWithPassword);
+    });
+
     it('Sign In successfully', async () => {
       const m = MEMBERS_FIXTURES.LOUISA;
       const pwd = MOCK_PASSWORD;
@@ -33,7 +39,7 @@ describe('Password routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email: member.email, password: pwd.password },
+        payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       expect(response.json()).toHaveProperty('resource');
@@ -47,7 +53,7 @@ describe('Password routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email: member.email, password: wrongPassword },
+        payload: { email: member.email, password: wrongPassword, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       expect(response.statusMessage).toEqual(ReasonPhrases.UNAUTHORIZED);
@@ -61,7 +67,7 @@ describe('Password routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email: member.email, password },
+        payload: { email: member.email, password, captcha: MOCK_CAPTCHA },
       });
       expect(response.statusCode).toEqual(StatusCodes.NOT_ACCEPTABLE);
       expect(response.statusMessage).toEqual(ReasonPhrases.NOT_ACCEPTABLE);
@@ -73,7 +79,7 @@ describe('Password routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email, password },
+        payload: { email, password, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
@@ -86,7 +92,7 @@ describe('Password routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',
-        payload: { email, password },
+        payload: { email, password, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);

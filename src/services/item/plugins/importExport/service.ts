@@ -17,7 +17,7 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
-import { Repositories } from '../../../../util/repositories';
+import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';

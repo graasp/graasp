@@ -1,7 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../util/graasp-error';
-import { Repositories } from '../../../../util/repositories';
+import { UnauthorizedMember } from '../../../../utils/errors';
+import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor } from '../../../member/entities/member';
 

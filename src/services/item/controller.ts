@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
 import {
@@ -171,9 +171,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // TODO: implement queue
         return itemService.patchMany(member, buildRepositories(manager), ids, body);
       })
-        .then((items) => {
+        .then((resultItems) => {
           // do not wait
-          actionItemService.postManyPatchAction(request, reply, resultOfToList(items));
+          actionItemService.postManyPatchAction(request, reply, resultOfToList(resultItems));
         })
         .catch((e) => {
           // TODO: return feedback in queue

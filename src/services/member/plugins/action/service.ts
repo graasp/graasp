@@ -1,5 +1,5 @@
-import { CannotModifyOtherMembers } from '../../../../util/graasp-error';
-import { Repositories } from '../../../../util/repositories';
+import { CannotModifyOtherMembers } from '../../../../utils/errors';
+import { Repositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { Actor } from '../../entities/member';
 

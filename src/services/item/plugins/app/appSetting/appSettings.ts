@@ -6,12 +6,10 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { Anything } from '@graasp/sdk';
 
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
@@ -33,7 +31,7 @@ export class AppSetting extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member;
+  creator: Member | null;
 
   @Column({
     nullable: false,
@@ -41,7 +39,7 @@ export class AppSetting extends BaseEntity {
   name: string;
 
   @Column('simple-json', { nullable: false, default: '{}' })
-  data: Anything;
+  data: {[key:string]: unknown};
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

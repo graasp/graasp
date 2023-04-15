@@ -28,8 +28,8 @@ export class ItemLoginSchema extends BaseEntity {
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;
 
-  // TODO
   @Column({
+    enum: Object.values(ItemLoginSchemaType),
     nullable: false,
     length: 100,
   })

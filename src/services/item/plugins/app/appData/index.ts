@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../../util/repositories';
+import { buildRepositories } from '../../../../../utils/repositories';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppData } from './appData';
 import { InputAppData } from './interfaces/app-data';

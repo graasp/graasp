@@ -2,8 +2,8 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { Context, Hostname, PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../util/graasp-error';
-import { Repositories, buildRepositories } from '../../../../util/repositories';
+import { UnauthorizedMember } from '../../../../utils/errors';
+import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { validatePermission } from '../../../authorization';

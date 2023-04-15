@@ -1,6 +1,6 @@
 import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { Repositories } from '../../util/repositories';
+import { Repositories } from '../../utils/repositories';
 import { filterOutHiddenItems, validatePermission } from '../authorization';
 import ItemService from '../item/service';
 

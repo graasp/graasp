@@ -1,5 +1,5 @@
-import { UnauthorizedMember } from '../../util/graasp-error';
-import { Repositories } from '../../util/repositories';
+import { UnauthorizedMember } from '../../utils/errors';
+import { Repositories } from '../../utils/repositories';
 import ItemService from '../item/service';
 import { Actor } from '../member/entities/member';
 import { ItemFlag } from './itemFlag';

@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { Context, Hostname, MentionStatus, buildItemLinkForBuilder } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../../member/entities/member';
 import { ChatMention } from './chatMention';

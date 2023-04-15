@@ -27,7 +27,7 @@ import {
   MemberCannotWriteItem,
   TooManyChildren,
   TooManyDescendants,
-} from '../../../util/graasp-error';
+} from '../../../utils/errors';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import {
   saveItemAndMembership,

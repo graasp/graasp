@@ -1,12 +1,13 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { JWT_SECRET } from '../../../../util/config';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, expectMember, saveMember } from '../../../member/test/fixtures/members';
+import { MOCK_CAPTCHA, mockCaptchaValidation } from '../captcha/test/utils';
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');
@@ -25,6 +26,11 @@ describe('Auth routes tests', () => {
   });
 
   describe('POST /register', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignUp);
+    });
+
     it('Sign Up successfully', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
@@ -32,7 +38,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: { email, name },
+        payload: { email, name, captcha: MOCK_CAPTCHA },
       });
       const m = await MemberRepository.findOneBy({ email, name });
 
@@ -56,7 +62,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/register?lang=${lang}`,
-        payload: { email, name },
+        payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -78,7 +84,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: member,
+        payload: { ...member, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -101,7 +107,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: { email, name },
+        payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
       const members = await MemberRepository.findBy({ email });
@@ -113,13 +119,17 @@ describe('Auth routes tests', () => {
   });
 
   describe('POST /login', () => {
+    beforeEach(() => {
+      // mock captcha validation
+      mockCaptchaValidation(RecaptchaAction.SignIn);
+    });
     it('Sign In successfully', async () => {
       const member = await saveMember(BOB);
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login',
-        payload: { email: member.email },
+        payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -138,7 +148,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/login?lang=${lang}`,
-        payload: { email: member.email },
+        payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -157,7 +167,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login',
-        payload: { email },
+        payload: { email, captcha: MOCK_CAPTCHA },
       });
 
       expect(mockSendEmail).not.toHaveBeenCalled();
@@ -170,7 +180,7 @@ describe('Auth routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login',
-        payload: { email },
+        payload: { email, captcha: MOCK_CAPTCHA },
       });
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);

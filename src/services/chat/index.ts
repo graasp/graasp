@@ -9,7 +9,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
 import commonChat, {

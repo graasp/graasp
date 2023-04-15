@@ -1,8 +1,8 @@
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MemberCannotAccess } from '../../../../../util/graasp-error';
-import HookManager from '../../../../../util/hook';
-import { Repositories } from '../../../../../util/repositories';
+import { MemberCannotAccess } from '../../../../../utils/errors';
+import HookManager from '../../../../../utils/hook';
+import { Repositories } from '../../../../../utils/repositories';
 import { Item } from '../../../entities/Item';
 import ItemService from '../../../service';
 import { AppSetting } from './appSettings';
@@ -99,7 +99,6 @@ export class AppSettingService {
     // get app setting is allowed to readers
     await this.itemService.get(member, repositories, itemId);
 
-    // TODO: get only memberId or with visibility
     return appSettingRepository.get(appSettingId);
   }
 
@@ -113,7 +112,6 @@ export class AppSettingService {
     // get app setting is allowed to readers
     await this.itemService.get(member, repositories, itemId);
 
-    // TODO: get only memberId or with visibility
     return appSettingRepository.getForItem(itemId);
   }
 

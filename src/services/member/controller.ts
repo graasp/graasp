@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams } from '@graasp/sdk';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { Member } from './entities/member';
 import { deleteOne, getCurrent, getMany, getManyBy, getOne, updateOne } from './schemas';
 

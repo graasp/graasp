@@ -2,12 +2,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { DEFAULT_LANG } from '@graasp/sdk';
+import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { AUTH_CLIENT_HOST, CLIENT_HOST, REDIRECT_URL } from '../../../../util/config';
-import { MemberAlreadySignedUp } from '../../../../util/graasp-error';
-import { buildRepositories } from '../../../../util/repositories';
-import { auth, login, register } from '../../schemas';
+import { AUTH_CLIENT_HOST, CLIENT_HOST, REDIRECT_URL } from '../../../../utils/config';
+import { MemberAlreadySignedUp } from '../../../../utils/errors';
+import { buildRepositories } from '../../../../utils/repositories';
+import { auth, login, register } from './schemas';
 import { MagicLinkService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -22,40 +22,56 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // cookie based auth and api endpoints
   await fastify.register(async function (fastify) {
     // register
-    fastify.post<{ Body: { name: string; email: string }; Querystring: { lang?: string } }>(
-      '/register',
-      { schema: register },
-      async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
-        // TODO: not best, too much logic here
-        return db.transaction(async (manager) => {
-          try {
-            // we use member service to allow post hook for invitation
-            const member = await memberService.post(
-              undefined,
-              buildRepositories(manager),
-              body,
-              lang,
-            );
+    fastify.post<{
+      Body: { name: string; email: string; captcha: string };
+      Querystring: { lang?: string };
+    }>('/register', { schema: register }, async (request, reply) => {
+      const {
+        body,
+        query: { lang = DEFAULT_LANG },
+        log,
+      } = request;
 
-            await magicLinkService.sendRegisterMail(null, buildRepositories(manager), member);
-            reply.status(StatusCodes.NO_CONTENT);
-          } catch (e) {
-            if (!(e instanceof MemberAlreadySignedUp)) {
-              throw e;
-            }
-            // send login email
-            await magicLinkService.login(null, buildRepositories(manager), body, lang);
-            reply.status(StatusCodes.NO_CONTENT);
+      // validate captcha
+      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUp);
+
+      // TODO: not best, too much logic here
+      return db.transaction(async (manager) => {
+        try {
+          // we use member service to allow post hook for invitation
+          const member = await memberService.post(
+            undefined,
+            buildRepositories(manager),
+            body,
+            lang,
+          );
+
+          await magicLinkService.sendRegisterMail(null, buildRepositories(manager), member);
+          reply.status(StatusCodes.NO_CONTENT);
+        } catch (e) {
+          if (!(e instanceof MemberAlreadySignedUp)) {
+            throw e;
           }
-        });
-      },
-    );
+          // send login email
+          await magicLinkService.login(null, buildRepositories(manager), body, lang);
+          reply.status(StatusCodes.NO_CONTENT);
+        }
+      });
+    });
 
     // login
-    fastify.post<{ Body: { email: string }; Querystring: { lang?: string } }>(
+    fastify.post<{ Body: { email: string; captcha: string }; Querystring: { lang?: string } }>(
       '/login',
       { schema: login },
-      async ({ body, query: { lang } }, reply) => {
+      async (request, reply) => {
+        const {
+          body,
+          query: { lang },
+        } = request;
+
+        // validate captcha
+        await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignIn);
+
         await magicLinkService.login(null, buildRepositories(), body, lang);
         reply.status(StatusCodes.NO_CONTENT);
       },

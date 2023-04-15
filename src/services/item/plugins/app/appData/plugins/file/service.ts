@@ -3,19 +3,17 @@ import path from 'path';
 import { v4 } from 'uuid';
 
 import { SavedMultipartFile } from '@fastify/multipart';
-import { FastifyReply } from 'fastify';
 
-import { PermissionLevel, UUID } from '@graasp/sdk';
+import { FileItemProperties, UUID } from '@graasp/sdk';
 
-import { ItemNotFound, UnauthorizedMember } from '../../../../../../../util/graasp-error';
-import { Repositories } from '../../../../../../../util/repositories';
-import { validatePermission } from '../../../../../../authorization';
+import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
+import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
-import { Actor, Member } from '../../../../../../member/entities/member';
+import { Actor } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { AppDataVisibility } from '../../../interfaces/app-details';
-import { APP_DATA_TYPE_FILE } from '../../../util/constants';
-import { NotAppDataFile } from '../../../util/graasp-apps-error';
+import { APP_DATA_TYPE_FILE } from '../../../constants';
+import { NotAppDataFile } from '../../errors';
 import { AppData } from '../../appData';
 import { AppDataService } from '../../service';
 
@@ -79,7 +77,7 @@ class AppDataFileService {
         size,
       })
       .then(() => {
-        return { filepath, filename, size, mimetype };
+        return { path:filepath, filename, size, mimetype };
       })
       .catch((e) => {
         throw e;
@@ -121,17 +119,17 @@ class AppDataFileService {
 
     // get app data and check it is a file
     const appData = await this.appDataService.get(actorId, repositories, itemId, appDataId);
-    if (!appData.data[this.fileService.type]) {
+    const fileProp = appData.data[this.fileService.type] as FileItemProperties;
+    if (!fileProp) {
       throw new NotAppDataFile(appData);
     }
 
     const result = await this.fileService.download(member, {
       id: appData.id,
-      mimetype: appData.data[this.fileService.type].mimetype,
-      path: appData.data[this.fileService.type].filepath,
       // always return the url because redirection uses bearer token automatically
       // and s3 prevent multiple auth methods
       replyUrl: true,
+      ...fileProp
     });
 
     return result;
@@ -141,11 +139,12 @@ class AppDataFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      if (!appData?.data?.[this.fileService.type]) {
+      const fileProp = appData?.data?.[this.fileService.type] as FileItemProperties;
+      if (!fileProp) {
         return;
       }
 
-      const filepath = appData.data[this.fileService.type].filepath;
+      const filepath = fileProp.path;
       await this.fileService.delete(actor, { filepath });
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not

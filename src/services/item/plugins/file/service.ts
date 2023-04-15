@@ -14,16 +14,16 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../util/graasp-error';
-import { Repositories } from '../../../../util/repositories';
+import { UnauthorizedMember } from '../../../../utils/errors';
+import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { StorageExceeded } from './utils/errors';
+import { randomHexOf4 } from '../../../utils';
 
-const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 
 const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
 

@@ -2,9 +2,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { EMAIL_LINKS_HOST, PROTOCOL } from '../../../../util/config';
-import { buildRepositories } from '../../../../util/repositories';
-import { passwordLogin, updatePassword } from '../../schemas';
+import { RecaptchaAction } from '@graasp/sdk';
+
+import { EMAIL_LINKS_HOST, PROTOCOL } from '../../../../utils/config';
+import { buildRepositories } from '../../../../utils/repositories';
+import { passwordLogin, updatePassword } from './schemas';
 import { MemberPasswordService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -13,10 +15,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const memberPasswordService = new MemberPasswordService(log);
 
   // login with password
-  fastify.post<{ Body: { email: string; password: string } }>(
+  fastify.post<{ Body: { email: string; password: string; captcha: string } }>(
     '/login-password',
     { schema: passwordLogin },
-    async ({ body, log }, reply) => {
+    async (request, reply) => {
+      const { body, log } = request;
+
+      // validate captcha
+      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword);
+
       // TODO: actor
       const token = await memberPasswordService.login(null, buildRepositories(), body);
 

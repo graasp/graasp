@@ -1,7 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { SearchFields } from '.';
-import { Repositories } from '../../util/repositories';
+import { Repositories } from '../../utils/repositories';
 import { filterOutHiddenItems, validatePermission } from '../authorization';
 
 // this file is not quite necessary, it could be merged with published items

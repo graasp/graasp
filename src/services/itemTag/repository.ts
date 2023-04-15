@@ -13,7 +13,7 @@ import {
   ConflictingTagsInTheHierarchy,
   ItemHasTag,
   ItemTagNotFound,
-} from './util/graasp-item-tags-error';
+} from './errors';
 
 /**
  * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)

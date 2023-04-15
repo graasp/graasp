@@ -1,8 +1,8 @@
 import { DEFAULT_LANG, UUID } from '@graasp/sdk';
 
-import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../util/graasp-error';
-import HookManager from '../../util/hook';
-import { Repositories } from '../../util/repositories';
+import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../utils/errors';
+import HookManager from '../../utils/hook';
+import { Repositories } from '../../utils/repositories';
 import { Actor } from './entities/member';
 
 export class MemberService {

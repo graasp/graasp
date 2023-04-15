@@ -3,13 +3,13 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
-import { Repositories, buildRepositories } from '../../../../../../../util/repositories';
+import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
 import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
-import { PreventUpdateAppSettingFile } from '../../../util/graasp-apps-error';
+import { PreventUpdateAppSettingFile } from '../../errors';
 import type { AppSettingService } from '../../service';
 import { download, upload } from './schema';
 import AppSettingFileService from './service';

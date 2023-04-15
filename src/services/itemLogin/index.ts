@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { Actor, ItemLoginSchemaType } from '@graasp/sdk';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   credentials,
@@ -10,7 +10,7 @@ import {
   getLoginSchemaType,
   login,
   updateLoginSchema,
-} from './schemas/schemas';
+} from './schemas';
 import { ItemLoginService } from './service';
 
 export interface GraaspItemLoginOptions {

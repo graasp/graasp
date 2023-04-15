@@ -3,12 +3,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, IdParam, UUID } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../../../../util/repositories';
+import { buildRepositories } from '../../../../../../../utils/repositories';
 import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
-import { PreventUpdateAppDataFile } from '../../../util/graasp-apps-error';
+import { PreventUpdateAppDataFile } from '../../errors';
 import type { AppDataService } from '../../service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
@@ -72,16 +72,14 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const { authTokenSubject: requestDetails, log } = request;
       const memberId = requestDetails?.memberId;
       const itemId = requestDetails?.itemId;
-
-      // TODO: if one file fails, keep other files??? APPLY ROLLBACK
-      // THEN WE SHOULD MOVE THE TRANSACTION
+      
       return db
         .transaction(async (manager) => {
           const repositories = buildRepositories(manager);
 
-          // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
+          // only one file is uploaded
           const files = await request.saveRequestFiles();
           return appDataFileService.upload(memberId, repositories, files[0], itemId);
         })

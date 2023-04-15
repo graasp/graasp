@@ -1,6 +1,6 @@
 import { Brackets, In, Not } from 'typeorm';
 
-import { PermissionLevel, PermissionLevelCompare, UUID } from '@graasp/sdk';
+import { PermissionLevel, PermissionLevelCompare, ResultOf, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import {
@@ -8,7 +8,7 @@ import {
   InvalidPermissionLevel,
   ItemMembershipNotFound,
   ModifyExisting,
-} from '../../util/graasp-error';
+} from '../../utils/errors';
 import { Item } from '../item/entities/Item';
 import { pathToId } from '../item/utils';
 import { Member } from '../member/entities/member';
@@ -26,7 +26,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return this.insert(memberships);
   },
 
-  async deleteOne(itemMembershipId: string, args: { purgeBelow?: boolean } = { purgeBelow: true }) {
+  async deleteOne(itemMembershipId: string, args: { purgeBelow?: boolean } = { purgeBelow: true }): Promise<ItemMembership> {
     const itemMembership = await this.get(itemMembershipId);
 
     if (args.purgeBelow) {
@@ -70,7 +70,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return item;
   },
 
-  async getAllBelow(item: Item, memberId?: string) {
+  async getAllBelow(item: Item, memberId?: string): Promise<ItemMembership[]> {
     const query = this.createQueryBuilder('item_membership')
       .andWhere('item_membership.item_path <@ :path', { path: item.path })
       .andWhere('item_membership.item_path != :path', { path: item.path });
@@ -87,7 +87,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return query.getMany();
   },
 
-  async getForManyItems(items: Item[], memberId?: UUID) {
+  async getForManyItems(items: Item[], memberId?: UUID): Promise<ResultOf<ItemMembership[]>> {
     const query = this.createQueryBuilder('item_membership')
       .leftJoinAndSelect('item_membership.item', 'item')
       .leftJoinAndSelect('item_membership.member', 'member');
@@ -125,7 +125,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
 
   // check member's membership "at" item
-  async getInherited(item: Item, member: Member, considerLocal = false) {
+  async getInherited(item: Item, member: Member, considerLocal = false): Promise<ItemMembership|null> {
     const query = this.createQueryBuilder('item_membership')
       .leftJoinAndSelect('item_membership.item', 'item')
       .leftJoinAndSelect('item_membership.member', 'member')
@@ -156,7 +156,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     // no membership in the tree
     return null;
   },
-  async getMany(ids: string[], args: { throwOnError?: boolean }) {
+  async getMany(ids: string[], args: { throwOnError?: boolean }): Promise<ResultOf<ItemMembership>> {
     const itemMemberships = await this.find({
       where: { id: In(ids) },
       relations: {
@@ -178,7 +178,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return result;
   },
 
-  async getSharedItems(actorId: UUID, permission?: PermissionLevel) {
+  async getSharedItems(actorId: UUID, permission?: PermissionLevel): Promise<Item[]> {
     // TODO: refactor
     let permissions: PermissionLevel[];
     switch (permission) {
@@ -212,7 +212,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     });
   },
 
-  async patch(itemMembershipId: string, data: { permission: PermissionLevel }) {
+  async patch(itemMembershipId: string, data: { permission: PermissionLevel }): Promise<ItemMembership> {
     const itemMembership = await this.findOne({
       where: { id: itemMembershipId },
       relations: { item: true, member: true },
@@ -259,7 +259,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return this.get(itemMembershipId);
   },
 
-  async post(args: { item: Item; member: Member; creator: Member; permission: PermissionLevel }) {
+  async post(args: { item: Item; member: Member; creator: Member; permission: PermissionLevel }): Promise<ItemMembership> {
     const { item, member, creator, permission } = args;
     // prepare membership but do not save it
     const itemMembership = this.create({

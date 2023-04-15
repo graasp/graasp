@@ -15,7 +15,7 @@ import {
   ITEMS_ROUTE_PREFIX,
   PROTOCOL,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from '../../util/config';
+} from '../../utils/config';
 import graaspChatbox from '../chat';
 import graaspInvitationsPlugin from '../invitation';
 import graaspCategoryPlugin from '../itemCategory';
@@ -124,10 +124,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         await fastify.register(graaspDocumentItem);
 
-        fastify.register(graaspInvitationsPlugin, {
-          buildInvitationLink: (invitation) =>
-            `${PROTOCOL}://${AUTH_CLIENT_HOST}/signup?invitationId=${invitation.id}`,
-        });
+        fastify.register(graaspInvitationsPlugin);
 
         fastify.register(graaspItemFlags);
 

@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { AuthTokenSubject } from '@graasp/sdk';
+import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
@@ -34,7 +34,7 @@ import {
   MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
-} from './util/config';
+} from './utils/config';
 
 // TODO: REMOVE
 declare module 'fastify' {
@@ -55,7 +55,11 @@ declare module 'fastify' {
     members: { service: MemberService };
     actions: { service: ActionService };
     corsPluginOptions: any;
-
+    validateCaptcha: (
+      request: FastifyRequest,
+      captcha: string,
+      actionType: RecaptchaActionType,
+    ) => Promise<void>;
     fetchMemberInSession: (request: FastifyRequest) => Promise<void>;
     generateAuthTokensPair: (memberId: string) => Promise<{
       authToken: string;

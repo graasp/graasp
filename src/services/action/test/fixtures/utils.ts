@@ -1,4 +1,4 @@
-import { GRAASP_ACTOR, VIEW_UNKNOWN_NAME } from '../../../../util/config';
+import { GRAASP_ACTOR, VIEW_UNKNOWN_NAME } from '../../../../utils/config';
 
 export const checkActionData = (savedAction, args) => {
   const {

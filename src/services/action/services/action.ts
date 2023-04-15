@@ -3,7 +3,7 @@ import { FastifyRequest } from 'fastify';
 
 import { Hostname } from '@graasp/sdk';
 
-import { Repositories } from '../../../util/repositories';
+import { Repositories } from '../../../utils/repositories';
 import ItemService from '../../item/service';
 import { Actor } from '../../member/entities/member';
 import { MemberService } from '../../member/service';
@@ -35,6 +35,10 @@ export class ActionService {
     actions: (Partial<Action> & Pick<Action, 'extra' | 'type'>)[],
   ): Promise<Action[]> {
     const { headers } = request;
+
+// todo: prevent saving here if member disabled or if item disabled analytics 
+
+
     const view = getView(headers, this.hosts);
     // warning: addresses might contained spoofed ips
     const addresses = forwarded(request.raw);

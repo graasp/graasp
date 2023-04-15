@@ -1,5 +1,5 @@
 import { AppDataSource } from '../../../plugins/datasource';
-import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../util/typeormError';
+import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../utils/typeormError';
 import { Item } from '../../item/entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';

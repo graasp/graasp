@@ -7,8 +7,8 @@ import {
   MemberCannotAdminItem,
   MemberCannotReadItem,
   MemberCannotWriteItem,
-} from '../util/graasp-error';
-import { Repositories } from '../util/repositories';
+} from '../utils/errors';
+import { Repositories } from '../utils/repositories';
 import { Item } from './item/entities/Item';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { Actor, Member } from './member/entities/member';
@@ -31,7 +31,7 @@ export const validatePermission = async (
   permission: PermissionLevel,
   member: Actor,
   item: Item,
-): Promise<ItemMembership> => {
+): Promise<ItemMembership|null> => {
   // get best permission for user
   // but do not fetch membership for signed out member
   const inheritedMembership = member

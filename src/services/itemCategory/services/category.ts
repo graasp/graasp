@@ -1,6 +1,6 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../util/repositories';
+import { Repositories } from '../../../utils/repositories';
 import { validatePermission } from '../../authorization';
 
 export class CategoryService {

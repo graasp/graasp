@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 
 import { FastifyLoggerInstance } from 'fastify';
 
-import { SALT_ROUNDS } from '../../../../util/config';
+import { SALT_ROUNDS } from '../../../../utils/config';
 import { MemberPassword } from './entities/password';
 
 export const verifyCredentials = (

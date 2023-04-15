@@ -8,7 +8,7 @@ import {
   S3FileConfiguration,
 } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { deleteAllById } from '../../../action/schemas';
 import { ActionMemberService } from './service';
 

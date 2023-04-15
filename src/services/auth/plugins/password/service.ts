@@ -1,8 +1,8 @@
 import { FastifyLoggerInstance } from 'fastify';
 
-import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES } from '../../../../util/config';
-import { MemberWithoutPassword } from '../../../../util/graasp-error';
-import { Repositories } from '../../../../util/repositories';
+import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES } from '../../../../utils/config';
+import { MemberWithoutPassword } from '../../../../utils/errors';
+import { Repositories } from '../../../../utils/repositories';
 import { generateToken } from '../../token';
 
 export class MemberPasswordService {

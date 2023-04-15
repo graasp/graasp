@@ -22,7 +22,7 @@ export const sendRequestToClassifier = async (
     const response = await fetch(classifierApi, {
       method: HttpMethod.POST,
       body: JSON.stringify(data),
-    });
+    }).then(res => res.json());
     return response;
   } catch (error) {
     console.log(error);

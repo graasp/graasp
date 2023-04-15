@@ -1,6 +1,6 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../util/repositories';
+import { Repositories } from '../../../utils/repositories';
 import ItemService from '../../item/service';
 
 export class ItemCategoryService {

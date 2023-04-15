@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { ItemValidationService } from './service';
 
 type GraaspPluginValidationOptions = {

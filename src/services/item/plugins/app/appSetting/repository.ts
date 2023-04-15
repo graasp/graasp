@@ -1,7 +1,7 @@
 import { ItemType } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { AppSettingNotFound, PreventUpdateAppSettingFile } from '../util/graasp-apps-error';
+import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 

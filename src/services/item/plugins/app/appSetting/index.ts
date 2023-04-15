@@ -2,7 +2,7 @@ import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
 import { IdParam, ItemType } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../../util/repositories';
+import { buildRepositories } from '../../../../../utils/repositories';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 import appSettingFilePlugin from './plugins/file';

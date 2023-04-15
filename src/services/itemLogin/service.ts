@@ -2,18 +2,18 @@ import { FastifyInstance } from 'fastify';
 
 import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../util/graasp-error';
-import { Repositories } from '../../util/repositories';
+import { UnauthorizedMember } from '../../utils/errors';
+import { Repositories } from '../../utils/repositories';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
-import { encryptPassword, generateRandomEmail } from './util/aux';
+import { encryptPassword, generateRandomEmail } from './utils';
 import {
   InvalidMember,
   MemberIdentifierNotFound,
   ValidMemberSession,
-} from './util/graasp-item-login-error';
+} from './errors';
 
 export class ItemLoginService {
   fastify: FastifyInstance;

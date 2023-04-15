@@ -10,17 +10,14 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { Anything } from '@graasp/sdk';
-
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { AppDataVisibility } from '../interfaces/app-details';
 
-
 export type Filters = {
   visibility?: AppDataVisibility;
-  member?: Partial<Member>
-}
+  member?: Partial<Member>;
+};
 
 @Entity()
 export class AppData extends BaseEntity {
@@ -38,7 +35,7 @@ export class AppData extends BaseEntity {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member;
+  creator: Member | null;
 
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'CASCADE',
@@ -59,7 +56,7 @@ export class AppData extends BaseEntity {
   visibility: AppDataVisibility;
 
   @Column('simple-json', { nullable: false, default: '{}' })
-  data: Anything;
+  data: {[key: string]: unknown;};
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

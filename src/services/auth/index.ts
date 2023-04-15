@@ -17,17 +17,19 @@ import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PROD,
   PROTOCOL,
+  RECAPTCHA_SECRET_ACCESS_KEY,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
   SECURE_SESSION_SECRET_KEY,
   STAGING,
   TOKEN_BASED_AUTH,
-} from '../../util/config';
-import { InvalidSession, OrphanSession } from '../../util/graasp-error';
+} from '../../utils/config';
+import { InvalidSession, OrphanSession } from '../../utils/errors';
 import { Member } from '../member/entities/member';
 import MemberRepository from '../member/repository';
 import { AuthPluginOptions } from './interfaces/auth';
+import captchaPlugin from './plugins/captcha';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
 import passwordController from './plugins/password';
@@ -54,6 +56,9 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
     cookie: { domain, path: '/', secure: PROD || STAGING },
   });
+
+  // captcha
+  await fastify.register(captchaPlugin, { secretAccessKey: RECAPTCHA_SECRET_ACCESS_KEY });
 
   async function verifyMemberInSession(request: FastifyRequest) {
     const { session } = request;

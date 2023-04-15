@@ -5,8 +5,8 @@ import { ItemSettings, ItemType, buildPathFromIds } from '@graasp/sdk';
 import { Member } from '../../../member/entities/member';
 import { Item, ItemExtra } from '../../entities/Item';
 import { ItemRepository } from '../../repository';
+import { randomHexOf4 } from '../../../utils';
 
-const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 
 export const getDummyItem = (
   options: {

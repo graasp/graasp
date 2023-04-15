@@ -5,8 +5,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, PermissionLevel, UnknownExtra } from '@graasp/sdk';
 
-import { WEBSOCKETS_PLUGIN } from '../../util/config';
-import { buildRepositories } from '../../util/repositories';
+import { WEBSOCKETS_PLUGIN } from '../../utils/config';
+import { buildRepositories } from '../../utils/repositories';
 import { ItemMembership } from './entities/ItemMembership';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteAll, deleteOne, getItems, updateOne } from './schemas';

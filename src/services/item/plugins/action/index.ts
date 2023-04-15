@@ -12,7 +12,7 @@ import {
   S3FileConfiguration,
 } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { ActionRequestExportService } from './requestExport/service';
 import { ActionItemService } from './service';
 

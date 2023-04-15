@@ -8,7 +8,7 @@ import { FastifyPluginAsync, FastifyRequest, preHandlerHookHandler } from 'fasti
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
@@ -16,7 +16,7 @@ import { createSchema, getMany, updateSchema } from './fluent-schema';
 import common, { generateToken, getContext } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
-import { DEFAULT_JWT_EXPIRATION } from './util/constants';
+import { DEFAULT_JWT_EXPIRATION } from './constants';
 
 const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) => {
   const { jwtSecret, jwtExpiration = DEFAULT_JWT_EXPIRATION, publisherId } = options;

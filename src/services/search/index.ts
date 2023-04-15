@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { search } from './schemas';
 import { SearchService } from './service';
 

@@ -4,7 +4,7 @@ import { AuthTokenSubject } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { App } from './entities/app';
-import { InvalidApplicationOrigin } from './util/graasp-apps-error';
+import { InvalidApplicationOrigin } from './errors';
 
 export const AppRepository = AppDataSource.getRepository(App).extend({
   async getAll(publisherId?: string) {

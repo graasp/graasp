@@ -49,6 +49,7 @@ jobs:
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME }}
       pg-connection-uri: ${{ secrets.PG_CONNECTION_URI }}
       pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS }}
+      recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       redis-host: ${{ secrets.REDIS_HOST }}
       redis-port: ${{ secrets.REDIS_PORT }}
       redis-password: ${{ secrets.REDIS_PASSWORD }}

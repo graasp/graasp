@@ -5,8 +5,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam } from '@graasp/sdk';
 
-import { THUMBNAILS_ROUTE_PREFIX } from '../../../../util/config';
-import { buildRepositories } from '../../../../util/repositories';
+import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
+import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../file/utils/errors';
 import { upload } from './schemas';

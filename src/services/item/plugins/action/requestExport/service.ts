@@ -9,9 +9,9 @@ import {
 } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
-import { TMP_FOLDER } from '../../../../../util/config';
-import { UnauthorizedMember } from '../../../../../util/graasp-error';
-import { Repositories } from '../../../../../util/repositories';
+import { TMP_FOLDER } from '../../../../../utils/config';
+import { UnauthorizedMember } from '../../../../../utils/errors';
+import { Repositories } from '../../../../../utils/repositories';
 import {
   EXPORT_FILE_EXPIRATION,
   VIEW_UNKNOWN_NAME,

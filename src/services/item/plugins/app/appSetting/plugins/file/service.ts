@@ -4,14 +4,14 @@ import { v4 } from 'uuid';
 
 import { SavedMultipartFile } from '@fastify/multipart';
 
-import { UUID } from '@graasp/sdk';
+import { FileItemProperties, UUID } from '@graasp/sdk';
 
-import { ItemNotFound, UnauthorizedMember } from '../../../../../../../util/graasp-error';
-import { Repositories } from '../../../../../../../util/repositories';
+import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
+import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Actor, Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
-import { NotAppSettingFile } from '../../../util/graasp-apps-error';
+import { NotAppSettingFile } from '../../errors';
 import { AppSetting } from '../../appSettings';
 import { AppSettingService } from '../../service';
 
@@ -89,7 +89,7 @@ class AppSettingFileService {
         size,
       })
       .then(() => {
-        return { filepath, filename, size, mimetype };
+        return { path:filepath, filename, size, mimetype };
       })
       .catch((e) => {
         throw e;
@@ -131,17 +131,17 @@ class AppSettingFileService {
       itemId,
       appSettingId,
     );
-    if (!appSetting.data[this.fileService.type]) {
+    const fileProp = appSetting.data[this.fileService.type];
+    if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
     }
 
     const result = await this.fileService.download(member, {
       id: appSetting.id,
-      mimetype: appSetting.data[this.fileService.type].mimetype,
-      path: appSetting.data[this.fileService.type].filepath,
       // always return the url because redirection uses bearer token automatically
       // and s3 prevent multiple auth methods
       replyUrl: true,
+      ...fileProp
     });
 
     return result;
@@ -157,17 +157,17 @@ class AppSettingFileService {
       // create file data object
       const itemId = appS.item.id;
       const newFilePath = this.buildFilePath(itemId, appS.id);
+      const originalFileExtra = appS.data[fileItemType] as FileItemProperties;
       const newFileData = {
         [fileItemType]: {
           filepath: newFilePath,
-          filename: appS.data[fileItemType].name,
-          size: appS.data[fileItemType].size,
-          mimetype: appS.data[fileItemType].mimetype,
+          filename: originalFileExtra.name,
+          size: originalFileExtra.size,
+          mimetype: originalFileExtra.mimetype,
         },
       };
 
       // run copy task
-      const originalFileExtra = appS.data[fileItemType];
       await this.fileService.copy(actor, {
         newId: appS.id,
         newFilePath,
@@ -184,11 +184,12 @@ class AppSettingFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      if (!appSetting?.data?.[this.fileService.type]) {
+      const fileProp = appSetting?.data?.[this.fileService.type] as FileItemProperties;
+      if (!fileProp) {
         return;
       }
 
-      const filepath = appSetting.data[this.fileService.type].filepath;
+      const filepath = fileProp.path;
       await this.fileService.delete(actor, { filepath });
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not

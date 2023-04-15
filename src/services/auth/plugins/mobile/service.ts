@@ -8,15 +8,15 @@ import { FastifyInstance, FastifyLoggerInstance } from 'fastify';
 
 import { DEFAULT_LANG } from '@graasp/sdk';
 
-import { JWT_SECRET } from '../../../../util/config';
+import { JWT_SECRET } from '../../../../utils/config';
 import {
   ChallengeFailed,
   InvalidToken,
   MemberAlreadySignedUp,
   MemberNotSignedUp,
   TokenExpired,
-} from '../../../../util/graasp-error';
-import { Repositories } from '../../../../util/repositories';
+} from '../../../../utils/errors';
+import { Repositories } from '../../../../utils/repositories';
 
 const promisifiedJwtVerify = promisify<
   string,

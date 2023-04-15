@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileProperties, HttpMethod, IdParam } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { download, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';

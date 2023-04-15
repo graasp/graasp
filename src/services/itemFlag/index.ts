@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { ItemFlag } from './itemFlag';
 import common, { create, getFlags } from './schemas';
 import { ItemFlagService } from './service';

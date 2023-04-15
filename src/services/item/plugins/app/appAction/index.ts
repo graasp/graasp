@@ -1,7 +1,7 @@
 import { preHandlerHookHandler } from 'fastify';
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../../../../util/repositories';
+import { buildRepositories } from '../../../../../utils/repositories';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { InputAppAction } from './interfaces/app-action';
 import common, { create, getForMany, getForOne } from './schemas';

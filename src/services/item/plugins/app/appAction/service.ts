@@ -1,9 +1,9 @@
 import { PermissionLevel } from '@graasp/sdk';
 
-import { Repositories } from '../../../../../util/repositories';
+import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
-import { AppActionNotAccessible } from '../util/graasp-apps-error';
+import { AppActionNotAccessible } from './errors';
 import { InputAppAction } from './interfaces/app-action';
 
 export class AppActionService {
@@ -32,12 +32,12 @@ export class AppActionService {
     // check member exists
     const member = await memberRepository.get(actorId);
 
-    // check item exists? let post fail?
+    // check item exists
     const item = await itemRepository.get(itemId);
 
     // posting an app action is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
-    const permission = membership.permission;
+    const permission = membership?.permission;
     let { memberId: fMemberId } = filters;
 
     // can read only own app action if not admin
@@ -63,12 +63,12 @@ export class AppActionService {
     // check member exists
     const member = await memberRepository.get(actorId);
 
-    // check item exists? let post fail?
+    // check item exists
     const item = await itemRepository.get(itemIds[0]);
 
     // posting an app data is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
-    const permission = membership.permission;
+    const permission = membership?.permission;
     let { memberId: fMemberId } = filters;
 
     // can read only own app action if not admin

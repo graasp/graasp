@@ -2,11 +2,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { DEFAULT_LANG } from '@graasp/sdk';
+import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../util/repositories';
-import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from '../../schemas';
+import { buildRepositories } from '../../../../utils/repositories';
 import { MemberPasswordService } from '../password/service';
+import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from './schemas';
 import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
@@ -21,33 +21,50 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('memberId', null);
 
   fastify.post<{
-    Body: { name: string; email: string; challenge: string };
+    Body: { name: string; email: string; challenge: string; captcha: string };
     Querystring: { lang?: string };
-  }>(
-    '/register',
-    { schema: mregister },
-    async ({ body, query: { lang = DEFAULT_LANG }, log }, reply) => {
-      return db.transaction(async (manager) => {
-        await mobileService.register(null, buildRepositories(manager), body, lang);
-        reply.status(StatusCodes.NO_CONTENT);
-      });
-    },
-  );
+  }>('/register', { schema: mregister }, async (request, reply) => {
+    const {
+      body,
+      query: { lang = DEFAULT_LANG },
+      log,
+    } = request;
 
-  fastify.post<{ Body: { email: string; challenge: string }; Querystring: { lang?: string } }>(
-    '/login',
-    { schema: mlogin },
-    async ({ body, query: { lang } }, reply) => {
-      await mobileService.login(null, buildRepositories(), body, lang);
+    // validate captcha
+    await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUpMobile);
+
+    return db.transaction(async (manager) => {
+      await mobileService.register(null, buildRepositories(manager), body, lang);
       reply.status(StatusCodes.NO_CONTENT);
-    },
-  );
+    });
+  });
+
+  fastify.post<{
+    Body: { email: string; challenge: string; captcha: string };
+    Querystring: { lang?: string };
+  }>('/login', { schema: mlogin }, async (request, reply) => {
+    const {
+      body,
+      query: { lang },
+    } = request;
+
+    // validate captcha
+    await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInMobile);
+
+    await mobileService.login(null, buildRepositories(), body, lang);
+    reply.status(StatusCodes.NO_CONTENT);
+  });
 
   // login with password
-  fastify.post<{ Body: { email: string; challenge: string; password: string } }>(
+  fastify.post<{ Body: { email: string; challenge: string; password: string; captcha: string } }>(
     '/login-password',
     { schema: mPasswordLogin },
-    async ({ body }, reply) => {
+    async (request, reply) => {
+      const { body } = request;
+
+      // validate captcha
+      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInMobile);
+
       const token = await memberPasswordService.login(
         null,
         buildRepositories(),

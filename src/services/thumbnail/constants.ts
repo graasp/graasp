@@ -1,4 +1,4 @@
-import { ThumbnailSize } from '@graasp/sdk';
+import { MimeTypes, ThumbnailSize } from '@graasp/sdk';
 
 export const ThumbnailSizeFormat = {
   [ThumbnailSize.Small]: 200,
@@ -8,12 +8,7 @@ export const ThumbnailSizeFormat = {
 };
 
 export const THUMBNAIL_FORMAT = 'jpeg';
-export const THUMBNAIL_MIMETYPE = 'image/jpeg';
+export const THUMBNAIL_MIMETYPE = MimeTypes.Image.JPEG;
 
-export const AVATARS_ROUTE = '/avatars';
-export const THUMBNAIL_ROUTE = '/thumbnails';
-export const MEMBERS_ROUTE = '/members';
-export const ITEMS_ROUTE = '/items';
 
-export const TMP_FOLDER = './tmp';
 export const PLUGIN_NAME = 'graasp-plugin-thumbnails';

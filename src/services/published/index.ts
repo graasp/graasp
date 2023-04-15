@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
-import { buildRepositories } from '../../util/repositories';
+import { buildRepositories } from '../../utils/repositories';
 import { getCollections, getCollectionsForMember, publishItem, unpublishItem } from './schemas';
 import { ItemPublishedService } from './service';
 

@@ -4,7 +4,7 @@ import { FastifyReply } from 'fastify';
 
 import { FileItemType, ItemType, LocalFileConfiguration, S3FileConfiguration } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../util/graasp-error';
+import { UnauthorizedMember } from '../../utils/errors';
 import { Actor } from '../member/entities/member';
 import { FileRepository } from './interfaces/fileRepository';
 import { LocalFileRepository } from './repositories/local';
@@ -48,7 +48,7 @@ class FileService {
   async upload(
     member: Actor,
     data?: { file: ReadStream; size: number; filepath: string; mimetype: string },
-  ): Promise<any> {
+  )  {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
@@ -98,7 +98,7 @@ class FileService {
       replyUrl?: boolean;
       id: string;
     },
-  ): Promise<any> {
+  ) {
     const { reply, id, path: filepath, mimetype, fileStorage, expiration, replyUrl } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
@@ -126,7 +126,7 @@ class FileService {
     data: {
       filepath?: string;
     },
-  ): Promise<any> {
+  ) {
     const { filepath } = data;
 
     if (!filepath) {
@@ -140,7 +140,7 @@ class FileService {
     data: {
       folderPath?: string;
     },
-  ): Promise<any> {
+  )  {
     const { folderPath } = data;
     if (!folderPath) {
       throw new DeleteFolderInvalidPathError(folderPath);
@@ -157,7 +157,7 @@ class FileService {
       originalPath?: string;
       mimetype?: string;
     },
-  ): Promise<any> {
+  ) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
@@ -186,7 +186,7 @@ class FileService {
       originalFolderPath: string;
       newFolderPath: string;
     },
-  ): Promise<any> {
+  )  {
     const { originalFolderPath, newFolderPath } = data;
 
     return this.repository.copyFolder({

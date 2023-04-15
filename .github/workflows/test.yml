@@ -97,3 +97,4 @@ jobs:
           MAILER_CONFIG_PASSWORD: password
           # mock uuid
           APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7
+          RECAPTCHA_SECRET_ACCESS_KEY: 'iamamockkey'

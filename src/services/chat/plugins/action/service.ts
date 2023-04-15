@@ -2,7 +2,7 @@ import { FastifyReply } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../util/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { ChatMessage } from '../../chatMessage';
 
