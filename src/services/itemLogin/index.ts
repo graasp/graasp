@@ -6,6 +6,7 @@ import { buildRepositories } from '../../utils/repositories';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   credentials,
+  deleteLoginSchema,
   getLoginSchema,
   getLoginSchemaType,
   login,
@@ -95,7 +96,7 @@ const plugin: FastifyPluginAsync<GraaspItemLoginOptions> = async (fastify, optio
   fastify.delete<{ Params: { id: string } }>(
     '/:id/login-schema',
     {
-      // schema: updateLoginSchema,
+      schema: deleteLoginSchema,
 
       // set member in request - throws if does not exist
       preHandler: fastify.verifyAuthentication,

@@ -29,7 +29,7 @@ const partialMember = S.object()
   .prop('name', S.string())
   .prop('email', S.string());
 
-const item = S.object()
+export const item = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
@@ -95,7 +95,7 @@ export const folderItemCreate = S.object().prop('type', S.const('folder')).exten
  * for validation on update
  */
 
-const itemUpdate = S.object()
+export const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
@@ -114,12 +114,12 @@ export const create =
     };
   };
 
-const getOne = {
+export const getOne = {
   params: idParam,
   response: { 200: item, '4xx': error },
 };
 
-const getMany = {
+export const getMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_READ_REQUEST))
     .extend(idsQuery),
@@ -132,7 +132,7 @@ const getMany = {
   },
 };
 
-const getChildren = {
+export const getChildren = {
   params: idParam,
   querystring: S.object().additionalProperties(false).prop('ordered', S.boolean()),
   response: {
@@ -141,7 +141,7 @@ const getChildren = {
   },
 };
 
-const getDescendants = {
+export const getDescendants = {
   params: idParam,
   response: {
     200: S.array().items(item),
@@ -149,14 +149,22 @@ const getDescendants = {
   },
 };
 
-const getOwn = {
+export const getParents = {
+  params: idParam,
   response: {
     200: S.array().items(item),
     '4xx': error,
   },
 };
 
-const getShared = {
+export const getOwn = {
+  response: {
+    200: S.array().items(item),
+    '4xx': error,
+  },
+};
+
+export const getShared = {
   querystring: S.object().additionalProperties(false).prop('permission', S.string()),
   response: {
     200: S.array().items(item),
@@ -164,7 +172,7 @@ const getShared = {
   },
 };
 
-const updateOne =
+export const updateOne =
   (...itemExtraSchemas: JSONSchema[]) =>
   (itemExtraSchema?: ObjectSchema) => {
     if (itemExtraSchema) itemExtraSchemas.push(itemExtraSchema);
@@ -190,7 +198,7 @@ const updateOne =
     };
   };
 
-const updateMany = ({ body }) => {
+export const updateMany = ({ body }) => {
   return {
     querystring: S.object()
       .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
@@ -209,7 +217,7 @@ const updateMany = ({ body }) => {
 //   response: { 200: item, '4xx': error },
 // };
 
-const deleteMany = {
+export const deleteMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
@@ -224,7 +232,7 @@ const deleteMany = {
 //   body: S.object().additionalProperties(false).prop('parentId', uuid),
 // };
 
-const moveMany = {
+export const moveMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
@@ -236,27 +244,13 @@ const moveMany = {
 //   body: S.object().additionalProperties(false).prop('parentId', uuid),
 // };
 
-const copyMany = {
+export const copyMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
   body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
-export {
-  item,
-  getOne,
-  getChildren,
-  getDescendants,
-  getMany,
-  getOwn,
-  getShared,
-  updateOne,
-  updateMany,
-  deleteMany,
-  moveMany,
-  copyMany,
-};
 
 // ajv for other schemas to import
 export default {

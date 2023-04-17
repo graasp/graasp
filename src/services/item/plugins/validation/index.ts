@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemValidationService } from './service';
+import { itemValidation, itemValidationGroup } from './schemas';
 
 type GraaspPluginValidationOptions = {
   imageClassifierApi?: string;
@@ -24,7 +25,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/validations/latest',
     {
-      // schema: itemValidation
+      schema: itemValidation,
 
       preHandler: fastify.verifyAuthentication,
     },
@@ -41,7 +42,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
   fastify.get<{ Params: { itemValidationGroupId: string } }>(
     '/:itemId/validations/:itemValidationGroupId',
     {
-      // schema: itemValidationGroup
+      schema: itemValidationGroup,
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemValidationGroupId }, log }) => {
@@ -57,7 +58,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
   fastify.post<{ Params: { itemId: string } }>(
     '/:itemId/validate',
     {
-      // schema: itemValidation
+      schema: itemValidation,
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemId }, log }, reply) => {

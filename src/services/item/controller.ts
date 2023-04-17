@@ -15,6 +15,7 @@ import {
   getMany,
   getOne,
   getOwn,
+  getParents,
   getShared,
   moveMany,
   updateMany,
@@ -124,7 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: IdParam }>(
     '/:id/parents',
     {
-      // schema: getDescendants
+      schema: getParents,
       preHandler: fastify.fetchMemberInSession,
     },
     async ({ member, params: { id }, log }) => {

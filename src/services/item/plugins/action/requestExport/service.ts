@@ -144,7 +144,6 @@ export class ActionRequestExportService {
         itemId,
       },
     );
-    console.log(baseAnalytics);
 
     // create archive given base analytics
 

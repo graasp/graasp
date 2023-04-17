@@ -58,3 +58,13 @@ export const updateLoginSchema = {
     '5xx': error,
   },
 };
+
+
+export const deleteLoginSchema = {
+  params: idParam,
+  response: {
+    '2xx': loginSchema,
+    '4xx': error,
+    '5xx': error,
+  },
+};

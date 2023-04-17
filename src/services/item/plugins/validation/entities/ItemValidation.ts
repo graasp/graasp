@@ -5,38 +5,15 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryColumn,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
-import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemValidationGroup } from './ItemValidationGroup';
 
-// export interface GraaspPluginValidationOptions {
-//   // classifierApi is the host api of the container running the image classifier
-//   classifierApi: string;
-//   fileItemType: FileItemType;
-//   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
-// }
-
-// export type SetEnabledForItemValidationProcessTaskInput = {
-//   enabled: boolean;
-// };
-
-// export type UpdateItemValidationReviewTaskInput = {
-//   status?: string;
-//   reason?: string;
-// };
-
-// export type contentForValidation = {
-//   name: string;
-//   value: string;
-// };
 
 @Entity()
 export class ItemValidation extends BaseEntity {
@@ -55,7 +32,7 @@ export class ItemValidation extends BaseEntity {
     nullable: false,
     enum: Object.values(ItemValidationProcess),
   })
-  process: ItemValidationProcess;
+  process: `${ItemValidationProcess}`;
 
   @Column({
     nullable: false,
@@ -81,30 +58,3 @@ export class ItemValidation extends BaseEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: string;
 }
-
-// export type FullValidationRecord = {
-//   id: string;
-//   itemId: string;
-//   reviewStatusId: string;
-//   validationStatusId: string;
-//   validationResult: string;
-//   process: string;
-//   createdAt: string;
-// };
-
-// export type ItemValidationAndReview = {
-//   itemValidationId: string;
-//   reviewStatusId: string;
-//   reviewReason: string;
-//   createdAt: string;
-// };
-
-// export type ItemValidationStatus = {
-//   id: string;
-//   name: string;
-// };
-
-// export type ItemValidationReviewStatus = {
-//   id: string;
-//   name: string;
-// };

@@ -3,13 +3,13 @@ import { StatusCodes } from 'http-status-codes';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam } from '@graasp/sdk';
+import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
 
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../file/utils/errors';
-import { upload } from './schemas';
+import { download, upload } from './schemas';
 import { FileThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
 
@@ -81,11 +81,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   );
 
-  // TODO: use ThumbnailSizeVariant
-  fastify.get<{ Params: IdParam & { size: string }; Querystring: { replyUrl?: boolean } }>(
+  fastify.get<{ Params: IdParam & { size: ThumbnailSizeType }; Querystring: { replyUrl?: boolean } }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}/:size`,
     {
-      // schema: download,
+      schema: download,
       preHandler: fastify.fetchMemberInSession,
     },
     async ({ member, params: { size, id: itemId }, query: { replyUrl }, log }, reply) => {

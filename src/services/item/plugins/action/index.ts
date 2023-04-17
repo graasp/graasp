@@ -15,6 +15,7 @@ import {
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionRequestExportService } from './requestExport/service';
 import { ActionItemService } from './service';
+import { exportAction, getItemActions } from './schemas';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
@@ -50,7 +51,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
   fastify.get<{ Params: IdParam; Querystring: { requestedSampleSize?: number; view?: Context } }>(
     '/:id/actions',
     {
-      // schema: getItemActions,
+      schema: getItemActions,
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { id }, query }, reply) => {
@@ -66,7 +67,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
   fastify.route<{ Params: IdParam }>({
     method: 'POST',
     url: '/:id/actions/export',
-    // schema: exportAction,
+    schema: exportAction,
     preHandler: fastify.verifyAuthentication,
     handler: async ({ member, params: { id: itemId }, log }, reply) => {
       db.transaction(async (manager) => {

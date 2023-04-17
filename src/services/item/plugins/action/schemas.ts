@@ -19,18 +19,19 @@ export const baseAnalytics = S.object()
 export const getItemActions = {
   params: idParam,
   querystring: {
-    requestedSampleSize: {
-      type: 'number',
-      required: ['requestedSampleSize'],
-      minimum: MIN_ACTIONS_SAMPLE_SIZE,
-      maximum: MAX_ACTIONS_SAMPLE_SIZE,
+    type: 'object',
+    properties: {
+      requestedSampleSize: {
+        type: 'number',
+        minimum: MIN_ACTIONS_SAMPLE_SIZE,
+        maximum: MAX_ACTIONS_SAMPLE_SIZE,
+      },
+      view: {
+        type: 'string',
+      },
     },
-    view: {
-      type: 'string',
-      required: ['view'],
-    },
+    required: ['view', 'requestedSampleSize'],
   },
-  response: {},
 };
 
 export const exportAction = {

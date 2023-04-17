@@ -100,3 +100,20 @@ export const unpublishItem = {
     200: publishEntry,
   },
 };
+
+export const getInformations = {
+  params: {
+    type: 'object',
+    properties: {
+      itemId: {
+        $ref: 'http://graasp.org/#/definitions/uuid',
+      },
+    },
+    required: ['itemId'],
+  },
+
+  response: {
+    200: publishEntry,
+  },
+
+};

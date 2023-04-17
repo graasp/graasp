@@ -33,7 +33,7 @@ export class ItemValidationReview extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'reviewer_id' })
-  reviewer: Member;
+  reviewer: Member | null;
 
   @Column({
     nullable: false,
@@ -44,7 +44,7 @@ export class ItemValidationReview extends BaseEntity {
   @Column({
     nullable: true,
   })
-  reason: string;
+  reason: string | null;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: string;

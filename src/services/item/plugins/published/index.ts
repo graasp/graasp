@@ -4,7 +4,7 @@ import { UUID } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import graaspSearchPlugin from './plugins/search';
-import { getCollections, getCollectionsForMember, publishItem, unpublishItem } from './schemas';
+import { getCollections, getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas';
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/collections/:itemId/informations',
     {
       preHandler: fastify.fetchMemberInSession,
-      // schema,
+      schema: getInformations,
     },
     async ({ params, member }) => {
       return pIS.get(member, buildRepositories(), params.itemId);

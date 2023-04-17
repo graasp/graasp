@@ -118,6 +118,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
    * */
   async getAncestors(item: Item): Promise<Item[]> {
     return this.createQueryBuilder('item')
+    .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path @> :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id })
       .getMany();
@@ -132,7 +133,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     // CHECK SQL
     const children = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
-      .where(`path ~ '${parent.path + '.*{1}'}'`)
+      .where('path ~ :path', {path: `${parent.path}.*{1}`})
       .orderBy('item.createdAt', 'ASC')
       .getMany();
 
@@ -253,7 +254,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return this.createQueryBuilder('item')
       .update()
       .set({ path: () => pathSql })
-      .where(`item.path <@ '${item.path}'`)
+      .where('item.path <@ :path', {path:item.path})
       .execute();
   },
 
