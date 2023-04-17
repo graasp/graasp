@@ -37,12 +37,6 @@ export const ItemLoginRepository = AppDataSource.getRepository(ItemLogin).extend
       .where('item.path <@ :path', { path });
   },
 
-  async deleteOne(id) {
-    // TODO:
-    // check member exists
-    return this.delete(id);
-  },
-
   async post(data: Partial<ItemLogin>) {
     await this.insert(data);
   },

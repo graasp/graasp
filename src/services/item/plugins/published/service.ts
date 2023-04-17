@@ -1,14 +1,52 @@
 import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
-import { filterOutHiddenItems, validatePermission } from '../../../authorization';
+import { filterOutHiddenItems } from '../../../authorization';
 import ItemService from '../../service';
+import type { MailerDecoration } from '../../../../plugins/mailer';
+import { MAIL } from '@graasp/translations';
+import { FastifyBaseLogger } from 'fastify';
+import { Item } from '../../entities/Item';
+import { Member } from '../../../member/entities/member';
+import {resultOfToList} from '../../../../services/utils';
+import { buildPublishedItemLink } from './constants';
 
 export class ItemPublishedService {
+  private log: FastifyBaseLogger;
   private itemService: ItemService;
+  private mailer: MailerDecoration;
 
-  constructor(itemService: ItemService) {
+  constructor(itemService: ItemService, mailer: MailerDecoration, log) {
+    this.log = log;
     this.itemService = itemService;
+    this.mailer = mailer;
+  }
+
+  async _notifyContributors(actor: Member, repositories:Repositories, item: Item):Promise<void> {
+
+    // send email to contributors except yourself
+    const memberships =  await repositories.itemMembershipRepository.getForManyItems([item]);
+    const contributors = resultOfToList(memberships)[0]
+      .filter(({permission, member})=>permission===PermissionLevel.Admin && member.id !== actor.id)
+      .map(({member})=>member);
+
+    const link = buildPublishedItemLink(item);
+
+    for (const member of contributors) {
+      const lang = member.lang;
+      const t = this.mailer.translate(lang);
+
+      const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });
+      const html = `
+        ${this.mailer.buildText(text)}
+        ${this.mailer.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
+      `;
+
+      const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
+      await this.mailer.sendEmail(title, member.email, link, html).catch((err) => {
+        this.log.warn(err, `mailer failed. published link: ${link}`);
+      });
+    }
   }
 
   async get(actor, repositories, itemId: string) {
@@ -30,7 +68,14 @@ export class ItemPublishedService {
     // item should be public first
     await itemTagRepository.getType(item, ItemTagType.PUBLIC, { shouldThrow: true });
 
-    return itemPublishedRepository.post(actor, item);
+    // TODO: check validation is alright
+
+    const published = await itemPublishedRepository.post(actor, item);
+
+    this._notifyContributors(actor, repositories, item);
+
+    return published;
+
   }
 
   async delete(actor, repositories, itemId: string) {

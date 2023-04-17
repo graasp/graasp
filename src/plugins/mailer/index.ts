@@ -17,6 +17,20 @@ export interface MailerOptions {
   fromEmail: string;
 }
 
+export interface MailerDecoration {
+  buildButton: (link: string, text: string) => string;
+  buildText: (string) => string;
+  sendEmail: (
+    subject: string,
+    to: string,
+    text: string,
+    html?: string,
+    from?: string,
+  ) => Promise<void>;
+  // TODO: this is i18next's t type
+  translate: (lang: string) => (key: string, variables?: any) => string;
+}
+
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   const { host, username: user, password: pass, fromEmail } = options;
 
@@ -75,96 +89,7 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     return i18n.t;
   };
 
-  // const modulePath = module.path;
-
-  // // Login
-  // async function sendLoginEmail(
-  //   member: { email: string; name: string },
-  //   link: string,
-  //   reRegistrationAttempt = false,
-  //   lang = DEFAULT_LANG,
-  // ) {
-  //   fastify.i18n.locale(lang);
-  //   const translated = fastify.i18n.locales[lang] ?? fastify.i18n.locales[DEFAULT_LANG];
-  //   const html = await fastify.view(`${modulePath}/templates/login.eta`, {
-  //     member,
-  //     link,
-  //     reRegistrationAttempt,
-  //     translated,
-  //   });
-  //   const title = translated['signInMailTitle'];
-  //   await sendMail(fromEmail, member.email, title, link, html);
-  // }
-
-  // // Register
-  // async function sendRegisterEmail(
-  //   member: { email: string; name: string },
-  //   link: string,
-  //   lang = DEFAULT_LANG,
-  // ) {
-  //   fastify.i18n.locale(lang);
-  //   const translated = fastify.i18n.locales[lang] ?? fastify.i18n.locales[DEFAULT_LANG];
-  //   const html = await fastify.view(`${modulePath}/templates/register.eta`, {
-  //     member,
-  //     link,
-  //     translated,
-  //   });
-  //   const title = translated['registrationMailTitle'];
-  //   await sendMail(fromEmail, member.email, title, link, html);
-  // }
-
-  // // Invitation
-  // async function sendInvitationEmail(
-  //   email: string,
-  //   link: string,
-  //   itemName: string,
-  //   creatorName: string,
-  //   lang = DEFAULT_LANG,
-  // ) {
-  //   fastify.i18n.locale(lang);
-  //   const translated = fastify.i18n.locales[lang] ?? fastify.i18n.locales[DEFAULT_LANG];
-  //   // this line necessary for .t() to correctly use the changed locale
-  //   fastify.i18n.replace(translated);
-  //   const text = fastify.i18n.t('invitationText', {
-  //     itemName,
-  //     creatorName,
-  //   });
-  //   const html = await fastify.view(`${modulePath}/templates/invitation.eta`, {
-  //     link,
-  //     translated,
-  //     text,
-  //   });
-  //   const title = translated['invitationMailTitle'];
-  //   await sendMail(fromEmail, email, title, link, html);
-  // }
-
-  // // Download link for actions
-  // async function sendExportActionsEmail(
-  //   member: { email: string; name: string },
-  //   link: string,
-  //   itemName: string,
-  //   lang: string = DEFAULT_LANG,
-  //   expirationDays: number = DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
-  // ) {
-  //   fastify.i18n.locale(lang);
-  //   const translated = fastify.i18n.locales[lang] ?? fastify.i18n.locales[DEFAULT_LANG];
-  //   // this line necessary for .t() to correctly use the changed locale
-  //   fastify.i18n.replace(translated);
-  //   const information = fastify.i18n.t('exportActionsInformation', {
-  //     itemName,
-  //     days: expirationDays,
-  //   });
-
-  //   const html = await fastify.view(`${modulePath}/templates/exportActions.eta`, {
-  //     member,
-  //     link,
-  //     translated,
-  //     information,
-  //   });
-  //   const title = fastify.i18n.t('exportActionsMailTitle', { itemName });
-  //   await sendMail(fromEmail, member.email, title, link, html);
-  // }
-
+  
   // // Notification for publish an item
   // async function sendPublishNotificationEmail(
   //   member: { email: string; name: string },
@@ -218,18 +143,13 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   //   await sendMail(fromEmail, member.email, title, link, html);
   // }
 
-  fastify.decorate('mailer', {
-    // sendLoginEmail,
-    // sendRegisterEmail,
-    // sendExportActionsEmail,
-    // sendInvitationEmail,
-    // sendPublishNotificationEmail,
-    // sendChatMentionNotificationEmail,
+  const decorations:MailerDecoration = {
     buildButton,
     buildText,
     sendEmail,
     translate,
-  });
+  };
+  fastify.decorate('mailer', decorations);
 };
 
 export default fp(plugin, {

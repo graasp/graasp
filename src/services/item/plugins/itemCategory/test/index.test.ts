@@ -3,18 +3,18 @@ import { v4 } from 'uuid';
 
 import { CategoryType, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
-import { MemberCannotAccess } from '../../../util/graasp-error';
-import { Item } from '../../item/entities/Item';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../member/entities/member';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { Item } from '../../../../item/entities/Item';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { Member } from '../../../../member/entities/member';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
 import { CategoryRepository } from '../repositories/category';
 import { ItemCategoryRepository } from '../repositories/itemCategory';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { MemberCannotAccess } from '../../../../../utils/errors';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

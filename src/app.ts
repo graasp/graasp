@@ -8,6 +8,7 @@ import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
 import mailerPlugin from './plugins/mailer';
+import type { MailerDecoration } from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import { ActionService } from './services/action/services/action';
@@ -87,19 +88,7 @@ declare module 'fastify' {
     // remove once fastify-polyglot has types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     i18n: any;
-    mailer: {
-      buildButton: (link: string, text: string) => string;
-      buildText: (string) => string;
-      sendEmail: (
-        subject: string,
-        to: string,
-        text: string,
-        html?: string,
-        from?: string,
-      ) => Promise<void>;
-      // TODO: this is i18next's t type
-      translate: (lang: string) => (key: string, variables?: any) => string;
-    };
+    mailer: MailerDecoration;
     files: {
       service: FileService;
     };

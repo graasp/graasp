@@ -313,6 +313,6 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
 };
 
 export default fp(plugin, {
-  fastify: '3.x',
+  fastify: '4.x',
   name: PLUGIN_NAME,
 });

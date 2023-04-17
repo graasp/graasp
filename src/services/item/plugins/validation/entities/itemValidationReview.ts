@@ -44,7 +44,7 @@ export class ItemValidationReview extends BaseEntity {
   @Column({
     nullable: true,
   })
-  reason: string | null;
+  reason: string;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: string;

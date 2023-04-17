@@ -3,8 +3,9 @@ import { In } from 'typeorm';
 import { AppDataSource } from '../../plugins/datasource';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { DuplicateInvitationError, InvitationNotFound } from './errors';
+import {  InvitationNotFound } from './errors';
 import { Invitation } from './invitation';
+import { ResultOf } from '@graasp/sdk';
 
 /**
  * Database's first layer of abstraction for Invitations
@@ -27,7 +28,7 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * Get invitations map by id
    * @param ids Invitation ids
    */
-  async getMany(ids: string[], actor?: Member) {
+  async getMany(ids: string[], actor?: Member):Promise<ResultOf<Invitation>> {
     const opts = actor ? { creator: true } : {};
     const invitations = await this.find({
       where: { id: In(ids) },
@@ -45,9 +46,9 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * Get invitations for item path and below
    * @param itemPath Item path
    */
-  async getForItem(itemPath: string): Promise<readonly Invitation[]> {
+  async getForItem(itemPath: string): Promise<Invitation[]> {
     return this.createQueryBuilder('invitation')
-      .leftJoinAndSelect('invitation.item', 'item')
+    .leftJoinAndSelect('invitation.item','item')
       .where(':path <@ item.path', { path: itemPath })
       .getMany();
   },
@@ -56,36 +57,19 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * Create invitation and return it.
    * @param invitation Invitation to create
    */
-  async postOne(
-    invitation: Partial<Invitation>,
-    creator: Member,
-    itemId: string,
-  ): Promise<Invitation> {
-    const existingEntry = await this.findOneBy({ email: invitation.email });
-    if (existingEntry) {
-      throw new DuplicateInvitationError({ invitation });
-    }
-
-    return this.insert({ ...invitation, creator, item: { itemId } });
-  },
-
-  /**
-   * Create invitation and return it.
-   * @param invitation Invitation to create
-   */
-  async postMany(invitations: Partial<Invitation>[], itemId: string, creator: Member) {
-    const existingEntries = await this.find({
-      where: { email: In(invitations.map((i) => i.email)) },
-      relations: { item: true },
-    });
+  async postMany(invitations: Partial<Invitation>[], itemPath: string, creator: Member):Promise<ResultOf<Invitation>> {
+    const existingEntries = await  this.createQueryBuilder('invitation')
+    .leftJoinAndSelect('invitation.item', 'item')
+      .where('item.path @> :path', { path: itemPath })
+      .getMany();
 
     const insertResult = await this.insert(
       invitations
         .filter(
           (i) =>
-            !existingEntries.find(({ email, item }) => email === i.email && item.id === itemId),
+            !existingEntries.find(({ email, item }) => email === i.email && item.id === itemPath),
         )
-        .map((invitation) => ({ ...invitation, item: { id: itemId }, creator })),
+        .map((invitation) => ({ ...invitation, item: { path: itemPath }, creator })),
     );
     // TODO: optimize
     return this.getMany(insertResult.identifiers.map(({ id }) => id));

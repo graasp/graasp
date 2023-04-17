@@ -1,13 +1,60 @@
-import { PermissionLevel } from '@graasp/sdk';
+import { Context, Hostname, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';
+import type { MailerDecoration } from '../../../../plugins/mailer';
+import { Item } from '../../../item/entities/Item';
+import { Member } from '../../../member/entities/member';
+import { MAIL } from '@graasp/translations';
+import { CLIENT_HOST } from '../../../../utils/config';
 
 export class MentionService {
   hooks = new HookManager();
+  mailer: MailerDecoration;
+  hosts: Hostname[];
+
+  constructor(mailer: MailerDecoration, hosts: Hostname[]) {
+    this.mailer = mailer;
+    this.hosts = hosts;
+  }
+
+  async sendMentionNotificationEmail({
+    item,
+    member,
+    creator,
+  }:
+    {
+      item: Item;
+      member: Member;
+      creator: Member;
+    }) {
+
+    const host = this.hosts.find((h) => h.name === Context.BUILDER)?.hostname;
+    if (!host) {
+      throw new Error('host is not defined');
+    }
+    const itemLink = buildItemLinkForBuilder({
+      origin: host,
+      itemId: item.id,
+      chatOpen: true,
+    });
+    const lang = member?.extra?.lang as string;
+
+    const translated = this.mailer.translate(lang);
+    const subject = translated(MAIL.CHAT_MENTION_TITLE);
+    const html = `
+    ${this.mailer.buildText(translated(MAIL.GREETINGS))}
+    ${this.mailer.buildText(translated(MAIL.CHAT_MENTION_TEXT, { creator }))}
+    ${this.mailer.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
+
+    this.mailer.sendEmail(subject, member.email, itemLink, html).catch((err) => {
+      console.error(err);
+      // log.warn(err, `mailer failed. notification link: ${itemLink}`);
+    });
+  }
 
   async createManyForItem(
     actor,

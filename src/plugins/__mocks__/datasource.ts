@@ -17,16 +17,16 @@ import { RecycledItemData } from '../../services/item/plugins/recycled/RecycledI
 import { ItemValidation } from '../../services/item/plugins/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../../services/item/plugins/validation/entities/ItemValidationGroup';
 import { ItemValidationReview } from '../../services/item/plugins/validation/entities/itemValidationReview';
-import { Category } from '../../services/itemCategory/entities/Category';
-import { ItemCategory } from '../../services/itemCategory/entities/ItemCategory';
-import { ItemFlag } from '../../services/itemFlag/itemFlag';
-import { ItemLike } from '../../services/itemLike/itemLike';
+import { Category } from '../../services/item/plugins/itemCategory/entities/Category';
+import { ItemCategory } from '../../services/item/plugins/itemCategory/entities/ItemCategory';
+import { ItemFlag } from '../../services/item/plugins/itemFlag/itemFlag';
+import { ItemLike } from '../../services/item/plugins/itemLike/itemLike';
 import { ItemLogin } from '../../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership';
-import { ItemTag } from '../../services/itemTag/ItemTag';
+import { ItemTag } from '../../services/item/plugins/itemTag/ItemTag';
 import { Member } from '../../services/member/entities/member';
-import { ItemPublished } from '../../services/published/entities/itemPublished';
+import { ItemPublished } from '../../services/item/plugins/published/entities/itemPublished';
 
 // mock data source
 // we could use the original file, but for extra security we keep this file

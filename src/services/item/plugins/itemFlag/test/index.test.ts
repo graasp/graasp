@@ -3,12 +3,12 @@ import { v4 } from 'uuid';
 
 import { FlagType, HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
-import { ItemNotFound } from '../../../util/graasp-error';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemFlagRepository } from '../repository';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { ItemNotFound } from '../../../../../utils/errors';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

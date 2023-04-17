@@ -1,6 +1,6 @@
-import { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { FastifyBaseLogger,  FastifyPluginAsync } from 'fastify';
 
-import { DEFAULT_LANG, PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import { UnauthorizedMember } from '../../utils/errors';
@@ -10,15 +10,16 @@ import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { buildInvitationLink } from './constants';
 import { Invitation } from './invitation';
+import type { MailerDecoration } from '../../plugins/mailer';
 
 export class InvitationService {
   log: FastifyBaseLogger;
-  fastify: FastifyInstance; // TODO
+  mailer: MailerDecoration; 
   itemService: ItemService;
 
-  constructor(log, fastify, itemService: ItemService) {
+  constructor(log, mailer, itemService: ItemService) {
     this.log = log;
-    this.fastify = fastify;
+    this.mailer = mailer;
     this.itemService = itemService;
   }
 
@@ -32,18 +33,18 @@ export class InvitationService {
     const lang = actor.lang;
     const link = buildInvitationLink(invitation);
 
-    const t = this.fastify.mailer.translate(lang);
+    const t = this.mailer.translate(lang);
 
     const text = t(MAIL.INVITATION_TEXT, {
       itemName: item.name,
       creatorName: actor.name,
     });
     const html = `
-      ${this.fastify.mailer.buildText(text)}
-      ${this.fastify.mailer.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
+      ${this.mailer.buildText(text)}
+      ${this.mailer.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
     `;
-    const title = t(MAIL.INVITATION_TITLE, { itemName: item.name });
-    this.fastify.mailer.sendEmail(title, email, link, html).catch((err) => {
+    const title = t(MAIL.INVITATION_TITLE);
+    this.mailer.sendEmail(title, email, link, html).catch((err) => {
       this.log.warn(err, `mailer failed. invitation link: ${link}`);
     });
   }
@@ -74,9 +75,9 @@ export class InvitationService {
       throw new UnauthorizedMember(actor);
     }
     const { invitationRepository } = repositories;
-    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
-    const completeInvitations = await invitationRepository.postMany(invitations, itemId, actor);
+    const completeInvitations = await invitationRepository.postMany(invitations, item.path, actor);
 
     // this.log.debug('send invitation mails');
     Object.values(completeInvitations.data).forEach((invitation: Invitation) => {

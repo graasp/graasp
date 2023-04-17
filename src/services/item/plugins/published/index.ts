@@ -8,8 +8,8 @@ import { getCollections, getCollectionsForMember, getInformations, publishItem, 
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
-  const pIS = new ItemPublishedService(items.service);
+  const { db, items, log, mailer } = fastify;
+  const pIS = new ItemPublishedService(items.service, mailer, log, );
 
   fastify.register(graaspSearchPlugin);
 

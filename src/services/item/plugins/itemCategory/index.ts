@@ -70,25 +70,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // // get categories of given type(s)
-  // fastify.get<{ Querystring: { typeId?: string[] } }>(
-  //   '/categories',
-  //   { schema: getCategories },
-  //   async ({ query, log }) => {
-
-  //       return itemCategoryService.delete(null, buildRepositories(), itemId, itemCategoryId);
-  //   },
-  // );
-
-  // // get all category types
-  // fastify.get(
-  //   '/category-types',
-  //   { schema: getCategoryTypes },
-  //   async ({ log }) => {
-
-  //       return itemCategoryService.delete(member, buildRepositories(), itemId, itemCategoryId);
-  //   },
-  // );
 };
 
 export default plugin;

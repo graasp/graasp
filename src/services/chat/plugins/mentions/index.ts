@@ -2,12 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { Context, Hostname, MentionStatus, buildItemLinkForBuilder } from '@graasp/sdk';
-import { MAIL } from '@graasp/translations';
+import {  Hostname, MentionStatus } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { Item } from '../../../item/entities/Item';
-import { Member } from '../../../member/entities/member';
 import { ChatMention } from './chatMention';
 import commonMentions, {
   clearAllMentions,
@@ -28,7 +25,7 @@ export interface GraaspChatPluginOptions {
 const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, options) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes
   const { db, mailer, hosts } = fastify;
-  const mentionService = new MentionService();
+  const mentionService = new MentionService(mailer, hosts);
 
   fastify.decorate('mentions', { service: mentionService });
 
@@ -51,45 +48,14 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
 
   // TODO MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
 
-  const host = hosts.find((h) => h.name === Context.BUILDER)?.hostname;
 
-  const sendMentionNotificationEmail = ({
-    item,
-    member,
-    creator,
-  }: // log,
-  {
-    item: Item;
-    member: Member;
-    creator: Member;
-    // log: FastifyLoggerInstance;
-  }) => {
-    const itemLink = buildItemLinkForBuilder({
-      origin: host,
-      itemId: item.id,
-      chatOpen: true,
-    });
-    const lang = member?.extra?.lang as string;
-
-    const translated = mailer.translate(lang);
-    const subject = translated(MAIL.CHAT_MENTION_TITLE);
-    const html = `
-    ${mailer.buildText(translated(MAIL.GREETINGS))}
-    ${mailer.buildText(translated(MAIL.CHAT_MENTION_TEXT, { creator }))}
-    ${mailer.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
-
-    mailer.sendEmail(subject, member.email, itemLink, html).catch((err) => {
-      console.error(err);
-      // log.warn(err, `mailer failed. notification link: ${itemLink}`);
-    });
-  };
 
   // send email on mention creation
   mentionService.hooks.setPostHook(
     'createMany',
     async (creator, repositories, { mentions, item }) => {
       mentions.forEach((mention) => {
-        sendMentionNotificationEmail({
+        mentionService.sendMentionNotificationEmail({
           item,
           member: (mention as ChatMention).member,
           creator,

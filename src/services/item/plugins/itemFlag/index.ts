@@ -14,14 +14,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(common);
 
   // get flags
-  fastify.get('/flags', { schema: getFlags }, async ({ member, log }) => {
+  fastify.get('/flags', { schema: getFlags, preHandler: fastify.fetchMemberInSession }, async ({ member, log }) => {
     return iFS.getAllFlags(member, buildRepositories());
   });
 
   // create item flag
   fastify.post<{ Params: { itemId: string }; Body: Partial<ItemFlag> }>(
     '/:itemId/flags',
-    { schema: create },
+    { schema: create, preHandler: fastify.fetchMemberInSession },
     async ({ member, params: { itemId }, body, log }) => {
       return db.transaction(async (manager) => {
         return iFS.post(member, buildRepositories(manager), itemId, body);

@@ -16,10 +16,6 @@ export interface GraaspPluginFileOptions {
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
   const { fileItemType, fileConfigurations } = options;
 
-  // if (!buildFilePath) {
-  //   throw new Error('graasp-plugin-file: buildFilePath is not defined');
-  // }
-
   if (
     fileItemType === ItemType.LOCAL_FILE &&
     !fileConfigurations?.local?.storageRootPath.startsWith('/')
@@ -28,9 +24,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   }
 
   if (fileItemType === ItemType.S3_FILE) {
-    // if (buildFilePath('itemId', 'filename').startsWith('/')) {
-    //   throw new Error('graasp-plugin-file: buildFilePath is not well defined');
-    // }
 
     if (
       !fileConfigurations?.s3?.s3Region ||

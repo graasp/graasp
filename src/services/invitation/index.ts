@@ -20,7 +20,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
 
   fastify.addSchema(definitions);
 
-  const iS = new InvitationService(log, fastify, items.service);
+  const iS = new InvitationService(log, mailer, items.service);
 
   // post hook: remove invitations on member creation
   const hook = async (actor, repositories, args: { member: Member }) => {
