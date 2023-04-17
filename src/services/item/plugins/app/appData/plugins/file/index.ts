@@ -72,7 +72,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const { authTokenSubject: requestDetails, log } = request;
       const memberId = requestDetails?.memberId;
       const itemId = requestDetails?.itemId;
-      
+
       return db
         .transaction(async (manager) => {
           const repositories = buildRepositories(manager);

@@ -1,7 +1,14 @@
 import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { FolderItemType, ItemSettings, ItemType, MAX_TREE_LEVELS, ResultOf, UUID } from '@graasp/sdk';
+import {
+  FolderItemType,
+  ItemSettings,
+  ItemType,
+  MAX_TREE_LEVELS,
+  ResultOf,
+  UUID,
+} from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import { DEFAULT_ITEM_SETTINGS } from '../../utils/config';
@@ -52,7 +59,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     settings: ItemSettings;
     creator: Member;
     parent?: Item;
-  }):Item {
+  }): Item {
     const {
       name,
       description = null,
@@ -81,7 +88,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return item;
   },
 
-  async deleteMany(ids: string[]):Promise<UUID[]> {
+  async deleteMany(ids: string[]): Promise<UUID[]> {
     await this.delete(ids);
     return ids;
   },
@@ -162,7 +169,10 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return query.getMany();
   },
 
-  async getMany(ids: string[], args: { throwOnError?: boolean; withDeleted?: boolean } = {}): Promise<ResultOf<Item>> {
+  async getMany(
+    ids: string[],
+    args: { throwOnError?: boolean; withDeleted?: boolean } = {},
+  ): Promise<ResultOf<Item>> {
     const { throwOnError = false } = args;
     const items = await this.find({
       where: { id: In(ids) },

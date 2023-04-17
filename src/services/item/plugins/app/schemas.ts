@@ -18,8 +18,18 @@ export default {
         description: { type: 'string' },
         type: { type: 'string' },
         extra: {},
-        children: { type: 'array' },
-        members: { type: 'array' },
+        members: {
+          type: 'array',
+          items: {
+            $ref: 'http://graasp.org/members/#/definitions/member',
+          },
+        },
+        children: {
+          type: 'array',
+          items: {
+            $ref: 'http://graasp.org/items/#/definitions/item',
+          },
+        },
       },
     },
   },

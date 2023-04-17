@@ -31,7 +31,7 @@ export const validatePermission = async (
   permission: PermissionLevel,
   member: Actor,
   item: Item,
-): Promise<ItemMembership|null> => {
+): Promise<ItemMembership | null> => {
   // get best permission for user
   // but do not fetch membership for signed out member
   const inheritedMembership = member

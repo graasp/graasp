@@ -1,8 +1,8 @@
 import { ItemType } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { AppSetting } from './appSettings';
+import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { InputAppSetting } from './interfaces/app-setting';
 
 export const AppSettingRepository = AppDataSource.getRepository(AppSetting).extend({

@@ -10,5 +10,4 @@ export const ThumbnailSizeFormat = {
 export const THUMBNAIL_FORMAT = 'jpeg';
 export const THUMBNAIL_MIMETYPE = MimeTypes.Image.JPEG;
 
-
 export const PLUGIN_NAME = 'graasp-plugin-thumbnails';

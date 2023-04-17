@@ -36,8 +36,7 @@ export class ActionService {
   ): Promise<Action[]> {
     const { headers } = request;
 
-// todo: prevent saving here if member disabled or if item disabled analytics 
-
+    // todo: prevent saving here if member disabled or if item disabled analytics
 
     const view = getView(headers, this.hosts);
     // warning: addresses might contained spoofed ips

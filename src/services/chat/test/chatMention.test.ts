@@ -4,12 +4,12 @@ import { v4 } from 'uuid';
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { saveMember } from '../../member/test/fixtures/members';
-import { saveItemWithChatMessages } from './chatMessage.test';
 import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
 import { ChatMention } from '../plugins/mentions/chatMention';
 import { ChatMentionRepository } from '../plugins/mentions/repository';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { saveItemWithChatMessages } from './chatMessage.test';
 
 // mock datasource
 jest.mock('../../plugins/datasource');

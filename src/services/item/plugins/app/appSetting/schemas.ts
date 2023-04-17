@@ -6,9 +6,11 @@ export default {
       properties: {
         id: { type: 'string' },
         name: { type: 'string' },
-        item: { type: 'string' },
+        item: {
+          $ref: 'http://graasp.org/items/#/definitions/item',
+        },
         data: {},
-        creator: { type: 'string' },
+        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },

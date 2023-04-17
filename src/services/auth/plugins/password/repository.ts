@@ -1,11 +1,7 @@
 import { UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
-import {
-  EmptyCurrentPassword,
-  IncorrectPassword,
-  InvalidPassword,
-} from '../../../../utils/errors';
+import { EmptyCurrentPassword, IncorrectPassword, InvalidPassword } from '../../../../utils/errors';
 import { MemberPassword } from './entities/password';
 import { encryptPassword, verifyCredentials, verifyCurrentPassword } from './utils';
 

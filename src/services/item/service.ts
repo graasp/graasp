@@ -160,7 +160,12 @@ export class ItemService {
     return itemRepository.patch(itemId, body);
   }
 
-  async patchMany(actor, repositories: Repositories, itemIds: UUID[], body):Promise<ResultOf<Item>> {
+  async patchMany(
+    actor,
+    repositories: Repositories,
+    itemIds: UUID[],
+    body,
+  ): Promise<ResultOf<Item>> {
     // TODO: extra + settings
     const ops = await Promise.all(
       itemIds.map(async (id) => this.patch(actor, repositories, id, body)),
@@ -188,7 +193,7 @@ export class ItemService {
     }
 
     const items = [...descendants, item];
-    await itemRepository.deleteMany(items.map((i)=>i.id));
+    await itemRepository.deleteMany(items.map((i) => i.id));
 
     // post hook
     for (const item of items) {
@@ -225,7 +230,7 @@ export class ItemService {
     );
 
     const items = [...allDescendants.flat(), ...allItems];
-    await itemRepository.deleteMany(items.map((i)=>i.id));
+    await itemRepository.deleteMany(items.map((i) => i.id));
 
     // post hook
     for (const item of items) {

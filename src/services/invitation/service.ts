@@ -8,8 +8,8 @@ import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
-import { Invitation } from './invitation';
 import { buildInvitationLink } from './constants';
+import { Invitation } from './invitation';
 
 export class InvitationService {
   log: FastifyBaseLogger;

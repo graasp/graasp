@@ -5,8 +5,12 @@ export default {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        memberId: { type: 'string' },
-        itemId: { type: 'string' },
+        member: {
+          $ref: 'http://graasp.org/members/#/definitions/member',
+        },
+        item: {
+          $ref: 'http://graasp.org/items/#/definitions/item',
+        },
         data: {},
         type: { type: 'string' },
         createdAt: { type: 'string' },

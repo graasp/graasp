@@ -23,6 +23,12 @@ const settings = S.object()
   .prop('ccLicenseAdaption', S.string())
   .prop('displayCoEditors', S.boolean());
 
+const partialMember = S.object()
+  .additionalProperties(false)
+  .prop('id', S.string())
+  .prop('name', S.string())
+  .prop('email', S.string());
+
 const item = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
@@ -32,8 +38,7 @@ const item = S.object()
   .prop('path', S.string())
   .prop('extra', S.object().additionalProperties(true))
   .prop('settings', settings)
-  // todo: use member schema
-  .prop('creator', S.raw({}))
+  .prop('creator', partialMember)
   /**
    * for some reason setting these date fields as "type: 'string'"
    * makes the serialization fail using the anyOf.
@@ -199,10 +204,10 @@ const updateMany = ({ body }) => {
   };
 };
 
-const deleteOne = {
-  params: idParam,
-  response: { 200: item, '4xx': error },
-};
+// const deleteOne = {
+//   params: idParam,
+//   response: { 200: item, '4xx': error },
+// };
 
 const deleteMany = {
   querystring: S.object()
@@ -214,10 +219,10 @@ const deleteMany = {
   },
 };
 
-const moveOne = {
-  params: idParam,
-  body: S.object().additionalProperties(false).prop('parentId', uuid),
-};
+// const moveOne = {
+//   params: idParam,
+//   body: S.object().additionalProperties(false).prop('parentId', uuid),
+// };
 
 const moveMany = {
   querystring: S.object()
@@ -226,10 +231,10 @@ const moveMany = {
   body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
-const copyOne = {
-  params: idParam,
-  body: S.object().additionalProperties(false).prop('parentId', uuid),
-};
+// const copyOne = {
+//   params: idParam,
+//   body: S.object().additionalProperties(false).prop('parentId', uuid),
+// };
 
 const copyMany = {
   querystring: S.object()
@@ -248,10 +253,35 @@ export {
   getShared,
   updateOne,
   updateMany,
-  deleteOne,
   deleteMany,
-  moveOne,
   moveMany,
-  copyOne,
   copyMany,
+};
+
+// ajv for other schemas to import
+export default {
+  $id: 'http://graasp.org/items/',
+  definitions: {
+    item: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        name: { type: 'string' },
+        description: { type: ['string', 'null'] },
+        type: { type: 'string' },
+        extra: {
+          type: 'object',
+          additionalProperties: true,
+        },
+        settings: {
+          type: 'object',
+          additionalProperties: true,
+        },
+        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' },
+      },
+    },
+  },
 };

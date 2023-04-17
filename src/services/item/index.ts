@@ -18,14 +18,9 @@ import {
 } from '../../utils/config';
 import graaspChatbox from '../chat';
 import graaspInvitationsPlugin from '../invitation';
-import graaspCategoryPlugin from '../itemCategory';
-import graaspItemFlags from '../itemFlag';
-import graaspItemLikes from '../itemLike';
 import graaspItemLogin from '../itemLogin';
-import graaspItemTags from '../itemTag';
-import graaspItemPublish from '../published';
 import itemController from './controller';
-import {
+import itemSchema, {
   baseItemCreate,
   create,
   folderExtra,
@@ -34,12 +29,16 @@ import {
   updateOne,
 } from './fluent-schema';
 import actionItemPlugin from './plugins/action';
-// import { itemActionHandler } from './handler/item-action-handler';
 import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import graaspFileItem from './plugins/file';
 import graaspZipPlugin from './plugins/importExport';
+import graaspCategoryPlugin from './plugins/itemCategory';
+import graaspItemFlags from './plugins/itemFlag';
+import graaspItemLikes from './plugins/itemLike';
+import graaspItemTags from './plugins/itemTag';
+import graaspItemPublish from './plugins/published';
 import graaspRecycledItemData from './plugins/recycled';
 import thumbnailsPlugin from './plugins/thumbnail';
 import graaspValidationPlugin from './plugins/validation';
@@ -47,18 +46,7 @@ import graaspValidationPlugin from './plugins/validation';
 // import { registerItemWsHooks } from './ws/hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  // we move this from fluent schema because it was a global value
-  // this did not fit well with tests
-  const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
-
-  const initializedUpdate = updateOne(folderExtra);
-
-  const { items } = fastify;
-  // decoration to extend create and update schemas from other plugins
-  items.extendCreateSchema = initializedCreate;
-  items.extendExtrasUpdateSchema = initializedUpdate;
-
-  // const itemTagService = new ItemTagService();
+  fastify.addSchema(itemSchema);
 
   fastify.decorate('file', {
     s3Config: S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -69,12 +57,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   if (APPS_PLUGIN) {
     // this needs to execute before 'create()' and 'updateOne()' are called
     // because graaspApps extends the schemas
-    await fastify.register(graaspApps, {
+    fastify.register(graaspApps, {
       jwtSecret: APPS_JWT_SECRET,
       prefix: APP_ITEMS_PREFIX,
       publisherId: APPS_PUBLISHER_ID,
     });
   }
+
+  // we move this from fluent schema because it was a global value
+  // this did not fit well with tests
+  const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
+
+  const initializedUpdate = updateOne(folderExtra);
+
+  const { items } = fastify;
+  // decoration to extend create and update schemas from other plugins
+  items.extendCreateSchema = initializedCreate;
+  items.extendExtrasUpdateSchema = initializedUpdate;
 
   fastify.register(
     async function (fastify) {

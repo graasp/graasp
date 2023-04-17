@@ -1,15 +1,10 @@
 import Ajv from 'ajv';
 
 import { Action } from '../../../action/entities/action';
-import {
-  actionsSchemaForAnalytics,
-  descendantsSchemaForAnalytics,
-  itemSchemaForAnalytics,
-  memberSchemaForAnalytics,
-} from '../../../action/schemas';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
+import { memberSchema, memberSchemaForAnalytics } from './schemas';
 
 export class BaseAnalytics {
   readonly actions: Action[];
@@ -35,20 +30,20 @@ export class BaseAnalytics {
   }) {
     // TODO: all other schemas
 
-    // validate and remove additional properties
+    // validate and remove additional properties from member
     const ajv = new Ajv({ removeAdditional: 'all' });
 
+    const validateMember = ajv.compile(memberSchema);
     const validateMembers = ajv.compile(memberSchemaForAnalytics);
     validateMembers(args.members);
 
-    const validateItem = ajv.compile(itemSchemaForAnalytics);
-    validateItem(args.item);
+    validateMember(args.item.creator);
 
-    const validateDescendants = ajv.compile(descendantsSchemaForAnalytics);
-    validateDescendants(args.descendants);
+    args.descendants.forEach((i) => validateMember(i.creator));
 
-    const validateActions = ajv.compile(actionsSchemaForAnalytics);
-    validateActions(args.actions);
+    args.itemMemberships.forEach((im) => validateMember(im.member));
+
+    args.actions.forEach((a) => validateMember(a.member));
 
     this.actions = args.actions;
     this.members = args.members;

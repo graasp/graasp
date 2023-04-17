@@ -211,7 +211,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     const translated = mailer.translate(memberLang);
     const subject = translated(MAIL.SIGN_IN_TITLE);
     const html = `
-    ${mailer.buildText(translated(MAIL.GREETINGS))}
     ${mailer.buildText(translated(MAIL.SIGN_IN_TEXT))}
     ${mailer.buildButton(link, translated(MAIL.SIGN_IN_BUTTON_TEXT))}
     ${mailer.buildText(translated(MAIL.SIGN_IN_NOT_REQUESTED))}`;

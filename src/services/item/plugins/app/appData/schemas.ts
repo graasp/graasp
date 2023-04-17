@@ -6,16 +6,14 @@ export default {
       properties: {
         id: { type: 'string' },
         member: { $ref: 'http://graasp.org/members/#/definitions/member' },
-        // TODO
-        item: {
+        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
+        data: {
           type: 'object',
           additionalProperties: true,
         },
-        data: {},
         type: { type: 'string' },
-        // ownership: { type: 'string' }, // TODO: should we always return this
         visibility: { type: 'string' }, // TODO: should we always return this
-        // creator: { type: 'string' },
+        creator: { type: 'string' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },

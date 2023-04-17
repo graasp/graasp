@@ -4,9 +4,9 @@ import qs from 'qs';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
 import MemberRepository from '../repository';
 import * as MEMBERS_FIXTURES from './fixtures/members';
-import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
 
 const { saveMember, saveMembers } = MEMBERS_FIXTURES;
 

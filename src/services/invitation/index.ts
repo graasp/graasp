@@ -11,7 +11,6 @@ import { Invitation } from './invitation';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
 import { InvitationService } from './service';
 
-
 const plugin: FastifyPluginAsync = async (fastify, options) => {
   const { mailer, db, log, members, items } = fastify;
 

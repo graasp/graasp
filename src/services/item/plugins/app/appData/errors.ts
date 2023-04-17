@@ -2,10 +2,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
+
 import { PLUGIN_NAME } from '../constants';
 
-
-export const GraaspAppDataError = ErrorFactory(PLUGIN_NAME+'/app-data');
+export const GraaspAppDataError = ErrorFactory(PLUGIN_NAME + '/app-data');
 
 export class AppDataNotFound extends GraaspAppDataError {
   constructor(data?: unknown) {
@@ -32,7 +32,6 @@ export class AppDataNotAccessible extends GraaspAppDataError {
     );
   }
 }
-
 
 export class PreventUpdateAppDataFile extends GraaspAppDataError {
   constructor(data?: unknown) {

@@ -9,7 +9,7 @@ import {
 } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { deleteAllById } from '../../../action/schemas';
+import { deleteAllById } from './schemas';
 import { ActionMemberService } from './service';
 
 export interface GraaspActionsOptions {

@@ -4,8 +4,8 @@ import { ItemType, ResultOf, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { mapById } from '../../../../utils';
-import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { AppData, Filters } from './appData';
+import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
 export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
@@ -46,11 +46,11 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
   },
 
   async get(id: string): Promise<AppData> {
-    const appData =await this.findOneBy({ id });
+    const appData = await this.findOneBy({ id });
 
-if(!appData) {
-  throw new AppDataNotFound();
-}
+    if (!appData) {
+      throw new AppDataNotFound();
+    }
 
     return appData;
   },

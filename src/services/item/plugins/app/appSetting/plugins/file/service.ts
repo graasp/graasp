@@ -11,8 +11,8 @@ import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Actor, Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
-import { NotAppSettingFile } from '../../errors';
 import { AppSetting } from '../../appSettings';
+import { NotAppSettingFile } from '../../errors';
 import { AppSettingService } from '../../service';
 
 const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
@@ -89,7 +89,7 @@ class AppSettingFileService {
         size,
       })
       .then(() => {
-        return { path:filepath, filename, size, mimetype };
+        return { path: filepath, name: filename, size, mimetype };
       })
       .catch((e) => {
         throw e;
@@ -141,7 +141,7 @@ class AppSettingFileService {
       // always return the url because redirection uses bearer token automatically
       // and s3 prevent multiple auth methods
       replyUrl: true,
-      ...fileProp
+      ...fileProp,
     });
 
     return result;

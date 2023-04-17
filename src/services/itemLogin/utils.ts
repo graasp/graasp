@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
+
 import { randomHexOf4 } from '../utils';
 
 const saltRounds = 10;

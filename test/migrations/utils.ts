@@ -21,9 +21,9 @@ export const checkDatabaseIsEmpty = async (app) => {
 
 export const parseValue = (v) => {
   if (Array.isArray(v)) {
-    return '\'{' + v.map((str) => `"${str}"`).join(',') + '}\'';
+    return "'{" + v.map((str) => `"${str}"`).join(',') + "}'";
   } else if (typeof v === 'object') {
-    return '\'' + JSON.stringify(v) + '\'';
+    return "'" + JSON.stringify(v) + "'";
   }
   return `'${v}'`;
 };

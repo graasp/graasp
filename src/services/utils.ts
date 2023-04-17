@@ -1,5 +1,6 @@
-import { ResultOf } from '@graasp/sdk';
 import crypto from 'crypto';
+
+import { ResultOf } from '@graasp/sdk';
 
 export function mapById<T>({
   keys,
@@ -8,7 +9,7 @@ export function mapById<T>({
 }: {
   defaultValue?: T;
   keys: string[];
-  findElement: (key: string) => T|undefined;
+  findElement: (key: string) => T | undefined;
   buildError?: (key: string) => Error;
 }): ResultOf<T> {
   const data: { [key: string]: T } = {};

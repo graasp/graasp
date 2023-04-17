@@ -48,7 +48,7 @@ class FileService {
   async upload(
     member: Actor,
     data?: { file: ReadStream; size: number; filepath: string; mimetype: string },
-  )  {
+  ) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
@@ -140,7 +140,7 @@ class FileService {
     data: {
       folderPath?: string;
     },
-  )  {
+  ) {
     const { folderPath } = data;
     if (!folderPath) {
       throw new DeleteFolderInvalidPathError(folderPath);
@@ -186,7 +186,7 @@ class FileService {
       originalFolderPath: string;
       newFolderPath: string;
     },
-  )  {
+  ) {
     const { originalFolderPath, newFolderPath } = data;
 
     return this.repository.copyFolder({

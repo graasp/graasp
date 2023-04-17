@@ -9,11 +9,15 @@ import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Actor } from '../../../../member/entities/member';
 import { AppDataVisibility } from '../interfaces/app-details';
-import { AppDataNotAccessible } from './errors';
 import { AppData, Filters } from './appData';
+import { AppDataNotAccessible } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
-const adaptFilters = (filters: Filters, permission: PermissionLevel|undefined, actorId: string) => {
+const adaptFilters = (
+  filters: Filters,
+  permission: PermissionLevel | undefined,
+  actorId: string,
+) => {
   // TODO: optimize
   // admin can get all app data from everyone
   // otherwise get member's AppData or others' AppData w/ visibility 'item'
@@ -289,7 +293,7 @@ export class AppDataService {
     member: Actor,
     appData: AppData,
     permission: PermissionLevel,
-    inheritedMembership?: ItemMembership|null,
+    inheritedMembership?: ItemMembership | null,
   ) {
     const isValid =
       // inheritedMembership?.permission &&

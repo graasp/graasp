@@ -5,8 +5,7 @@ import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import { PLUGIN_NAME } from '../constants';
 
-export const GraaspAppActionError = ErrorFactory(PLUGIN_NAME+'/app-action');
-
+export const GraaspAppActionError = ErrorFactory(PLUGIN_NAME + '/app-action');
 
 export class AppActionNotAccessible extends GraaspAppActionError {
   constructor(data?: unknown) {

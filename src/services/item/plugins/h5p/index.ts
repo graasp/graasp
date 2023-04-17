@@ -11,12 +11,13 @@ import fastifyMultipart from '@fastify/multipart';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { H5PItemExtra,  ItemType, PermissionLevel } from '@graasp/sdk';
+import { H5PItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
+import { Item } from '../../entities/Item';
 import {
   DEFAULT_MIME_TYPE,
   H5P_FILE_DOT_EXTENSION,
@@ -31,7 +32,6 @@ import { H5PService } from './service';
 import { H5PPluginOptions } from './types';
 import { buildContentPath, buildH5PPath, buildRootPath, validatePluginOptions } from './utils';
 import { H5PValidator } from './validation/h5p-validator';
-import { Item } from '../../entities/Item';
 
 const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) => {
   // get services from server instance

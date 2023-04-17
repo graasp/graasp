@@ -7,27 +7,8 @@ export default {
       required: ['id', 'item'],
       properties: {
         id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-        // TODO: use item schema
         item: {
-          type: 'object',
-          properties: {
-            id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-            name: { type: 'string' },
-            description: { type: ['string', 'null'] },
-            type: { type: 'string' },
-            path: { type: 'string' },
-            extra: {
-              type: 'object',
-              additionalProperties: true,
-            },
-            creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
-            createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
-            settings: {
-              type: 'object',
-              additionalProperties: true,
-            },
-          },
+          $ref: 'http://graasp.org/items/#/definitions/item',
         },
         creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },

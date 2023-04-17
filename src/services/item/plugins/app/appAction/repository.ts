@@ -1,11 +1,12 @@
 import { In } from 'typeorm';
 
+import { ResultOf } from '@graasp/sdk';
+
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { mapById } from '../../../../utils';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppAction } from './appAction';
 import { InputAppAction } from './interfaces/app-action';
-import { ResultOf } from '@graasp/sdk';
 
 export const AppActionRepository = AppDataSource.getRepository(AppAction).extend({
   async post(itemId: string, memberId: string, body: Partial<InputAppAction>): Promise<AppAction> {
@@ -28,7 +29,7 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
     return this.delete(appActionId);
   },
 
-  async get(id: string): Promise<AppAction|null> {
+  async get(id: string): Promise<AppAction | null> {
     return this.findOneBy({ id });
   },
 
@@ -37,7 +38,10 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
     return this.findBy({ item: { id: itemId }, member: { id: memberId } });
   },
 
-  async getForManyItems(itemIds: string[], filters: ManyItemsGetFilter): Promise<ResultOf<AppAction[]>> {
+  async getForManyItems(
+    itemIds: string[],
+    filters: ManyItemsGetFilter,
+  ): Promise<ResultOf<AppAction[]>> {
     const { memberId } = filters;
 
     const appActions = await this.findBy({ item: { id: In(itemIds) }, member: { id: memberId } });

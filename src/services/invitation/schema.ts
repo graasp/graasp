@@ -10,20 +10,8 @@ export default {
         email: { type: 'string', format: 'email' },
         name: { type: ['string', 'null'] },
         permission: { type: 'string' },
-        item: {
-          type: 'object',
-          properties: {
-            id: { type: 'string' },
-            name: { type: 'string' },
-            description: { type: 'string' },
-            path: { type: 'string' },
-            type: { type: 'string' },
-            creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
-            createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
-          },
-          additionalProperties: false,
-        },
+        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
+
         /**
          * for some reason setting these date fields as "type: 'string'"
          * makes the serialization fail using the anyOf. Following the same

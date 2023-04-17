@@ -11,25 +11,25 @@ import { AppDataRepository } from '../services/item/plugins/app/appData/reposito
 import { AppSettingRepository } from '../services/item/plugins/app/appSetting/repository';
 import { PublisherRepository } from '../services/item/plugins/app/publisherRepository';
 import { AppRepository } from '../services/item/plugins/app/repository';
+import { CategoryRepository } from '../services/item/plugins/itemCategory/repositories/category';
+import { ItemCategoryRepository } from '../services/item/plugins/itemCategory/repositories/itemCategory';
+import { ItemFlagRepository } from '../services/item/plugins/itemFlag/repository';
+import { ItemLikeRepository } from '../services/item/plugins/itemLike/repository';
+import { ItemTagRepository } from '../services/item/plugins/itemTag/repository';
+import { ItemPublishedRepository } from '../services/item/plugins/published/repositories/itemPublished';
 import { RecycledItemDataRepository } from '../services/item/plugins/recycled/repository';
 import { ItemValidationGroupRepository } from '../services/item/plugins/validation/repositories/ItemValidationGroup';
 import { ItemValidationRepository } from '../services/item/plugins/validation/repositories/itemValidation';
 import { ItemValidationReviewRepository } from '../services/item/plugins/validation/repositories/itemValidationReview';
 import { ItemRepository } from '../services/item/repository';
-import { CategoryRepository } from '../services/itemCategory/repositories/category';
-import { ItemCategoryRepository } from '../services/itemCategory/repositories/itemCategory';
-import { ItemFlagRepository } from '../services/itemFlag/repository';
-import { ItemLikeRepository } from '../services/itemLike/repository';
 import ItemLoginRepository from '../services/itemLogin/repositories/itemLogin';
 import ItemLoginSchemaRepository from '../services/itemLogin/repositories/itemLoginSchema';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import { ItemTagRepository } from '../services/itemTag/repository';
 import MemberRepository from '../services/member/repository';
-import { ItemPublishedRepository } from '../services/published/repositories/itemPublished';
 
 export type Repositories = {
-  actionRequestExportRepository: typeof ActionRequestExportRepository;
   actionRepository: typeof ActionRepository;
+  actionRequestExportRepository: typeof ActionRequestExportRepository;
   appActionRepository: typeof AppActionRepository;
   appDataRepository: typeof AppDataRepository;
   appRepository: typeof AppRepository;
@@ -43,17 +43,17 @@ export type Repositories = {
   itemLoginRepository: typeof ItemLoginRepository;
   itemLoginSchemaRepository: typeof ItemLoginSchemaRepository;
   itemMembershipRepository: typeof ItemMembershipRepository;
+  itemPublishedRepository: typeof ItemPublishedRepository;
   itemRepository: typeof ItemRepository;
   itemTagRepository: typeof ItemTagRepository;
+  itemValidationGroupRepository: typeof ItemValidationGroupRepository;
+  itemValidationRepository: typeof ItemValidationRepository;
+  itemValidationReviewRepository: typeof ItemValidationReviewRepository;
   memberPasswordRepository: typeof MemberPasswordRepository;
   memberRepository: typeof MemberRepository;
   mentionRepository: typeof ChatMentionRepository;
-  itemPublishedRepository: typeof ItemPublishedRepository;
   publisherRepository: typeof PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
-  itemValidationRepository: typeof ItemValidationRepository;
-  itemValidationReviewRepository: typeof ItemValidationReviewRepository;
-  itemValidationGroupRepository: typeof ItemValidationGroupRepository;
 };
 // public: exists in item tag
 

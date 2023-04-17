@@ -2,10 +2,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
+
 import { PLUGIN_NAME } from '../constants';
 
-
-export const GraaspAppSettingError = ErrorFactory(PLUGIN_NAME+'/app-setting');
+export const GraaspAppSettingError = ErrorFactory(PLUGIN_NAME + '/app-setting');
 
 export class AppSettingNotFound extends GraaspAppSettingError {
   constructor(data?: unknown) {
@@ -19,7 +19,6 @@ export class AppSettingNotFound extends GraaspAppSettingError {
     );
   }
 }
-
 
 export class PreventUpdateAppSettingFile extends GraaspAppSettingError {
   constructor(data?: unknown) {

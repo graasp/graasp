@@ -24,7 +24,7 @@ export default {
          */
         // itemPath: { $ref: 'http://graasp.org/#/definitions/itemPath' },
         // bug: cannot set item schema because it's a fluent schema
-        item: { type: 'object', additionalProperties: true },
+        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
         // TODO: bug! should allow relative $ref: #/definitions/permission
         // check: https://github.com/fastify/fastify/issues/2328
         permission: { $ref: 'http://graasp.org/item-memberships/#/definitions/permission' },

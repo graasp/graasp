@@ -13,7 +13,6 @@ import { AppDataService } from './service';
 const appDataPlugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
 
-  // TODO: still necessary??
   fastify.addSchema(common);
 
   const appDataService = new AppDataService();

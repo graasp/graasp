@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 
@@ -39,7 +38,7 @@ export class AppSetting extends BaseEntity {
   name: string;
 
   @Column('simple-json', { nullable: false, default: '{}' })
-  data: {[key:string]: unknown};
+  data: { [key: string]: unknown };
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

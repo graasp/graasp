@@ -7,6 +7,7 @@ import fastifyPlugin from 'fastify-plugin';
 
 import { RecaptchaActionType } from '@graasp/sdk';
 
+import { DEV } from '../../../../utils/config';
 import { AuthenticationError } from './errors';
 
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
@@ -16,7 +17,7 @@ const plugin: FastifyPluginAsync<{ secretAccessKey: string }> = async (fastify, 
   const { secretAccessKey } = options;
 
   if (!secretAccessKey) {
-    console.error('Captcha\'s secretAccessKey environment variable missing.');
+    console.error("Captcha's secretAccessKey environment variable missing.");
     process.exit(1);
   }
 
@@ -25,6 +26,11 @@ const plugin: FastifyPluginAsync<{ secretAccessKey: string }> = async (fastify, 
     captcha: string,
     actionType: RecaptchaActionType,
   ) => {
+    // TODO: better? to allow dev
+    if (DEV) {
+      return;
+    }
+
     if (!captcha) {
       console.error('The captcha verification has thrown: token is undefined');
       throw new AuthenticationError();

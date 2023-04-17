@@ -196,12 +196,12 @@ export class ItemValidationService {
             if (!this.imageClassifierApi) {
               throw new Error('imageClassifierApi is not defined');
             }
-            const filePath = await this.fileService.download(actor, {
+            const filePath = (await this.fileService.download(actor, {
               path: filepath,
               id: item?.id,
               mimetype,
               fileStorage,
-            }) as string;
+            })) as string;
             const isSafe = await classifyImage(this.imageClassifierApi, filePath);
             status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
           }

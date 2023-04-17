@@ -3,10 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { ItemSettings, ItemType, buildPathFromIds } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
+import { randomHexOf4 } from '../../../utils';
 import { Item, ItemExtra } from '../../entities/Item';
 import { ItemRepository } from '../../repository';
-import { randomHexOf4 } from '../../../utils';
-
 
 export const getDummyItem = (
   options: {

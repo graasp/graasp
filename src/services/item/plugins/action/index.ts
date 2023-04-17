@@ -72,7 +72,14 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         await requestExportService.request(member, repositories, itemId);
-      });
+      })
+        .then(() => {
+          // todo: save action
+        })
+        .catch((e) => {
+          // TODO: return feedback in queue
+          console.error(e);
+        });
 
       // reply no content and let the server create the archive and send the mail
       reply.status(StatusCodes.NO_CONTENT);

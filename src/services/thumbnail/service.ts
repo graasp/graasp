@@ -5,10 +5,10 @@ import path from 'path';
 import { SavedMultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
-import FileService from '../file/service';
-import { THUMBNAIL_MIMETYPE,  } from './constants';
-import { createThumbnails } from './utils';
 import { TMP_FOLDER } from '../../utils/config';
+import FileService from '../file/service';
+import { THUMBNAIL_MIMETYPE } from './constants';
+import { createThumbnails } from './utils';
 
 export class ThumbnailService {
   fileService: FileService;

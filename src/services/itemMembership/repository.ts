@@ -26,7 +26,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return this.insert(memberships);
   },
 
-  async deleteOne(itemMembershipId: string, args: { purgeBelow?: boolean } = { purgeBelow: true }): Promise<ItemMembership> {
+  async deleteOne(
+    itemMembershipId: string,
+    args: { purgeBelow?: boolean } = { purgeBelow: true },
+  ): Promise<ItemMembership> {
     const itemMembership = await this.get(itemMembershipId);
 
     if (args.purgeBelow) {
@@ -125,7 +128,11 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
 
   // check member's membership "at" item
-  async getInherited(item: Item, member: Member, considerLocal = false): Promise<ItemMembership|null> {
+  async getInherited(
+    item: Item,
+    member: Member,
+    considerLocal = false,
+  ): Promise<ItemMembership | null> {
     const query = this.createQueryBuilder('item_membership')
       .leftJoinAndSelect('item_membership.item', 'item')
       .leftJoinAndSelect('item_membership.member', 'member')
@@ -156,7 +163,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     // no membership in the tree
     return null;
   },
-  async getMany(ids: string[], args: { throwOnError?: boolean }): Promise<ResultOf<ItemMembership>> {
+  async getMany(
+    ids: string[],
+    args: { throwOnError?: boolean },
+  ): Promise<ResultOf<ItemMembership>> {
     const itemMemberships = await this.find({
       where: { id: In(ids) },
       relations: {
@@ -212,7 +222,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     });
   },
 
-  async patch(itemMembershipId: string, data: { permission: PermissionLevel }): Promise<ItemMembership> {
+  async patch(
+    itemMembershipId: string,
+    data: { permission: PermissionLevel },
+  ): Promise<ItemMembership> {
     const itemMembership = await this.findOne({
       where: { id: itemMembershipId },
       relations: { item: true, member: true },
@@ -259,7 +272,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return this.get(itemMembershipId);
   },
 
-  async post(args: { item: Item; member: Member; creator: Member; permission: PermissionLevel }): Promise<ItemMembership> {
+  async post(args: {
+    item: Item;
+    member: Member;
+    creator: Member;
+    permission: PermissionLevel;
+  }): Promise<ItemMembership> {
     const { item, member, creator, permission } = args;
     // prepare membership but do not save it
     const itemMembership = this.create({

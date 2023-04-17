@@ -11,10 +11,10 @@ import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Actor } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
-import { AppDataVisibility } from '../../../interfaces/app-details';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
-import { NotAppDataFile } from '../../errors';
+import { AppDataVisibility } from '../../../interfaces/app-details';
 import { AppData } from '../../appData';
+import { NotAppDataFile } from '../../errors';
 import { AppDataService } from '../../service';
 
 class AppDataFileService {
@@ -77,7 +77,7 @@ class AppDataFileService {
         size,
       })
       .then(() => {
-        return { path:filepath, filename, size, mimetype };
+        return { path: filepath, name: filename, size, mimetype };
       })
       .catch((e) => {
         throw e;
@@ -129,7 +129,7 @@ class AppDataFileService {
       // always return the url because redirection uses bearer token automatically
       // and s3 prevent multiple auth methods
       replyUrl: true,
-      ...fileProp
+      ...fileProp,
     });
 
     return result;
