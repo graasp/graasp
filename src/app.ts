@@ -151,6 +151,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
   //     },
   //   });
   // }
+  
 
   instance.register(async (instance) => {
     // core API modules

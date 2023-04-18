@@ -5,8 +5,8 @@ import fp from 'fastify-plugin';
 
 import { IdParam } from '@graasp/sdk';
 
-import { buildRepositories } from '../../utils/repositories';
-import { Member } from '../member/entities/member';
+import { Repositories, buildRepositories } from '../../utils/repositories';
+import { Actor, Member } from '../member/entities/member';
 import { Invitation } from './invitation';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
 import { InvitationService } from './service';
@@ -23,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
   const iS = new InvitationService(log, mailer, items.service);
 
   // post hook: remove invitations on member creation
-  const hook = async (actor, repositories, args: { member: Member }) => {
+  const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
     const { email } = args.member;
     await iS.createToMemberships(actor, repositories, args.member);
     await repositories.invitationRepository.deleteForEmail(email);

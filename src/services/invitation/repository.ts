@@ -1,11 +1,12 @@
 import { In } from 'typeorm';
 
+import { ResultOf } from '@graasp/sdk';
+
 import { AppDataSource } from '../../plugins/datasource';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import {  InvitationNotFound } from './errors';
+import { InvitationNotFound } from './errors';
 import { Invitation } from './invitation';
-import { ResultOf } from '@graasp/sdk';
 
 /**
  * Database's first layer of abstraction for Invitations
@@ -28,7 +29,7 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * Get invitations map by id
    * @param ids Invitation ids
    */
-  async getMany(ids: string[], actor?: Member):Promise<ResultOf<Invitation>> {
+  async getMany(ids: string[], actor?: Member): Promise<ResultOf<Invitation>> {
     const opts = actor ? { creator: true } : {};
     const invitations = await this.find({
       where: { id: In(ids) },
@@ -48,7 +49,7 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    */
   async getForItem(itemPath: string): Promise<Invitation[]> {
     return this.createQueryBuilder('invitation')
-    .leftJoinAndSelect('invitation.item','item')
+      .leftJoinAndSelect('invitation.item', 'item')
       .where(':path <@ item.path', { path: itemPath })
       .getMany();
   },
@@ -57,9 +58,13 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * Create invitation and return it.
    * @param invitation Invitation to create
    */
-  async postMany(invitations: Partial<Invitation>[], itemPath: string, creator: Member):Promise<ResultOf<Invitation>> {
-    const existingEntries = await  this.createQueryBuilder('invitation')
-    .leftJoinAndSelect('invitation.item', 'item')
+  async postMany(
+    invitations: Partial<Invitation>[],
+    itemPath: string,
+    creator: Member,
+  ): Promise<ResultOf<Invitation>> {
+    const existingEntries = await this.createQueryBuilder('invitation')
+      .leftJoinAndSelect('invitation.item', 'item')
       .where('item.path @> :path', { path: itemPath })
       .getMany();
 

@@ -1,6 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../../utils/repositories';
+import { Actor } from '../../../../member/entities/member';
 import ItemService from '../../../service';
 
 export class ItemCategoryService {
@@ -10,7 +11,7 @@ export class ItemCategoryService {
     this.itemService = itemService;
   }
 
-  async getForItem(actor, repositories: Repositories, itemId: string) {
+  async getForItem(actor: Actor, repositories: Repositories, itemId: string) {
     const { itemCategoryRepository } = repositories;
     // get and check permissions
     await this.itemService.get(actor, repositories, itemId);
@@ -18,7 +19,7 @@ export class ItemCategoryService {
     return itemCategoryRepository.getForItem(itemId);
   }
 
-  async post(actor, repositories: Repositories, itemId: string, categoryId: string) {
+  async post(actor: Actor, repositories: Repositories, itemId: string, categoryId: string) {
     const { itemCategoryRepository } = repositories;
 
     // get and check permissions
@@ -26,7 +27,7 @@ export class ItemCategoryService {
     return itemCategoryRepository.post(item.path, categoryId);
   }
 
-  async delete(actor, repositories: Repositories, itemId: string, categoryId: string) {
+  async delete(actor: Actor, repositories: Repositories, itemId: string, categoryId: string) {
     const { itemCategoryRepository } = repositories;
 
     // get and check permissions

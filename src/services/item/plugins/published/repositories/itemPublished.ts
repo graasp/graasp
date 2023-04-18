@@ -1,6 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
@@ -39,7 +40,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       .getMany();
   },
 
-  async post(creator, item: Item) {
+  async post(creator: Actor, item: Item) {
     const p = this.create({ item, creator });
     await this.insert(p);
     return p;

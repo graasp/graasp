@@ -251,7 +251,6 @@ export const copyMany = {
   body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
-
 // ajv for other schemas to import
 export default {
   $id: 'http://graasp.org/items/',

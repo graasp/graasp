@@ -13,7 +13,8 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "strictPropertyInitialization": false // disable because of entities
   },
   "include": ["src/**/*"],
   "exclude": [

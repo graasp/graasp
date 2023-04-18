@@ -14,7 +14,6 @@ import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 import { Item } from '../../../entities/Item';
 import { ItemValidationGroup } from './ItemValidationGroup';
 
-
 @Entity()
 export class ItemValidation extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')

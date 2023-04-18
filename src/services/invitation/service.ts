@@ -1,8 +1,9 @@
-import { FastifyBaseLogger,  FastifyPluginAsync } from 'fastify';
+import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
+import type { MailerDecoration } from '../../plugins/mailer';
 import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
@@ -10,11 +11,10 @@ import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { buildInvitationLink } from './constants';
 import { Invitation } from './invitation';
-import type { MailerDecoration } from '../../plugins/mailer';
 
 export class InvitationService {
   log: FastifyBaseLogger;
-  mailer: MailerDecoration; 
+  mailer: MailerDecoration;
   itemService: ItemService;
 
   constructor(log, mailer, itemService: ItemService) {

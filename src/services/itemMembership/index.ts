@@ -1,3 +1,4 @@
+import { UUID } from 'crypto';
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyCors from '@fastify/cors';
@@ -20,8 +21,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     db,
     items: { service: itemService },
+    mailer,
+    hosts,
   } = fastify;
-  const itemMembershipService = new ItemMembershipService(itemService);
+  const itemMembershipService = new ItemMembershipService(itemService, hosts, fastify.mailer);
 
   // schemas
   fastify.addSchema(common);
@@ -99,7 +102,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // update item membership
-      fastify.patch<{ Params: IdParam; Body: Partial<ItemMembership> }>(
+      fastify.patch<{
+        Params: IdParam;
+        Body: { memberId: UUID; itemId: UUID; permission: PermissionLevel };
+      }>(
         '/:id',
         {
           schema: updateOne,

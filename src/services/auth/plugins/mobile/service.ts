@@ -4,7 +4,7 @@ import jwt, { Secret, SignOptions, TokenExpiredError, VerifyOptions } from 'json
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { promisify } from 'util';
 
-import { FastifyInstance, FastifyLoggerInstance } from 'fastify';
+import { FastifyBaseLogger, FastifyInstance, FastifyLoggerInstance } from 'fastify';
 
 import { DEFAULT_LANG } from '@graasp/sdk';
 
@@ -17,6 +17,7 @@ import {
   TokenExpired,
 } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import { Actor } from '../../../member/entities/member';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -26,18 +27,18 @@ const promisifiedJwtVerify = promisify<
 >(jwt.verify);
 
 export class MobileService {
-  log: FastifyLoggerInstance;
+  log: FastifyBaseLogger;
   fastify: FastifyInstance;
 
-  constructor(fastify, log) {
+  constructor(fastify: FastifyInstance, log: FastifyBaseLogger) {
     this.log = log;
     this.fastify = fastify;
   }
 
   async register(
-    actor,
+    actor: Actor,
     repositories: Repositories,
-    { name, email, challenge },
+    { name, email, challenge }: { name: string; email: string; challenge: string },
     lang = DEFAULT_LANG,
   ) {
     const { memberRepository } = repositories;
@@ -62,7 +63,12 @@ export class MobileService {
     }
   }
 
-  async login(actor, repositories: Repositories, { email, challenge }, lang = DEFAULT_LANG) {
+  async login(
+    actor: Actor,
+    repositories: Repositories,
+    { email, challenge }: { email: string; challenge: string },
+    lang = DEFAULT_LANG,
+  ) {
     const { memberRepository } = repositories;
 
     const member = await memberRepository.getByEmail(email);
@@ -75,7 +81,7 @@ export class MobileService {
     }
   }
 
-  async auth(actor, repositories: Repositories, token, verifier) {
+  async auth(actor: Actor, repositories: Repositories, token: string, verifier: string) {
     try {
       const { sub: memberId, challenge } = await promisifiedJwtVerify(token, JWT_SECRET, {});
 

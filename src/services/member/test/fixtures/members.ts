@@ -10,12 +10,12 @@ export const saveMember = async (m: Partial<Member>) => {
   return savedMember;
 };
 
-export const saveMembers = async (members) => {
+export const saveMembers = async (members: Partial<Member>[]) => {
   const promises = members.map((m) => saveMember(m));
   return Promise.all(promises);
 };
 
-export const expectMember = (m, validation) => {
+export const expectMember = (m: Member, validation: Member) => {
   if (!m) {
     throw 'member does not exist';
   }

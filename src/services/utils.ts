@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 
-import { ResultOf } from '@graasp/sdk';
+import { Context, Hostname, ResultOf, buildItemLinkForBuilder } from '@graasp/sdk';
+
+import { Item } from './item/entities/Item';
 
 export function mapById<T>({
   keys,
@@ -35,3 +37,17 @@ export function resultOfToList<T>(resultOf: ResultOf<T>): T[] {
 
 // const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 export const randomHexOf4 = () => crypto.randomBytes(2).toString('hex');
+
+export const buildItemLink = (hosts: Hostname[], item: Item) => {
+  const host = hosts.find((h) => h.name === Context.BUILDER)?.hostname;
+  if (!host) {
+    throw new Error('host is not defined');
+  }
+  const itemLink = buildItemLinkForBuilder({
+    origin: host,
+    itemId: item.id,
+    chatOpen: true,
+  });
+
+  return itemLink;
+};

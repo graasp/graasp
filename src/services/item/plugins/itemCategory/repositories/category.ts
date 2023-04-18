@@ -1,7 +1,4 @@
-import { In } from 'typeorm';
-
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { Item } from '../../../entities/Item';
 import { Category } from '../entities/Category';
 
 export const CategoryRepository = AppDataSource.getRepository(Category).extend({
@@ -13,7 +10,7 @@ export const CategoryRepository = AppDataSource.getRepository(Category).extend({
    * Get Category matching the given `id` or `null`, if not found.
    * @param id Category's id
    */
-  async get(id: string): Promise<Category> {
+  async get(id: string): Promise<Category | null> {
     return this.findOneBy({ id });
   },
 });

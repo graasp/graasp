@@ -24,10 +24,10 @@ export const ChatMentionRepository = AppDataSource.getRepository(ChatMention).ex
    * Retrieves a mention given the mention id
    * @param mentionId Id of the mention to retrieve
    */
-  async get(mentionId: string, options = { shouldExist: false }): Promise<ChatMention> {
+  async get(mentionId: string): Promise<ChatMention> {
     const mention = await this.findOne({ where: { id: mentionId }, relations: { member: true } });
 
-    if (options.shouldExist && !mention) {
+    if (!mention) {
       throw new ChatMentionNotFound(mentionId);
     }
 
@@ -115,7 +115,7 @@ export const ChatMentionRepository = AppDataSource.getRepository(ChatMention).ex
    * Remove all mentions for the given memberId
    * @param memberId Id of the member
    */
-  async deleteAll(memberId: string): Promise<ChatMention[]> {
+  async deleteAll(memberId: string): Promise<unknown> {
     return this.createQueryBuilder('mention')
       .leftJoinAndSelect('mention.member', 'member')
       .delete()

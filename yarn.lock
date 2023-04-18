@@ -2117,10 +2117,10 @@ __metadata:
 
 "@graasp/translations@github:graasp/graasp-translations#89-email":
   version: 1.8.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=37b896778ca2aa805d670a77ee65d236bfef0a79"
+  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=78159907fdb6546628aa22ab7938837eebb331a7"
   dependencies:
     i18next: 21.8.1
-  checksum: 57097b9ae1a08566b3d6752bb563561c0f869321628f6c58cc729c9895f3cfde10821beb0adb9b202231d5939407d55a2e3ed0a4faf9532b6c8f878e9b5926b3
+  checksum: 4e035238857280dc80292f68c79adc84f82e467530c12957b39994323e44afded9ac4eca1374c1cf74520f4547d82214d5a67aa363e5cdec8b169ca590862953
   languageName: node
   linkType: hard
 
@@ -2831,12 +2831,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bad-words@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@types/bad-words@npm:3.0.1"
+  checksum: c700fadd2bafef153812137220466ca3148425228915ddb6e7e80bc339fa983d2ddef098cacf00196fbd7467181ae5b9747d8fd383fc5ed17f8bf5e62e89d425
+  languageName: node
+  linkType: hard
+
+"@types/bcrypt@npm:5.0.0":
+  version: 5.0.0
+  resolution: "@types/bcrypt@npm:5.0.0"
+  dependencies:
+    "@types/node": "*"
+  checksum: 063c32c7a519d64768dfc0169a319b8244d6a6cb50a355c93992b3c5fee1dbc236526a1111f0e7bb25abc8b0473e5f40a5edfeb8b33cad2a6ea35aa2d7d7db14
+  languageName: node
+  linkType: hard
+
 "@types/concurrently@npm:7.0.0":
   version: 7.0.0
   resolution: "@types/concurrently@npm:7.0.0"
   dependencies:
     concurrently: "*"
   checksum: ae11a2cbe591324e64599dc3f2bf36ec47499717361930cf959ee5a7f232c0f06e884b130c9bf305c6b914e81631f27af8e78140707aa5493f2818bc570c0ad6
+  languageName: node
+  linkType: hard
+
+"@types/content-disposition@npm:0.5.5":
+  version: 0.5.5
+  resolution: "@types/content-disposition@npm:0.5.5"
+  checksum: fdf7379db1d509990bcf9a21d85f05aad878596f28b1418f9179f6436cb22513262c670ce88c6055054a7f5804a9303eeacb70aa59a5e11ffdc1434559db9692
   languageName: node
   linkType: hard
 
@@ -2854,6 +2877,13 @@ __metadata:
   version: 1.0.0
   resolution: "@types/estree@npm:1.0.0"
   checksum: 910d97fb7092c6738d30a7430ae4786a38542023c6302b95d46f49420b797f21619cdde11fa92b338366268795884111c2eb10356e4bd2c8ad5b92941e9e6443
+  languageName: node
+  linkType: hard
+
+"@types/geoip-lite@npm:1.4.1":
+  version: 1.4.1
+  resolution: "@types/geoip-lite@npm:1.4.1"
+  checksum: fe6807d61d3f6b6abcd28641b35a0b4bcca02440ba9613e31765b3a874616cfd537e415ed8405126fd6a03eca27727f168b28d22bec1e82b197c1266423a66c9
   languageName: node
   linkType: hard
 
@@ -2905,6 +2935,15 @@ __metadata:
   version: 7.0.11
   resolution: "@types/json-schema@npm:7.0.11"
   checksum: 527bddfe62db9012fccd7627794bd4c71beb77601861055d87e3ee464f2217c85fca7a4b56ae677478367bbd248dbde13553312b7d4dbc702a2f2bbf60c4018d
+  languageName: node
+  linkType: hard
+
+"@types/jsonwebtoken@npm:9.0.1":
+  version: 9.0.1
+  resolution: "@types/jsonwebtoken@npm:9.0.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: a7f0925e9a42ad3ae970364c63c5986d40da5c83d51d3f4e624eb0f064a380376f9e3fb3f2f837390a9ab80143f5d75fd51866da30e110f6b486a3379e1c768f
   languageName: node
   linkType: hard
 
@@ -5911,9 +5950,14 @@ __metadata:
     "@sentry/profiling-node": 0.3.0
     "@sentry/tracing": 7.44.2
     "@trivago/prettier-plugin-sort-imports": 4.1.1
+    "@types/bad-words": 3.0.1
+    "@types/bcrypt": 5.0.0
     "@types/concurrently": 7.0.0
+    "@types/content-disposition": 0.5.5
     "@types/eslint": 8.21.3
+    "@types/geoip-lite": 1.4.1
     "@types/jest": 29.5.0
+    "@types/jsonwebtoken": 9.0.1
     "@types/mime": 3.0.1
     "@types/node": 18.15.5
     "@types/node-fetch": 2

@@ -1,14 +1,15 @@
-import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+import { FastifyBaseLogger } from 'fastify';
 
+import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+import { MAIL } from '@graasp/translations';
+
+import type { MailerDecoration } from '../../../../plugins/mailer';
+import { resultOfToList } from '../../../../services/utils';
 import { Repositories } from '../../../../utils/repositories';
 import { filterOutHiddenItems } from '../../../authorization';
-import ItemService from '../../service';
-import type { MailerDecoration } from '../../../../plugins/mailer';
-import { MAIL } from '@graasp/translations';
-import { FastifyBaseLogger } from 'fastify';
-import { Item } from '../../entities/Item';
 import { Member } from '../../../member/entities/member';
-import {resultOfToList} from '../../../../services/utils';
+import { Item } from '../../entities/Item';
+import ItemService from '../../service';
 import { buildPublishedItemLink } from './constants';
 
 export class ItemPublishedService {
@@ -22,13 +23,14 @@ export class ItemPublishedService {
     this.mailer = mailer;
   }
 
-  async _notifyContributors(actor: Member, repositories:Repositories, item: Item):Promise<void> {
-
+  async _notifyContributors(actor: Member, repositories: Repositories, item: Item): Promise<void> {
     // send email to contributors except yourself
-    const memberships =  await repositories.itemMembershipRepository.getForManyItems([item]);
+    const memberships = await repositories.itemMembershipRepository.getForManyItems([item]);
     const contributors = resultOfToList(memberships)[0]
-      .filter(({permission, member})=>permission===PermissionLevel.Admin && member.id !== actor.id)
-      .map(({member})=>member);
+      .filter(
+        ({ permission, member }) => permission === PermissionLevel.Admin && member.id !== actor.id,
+      )
+      .map(({ member }) => member);
 
     const link = buildPublishedItemLink(item);
 
@@ -75,7 +77,6 @@ export class ItemPublishedService {
     this._notifyContributors(actor, repositories, item);
 
     return published;
-
   }
 
   async delete(actor, repositories, itemId: string) {

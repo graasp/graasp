@@ -14,8 +14,8 @@ import {
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionRequestExportService } from './requestExport/service';
-import { ActionItemService } from './service';
 import { exportAction, getItemActions } from './schemas';
+import { ActionItemService } from './service';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;

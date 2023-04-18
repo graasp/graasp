@@ -4,12 +4,18 @@ import { UUID } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import graaspSearchPlugin from './plugins/search';
-import { getCollections, getCollectionsForMember, getInformations, publishItem, unpublishItem } from './schemas';
+import {
+  getCollections,
+  getCollectionsForMember,
+  getInformations,
+  publishItem,
+  unpublishItem,
+} from './schemas';
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, log, mailer } = fastify;
-  const pIS = new ItemPublishedService(items.service, mailer, log, );
+  const pIS = new ItemPublishedService(items.service, mailer, log);
 
   fastify.register(graaspSearchPlugin);
 

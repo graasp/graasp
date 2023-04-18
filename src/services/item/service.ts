@@ -26,7 +26,15 @@ import { Item } from './entities/Item';
 export class ItemService {
   hooks = new HookManager();
 
-  async post(actor, repositories: Repositories, args: { item: Partial<Item>; parentId?: string }) {
+  async post(
+    actor: Actor,
+    repositories: Repositories,
+    args: { item: Partial<Item>; parentId?: string },
+  ) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     const { itemRepository, itemMembershipRepository } = repositories;
 
     const { item, parentId } = args;
@@ -84,7 +92,7 @@ export class ItemService {
     return item;
   }
 
-  async getMany(actor, repositories: Repositories, ids: string[]) {
+  async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
     const { itemRepository } = repositories;
     const result = await itemRepository.getMany(ids);
 
@@ -97,7 +105,10 @@ export class ItemService {
     return result;
   }
 
-  async getOwn(actor, { itemRepository }: Repositories) {
+  async getOwn(actor: Actor, { itemRepository }: Repositories) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     return itemRepository.getOwn(actor.id);
   }
 
@@ -151,7 +162,11 @@ export class ItemService {
     }
   }
 
-  async patch(actor, repositories: Repositories, itemId: UUID, body) {
+  async patch(actor: Actor, repositories: Repositories, itemId: UUID, body: Partial<Item>) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     const { itemRepository } = repositories;
 
     // check memberships
@@ -161,11 +176,15 @@ export class ItemService {
   }
 
   async patchMany(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     itemIds: UUID[],
-    body,
+    body: Partial<Item>,
   ): Promise<ResultOf<Item>> {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     // TODO: extra + settings
     const ops = await Promise.all(
       itemIds.map(async (id) => this.patch(actor, repositories, id, body)),
@@ -179,7 +198,7 @@ export class ItemService {
   }
 
   // QUESTION? DELETE BY PATH???
-  async delete(actor, repositories: Repositories, itemId: UUID) {
+  async delete(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     // check memberships
     const item = await itemRepository.get(itemId, { withDeleted: true });
@@ -204,7 +223,11 @@ export class ItemService {
   }
 
   // QUESTION? DELETE BY PATH???
-  async deleteMany(actor, repositories: Repositories, itemIds: string[]) {
+  async deleteMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     const { itemRepository } = repositories;
     // check memberships
     // can get soft deleted items
@@ -241,7 +264,11 @@ export class ItemService {
   }
 
   /////// -------- MOVE
-  async move(actor, repositories: Repositories, itemId, toItemId?: string) {
+  async move(actor: Actor, repositories: Repositories, itemId: UUID, toItemId?: UUID) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     const { itemRepository } = repositories;
     // TODO: check memberships
     let parentItem;
@@ -269,7 +296,11 @@ export class ItemService {
   }
 
   // TODO: optimize
-  async moveMany(actor, repositories: Repositories, itemIds: string[], toItemId?: string) {
+  async moveMany(actor: Actor, repositories: Repositories, itemIds: string[], toItemId?: string) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     const items = await Promise.all(
       itemIds.map((id) => this.move(actor, repositories, id, toItemId)),
     );
@@ -287,7 +318,7 @@ export class ItemService {
    * * `inserts`' `itemPath`s already have the expected paths for the destination;
    * * `deletes`' `itemPath`s have the path changes after `this.itemService.move()`.
    */
-  async _move(actor, repositories: Repositories, item: Item, parentItem?: Item) {
+  async _move(actor: Member, repositories: Repositories, item: Item, parentItem?: Item) {
     const { itemRepository, itemMembershipRepository } = repositories;
     // identify all the necessary adjustments to memberships
     // TODO: maybe this whole 'magic' should happen in a db procedure?
@@ -309,7 +340,11 @@ export class ItemService {
   }
 
   /////// -------- COPY
-  async copy(actor, repositories: Repositories, itemId, args) {
+  async copy(actor: Actor, repositories: Repositories, itemId: UUID, args: { parentId?: UUID }) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     const { itemRepository } = repositories;
 
     const item = await this.get(actor, repositories, itemId);
@@ -341,7 +376,12 @@ export class ItemService {
   }
 
   // TODO: optimize
-  async copyMany(actor, repositories: Repositories, itemIds: string[], args) {
+  async copyMany(
+    actor: Actor,
+    repositories: Repositories,
+    itemIds: string[],
+    args: { parentId?: UUID },
+  ) {
     const items = await Promise.all(
       itemIds.map(async (id) => this.copy(actor, repositories, id, args)),
     );

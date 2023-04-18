@@ -79,7 +79,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   );
 
-  fastify.get<{ Params: IdParam & { size: ThumbnailSizeType }; Querystring: { replyUrl?: boolean } }>(
+  fastify.get<{
+    Params: IdParam & { size: ThumbnailSizeType };
+    Querystring: { replyUrl?: boolean };
+  }>(
     '/:id/avatar/:size',
     {
       schema: download,

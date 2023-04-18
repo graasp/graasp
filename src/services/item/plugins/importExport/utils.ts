@@ -45,7 +45,17 @@ export const buildTextContent = (url: string, type: ItemType): string => {
   return `[InternetShortcut]\n${URL_PREFIX}${url}\n${APP_URL_PREFIX}1\n`;
 };
 
-export const setDescriptionInItem = ({ filename, content, items, extention }) => {
+export const setDescriptionInItem = ({
+  filename,
+  content,
+  items,
+  extention,
+}: {
+  filename: string;
+  content: string;
+  items: Partial<Item>[];
+  extention: string;
+}) => {
   const name = filename.slice(0, -extention.length);
   const item = items.find(({ name: thisName }) => name === thisName);
   if (item) {

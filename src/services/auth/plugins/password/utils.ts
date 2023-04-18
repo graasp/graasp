@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-import { FastifyLoggerInstance } from 'fastify';
+import { FastifyBaseLogger } from 'fastify';
 
 import { SALT_ROUNDS } from '../../../../utils/config';
 import { MemberPassword } from './entities/password';
@@ -8,7 +8,7 @@ import { MemberPassword } from './entities/password';
 export const verifyCredentials = (
   memberPassword: MemberPassword,
   body: { email: string; password: string },
-  log: FastifyLoggerInstance,
+  log: FastifyBaseLogger,
 ) => {
   /* the verified variable is used to store the output of bcrypt.compare() 
   bcrypt.compare() allows to compare the provided password with a stored hash. 
@@ -32,6 +32,10 @@ export async function verifyCurrentPassword(memberPassword: MemberPassword, pass
   */
   // if the member already has a password set: return verified
   if (memberPassword?.password) {
+    if (!password) {
+      // TODO
+      throw new Error('password is not defined');
+    }
     const verified = bcrypt
       .compare(password, memberPassword.password)
       .then((res) => res)

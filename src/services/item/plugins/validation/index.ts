@@ -3,8 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { ItemValidationService } from './service';
 import { itemValidation, itemValidationGroup } from './schemas';
+import { ItemValidationService } from './service';
 
 type GraaspPluginValidationOptions = {
   imageClassifierApi?: string;

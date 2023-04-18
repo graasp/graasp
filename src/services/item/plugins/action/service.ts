@@ -120,7 +120,7 @@ export class ActionItemService {
     });
   }
 
-  async postPostAction(request, reply: FastifyReply, item: Item) {
+  async postPostAction(request: FastifyRequest, reply: FastifyReply, item: Item) {
     const { member } = request;
     const action = {
       item,

@@ -115,5 +115,4 @@ export const getInformations = {
   response: {
     200: publishEntry,
   },
-
 };

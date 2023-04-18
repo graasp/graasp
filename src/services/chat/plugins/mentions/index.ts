@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import {  Hostname, MentionStatus } from '@graasp/sdk';
+import { Hostname, MentionStatus } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { ChatMention } from './chatMention';
@@ -47,8 +47,6 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
   // }
 
   // TODO MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
-
-
 
   // send email on mention creation
   mentionService.hooks.setPostHook(

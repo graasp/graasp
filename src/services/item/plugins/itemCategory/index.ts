@@ -26,7 +26,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/categories',
     { schema: getCategories, preHandler: fastify.fetchMemberInSession },
     async ({}) => {
-      return categoryService.getAll(null, buildRepositories());
+      return categoryService.getAll(undefined, buildRepositories());
     },
   );
 
@@ -69,7 +69,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
-
 };
 
 export default plugin;

@@ -1,15 +1,16 @@
 import { Context, Hostname, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
+import { MAIL } from '@graasp/translations';
 
+import type { MailerDecoration } from '../../../../plugins/mailer';
+import { CLIENT_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
-import { ChatMessage } from '../../chatMessage';
-import { MemberCannotAccessMention } from '../../errors';
-import type { MailerDecoration } from '../../../../plugins/mailer';
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../../member/entities/member';
-import { MAIL } from '@graasp/translations';
-import { CLIENT_HOST } from '../../../../utils/config';
+import { buildItemLink } from '../../../utils';
+import { ChatMessage } from '../../chatMessage';
+import { MemberCannotAccessMention } from '../../errors';
 
 export class MentionService {
   hooks = new HookManager();
@@ -25,22 +26,12 @@ export class MentionService {
     item,
     member,
     creator,
-  }:
-    {
-      item: Item;
-      member: Member;
-      creator: Member;
-    }) {
-
-    const host = this.hosts.find((h) => h.name === Context.BUILDER)?.hostname;
-    if (!host) {
-      throw new Error('host is not defined');
-    }
-    const itemLink = buildItemLinkForBuilder({
-      origin: host,
-      itemId: item.id,
-      chatOpen: true,
-    });
+  }: {
+    item: Item;
+    member: Member;
+    creator: Member;
+  }) {
+    const itemLink = buildItemLink(this.hosts, item);
     const lang = member?.extra?.lang as string;
 
     const translated = this.mailer.translate(lang);
@@ -81,14 +72,9 @@ export class MentionService {
     return mentionRepository.getForMember(actor.id);
   }
 
-  async get(
-    actor,
-    repositories: Repositories,
-    mentionId: string,
-    options = { shouldExist: false },
-  ) {
+  async get(actor, repositories: Repositories, mentionId: string) {
     const { mentionRepository } = repositories;
-    const mentionContent = await mentionRepository.get(mentionId, options);
+    const mentionContent = await mentionRepository.get(mentionId);
 
     if (mentionContent.member.id !== actor.id) {
       throw new MemberCannotAccessMention(mentionId);
@@ -101,7 +87,7 @@ export class MentionService {
     const { mentionRepository } = repositories;
 
     // check permission
-    await this.get(actor, repositories, mentionId, { shouldExist: true });
+    await this.get(actor, repositories, mentionId);
 
     return mentionRepository.patch(mentionId, status);
   }
@@ -110,7 +96,7 @@ export class MentionService {
     const { mentionRepository } = repositories;
 
     // check permission
-    await this.get(actor, repositories, mentionId, { shouldExist: true });
+    await this.get(actor, repositories, mentionId);
 
     return mentionRepository.deleteOne(mentionId);
   }

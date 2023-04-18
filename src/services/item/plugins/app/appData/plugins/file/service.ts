@@ -135,7 +135,7 @@ class AppDataFileService {
     return result;
   }
 
-  async deleteOne(actor, repositories: Repositories, appData: AppData) {
+  async deleteOne(actor: Actor, repositories: Repositories, appData: AppData) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type

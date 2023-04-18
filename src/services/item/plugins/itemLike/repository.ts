@@ -13,7 +13,7 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
    * Get items liked by given memberId.
    * @param memberId user's id
    */
-  async getItemsForMember(memberId: string): Promise<Item[]> {
+  async getItemsForMember(memberId: string): Promise<ItemLike[]> {
     const itemLikes = await this.find({
       where: { creator: { id: memberId } },
       relations: { item: true },
@@ -25,7 +25,7 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
    * Get likes for item
    * @param itemId
    */
-  async getForItem(itemId: string): Promise<Item[]> {
+  async getForItem(itemId: string): Promise<ItemLike[]> {
     const itemLikes = await this.find({
       where: { item: { id: itemId } },
       relations: { item: true },

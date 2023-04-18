@@ -1,8 +1,9 @@
-import { PermissionLevel, UUID } from '@graasp/sdk';
+import { AppItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MemberCannotAccess } from '../../../../../utils/errors';
+import { MemberCannotAccess, UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
+import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import ItemService from '../../../service';
 import { AppSetting } from './appSettings';
@@ -115,9 +116,17 @@ export class AppSettingService {
     return appSettingRepository.getForItem(itemId);
   }
 
-  async copyForItem(actor, repositories: Repositories, original: Item, copy: Item) {
+  async copyForItem(
+    actor: Actor,
+    repositories: Repositories,
+    original: AppItemType,
+    copy: AppItemType,
+  ) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
     try {
-      const appSettings = await this.getForItem(actor, repositories, original.id);
+      const appSettings = await this.getForItem(actor.id, repositories, original.id);
       const newAppSettings: AppSetting[] = [];
       for (const appS of appSettings) {
         const copyData = {
@@ -128,7 +137,7 @@ export class AppSettingService {
         };
         const newSetting = await repositories.appSettingRepository.post(
           copy.id,
-          appS.memberId,
+          appS.creator?.id,
           copyData,
         );
         newAppSettings.push(newSetting);

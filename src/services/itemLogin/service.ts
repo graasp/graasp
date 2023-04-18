@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 
-import { ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
+import { ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
@@ -48,10 +48,25 @@ export class ItemLoginService {
     }
 
     const { username, memberId, password } = credentials; // TODO: allow for "empty" username and generate one (anonymous, anonymous+password)
-    const bondMember = username
-      ? await this.loginWithUsername(actor, repositories, itemId, { username, password })
-      : await this.loginWithMemberId(actor, repositories, itemId, { memberId, password });
+    let bondMember: Member | undefined = undefined;
+    if (username) {
+      bondMember = await this.loginWithUsername(actor, repositories, itemId, {
+        username,
+        password,
+      });
+    }
 
+    if (memberId) {
+      bondMember = await this.loginWithMemberId(actor, repositories, itemId, {
+        memberId,
+        password,
+      });
+    }
+
+    if (!bondMember) {
+      // TODO
+      throw new Error();
+    }
     // TODO: mobile ???
     // app client
     // if (m) {
@@ -67,8 +82,8 @@ export class ItemLoginService {
   async loginWithUsername(
     actor: Actor,
     repositories: Repositories,
-    itemId,
-    { username, password },
+    itemId: UUID,
+    { username, password }: { username: string; password?: string },
   ) {
     const { memberRepository, itemLoginRepository, itemRepository, itemLoginSchemaRepository } =
       repositories;
@@ -114,8 +129,8 @@ export class ItemLoginService {
   async loginWithMemberId(
     actor: Actor,
     repositories: Repositories,
-    itemId,
-    { memberId, password },
+    itemId: UUID,
+    { memberId, password }: { memberId: UUID; password?: string },
   ) {
     const { memberRepository, itemRepository, itemLoginRepository, itemLoginSchemaRepository } =
       repositories;

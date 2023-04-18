@@ -24,7 +24,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   }
 
   if (fileItemType === ItemType.S3_FILE) {
-
     if (
       !fileConfigurations?.s3?.s3Region ||
       !fileConfigurations?.s3?.s3Bucket ||

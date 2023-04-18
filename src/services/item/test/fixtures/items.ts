@@ -60,13 +60,21 @@ export const saveItem = async ({
   return ItemRepository.post(item, actor, parentItem);
 };
 
-export const saveItems = async ({ items, parentItem, actor }) => {
+export const saveItems = async ({
+  items,
+  parentItem,
+  actor,
+}: {
+  items: Item[];
+  parentItem: Item;
+  actor: Member;
+}) => {
   for (const i of items) {
     await saveItem({ actor, parentItem, item: i });
   }
 };
 
-export const expectItem = (newItem, correctItem, creator?: Member, parent?: Item) => {
+export const expectItem = (newItem: Item, correctItem: Item, creator?: Member, parent?: Item) => {
   expect(newItem.name).toEqual(correctItem.name);
   expect(newItem.description).toEqual(correctItem.description);
   expect(newItem.extra).toEqual(correctItem.extra);
@@ -82,15 +90,23 @@ export const expectItem = (newItem, correctItem, creator?: Member, parent?: Item
   }
 };
 
-export const expectManyItems = (items, correctItems, creator?: Member, parent?: Item) => {
+export const expectManyItems = (
+  items: Item[],
+  correctItems: Item[],
+  creator?: Member,
+  parent?: Item,
+) => {
   expect(items).toHaveLength(correctItems.length);
 
   items.forEach(({ id }) => {
-    expectItem(
-      items.find(({ id: thisId }) => thisId === id),
-      correctItems.find(({ id: thisId }) => thisId === id),
-      creator,
-      parent,
-    );
+    const item = items.find(({ id: thisId }) => thisId === id);
+    if (!item) {
+      throw new Error('expectManyItems.item is not defined ' + JSON.stringify(item));
+    }
+    const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
+    if (!correctItem) {
+      throw new Error('expectManyItems.correctItem is not defined ' + JSON.stringify(correctItem));
+    }
+    expectItem(item, correctItem, creator, parent);
   });
 };

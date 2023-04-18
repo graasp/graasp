@@ -1,4 +1,5 @@
 import { Context } from '@graasp/sdk';
+
 import { CLIENT_HOSTS, PROTOCOL } from '../../../../utils/config';
 import { Item } from '../../entities/Item';
 

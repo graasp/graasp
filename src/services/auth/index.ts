@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   // cookie based auth
   await fastify.register(fastifySecureSession, {
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
-    cookie: { domain, path: '/', secure: PROD || STAGING },
+    cookie: { domain, path: '/', secure: PROD || STAGING, httpOnly: true },
   });
 
   // captcha

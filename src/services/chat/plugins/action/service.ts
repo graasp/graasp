@@ -1,4 +1,4 @@
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
@@ -20,37 +20,41 @@ export class ActionChatService {
     this.actionService = actionService;
   }
 
-  async postPostMessageAction(request, reply: FastifyReply, message: ChatMessage) {
+  async postPostMessageAction(request: FastifyRequest, reply: FastifyReply, message: ChatMessage) {
     const { member } = request;
     const action = {
       item: message.item,
       type: ChatActionType.Create,
-      extra: { ...request.payload },
+      extra: { ...(request.body as any) },
     };
     await this.actionService.postMany(member, buildRepositories(), request, [action]);
   }
 
-  async postPatchMessageAction(request, reply: FastifyReply, message: ChatMessage) {
+  async postPatchMessageAction(request: FastifyRequest, reply: FastifyReply, message: ChatMessage) {
     const { member } = request;
     const action = {
       item: message.item,
       type: ChatActionType.Update,
-      extra: { ...request.payload, messageId: message.id },
+      extra: { ...(request.body as any), messageId: message.id },
     };
     await this.actionService.postMany(member, buildRepositories(), request, [action]);
   }
 
-  async postDeleteMessageAction(request, reply: FastifyReply, message: ChatMessage) {
+  async postDeleteMessageAction(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    message: ChatMessage,
+  ) {
     const { member } = request;
     const action = {
       item: message.item,
       type: ChatActionType.Delete,
-      extra: { ...request.payload, messageId: message.id },
+      extra: { ...(request.body as any), messageId: message.id },
     };
     await this.actionService.postMany(member, buildRepositories(), request, [action]);
   }
 
-  async postClearMessageAction(request, reply: FastifyReply, itemId: UUID) {
+  async postClearMessageAction(request: FastifyRequest, reply: FastifyReply, itemId: UUID) {
     const { member } = request;
     const action = {
       type: ChatActionType.Clear,

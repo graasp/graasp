@@ -51,7 +51,7 @@ export class Action extends BaseEntity {
   @Column('simple-json', { nullable: false })
   extra: Anything;
 
-  @Column('simple-json', { nullable: true })
+  @Column('simple-json', { nullable: true, default: null })
   geolocation?: geoip.Lookup;
 
   @CreateDateColumn({ name: 'created_at' })

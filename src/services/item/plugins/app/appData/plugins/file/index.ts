@@ -3,11 +3,13 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, IdParam, UUID } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../../../../utils/repositories';
+import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
+import { Actor } from '../../../../../../member/entities/member';
 import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
+import { AppData } from '../../appData';
 import { PreventUpdateAppDataFile } from '../../errors';
 import type { AppDataService } from '../../service';
 import { download, upload } from './schema';
@@ -51,13 +53,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (actor, repositories, appData) => {
+  const deleteHook = async (actor: Actor, repositories: Repositories, appData: AppData) => {
     await appDataFileService.deleteOne(actor, repositories, appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
 
   // prevent patch on app data file
-  const patchPreHook = async (actor, repositories, appData) => {
+  const patchPreHook = async (actor: Actor, repositories: Repositories, appData: AppData) => {
     if (appData.data[fileService.type]) {
       throw new PreventUpdateAppDataFile(appData);
     }

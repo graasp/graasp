@@ -3,9 +3,18 @@ import { PermissionLevel } from '@graasp/sdk';
 import { Item } from '../../../item/entities/Item';
 import { getDummyItem, saveItem } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
+import { ItemMembership } from '../../entities/ItemMembership';
 import { ItemMembershipRepository } from '../../repository';
 
-export const saveMembership = ({ item, member, permission = PermissionLevel.Admin }) => {
+export const saveMembership = ({
+  item,
+  member,
+  permission = PermissionLevel.Admin,
+}: {
+  item: Item;
+  member: Member;
+  permission?: PermissionLevel;
+}) => {
   return ItemMembershipRepository.save({ item, member, permission });
 };
 
@@ -22,7 +31,11 @@ export const saveItemAndMembership = async (options: {
   return { item: newItem, itemMembership: im };
 };
 
-export const expectMembership = (newMembership, correctMembership, creator?: Member) => {
+export const expectMembership = (
+  newMembership: ItemMembership,
+  correctMembership: ItemMembership,
+  creator?: Member,
+) => {
   expect(newMembership.permission).toEqual(correctMembership.permission);
   expect(newMembership.item.id).toContain(correctMembership.item.id);
   if (newMembership.creator && creator) {

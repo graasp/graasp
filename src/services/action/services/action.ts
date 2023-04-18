@@ -45,7 +45,12 @@ export class ActionService {
 
     const geolocation = ip ? getGeolocationIp(ip) : null;
 
-    const completeActions = actions.map((a) => ({ member, geolocation, view, ...a }));
+    const completeActions = actions.map((a) => ({
+      member,
+      geolocation: geolocation ?? undefined,
+      view,
+      ...a,
+    }));
 
     return repositories.actionRepository.postMany(completeActions);
   }

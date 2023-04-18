@@ -4,7 +4,7 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { ItemValidation } from '../entities/ItemValidation';
 
 export const ItemValidationRepository = AppDataSource.getRepository(ItemValidation).extend({
-  async get(id: string): Promise<ItemValidation> {
+  async get(id: string): Promise<ItemValidation | null> {
     return this.findOneBy({ id });
   },
 

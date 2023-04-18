@@ -1,16 +1,47 @@
-import { PermissionLevel } from '@graasp/sdk';
+import { Hostname, PermissionLevel, UUID } from '@graasp/sdk';
+import { MAIL } from '@graasp/translations';
 
+import { MailerDecoration } from '../../plugins/mailer';
 import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
+import { Item } from '../item/entities/Item';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
+import { buildItemLink } from '../utils';
 
 export class ItemMembershipService {
   itemService: ItemService;
+  hosts: Hostname[];
+  mailer: MailerDecoration;
 
-  constructor(itemService: ItemService) {
+  constructor(itemService: ItemService, hosts: Hostname[], mailer: MailerDecoration) {
     this.itemService = itemService;
+    this.hosts = hosts;
+    this.mailer = mailer;
+  }
+
+  async _notifyMember(
+    actor: Member,
+    repositories: Repositories,
+    member: Member,
+    item: Item,
+  ): Promise<void> {
+    const link = buildItemLink(this.hosts, item);
+
+    const lang = member.lang;
+    const t = this.mailer.translate(lang);
+
+    const text = t(MAIL.SHARE_ITEM_TEXT, { itemName: item.name });
+    const html = `
+        ${this.mailer.buildText(text)}
+        ${this.mailer.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
+      `;
+
+    const title = t(MAIL.SHARE_ITEM_TITLE, { itemName: item.name });
+    await this.mailer.sendEmail(title, member.email, link, html).catch((err) => {
+      console.error(err, `mailer failed. shared link: ${link}`);
+    });
   }
 
   async create(
@@ -21,25 +52,29 @@ export class ItemMembershipService {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
+    const { memberRepository, itemMembershipRepository } = repositories;
 
-    const item = await itemRepository.findOneByOrFail({ id: im.itemId });
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, im.itemId, PermissionLevel.Admin);
     const member = await memberRepository.findOneByOrFail({ id: im.memberId });
 
-    return itemMembershipRepository.post({
+    const result = await itemMembershipRepository.post({
       item,
       member,
       permission: im.permission,
       creator: actor,
     });
+
+    await this._notifyMember(actor, repositories, member, item);
+
+    return result;
   }
 
   async get(actor: Actor, repositories: Repositories, id: string) {
-    // TODO: check memberships
     const { itemMembershipRepository } = repositories;
 
     const membership = await itemMembershipRepository.get(id);
+
+    // check rights
     await validatePermission(repositories, PermissionLevel.Read, actor, membership.item);
     return membership;
   }
@@ -75,15 +110,18 @@ export class ItemMembershipService {
     return itemMembershipRepository.getForManyItems(Object.values(items.data));
   }
 
-  async post(actor: Actor, repositories: Repositories, { permission, itemId, memberId }) {
+  async post(
+    actor: Actor,
+    repositories: Repositories,
+    { permission, itemId, memberId }: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
+  ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
     const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
     // check memberships
     const member = await memberRepository.get(memberId);
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     return itemMembershipRepository.post({ item, member, creator: actor, permission });
   }
@@ -91,16 +129,15 @@ export class ItemMembershipService {
   async postMany(
     actor: Actor,
     repositories: Repositories,
-    memberships: { permission; memberId }[],
-    itemId,
+    memberships: { permission: PermissionLevel; memberId: UUID }[],
+    itemId: UUID,
   ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
     const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
     // check memberships
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     return Promise.all(
       memberships.map(async ({ memberId, permission }) => {
@@ -110,15 +147,19 @@ export class ItemMembershipService {
     );
   }
 
-  async patch(actor: Actor, repositories: Repositories, itemMembershipId: string, data) {
+  async patch(
+    actor: Actor,
+    repositories: Repositories,
+    itemMembershipId: string,
+    data: { permission: PermissionLevel },
+  ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const { itemRepository, itemMembershipRepository } = repositories;
+    const { itemMembershipRepository } = repositories;
     // check memberships
     const iM = await itemMembershipRepository.get(itemMembershipId);
-    const item = await itemRepository.get(iM.item.id);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    await validatePermission(repositories, PermissionLevel.Admin, actor, iM.item);
 
     return itemMembershipRepository.patch(itemMembershipId, data);
   }
@@ -133,8 +174,7 @@ export class ItemMembershipService {
       throw new UnauthorizedMember(actor);
     }
     const { itemMembershipRepository } = repositories;
-    // TODO: access item?
-    // TODO: check memberships
+    // check memberships
     const { item } = await itemMembershipRepository.get(itemMembershipId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, item);
 

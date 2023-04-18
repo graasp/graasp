@@ -3,7 +3,7 @@ import { DEFAULT_LANG, UUID } from '@graasp/sdk';
 import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { Actor } from './entities/member';
+import { Actor, Member } from './entities/member';
 
 export class MemberService {
   hooks = new HookManager();
@@ -20,7 +20,12 @@ export class MemberService {
     return memberRepository.getManyByEmail(ids);
   }
 
-  async post(actor: Actor, repositories: Repositories, body, lang = DEFAULT_LANG) {
+  async post(
+    actor: Actor,
+    repositories: Repositories,
+    body: Pick<Member, 'email'>,
+    lang = DEFAULT_LANG,
+  ) {
     // actor may not exist on register
 
     const { memberRepository } = repositories;
@@ -52,7 +57,12 @@ export class MemberService {
     // TODO: refactor
   }
 
-  async patch(actor: Actor, { memberRepository }: Repositories, id: UUID, body) {
+  async patch(
+    actor: Actor,
+    { memberRepository }: Repositories,
+    id: UUID,
+    body: Partial<Pick<Member, 'extra' | 'email' | 'name'>>,
+  ) {
     if (!actor || actor.id !== id) {
       throw new CannotModifyOtherMembers(id);
     }

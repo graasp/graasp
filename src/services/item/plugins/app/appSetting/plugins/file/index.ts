@@ -4,11 +4,13 @@ import { FastifyPluginAsync } from 'fastify';
 import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
+import { Actor } from '../../../../../../member/entities/member';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
 import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
+import { AppSetting } from '../../appSettings';
 import { PreventUpdateAppSettingFile } from '../../errors';
 import type { AppSettingService } from '../../service';
 import { download, upload } from './schema';
@@ -52,15 +54,15 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (actor, repositories, appSetting) => {
+  const deleteHook = async (actor: Actor, repositories: Repositories, appSetting: AppSetting) => {
     await appSettingFileService.deleteOne(actor, repositories, appSetting);
   };
   appSettingService.hooks.setPostHook('delete', deleteHook);
 
   // app setting copy hook
-  const hook = async (actor, repositories: Repositories, newAppSettings) => {
+  const hook = async (actor: Actor, repositories: Repositories, newAppSettings: AppSetting[]) => {
     // copy file only if content is a file
-    const isFileSetting = (a) => a.data[fileService.type];
+    const isFileSetting = (a: AppSetting) => a.data[fileService.type];
     const toCopy = newAppSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(actor, repositories, toCopy);
@@ -69,7 +71,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   appSettingService.hooks.setPostHook('copyMany', hook);
 
   // prevent patch on app setting file
-  const patchPreHook = async (actor, repositories: Repositories, appSetting) => {
+  const patchPreHook = async (actor: Actor, repositories: Repositories, appSetting: AppSetting) => {
     if (appSetting.data[fileService.type]) {
       throw new PreventUpdateAppSettingFile(appSetting);
     }

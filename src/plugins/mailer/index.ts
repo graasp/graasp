@@ -19,12 +19,12 @@ export interface MailerOptions {
 
 export interface MailerDecoration {
   buildButton: (link: string, text: string) => string;
-  buildText: (string) => string;
+  buildText: (str: string) => string;
   sendEmail: (
     subject: string,
     to: string,
     text: string,
-    html?: string,
+    html: string,
     from?: string,
   ) => Promise<void>;
   // TODO: this is i18next's t type
@@ -82,14 +82,13 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   `;
   };
 
-  const buildText = (text) => `<p>${text}</p>`;
+  const buildText = (text: string) => `<p>${text}</p>`;
 
   const translate = (lang: string = DEFAULT_LANG) => {
     i18n.changeLanguage(lang);
     return i18n.t;
   };
 
-  
   // // Notification for publish an item
   // async function sendPublishNotificationEmail(
   //   member: { email: string; name: string },
@@ -143,7 +142,7 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   //   await sendMail(fromEmail, member.email, title, link, html);
   // }
 
-  const decorations:MailerDecoration = {
+  const decorations: MailerDecoration = {
     buildButton,
     buildText,
     sendEmail,

@@ -7,12 +7,14 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import contentDisposition from 'content-disposition';
-import fs from 'fs';
+import fs, { ReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
 
-import { S3FileConfiguration } from '@graasp/sdk';
+import { FastifyReply } from 'fastify';
+
+import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
@@ -46,6 +48,13 @@ export class S3FileRepository implements FileRepository {
     newFilePath,
     filename,
     mimetype,
+  }: {
+    newId?: UUID;
+    memberId: UUID;
+    originalPath: string;
+    newFilePath: string;
+    filename: string;
+    mimetype?: string;
   }): Promise<string> {
     const { s3Bucket: bucket } = this.options;
 
@@ -53,7 +62,7 @@ export class S3FileRepository implements FileRepository {
     // Otherwise S3 cannot deal with 'undefined' values property
     const metadata = Object.fromEntries(
       Object.entries({ item: newId, member: memberId }).filter(([k, v]) => v),
-    );
+    ) as Record<string, string>;
 
     const params: CopyObjectCommandInput = {
       CopySource: `${bucket}/${originalPath}`,
@@ -72,7 +81,13 @@ export class S3FileRepository implements FileRepository {
     return newFilePath;
   }
 
-  async copyFolder({ originalFolderPath, newFolderPath }): Promise<string> {
+  async copyFolder({
+    originalFolderPath,
+    newFolderPath,
+  }: {
+    originalFolderPath: string;
+    newFolderPath: string;
+  }): Promise<string> {
     const { s3Bucket: bucket } = this.options;
 
     const { Contents } = await this.s3Instance.listObjectsV2({
@@ -101,7 +116,7 @@ export class S3FileRepository implements FileRepository {
     return newFolderPath;
   }
 
-  async deleteFile({ filepath }): Promise<void> {
+  async deleteFile({ filepath }: { filepath: string }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
     await this.s3Instance.deleteObject({
       Bucket: bucket,
@@ -110,7 +125,7 @@ export class S3FileRepository implements FileRepository {
   }
 
   // delete all content in a folder
-  async deleteFolder({ folderPath }): Promise<void> {
+  async deleteFolder({ folderPath }: { folderPath: string }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     // get all objects in a key
@@ -136,7 +151,21 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  async downloadFile({ reply, filepath, id, fileStorage, expiration, replyUrl }) {
+  async downloadFile({
+    reply,
+    filepath,
+    id,
+    fileStorage,
+    expiration,
+    replyUrl,
+  }: {
+    reply?: FastifyReply;
+    filepath: string;
+    id: UUID;
+    fileStorage?: string;
+    expiration?: number;
+    replyUrl?: boolean;
+  }) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -181,7 +210,7 @@ export class S3FileRepository implements FileRepository {
 
         // create and return read stream (similar to local file service)
         const file = fs.createReadStream(tmpPath);
-        file.on('close', function (err) {
+        file.on('close', function (err: Error) {
           if (err) {
             console.error(err);
           }
@@ -207,7 +236,18 @@ export class S3FileRepository implements FileRepository {
     return metadata;
   }
 
-  async uploadFile({ fileStream, memberId, filepath, mimetype }): Promise<void> {
+  async uploadFile({
+    fileStream,
+    memberId,
+    filepath,
+    mimetype,
+  }: {
+    fileStream: ReadStream;
+    memberId: string;
+    filepath: string;
+    mimetype?: string;
+    size?: string;
+  }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params: PutObjectCommandInput = {

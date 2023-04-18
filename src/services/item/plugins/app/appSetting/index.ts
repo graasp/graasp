@@ -1,8 +1,9 @@
 import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
-import { IdParam, ItemType } from '@graasp/sdk';
+import { IdParam, Item, ItemType } from '@graasp/sdk';
 
-import { buildRepositories } from '../../../../../utils/repositories';
+import { Repositories, buildRepositories } from '../../../../../utils/repositories';
+import { Actor } from '../../../../member/entities/member';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 import appSettingFilePlugin from './plugins/file';
@@ -21,8 +22,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const appSettingService = new AppSettingService(itemService);
 
   // copy app settings and related files on item copy
-  const hook = async (actor, repositories, { original, copy }) => {
-    if (original.type !== ItemType.APP) return;
+  const hook = async (
+    actor: Actor,
+    repositories: Repositories,
+    { original, copy }: { original: Item; copy: Item },
+  ) => {
+    if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
 
     await appSettingService.copyForItem(actor, repositories, original, copy);
   };

@@ -96,6 +96,9 @@ export const GRAASP_ACTOR = { id: '12345678-1234-1234-1234-123456789012' };
 /**
  * JWT
  */
+if (!process.env.JWT_SECRET) {
+  throw new Error('process.env.JWT_SECRET should be defined');
+}
 export const JWT_SECRET = process.env.JWT_SECRET;
 /** Register token expiration, in minutes */
 export const REGISTER_TOKEN_EXPIRATION_IN_MINUTES = 60;
@@ -104,7 +107,13 @@ export const LOGIN_TOKEN_EXPIRATION_IN_MINUTES = 30;
 
 // Token based auth
 export const TOKEN_BASED_AUTH = process.env.TOKEN_BASED_AUTH === 'true';
+if (!process.env.AUTH_TOKEN_JWT_SECRET) {
+  throw new Error('process.env.AUTH_TOKEN_JWT_SECRET should be defined');
+}
 export const AUTH_TOKEN_JWT_SECRET = process.env.AUTH_TOKEN_JWT_SECRET;
+if (!process.env.REFRESH_TOKEN_JWT_SECRET) {
+  throw new Error('process.env.REFRESH_TOKEN_JWT_SECRET should be defined');
+}
 export const REFRESH_TOKEN_JWT_SECRET = process.env.REFRESH_TOKEN_JWT_SECRET;
 /** Auth token expiration, in minutes */
 export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = process.env.AUTH_TOKEN_EXPIRATION_IN_MINUTES

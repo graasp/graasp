@@ -14,9 +14,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(common);
 
   // get flags
-  fastify.get('/flags', { schema: getFlags, preHandler: fastify.fetchMemberInSession }, async ({ member, log }) => {
-    return iFS.getAllFlags(member, buildRepositories());
-  });
+  fastify.get(
+    '/flags',
+    { schema: getFlags, preHandler: fastify.fetchMemberInSession },
+    async ({ member, log }) => {
+      return iFS.getAllFlags(member, buildRepositories());
+    },
+  );
 
   // create item flag
   fastify.post<{ Params: { itemId: string }; Body: Partial<ItemFlag> }>(

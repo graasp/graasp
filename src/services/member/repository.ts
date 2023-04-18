@@ -1,6 +1,6 @@
 import { In } from 'typeorm';
 
-import { FileItemType } from '@graasp/sdk';
+import { FileItemType, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import { MemberNotFound } from '../../utils/errors';
@@ -73,17 +73,31 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     }, 0);
   },
 
-  async patch(id, body) {
-    const extra = Object.assign({}, body?.extra, body.extra);
+  async patch(id: UUID, body: Partial<Pick<Member, 'extra' | 'email' | 'name'>>) {
+    const newData: Partial<Member> = {};
+
+    if (body.name) {
+      newData.name = body.name;
+    }
+
+    if (body.email) {
+      newData.email = body.email;
+    }
+
+    if (body.extra) {
+      newData.extra = Object.assign({}, body?.extra, body.extra);
+    }
+
+    // TODO: throw if newData is empty
 
     // TODO: check member exists
-    await this.update(id, { name: body.name, email: body.email, extra });
+    await this.update(id, newData);
 
     // todo: optimize?
     return this.get(id);
   },
 
-  async post(data: Partial<Member> & Pick<Member, 'email'>) {
+  async post(data: Partial<Member> & Pick<Member, 'email'>): Promise<Member> {
     const email = data.email.toLowerCase();
     const createdMember = await this.insert({ ...data, email });
 

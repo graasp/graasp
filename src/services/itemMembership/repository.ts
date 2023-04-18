@@ -149,7 +149,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     // TODO: optimize
     // order by array https://stackoverflow.com/questions/866465/order-by-the-in-value-list
     // order by https://stackoverflow.com/questions/17603907/order-by-enum-field-in-mysql
-    const result = memberships?.reduce((highest, m) => {
+    const result = memberships?.reduce((highest: ItemMembership | null, m: ItemMembership) => {
       if (PermissionLevelCompare.gte(m.permission, highest?.permission ?? PermissionLevel.Read)) {
         return m;
       }
@@ -226,10 +226,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     itemMembershipId: string,
     data: { permission: PermissionLevel },
   ): Promise<ItemMembership> {
-    const itemMembership = await this.findOne({
-      where: { id: itemMembershipId },
-      relations: { item: true, member: true },
-    });
+    const itemMembership = await this.get(itemMembershipId);
     // check member's inherited membership
     const { item, member: memberOfMembership } = itemMembership;
 
@@ -251,7 +248,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     // check existing memberships lower in the tree
     const membershipsBelow = await this.getAllBelow(item, memberOfMembership.id);
-    let tasks: Promise<void>[] = [];
+    // TODO: fix type?
+    let tasks: Promise<void | unknown>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>

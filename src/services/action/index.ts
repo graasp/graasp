@@ -10,7 +10,6 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options) => {
-  
   // TODO post action endpoint
 };
 

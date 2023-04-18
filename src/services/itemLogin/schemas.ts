@@ -59,7 +59,6 @@ export const updateLoginSchema = {
   },
 };
 
-
 export const deleteLoginSchema = {
   params: idParam,
   response: {

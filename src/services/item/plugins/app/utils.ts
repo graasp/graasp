@@ -1,6 +1,3 @@
-import path from 'path';
-
-import { PATH_PREFIX } from './constants';
 import { TokenItemIdMismatch } from './errors';
 
 export const checkTargetItemAndTokenItemMatch = (itemId1: string, itemId2: string): void => {
@@ -9,7 +6,21 @@ export const checkTargetItemAndTokenItemMatch = (itemId1: string, itemId2: strin
   }
 };
 
-export const buildFileItemData = ({ name, type, filename, filepath, size, mimetype }) => ({
+export const buildFileItemData = ({
+  name,
+  type,
+  filename,
+  filepath,
+  size,
+  mimetype,
+}: {
+  name: string;
+  type: string;
+  filename: string;
+  filepath: string;
+  size: number;
+  mimetype: string;
+}) => ({
   name,
   type,
   extra: {

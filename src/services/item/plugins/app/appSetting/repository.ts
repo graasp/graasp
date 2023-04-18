@@ -6,11 +6,15 @@ import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { InputAppSetting } from './interfaces/app-setting';
 
 export const AppSettingRepository = AppDataSource.getRepository(AppSetting).extend({
-  async post(itemId: string, memberId: string, body: Partial<InputAppSetting>) {
+  async post(
+    itemId: string,
+    memberId: string | undefined,
+    body: Partial<InputAppSetting>,
+  ): Promise<AppSetting> {
     const appSetting = await this.insert({
       ...body,
       item: { id: itemId },
-      member: { id: memberId },
+      creator: { id: memberId },
     });
 
     // TODO: better solution?

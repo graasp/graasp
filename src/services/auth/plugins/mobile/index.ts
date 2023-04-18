@@ -34,7 +34,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUpMobile);
 
     return db.transaction(async (manager) => {
-      await mobileService.register(null, buildRepositories(manager), body, lang);
+      await mobileService.register(undefined, buildRepositories(manager), body, lang);
       reply.status(StatusCodes.NO_CONTENT);
     });
   });
@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // validate captcha
     await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInMobile);
 
-    await mobileService.login(null, buildRepositories(), body, lang);
+    await mobileService.login(undefined, buildRepositories(), body, lang);
     reply.status(StatusCodes.NO_CONTENT);
   });
 
@@ -80,7 +80,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/auth',
     { schema: mauth },
     async ({ body: { t: token, verifier } }) => {
-      return mobileService.auth(null, buildRepositories(), token, verifier);
+      return mobileService.auth(undefined, buildRepositories(), token, verifier);
     },
   );
 
