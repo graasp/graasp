@@ -1152,16 +1152,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/plugin-etherpad@github:graasp/graasp-plugin-etherpad#22-decorate-service":
-  version: 1.0.1
-  resolution: "@graasp/plugin-etherpad@https://github.com/graasp/graasp-plugin-etherpad.git#commit=b95751a35e96ab91b3b34f284fcc4b31fd96a732"
+"@graasp/plugin-etherpad@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@graasp/plugin-etherpad@npm:1.1.0"
   dependencies:
     "@fastify/cookie": 6.0.0
     "@graasp/etherpad-api": 2.1.1
     http-status-codes: 2.2.0
     luxon: 3.3.0
     uuid: 9.0.0
-  checksum: 30655480be8006909152dac36caa2fc7c20c50d6d36bc149ed2ef0828234bcff03b3578d17958a6859dc927f73a04564fb1ab5c19d211c4892d42d9e298e2d8f
+  checksum: 5eb630456b19c68d73c08f37b0cca144385110b4ea5a6ea00ef9f6095be45b01641a138ba2c70f35a02d89f4fe819cc8866bd3da92bb88f5f45f159e0adf1131
   languageName: node
   linkType: hard
 
@@ -1195,24 +1195,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#142-etherpad-service":
-  version: 0.10.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=326238a489ad8bcde99a21ddf1a94490961f4025"
-  dependencies:
-    "@fastify/secure-session": 5.3.0
-    "@graasp/etherpad-api": 2.1.1
-    aws-sdk: 2.1356.0
-    fastify: 3.29.5
-    fluent-json-schema: 3.1.0
-    immutable: 4.3.0
-    js-cookie: 3.0.1
-    qs: 6.11.1
-    slonik: 28.1.1
-    uuid: 9.0.0
-  checksum: bf46cc74eb9f69aad75afda4af1b0fe72a0e70c7389a6e8ac75cba55e614097e0cc38677a945c8b8ea6840c1fdf0c06e4c27dc217dbc69a98c7966e611997804
-  languageName: node
-  linkType: hard
-
 "@graasp/sdk@github:graasp/graasp-sdk, @graasp/sdk@github:graasp/graasp-sdk.git":
   version: 0.1.0
   resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=3c6bf828279719895489d8237c4a53dfc430b2a8"
@@ -1227,6 +1209,24 @@ __metadata:
     slonik: 28.1.1
     uuid: 8.3.2
   checksum: 71c6aff2c43403915751aa111a83d71d6d8c8737f3441c0843556cee61c8bf0729c199a27c8ca8d137f25cfbfbc53b566b456fec0206c583917fee4d04a79d88
+  languageName: node
+  linkType: hard
+
+"@graasp/sdk@npm:0.11.0":
+  version: 0.11.0
+  resolution: "@graasp/sdk@npm:0.11.0"
+  dependencies:
+    "@fastify/secure-session": 5.3.0
+    "@graasp/etherpad-api": 2.1.1
+    aws-sdk: 2.1356.0
+    fastify: 3.29.5
+    fluent-json-schema: 3.1.0
+    immutable: 4.3.0
+    js-cookie: 3.0.1
+    qs: 6.11.1
+    slonik: 28.1.1
+    uuid: 9.0.0
+  checksum: 72b99bd60190e3d9385c13b9a61bc4f0dbfffdf925bbf994a47805e35ddf6c50de43f8d3539564d1a41298ce6d6792e2caa47ff21a77038ffe7800367786989b
   languageName: node
   linkType: hard
 
@@ -5761,7 +5761,7 @@ __metadata:
     secure-json-parse: 2.4.0
     tmp-promise: 3.0.3
     uuid: 8.3.2
-  checksum: 51e977a08275a4c635a80efe447e4932e373875dae34966ca885b61f5b845dc824f1e41a7a1ec2e6423eda6fe9370701700dd5ae2544aa05a4ec78899b20d7ec
+  checksum: 868688e6ae01b7e777d4a82fbb424bbed2c969ef90da588bcefc0b99a36790fb3995143f5aecd7a8ac3e97376123aed0949ad7bf6620484007574ac5433e278b
   languageName: node
   linkType: hard
 
@@ -5822,9 +5822,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip#39-add-zip-export-import-for-etherpad":
+"graasp-plugin-item-zip@github:graasp/graasp-plugin-item-zip":
   version: 0.1.0
-  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=9a9fbae80e989faf028b3b06c2a1e659319b4b26"
+  resolution: "graasp-plugin-item-zip@https://github.com/graasp/graasp-plugin-item-zip.git#commit=42201b045cdee59b1c503b402aa8e8743210229c"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -5843,7 +5843,7 @@ __metadata:
     sanitize-html: 2.10.0
     slugify: 1.6.5
     stream-promise: 3.2.0
-  checksum: ec00367ad644cb5d4f14aef18b6914ba8753aa90dd34499f1d0f99a0016fb54dbaa7cba3fd1cfb7fc0ed9009058f97e053a7c7c26ba11237a909fd55d230fead
+  checksum: 20a4bfa9d349cfeaf5c80e7284321e50359466d3a794e7ed738e784ef7d9e103c7cb601a2d857a5f45e1272946f20b81e03741e8844adf091bbee8692ae34af9
   languageName: node
   linkType: hard
 
@@ -5947,9 +5947,9 @@ __metadata:
     "@fastify/forwarded": 2.2.0
     "@fastify/helmet": 8.1.0
     "@fastify/secure-session": 4.1.1
-    "@graasp/plugin-etherpad": "github:graasp/graasp-plugin-etherpad#22-decorate-service"
+    "@graasp/plugin-etherpad": 1.1.0
     "@graasp/plugin-websockets": 1.0.0
-    "@graasp/sdk": "github:graasp/graasp-sdk#142-etherpad-service"
+    "@graasp/sdk": 0.11.0
     "@graasp/translations": 1.10.0
     "@sentry/node": 7.44.2
     "@sentry/profiling-node": 0.3.0
@@ -5993,7 +5993,7 @@ __metadata:
     graasp-plugin-item-likes: "github:graasp/graasp-plugin-item-likes"
     graasp-plugin-item-login: "github:graasp/graasp-plugin-item-login"
     graasp-plugin-item-publish: "github:graasp/graasp-plugin-item-publish"
-    graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip#39-add-zip-export-import-for-etherpad"
+    graasp-plugin-item-zip: "github:graasp/graasp-plugin-item-zip"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-plugin-recycle-bin: "github:graasp/graasp-plugin-recycle-bin"
     graasp-plugin-search: "github:graasp/graasp-plugin-search"

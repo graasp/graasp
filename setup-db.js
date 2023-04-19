@@ -1,5 +1,10 @@
 /* eslint-disable */
 
+/**
+ * This script populates the dev database from the github SQL links found in README
+ * Usage: node setup-db.js
+ */
+
 const fs = require('fs/promises');
 const path = require('path');
 const https = require('https');
