@@ -10,7 +10,7 @@ import { ItemRepository } from '../../repository';
 export const getDummyItem = (
   options: {
     name?: string;
-    type?: Item['type'];
+    type?: ItemType;
     path?: string;
     description?: string;
     id?: string;
@@ -19,7 +19,7 @@ export const getDummyItem = (
     parentPath?: string;
     settings?: ItemSettings;
   } = {},
-): Partial<Item> => {
+): Item => {
   const {
     type,
     parentPath,
@@ -35,7 +35,7 @@ export const getDummyItem = (
   let buildPath = path ?? buildPathFromIds(buildId);
   if (parentPath) buildPath = `${parentPath}.${buildPath}`;
 
-  return {
+  return  {
     id: buildId,
     name: name ?? randomHexOf4(),
     description: description ?? 'some description',
@@ -44,7 +44,9 @@ export const getDummyItem = (
     extra: extra ?? ({} as ItemExtra),
     // creator,
     settings,
-  };
+    updatedAt: new Date(),
+    createdAt: new Date(),
+  } as Item; // HACK: Item entity contains much more data
 };
 
 // todo: factor out
@@ -74,7 +76,13 @@ export const saveItems = async ({
   }
 };
 
-export const expectItem = (newItem: Item, correctItem: Item, creator?: Member, parent?: Item) => {
+export const expectItem = (newItem: Partial<Item>|undefined, correctItem: Partial<Item>|undefined, creator?: Member, parent?: Item) => {
+  if (!newItem || !newItem.id) {
+    throw new Error('expectItem.newItem is not defined ' + JSON.stringify(newItem));
+  }
+  if (!correctItem) {
+    throw new Error('expectItem.correctItem is not defined ' + JSON.stringify(correctItem));
+  }
   expect(newItem.name).toEqual(correctItem.name);
   expect(newItem.description).toEqual(correctItem.description);
   expect(newItem.extra).toEqual(correctItem.extra);
@@ -100,13 +108,7 @@ export const expectManyItems = (
 
   items.forEach(({ id }) => {
     const item = items.find(({ id: thisId }) => thisId === id);
-    if (!item) {
-      throw new Error('expectManyItems.item is not defined ' + JSON.stringify(item));
-    }
     const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
-    if (!correctItem) {
-      throw new Error('expectManyItems.correctItem is not defined ' + JSON.stringify(correctItem));
-    }
     expectItem(item, correctItem, creator, parent);
   });
 };

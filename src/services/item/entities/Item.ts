@@ -88,10 +88,6 @@ export class Item extends BaseEntity {
   @Column('simple-json', { nullable: false, default: '{}' })
   settings: ItemSettings;
 
-  // return path
-  // https://github.com/typeorm/typeorm/issues/4232#issuecomment-585162991
-  // @VirtualColumn
-
   @Column('ltree', { unique: true, nullable: false })
   path: string;
 

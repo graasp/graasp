@@ -73,6 +73,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return item;
   },
 
+  /**
+   * Return membership under given item (without self memberships) 
+   * @param item 
+   * @param memberId 
+   * @returns 
+   */
   async getAllBelow(item: Item, memberId?: string): Promise<ItemMembership[]> {
     const query = this.createQueryBuilder('item_membership')
       .andWhere('item_membership.item_path <@ :path', { path: item.path })
@@ -80,7 +86,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     // if member is specified, select only this user
     if (memberId) {
-      query.where('item_membership.member = :id', { id: memberId });
+      query.andWhere('item_membership.member = :id', { id: memberId });
     }
     // otherwise return members' info
     else {

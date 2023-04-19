@@ -53,10 +53,10 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
    */
   createOne(args: {
     name: string;
-    description: string;
-    type: ItemType;
+    description?: string;
+    type?: ItemType;
     extra: ItemExtra;
-    settings: ItemSettings;
+    settings?: ItemSettings;
     creator: Member;
     parent?: Item;
   }): Item {

@@ -33,13 +33,13 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../itemMembership/test/fixtures/memberships';
-import { ItemTagRepository } from '../../itemTag/repository';
 import { Member } from '../../member/entities/member';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ItemRepository } from '../repository';
 import { pathToId } from '../utils';
 import { expectItem, expectManyItems, getDummyItem, saveItem, saveItems } from './fixtures/items';
+import { ItemTagRepository } from '../plugins/itemTag/repository';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

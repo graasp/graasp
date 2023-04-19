@@ -509,7 +509,6 @@ const expected = {
       const [itemPublished] = await db.query(
         `SELECT * FROM item_published WHERE item_path= '${expected.item_path}'`,
       );
-      console.log(itemPublished);
       expect(itemPublished.id).toBeTruthy();
       expect(itemPublished.creator_id).toEqual(itemTag.creator_id);
       expect(itemPublished.created_at).toEqual(itemTag.created_at);
@@ -668,7 +667,6 @@ const expected = {
     expect(ad.created_at.toISOString()).toEqual(expected.created_at);
     // file specific
     if (expected.data?.extra?.s3File) {
-      console.log(ad, expected);
       expect(JSON.parse(ad.data).s3File).toMatchObject(expected.data.extra.s3File);
     } else {
       expect(JSON.parse(ad.data)).toEqual(expected.data);
@@ -693,7 +691,6 @@ const expected = {
     expect(as.updated_at.toISOString()).toEqual(expected.updated_at);
     // file specific
     if (expected.data?.extra?.s3File) {
-      console.log(as, expected);
       expect(JSON.parse(as.data).s3File).toMatchObject(expected.data.extra.s3File);
     } else {
       expect(JSON.parse(as.data)).toEqual(expected.data);

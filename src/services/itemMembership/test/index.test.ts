@@ -13,7 +13,7 @@ import {
   MemberCannotAccess,
   MemberCannotAdminItem,
   ModifyExisting,
-} from '../../../util/graasp-error';
+} from '../../../utils/errors';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
@@ -198,6 +198,8 @@ describe('Membership routes tests', () => {
           item,
           member,
         });
+        const { itemMembership:anotherMembership } = await saveItemAndMembership({ member: actor });
+
 
         const newMembership = {
           permission: PermissionLevel.Write,
@@ -211,15 +213,18 @@ describe('Membership routes tests', () => {
           payload: newMembership,
         });
 
+        expect(response.statusCode).toBe(StatusCodes.OK);
         // check item membership repository contains two memberships
         // the parent one and the new one
 
-        expect(await ItemMembershipRepository.find()).toHaveLength(3);
+        expect(await ItemMembershipRepository.find()).toHaveLength(4);
         // previous membership is deleted
         expect(await ItemMembershipRepository.findOneBy({ id: membership.id })).toBeFalsy();
 
         expect(await ItemMembershipRepository.findOneBy({ id: response.json().id })).toBeTruthy();
-        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        // expect sibling not to be deleted
+        expect(await ItemMembershipRepository.findOneBy({id:anotherMembership.id})).toBeTruthy();
       });
 
       it('Cannot add new membership at same item for same member', async () => {
@@ -380,7 +385,7 @@ describe('Membership routes tests', () => {
                 ...m,
                 item,
                 creator: actor,
-                member: members.find(({ id: thisId }) => thisId === m.memberId),
+                member: members.find(({ id: thisId }) => thisId === m.memberId)!,
               };
               expectMembership(im, correctMembership);
             });

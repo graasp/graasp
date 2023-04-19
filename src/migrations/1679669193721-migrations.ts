@@ -96,7 +96,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
             "permission" character varying(100) NOT NULL,
             "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE,
-            "creator_id" uuid REFERENCES member("id") ON DELETE CASCADE,
+            "creator_id" uuid REFERENCES member("id") ON DELETE SET NULL,
             "member_id" uuid REFERENCES member("id") ON DELETE CASCADE,
             "created_at" TIMESTAMP NOT NULL DEFAULT now(), 
             "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
@@ -106,7 +106,8 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "item_membership" ADD CONSTRAINT "item_membership-item-member" UNIQUE ("item_path", "member_id")',
     );
     await queryRunner.query(
-      'INSERT INTO "item_membership" (id,item_path, member_id, creator_id, permission, created_at, updated_at) SELECT id,item_path, member_id, creator, permission, created_at, updated_at from item_membership_old',
+      `INSERT INTO "item_membership" (id,item_path, member_id, creator_id, permission, created_at, updated_at) 
+      SELECT id,item_path, member_id, creator, permission, created_at, updated_at from item_membership_old`,
     );
 
     // member password
