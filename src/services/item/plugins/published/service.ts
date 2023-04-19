@@ -65,7 +65,7 @@ export class ItemPublishedService {
 
   async post(actor:Actor, repositories:Repositories, itemId: string) {
     if(!actor) {
-      throw new UnauthorizedMember(actor)
+      throw new UnauthorizedMember(actor);
     }
     const { itemPublishedRepository, itemTagRepository } = repositories;
 
@@ -85,7 +85,7 @@ export class ItemPublishedService {
 
   async delete(actor:Actor, repositories:Repositories, itemId: string) {
     if(!actor) {
-      throw new UnauthorizedMember(actor)
+      throw new UnauthorizedMember(actor);
     }
     const { itemPublishedRepository } = repositories;
 

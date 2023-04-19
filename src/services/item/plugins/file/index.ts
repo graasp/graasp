@@ -119,7 +119,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           // necessary to get file size -> can use stream busboy only otherwise
           const files = await request.saveRequestFiles();
           return fileItemService.upload(member, repositories, files, parentId);
-        })
+        });
         // .catch((e) => {
         //   console.error(e);
 
@@ -152,7 +152,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       } = request;
 
       return fileItemService
-        .download(member, buildRepositories(), { reply, itemId, replyUrl })
+        .download(member, buildRepositories(), { reply, itemId, replyUrl });
         // .catch((e) => {
         //   if (e.code) {
         //     throw e;

@@ -96,10 +96,16 @@ export class ItemService {
     const { itemRepository } = repositories;
     const result = await itemRepository.getMany(ids);
 
-    // TODO: check memberships
+    // check memberships
     // remove items if they do not have permissions
     for (const [id, item] of Object.entries(result.data)) {
-      await validatePermission(repositories, PermissionLevel.Read, actor, item);
+      try {
+        await validatePermission(repositories, PermissionLevel.Read, actor, item);
+      }
+      catch(e) {
+        delete result.data[id];
+        result.errors.push(e);
+      }
     }
 
     return result;
