@@ -30,7 +30,7 @@ export class ItemTag extends BaseEntity {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, enum: Object.values(ItemTagType) })
   type: ItemTagType;
 
   @ManyToOne(() => Item, (item) => item.path, {

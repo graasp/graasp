@@ -83,14 +83,14 @@ export class ItemMembershipService {
     const { itemMembershipRepository } = repositories;
     // TODO: optimize? groupby item?
     // check memberships for all diff items
-    const { data, errors } = await itemMembershipRepository.getMany(ids, { throwOnError: true });
+    const { data, errors } = await itemMembershipRepository.getMany(ids);
     await Promise.all(
-      Object.values(data).map(async ({ item }) => {
+      Object.values(data).map(async ({ id, item }) => {
         try {
-          validatePermission(repositories, PermissionLevel.Read, actor, item);
+          await validatePermission(repositories, PermissionLevel.Read, actor, item);
         } catch (e) {
           // if does not have permission, remove data and add error
-          delete data.data[item.id];
+          delete data.data[id];
           errors.push(e);
         }
       }),

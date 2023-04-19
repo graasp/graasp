@@ -7,13 +7,13 @@ import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 
 export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished).extend({
-  async getForItem(item: Item, { shouldExist } = { shouldExist: false }) {
+  async getForItem(item: Item) {
     const entry = await this.findOne({
       where: { item: { id: item.id } },
       relations: { item: true, creator: true },
     });
-    if (shouldExist && !entry) {
-      throw new ItemPublishedNotFound(item);
+    if (!entry) {
+      throw new ItemPublishedNotFound(item.id);
     }
 
     return entry;
@@ -47,7 +47,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   },
 
   async deleteForItem(item: Item) {
-    const entry = await this.getForItem(item, { shouldExist: true });
+    const entry = await this.getForItem(item);
 
     await this.delete(entry.id);
     return entry;

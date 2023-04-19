@@ -165,7 +165,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
   async getMany(
     ids: string[],
-    args: { throwOnError?: boolean },
+    args: { throwOnError?: boolean }={throwOnError:false},
   ): Promise<ResultOf<ItemMembership>> {
     const itemMemberships = await this.find({
       where: { id: In(ids) },

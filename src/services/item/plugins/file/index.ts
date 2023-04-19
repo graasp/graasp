@@ -120,16 +120,16 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           const files = await request.saveRequestFiles();
           return fileItemService.upload(member, repositories, files, parentId);
         })
-        .catch((e) => {
-          console.error(e);
+        // .catch((e) => {
+        //   console.error(e);
 
-          // TODO rollback uploaded file
+        //   // TODO rollback uploaded file
 
-          if (e.code) {
-            throw e;
-          }
-          throw new UploadFileUnexpectedError(e);
-        });
+        //   if (e.code) {
+        //     throw e;
+        //   }
+        //   throw new UploadFileUnexpectedError(e);
+        // });
     },
     // onResponse: async (request, reply) => {
     //   uploadOnResponse?.(request, reply);
@@ -153,12 +153,12 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
       return fileItemService
         .download(member, buildRepositories(), { reply, itemId, replyUrl })
-        .catch((e) => {
-          if (e.code) {
-            throw e;
-          }
-          throw new DownloadFileUnexpectedError(e);
-        });
+        // .catch((e) => {
+        //   if (e.code) {
+        //     throw e;
+        //   }
+        //   throw new DownloadFileUnexpectedError(e);
+        // });
     },
   );
 };

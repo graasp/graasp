@@ -26,7 +26,7 @@ export class UploadFileUnexpectedError extends GraaspFileItemError {
         code: 'GPFERR010',
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         // TODO: change message
-        message: FAILURE_MESSAGES.INVALID_UPLOAD_PARAMETERS,
+        message: FAILURE_MESSAGES.UPLOAD_FILE_UNEXPECTED_ERROR,
       },
       data,
     );
@@ -40,9 +40,10 @@ export class DownloadFileUnexpectedError extends GraaspFileItemError {
         code: 'GPFERR011',
         statusCode: StatusCodes.BAD_REQUEST,
         // TODO: change message
-        message: FAILURE_MESSAGES.UPLOAD_EMPTY_FILE,
+        message: FAILURE_MESSAGES.DOWNLOAD_FILE_UNEXPECTED_ERROR,
       },
       data,
     );
   }
 }
+

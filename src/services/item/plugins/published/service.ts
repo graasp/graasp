@@ -7,10 +7,11 @@ import type { MailerDecoration } from '../../../../plugins/mailer';
 import { resultOfToList } from '../../../../services/utils';
 import { Repositories } from '../../../../utils/repositories';
 import { filterOutHiddenItems } from '../../../authorization';
-import { Member } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { buildPublishedItemLink } from './constants';
+import { UnauthorizedMember } from '../../../../utils/errors';
 
 export class ItemPublishedService {
   private log: FastifyBaseLogger;
@@ -51,7 +52,7 @@ export class ItemPublishedService {
     }
   }
 
-  async get(actor, repositories, itemId: string) {
+  async get(actor:Actor, repositories: Repositories, itemId: string) {
     const { itemPublishedRepository, itemTagRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId);
@@ -62,7 +63,10 @@ export class ItemPublishedService {
     return itemPublishedRepository.getForItem(item);
   }
 
-  async post(actor, repositories, itemId: string) {
+  async post(actor:Actor, repositories:Repositories, itemId: string) {
+    if(!actor) {
+      throw new UnauthorizedMember(actor)
+    }
     const { itemPublishedRepository, itemTagRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
@@ -79,7 +83,10 @@ export class ItemPublishedService {
     return published;
   }
 
-  async delete(actor, repositories, itemId: string) {
+  async delete(actor:Actor, repositories:Repositories, itemId: string) {
+    if(!actor) {
+      throw new UnauthorizedMember(actor)
+    }
     const { itemPublishedRepository } = repositories;
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
@@ -87,13 +94,13 @@ export class ItemPublishedService {
     return itemPublishedRepository.deleteForItem(item);
   }
 
-  async getItemsForMember(actor, repositories, memberId: UUID) {
+  async getItemsForMember(actor:Actor, repositories, memberId: UUID) {
     const { itemPublishedRepository } = repositories;
     return itemPublishedRepository.getItemsForMember(memberId);
   }
 
   // filter out by categories, not defined will return all items
-  async getItemsByCategories(actor, repositories: Repositories, categoryIds?: string[]) {
+  async getItemsByCategories(actor:Actor, repositories: Repositories, categoryIds?: string[]) {
     const { itemPublishedRepository } = repositories;
 
     if (!categoryIds?.length) {
