@@ -263,6 +263,7 @@ export default {
         name: { type: 'string' },
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
+        path: { type: 'string' },
         extra: {
           type: 'object',
           additionalProperties: true,
