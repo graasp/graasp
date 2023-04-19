@@ -1,5 +1,6 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
 import graaspItemEtherpad from '@graasp/plugin-etherpad';
 import {
@@ -154,7 +155,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.addHook('preHandler', fastify.verifyAuthentication);
 
         // H5P plugin must be registered before ZIP
-        fastify.register(graaspItemH5P, {
+        await fastify.register(graaspItemH5P, {
           pathPrefix: H5P_PATH_PREFIX,
           fileItemType: FILE_ITEM_TYPE,
           fileConfigurations: {
@@ -163,7 +164,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           },
         });
 
-        fastify.register(graaspItemEtherpad, {
+        await fastify.register(fp(graaspItemEtherpad), {
           url: ETHERPAD_URL,
           apiKey: ETHERPAD_API_KEY,
           publicUrl: ETHERPAD_PUBLIC_URL,
