@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/graasp/graasp/compare/v0.8.1...v0.9.0) (2023-04-20)
+
+
+### Features
+
+* add etherpad zip import / export ([#374](https://github.com/graasp/graasp/issues/374)) ([ab20c82](https://github.com/graasp/graasp/commit/ab20c82c334c7286bea82fb3c8b123b0008488c1))
+
+
+### Bug Fixes
+
+* allow empty string for replica env var to disable ([#375](https://github.com/graasp/graasp/issues/375)) ([40f1815](https://github.com/graasp/graasp/commit/40f18158a7461c69da5c72b3783fb189eacd2c61))
+
 ## [0.8.1](https://github.com/graasp/graasp/compare/v0.8.0...v0.8.1) (2023-03-28)
 
 
