@@ -198,8 +198,9 @@ describe('Membership routes tests', () => {
           item,
           member,
         });
-        const { itemMembership:anotherMembership } = await saveItemAndMembership({ member: actor });
-
+        const { itemMembership: anotherMembership } = await saveItemAndMembership({
+          member: actor,
+        });
 
         const newMembership = {
           permission: PermissionLevel.Write,
@@ -224,7 +225,7 @@ describe('Membership routes tests', () => {
         expect(await ItemMembershipRepository.findOneBy({ id: response.json().id })).toBeTruthy();
 
         // expect sibling not to be deleted
-        expect(await ItemMembershipRepository.findOneBy({id:anotherMembership.id})).toBeTruthy();
+        expect(await ItemMembershipRepository.findOneBy({ id: anotherMembership.id })).toBeTruthy();
       });
 
       it('Cannot add new membership at same item for same member', async () => {

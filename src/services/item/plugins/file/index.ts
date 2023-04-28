@@ -110,26 +110,25 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       } = request;
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK
       // THEN WE SHOULD MOVE THE TRANSACTION
-      return db
-        .transaction(async (manager) => {
-          const repositories = buildRepositories(manager);
+      return db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
 
-          // const files = request.files();
-          // files are saved in temporary folder in disk, they are removed when the response ends
-          // necessary to get file size -> can use stream busboy only otherwise
-          const files = await request.saveRequestFiles();
-          return fileItemService.upload(member, repositories, files, parentId);
-        });
-        // .catch((e) => {
-        //   console.error(e);
+        // const files = request.files();
+        // files are saved in temporary folder in disk, they are removed when the response ends
+        // necessary to get file size -> can use stream busboy only otherwise
+        const files = await request.saveRequestFiles();
+        return fileItemService.upload(member, repositories, files, parentId);
+      });
+      // .catch((e) => {
+      //   console.error(e);
 
-        //   // TODO rollback uploaded file
+      //   // TODO rollback uploaded file
 
-        //   if (e.code) {
-        //     throw e;
-        //   }
-        //   throw new UploadFileUnexpectedError(e);
-        // });
+      //   if (e.code) {
+      //     throw e;
+      //   }
+      //   throw new UploadFileUnexpectedError(e);
+      // });
     },
     // onResponse: async (request, reply) => {
     //   uploadOnResponse?.(request, reply);
@@ -151,14 +150,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         log,
       } = request;
 
-      return fileItemService
-        .download(member, buildRepositories(), { reply, itemId, replyUrl });
-        // .catch((e) => {
-        //   if (e.code) {
-        //     throw e;
-        //   }
-        //   throw new DownloadFileUnexpectedError(e);
-        // });
+      return fileItemService.download(member, buildRepositories(), { reply, itemId, replyUrl });
+      // .catch((e) => {
+      //   if (e.code) {
+      //     throw e;
+      //   }
+      //   throw new DownloadFileUnexpectedError(e);
+      // });
     },
   );
 };

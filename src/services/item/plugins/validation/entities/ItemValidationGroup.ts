@@ -24,7 +24,7 @@ export class ItemValidationGroup extends BaseEntity {
   item: Item;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: string;
+  createdAt: Date;
 
   @OneToMany(() => ItemValidation, (iv) => iv.itemValidationGroup)
   itemValidations: ItemValidation[];

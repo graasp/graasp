@@ -32,12 +32,14 @@ export const saveItemAndMembership = async (options: {
 };
 
 export const expectMembership = (
-  newMembership:undefined| Pick<ItemMembership, 'permission'|'item'|'member'>&{creator?:Member},
-  correctMembership: undefined|Pick<ItemMembership, 'permission'|'item'|'member'|'creator'>,
+  newMembership:
+    | undefined
+    | (Pick<ItemMembership, 'permission' | 'item' | 'member'> & { creator?: Member }),
+  correctMembership: undefined | Pick<ItemMembership, 'permission' | 'item' | 'member' | 'creator'>,
   creator?: Member,
 ) => {
-  if(!newMembership || !correctMembership) {
-    throw new Error('expectMembership\'s newMembership or correctMembership is undefined');
+  if (!newMembership || !correctMembership) {
+    throw new Error("expectMembership's newMembership or correctMembership is undefined");
   }
   expect(newMembership.permission).toEqual(correctMembership.permission);
   expect(newMembership.item.id).toContain(correctMembership.item.id);

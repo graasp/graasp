@@ -101,8 +101,7 @@ export class ItemService {
     for (const [id, item] of Object.entries(result.data)) {
       try {
         await validatePermission(repositories, PermissionLevel.Read, actor, item);
-      }
-      catch(e) {
+      } catch (e) {
         delete result.data[id];
         result.errors.push(e);
       }

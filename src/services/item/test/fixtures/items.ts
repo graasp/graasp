@@ -35,7 +35,7 @@ export const getDummyItem = (
   let buildPath = path ?? buildPathFromIds(buildId);
   if (parentPath) buildPath = `${parentPath}.${buildPath}`;
 
-  return  {
+  return {
     id: buildId,
     name: name ?? randomHexOf4(),
     description: description ?? 'some description',
@@ -76,7 +76,12 @@ export const saveItems = async ({
   }
 };
 
-export const expectItem = (newItem: Partial<Item>|undefined, correctItem: Partial<Item>|undefined, creator?: Member, parent?: Item) => {
+export const expectItem = (
+  newItem: Partial<Item> | undefined,
+  correctItem: Partial<Item> | undefined,
+  creator?: Member,
+  parent?: Item,
+) => {
   if (!newItem || !newItem.id) {
     throw new Error('expectItem.newItem is not defined ' + JSON.stringify(newItem));
   }

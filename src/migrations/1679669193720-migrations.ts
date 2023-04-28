@@ -5,7 +5,7 @@ export class migrations1679669193720 implements MigrationInterface {
 
   // create all initial tables
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
+    await queryRunner.query("CREATE TYPE \"member_type_enum\" AS ENUM ('individual', 'group')");
     await queryRunner.query(`CREATE TABLE "member" (
           "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
           "name" character varying(300) NOT NULL,
@@ -34,7 +34,7 @@ export class migrations1679669193720 implements MigrationInterface {
     await queryRunner.query('CREATE INDEX "item_creator_idx" ON item("creator")');
     await queryRunner.query(' CREATE INDEX "item_type_idx" ON item("type")');
 
-    await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
+    await queryRunner.query("CREATE TYPE \"permissions_enum\" AS ENUM ('read', 'write', 'admin')");
     await queryRunner.query(`CREATE TABLE "item_membership" (
           "id" uuid UNIQUE NOT NULL DEFAULT uuid_generate_v4(),
           -- delete row if member is deleted
@@ -139,7 +139,7 @@ export class migrations1679669193720 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
 
-    await queryRunner.query('CREATE TYPE "nested_tag_enum" AS ENUM (\'allow\', \'fail\')');
+    await queryRunner.query("CREATE TYPE \"nested_tag_enum\" AS ENUM ('allow', 'fail')");
 
     await queryRunner.query(`CREATE TABLE "tag" (
           "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -351,7 +351,7 @@ export class migrations1679669193720 implements MigrationInterface {
             FOR EACH ROW
             EXECUTE PROCEDURE trigger_set_timestamp()`);
 
-    await queryRunner.query('CREATE TYPE mention_status AS ENUM (\'unread\', \'read\')');
+    await queryRunner.query("CREATE TYPE mention_status AS ENUM ('unread', 'read')");
 
     await queryRunner.query(`CREATE TABLE "chat_mention" 
             (
@@ -388,22 +388,22 @@ export class migrations1679669193720 implements MigrationInterface {
               )`);
 
     await queryRunner.query(
-      'INSERT INTO flag VALUES (\'053d9c35-182e-41d8-9f1f-2f5b443d0fbd\', \'Inappropriate Content\')',
+      "INSERT INTO flag VALUES ('053d9c35-182e-41d8-9f1f-2f5b443d0fbd', 'Inappropriate Content')",
     );
     await queryRunner.query(
-      'INSERT INTO flag VALUES (\'69f652a7-9c04-4346-b963-004e63c478b9\', \'Hate speech\')',
+      "INSERT INTO flag VALUES ('69f652a7-9c04-4346-b963-004e63c478b9', 'Hate speech')",
     );
     await queryRunner.query(
-      'INSERT INTO flag VALUES (\'a1ebd159-416a-404b-b893-02a7064454db\', \'Fraud / Plagiarism\')',
+      "INSERT INTO flag VALUES ('a1ebd159-416a-404b-b893-02a7064454db', 'Fraud / Plagiarism')",
     );
     await queryRunner.query(
-      ' INSERT INTO flag VALUES (\'7463afaa-a74e-4a5c-810c-44f9642c87c5\', \'Spam\')',
+      " INSERT INTO flag VALUES ('7463afaa-a74e-4a5c-810c-44f9642c87c5', 'Spam')",
     );
     await queryRunner.query(
-      ' INSERT INTO flag VALUES (\'ca6d1841-fabc-4444-b86e-b76af41263c1\', \'Targeted Harrasment\')',
+      " INSERT INTO flag VALUES ('ca6d1841-fabc-4444-b86e-b76af41263c1', 'Targeted Harrasment')",
     );
     await queryRunner.query(
-      ' INSERT INTO flag VALUES (\'9baecb0e-3dc3-4191-bbf7-2a89d304600b\', \'False Information\')',
+      " INSERT INTO flag VALUES ('9baecb0e-3dc3-4191-bbf7-2a89d304600b', 'False Information')",
     );
 
     await queryRunner.query(`CREATE TABLE "publisher" (
@@ -430,7 +430,7 @@ export class migrations1679669193720 implements MigrationInterface {
      * the same as above
      */
     await queryRunner.query(
-      'CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')',
+      "CREATE TYPE \"app_data_visibility_enum\" AS ENUM ('member', 'item'); --, 'app', 'publisher')",
     );
 
     await queryRunner.query(`CREATE TABLE "app_data" (

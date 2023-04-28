@@ -46,4 +46,3 @@ export class DownloadFileUnexpectedError extends GraaspFileItemError {
     );
   }
 }
-

@@ -36,7 +36,7 @@ describe('Link Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = ({ type: ItemType.LINK, extra, name:'mylink' });
+      const payload = { type: ItemType.LINK, extra, name: 'mylink' };
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/items',
@@ -52,7 +52,7 @@ describe('Link Item tests', () => {
       });
 
       it('Create successfully', async () => {
-        const payload = ({ type: ItemType.LINK, extra, name:'mylink' });
+        const payload = { type: ItemType.LINK, extra, name: 'mylink' };
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -75,10 +75,11 @@ describe('Link Item tests', () => {
       });
 
       it('Fail to create if type does not match extra', async () => {
-        const payload = ({
+        const payload = {
           type: ItemType.DOCUMENT,
-          extra, name:'mylink'
-        });
+          extra,
+          name: 'mylink',
+        };
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -90,10 +91,11 @@ describe('Link Item tests', () => {
       });
 
       it('Fail to create if payload is invalid', async () => {
-        const payload = ({
+        const payload = {
           type: ItemType.DOCUMENT,
-          extra: { [ItemType.FOLDER]: { url: 'http://myurl.com' } } , name:'mylink'
-        });
+          extra: { [ItemType.FOLDER]: { url: 'http://myurl.com' } },
+          name: 'mylink',
+        };
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -105,10 +107,11 @@ describe('Link Item tests', () => {
       });
 
       it('Fail to create if url of link is not an url', async () => {
-        const payload1 = ({
+        const payload1 = {
           type: ItemType.LINK,
-          extra: { [ItemType.LINK]: { url: 'someurl' } } , name:'mylink'
-        });
+          extra: { [ItemType.LINK]: { url: 'someurl' } },
+          name: 'mylink',
+        };
 
         const response1 = await app.inject({
           method: HttpMethod.POST,
@@ -144,10 +147,10 @@ describe('Link Item tests', () => {
 
       it('Bad Request for link', async () => {
         const { item } = await saveItemAndMembership({
-          item: ({
+          item: {
             type: ItemType.LINK,
             extra,
-          }),
+          },
           member: actor,
         });
         const payload = {
@@ -196,14 +199,15 @@ describe('Link Item tests', () => {
 
       it('Fail to update', async () => {
         const { item } = await saveItemAndMembership({
-          item: ({
+          item: {
             type: ItemType.LINK,
             extra: {
               [ItemType.LINK]: {
                 url: 'http://myurl.com',
               },
-            } as any, name:'mylink'
-          }),
+            } as any,
+            name: 'mylink',
+          },
           member: actor,
         });
         const payload = {

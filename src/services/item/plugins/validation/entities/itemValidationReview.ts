@@ -47,8 +47,8 @@ export class ItemValidationReview extends BaseEntity {
   reason: string;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: string;
+  updatedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: string;
+  createdAt: Date;
 }

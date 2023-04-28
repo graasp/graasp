@@ -74,10 +74,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
 
   /**
-   * Return membership under given item (without self memberships) 
-   * @param item 
-   * @param memberId 
-   * @returns 
+   * Return membership under given item (without self memberships)
+   * @param item
+   * @param memberId
+   * @returns
    */
   async getAllBelow(item: Item, memberId?: string): Promise<ItemMembership[]> {
     const query = this.createQueryBuilder('item_membership')
@@ -171,7 +171,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
   async getMany(
     ids: string[],
-    args: { throwOnError?: boolean }={throwOnError:false},
+    args: { throwOnError?: boolean } = { throwOnError: false },
   ): Promise<ResultOf<ItemMembership>> {
     const itemMemberships = await this.find({
       where: { id: In(ids) },
