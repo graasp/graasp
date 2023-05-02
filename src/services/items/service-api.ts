@@ -43,7 +43,7 @@ import graaspValidationPlugin from 'graasp-plugin-validation';
 
 import {ItemType} from '/workspace/node_modules/@graasp/sdk/dist/constants/itemType';
 import { MeiliSearch } from 'meilisearch';
-
+import searchPlugin  from './search';
 import {
   APPS_JWT_SECRET,
   APPS_PLUGIN,
@@ -296,70 +296,88 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
 
+        await fastify.register(searchPlugin);
         // search plugin
-        await fastify.register(async (instance) => {
+        // await fastify.register(async (instance) => 
+        // {
 
-          //create indexes to store different filesmm
-          const { publish, items } = instance;
-          const { taskManager: publishTaskManager } = publish;
-          const { dbService: itemService } = items;
-          const { taskRunner } = instance;
-          const publishItemTaskName = publishTaskManager.getPublishItemTaskName();
+        //   //create indexes to store different filesmm
+        //   const { publish, items } = instance;
+        //   const { taskManager: publishTaskManager } = publish;
+        //   const { taskManager: itemsTaskManager, dbService: itemService } = items;
+        //   const { taskRunner } = instance;
+        //   const publishItemTaskName = publishTaskManager.getPublishItemTaskName();
+        //   const itemIndex = 'testitem';
           
-          const meilisearchClient = new MeiliSearch({
-            host: 'http://meilisearch:8080',
-            apiKey: '',
-          });
+        //   // itemsTaskManager.get
+          
+        //   const meilisearchClient = new MeiliSearch({
+        //     host: 'http://meilisearch:8080',
+        //     apiKey: '2416ed3f3e8d109faa75f415e2c04ba27eec5da31cbacaaa9bd8832655d1',
+        //   });
 
-          const status = await meilisearchClient.isHealthy();
-          if (status) {
+        //   const status = await meilisearchClient.isHealthy();
+        //   if (status) {
+        //     meilisearchClient.getIndex(itemIndex).catch(() => {
+        //       meilisearchClient.createIndex(itemIndex).then(res => {
+        //         console.log('Create new index:' + itemIndex);
+        //       })
+        //       .catch(err => {
+        //          console.log('Error creating index:' + itemIndex + ' err: ' + err);
+        //       });
+        //     });
+        //   }
 
-            const itemTypes = Object.values(ItemType);
-            itemTypes.forEach(itemType => {
-              console.log(itemType);
-              meilisearchClient.getIndex(itemType).catch(() => {
-                meilisearchClient.createIndex(itemType).then(res => {
-                  console.log('Create new index:' + itemType);
-                })
-                .catch(err => {
-                   console.log('Error creating index:' + itemType + ' err: ' + err);
-                });
-              });
+        //   taskRunner.setTaskPostHookHandler<Item>(
+        //     publishItemTaskName,
+        //     async (item, member, { log, handler }) => {
+
+        //       meilisearchClient.isHealthy().then(() => {
+        //         meilisearchClient.getIndex(itemIndex).catch(err => {
+        //           console.log('Document can not be added: ' + err);
+        //         });
+                
+        //         // const jsonChildItem = JSON.string
+        //         meilisearchClient.index(itemIndex).addDocuments([item]).then(() => {
+        //           console.log('Item added to meilisearch');
+        //         }).catch(err => {
+        //           console.log('There was a problem adding ' + item + 'to meilisearch ' + err);
+        //         });
+
+        //       }).catch(err => {
+        //         console.log('Server is not healthy' + err);
+        //       });
+              
+        //       meilisearchClient.index(itemIndex).updateSearchableAttributes(['name','description']).then(() => {
+        //         console.log('Setting for searchable Attributes has changed');
+        //       }).catch( err => {
+        //         console.log('There was an error changing the configuration of meilisearch db' + err);
+        //       });
+        //       if (item.type == 'folder'){
+        //         (itemService.getDescendants(item, handler)).then(children=>{
+        //           children.forEach(childItem => {
+        //             meilisearchClient.isHealthy().then(() => {
+        //               meilisearchClient.getIndex(itemIndex).catch(err => {
+        //                 console.log('Document can not be added: ' + err);
+        //               });
+                      
+        //               // const jsonChildItem = JSON.string
+        //               meilisearchClient.index(itemIndex).addDocuments([childItem]).then(() => {
+        //                 console.log('Item added to meilisearch');
+        //               }).catch(err => {
+        //                 console.log('There was a problem adding ' + childItem + 'to meilisearch ' + err);
+        //               });
   
-            });
-          }
-
-          taskRunner.setTaskPostHookHandler<Item>(
-            publishItemTaskName,
-            async (item, member, { log, handler }) => {
-              console.log(item);
-              console.log(item);
-
-              (itemService.getDescendants(item, handler)).then(children=>{
-
-                children.forEach(childItem => {
-
-                  meilisearchClient.isHealthy().then(() => {
-                    meilisearchClient.getIndex(childItem.type).catch(err => {
-                      console.log('Document can not be added: ' + err);
-                    });
-                    
-                    // const jsonChildItem = JSON.string
-                    meilisearchClient.index(childItem.type).addDocuments([childItem]).then(() => {
-                      console.log('Item added to meilisearch');
-                    }).catch(err => {
-                      console.log('There was a problem adding ' + childItem + 'to meilisearch ' + err);
-                    });
-
-                  }).catch(err => {
-                    console.log('Server is not healthy' + err);
-                  });
-
-                });
-              });
-            },
-          );
-        });
+        //             }).catch(err => {
+        //               console.log('Server is not healthy' + err);
+        //             });
+  
+        //           });
+        //         });
+        //       }
+        //     },
+        //   );
+        // });
 
         // isolate the core actions using fastify.register
         fastify.register(async function (fastify) {
