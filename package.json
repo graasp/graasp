@@ -60,6 +60,7 @@
     "@fastify/secure-session": "6.0.0",
     "@fastify/static": "6.9.0",
     "@fastify/view": "7.4.1",
+    "@fastify/websocket": "8.0.0",
     "@graasp/sdk": "github:graasp/graasp-sdk#typeorm",
     "@graasp/translations": "github:graasp/graasp-translations#89-email",
     "@sentry/node": "7.44.2",
@@ -81,6 +82,7 @@
     "french-badwords-list": "1.0.6",
     "geoip-lite": "1.4.7",
     "http-status-codes": "2.2.0",
+    "ioredis": "5.3.2",
     "jsonwebtoken": "9.0.0",
     "lodash.groupby": "4.6.0",
     "lodash.uniqby": "4.7.0",
@@ -94,6 +96,7 @@
     "tmp-promise": "3.0.3",
     "typeorm": "0.3.12",
     "uuid": "9.0.0",
+    "ws": "8.13.0",
     "yarn": "1.22.19"
   },
   "devDependencies": {

@@ -19,20 +19,15 @@ services:
       DB_NAME: typeorm
       DB_USERNAME: docker
       DB_PASSWORD: docker
-      DB_HOST: localhost
+      DB_HOST: db
 
     volumes:
       - ..:/workspace:cached
       - ../tmp:/tmp/graasp-file-item-storage
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
-    # Uncomment the next line to use a non-root user for all processes.
-    # user: node
-
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
+    ports:
+      - 3000:3000
 
   db:
     container_name: graasp-postgres
