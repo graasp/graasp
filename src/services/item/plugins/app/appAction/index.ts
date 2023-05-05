@@ -12,6 +12,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const appActionService = new AppActionService();
 
+  // register app action schema
   fastify.addSchema(common);
 
   // endpoints accessible to third parties with Bearer token

@@ -157,7 +157,7 @@ export class ActionItemService {
   async postManyDeleteAction(request: FastifyRequest, reply: FastifyReply, items: Item[]) {
     const { member } = request;
     const actions = items.map((item) => ({
-      item,
+      // cannot include item since is has been deleted
       type: ItemActionType.Delete,
       extra: { itemId: item.id },
     }));

@@ -90,7 +90,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemPublish, {
         // publishedTagId: PUBLISHED_TAG_ID,
         // publicTagId: PUBLIC_TAG_ID,
-        // graaspActor: GRAASP_ACTOR,
         // hostname: CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname,
       });
 

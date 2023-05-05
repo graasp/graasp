@@ -15,7 +15,7 @@ export const saveMembers = async (members: Partial<Member>[]) => {
   return Promise.all(promises);
 };
 
-export const expectMember = (m: Member, validation: Member) => {
+export const expectMember = (m: Member|undefined|null, validation: Partial<Member>&Pick<Member, 'name'|'email'>) => {
   if (!m) {
     throw 'member does not exist';
   }
@@ -28,6 +28,8 @@ export const expectMember = (m: Member, validation: Member) => {
 export const ANNA = { name: 'anna', email: 'anna@email.org' };
 
 export const BOB = { name: 'bob', email: 'bob@email.org', extra: { lang: 'fr' } };
+
+export const CEDRIC = { name: 'cedric', email: 'cedric@email.org', extra: {  } };
 
 export const LOUISA = {
   name: 'louisa',

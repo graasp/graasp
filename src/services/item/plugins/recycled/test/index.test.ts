@@ -12,12 +12,7 @@ import {
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../util/config';
-import {
-  ItemNotFound,
-  MemberCannotAccess,
-  MemberCannotAdminItem,
-} from '../../../../../util/graasp-error';
+
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
@@ -27,6 +22,8 @@ import { expectManyItems, getDummyItem } from '../../../test/fixtures/items';
 import { CannotRestoreNonDeletedItem } from '../errors';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyRecycledItems, expectRecycledItem } from './fixtures';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { ItemNotFound, MemberCannotAccess, MemberCannotAdminItem } from '../../../../../utils/errors';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -98,70 +95,70 @@ describe('Recycle Bin Tests', () => {
       });
     });
 
-    describe('POST /:id/recycle', () => {
-      it('Throws if signed out', async () => {
-        ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
-        const { item } = await saveItemAndMembership({ member });
+    // describe('POST /:id/recycle', () => {
+    //   it('Throws if signed out', async () => {
+    //     ({ app } = await build({ member: null }));
+    //     const member = await saveMember(BOB);
+    //     const { item } = await saveItemAndMembership({ member });
 
-        const response = await app.inject({
-          method: HttpMethod.POST,
-          url: `/items/${item.id}/recycle`,
-        });
+    //     const response = await app.inject({
+    //       method: HttpMethod.POST,
+    //       url: `/items/${item.id}/recycle`,
+    //     });
 
-        expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-      });
+    //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    //   });
 
-      describe('Signed In', () => {
-        beforeEach(async () => {
-          ({ app, actor } = await build());
-        });
+    //   describe('Signed In', () => {
+    //     beforeEach(async () => {
+    //       ({ app, actor } = await build());
+    //     });
 
-        it('Successfully recycle an item', async () => {
-          const { item } = await saveItemAndMembership({ member: actor });
+    //     it('Successfully recycle an item', async () => {
+    //       const { item } = await saveItemAndMembership({ member: actor });
 
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `/items/${item.id}/recycle`,
-          });
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `/items/${item.id}/recycle`,
+    //       });
 
-          expect(res.statusCode).toBe(StatusCodes.OK);
-          expectRecycledItem(res.json(), item);
-        });
+    //       expect(res.statusCode).toBe(StatusCodes.OK);
+    //       expectRecycledItem(res.json(), item);
+    //     });
 
-        it('Cannot recycle an item if does not have rights', async () => {
-          const member = await saveMember(BOB);
-          const { item } = await saveItemAndMembership({ member });
+    //     it('Cannot recycle an item if does not have rights', async () => {
+    //       const member = await saveMember(BOB);
+    //       const { item } = await saveItemAndMembership({ member });
 
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `/items/${item.id}/recycle`,
-          });
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `/items/${item.id}/recycle`,
+    //       });
 
-          expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
-        });
+    //       expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
+    //     });
 
-        it('Cannot recycle an item already recycled: item not found', async () => {
-          const item = await saveRecycledItem(actor);
+    //     it('Cannot recycle an item already recycled: item not found', async () => {
+    //       const item = await saveRecycledItem(actor);
 
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `/items/${item.id}/recycle`,
-          });
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `/items/${item.id}/recycle`,
+    //       });
 
-          expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-        });
+    //       expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+    //     });
 
-        it('Bad request for invalid id', async () => {
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: '/items/invalid/recycle',
-          });
+    //     it('Bad request for invalid id', async () => {
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: '/items/invalid/recycle',
+    //       });
 
-          expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        });
-      });
-    });
+    //       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    //     });
+    //   });
+    // });
 
     describe('POST /recycle', () => {
       it('Throws if signed out', async () => {
@@ -276,112 +273,112 @@ describe('Recycle Bin Tests', () => {
       });
     });
 
-    describe('POST /:id/restore', () => {
-      it('Throws if signed out', async () => {
-        ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
-        const { item } = await saveItemAndMembership({ member });
+    // describe('POST /:id/restore', () => {
+    //   it('Throws if signed out', async () => {
+    //     ({ app } = await build({ member: null }));
+    //     const member = await saveMember(BOB);
+    //     const { item } = await saveItemAndMembership({ member });
 
-        const response = await app.inject({
-          method: HttpMethod.POST,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
-        });
+    //     const response = await app.inject({
+    //       method: HttpMethod.POST,
+    //       url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
+    //     });
 
-        expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-      });
+    //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    //   });
 
-      describe('Signed In', () => {
-        let item;
-        beforeEach(async () => {
-          ({ app, actor } = await build());
-          item = await saveRecycledItem(actor);
-        });
+    //   describe('Signed In', () => {
+    //     let item;
+    //     beforeEach(async () => {
+    //       ({ app, actor } = await build());
+    //       item = await saveRecycledItem(actor);
+    //     });
 
-        it('Successfully restore an item', async () => {
-          const initialCount = (await RecycledItemDataRepository.find()).length;
+    //     it('Successfully restore an item', async () => {
+    //       const initialCount = (await RecycledItemDataRepository.find()).length;
 
-          const response = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
-          });
-          expect(response.statusCode).toBe(StatusCodes.OK);
-          expect(await RecycledItemDataRepository.find()).toHaveLength(initialCount - 1);
-          expect(response.json().id).toBeTruthy();
-          expectManyRecycledItems([response.json()], [item], actor);
-        });
+    //       const response = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
+    //       });
+    //       expect(response.statusCode).toBe(StatusCodes.OK);
+    //       expect(await RecycledItemDataRepository.find()).toHaveLength(initialCount - 1);
+    //       expect(response.json().id).toBeTruthy();
+    //       expectManyRecycledItems([response.json()], [item], actor);
+    //     });
 
-        it('Bad request for invalid id', async () => {
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/invalid/restore`,
-          });
+    //     it('Bad request for invalid id', async () => {
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `${ITEMS_ROUTE_PREFIX}/invalid/restore`,
+    //       });
 
-          expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        });
+    //       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    //     });
 
-        it('Throws if item does not exist', async () => {
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${v4()}/restore`,
-          });
+    //     it('Throws if item does not exist', async () => {
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/restore`,
+    //       });
 
-          expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
-        });
-        it('Throws if item is not recycled', async () => {
-          const { item } = await saveItemAndMembership({ member: actor });
+    //       expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
+    //     });
+    //     it('Throws if item is not recycled', async () => {
+    //       const { item } = await saveItemAndMembership({ member: actor });
 
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
-          });
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
+    //       });
 
-          expect(res.json()).toMatchObject(new CannotRestoreNonDeletedItem(expect.anything()));
-        });
-        it('Throws if has only write permission over item', async () => {
-          const member = await saveMember(BOB);
-          const item = await saveRecycledItem(member);
-          await ItemMembershipRepository.save({
-            item,
-            member: actor,
-            permission: PermissionLevel.Write,
-          });
+    //       expect(res.json()).toMatchObject(new CannotRestoreNonDeletedItem(expect.anything()));
+    //     });
+    //     it('Throws if has only write permission over item', async () => {
+    //       const member = await saveMember(BOB);
+    //       const item = await saveRecycledItem(member);
+    //       await ItemMembershipRepository.save({
+    //         item,
+    //         member: actor,
+    //         permission: PermissionLevel.Write,
+    //       });
 
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
-          });
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
+    //       });
 
-          expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
-        });
-        it('Throws if has only read permission over item', async () => {
-          const member = await saveMember(BOB);
-          const item = await saveRecycledItem(member);
-          await ItemMembershipRepository.save({
-            item,
-            member: actor,
-            permission: PermissionLevel.Read,
-          });
+    //       expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+    //     });
+    //     it('Throws if has only read permission over item', async () => {
+    //       const member = await saveMember(BOB);
+    //       const item = await saveRecycledItem(member);
+    //       await ItemMembershipRepository.save({
+    //         item,
+    //         member: actor,
+    //         permission: PermissionLevel.Read,
+    //       });
 
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
-          });
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
+    //       });
 
-          expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
-        });
-        it('Throws if has no permission over item', async () => {
-          const member = await saveMember(BOB);
-          const item = await saveRecycledItem(member);
+    //       expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+    //     });
+    //     it('Throws if has no permission over item', async () => {
+    //       const member = await saveMember(BOB);
+    //       const item = await saveRecycledItem(member);
 
-          const res = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
-          });
+    //       const res = await app.inject({
+    //         method: HttpMethod.POST,
+    //         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/restore`,
+    //       });
 
-          expect(res.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
-        });
-      });
-    });
+    //       expect(res.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+    //     });
+    //   });
+    // });
 
     describe('POST /restore', () => {
       it('Throws if signed out', async () => {

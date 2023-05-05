@@ -3,8 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 import { HttpMethod, ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../util/config';
-import { MemberCannotAdminItem } from '../../../util/graasp-error';
 import { Item } from '../../item/entities/Item';
 import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
 import {
@@ -16,9 +14,11 @@ import { BOB, expectMember, saveMember } from '../../member/test/fixtures/member
 import { ItemLogin } from '../entities/itemLogin';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
 import ItemLoginRepository from '../repositories/itemLogin';
-import { encryptPassword, generateRandomEmail } from '../util/aux';
-import { ValidMemberSession } from '../util/graasp-item-login-error';
 import { USERNAME_LOGIN } from './fixtures';
+import { encryptPassword, generateRandomEmail } from '../utils';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { ValidMemberSession } from '../errors';
+import {  MemberCannotAdminItem } from '../../../utils/errors';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -65,7 +65,7 @@ describe('Item Login Tests', () => {
     app.close();
   });
 
-  describe('GET /:id/login-schema', () => {
+  describe('GET /:id/login-schema-type', () => {
     it('Get item login if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
@@ -74,11 +74,28 @@ describe('Item Login Tests', () => {
 
       const res = await app.inject({
         method: HttpMethod.GET,
-        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
       });
 
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.body).toEqual(itemLoginSchema.type);
+    });
+
+  });
+
+  describe('GET /:id/login-schema', () => {
+    it('Throws if signed out', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember(BOB);
+      ({ item } = await saveItemAndMembership({ member }));
+      await saveItemLogin({ item });
+
+      const res = await app.inject({
+        method: HttpMethod.GET,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
 
     describe('Signed In', () => {
@@ -92,13 +109,27 @@ describe('Item Login Tests', () => {
       });
 
       it('Successfully get item login', async () => {
+        await saveMembership({item,  member:actor, permission:PermissionLevel.Admin });
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.body).toEqual(itemLoginSchema.type);
+        const result = res.json();
+        expect(result.id).toEqual(itemLoginSchema.id);
+        expect(result.type).toEqual(itemLoginSchema.type);
+        expect(result.item.id).toEqual(itemLoginSchema.item.id);
+      });
+
+      it('Throws if has Write permission', async () => {
+        await saveMembership({item,  member:actor, permission:PermissionLevel.Write });
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        });
+
+        expect(res.json()).toMatchObject(new MemberCannotAdminItem(item.id));
       });
 
       it('Throws if id is not valid', async () => {
@@ -512,11 +543,9 @@ describe('Item Login Tests', () => {
 
       it('Cannot change item login schema if have write permission', async () => {
         // save new item with wanted memberships
-        const member = await saveMember(BOB);
-        const { item: item1 } = await saveItemAndMembership({ member });
-        await saveMembership({ item: item1, member: actor, permission: PermissionLevel.Write });
+        const { item: item1 } = await saveItemAndMembership({ member:actor,  permission: PermissionLevel.Write });
 
-        await saveItemLogin({ item });
+        await saveItemLogin({ item:item1 });
 
         const res = await app.inject({
           method: HttpMethod.PUT,

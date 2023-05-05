@@ -1,12 +1,15 @@
 // we need this file used in classic json schema
 // duplicate of shared fluent-schema.ts
 
+export const  UUID_REGEX = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
+
+
 export default {
   $id: 'http://graasp.org/',
   definitions: {
     uuid: {
       type: 'string',
-      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+      pattern: UUID_REGEX,
     },
     itemPath: {
       type: 'string',

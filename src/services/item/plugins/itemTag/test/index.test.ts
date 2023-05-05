@@ -12,14 +12,14 @@ import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTag } from '../ItemTag';
 import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
 import { ItemTagRepository } from '../repository';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 const saveTagsForItem = async ({ item, creator }) => {
   const itemTags: ItemTag[] = [];
   itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.HIDDEN }));
-  itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.PUBLIC }));
 
   return itemTags;
 };
@@ -131,7 +131,7 @@ describe('Tags', () => {
           url: `${ITEMS_ROUTE_PREFIX}/tags?id=${item.id}`,
         });
 
-        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(response.json().errors[0]).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
 
       it('Returns successfully if item is public', async () => {
@@ -199,36 +199,38 @@ describe('Tags', () => {
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      it('Throws if one item does not exist', async () => {
+      it('Returns error if one item does not exist', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
-        await saveTagsForItem({ item, creator: actor });
+        const tags = await saveTagsForItem({ item, creator: actor });
         const ids = [item.id, v4()];
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         });
-
-        expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
+        expectItemTags( res.json().data[ids[0]], tags);
+        expect(res.json().errors[0]).toMatchObject(new ItemNotFound(expect.anything()));
       });
 
-      it('Throws if does not have rights on one item', async () => {
+      it('Return errors if does not have rights on one item', async () => {
         const { item: item1 } = await saveItemAndMembership({ member: actor });
         const member = await saveMember(BOB);
         const { item: item2 } = await saveItemAndMembership({ member });
+        await saveTagsForItem({ item:item2, creator: member });
         const ids = [item1.id, item2.id];
 
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect( res.json().data[ids[1]]).toBeUndefined();
+        expect(res.json().errors[0]).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
     });
   });
 
   describe('POST /:itemId/tags', () => {
     let item;
-    const type = ItemTagType.PUBLIC;
+    const type = ItemTagType.HIDDEN;
 
     describe('Signed Out', () => {
       let member;
@@ -340,7 +342,7 @@ describe('Tags', () => {
         ({ app, actor } = await build());
         ({ item } = await saveItemAndMembership({ member: actor }));
         itemTags = await saveTagsForItem({ item, creator: actor });
-        toDelete = itemTags[1];
+        toDelete = itemTags[0];
       });
 
       it('Delete a tag of an item (and descendants)', async () => {

@@ -16,7 +16,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     db,
   } = fastify;
 
-  // TODO: still necessary??
+  // register app setting schema
   fastify.addSchema(common);
 
   const appSettingService = new AppSettingService(itemService);

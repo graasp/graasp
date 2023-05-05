@@ -219,7 +219,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .where('creator.id = :id', { id: memberId })
-      .andWhere("im.permission = 'admin'")
+      .andWhere('im.permission = \'admin\'')
       .andWhere('nlevel(item.path) = 1')
       .orderBy('item.updatedAt', 'DESC')
       .getMany();

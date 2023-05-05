@@ -2,22 +2,22 @@ import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
 import { HttpMethod, ItemType } from '@graasp/sdk';
-
-import build, { clearDatabase } from '../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../util/config';
-import { ItemNotFound, MemberCannotAccess } from '../../util/graasp-error';
-import { getDummyItem } from '../item/test/fixtures/items';
-import { saveItemAndMembership } from '../itemMembership/test/fixtures/memberships';
-import { Member } from '../member/entities/member';
-import MemberRepository from '../member/repository';
-import { MEMBERS, saveMember } from '../member/test/fixtures/members';
-import { ChatMessage } from './chatMessage';
-import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
-import { ChatMentionRepository } from './plugins/mentions/repository';
-import { ChatMessageRepository } from './repository';
+import { ChatMessage } from '../chatMessage';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
+import { BOB, CEDRIC, MEMBERS, saveMember } from '../../member/test/fixtures/members';
+import { Member } from '../../member/entities/member';
+import { ChatMessageRepository } from '../repository';
+import build, { clearDatabase } from '../../../../test/app';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
+import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
+import MemberRepository from '../../member/repository';
+import { ChatMentionRepository } from '../plugins/mentions/repository';
+import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
+import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+jest.mock('../../../plugins/datasource');
 
 export const saveItemWithChatMessages = async (creator) => {
   const { item } = await saveItemAndMembership({ member: creator });
@@ -57,17 +57,16 @@ describe('Chat Message tests', () => {
     it('Throws for private item', async () => {
       ({ app } = await build({ member: null }));
 
-      const item = getDummyItem({ type: ItemType.FOLDER });
+      const member = await saveMember(BOB);
+      const item = await saveItem({item:getDummyItem(), actor:member});
 
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
-
-    // TODO: public?
 
     describe('Signed In', () => {
       beforeEach(async () => {
@@ -122,6 +121,27 @@ describe('Chat Message tests', () => {
         expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
     });
+
+    describe('Public', ()=>{
+
+      it('Get successfully', async () => {
+        ({ app,  } = await build({member:null}));
+        const member = await saveMember(CEDRIC);
+        const { item, chatMessages } = await saveItemWithChatMessages(member);
+        await setItemPublic(item, member);
+        
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        // check response value
+        expectChatMessages(response.json(), chatMessages);
+
+        // TODO: check schema of return values
+      });
+    });
   });
 
   describe('POST /item-id/chat', () => {
@@ -140,8 +160,6 @@ describe('Chat Message tests', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
 
-    // TODO: public?
-
     describe('Signed In', () => {
       let item;
 
@@ -159,6 +177,7 @@ describe('Chat Message tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
           payload,
         });
+
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 

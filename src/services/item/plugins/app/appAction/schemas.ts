@@ -1,3 +1,5 @@
+import { UUID_REGEX } from '../../../../../schemas/global';
+
 export default {
   $id: 'http://graasp.org/apps/app-action/',
   definitions: {
@@ -68,9 +70,26 @@ const getForMany = {
   },
   response: {
     200: {
-      type: 'array',
-      items: { $ref: 'http://graasp.org/apps/app-action/#/definitions/appAction' },
-    },
+      type: 'object',
+      additionalProperties:false,
+      properties: {
+        data: {
+          type: 'object',
+          patternProperties: {
+            [UUID_REGEX]: {
+              type: 'array',
+              items:{ $ref: 'http://graasp.org/apps/app-action/#/definitions/appAction' },
+            },
+          },
+        },
+        errors: {
+          type: 'array',
+          items: {
+            $ref: 'http://graasp.org/#/definitions/error',
+          },
+        },
+      },
+      },
   },
 };
 

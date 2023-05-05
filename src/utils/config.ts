@@ -89,10 +89,7 @@ if (!process.env.SECURE_SESSION_SECRET_KEY) {
   throw new Error('SECURE_SESSION_SECRET_KEY is not defined');
 }
 export const SECURE_SESSION_SECRET_KEY = process.env.SECURE_SESSION_SECRET_KEY;
-/**
- * Graasp's "internal" actor
- */
-export const GRAASP_ACTOR = { id: '12345678-1234-1234-1234-123456789012' };
+
 /**
  * JWT
  */

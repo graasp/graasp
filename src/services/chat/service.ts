@@ -6,21 +6,23 @@ import { validatePermission } from '../authorization';
 import { ChatMessage } from './chatMessage';
 import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
+import ItemService from '../item/service';
 
 export class ChatMessageService {
   hooks = new HookManager();
   mentionService: MentionService;
+  itemService: ItemService;
 
-  constructor(mentionService: MentionService) {
+  constructor(itemService: ItemService, mentionService: MentionService) {
+    this.itemService= itemService;
     this.mentionService = mentionService;
   }
 
   async getForItem(actor, repositories: Repositories, itemId: string): Promise<ChatMessage[]> {
-    const { chatMessageRepository, itemRepository } = repositories;
-    const item = await itemRepository.get(itemId);
-
-    // check rights
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const { chatMessageRepository,  } = repositories;
+    
+    // check permission
+    await this.itemService.get(actor, repositories, itemId);
 
     const messages = await chatMessageRepository.getForItem(itemId);
     return messages;
@@ -32,14 +34,13 @@ export class ChatMessageService {
     itemId: string,
     data: { body: string; mentions: string[] },
   ) {
-    const { chatMessageRepository, itemRepository } = repositories;
-    const item = await itemRepository.get(itemId);
-
-    // check rights
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const { chatMessageRepository } = repositories;
+    
+    // check permission
+    await this.itemService.get(actor, repositories, itemId);
 
     const message = await chatMessageRepository.postOne({
-      chatId: itemId,
+      itemId,
       creator: actor,
       body: data.body,
     });
@@ -58,16 +59,15 @@ export class ChatMessageService {
     messageId: string,
     message: { body: string },
   ) {
-    const { chatMessageRepository, itemRepository } = repositories;
-    const item = await itemRepository.get(itemId);
-
-    // check rights
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const { chatMessageRepository } = repositories;
+    
+    // check permission
+    await this.itemService.get(actor, repositories, itemId);
 
     // check right to make sure that the user is editing his own message
     const messageContent = await chatMessageRepository.get(messageId, { shouldExist: true });
 
-    if (messageContent.creator.id !== actor.id) {
+    if (messageContent.creator?.id !== actor.id) {
       throw new MemberCannotEditMessage(messageId);
     }
 
@@ -75,14 +75,13 @@ export class ChatMessageService {
   }
 
   async deleteOne(actor, repositories: Repositories, itemId: string, messageId: string) {
-    const { chatMessageRepository, itemRepository } = repositories;
-    const item = await itemRepository.get(itemId);
+    const { chatMessageRepository,  } = repositories;
 
-    // check rights
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    // check permission
+    await this.itemService.get(actor, repositories, itemId);
 
     const messageContent = await chatMessageRepository.get(messageId, { shouldExist: true });
-    if (messageContent.creator.id !== actor.id) {
+    if (messageContent.creator?.id !== actor.id) {
       throw new MemberCannotDeleteMessage(messageId);
     }
 
@@ -94,12 +93,11 @@ export class ChatMessageService {
   }
 
   async clear(actor, repositories: Repositories, itemId: string) {
-    const { chatMessageRepository, itemRepository } = repositories;
+    const { chatMessageRepository } = repositories;
 
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
-    const item = await itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     await chatMessageRepository.clearChat(itemId);
   }

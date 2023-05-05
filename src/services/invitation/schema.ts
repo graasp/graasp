@@ -1,4 +1,4 @@
-const UUID_REGEX = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
+import { UUID_REGEX } from '../../schemas/global';
 
 export default {
   $id: 'http://graasp.org/invitations/',

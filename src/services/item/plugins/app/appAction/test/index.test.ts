@@ -4,12 +4,12 @@ import { v4 } from 'uuid';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../../util/config';
 import { Member } from '../../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { setUp } from '../../test/fixtures';
 import { AppActionRepository } from '../repository';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
@@ -221,8 +221,8 @@ describe('App Actions Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        Object.entries(response.json()).forEach(([itemId, appActionss]) => {
-          expectAppAction(appActionss, appActionsArray[itemId]);
+        Object.entries(response.json().data).forEach(([itemId, appActions]) => {
+          expectAppAction(appActions, appActionsArray[itemId]);
         });
       });
 

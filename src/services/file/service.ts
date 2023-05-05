@@ -17,6 +17,7 @@ import {
   UploadEmptyFileError,
   UploadFileInvalidParameterError,
 } from './utils/errors';
+import { UploadFileUnexpectedError } from '../item/plugins/file/utils/errors';
 
 class FileService {
   repository: FileRepository;
@@ -78,10 +79,11 @@ class FileService {
         mimetype,
       });
     } catch (e) {
-      // TODO rollback uploaded file
+      // rollback uploaded file
+      this.delete(member, {filepath}).catch(e=>console.error(e));
 
       console.error(e);
-      throw e;
+      throw new UploadFileUnexpectedError({mimetype, memberId:member.id, size});
     }
 
     return data;

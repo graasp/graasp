@@ -19,8 +19,9 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
    * Retrieves a message by its id
    * @param id Id of the message to retrieve
    */
-  async get(id: string, options = { shouldExist: false }): Promise<ChatMessage> {
-    const chatMessage = await this.findOne({ where: { id }, relations: { creator: true } });
+  async get(id: string, args? : {shouldExist?:boolean, relations?: {creator?:boolean, item?:boolean}}): Promise<ChatMessage> {
+    const options =  { shouldExist: false, relations :{creator:true},...args,};
+    const chatMessage = await this.findOne({ where: { id }, relations:options.relations });
 
     if (options.shouldExist && !chatMessage) {
       throw new ChatMessageNotFound(id);
@@ -33,10 +34,11 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
    * Adds a message to the given chat
    * @param message Message
    */
-  async postOne(message: { chatId: string; creator: string; body: string }): Promise<ChatMessage> {
-    const entry = this.create({ ...message, item: message.chatId });
-    await this.insert(entry);
-    return entry;
+  async postOne(message: { itemId: string; creator: string; body: string }): Promise<ChatMessage> {
+    const entry = this.create({ ...message, item: message.itemId });
+    const created = await this.insert(entry);
+    // TODO: optimize
+    return this.get(created.identifiers[0].id, {relations:{item:true}});
   },
 
   /**
@@ -47,7 +49,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
   async patchOne(id: string, data: Partial<ChatMessage>): Promise<ChatMessage> {
     await this.update(id, data);
     // TODO: optimize
-    return this.get(id);
+    return this.get(id, {relations:{item:true}});
   },
 
   /**
@@ -62,7 +64,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
    * Remove all messages for the given chat
    * @param chatId Id of chat
    */
-  async clearChat(chatId: string): Promise<ChatMessage[]> {
-    return this.delete({ item: { id: chatId } });
+  async clearChat(itemId: string): Promise<ChatMessage[]> {
+    return this.delete({ item: { id: itemId } });
   },
 });

@@ -20,7 +20,7 @@ export class RecycledItemData extends BaseEntity {
 
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'SET NULL',
-    nullable: false,
+    nullable: true,
   })
   @JoinColumn({ name: 'creator_id' })
   creator: Member;

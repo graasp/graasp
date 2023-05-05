@@ -22,7 +22,7 @@ export class ItemTagService {
     const { data, errors } = await this.itemService.getMany(actor, repositories, itemIds);
     const items = Object.values(data);
     const itemTags = await itemTagRepository.getForManyItems(items);
-    return { data: itemTags.data, errors: [...itemTags.errors, errors] };
+    return { data: itemTags.data, errors: [...itemTags.errors, ...errors] };
   }
 
   async has(actor: Actor, repositories: Repositories, id: string, tagType: ItemTagType) {

@@ -168,7 +168,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
     //     instance.addHook('preHandler', instance.verifyAuthentication);
     //     instance.register(graaspPluginActions, {
     //       shouldSave: SAVE_ACTIONS,
-    //       graaspActor: GRAASP_ACTOR,
     //       hosts: CLIENT_HOSTS,
     //       fileItemType: FILE_ITEM_TYPE,
     //       fileConfigurations: {

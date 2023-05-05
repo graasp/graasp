@@ -4,12 +4,12 @@ import { v4 } from 'uuid';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../../util/config';
 import { Member } from '../../../../../member/entities/member';
 import { Item } from '../../../../entities/Item';
 import { AppDataVisibility } from '../../interfaces/app-details';
 import { setUp } from '../../test/fixtures';
 import { AppDataRepository } from '../repository';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
@@ -201,7 +201,7 @@ describe('Apps Data Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        Object.entries(response.json()).forEach(([itemId, appDatas]) => {
+        Object.entries(response.json().data).forEach(([itemId, appDatas]) => {
           expectAppData(appDatas, appDataArray[itemId]);
         });
       });
@@ -448,7 +448,7 @@ describe('Apps Data Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(response.body).toEqual(chosenAppData.id);
 
-        const appSetting = await AppDataRepository.get(chosenAppData.id);
+        const appSetting = await AppDataRepository.findOneBy({id:chosenAppData.id});
         expect(appSetting).toBeFalsy();
       });
 

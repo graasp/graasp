@@ -12,7 +12,7 @@ import { ChatMentionRepository } from '../plugins/mentions/repository';
 import { saveItemWithChatMessages } from './chatMessage.test';
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+jest.mock('../../../plugins/datasource');
 
 // create item, chat messages from another member and members
 // as well as mentions of actor

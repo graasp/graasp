@@ -45,13 +45,16 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE item_validation_review_status RENAME TO item_validation_review_status_old',
     );
     await queryRunner.query('ALTER TABLE member RENAME TO member_old');
+   
+    // don't use role and role_permission (admin)
+    await queryRunner.query('DROP TABLE IF EXISTS role_permission');
+    await queryRunner.query('ALTER TABLE tag RENAME TO tag_old');
+
     // don't use permission (admin?)
     await queryRunner.query('DROP TABLE IF EXISTS permission');
     await queryRunner.query('ALTER TABLE publisher RENAME TO publisher_old');
     await queryRunner.query('ALTER TABLE recycled_item RENAME TO recycled_item_old');
-    // don't use role and role_permission (admin)
-    await queryRunner.query('DROP TABLE IF EXISTS role_permission');
-    await queryRunner.query('ALTER TABLE tag RENAME TO tag_old');
+
     // don't use member_plan and plan
     await queryRunner.query('DROP TABLE IF EXISTS member_plan');
     await queryRunner.query('DROP TABLE IF EXISTS plan');
@@ -124,7 +127,7 @@ export class Migrations1679669193721 implements MigrationInterface {
 
     // recycled item
     await queryRunner.query(
-      'CREATE TABLE "recycled_item_data" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid NOT NULL, "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "recycled-item-data" UNIQUE ("item_path"), CONSTRAINT "PK_d6f781e5054e98174c35c87c225" PRIMARY KEY ("id"))',
+      'CREATE TABLE "recycled_item_data" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid, "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "recycled-item-data" UNIQUE ("item_path"), CONSTRAINT "PK_d6f781e5054e98174c35c87c225" PRIMARY KEY ("id"))',
     );
     await queryRunner.query(
       'INSERT INTO "recycled_item_data" (id, creator_id, item_path, created_at) SELECT id, creator, item_path, created_at FROM recycled_item_old',
@@ -256,7 +259,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 `);
     // update downloaded file shape
     await queryRunner.query(
-      "UPDATE \"app_data\" SET data = data::jsonb->'extra' WHERE data::jsonb->'extra' is not null",
+      'UPDATE "app_data" SET data = data::jsonb->\'extra\' WHERE data::jsonb->\'extra\' is not null',
     );
 
     await queryRunner.query(`CREATE TABLE "app_action" (
@@ -287,7 +290,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                         `);
     // update downloaded file shape
     await queryRunner.query(
-      "UPDATE \"app_setting\" SET data = data::jsonb->'extra' WHERE data::jsonb->'extra' is not null",
+      'UPDATE "app_setting" SET data = data::jsonb->\'extra\' WHERE data::jsonb->\'extra\' is not null',
     );
 
     await queryRunner.query(`CREATE TABLE "invitation" (
@@ -1069,13 +1072,13 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION',
     );
 
-    await queryRunner.query("CREATE TYPE \"member_type_enum\" AS ENUM ('individual', 'group')");
-    await queryRunner.query("CREATE TYPE \"permissions_enum\" AS ENUM ('read', 'write', 'admin')");
+    await queryRunner.query('CREATE TYPE "member_type_enum" AS ENUM (\'individual\', \'group\')');
+    await queryRunner.query('CREATE TYPE "permissions_enum" AS ENUM (\'read\', \'write\', \'admin\')');
 
-    await queryRunner.query("CREATE TYPE \"nested_tag_enum\" AS ENUM ('allow', 'fail')");
-    await queryRunner.query("CREATE TYPE mention_status AS ENUM ('unread', 'read')");
+    await queryRunner.query('CREATE TYPE "nested_tag_enum" AS ENUM (\'allow\', \'fail\')');
+    await queryRunner.query('CREATE TYPE mention_status AS ENUM (\'unread\', \'read\')');
     await queryRunner.query(
-      "CREATE TYPE \"app_data_visibility_enum\" AS ENUM ('member', 'item'); --, 'app', 'publisher')",
+      'CREATE TYPE "app_data_visibility_enum" AS ENUM (\'member\', \'item\'); --, \'app\', \'publisher\')',
     );
 
     // -- CREATE everything
@@ -1450,7 +1453,7 @@ export class Migrations1679669193721 implements MigrationInterface {
                 SELECT id,item_id, creator_id, created_at, updated_at, member_id,type,visibility::text::app_data_visibility_enum,data::jsonb FROM app_data
                 `);
     await queryRunner.query(
-      "UPDATE \"app_data_old\" SET data = to_json('{ \"extra\": '::text||(data)||' }'::text) WHERE data::jsonb->'s3File' is not null",
+      'UPDATE "app_data_old" SET data = to_json(\'{ "extra": \'::text||(data)||\' }\'::text) WHERE data::jsonb->\'s3File\' is not null',
     );
 
     await queryRunner.query(`CREATE TABLE "app_action_old" (
@@ -1486,12 +1489,12 @@ export class Migrations1679669193721 implements MigrationInterface {
                         `);
 
     await queryRunner.query(
-      "UPDATE \"app_setting_old\" SET data = to_json('{ \"extra\": '::text||(data)||' }'::text) WHERE data::jsonb->'s3File' is not null",
+      'UPDATE "app_setting_old" SET data = to_json(\'{ "extra": \'::text||(data)||\' }\'::text) WHERE data::jsonb->\'s3File\' is not null',
     );
 
     // update downloaded file shape
     await queryRunner.query(
-      "UPDATE \"app_setting\" SET data = data::jsonb->'extra' WHERE data::jsonb->'extra' is not null",
+      'UPDATE "app_setting" SET data = data::jsonb->\'extra\' WHERE data::jsonb->\'extra\' is not null',
     );
 
     await queryRunner.query(`CREATE TABLE item_like_old (

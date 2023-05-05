@@ -104,10 +104,10 @@ export class ItemMembershipService {
 
     const { itemMembershipRepository } = repositories;
 
-    // TODO: handle errors
     const items = await this.itemService.getMany(actor, repositories, itemIds);
 
-    return itemMembershipRepository.getForManyItems(Object.values(items.data));
+    const result=await itemMembershipRepository.getForManyItems(Object.values(items.data));
+  return {data:result.data, errors:[...items.errors, ...result.errors]};
   }
 
   async post(

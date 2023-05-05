@@ -25,7 +25,7 @@ export class SearchService {
     }
 
     if (name) {
-      query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
+      query.andWhere('LOWER(item.name) LIKE \'%\' || :name || \'%\'', {
         name: name.toLowerCase().trim(),
       });
     }
@@ -42,7 +42,7 @@ export class SearchService {
     }
 
     if (creator) {
-      query.andWhere("LOWER(member.name) LIKE '%' || :creator || '%'", {
+      query.andWhere('LOWER(member.name) LIKE \'%\' || :creator || \'%\'', {
         creator: creator.toLowerCase().trim(),
       });
     }

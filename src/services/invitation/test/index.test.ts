@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { In } from 'typeorm';
-
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import fetch from 'node-fetch';
+import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
@@ -13,9 +13,17 @@ import { Member } from '../../member/entities/member';
 import { BOB, saveMember } from '../../member/test/fixtures/members';
 import { Invitation } from '../invitation';
 import { InvitationRepository } from '../repository';
+import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+
+// mock captcha
+// bug: cannot reuse mockCaptchaValidation
+jest.mock('node-fetch');
+(fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+  return { json: async () => ({ success: true, action:RecaptchaAction.SignUp, score: 1 }) } as any;
+});
 
 const mockEmail = (app) => {
   return jest.spyOn(app.mailer, 'sendEmail').mockImplementation(async () => {
@@ -434,6 +442,7 @@ describe('Invitation Plugin', () => {
     beforeEach(async () => {
       ({ app, actor } = await build());
       ({ item, invitations } = await saveInvitations({ member: actor }));
+      
     });
 
     it('Remove invitation on member registration and create memberships successfully', async () => {
@@ -443,7 +452,7 @@ describe('Invitation Plugin', () => {
       await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: { email, name: 'some-name' },
+        payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
 
       // invitations should be removed and memberships created
@@ -470,7 +479,7 @@ describe('Invitation Plugin', () => {
       await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: { email, name: 'some-name' },
+        payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
 
       await new Promise((done) => {

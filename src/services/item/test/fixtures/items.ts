@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ItemSettings, ItemType, buildPathFromIds } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
+import {setItemPublic} from '../../plugins/itemTag/test/fixtures';
 import { randomHexOf4 } from '../../../utils';
 import { Item, ItemExtra } from '../../entities/Item';
 import { ItemRepository } from '../../repository';
@@ -62,6 +63,20 @@ export const saveItem = async ({
   return ItemRepository.post(item, actor, parentItem);
 };
 
+export const savePublicItem = async ({
+  item,
+  parentItem,
+  actor,
+}: {
+  parentItem?: Item;
+  actor: Member;
+  item: Partial<Item>;
+}) => {
+  const newItem = await ItemRepository.post(item, actor, parentItem);
+  await setItemPublic(newItem, actor);
+  return newItem;
+};
+
 export const saveItems = async ({
   items,
   parentItem,
@@ -77,8 +92,8 @@ export const saveItems = async ({
 };
 
 export const expectItem = (
-  newItem: Partial<Item> | undefined,
-  correctItem: Partial<Item> | undefined,
+  newItem: Partial<Item> | undefined | null,
+  correctItem: Partial<Item> | undefined| null,
   creator?: Member,
   parent?: Item,
 ) => {

@@ -4,10 +4,10 @@ import jwt from 'jsonwebtoken';
 import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { JWT_SECRET } from '../../../../util/config';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA, mockCaptchaValidation } from '../captcha/test/utils';
+import { JWT_SECRET } from '../../../../utils/config';
 
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');

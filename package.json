@@ -17,7 +17,7 @@
     "serve": "NODE_PATH=./dist node dist/server.js",
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
-    "test": "DISABLE_LOGS=true jest --forceExit --verbose",
+    "test": "DISABLE_LOGS=true jest --forceExit --verbose --coverage",
     "test:watch": "yarn test --watchAll",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
@@ -88,13 +88,13 @@
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
+    "pg": "8.10.0",
     "qs": "6.11.1",
     "sharp": "0.31.3",
     "striptags": "3.2.0",
     "tmp-promise": "3.0.3",
-    "typeorm": "0.3.12",
-    "uuid": "9.0.0",
-    "yarn": "1.22.19"
+    "typeorm": "0.3.15",
+    "uuid": "9.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "17.5.0",

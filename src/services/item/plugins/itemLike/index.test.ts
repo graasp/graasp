@@ -2,20 +2,21 @@ import { StatusCodes } from 'http-status-codes';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../test/app';
-import { MemberCannotAccess } from '../../util/graasp-error';
-import { Item } from '../item/entities/Item';
-import { expectManyItems } from '../item/test/fixtures/items';
-import { saveItemAndMembership } from '../itemMembership/test/fixtures/memberships';
 import { setItemPublic } from '../itemTag/test/fixtures';
-import { Member } from '../member/entities/member';
-import { BOB, saveMember } from '../member/test/fixtures/members';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 import { ItemLikeRepository } from './repository';
+import { Member } from '../../../member/entities/member';
+import { Item } from '../../entities/Item';
+import { BOB, saveMember } from '../../../member/test/fixtures/members';
+import build, { clearDatabase } from '../../../../../test/app';
+import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
+import { MemberCannotAccess } from '../../../../utils/errors';
+import { expectManyItems, saveItem } from '../../test/fixtures/items';
+import { v4 } from 'uuid';
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+jest.mock('../../../../plugins/datasource');
 
 export const expectItemLike = (newLike: ItemLike, correctLike: ItemLike, creator?: Member) => {
   expect(newLike.item.id).toEqual(correctLike.item.id);
@@ -64,14 +65,13 @@ describe('Item Like', () => {
     app.close();
   });
 
-  describe('GET /:memberId/liked', () => {
+  describe('GET /liked', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
 
       const response = await app.inject({
-        method: 'GET',
-        url: `/items/${member.id}/liked`,
+        method: HttpMethod.GET,
+        url: '/items/liked',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -89,22 +89,16 @@ describe('Item Like', () => {
         await saveItemLikes(items, actor);
 
         const res = await app.inject({
-          method: 'GET',
-          url: `/items/${actor.id}/liked`,
+          method: HttpMethod.GET,
+          url: '/items/liked',
         });
+
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         // check returned items
-        expectManyItems(res.json(), items, actor);
+        expectManyItems(res.json().map(({item})=>item), items, actor);
       });
 
-      it('Bad request if id is invalid', async () => {
-        const res = await app.inject({
-          method: 'GET',
-          url: '/items/invalid-id/liked',
-        });
-        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-      });
     });
   });
 
@@ -117,34 +111,39 @@ describe('Item Like', () => {
       });
 
       it('Throws if signed out', async () => {
-        ({ app } = await build({ member: null }));
-
+const {item} = await saveItemAndMembership({member});
         const response = await app.inject({
-          method: 'GET',
-          url: `/items/${member.id}/likes`,
+          method: HttpMethod.GET,
+          url: `/items/${item.id}/likes`,
         });
 
-        expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+        expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
     });
 
-    // TODO: public - enable when prehook is removed
-    //   it('Get like entries for public item', async () => {
+    describe('Public', () => {
+      let member;
+      beforeEach(async () => {
+        ({ app } = await build({ member: null }));
+        member = await saveMember(BOB);
+      });
 
-    //     const {item} = await saveItemAndMembership({member});
-    //     await setItemPublic(item, member);
-    //     const likes= await saveItemLikes([item], member);
-    //     const res = await app.inject({
-    //       method: 'GET',
-    //       url: `/items/${item.id}/likes`,
-    //     });
-    //     expect(res.statusCode).toBe(StatusCodes.OK);
+      it('Get like entries for public item', async () => {
 
-    //     // get item like from repository with item (not returned in request)
-    //     const fullItemLike = await getFullItemLike(res.json().id);
-    //     expectItemLike(fullItemLike!,likes[0]);
-    //   });
-    // });
+        const {item} = await saveItemAndMembership({member});
+        await setItemPublic(item, member);
+        const likes= await saveItemLikes([item], member);
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${item.id}/likes`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        // get item like from repository with item (not returned in request)
+        const fullItemLike = await getFullItemLike(res.json().id);
+        expectItemLike(fullItemLike!,likes[0]);
+      });
+    });
 
     describe('Signed In', () => {
       beforeEach(async () => {
@@ -157,7 +156,7 @@ describe('Item Like', () => {
         const items = [item1, item2];
         const likes = await saveItemLikes(items, actor);
         const res = await app.inject({
-          method: 'GET',
+          method: HttpMethod.GET,
           url: `/items/${item1.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -173,7 +172,7 @@ describe('Item Like', () => {
         await saveItemLikes([item], member);
 
         const res = await app.inject({
-          method: 'GET',
+          method: HttpMethod.GET,
           url: `/items/${item.id}/likes`,
         });
         expect(res.json()).toEqual(new MemberCannotAccess(item.id));
@@ -185,7 +184,7 @@ describe('Item Like', () => {
         await setItemPublic(item, member);
         const likes = await saveItemLikes([item], member);
         const res = await app.inject({
-          method: 'GET',
+          method: HttpMethod.GET,
           url: `/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -198,7 +197,7 @@ describe('Item Like', () => {
 
     it('Bad request if id is invalid', async () => {
       const res = await app.inject({
-        method: 'GET',
+        method: HttpMethod.GET,
         url: '/items/invalid-id/likes',
       });
       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);

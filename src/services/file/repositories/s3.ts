@@ -19,6 +19,7 @@ import { S3FileConfiguration, UUID } from '@graasp/sdk';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import { S3FileNotFound } from '../utils/errors';
+import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../item/plugins/file/utils/errors';
 
 export class S3FileRepository implements FileRepository {
   private readonly options: S3FileConfiguration;
@@ -226,7 +227,7 @@ export class S3FileRepository implements FileRepository {
         throw new S3FileNotFound({ filepath, id });
       }
 
-      throw e;
+      throw new DownloadFileUnexpectedError({filepath, id});
     }
   }
 
@@ -262,7 +263,6 @@ export class S3FileRepository implements FileRepository {
     };
 
     // TO CHANGE: use signed url ? but difficult to set up callback
-
     await this.s3Instance.putObject(params);
   }
 }

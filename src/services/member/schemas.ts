@@ -1,6 +1,6 @@
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import { UUID_REGEX } from '../../schemas/global';
 
-const UUID_REGEX = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
 
 const EMAIL_REGEX = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$';
 
@@ -86,7 +86,6 @@ const getMany = {
   response: {
     200: {
       type: 'object',
-      // additionalProperties:true,
       properties: {
         data: {
           type: 'object',

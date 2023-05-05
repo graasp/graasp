@@ -17,7 +17,20 @@ const loginSchemaType = S.string().enum(Object.values(ItemLoginSchemaType));
 export const loginSchema = S.object()
   .additionalProperties(false)
   .prop('type', loginSchemaType)
-  .prop('item', item);
+  .prop('item', item)
+  .prop('createdAt', S.string())
+  .prop('updatedAt', S.string())
+  .prop('id', uuid);
+
+  // tood: refactor out -> use uniform schema
+export const member = S.object()
+.additionalProperties(false)
+.prop('email', S.string())
+.prop('name', S.string())
+.prop('createdAt', S.string())
+.prop('updatedAt', S.string())
+.prop('id', uuid);
+
 
 export const login = {
   params: idParam,
@@ -25,7 +38,7 @@ export const login = {
   body: credentials,
   response: {
     // TODO: use member schema
-    // '2xx': memberSchemas.member,
+    '2xx': member,
     '4xx': error,
     '5xx': error,
   },
