@@ -97,12 +97,12 @@ class MultiInstanceChannelsBroker {
     wsChannels: WebSocketChannels,
     redisParams: {
       config: RedisOptions;
-      notifChannel: string;
+      channelName: string;
     },
     log?: FastifyBaseLogger,
   ) {
     this.wsChannels = wsChannels;
-    this.notifChannel = redisParams.notifChannel;
+    this.notifChannel = redisParams.channelName;
     this.sub = createRedisClientInstance(redisParams.config, log);
     this.pub = createRedisClientInstance(redisParams.config, log);
 

@@ -131,14 +131,12 @@ describe('internal state', () => {
       };
       clientSend(t.client!, request);
 
-      // eslint-disable-next-line jest/no-standalone-expect
       expect(await ack).toStrictEqual({
         realm: Websocket.Realms.Notif,
         type: Websocket.ServerMessageTypes.Response,
         status: Websocket.ResponseStatuses.Success,
         request,
       });
-      // eslint-disable-next-line jest/no-standalone-expect
       expect(t.server!._debug_websocketsChannels.channels.get('foo/a')?.subscribers.size).toEqual(
         1,
       );

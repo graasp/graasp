@@ -7,12 +7,12 @@
  * in a fastify server plugin with @fastify/websocket
  */
 import { RedisOptions } from 'ioredis';
-import util from 'util';
 
 import fws from '@fastify/websocket';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { InvalidSession } from '../../utils/errors';
 import { AjvMessageSerializer } from './message-serializer';
 import { MultiInstanceChannelsBroker } from './multi-instance';
 import { WebSocketChannels } from './ws-channels';
@@ -22,53 +22,37 @@ import { WebsocketService } from './ws-service';
  * Type definition for plugin options
  */
 interface WebsocketsPluginOptions {
-  prefix?: string;
-  redis?: {
-    config?: RedisOptions;
-    channelName?: string;
+  prefix: string;
+  redis: {
+    config: RedisOptions;
+    channelName: string;
   };
-}
-
-/**
- * Helper function to destructure options into useful config params
- */
-function destructureOptions(options: WebsocketsPluginOptions) {
-  const prefix = options.prefix ?? '/ws';
-  const redis = {
-    config: {
-      ...options.redis?.config,
-      port: options.redis?.config?.port,
-      host: options.redis?.config?.host,
-      password: options.redis?.config?.password,
-    },
-    notifChannel: options.redis?.channelName,
-  };
-  return { prefix, redis };
 }
 
 /**
  * Helper function to log boot message after plugin initialization
  */
-function logBootMessage(log: FastifyBaseLogger, config: WebsocketsPluginOptions) {
-  // don't log password
-  const publicRedisConfig = { ...config.redis, password: undefined };
-  delete publicRedisConfig.config?.password;
+function logBootMessage(log: FastifyBaseLogger, options: WebsocketsPluginOptions) {
+  const { redis, ...rest } = options;
+  const { config, channelName } = redis;
 
-  const prettyRedisConfig = util.inspect(publicRedisConfig, {
-    breakLength: Infinity,
-  });
+  const loggedOptions = {
+    ...rest,
+    redis: {
+      // don't log password
+      ...config,
+      password: undefined,
+      channelName,
+    },
+  };
+  delete loggedOptions.redis.password;
 
-  log.info(
-    `graasp-plugin-websockets: plugin booted with prefix ${config.prefix} and Redis parameters ${prettyRedisConfig}`,
-  );
+  log.info('graasp-plugin-websockets: plugin booted with options', loggedOptions);
 }
 
 const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, options) => {
   // destructure passed fastify instance
   const { log, verifyAuthentication } = fastify;
-
-  // configure plugin
-  const config = destructureOptions(options);
 
   // must await this register call: otherwise decorated properties on `fastify` are not available
   await fastify.register(fws, {
@@ -89,7 +73,7 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
   const wsChannels = new WebSocketChannels(fastify.websocketServer, serdes.serialize, log);
 
   // create multi-instance channels broker
-  const wsMultiBroker = new MultiInstanceChannelsBroker(wsChannels, config.redis, log);
+  const wsMultiBroker = new MultiInstanceChannelsBroker(wsChannels, options.redis, log);
 
   // create websockets service
   const wsService = new WebsocketService(wsChannels, wsMultiBroker, serdes.parse, log);
@@ -107,11 +91,15 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
     fastify.addHook('preHandler', verifyAuthentication);
 
     // handle incoming requests
-    fastify.get(config.prefix, { websocket: true }, (conn, req) => {
+    fastify.get(options.prefix, { websocket: true }, (conn, req) => {
       // raw websocket client
       const client = conn.socket;
       // member from valid session
       const { member } = req;
+
+      if (!member) {
+        throw new InvalidSession();
+      }
 
       wsChannels.clientRegister(client);
 
@@ -132,7 +120,7 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
     done();
   });
 
-  logBootMessage(log, config);
+  logBootMessage(log, options);
 };
 
 export default fp(plugin, {
