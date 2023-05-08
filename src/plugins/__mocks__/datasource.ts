@@ -37,7 +37,7 @@ export const AppDataSource = new DataSource({
   port: 5432,
   username: 'docker',
   password: 'docker',
-  database: 'docker',
+  database: 'typeorm',
   // IMPORTANT: this ensure we don't use the same table as the prod/dev one
   // does not work for test since migrations are based on 'public'
   schema: DB_TEST_SCHEMA,
