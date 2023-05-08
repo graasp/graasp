@@ -67,9 +67,9 @@ export class MentionService {
     return results;
   }
 
-  async getForMember(actor, repositories: Repositories) {
+  async getForMember(member: Member, repositories: Repositories) {
     const { mentionRepository } = repositories;
-    return mentionRepository.getForMember(actor.id);
+    return mentionRepository.getForMember(member.id);
   }
 
   async get(actor, repositories: Repositories, mentionId: string) {

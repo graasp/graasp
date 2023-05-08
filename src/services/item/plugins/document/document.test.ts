@@ -6,6 +6,7 @@ import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
 import { expectItem, getDummyItem } from '../../test/fixtures/items';
 
@@ -122,7 +123,8 @@ describe('Document Item tests', () => {
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const { item } = await saveItemAndMembership({ member: actor });
+      const member = await saveMember(BOB);
+      const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.PATCH,
@@ -216,7 +218,8 @@ describe('Document Item tests', () => {
   describe('PATCH many /items', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const { item } = await saveItemAndMembership({ member: actor });
+      const member = await saveMember(BOB);
+      const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.PATCH,

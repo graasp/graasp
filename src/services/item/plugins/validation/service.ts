@@ -15,6 +15,7 @@ import {
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
+import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { IMAGE_FILE_EXTENSIONS } from './constants';
@@ -40,7 +41,11 @@ export class ItemValidationService {
     this.imageClassifierApi = imageClassifierApi;
   }
 
-  async getLastItemValidationGroupForItem(actor, repositories: Repositories, itemId: string) {
+  async getLastItemValidationGroupForItem(
+    actor: Member,
+    repositories: Repositories,
+    itemId: string,
+  ) {
     const { itemValidationGroupRepository } = repositories;
 
     // get item
@@ -54,7 +59,11 @@ export class ItemValidationService {
     return group;
   }
 
-  async getItemValidationGroup(actor, repositories: Repositories, itemValidationGroupId: string) {
+  async getItemValidationGroup(
+    actor: Member,
+    repositories: Repositories,
+    itemValidationGroupId: string,
+  ) {
     const { itemValidationGroupRepository } = repositories;
 
     const group = await itemValidationGroupRepository.get(itemValidationGroupId);
@@ -64,8 +73,12 @@ export class ItemValidationService {
     return group;
   }
 
-  async post(actor, repositories: Repositories, itemId: string) {
+  async post(member: Member, repositories: Repositories, itemId: string) {
     const { itemValidationGroupRepository } = repositories;
+
+    // get item and check permission
+    const item = await this.itemService.get(member, repositories, itemId);
+    await validatePermission(repositories, PermissionLevel.Admin, member, item);
 
     // create folder to store files
     const fileStorage = buildStoragePath(itemId);
@@ -76,18 +89,15 @@ export class ItemValidationService {
     // create record in item-validation
     const iVG = await itemValidationGroupRepository.post(itemId);
 
-    // get item
-    const item = await this.itemService.get(actor, repositories, itemId);
-
     // create validation and execute for each node recursively
-    await this._post(actor, repositories, item, iVG, fileStorage);
+    await this._post(member, repositories, item, iVG, fileStorage);
 
     // delete tmp folder
     rmSync(fileStorage, { recursive: true });
   }
 
   async _post(
-    actor,
+    actor: Member,
     repositories: Repositories,
     item: Item,
     itemValidationGroup: ItemValidationGroup,
@@ -136,7 +146,7 @@ export class ItemValidationService {
   }
 
   async validateItem(
-    actor,
+    actor: Member,
     repositories: Repositories,
     item: Item,
     groupId: string,

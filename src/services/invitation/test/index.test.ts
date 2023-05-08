@@ -1,10 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
-import { In } from 'typeorm';
 import fetch from 'node-fetch';
+import { In } from 'typeorm';
+
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 import { Item } from '../../item/entities/Item';
 import { generateRandomEmail } from '../../itemLogin/utils';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
@@ -13,7 +15,6 @@ import { Member } from '../../member/entities/member';
 import { BOB, saveMember } from '../../member/test/fixtures/members';
 import { Invitation } from '../invitation';
 import { InvitationRepository } from '../repository';
-import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -22,13 +23,13 @@ jest.mock('../../../plugins/datasource');
 // bug: cannot reuse mockCaptchaValidation
 jest.mock('node-fetch');
 (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-  return { json: async () => ({ success: true, action:RecaptchaAction.SignUp, score: 1 }) } as any;
+  return { json: async () => ({ success: true, action: RecaptchaAction.SignUp, score: 1 }) } as any;
 });
 
 const mockEmail = (app) => {
   return jest.spyOn(app.mailer, 'sendEmail').mockImplementation(async () => {
     // do nothing
-    console.log('SEND EMAIL');
+    console.debug('SEND EMAIL');
   });
 };
 
@@ -442,7 +443,6 @@ describe('Invitation Plugin', () => {
     beforeEach(async () => {
       ({ app, actor } = await build());
       ({ item, invitations } = await saveInvitations({ member: actor }));
-      
     });
 
     it('Remove invitation on member registration and create memberships successfully', async () => {

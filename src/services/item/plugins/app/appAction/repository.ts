@@ -44,7 +44,10 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
   ): Promise<ResultOf<AppAction[]>> {
     const { memberId } = filters;
 
-    const appActions = await this.find({where:{ item: { id: In(itemIds) }, member: { id: memberId }}, relations:{item:true} });
+    const appActions = await this.find({
+      where: { item: { id: In(itemIds) }, member: { id: memberId } },
+      relations: { item: true },
+    });
     return mapById({
       keys: itemIds,
       findElement: (id) => appActions.filter(({ item }) => item.id === id),

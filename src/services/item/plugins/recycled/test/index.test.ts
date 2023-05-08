@@ -12,7 +12,12 @@ import {
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import {
+  ItemNotFound,
+  MemberCannotAccess,
+  MemberCannotAdminItem,
+} from '../../../../../utils/errors';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
@@ -22,8 +27,6 @@ import { expectManyItems, getDummyItem } from '../../../test/fixtures/items';
 import { CannotRestoreNonDeletedItem } from '../errors';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyRecycledItems, expectRecycledItem } from './fixtures';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ItemNotFound, MemberCannotAccess, MemberCannotAdminItem } from '../../../../../utils/errors';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

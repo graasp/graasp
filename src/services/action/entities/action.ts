@@ -24,7 +24,7 @@ export class Action extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'member_id' })
-  member?: Member|null;
+  member?: Member | null;
 
   /**
    * action can be related to a behavior not related to an item
@@ -35,7 +35,7 @@ export class Action extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
-  item?: Item|null;
+  item?: Item | null;
 
   @Column({
     nullable: false,

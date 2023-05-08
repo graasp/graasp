@@ -180,8 +180,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           // TODO: return feedback in queue
           console.error(e);
         });
-       reply.status(StatusCodes.ACCEPTED);
-       return ids;
+      reply.status(StatusCodes.ACCEPTED);
+      return ids;
     },
   );
 

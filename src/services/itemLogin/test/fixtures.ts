@@ -1,6 +1,6 @@
-import { ItemLoginSchemaType } from '@graasp/sdk';
 import { v4 } from 'uuid';
 
+import { ItemLoginSchemaType } from '@graasp/sdk';
 
 export const MOCK_LOGIN_SCHEMA = ItemLoginSchemaType.USERNAME;
 

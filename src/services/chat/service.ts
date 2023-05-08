@@ -3,10 +3,10 @@ import { PermissionLevel } from '@graasp/sdk';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
+import ItemService from '../item/service';
 import { ChatMessage } from './chatMessage';
 import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
-import ItemService from '../item/service';
 
 export class ChatMessageService {
   hooks = new HookManager();
@@ -14,13 +14,13 @@ export class ChatMessageService {
   itemService: ItemService;
 
   constructor(itemService: ItemService, mentionService: MentionService) {
-    this.itemService= itemService;
+    this.itemService = itemService;
     this.mentionService = mentionService;
   }
 
   async getForItem(actor, repositories: Repositories, itemId: string): Promise<ChatMessage[]> {
-    const { chatMessageRepository,  } = repositories;
-    
+    const { chatMessageRepository } = repositories;
+
     // check permission
     await this.itemService.get(actor, repositories, itemId);
 
@@ -35,7 +35,7 @@ export class ChatMessageService {
     data: { body: string; mentions: string[] },
   ) {
     const { chatMessageRepository } = repositories;
-    
+
     // check permission
     await this.itemService.get(actor, repositories, itemId);
 
@@ -60,7 +60,7 @@ export class ChatMessageService {
     message: { body: string },
   ) {
     const { chatMessageRepository } = repositories;
-    
+
     // check permission
     await this.itemService.get(actor, repositories, itemId);
 
@@ -75,7 +75,7 @@ export class ChatMessageService {
   }
 
   async deleteOne(actor, repositories: Repositories, itemId: string, messageId: string) {
-    const { chatMessageRepository,  } = repositories;
+    const { chatMessageRepository } = repositories;
 
     // check permission
     await this.itemService.get(actor, repositories, itemId);

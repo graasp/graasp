@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
@@ -30,6 +31,9 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemId }, log }) => {
+      if (!member) {
+        throw new UnauthorizedMember();
+      }
       return validationService.getLastItemValidationGroupForItem(
         member,
         buildRepositories(),
@@ -46,6 +50,9 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemValidationGroupId }, log }) => {
+      if (!member) {
+        throw new UnauthorizedMember();
+      }
       return validationService.getItemValidationGroup(
         member,
         buildRepositories(),
@@ -62,8 +69,11 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { itemId }, log }, reply) => {
+      // we do not wait
       db.transaction(async (manager) => {
-        // we do not wait
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
         await validationService.post(member, buildRepositories(manager), itemId);
 
         // the process could take long time, so let the process run in the background and kreturn the itemId instead

@@ -14,10 +14,10 @@ import {
   MemberCannotAdminItem,
   ModifyExisting,
 } from '../../../utils/errors';
+import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
-import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -139,7 +139,7 @@ describe('Membership routes tests', () => {
 
     describe('Public', () => {
       beforeEach(async () => {
-        ({ app,  } = await build());
+        ({ app } = await build());
       });
       it('Returns successfully for one id', async () => {
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
@@ -147,7 +147,7 @@ describe('Membership routes tests', () => {
         await setItemPublic(item, member);
 
         const member1 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.LOUISA);
-        const membership = await saveMembership({ item, member:member1 });
+        const membership = await saveMembership({ item, member: member1 });
 
         const memberships = [itemMembership, membership];
 
@@ -164,8 +164,8 @@ describe('Membership routes tests', () => {
         expect(errors).toHaveLength(0);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
+    });
   });
-});
 
   describe('POST /item-memberships', () => {
     it('Throws if signed out', async () => {

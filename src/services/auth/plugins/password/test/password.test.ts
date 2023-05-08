@@ -1,12 +1,22 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import fetch from 'node-fetch';
 
-import { HttpMethod, RecaptchaAction } from '@graasp/sdk';
+import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import * as MEMBERS_FIXTURES from '../../../../member/test/fixtures/members';
-import { MOCK_CAPTCHA, mockCaptchaValidation } from '../../captcha/test/utils';
+import { MOCK_CAPTCHA } from '../../captcha/test/utils';
 import { MOCK_PASSWORD, saveMemberAndPassword } from './fixtures/password';
 
+jest.mock('node-fetch');
+
+// mock captcha
+// bug: cannot use exported mockCaptchaValidation
+export const mockCaptchaValidation = (action: RecaptchaActionType) => {
+  (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+    return { json: async () => ({ success: true, action, score: 1 }) } as any;
+  });
+};
 // mock database and decorator plugins
 jest.mock('../../../../../plugins/datasource');
 

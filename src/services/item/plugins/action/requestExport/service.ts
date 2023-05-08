@@ -126,7 +126,7 @@ export class ActionRequestExportService {
     `;
     const title = t(MAIL.EXPORT_ACTIONS_TITLE, { itemName: item.name });
     this.mailer.sendEmail(title, actor.email, link, html).catch((err) => {
-      console.log(err, `mailer failed. invitation link: ${link}`);
+      console.debug(err, `mailer failed. invitation link: ${link}`);
     });
   }
 

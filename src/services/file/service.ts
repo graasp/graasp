@@ -5,6 +5,7 @@ import { FastifyReply } from 'fastify';
 import { FileItemType, ItemType, LocalFileConfiguration, S3FileConfiguration } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../utils/errors';
+import { UploadFileUnexpectedError } from '../item/plugins/file/utils/errors';
 import { Actor } from '../member/entities/member';
 import { FileRepository } from './interfaces/fileRepository';
 import { LocalFileRepository } from './repositories/local';
@@ -17,7 +18,6 @@ import {
   UploadEmptyFileError,
   UploadFileInvalidParameterError,
 } from './utils/errors';
-import { UploadFileUnexpectedError } from '../item/plugins/file/utils/errors';
 
 class FileService {
   repository: FileRepository;
@@ -80,10 +80,10 @@ class FileService {
       });
     } catch (e) {
       // rollback uploaded file
-      this.delete(member, {filepath}).catch(e=>console.error(e));
+      this.delete(member, { filepath }).catch((e) => console.error(e));
 
       console.error(e);
-      throw new UploadFileUnexpectedError({mimetype, memberId:member.id, size});
+      throw new UploadFileUnexpectedError({ mimetype, memberId: member.id, size });
     }
 
     return data;

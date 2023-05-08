@@ -1,19 +1,19 @@
 import { StatusCodes } from 'http-status-codes';
+import { v4 } from 'uuid';
 
 import { HttpMethod } from '@graasp/sdk';
 
+import build, { clearDatabase } from '../../../../../test/app';
+import { MemberCannotAccess } from '../../../../utils/errors';
+import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
+import { Member } from '../../../member/entities/member';
+import { BOB, saveMember } from '../../../member/test/fixtures/members';
+import { Item } from '../../entities/Item';
+import { expectManyItems, saveItem } from '../../test/fixtures/items';
 import { setItemPublic } from '../itemTag/test/fixtures';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 import { ItemLikeRepository } from './repository';
-import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
-import { BOB, saveMember } from '../../../member/test/fixtures/members';
-import build, { clearDatabase } from '../../../../../test/app';
-import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { MemberCannotAccess } from '../../../../utils/errors';
-import { expectManyItems, saveItem } from '../../test/fixtures/items';
-import { v4 } from 'uuid';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -96,9 +96,12 @@ describe('Item Like', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         // check returned items
-        expectManyItems(res.json().map(({item})=>item), items, actor);
+        expectManyItems(
+          res.json().map(({ item }) => item),
+          items,
+          actor,
+        );
       });
-
     });
   });
 
@@ -111,7 +114,7 @@ describe('Item Like', () => {
       });
 
       it('Throws if signed out', async () => {
-const {item} = await saveItemAndMembership({member});
+        const { item } = await saveItemAndMembership({ member });
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `/items/${item.id}/likes`,
@@ -129,10 +132,9 @@ const {item} = await saveItemAndMembership({member});
       });
 
       it('Get like entries for public item', async () => {
-
-        const {item} = await saveItemAndMembership({member});
+        const { item } = await saveItemAndMembership({ member });
         await setItemPublic(item, member);
-        const likes= await saveItemLikes([item], member);
+        const likes = await saveItemLikes([item], member);
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `/items/${item.id}/likes`,
@@ -141,7 +143,7 @@ const {item} = await saveItemAndMembership({member});
 
         // get item like from repository with item (not returned in request)
         const fullItemLike = await getFullItemLike(res.json().id);
-        expectItemLike(fullItemLike!,likes[0]);
+        expectItemLike(fullItemLike!, likes[0]);
       });
     });
 

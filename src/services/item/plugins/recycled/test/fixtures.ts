@@ -1,9 +1,12 @@
-
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { RecycledItemData } from '../RecycledItemData';
 
-export const expectRecycledItem = (newRecycledItem: RecycledItemData, item?: Item, creator?: Member) => {
+export const expectRecycledItem = (
+  newRecycledItem: RecycledItemData,
+  item?: Item,
+  creator?: Member,
+) => {
   if (!item) {
     throw 'expectRecycledItem.item is not defined';
   }

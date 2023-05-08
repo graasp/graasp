@@ -19,9 +19,12 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
    * Retrieves a message by its id
    * @param id Id of the message to retrieve
    */
-  async get(id: string, args? : {shouldExist?:boolean, relations?: {creator?:boolean, item?:boolean}}): Promise<ChatMessage> {
-    const options =  { shouldExist: false, relations :{creator:true},...args,};
-    const chatMessage = await this.findOne({ where: { id }, relations:options.relations });
+  async get(
+    id: string,
+    args?: { shouldExist?: boolean; relations?: { creator?: boolean; item?: boolean } },
+  ): Promise<ChatMessage> {
+    const options = { shouldExist: false, relations: { creator: true }, ...args };
+    const chatMessage = await this.findOne({ where: { id }, relations: options.relations });
 
     if (options.shouldExist && !chatMessage) {
       throw new ChatMessageNotFound(id);
@@ -38,7 +41,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
     const entry = this.create({ ...message, item: message.itemId });
     const created = await this.insert(entry);
     // TODO: optimize
-    return this.get(created.identifiers[0].id, {relations:{item:true}});
+    return this.get(created.identifiers[0].id, { relations: { item: true } });
   },
 
   /**
@@ -49,7 +52,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
   async patchOne(id: string, data: Partial<ChatMessage>): Promise<ChatMessage> {
     await this.update(id, data);
     // TODO: optimize
-    return this.get(id, {relations:{item:true}});
+    return this.get(id, { relations: { item: true } });
   },
 
   /**

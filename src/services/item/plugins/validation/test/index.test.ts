@@ -1,16 +1,50 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import {
+  HttpMethod,
+  ItemValidationProcess,
+  ItemValidationStatus,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../util/config';
-import { MemberCannotAdminItem } from '../../../../../util/graasp-error';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { ItemValidationGroupNotFound } from '../errors';
+import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
+import { ItemValidationRepository } from '../repositories/itemValidation';
+
+const VALIDATION_LOADING_TIME = 2000;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+
+const saveItemValidation = async ({ item }) => {
+  const group = await ItemValidationGroupRepository.save({ item });
+  const itemValidation = await ItemValidationRepository.save({
+    item,
+    process: ItemValidationProcess.BadWordsDetection,
+    status: ItemValidationStatus.Success,
+    result: '',
+    itemValidationGroup: group,
+  });
+
+  // get full item validation group, since save does not include itemvalidation
+  const fullItemValidationGroup = await ItemValidationGroupRepository.findOne({
+    where: { id: group.id },
+    relations: { itemValidations: true, item: true },
+  });
+  return { itemValidationGroup: fullItemValidationGroup, itemValidation };
+};
+
+const expectItemValidation = (iv, correctIV) => {
+  expect(iv.id).toEqual(correctIV.id);
+  expect(iv.item.id).toEqual(correctIV.item.id);
+  expect(iv.itemValidations).toHaveLength(correctIV.itemValidations.length);
+};
 
 describe('Item Validation Tests', () => {
   let app;
@@ -42,13 +76,14 @@ describe('Item Validation Tests', () => {
 
       it('Get latest item validation', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
+        const { itemValidationGroup } = await saveItemValidation({ item });
 
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json()).toEqual(res);
+        expectItemValidation(res.json(), itemValidationGroup);
       });
 
       it('Throws if has read permission', async () => {
@@ -92,12 +127,13 @@ describe('Item Validation Tests', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
+
       it('Throws if item does not exist', async () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/latest`,
         });
-        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
       });
     });
   });
@@ -120,12 +156,16 @@ describe('Item Validation Tests', () => {
       });
 
       it('Get item validation groups', async () => {
+        const { item } = await saveItemAndMembership({ member: actor });
+        const { itemValidationGroup } = await saveItemValidation({ item });
+        // save another item validation
+        await saveItemValidation({ item });
         const res = await app.inject({
           method: HttpMethod.GET,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expect(res.json()).toEqual(res);
+        expectItemValidation(res.json(), itemValidationGroup);
       });
 
       it('Throws if has read permission', async () => {
@@ -135,15 +175,13 @@ describe('Item Validation Tests', () => {
           member: actor,
           permission: PermissionLevel.Read,
         });
+        const { itemValidationGroup } = await saveItemValidation({ item });
 
-        const groupId = v4();
         const res = await app.inject({
           method: HttpMethod.GET,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${groupId}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
-
-        // check no created entries
       });
 
       it('Throws if has write permission', async () => {
@@ -153,15 +191,13 @@ describe('Item Validation Tests', () => {
           member: actor,
           permission: PermissionLevel.Write,
         });
+        const { itemValidationGroup } = await saveItemValidation({ item });
 
-        const groupId = v4();
         const res = await app.inject({
           method: HttpMethod.GET,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${groupId}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
-
-        // check no created entries
       });
 
       it('Bad request if id is invalid', async () => {
@@ -172,12 +208,12 @@ describe('Item Validation Tests', () => {
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      it('Bad request if item does not exist', async () => {
+      it('Throws if item does not exist', async () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
         });
-        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
 
       it('Bad request if group id is invalid', async () => {
@@ -188,25 +224,25 @@ describe('Item Validation Tests', () => {
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      it('Bad request if validation group does not exist', async () => {
+      it('Throws if validation group does not exist', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${v4()}`,
         });
-        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(res.json()).toMatchObject(new ItemValidationGroupNotFound(expect.anything()));
       });
     });
   });
 
-  describe('POST /validations/:itemId', () => {
+  describe('POST /:itemId/validate', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
         method: HttpMethod.POST,
-        url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations`,
+        url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validate`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -218,15 +254,23 @@ describe('Item Validation Tests', () => {
       });
       it('create validation', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
+        await saveItemValidation({ item });
+        const count = await ItemValidationGroupRepository.find();
 
         const res = await app.inject({
           method: HttpMethod.POST,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
         expect(res.body).toEqual(item.id);
 
-        // check created entries
+        await new Promise((res) => {
+          setTimeout(async () => {
+            // check no created entries
+            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length - 1);
+            res(true);
+          }, VALIDATION_LOADING_TIME);
+        });
       });
 
       it('Throws if has read permission', async () => {
@@ -236,14 +280,22 @@ describe('Item Validation Tests', () => {
           member: actor,
           permission: PermissionLevel.Read,
         });
+        await saveItemValidation({ item });
+        const count = await ItemValidationGroupRepository.find();
 
         const res = await app.inject({
           method: HttpMethod.POST,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
-        // check no created entries
+        await new Promise((res) => {
+          setTimeout(async () => {
+            // check no created entries
+            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length);
+            res(true);
+          }, VALIDATION_LOADING_TIME);
+        });
       });
 
       it('Throws if has write permission', async () => {
@@ -253,29 +305,52 @@ describe('Item Validation Tests', () => {
           member: actor,
           permission: PermissionLevel.Write,
         });
+        await saveItemValidation({ item });
+        const count = await ItemValidationGroupRepository.find();
 
         const res = await app.inject({
           method: HttpMethod.POST,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations`,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
         });
-        expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+        expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
-        // check no created entries
+        await new Promise((res) => {
+          setTimeout(async () => {
+            // check no created entries
+            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length);
+            res(true);
+          }, VALIDATION_LOADING_TIME);
+        });
       });
 
       it('Bad request if id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.POST,
-          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/validations`,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
+
       it('Throws if item does not exist', async () => {
+        const { item } = await saveItemAndMembership({
+          member: actor,
+        });
+        await saveItemValidation({ item });
+        const count = await ItemValidationGroupRepository.find();
+
         const res = await app.inject({
           method: HttpMethod.POST,
-          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations`,
+          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validate`,
         });
-        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        await new Promise((res) => {
+          setTimeout(async () => {
+            // check no created entries
+            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length);
+            res(true);
+          }, VALIDATION_LOADING_TIME);
+        });
       });
     });
   });

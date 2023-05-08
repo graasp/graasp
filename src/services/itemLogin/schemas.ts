@@ -22,15 +22,14 @@ export const loginSchema = S.object()
   .prop('updatedAt', S.string())
   .prop('id', uuid);
 
-  // tood: refactor out -> use uniform schema
+// tood: refactor out -> use uniform schema
 export const member = S.object()
-.additionalProperties(false)
-.prop('email', S.string())
-.prop('name', S.string())
-.prop('createdAt', S.string())
-.prop('updatedAt', S.string())
-.prop('id', uuid);
-
+  .additionalProperties(false)
+  .prop('email', S.string())
+  .prop('name', S.string())
+  .prop('createdAt', S.string())
+  .prop('updatedAt', S.string())
+  .prop('id', uuid);
 
 export const login = {
   params: idParam,

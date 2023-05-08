@@ -4,10 +4,21 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import { FileItemType, HttpMethod, Item, ItemTagType, ItemType, LocalFileItemType, PermissionLevel, S3FileItemType } from '@graasp/sdk';
+import {
+  FileItemType,
+  HttpMethod,
+  Item,
+  ItemTagType,
+  ItemType,
+  LocalFileItemType,
+  PermissionLevel,
+  S3FileItemType,
+} from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
+import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
 import {
   DownloadFileInvalidParameterError,
   UploadEmptyFileError,
@@ -17,44 +28,43 @@ import { ItemMembershipRepository } from '../../../../itemMembership/repository'
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
-import { DEFAULT_MAX_STORAGE } from '../utils/constants';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../utils/errors';
-import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
 import { ItemTagRepository } from '../../itemTag/repository';
 import { setItemPublic } from '../../itemTag/test/fixtures';
+import { DEFAULT_MAX_STORAGE } from '../utils/constants';
+import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../utils/errors';
 
 // TODO: LOCAL FILE TESTS
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
-const putObjectMock = jest.fn(async () => console.log('putObjectMock'));
-const deleteObjectMock = jest.fn(async () => console.log('deleteObjectMock'));
-const copyObjectMock = jest.fn(async () => console.log('copyObjectMock'));
-const headObjectMock = jest.fn(async () => console.log('headObjectMock'));
+const putObjectMock = jest.fn(async () => console.debug('putObjectMock'));
+const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
+const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
+const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
 const MOCK_SIGNED_URL = 'signed-url';
 jest.mock('@aws-sdk/client-s3', () => {
   return {
-    GetObjectCommand:jest.fn(),
+    GetObjectCommand: jest.fn(),
     S3: function () {
-    return {
-      copyObject: copyObjectMock,
-      deleteObject: deleteObjectMock,
-      putObject: putObjectMock,
-      headObject: headObjectMock
-    };
-  }
-};});
+      return {
+        copyObject: copyObjectMock,
+        deleteObject: deleteObjectMock,
+        putObject: putObjectMock,
+        headObject: headObjectMock,
+      };
+    },
+  };
+});
 jest.mock('@aws-sdk/s3-request-presigner', () => {
   const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
-    return {
-      getSignedUrl,
-    };
+  return {
+    getSignedUrl,
+  };
 });
 
 const MOCK_FILE_ITEM = getDummyItem({
-  type: FILE_ITEM_TYPE ,
+  type: FILE_ITEM_TYPE,
   extra: {
     [FILE_ITEM_TYPE]: {
       name: 'name',
@@ -63,7 +73,7 @@ const MOCK_FILE_ITEM = getDummyItem({
       size: 10,
     },
   },
-} as any); 
+} as any);
 
 const MOCK_HUGE_FILE_ITEM = getDummyItem({
   type: FILE_ITEM_TYPE,
@@ -333,7 +343,7 @@ describe('File Item routes tests', () => {
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-         member = await saveMember(BOB);
+        member = await saveMember(BOB);
         ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member }));
       });
 

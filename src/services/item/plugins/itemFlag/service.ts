@@ -1,6 +1,5 @@
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { Actor } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import ItemService from '../../service';
 import { ItemFlag } from './itemFlag';
 
@@ -16,10 +15,7 @@ export class ItemFlagService {
     return itemFlagRepository.getAllFlags();
   }
 
-  async post(actor: Actor, repositories: Repositories, itemId: string, body: Partial<ItemFlag>) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
+  async post(actor: Member, repositories: Repositories, itemId: string, body: Partial<ItemFlag>) {
     const { itemFlagRepository } = repositories;
 
     // only register member can report

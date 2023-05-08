@@ -106,8 +106,8 @@ export class ItemMembershipService {
 
     const items = await this.itemService.getMany(actor, repositories, itemIds);
 
-    const result=await itemMembershipRepository.getForManyItems(Object.values(items.data));
-  return {data:result.data, errors:[...items.errors, ...result.errors]};
+    const result = await itemMembershipRepository.getForManyItems(Object.values(items.data));
+    return { data: result.data, errors: [...items.errors, ...result.errors] };
   }
 
   async post(

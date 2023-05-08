@@ -4,9 +4,9 @@ import { v4 } from 'uuid';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../util/config';
+import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, expectMember, saveMember } from '../../../../member/test/fixtures/members';
+import { BOB, expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
 import { expectItem } from '../../../test/fixtures/items';
 import { MOCK_APP_ORIGIN, MOCK_TOKEN, saveApp, saveAppList } from './fixtures';
 
@@ -174,7 +174,7 @@ describe('Apps Plugin Tests', () => {
           },
         });
         expect(response.json().members).toHaveLength(1);
-        expectMember(response.json().members[0], actor);
+        expectMinimalMember(response.json().members[0], actor);
       });
 
       it('Get app context successfully for one item and its parents', async () => {
@@ -196,7 +196,7 @@ describe('Apps Plugin Tests', () => {
         expect(children).toHaveLength(2);
 
         expect(members).toHaveLength(1);
-        expectMember(members[0], actor);
+        expectMinimalMember(members[0], actor);
       });
 
       it('Invalid item id throws bad request', async () => {

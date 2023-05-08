@@ -1,6 +1,6 @@
 import { ItemTagType } from '@graasp/sdk';
-import { UUID_REGEX } from '../../../../schemas/global';
 
+import { UUID_REGEX } from '../../../../schemas/global';
 
 const MAX_ITEMS_FOR_GET = 30;
 

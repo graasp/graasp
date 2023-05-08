@@ -70,3 +70,16 @@ export class ItemValidationError extends GraaspValidationError {
     );
   }
 }
+
+export class ItemValidationGroupNotFound extends GraaspValidationError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPVERR006',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'Item validation group not found',
+      },
+      data,
+    );
+  }
+}

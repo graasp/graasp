@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import { HttpMethod, ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { MemberCannotAdminItem } from '../../../utils/errors';
 import { Item } from '../../item/entities/Item';
 import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
 import {
@@ -10,15 +12,13 @@ import {
   saveMembership,
 } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
-import { BOB, expectMember, saveMember } from '../../member/test/fixtures/members';
+import { BOB, expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
 import { ItemLogin } from '../entities/itemLogin';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
-import ItemLoginRepository from '../repositories/itemLogin';
-import { USERNAME_LOGIN } from './fixtures';
-import { encryptPassword, generateRandomEmail } from '../utils';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { ValidMemberSession } from '../errors';
-import {  MemberCannotAdminItem } from '../../../utils/errors';
+import ItemLoginRepository from '../repositories/itemLogin';
+import { encryptPassword, generateRandomEmail } from '../utils';
+import { USERNAME_LOGIN } from './fixtures';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -41,6 +41,10 @@ const saveItemLogin = async ({
     values.itemLogin = await ItemLogin.save({ itemLoginSchema, password: hashedPassword, member });
   }
   return values;
+};
+
+const expectItemLogin = (member, m) => {
+  expectMinimalMember(member, m);
 };
 
 const savePseudonymizedMember = (name) => {
@@ -80,7 +84,6 @@ describe('Item Login Tests', () => {
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.body).toEqual(itemLoginSchema.type);
     });
-
   });
 
   describe('GET /:id/login-schema', () => {
@@ -109,7 +112,7 @@ describe('Item Login Tests', () => {
       });
 
       it('Successfully get item login', async () => {
-        await saveMembership({item,  member:actor, permission:PermissionLevel.Admin });
+        await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
@@ -123,7 +126,7 @@ describe('Item Login Tests', () => {
       });
 
       it('Throws if has Write permission', async () => {
-        await saveMembership({item,  member:actor, permission:PermissionLevel.Write });
+        await saveMembership({ item, member: actor, permission: PermissionLevel.Write });
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
@@ -227,7 +230,8 @@ describe('Item Login Tests', () => {
               payload,
             });
 
-            expectMember(res.json(), m);
+            const member = res.json();
+            expectItemLogin(member, m);
             expect(res.statusCode).toBe(StatusCodes.OK);
           });
         });
@@ -245,7 +249,7 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectMember(res.json(), pseudonymizedMember);
+            expectItemLogin(res.json(), pseudonymizedMember);
           });
 
           it('Successfully reuse item login with member id', async () => {
@@ -262,7 +266,7 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectMember(res.json(), m);
+            expectItemLogin(res.json(), m);
             expect(await ItemLoginRepository.find()).toHaveLength(1);
           });
 
@@ -285,7 +289,7 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectMember(res.json(), m);
+            expectItemLogin(res.json(), m);
             expect(await ItemLoginRepository.find()).toHaveLength(2);
           });
 
@@ -376,7 +380,7 @@ describe('Item Login Tests', () => {
               payload,
             });
 
-            expectMember(res.json(), m);
+            expectItemLogin(res.json(), m);
             expect(res.statusCode).toBe(StatusCodes.OK);
           });
 
@@ -412,7 +416,7 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectMember(res.json(), pseudonymizedMember);
+            expectItemLogin(res.json(), pseudonymizedMember);
           });
 
           it('Successfully reuse item login with member id and password', async () => {
@@ -434,7 +438,7 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectMember(res.json(), m);
+            expectItemLogin(res.json(), m);
             expect(await ItemLoginRepository.find()).toHaveLength(1);
           });
 
@@ -457,7 +461,7 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectMember(res.json(), m);
+            expectItemLogin(res.json(), m);
             expect(await ItemLoginRepository.find()).toHaveLength(1);
           });
 
@@ -484,7 +488,7 @@ describe('Item Login Tests', () => {
             });
 
             expect(res.statusCode).toBe(StatusCodes.OK);
-            expectMember(res.json(), m);
+            expectItemLogin(res.json(), m);
             expect(await ItemLoginRepository.find()).toHaveLength(2);
           });
 
@@ -543,9 +547,12 @@ describe('Item Login Tests', () => {
 
       it('Cannot change item login schema if have write permission', async () => {
         // save new item with wanted memberships
-        const { item: item1 } = await saveItemAndMembership({ member:actor,  permission: PermissionLevel.Write });
+        const { item: item1 } = await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Write,
+        });
 
-        await saveItemLogin({ item:item1 });
+        await saveItemLogin({ item: item1 });
 
         const res = await app.inject({
           method: HttpMethod.PUT,

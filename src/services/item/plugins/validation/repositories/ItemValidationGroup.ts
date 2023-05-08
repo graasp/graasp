@@ -2,6 +2,7 @@ import { ItemValidationStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ItemValidationGroup } from '../entities/ItemValidationGroup';
+import { ItemValidationGroupNotFound } from '../errors';
 
 export const ItemValidationGroupRepository = AppDataSource.getRepository(
   ItemValidationGroup,
@@ -11,7 +12,16 @@ export const ItemValidationGroupRepository = AppDataSource.getRepository(
    * @param {string} iVId id of the item being checked
    */
   async get(id: string): Promise<ItemValidationGroup> {
-    return this.findOne({ where: { id }, relations: { item: true, itemValidations: true } });
+    const ivg = await this.findOne({
+      where: { id },
+      relations: { item: true, itemValidations: true },
+    });
+
+    if (!ivg) {
+      throw new ItemValidationGroupNotFound(id);
+    }
+
+    return ivg;
   },
 
   /**

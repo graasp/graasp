@@ -1,6 +1,6 @@
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
-import { UUID_REGEX } from '../../schemas/global';
 
+import { UUID_REGEX } from '../../schemas/global';
 
 const EMAIL_REGEX = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$';
 

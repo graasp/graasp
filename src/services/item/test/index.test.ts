@@ -39,7 +39,14 @@ import { Item } from '../entities/Item';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
 import { pathToId } from '../utils';
-import { expectItem, expectManyItems, getDummyItem, saveItem, saveItems, savePublicItem } from './fixtures/items';
+import {
+  expectItem,
+  expectManyItems,
+  getDummyItem,
+  saveItem,
+  saveItems,
+  savePublicItem,
+} from './fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -378,12 +385,11 @@ describe('Item routes tests', () => {
       });
     });
 
-    describe('Public', ()=>{
-
+    describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({member:null}));
+        ({ app } = await build({ member: null }));
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const item = await savePublicItem({ item: getDummyItem(),  actor:member });
+        const item = await savePublicItem({ item: getDummyItem(), actor: member });
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -492,14 +498,13 @@ describe('Item routes tests', () => {
       });
     });
 
-    describe('Public', ()=>{
-
+    describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({member:null}));
+        ({ app } = await build({ member: null }));
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         const items: Item[] = [];
         for (let i = 0; i < 3; i++) {
-          const item= await savePublicItem({ item:getDummyItem(), actor:member });
+          const item = await savePublicItem({ item: getDummyItem(), actor: member });
           items.push(item);
         }
 
@@ -927,19 +932,17 @@ describe('Item routes tests', () => {
       });
     });
 
-    describe('Public',()=>{
-
+    describe('Public', () => {
       it('Returns successfully', async () => {
-
-        ({ app } = await build({member:null}));
+        ({ app } = await build({ member: null }));
         const actor = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const  parent  = await savePublicItem({item:getDummyItem(),  actor });
-        const  child1  = await savePublicItem({ item:getDummyItem(), actor, parentItem: parent });
-        const  child2  = await savePublicItem({ item:getDummyItem(), actor, parentItem: parent });
+        const parent = await savePublicItem({ item: getDummyItem(), actor });
+        const child1 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
+        const child2 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
 
         const children = [child1, child2];
         // create child of child
-        await savePublicItem({ item: getDummyItem(),  actor, parentItem: child1 });
+        await savePublicItem({ item: getDummyItem(), actor, parentItem: child1 });
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -1117,25 +1120,24 @@ describe('Item routes tests', () => {
       });
     });
 
-    describe('Public',()=>{
-
+    describe('Public', () => {
       it('Returns successfully', async () => {
-        ({ app } = await build({member:null}));
-        const parent= await savePublicItem({item:getDummyItem(),   actor });
+        ({ app } = await build({ member: null }));
+        const parent = await savePublicItem({ item: getDummyItem(), actor });
         const child1 = await savePublicItem({
           item: getDummyItem({ name: 'child1' }),
-           actor,
+          actor,
           parentItem: parent,
         });
         const child2 = await savePublicItem({
           item: getDummyItem({ name: 'child2' }),
-           actor,
+          actor,
           parentItem: parent,
         });
 
         const childOfChild = await savePublicItem({
           item: getDummyItem({ name: 'child3' }),
-           actor,
+          actor,
           parentItem: child1,
         });
         const descendants = [child1, child2, childOfChild];

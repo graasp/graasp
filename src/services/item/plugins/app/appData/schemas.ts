@@ -108,14 +108,14 @@ const getForMany = {
   response: {
     200: {
       type: 'object',
-      additionalProperties:false,
+      additionalProperties: false,
       properties: {
         data: {
           type: 'object',
           patternProperties: {
             [UUID_REGEX]: {
               type: 'array',
-              items:{ $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+              items: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
             },
           },
         },
@@ -126,7 +126,7 @@ const getForMany = {
           },
         },
       },
-      },
+    },
   },
 };
 

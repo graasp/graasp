@@ -7,12 +7,12 @@ import { HttpMethod, ItemTagType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTag } from '../ItemTag';
 import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
 import { ItemTagRepository } from '../repository';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -207,7 +207,7 @@ describe('Tags', () => {
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         });
-        expectItemTags( res.json().data[ids[0]], tags);
+        expectItemTags(res.json().data[ids[0]], tags);
         expect(res.json().errors[0]).toMatchObject(new ItemNotFound(expect.anything()));
       });
 
@@ -215,14 +215,14 @@ describe('Tags', () => {
         const { item: item1 } = await saveItemAndMembership({ member: actor });
         const member = await saveMember(BOB);
         const { item: item2 } = await saveItemAndMembership({ member });
-        await saveTagsForItem({ item:item2, creator: member });
+        await saveTagsForItem({ item: item2, creator: member });
         const ids = [item1.id, item2.id];
 
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         });
-        expect( res.json().data[ids[1]]).toBeUndefined();
+        expect(res.json().data[ids[1]]).toBeUndefined();
         expect(res.json().errors[0]).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
     });

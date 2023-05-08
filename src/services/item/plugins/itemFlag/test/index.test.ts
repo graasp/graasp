@@ -11,7 +11,7 @@ import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemFlagRepository } from '../repository';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 const expectItemFlag = (flag, correctFlag) => {
   expect(flag.id).toEqual(correctFlag.id);
@@ -23,7 +23,7 @@ const expectItemFlag = (flag, correctFlag) => {
 describe('Item Flag Tests', () => {
   let app;
   let actor;
-  const payload = { flagType: FlagType.FALSE_INFORMATION };
+  const payload = { type: FlagType.FALSE_INFORMATION };
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -33,15 +33,15 @@ describe('Item Flag Tests', () => {
   });
 
   describe('GET /flags', () => {
-    it('Throws if signed out', async () => {
+    it('Successfully get flags', async () => {
       ({ app } = await build({ member: null }));
-
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `${ITEMS_ROUTE_PREFIX}/flags`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(await response.json()).toEqual(Object.values(FlagType));
     });
 
     describe('Signed In', () => {
@@ -88,12 +88,12 @@ describe('Item Flag Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/flags`,
           payload,
         });
-
+        console.log(response);
         expect(response.statusCode).toBe(StatusCodes.OK);
         const [flagContent] = await ItemFlagRepository.find({
           relations: { creator: true, item: true },
         });
-        expect(flagContent.type).toEqual(payload.flagType);
+        expect(flagContent.type).toEqual(payload.type);
         expectItemFlag(await response.json(), flagContent);
       });
 

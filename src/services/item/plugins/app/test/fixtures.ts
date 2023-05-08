@@ -1,7 +1,8 @@
 import { v4 } from 'uuid';
 
-import {  HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import {
   saveItemAndMembership,
   saveMembership,
@@ -11,18 +12,16 @@ import { Item } from '../../../entities/Item';
 import { getDummyItem } from '../../../test/fixtures/items';
 import { PublisherRepository } from '../publisherRepository';
 import { AppRepository } from '../repository';
-import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
-
 
 export const GRAASP_PUBLISHER = {
-  id: v4(),
+  id: APPS_PUBLISHER_ID,
   name: 'graasp',
   origins: ['http://origin.org'],
 };
 
 export const MOCK_APP_ORIGIN = 'http://app.localhost:3000';
 
-export const buildMockAuthTokenSubject = ({ app = v4(), member=v4(),item = v4() } = {}) => ({
+export const buildMockAuthTokenSubject = ({ app = v4(), member = v4(), item = v4() } = {}) => ({
   item,
   member,
   app,

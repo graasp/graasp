@@ -35,7 +35,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     db,
     actions: { service: actionService },
     mentions: { service: mentionService },
-    items:{service:itemService}
+    items: { service: itemService },
   } = fastify;
 
   const chatService = new ChatMessageService(itemService, mentionService);

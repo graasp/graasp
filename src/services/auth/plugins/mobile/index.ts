@@ -63,7 +63,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const { body } = request;
 
       // validate captcha
-      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPasswordMobile);
+      await fastify.validateCaptcha(
+        request,
+        body.captcha,
+        RecaptchaAction.SignInWithPasswordMobile,
+      );
 
       const token = await memberPasswordService.login(
         null,
