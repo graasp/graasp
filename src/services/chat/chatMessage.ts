@@ -11,11 +11,13 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { ChatMessage as GraaspChatMessage } from '@graasp/sdk';
+
 import { Item } from '../item/entities/Item';
 import { Member } from '../member/entities/member';
 
 @Entity()
-export class ChatMessage extends BaseEntity {
+export class ChatMessage extends BaseEntity implements GraaspChatMessage {
   // we do not generate by default because if need to generate
   // the id to define the path
   @PrimaryGeneratedColumn('uuid')

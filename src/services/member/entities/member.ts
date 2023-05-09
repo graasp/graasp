@@ -19,7 +19,10 @@ import {
 
 @Entity()
 @Unique('email', ['email'])
-export class Member<Extra extends UnknownExtra = MemberExtra> extends BaseEntity {
+export class Member<Extra extends UnknownExtra = MemberExtra>
+  extends BaseEntity
+  implements GraaspMember
+{
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

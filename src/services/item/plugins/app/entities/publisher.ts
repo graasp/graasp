@@ -9,9 +9,11 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { Publisher as GraaspPublisher } from '@graasp/sdk';
+
 @Entity()
 @Unique('name', ['name'])
-export class Publisher extends BaseEntity {
+export class Publisher extends BaseEntity implements GraaspPublisher {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

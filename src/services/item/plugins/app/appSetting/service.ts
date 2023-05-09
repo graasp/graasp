@@ -116,12 +116,7 @@ export class AppSettingService {
     return appSettingRepository.getForItem(itemId);
   }
 
-  async copyForItem(
-    actor: Actor,
-    repositories: Repositories,
-    original: AppItemType,
-    copy: AppItemType,
-  ) {
+  async copyForItem(actor: Actor, repositories: Repositories, original: Item, copy: Item) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }

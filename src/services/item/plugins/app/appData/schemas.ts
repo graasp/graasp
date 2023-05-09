@@ -1,5 +1,6 @@
+import { AppDataVisibility } from '@graasp/sdk';
+
 import { UUID_REGEX } from '../../../../../schemas/global';
-import { AppDataVisibility } from '../interfaces/app-details';
 
 export default {
   $id: 'http://graasp.org/apps/app-data/',

@@ -11,13 +11,16 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { ItemValidationReviewStatus } from '@graasp/sdk';
+import {
+  ItemValidationReview as GraaspItemValidationReview,
+  ItemValidationReviewStatus,
+} from '@graasp/sdk';
 
 import { Member } from '../../../../member/entities/member';
 import { ItemValidation } from './ItemValidation';
 
 @Entity()
-export class ItemValidationReview extends BaseEntity {
+export class ItemValidationReview extends BaseEntity implements GraaspItemValidationReview {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

@@ -18,7 +18,7 @@ export const detectFieldNameWithBadWords = (
   const badWordsFilter = new BadWordsFilter();
   buildWordList(badWordsFilter);
   const suspiciousFields: string[] = [];
-  for (const {value, name} of contents) {
+  for (const { value, name } of contents) {
     if (badWordsFilter.isProfane(value)) {
       suspiciousFields.push(name);
     }

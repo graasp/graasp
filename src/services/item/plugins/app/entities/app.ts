@@ -11,6 +11,8 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { App as GraaspApp } from '@graasp/sdk';
+
 import { Publisher } from './publisher';
 
 export type AppExtra = {
@@ -18,11 +20,11 @@ export type AppExtra = {
 };
 
 @Entity()
-export class App extends BaseEntity {
+@Unique('app-name', ['name'])
+export class App extends BaseEntity implements GraaspApp {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 
-  // TODO
   @Column({
     generated: 'uuid',
     unique: true,

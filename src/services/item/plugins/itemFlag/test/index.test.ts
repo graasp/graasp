@@ -34,7 +34,7 @@ describe('Item Flag Tests', () => {
 
   describe('GET /flags', () => {
     it('Successfully get flags', async () => {
-      ({ app } = await build({member:null}));
+      ({ app } = await build({ member: null }));
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `${ITEMS_ROUTE_PREFIX}/flags`,

@@ -9,13 +9,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { Anything, Context } from '@graasp/sdk';
+import { Anything, Context, Action as GraaspAction } from '@graasp/sdk';
 
 import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
-export class Action extends BaseEntity {
+export class Action extends BaseEntity implements GraaspAction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

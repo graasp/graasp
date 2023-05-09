@@ -10,14 +10,14 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemTag as GraaspItemTag, ItemTagType } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 
 @Entity()
 @Unique('item-tag', ['item', 'type'])
-export class ItemTag extends BaseEntity {
+export class ItemTag extends BaseEntity implements GraaspItemTag {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

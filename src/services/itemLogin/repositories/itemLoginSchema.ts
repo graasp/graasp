@@ -43,7 +43,7 @@ export const ItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSc
     return deleteResult.raw[0].id;
   },
 
-  async put(item: Item, type: ItemLoginSchemaType = ItemLoginSchemaType.USERNAME) {
+  async put(item: Item, type: ItemLoginSchemaType = ItemLoginSchemaType.Username) {
     const entry = this.create({ item, type });
     await this.upsert(entry, {
       conflictPaths: ['item'],

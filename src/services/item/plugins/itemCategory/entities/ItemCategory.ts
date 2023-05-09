@@ -9,13 +9,15 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { ItemCategory as GraaspItemCategory } from '@graasp/sdk';
+
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { Category } from './Category';
 
 @Entity()
 @Unique('category-item', ['category', 'item'])
-export class ItemCategory extends BaseEntity {
+export class ItemCategory extends BaseEntity implements GraaspItemCategory {
   // we do not generate by default because if need to generate
   // the id to define the path
   @PrimaryGeneratedColumn('uuid')

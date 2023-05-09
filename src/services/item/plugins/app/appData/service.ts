@@ -1,6 +1,6 @@
 import { defineAbility } from '@casl/ability';
 
-import { PermissionLevel, UUID } from '@graasp/sdk';
+import { AppDataVisibility, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { MemberCannotWriteItem, UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
@@ -8,7 +8,6 @@ import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Actor } from '../../../../member/entities/member';
-import { AppDataVisibility } from '../interfaces/app-details';
 import { AppData, Filters } from './appData';
 import { AppDataNotAccessible } from './errors';
 import { InputAppData } from './interfaces/app-data';
@@ -27,18 +26,18 @@ const adaptFilters = (
     let op;
 
     if (!fMember?.id) {
-      if (fVisibility !== AppDataVisibility.ITEM) {
+      if (fVisibility !== AppDataVisibility.Item) {
         finalFilters = { ...finalFilters, member: { id: actorId } }; // get member's AppData
         if (!fVisibility) {
           // + any AppData w/ visibility 'item'
-          finalFilters.visibility = AppDataVisibility.ITEM;
+          finalFilters.visibility = AppDataVisibility.Item;
           op = 'OR';
         }
       }
     } else if (fMember?.id !== actorId) {
-      if (fVisibility !== AppDataVisibility.ITEM) {
-        if (fVisibility === AppDataVisibility.MEMBER) throw new AppDataNotAccessible();
-        finalFilters.visibility = AppDataVisibility.ITEM; // force 'item' visibility while fetching others' AppData
+      if (fVisibility !== AppDataVisibility.Item) {
+        if (fVisibility === AppDataVisibility.Member) throw new AppDataNotAccessible();
+        finalFilters.visibility = AppDataVisibility.Item; // force 'item' visibility while fetching others' AppData
       }
     }
     return finalFilters;
@@ -54,7 +53,7 @@ const ownAppDataAbility = (member) =>
 
 const itemVisibilityAppDataAbility = (member) =>
   defineAbility((can, cannot) => {
-    can(PermissionLevel.Read, 'AppData', { visibility: AppDataVisibility.ITEM });
+    can(PermissionLevel.Read, 'AppData', { visibility: AppDataVisibility.Item });
   });
 
 // TODO: factor ut
@@ -93,7 +92,7 @@ export class AppDataService {
     }
     const completeData = Object.assign(
       {
-        visibility: AppDataVisibility.MEMBER,
+        visibility: AppDataVisibility.Member,
       },
       body,
       {

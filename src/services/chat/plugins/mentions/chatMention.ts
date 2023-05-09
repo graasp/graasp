@@ -6,18 +6,17 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { MentionStatus } from '@graasp/sdk';
+import { ChatMention as GraaspChatMention, MentionStatus } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
 
 @Entity()
-export class ChatMention extends BaseEntity {
+export class ChatMention extends BaseEntity implements GraaspChatMention {
   // we do not generate by default because if need to generate
   // the id to define the path
   @PrimaryGeneratedColumn('uuid')

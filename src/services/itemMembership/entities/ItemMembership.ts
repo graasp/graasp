@@ -17,7 +17,7 @@ import { Member } from '../../member/entities/member';
 
 @Entity()
 @Unique('item_membership-item-member', ['item', 'member'])
-export class ItemMembership extends BaseEntity {
+export class ItemMembership extends BaseEntity implements GraaspItemMembership {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

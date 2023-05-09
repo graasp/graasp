@@ -329,13 +329,11 @@ export class EmptyCurrentPassword extends CoreError {
 export class UnauthorizedMember extends CoreError {
   constructor(data?: unknown) {
     // this status code is custom for the browser to know it needs to refresh its token
-    super(
-      {
-        code: 'GERR027',
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'Unauthorized member',
-      }
-    );
+    super({
+      code: 'GERR027',
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: 'Unauthorized member',
+    });
   }
 }
 

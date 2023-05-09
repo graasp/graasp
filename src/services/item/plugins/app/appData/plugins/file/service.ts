@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import { SavedMultipartFile } from '@fastify/multipart';
 
-import { FileItemProperties, UUID } from '@graasp/sdk';
+import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
 import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
@@ -12,7 +12,6 @@ import FileService from '../../../../../../file/service';
 import { Actor } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
-import { AppDataVisibility } from '../../../interfaces/app-details';
 import { AppData } from '../../appData';
 import { NotAppDataFile } from '../../errors';
 import { AppDataService } from '../../service';
@@ -92,7 +91,7 @@ class AppDataFileService {
     const appData = await repositories.appDataRepository.post(itemId, member.id, {
       id: appDataId,
       type: APP_DATA_TYPE_FILE,
-      visibility: AppDataVisibility.MEMBER,
+      visibility: AppDataVisibility.Member,
       data: {
         [this.fileService.type]: fileProperties,
       },

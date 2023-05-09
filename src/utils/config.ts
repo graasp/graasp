@@ -281,10 +281,10 @@ export const TMP_FOLDER = path.resolve(__dirname, '../..', 'tmp');
 
 export const VIEW_UNKNOWN_NAME = 'unknown';
 
-export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_KEY;
-if (!RECAPTCHA_SECRET_ACCESS_KEY) {
+if (!process.env.RECAPTCHA_SECRET_ACCESS_KEY) {
   console.error('RECAPTCHA_SECRET_ACCESS_KEY environment variable missing.');
   process.exit(1);
 }
+export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_KEY;
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
 export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
