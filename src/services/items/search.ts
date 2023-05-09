@@ -10,6 +10,13 @@ import {
     PermissionLevel,
   } from '@graasp/sdk';
 
+function getParentId(path:string){
+  const separator = '.';
+  const split_path = path.split(separator);
+  if (split_path.length == 1)
+    return null;
+  return split_path[split_path.length - 2];
+}
 const searchPlugin = async (instance:FastifyInstance) => {
 
           //create indexes to store different filesmm
@@ -95,31 +102,6 @@ const searchPlugin = async (instance:FastifyInstance) => {
           taskRunner.setTaskPreHookHandler<Item>(
             deleteItemTaskName,
             async (item, member, { log, handler }) => {
-
-
-                // if (item.type == 'folder'){
-                //     (itemService.getDescendants(item, handler)).then(children=>{
-                //       children.forEach(childItem => {
-                //         meilisearchClient.isHealthy().then(() => {
-                //           meilisearchClient.getIndex(itemIndex).catch(err => {
-                //             console.log('Document can not be deleted: ' + err);
-                //           });
-                          
-                //           // const jsonChildItem = JSON.string
-                //           meilisearchClient.index(itemIndex).deleteDocument(childItem.id).then(() => {
-                //             console.log('Item deleted');
-                //           }).catch(err => {
-                //             console.log('There was a problem deleting' + childItem + 'to meilisearch ' + err);
-                //           });
-      
-                //         }).catch(err => {
-                //           console.log('Server is not healthy' + err);
-                //         });
-      
-                //       });
-                //     });
-                //   }
-
                 meilisearchClient.isHealthy().then(() => {
                     meilisearchClient.getIndex(itemIndex).catch(err => {
                       console.log('Document can not be deleted: ' + err);
@@ -161,26 +143,38 @@ const searchPlugin = async (instance:FastifyInstance) => {
           );
 
 
-          taskRunner.setTaskProHookHandler<Item>(
+          taskRunner.setTaskPostHookHandler<Item>(
             moveItemTaskName,
             async (item, member, { log, handler }) => {
                 meilisearchClient.isHealthy().then(() => {
+
+                  const parentID = getParentId(item.path);
                     meilisearchClient.getIndex(itemIndex).catch(err => {
                       console.log('Document can not be moved: ' + err);
                     });
-                    
-
-                    
-                    
-                    meilisearchClient.index(itemIndex).updateDocuments([item]).then(() => {
-                      console.log('Item moved');
-                    }).catch(err => {
-                      console.log('There was a problem moving ' + item + 'to meilisearch ' + err);
-                    });
+                    if (parentID != null){
+                      (itemService.isPublished(parentID,handler)).then((published)=>{
+                        if (published){
+                          meilisearchClient.index(itemIndex).updateDocuments([item]).then(() => {
+                            console.log('Item moved');
+                          }).catch(err => {
+                            console.log('There was a problem moving ' + item + 'to meilisearch ' + err);
+                          });
+                        } else{
+                          meilisearchClient.index(itemIndex).deleteDocument(item.id).then(() => {
+                            console.log('Item deleted');
+                          }).catch(err => {
+                            console.log('There was a problem deleting ' + item + 'to meilisearch ' + err);
+                          });
+                        }
+                      });
+                    }
     
                   }).catch(err => {
                     console.log('Server is not healthy' + err);
                   });
+
+                    
             },
 
           );
