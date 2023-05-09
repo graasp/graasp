@@ -84,20 +84,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:itemId',
         { schema: createMany, preHandler: fastify.verifyAuthentication },
         async ({ member, params: { itemId }, body, log }, reply) => {
-          db.transaction((manager) => {
-            // TODO: implement queue
+          // BUG: because we use this call to save csv member
+          // we have to return immediately
+          // solution: it's probably simpler to upload a csv and handle it in the back
+          return db.transaction((manager) => {
             return itemMembershipService.postMany(
               member,
               buildRepositories(manager),
               body.memberships,
               itemId,
             );
-          }).catch((e) => {
-            // TODO: return feedback in queue
-            console.error(e);
           });
-          reply.status(StatusCodes.ACCEPTED);
-          return body.memberships;
         },
       );
 
