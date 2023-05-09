@@ -34,7 +34,7 @@ describe('Item Flag Tests', () => {
 
   describe('GET /flags', () => {
     it('Successfully get flags', async () => {
-      ({ app } = await build({ member: null }));
+      ({ app } = await build({member:null}));
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `${ITEMS_ROUTE_PREFIX}/flags`,
@@ -88,7 +88,6 @@ describe('Item Flag Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/flags`,
           payload,
         });
-        console.log(response);
         expect(response.statusCode).toBe(StatusCodes.OK);
         const [flagContent] = await ItemFlagRepository.find({
           relations: { creator: true, item: true },

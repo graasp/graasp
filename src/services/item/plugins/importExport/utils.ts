@@ -88,7 +88,7 @@ export const handleItemDescription = async (options: {
   switch (true) {
     // parent folder description
     case filename === `${folderName}${DESCRIPTION_EXTENSION}`: {
-      await updateParentDescription;
+      await updateParentDescription(content);
       break;
     }
     // links description

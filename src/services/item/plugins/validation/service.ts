@@ -26,7 +26,7 @@ import {
   ProcessExecutionError,
   ProcessNotFoundError,
 } from './errors';
-import { checkBadWords } from './processes/badWordsDetection';
+import { detectFieldNameWithBadWords } from './processes/badWordsDetection';
 import { classifyImage } from './processes/imageClassification';
 import { buildStoragePath, stripHtml } from './utils';
 
@@ -163,7 +163,7 @@ export class ItemValidationService {
     try {
       switch (process) {
         case ItemValidationProcess.BadWordsDetection:
-          const suspiciousFields = checkBadWords([
+          const suspiciousFields = detectFieldNameWithBadWords([
             { name: 'name', value: item.name },
             { name: 'description', value: stripHtml(item.description) },
           ]);

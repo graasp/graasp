@@ -7,9 +7,10 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { getDummyItem } from '../../../test/fixtures/items';
+import { setItemPublic } from '../../itemTag/test/fixtures';
 import { PublisherRepository } from '../publisherRepository';
 import { AppRepository } from '../repository';
 
@@ -87,15 +88,24 @@ export const saveAppList = async () => {
 };
 
 // save apps, app settings, and get token
-export const setUp = async (app, actor: Member, creator?: Member, permission?: PermissionLevel) => {
+export const setUp = async (
+  app,
+  actor: Actor,
+  creator: Member,
+  permission?: PermissionLevel,
+  setPublic?: boolean,
+) => {
   const apps = await saveAppList();
   const chosenApp = apps[0];
-  const { item } = await saveApp({ url: chosenApp.url, member: creator ?? actor });
+  const { item } = await saveApp({ url: chosenApp.url, member: creator });
+  if (setPublic) {
+    await setItemPublic(item, creator);
+  }
   const appDetails = { origin: chosenApp.publisher.origins[0], key: chosenApp.key };
 
   // if specified, we have a complex case where actor did not create the items
   // and data, so we need to add a membership
-  if (permission && creator) {
+  if (permission && actor && creator && actor !== creator) {
     await saveMembership({ item, member: actor, permission });
   }
   const response = await app.inject({
@@ -104,5 +114,6 @@ export const setUp = async (app, actor: Member, creator?: Member, permission?: P
     payload: appDetails,
   });
   const token = response.json().token;
+  console.log(response.json());
   return { token, item };
 };

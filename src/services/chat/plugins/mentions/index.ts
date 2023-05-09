@@ -4,7 +4,6 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { Hostname, MentionStatus } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ChatMention } from './chatMention';
 import commonMentions, {
@@ -14,6 +13,7 @@ import commonMentions, {
   patchMention,
 } from './schemas';
 import { MentionService } from './service';
+import { UnauthorizedMember } from '../../../../utils/errors';
 
 /**
  * Type definition for plugin options
@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
   //   );
   // }
 
-  // TODO MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
+  // TODO: MEMBERSHIP POSTHOOK: REMOVE MENTION TO AVOID PROVIDING ITEM INFO through message
 
   // send email on mention creation
   mentionService.hooks.setPostHook(
@@ -65,16 +65,12 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
   );
 
   // mentions
-  fastify.get(
-    '/mentions',
-    { schema: getMentions, preHandler: fastify.fetchMemberInSession },
-    async ({ member, log }) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
-      return mentionService.getForMember(member, buildRepositories());
-    },
-  );
+  fastify.get('/mentions', { schema: getMentions, preHandler: fastify.fetchMemberInSession }, async ({ member, log }) => {
+    if(!member) {
+      throw new UnauthorizedMember(member);
+    }
+    return mentionService.getForMember(member, buildRepositories());
+  });
 
   fastify.patch<{
     Params: { mentionId: string };
@@ -101,16 +97,12 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
   );
 
   // delete all mentions for a user
-  fastify.delete(
-    '/mentions',
-    { schema: clearAllMentions, preHandler: fastify.verifyAuthentication },
-    async ({ member, log }, reply) => {
-      await db.transaction(async (manager) => {
-        await mentionService.deleteAll(member, buildRepositories(manager));
-      });
-      reply.status(StatusCodes.NO_CONTENT);
-    },
-  );
+  fastify.delete('/mentions', { schema: clearAllMentions, preHandler: fastify.verifyAuthentication }, async ({ member, log }, reply) => {
+    await db.transaction(async (manager) => {
+      await mentionService.deleteAll(member, buildRepositories(manager));
+    });
+    reply.status(StatusCodes.NO_CONTENT);
+  });
 };
 
 export default plugin;

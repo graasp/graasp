@@ -8,6 +8,7 @@ import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
 import { expectItem } from '../../../test/fixtures/items';
+import { setItemPublic } from '../../itemTag/test/fixtures';
 import { MOCK_APP_ORIGIN, MOCK_TOKEN, saveApp, saveAppList } from './fixtures';
 
 // mock datasource
@@ -25,18 +26,8 @@ describe('Apps Plugin Tests', () => {
   });
 
   describe('GET /list', () => {
-    it('Unauthorized member cannot get apps list', async () => {
-      ({ app } = await build({ member: null }));
-      const response = await app.inject({
-        method: HttpMethod.GET,
-        url: `${APP_ITEMS_PREFIX}/list`,
-      });
-      const data = response.json();
-      expect(data.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
-    });
-
     it('Get apps list', async () => {
-      ({ app } = await build());
+      ({ app } = await build({ member: null }));
       const apps = await saveAppList();
 
       const response = await app.inject({
@@ -53,8 +44,6 @@ describe('Apps Plugin Tests', () => {
   describe('POST /:itemId/api-access-token', () => {
     let apps;
 
-    // TODO: allow public
-
     describe('Signed Out', () => {
       it('Unauthenticated member throws error', async () => {
         ({ app } = await build({ member: null }));
@@ -66,11 +55,29 @@ describe('Apps Plugin Tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
-          payload: { origin: MOCK_APP_ORIGIN, key: v4() },
+          payload: { origin: chosenApp.url, key: chosenApp.key },
         });
         // the call should fail: suppose verifyAuthentication works correctly and throws
 
-        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
+      });
+    });
+
+    describe('Public', () => {
+      it('Successfully request api access', async () => {
+        ({ app } = await build({ member: null }));
+        const member = await saveMember(BOB);
+        apps = await saveAppList();
+        const chosenApp = apps[0];
+        const { item } = await saveApp({ url: chosenApp.url, member });
+        await setItemPublic(item, member);
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
+          payload: { origin: chosenApp.url, key: chosenApp.key },
+        });
+        expect(response.json().token).toBeTruthy();
       });
     });
 
@@ -140,7 +147,30 @@ describe('Apps Plugin Tests', () => {
     let apps;
     let chosenApp;
 
-    // TODO: allow public: with token but without member should pass
+    describe('Public', () => {
+      it('Get app context successfully for one item without members', async () => {
+        ({ app } = await build({ member: null }));
+        const member = await saveMember(BOB);
+        apps = await saveAppList();
+        chosenApp = apps[0];
+
+        const { item } = await saveApp({ url: chosenApp.url, member });
+        await setItemPublic(item, member);
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
+          headers: {
+            Authorization: `Bearer ${MOCK_TOKEN}`,
+          },
+        });
+        console.log(response);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const data = response.json();
+        expect(data.id).toEqual(item.id);
+        expect(data.members).toBeUndefined();
+      });
+    });
 
     describe('Signed Out', () => {
       it('Request without token and without member throws', async () => {
@@ -153,7 +183,7 @@ describe('Apps Plugin Tests', () => {
           method: HttpMethod.GET,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
         });
-        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+        expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
     });
 
@@ -173,7 +203,10 @@ describe('Apps Plugin Tests', () => {
             Authorization: `Bearer ${MOCK_TOKEN}`,
           },
         });
-        expect(response.json().members).toHaveLength(1);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const data = response.json();
+        expect(data.id).toEqual(item.id);
+        expect(data.members).toHaveLength(1);
         expectMinimalMember(response.json().members[0], actor);
       });
 

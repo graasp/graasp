@@ -23,7 +23,7 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
   },
 
   generateApiAccessTokenSubject(
-    memberId: string,
+    memberId: string | undefined,
     itemId: string,
     appDetails: { key: string; origin: string },
   ): AuthTokenSubject {

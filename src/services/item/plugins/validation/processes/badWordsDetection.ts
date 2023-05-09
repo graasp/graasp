@@ -8,7 +8,7 @@ export const buildWordList = (badWordsFilter: BadWordsFilter): void => {
   badWordsFilter.addWords(...frenchBadwordsList);
 };
 
-export const checkBadWords = (
+export const detectFieldNameWithBadWords = (
   documents: {
     name: string;
     value: string;
@@ -18,9 +18,9 @@ export const checkBadWords = (
   const badWordsFilter = new BadWordsFilter();
   buildWordList(badWordsFilter);
   const suspiciousFields: string[] = [];
-  for (const index in contents) {
-    if (badWordsFilter.isProfane(contents[index].value)) {
-      suspiciousFields.push(contents[index].name);
+  for (const {value, name} of contents) {
+    if (badWordsFilter.isProfane(value)) {
+      suspiciousFields.push(name);
     }
   }
   return suspiciousFields;

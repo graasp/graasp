@@ -204,7 +204,6 @@ export class AppDataService {
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
-    // posting an app data is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
 
     const appData = await appDataRepository.get(appDataId);

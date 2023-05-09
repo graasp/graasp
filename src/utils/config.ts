@@ -205,23 +205,18 @@ export const FILE_ITEM_TYPE: FileItemType = S3_FILE_ITEM_PLUGIN
   ? ItemType.S3_FILE
   : ItemType.LOCAL_FILE;
 
-// Graasp embedded link item
-// TODO: should this be here?
-export const EMBEDDED_LINK_ITEM_PLUGIN = process.env.EMBEDDED_LINK_ITEM_PLUGIN === 'true';
-export let EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
-if (EMBEDDED_LINK_ITEM_PLUGIN) {
-  EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN = process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
+if (!process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN) {
+  throw new Error('EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN is not defined');
 }
+export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN =
+  process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
 
 // Graasp apps
 export const APPS_PLUGIN = process.env.APPS_PLUGIN === 'true';
-export let APPS_JWT_SECRET;
-if (APPS_PLUGIN) {
-  if (!process.env.APPS_JWT_SECRET) {
-    throw new Error('APPS_JWT_SECRET is not defined');
-  }
-  APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
+if (!process.env.APPS_JWT_SECRET) {
+  throw new Error('APPS_JWT_SECRET is not defined');
 }
+export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
 export const WEBSOCKETS_PLUGIN = process.env.WEBSOCKETS_PLUGIN === 'true';
@@ -236,9 +231,6 @@ export const HIDDEN_TAG_ID = process.env.HIDDEN_TAG_ID;
 export const PUBLISHED_TAG_ID = process.env.PUBLISHED_TAG_ID;
 export const PUBLIC_TAG_ID = process.env.PUBLIC_TAG_ID;
 export const LOGIN_ITEM_TAG_ID = process.env.LOGIN_ITEM_TAG_ID;
-
-// Graasp chatbox plugin
-export const CHATBOX_PLUGIN = process.env.CHATBOX_PLUGIN === 'true';
 
 // Graasp hidden
 export const HIDDEN_ITEMS_PLUGIN = process.env.HIDDEN_ITEMS_PLUGIN

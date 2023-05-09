@@ -27,7 +27,7 @@ export class AppService {
   }
 
   async getApiAccessToken(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     itemId: string,
     appDetails: { origin: string; key: string },
@@ -46,7 +46,7 @@ export class AppService {
     await appRepository.isValidAppOrigin(appDetails);
 
     const authTokenSubject = appRepository.generateApiAccessTokenSubject(
-      actor.id,
+      actor?.id,
       itemId,
       appDetails,
     );
@@ -63,7 +63,7 @@ export class AppService {
 
     // TODO: check item is app
     const item = await itemRepository.get(itemId);
-    const member = await memberRepository.get(actorId);
+    const member = actorId ? await memberRepository.get(actorId) : undefined;
 
     if (requestDetails) {
       const { item: tokenItemId } = requestDetails;
@@ -78,20 +78,24 @@ export class AppService {
       [ItemType.FOLDER, ItemType.APP],
       item.path,
     );
-    const members = await this.getItemAndParentMembers(actorId, repositories, item);
+    console.log(foldersAndAppItems);
 
-    const parent: Partial<Item> & { children?: Partial<Item>[]; members?: Partial<Member>[] } =
+    const parent: { children?: Partial<Item>[]; members?: Partial<Member>[] } =
       foldersAndAppItems.length
         ? this.sortedListToTree(foldersAndAppItems[0], foldersAndAppItems, 1)
         : {};
 
-    parent.members = members;
+    // return member data only if authenticated
+    if (member) {
+      const members = await this.getItemAndParentMembers(actorId, repositories, item);
+      parent.members = members;
+    }
 
-    return parent;
+    return { ...item, ...parent };
   }
 
   // used by app : get tree
-  async getItemsByType(actorId, repositories: Repositories, types: ItemType[], path: string) {
+  async getItemsByType(actorId: UUID, repositories: Repositories, types: ItemType[], path: string) {
     if (!path.includes('.')) {
       return [];
     }

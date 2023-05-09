@@ -21,7 +21,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: docker
           POSTGRES_USER: docker
-          POSTGRES_DB: typeorm
+          POSTGRES_DB: docker
         ports:
           - 5432:5432 # exposing 5432 port for application to use
         # Set health checks to wait until postgres has started
@@ -63,14 +63,14 @@ jobs:
         env:
           DB_PASSWORD: docker
           DB_USERNAME: docker
-          DB_NAME: typeorm
+          DB_NAME: docker
         run: yarn migration:run
         
       - name: check migrations are synced with the current codebase
         env:
           DB_PASSWORD: docker
           DB_USERNAME: docker
-          DB_NAME: typeorm
+          DB_NAME: docker
         run: yarn migration:check
 
       - name: yarn test
