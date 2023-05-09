@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/graasp/graasp/compare/v0.8.1...v0.9.0) (2023-04-20)
+
+
+### Features
+
+* add etherpad zip import / export ([#374](https://github.com/graasp/graasp/issues/374)) ([ab20c82](https://github.com/graasp/graasp/commit/ab20c82c334c7286bea82fb3c8b123b0008488c1))
+
+
+### Bug Fixes
+
+* allow empty string for replica env var to disable ([#375](https://github.com/graasp/graasp/issues/375)) ([40f1815](https://github.com/graasp/graasp/commit/40f18158a7461c69da5c72b3783fb189eacd2c61))
+
+## [0.8.1](https://github.com/graasp/graasp/compare/v0.8.0...v0.8.1) (2023-03-28)
+
+
+### Bug Fixes
+
+* remove duplicate recaptcha secret in workflows ([eaad2da](https://github.com/graasp/graasp/commit/eaad2dade08ad51d66a89f4e289e66fd0975e1e2))
+
+## [0.8.0](https://github.com/graasp/graasp/compare/v0.7.0...v0.8.0) (2023-03-28)
+
+
+### Features
+
+* add recaptcha ([#365](https://github.com/graasp/graasp/issues/365)) ([#370](https://github.com/graasp/graasp/issues/370)) ([6fe5ecc](https://github.com/graasp/graasp/commit/6fe5eccb83c24fc4d76ff4cfd1f5b3cdcbe69b91))
+
+
+### Bug Fixes
+
+* add recaptcha in workflows ([#366](https://github.com/graasp/graasp/issues/366)) ([8c3d563](https://github.com/graasp/graasp/commit/8c3d56384bd3afd96bbd28dc0f8663b752a22a84))
+* bump @graasp/plugin-etherpad ([#369](https://github.com/graasp/graasp/issues/369)) ([ff05d43](https://github.com/graasp/graasp/commit/ff05d435fa869c9726bcca8e77a9d984e6db018e))
+
 ## [0.7.0](https://github.com/graasp/graasp/compare/v0.6.0...v0.7.0) (2023-03-22)
 
 

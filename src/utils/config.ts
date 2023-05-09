@@ -72,7 +72,10 @@ export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 
 // export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;
 // export const PG_READ_REPLICAS_CONNECTION_URIS =
-//   process.env.PG_READ_REPLICAS_CONNECTION_URIS?.split(',');
+//   // note: we don't use the elvis operator because we also want to exclude e.g. empty string
+//   process.env.PG_READ_REPLICAS_CONNECTION_URIS
+//     ? process.env.PG_READ_REPLICAS_CONNECTION_URIS.split(',')
+//     : undefined;
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 
@@ -278,8 +281,10 @@ export const TMP_FOLDER = path.resolve(__dirname, '../..', 'tmp');
 
 export const VIEW_UNKNOWN_NAME = 'unknown';
 
-if (!process.env.RECAPTCHA_SECRET_ACCESS_KEY) {
+export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_KEY;
+if (!RECAPTCHA_SECRET_ACCESS_KEY) {
   console.error('RECAPTCHA_SECRET_ACCESS_KEY environment variable missing.');
   process.exit(1);
 }
-export const RECAPTCHA_SECRET_ACCESS_KEY = process.env.RECAPTCHA_SECRET_ACCESS_KEY;
+export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
+export const RECAPTCHA_SCORE_THRESHOLD = 0.5;

@@ -39,15 +39,5 @@
       "username": "docker",
       "password": "docker"
     },
-    {
-      "previewLimit": 50,
-      "server": "localhost",
-      "port": 5432,
-      "driver": "PostgreSQL",
-      "name": "typeorm",
-      "database": "typeorm",
-      "username": "docker",
-      "password": "docker"
-    }
   ]
 }

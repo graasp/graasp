@@ -334,6 +334,27 @@ export class UnauthorizedMember extends CoreError {
         code: 'GERR027',
         statusCode: StatusCodes.UNAUTHORIZED,
         message: 'Unauthorized member',
+      }
+    );
+  }
+}
+
+export class EmailNotAllowed extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      { code: 'GERR027', statusCode: 403, message: 'Your email is not allowed to sign up' },
+      data,
+    );
+  }
+}
+
+export class AuthenticationError extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR028',
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: 'The authentication failed',
       },
       data,
     );

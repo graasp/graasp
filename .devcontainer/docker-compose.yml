@@ -16,7 +16,7 @@ services:
       HOSTNAME: localhost
       PG_CONNECTION_URI: "postgresql://docker:docker@localhost:5432/docker"
       FILE_STORAGE_ROOT_PATH: "/tmp/graasp-file-item-storage"
-      DB_NAME: typeorm
+      DB_NAME: docker
       DB_USERNAME: docker
       DB_PASSWORD: docker
       DB_HOST: localhost
