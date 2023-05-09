@@ -35,9 +35,9 @@ export const AppDataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
   port: 5432,
-  username: 'docker',
-  password: 'docker',
-  database: 'docker',
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   // IMPORTANT: this ensure we don't use the same table as the prod/dev one
   // does not work for test since migrations are based on 'public'
   schema: DB_TEST_SCHEMA,

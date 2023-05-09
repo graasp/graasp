@@ -5,6 +5,10 @@ on: [push]
 jobs:
   build-node:
     runs-on: ubuntu-latest
+    env: 
+      DB_NAME: docker
+      DB_USER: docker
+      DB_PASSWORD: docker
 
     # abort running jobs if newer version is detected on same branch
     concurrency:
@@ -19,9 +23,9 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_PASSWORD: docker
-          POSTGRES_USER: docker
-          POSTGRES_DB: docker
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_DB: ${{ env.DB_NAME }}
         ports:
           - 5432:5432 # exposing 5432 port for application to use
         # Set health checks to wait until postgres has started
@@ -35,7 +39,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: create test schema
-        run: psql -f test/db/init.sql postgresql://docker:docker@localhost:5432/typeorm
+        run: psql -f test/db/init.sql postgresql://${{ env.DB_USER }}:${{ env.DB_PASSWORD }}@localhost:5432/${{ env.DB_NAME }}
         
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
@@ -61,16 +65,16 @@ jobs:
 
       - name: apply migrations on empty database
         env:
-          DB_PASSWORD: docker
-          DB_USERNAME: docker
-          DB_NAME: docker
+          DB_PASSWORD: ${{ env.DB_PASSWORD }}
+          DB_USERNAME: ${{ env.DB_USERNAME }}
+          DB_NAME: ${{ env.DB_NAME }}
         run: yarn migration:run
         
       - name: check migrations are synced with the current codebase
         env:
-          DB_PASSWORD: docker
-          DB_USERNAME: docker
-          DB_NAME: docker
+          DB_PASSWORD: ${{ env.DB_PASSWORD }}
+          DB_USERNAME: ${{ env.DB_USERNAME }}
+          DB_NAME: ${{ env.DB_NAME }}
         run: yarn migration:check
 
       - name: yarn test
@@ -79,22 +83,25 @@ jobs:
         env:
           CI: true
           # random keys
-          SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
-          JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
-          REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          BUILDER_CLIENT_HOST: 'http://localhost:3111'
+          COOKIE_DOMAIN: localhost
+          DB_NAME: ${{ env.DB_NAME }}
+          DB_PASSWORD: ${{ env.DB_PASSWORD }}
+          DB_USERNAME: ${{ env.DB_USERNAME }}
+          ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          ETHERPAD_URL: http://etherpad:9001
+          EXPLORER_CLIENT_HOST: 'http://localhost:3113'
           FILE_STORAGE_ROOT_PATH: /
           H5P_PATH_PREFIX: h5p
-          BUILDER_CLIENT_HOST: 'http://localhost:3111'
-          PLAYER_CLIENT_HOST: 'http://localhost:3112'
-          EXPLORER_CLIENT_HOST: 'http://localhost:3113'
-          ETHERPAD_URL: http://etherpad:9001
-          ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-          COOKIE_DOMAIN: localhost
+          JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
+          MAILER_CONFIG_PASSWORD: password
           MAILER_CONFIG_SMTP_HOST: localhost
           MAILER_CONFIG_USERNAME: username
-          MAILER_CONFIG_PASSWORD: password
+          PLAYER_CLIENT_HOST: 'http://localhost:3112'
+          REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
+          SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           # mock uuid
           APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7
           RECAPTCHA_SECRET_ACCESS_KEY: 'iamamockkey'
