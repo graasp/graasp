@@ -40,15 +40,15 @@ const DEFAULT_HOST = 'http://localhost:3000';
 
 export const CLIENT_HOSTS = [
   {
-    name: Context.BUILDER,
+    name: Context.Builder,
     hostname: new URL(process.env.BUILDER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
   },
   {
-    name: Context.PLAYER,
+    name: Context.Player,
     hostname: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
   },
   {
-    name: Context.LIBRARY,
+    name: Context.Library,
     hostname: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
   },
 ];
@@ -123,17 +123,6 @@ export const AUTH_TOKEN_EXPIRATION_IN_MINUTES = process.env.AUTH_TOKEN_EXPIRATIO
 export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
   ? +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
   : 86400;
-
-// Graasp limits
-
-/**
- * Maximum connections to the DB for slonik
- * https://wiki.postgresql.org/wiki/Number_Of_Database_Connections
- * should be around ((core_count * 2) + effective_spindle_count), to be tuned wrt effective workload
- */
-export const MAXIMUM_POOL_SIZE = process.env.MAXIMUM_POOL_SIZE
-  ? parseInt(process.env.MAXIMUM_POOL_SIZE)
-  : 20;
 
 // Graasp mailer config
 if (
@@ -228,44 +217,24 @@ export const REDIS_PORT = process.env.REDIS_PORT;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
-// Graasp public items
-export const PUBLIC_PLUGIN = process.env.PUBLIC_PLUGIN === 'true';
-export const HIDDEN_TAG_ID = process.env.HIDDEN_TAG_ID;
-export const PUBLISHED_TAG_ID = process.env.PUBLISHED_TAG_ID;
-export const PUBLIC_TAG_ID = process.env.PUBLIC_TAG_ID;
-export const LOGIN_ITEM_TAG_ID = process.env.LOGIN_ITEM_TAG_ID;
-
-// Graasp hidden
-export const HIDDEN_ITEMS_PLUGIN = process.env.HIDDEN_ITEMS_PLUGIN
-  ? process.env.HIDDEN_ITEMS_PLUGIN === 'true'
-  : true;
-
-// actions
-export const SAVE_ACTIONS = process.env.SAVE_ACTIONS === 'true';
-
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
 
-export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
-export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
-export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
-export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
+// export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
+// export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
+// export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
+// export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root' };
 
 export const ITEMS_ROUTE_PREFIX = '/items';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
-export const SUBSCRIPTION_ROUTE_PREFIX = '/subscriptions';
 
 if (!process.env.APPS_PUBLISHER_ID) {
   throw new Error('APPS_PUBLISHER_ID is not defined');
 }
 export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
-
-export const DEFAULT_ITEM_SETTINGS: ItemSettings = {
-  hasThumbnail: false,
-};
 
 // Stripe
 export const SUBSCRIPTION_PLUGIN = process.env.SUBSCRIPTION_PLUGIN === 'true';
@@ -278,8 +247,6 @@ export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
 export const SALT_ROUNDS = 10;
 
 export const TMP_FOLDER = path.resolve(__dirname, '../..', 'tmp');
-
-export const VIEW_UNKNOWN_NAME = 'unknown';
 
 if (!process.env.RECAPTCHA_SECRET_ACCESS_KEY) {
   console.error('RECAPTCHA_SECRET_ACCESS_KEY environment variable missing.');

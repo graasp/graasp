@@ -24,6 +24,7 @@ describe('migrations1679669193721', () => {
   });
 
   afterEach(async () => {
+    // TODO: dump db and set it back?
     app.close();
   });
 

@@ -87,6 +87,10 @@ To test your migrations, you can run
 yarn migration:fake
 ````
 
+Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`. 
+
+Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
+
 ### Configuration
 
 To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :

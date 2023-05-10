@@ -1,8 +1,9 @@
-import { VIEW_UNKNOWN_NAME } from '../../../../utils/config';
+import { Context } from '@graasp/sdk';
+
 import { Action } from '../../entities/action';
 
 export const checkActionData = (savedAction: Action, args) => {
-  const { itemId, extraItemId, item, actionType, view = VIEW_UNKNOWN_NAME, member } = args;
+  const { itemId, extraItemId, item, actionType, view = Context.Unknown, member } = args;
   expect(savedAction.item).toEqual(item);
   expect(savedAction.member).toEqual(member);
   expect(savedAction.type).toEqual(actionType);

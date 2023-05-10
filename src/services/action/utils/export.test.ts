@@ -2,14 +2,15 @@ import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
+import { Context } from '@graasp/sdk';
+
 import build, { clearDatabase } from '../../../../test/app';
-import { CLIENT_HOSTS, TMP_FOLDER } from '../../../utils/config';
+import { TMP_FOLDER } from '../../../utils/config';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
 import { getDummyItem } from '../../item/test/fixtures/items';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
 import { BOB, saveMember } from '../../member/test/fixtures/members';
-import { VIEW_UNKNOWN_NAME } from '../constants/constants';
 import { Action } from '../entities/action';
 import { ActionRepository } from '../repositories/action';
 import { exportActionsInArchive } from './export';
@@ -30,7 +31,7 @@ const createDummyAction = async ({ item, member, view }): Promise<Action> => {
 
 const setUpActions = async (app, member: Member) => {
   const itemId = v4();
-  const views = [...CLIENT_HOSTS.map(({ name }) => name), VIEW_UNKNOWN_NAME];
+  const views = Object.values(Context);
   const { item, itemMembership } = await saveItemAndMembership({
     item: { id: itemId, name: 'item-name' },
     member,

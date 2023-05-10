@@ -4,16 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import {
-  FileItemType,
-  HttpMethod,
-  Item,
-  ItemTagType,
-  ItemType,
-  LocalFileItemType,
-  PermissionLevel,
-  S3FileItemType,
-} from '@graasp/sdk';
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
@@ -28,7 +19,6 @@ import { ItemMembershipRepository } from '../../../../itemMembership/repository'
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
-import { ItemTagRepository } from '../../itemTag/repository';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../utils/errors';

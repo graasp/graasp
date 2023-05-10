@@ -163,7 +163,6 @@ export const values = {
   ],
   item_member_login: [
     {
-      id: 'ae901df0-d246-4673-bb01-34269f4c0fed',
       item_id: itemId,
       member_id: memberId,
     },

@@ -39,7 +39,7 @@ export const expectMembership = (
   creator?: Member,
 ) => {
   if (!newMembership || !correctMembership) {
-    throw new Error("expectMembership's newMembership or correctMembership is undefined");
+    throw new Error('expectMembership\'s newMembership or correctMembership is undefined');
   }
   expect(newMembership.permission).toEqual(correctMembership.permission);
   expect(newMembership.item.id).toContain(correctMembership.item.id);

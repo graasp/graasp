@@ -39,7 +39,7 @@ export function resultOfToList<T>(resultOf: ResultOf<T>): T[] {
 export const randomHexOf4 = () => crypto.randomBytes(2).toString('hex');
 
 export const buildItemLink = (hosts: Hostname[], item: Item) => {
-  const host = hosts.find((h) => h.name === Context.BUILDER)?.hostname;
+  const host = hosts.find((h) => h.name === Context.Builder)?.hostname;
   if (!host) {
     throw new Error('host is not defined');
   }

@@ -1,5 +1,6 @@
+import { Context } from '@graasp/sdk';
+
 import { CLIENT_HOSTS } from '../../../utils/config';
-import { VIEW_UNKNOWN_NAME } from '../constants/constants';
 import { getGeolocationIp, getView } from './actions';
 
 const BUILDER_CLIENT_HOST = CLIENT_HOSTS[0];
@@ -26,6 +27,6 @@ describe('Action Utils', () => {
       origin: 'https://bababubu.com',
     };
     const view = getView(headers, CLIENT_HOSTS);
-    expect(view).toEqual(VIEW_UNKNOWN_NAME);
+    expect(view).toEqual(Context.Unknown);
   });
 });

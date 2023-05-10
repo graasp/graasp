@@ -11,7 +11,6 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
-import { DEFAULT_ITEM_SETTINGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -29,6 +28,10 @@ import {
   pathToId,
   sortChildrenWith,
 } from './utils';
+
+export const DEFAULT_ITEM_SETTINGS: ItemSettings = {
+  hasThumbnail: false,
+};
 
 export const ItemRepository = AppDataSource.getRepository(Item).extend({
   checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
@@ -219,7 +222,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .where('creator.id = :id', { id: memberId })
-      .andWhere("im.permission = 'admin'")
+      .andWhere('im.permission = \'admin\'')
       .andWhere('nlevel(item.path) = 1')
       .orderBy('item.updatedAt', 'DESC')
       .getMany();

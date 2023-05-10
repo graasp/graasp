@@ -1,7 +1,5 @@
 export const PLUGIN_NAME = 'graasp-plugin-actions';
 
-export const VIEW_UNKNOWN_NAME = 'unknown';
-
 // Constants to check the validity of the query parameters when obtaining actions
 export const DEFAULT_ACTIONS_SAMPLE_SIZE = 5000;
 export const MIN_ACTIONS_SAMPLE_SIZE = 0;

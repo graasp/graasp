@@ -398,28 +398,24 @@ describe('Membership routes tests', () => {
           payload: { memberships: newMemberships },
         });
 
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        expect(response.statusCode).toBe(StatusCodes.OK);
 
-        await new Promise((res) => {
-          setTimeout(async () => {
-            const newCount = await ItemMembershipRepository.count();
-            expect(newCount).toEqual(initialCount + 2);
-            const { data: savedMembershispForItem } =
-              await ItemMembershipRepository.getForManyItems([item]);
-            const savedMemberships = savedMembershispForItem[item.id];
+        const newCount = await ItemMembershipRepository.count();
+        expect(newCount).toEqual(initialCount + 2);
+        const { data: savedMembershispForItem } = await ItemMembershipRepository.getForManyItems([
+          item,
+        ]);
+        const savedMemberships = savedMembershispForItem[item.id];
 
-            newMemberships.forEach((m, idx) => {
-              const im = savedMemberships.find(({ member }) => member.id === m.memberId);
-              const correctMembership = {
-                ...m,
-                item,
-                creator: actor,
-                member: members.find(({ id: thisId }) => thisId === m.memberId)!,
-              };
-              expectMembership(im, correctMembership);
-            });
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
+        newMemberships.forEach((m, idx) => {
+          const im = savedMemberships.find(({ member }) => member.id === m.memberId);
+          const correctMembership = {
+            ...m,
+            item,
+            creator: actor,
+            member: members.find(({ id: thisId }) => thisId === m.memberId)!,
+          };
+          expectMembership(im, correctMembership);
         });
       });
 

@@ -99,6 +99,7 @@ jobs:
           MAILER_CONFIG_USERNAME: username
           PLAYER_CLIENT_HOST: 'http://localhost:3112'
           REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
+          S3_FILE_ITEM_PLUGIN: true
           SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           # mock uuid

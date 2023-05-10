@@ -162,10 +162,9 @@ describe('Item Like', () => {
           url: `/items/${item1.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-
         // get item like from repository with item (not returned in request)
         const fullItemLike = await getFullItemLike(res.json().id);
-        expectItemLike(fullItemLike!, likes[0]);
+        expectItemLike(fullItemLike!, likes.find(({ item }) => item.id === item1.id)!);
       });
 
       it('Cannot get like item if does not have rights', async () => {

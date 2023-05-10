@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import {
+  Context,
   DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
   Hostname,
   PermissionLevel,
@@ -12,11 +13,7 @@ import { MAIL } from '@graasp/translations';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
-import {
-  EXPORT_FILE_EXPIRATION,
-  VIEW_UNKNOWN_NAME,
-  ZIP_MIMETYPE,
-} from '../../../../action/constants/constants';
+import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
 import { ActionService } from '../../../../action/services/action';
 import {
   buildActionFilePath,
@@ -151,7 +148,7 @@ export class ActionRequestExportService {
       storageFolder,
       baseAnalytics,
       // include all actions from any view
-      views: [...this.hosts.map(({ name }) => name), VIEW_UNKNOWN_NAME],
+      views: Object.values(Context),
     });
 
     // upload file task

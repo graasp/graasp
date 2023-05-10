@@ -1,6 +1,4 @@
-export const PLUGIN_NAME = 'graasp-plugin-actions';
-
-export const VIEW_UNKNOWN_NAME = 'unknown';
+export const PLUGIN_NAME = 'graasp-plugin-item-actions';
 
 export enum ItemActionType {
   Update = 'update',

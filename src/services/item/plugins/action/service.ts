@@ -53,7 +53,7 @@ export class ActionItemService {
     itemId: string,
     filters: { view?: Context; sampleSize?: number },
   ): Promise<Action[]> {
-    const { view = Context.BUILDER, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
+    const { view = Context.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
     // get item
     const item = await this.itemService.get(actor, repositories, itemId);
 

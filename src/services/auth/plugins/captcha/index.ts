@@ -17,7 +17,7 @@ const plugin: FastifyPluginAsync<{ secretAccessKey: string }> = async (fastify, 
   const { secretAccessKey } = options;
 
   if (!secretAccessKey) {
-    console.error("Captcha's secretAccessKey environment variable missing.");
+    console.error('Captcha\'s secretAccessKey environment variable missing.');
     process.exit(1);
   }
 

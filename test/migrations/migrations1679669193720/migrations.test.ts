@@ -6,10 +6,11 @@ import { expected, values as migrationData } from './migrations1679669193720.fix
 // mock datasource
 jest.mock('../../../src/plugins/datasource');
 
-describe('Database', () => {
+describe('migrations1679669193720', () => {
   let app;
+  const migration = new migrations1679669193720();
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     // init db empty, it is sync by default
     ({ app } = await build());
     await app.db.dropDatabase();
@@ -18,41 +19,35 @@ describe('Database', () => {
     await checkDatabaseIsEmpty(app);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
+    // TODO: dump db and set it back?
     app.close();
   });
 
-  afterEach(async () => {
-    jest.clearAllMocks();
-    // await clearDatabase(app.db);
+
+  it('Up', async () => {
+    await migration.up(app.db.createQueryRunner());
+
+    // insert mock data and check return value
+    for (const [tableName, data] of Object.entries(migrationData)) {
+      for (const [idx, d] of data.entries()) {
+        const [returnedValue] = await app.db.query(buildInsertIntoQuery(tableName, d));
+        await expected[tableName](returnedValue, idx, app.db);
+      }
+    }
+
+    // every table is checked
+    const nbTables = await getNumberOfTables(app);
+    expect(Object.keys(migrationData).length).toEqual(nbTables);
   });
 
-  describe('migrations1679669193720', () => {
-    const migration = new migrations1679669193720();
+  it('Down', async () => {
+    await migration.up(app.db.createQueryRunner());
 
-    it('Up', async () => {
-      const queryRunner = app.db.createQueryRunner();
-      await migration.up(queryRunner);
+    // everything is deleted
+    await migration.down(app.db.createQueryRunner());
 
-      // insert mock data and check return value
-      for (const [tableName, data] of Object.entries(migrationData)) {
-        for (const [idx, d] of data.entries()) {
-          const [returnedValue] = await app.db.query(buildInsertIntoQuery(tableName, d));
-          await expected[tableName](returnedValue, idx, app.db);
-        }
-      }
-
-      // every table is checked
-      const nbTables = await getNumberOfTables(app);
-      expect(Object.keys(migrationData).length).toEqual(nbTables);
-    });
-
-    it('Down', async () => {
-      // everything is deleted
-      await migration.down(app.db.createQueryRunner());
-
-      // should contain no table
-      await checkDatabaseIsEmpty(app);
-    });
+    // should contain no table
+    await checkDatabaseIsEmpty(app);
   });
 });
