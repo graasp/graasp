@@ -4,22 +4,22 @@ import { v4 } from 'uuid';
 
 import { HttpMethod, ItemTagType, PermissionLevel } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { ItemNotFound, MemberCannotAdminItem } from '../../../utils/errors';
-import { Item } from '../../item/entities/Item';
-import { expectManyItems } from '../../item/test/fixtures/items';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { Item } from '../../../entities/Item';
+import { expectManyItems } from '../../../test/fixtures/items';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { ItemTagNotFound } from '../../itemTag/errors';
 import { ItemTagRepository } from '../../itemTag/repository';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
 import { ItemPublishedNotFound } from '../errors';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 const saveCollections = async (member) => {
   const items: Item[] = [];
@@ -185,19 +185,20 @@ describe('Item Published', () => {
     });
   });
 
-  describe('GET /collections/own', () => {
+  describe('GET /collections/members/:memberId', () => {
     describe('Signed Out', () => {
-      it('Throw if signed out', async () => {
+      it('Returns published collections for member', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember(BOB);
-        await saveCollections(member);
+        const items = await saveCollections(member);
         await saveCategories();
 
         const res = await app.inject({
           method: HttpMethod.GET,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/own`,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
-        expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectManyItems(res.json(), items);
       });
     });
 
@@ -210,17 +211,17 @@ describe('Item Published', () => {
         collections = await saveCollections(actor);
       });
 
-      it('Get all own published collections', async () => {
+      it('Get published collections for member', async () => {
         // add other collections
         const member = await saveMember(BOB);
-        await saveCollections(member);
+        const items = await saveCollections(member);
 
         const res = await app.inject({
           method: HttpMethod.GET,
-          url: `${ITEMS_ROUTE_PREFIX}/collections/own`,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyItems(res.json(), collections);
+        expectManyItems(res.json(), items);
       });
     });
   });

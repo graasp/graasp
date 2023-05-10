@@ -4,12 +4,21 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import { HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
+import {
+  FileItemType,
+  HttpMethod,
+  Item,
+  ItemTagType,
+  ItemType,
+  LocalFileItemType,
+  PermissionLevel,
+  S3FileItemType,
+} from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
-import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../util/config';
-import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../util/graasp-error';
+import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
 import {
   DownloadFileInvalidParameterError,
   UploadEmptyFileError,
@@ -17,9 +26,10 @@ import {
 import { expectItem, expectManyItems, getDummyItem } from '../../../../item/test/fixtures/items';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { ItemTagRepository } from '../../../../itemTag/repository';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
+import { ItemTagRepository } from '../../itemTag/repository';
+import { setItemPublic } from '../../itemTag/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../utils/errors';
 
@@ -28,63 +38,54 @@ import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../utils
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
-const putObjectMock = jest.fn(async () => console.log('putObjectMock'));
-const deleteObjectMock = jest.fn(async () => console.log('deleteObjectMock'));
-const copyObjectMock = jest.fn(async () => console.log('copyObjectMock'));
-const headObjectMock = jest.fn(async () => console.log('headObjectMock'));
+const putObjectMock = jest.fn(async () => console.debug('putObjectMock'));
+const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
+const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
+const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
 const MOCK_SIGNED_URL = 'signed-url';
 jest.mock('@aws-sdk/client-s3', () => {
-  return function () {
-    return {
-      copyObject: () => ({
-        promise: copyObjectMock,
-      }),
-      deleteObject: () => ({
-        promise: deleteObjectMock,
-      }),
-      putObject: () => ({
-        promise: putObjectMock,
-      }),
-      headObject: () => ({
-        promise: headObjectMock,
-      }),
-    };
+  return {
+    GetObjectCommand: jest.fn(),
+    S3: function () {
+      return {
+        copyObject: copyObjectMock,
+        deleteObject: deleteObjectMock,
+        putObject: putObjectMock,
+        headObject: headObjectMock,
+      };
+    },
   };
 });
 jest.mock('@aws-sdk/s3-request-presigner', () => {
   const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
-  return function () {
-    return {
-      getSignedUrl,
-    };
+  return {
+    getSignedUrl,
   };
 });
 
-// TODO: S3 file??
 const MOCK_FILE_ITEM = getDummyItem({
-  type: ItemType.LOCAL_FILE,
+  type: FILE_ITEM_TYPE,
   extra: {
-    [ItemType.LOCAL_FILE]: {
+    [FILE_ITEM_TYPE]: {
       name: 'name',
       mimetype: 'mimetype',
       path: 'filepath',
       size: 10,
     },
   },
-});
+} as any);
 
-// TODO: S3 file??
 const MOCK_HUGE_FILE_ITEM = getDummyItem({
-  type: ItemType.LOCAL_FILE,
+  type: FILE_ITEM_TYPE,
   extra: {
-    [ItemType.LOCAL_FILE]: {
+    [FILE_ITEM_TYPE]: {
       name: 'name',
       mimetype: 'mimetype',
       path: 'filepath',
       size: DEFAULT_MAX_STORAGE,
     },
   },
-});
+} as any);
 
 // we need a different form data for each test
 const createFormData = (form = new FormData()) => {
@@ -338,11 +339,11 @@ describe('File Item routes tests', () => {
 
   describe('GET /download', () => {
     describe('Sign out', () => {
-      let item;
+      let item, member;
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        member = await saveMember(BOB);
         ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member }));
       });
 
@@ -356,7 +357,7 @@ describe('File Item routes tests', () => {
       });
 
       it('Download public file item', async () => {
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC });
+        await setItemPublic(item, member);
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -452,19 +453,32 @@ describe('File Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
         const response = await app.inject({
           method: HttpMethod.DELETE,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
+          url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
 
-        await expect(deleteObjectMock).not.toHaveBeenCalled();
+        await new Promise(async (done) => {
+          setTimeout(async () => {
+            await expect(deleteObjectMock).not.toHaveBeenCalled();
+
+            done(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
+        });
       });
       it('Delete corresponding file for file item', async () => {
         const { item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor });
 
         const response = await app.inject({
           method: HttpMethod.DELETE,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
+          url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
-        await expect(deleteObjectMock).toHaveBeenCalled();
+
+        await new Promise(async (done) => {
+          setTimeout(async () => {
+            await expect(deleteObjectMock).toHaveBeenCalled();
+
+            done(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
+        });
       });
 
       describe('Copy Pre Hook', () => {
@@ -494,7 +508,7 @@ describe('File Item routes tests', () => {
 
           const response = await app.inject({
             method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/copy`,
+            url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
             payload: {
               parentId: parentItem.id,
             },
@@ -520,7 +534,7 @@ describe('File Item routes tests', () => {
 
           const response = await app.inject({
             method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/copy`,
+            url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
             payload: {
               parentId: parentItem.id,
             },

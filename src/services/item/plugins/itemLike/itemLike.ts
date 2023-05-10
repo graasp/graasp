@@ -9,12 +9,14 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { ItemLike as GraaspItemLike } from '@graasp/sdk';
+
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../../member/entities/member';
 
 @Entity()
 @Unique('id', ['creator', 'item'])
-export class ItemLike extends BaseEntity {
+export class ItemLike extends BaseEntity implements GraaspItemLike {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

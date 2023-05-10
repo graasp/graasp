@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "0.7.0",
+  "version": "0.9.0",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -18,6 +18,7 @@
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "test": "DISABLE_LOGS=true jest --forceExit --verbose",
+    "test:ci": "DISABLE_LOGS=true jest --forceExit --verbose --coverage --silent",
     "test:watch": "yarn test --watchAll",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
@@ -90,11 +91,12 @@
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
+    "pg": "8.10.0",
     "qs": "6.11.1",
     "sharp": "0.31.3",
     "striptags": "3.2.0",
     "tmp-promise": "3.0.3",
-    "typeorm": "0.3.12",
+    "typeorm": "0.3.15",
     "uuid": "9.0.0",
     "ws": "8.13.0",
     "yarn": "1.22.19"

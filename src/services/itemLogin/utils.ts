@@ -16,7 +16,7 @@ export const validatePassword = async (
 ): Promise<boolean> => bcrypt.compare(plainTextPassword, passwordHash);
 
 export const loginSchemaRequiresPassword = (loginSchema: ItemLoginSchemaType): boolean =>
-  loginSchema === ItemLoginSchemaType.USERNAME_AND_PASSWORD ||
+  loginSchema === ItemLoginSchemaType.UsernameAndPassword ||
   loginSchema === ItemLoginSchemaType.AnonymousAndPassword;
 
 export const generateRandomEmail = (): string => `${randomHexOf4()}-${Date.now()}@graasp.org`;

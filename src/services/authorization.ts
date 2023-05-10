@@ -68,7 +68,6 @@ export const validatePermission = async (
       return inheritedMembership;
     }
   }
-
   if (!inheritedMembership) {
     throw new MemberCannotAccess(item.id);
   }

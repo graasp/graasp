@@ -12,7 +12,7 @@ import { ChatMentionRepository } from '../plugins/mentions/repository';
 import { saveItemWithChatMessages } from './chatMessage.test';
 
 // mock datasource
-jest.mock('../../plugins/datasource');
+jest.mock('../../../plugins/datasource');
 
 // create item, chat messages from another member and members
 // as well as mentions of actor
@@ -193,7 +193,7 @@ describe('Chat Mention tests', () => {
         expect(response.json().body).toEqual(chatMentions[0].body);
 
         expect(await ChatMentionRepository.find()).toHaveLength(initialCount - 1);
-        expect(await ChatMentionRepository.get(chatMentions[0].id)).toBeNull();
+        expect(await ChatMentionRepository.findOneBy({ id: chatMentions[0].id })).toBeNull();
       });
 
       it('Throws if chat mention id is incorrect', async () => {

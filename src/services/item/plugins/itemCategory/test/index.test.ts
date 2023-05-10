@@ -17,7 +17,7 @@ import { CategoryRepository } from '../repositories/category';
 import { ItemCategoryRepository } from '../repositories/itemCategory';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 export const expectItemCategory = (newItemCategory, correctItemCategory) => {
   expect(newItemCategory.category).toEqual(correctItemCategory.category);

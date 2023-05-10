@@ -15,6 +15,7 @@ import {
   AppItemExtra,
   EtherpadItemExtra,
   FolderItemExtra,
+  Item as GraaspItem,
   H5PItemExtra,
   ItemSettings,
   ItemType,
@@ -40,7 +41,7 @@ export type ItemExtra =
   | AppItemExtra;
 
 @Entity()
-export class Item extends BaseEntity {
+export class Item extends BaseEntity implements GraaspItem {
   // we do not generate by default because if need to generate
   // the id to define the path
   @PrimaryColumn('uuid', { nullable: false })

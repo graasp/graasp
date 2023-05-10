@@ -81,7 +81,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     const query = this.createQueryBuilder()
       .select(['item'])
       .from(Item, 'item')
-      .innerJoin('published_item', 'pi', 'pi.item_path @> item.path')
+      .innerJoin('item_published', 'ip', 'ip.item_path @> item.path')
       .innerJoin('item_category', 'ic', 'ic.item_path @> item.path')
       .groupBy('item.id');
 

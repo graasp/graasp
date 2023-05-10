@@ -10,11 +10,13 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { AppSetting as GraaspAppSetting } from '@graasp/sdk';
+
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 
 @Entity()
-export class AppSetting extends BaseEntity {
+export class AppSetting extends BaseEntity implements GraaspAppSetting {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 
@@ -30,7 +32,7 @@ export class AppSetting extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member | null;
+  creator?: Member | null;
 
   @Column({
     nullable: false,

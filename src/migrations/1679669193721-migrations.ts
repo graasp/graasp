@@ -45,13 +45,16 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE item_validation_review_status RENAME TO item_validation_review_status_old',
     );
     await queryRunner.query('ALTER TABLE member RENAME TO member_old');
+
+    // don't use role and role_permission (admin)
+    await queryRunner.query('DROP TABLE IF EXISTS role_permission');
+    await queryRunner.query('ALTER TABLE tag RENAME TO tag_old');
+
     // don't use permission (admin?)
     await queryRunner.query('DROP TABLE IF EXISTS permission');
     await queryRunner.query('ALTER TABLE publisher RENAME TO publisher_old');
     await queryRunner.query('ALTER TABLE recycled_item RENAME TO recycled_item_old');
-    // don't use role and role_permission (admin)
-    await queryRunner.query('DROP TABLE IF EXISTS role_permission');
-    await queryRunner.query('ALTER TABLE tag RENAME TO tag_old');
+
     // don't use member_plan and plan
     await queryRunner.query('DROP TABLE IF EXISTS member_plan');
     await queryRunner.query('DROP TABLE IF EXISTS plan');
@@ -124,7 +127,7 @@ export class Migrations1679669193721 implements MigrationInterface {
 
     // recycled item
     await queryRunner.query(
-      'CREATE TABLE "recycled_item_data" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid NOT NULL, "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "recycled-item-data" UNIQUE ("item_path"), CONSTRAINT "PK_d6f781e5054e98174c35c87c225" PRIMARY KEY ("id"))',
+      'CREATE TABLE "recycled_item_data" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid, "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "recycled-item-data" UNIQUE ("item_path"), CONSTRAINT "PK_d6f781e5054e98174c35c87c225" PRIMARY KEY ("id"))',
     );
     await queryRunner.query(
       'INSERT INTO "recycled_item_data" (id, creator_id, item_path, created_at) SELECT id, creator, item_path, created_at FROM recycled_item_old',

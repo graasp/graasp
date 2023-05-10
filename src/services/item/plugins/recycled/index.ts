@@ -7,7 +7,6 @@ import {
   IdsParams,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST,
-  PostHookHandlerType,
 } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
@@ -30,7 +29,6 @@ export interface RecycledItemDataOptions {
    * will continue "in the back". **This value should be smaller than `maxItemsInRequest`**
    * otherwise it has no effect. Defaults to `5`. */
   maxItemsWithResponse: number;
-  recycleItemPostHook?: PostHookHandlerType<string>;
 }
 
 const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, options) => {

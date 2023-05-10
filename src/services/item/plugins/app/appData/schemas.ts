@@ -1,3 +1,7 @@
+import { AppDataVisibility } from '@graasp/sdk';
+
+import { UUID_REGEX } from '../../../../../schemas/global';
+
 export default {
   $id: 'http://graasp.org/apps/app-data/',
   definitions: {
@@ -74,7 +78,7 @@ const getForOne = {
   querystring: {
     type: 'object',
     properties: {
-      visibility: { type: 'string', enum: ['member', 'item'] },
+      visibility: { type: 'string', enum: Object.values(AppDataVisibility) },
       memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
@@ -97,15 +101,32 @@ const getForMany = {
         items: { $ref: 'http://graasp.org/#/definitions/uuid' },
         uniqueItems: true,
       },
-      visibility: { type: 'string', enum: ['member', 'item'] },
+      visibility: { type: 'string', enum: Object.values(AppDataVisibility) },
       memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
   response: {
     200: {
-      type: 'array',
-      items: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        data: {
+          type: 'object',
+          patternProperties: {
+            [UUID_REGEX]: {
+              type: 'array',
+              items: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+            },
+          },
+        },
+        errors: {
+          type: 'array',
+          items: {
+            $ref: 'http://graasp.org/#/definitions/error',
+          },
+        },
+      },
     },
   },
 };

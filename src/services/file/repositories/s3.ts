@@ -16,6 +16,10 @@ import { FastifyReply } from 'fastify';
 
 import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
+import {
+  DownloadFileUnexpectedError,
+  UploadFileUnexpectedError,
+} from '../../item/plugins/file/utils/errors';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import { S3FileNotFound } from '../utils/errors';
@@ -226,7 +230,7 @@ export class S3FileRepository implements FileRepository {
         throw new S3FileNotFound({ filepath, id });
       }
 
-      throw e;
+      throw new DownloadFileUnexpectedError({ filepath, id });
     }
   }
 
@@ -262,7 +266,6 @@ export class S3FileRepository implements FileRepository {
     };
 
     // TO CHANGE: use signed url ? but difficult to set up callback
-
     await this.s3Instance.putObject(params);
   }
 }

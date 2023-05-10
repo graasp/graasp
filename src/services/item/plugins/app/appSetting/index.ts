@@ -1,9 +1,10 @@
 import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
-import { IdParam, Item, ItemType } from '@graasp/sdk';
+import { IdParam, ItemType } from '@graasp/sdk';
 
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { Actor } from '../../../../member/entities/member';
+import { Item } from '../../../entities/Item';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 import appSettingFilePlugin from './plugins/file';
@@ -16,7 +17,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     db,
   } = fastify;
 
-  // TODO: still necessary??
+  // register app setting schema
   fastify.addSchema(common);
 
   const appSettingService = new AppSettingService(itemService);

@@ -148,6 +148,7 @@ describe('Link Item tests', () => {
       it('Bad Request for link', async () => {
         const { item } = await saveItemAndMembership({
           item: {
+            name: 'link item',
             type: ItemType.LINK,
             extra,
           },
@@ -181,7 +182,8 @@ describe('Link Item tests', () => {
   describe('PATCH many /items', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const { item } = await saveItemAndMembership({ member: actor });
+      const member = await saveMember(BOB);
+      const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.PATCH,

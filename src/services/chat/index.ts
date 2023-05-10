@@ -35,9 +35,10 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     db,
     actions: { service: actionService },
     mentions: { service: mentionService },
+    items: { service: itemService },
   } = fastify;
 
-  const chatService = new ChatMessageService(mentionService);
+  const chatService = new ChatMessageService(itemService, mentionService);
   const actionChatService = new ActionChatService(actionService);
 
   // isolate plugin content using fastify.register to ensure that the hooks will not be called when other routes match

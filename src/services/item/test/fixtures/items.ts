@@ -5,6 +5,7 @@ import { ItemSettings, ItemType, buildPathFromIds } from '@graasp/sdk';
 import { Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
 import { Item, ItemExtra } from '../../entities/Item';
+import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemRepository } from '../../repository';
 
 export const getDummyItem = (
@@ -62,6 +63,20 @@ export const saveItem = async ({
   return ItemRepository.post(item, actor, parentItem);
 };
 
+export const savePublicItem = async ({
+  item,
+  parentItem,
+  actor,
+}: {
+  parentItem?: Item;
+  actor: Member;
+  item: Partial<Item>;
+}) => {
+  const newItem = await ItemRepository.post(item, actor, parentItem);
+  await setItemPublic(newItem, actor);
+  return newItem;
+};
+
 export const saveItems = async ({
   items,
   parentItem,
@@ -77,8 +92,8 @@ export const saveItems = async ({
 };
 
 export const expectItem = (
-  newItem: Partial<Item> | undefined,
-  correctItem: Partial<Item> | undefined,
+  newItem: Partial<Item> | undefined | null,
+  correctItem: Partial<Item> | undefined | null,
   creator?: Member,
   parent?: Item,
 ) => {
@@ -89,7 +104,7 @@ export const expectItem = (
     throw new Error('expectItem.correctItem is not defined ' + JSON.stringify(correctItem));
   }
   expect(newItem.name).toEqual(correctItem.name);
-  expect(newItem.description).toEqual(correctItem.description);
+  expect(newItem.description).toEqual(correctItem.description ?? null);
   expect(newItem.extra).toEqual(correctItem.extra);
   expect(newItem.type).toEqual(correctItem.type);
 

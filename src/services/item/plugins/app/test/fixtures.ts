@@ -1,33 +1,30 @@
 import { v4 } from 'uuid';
 
-import { Actor, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { APP_ITEMS_PREFIX } from '../../../../../util/config';
+import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { getDummyItem } from '../../../test/fixtures/items';
+import { setItemPublic } from '../../itemTag/test/fixtures';
 import { PublisherRepository } from '../publisherRepository';
 import { AppRepository } from '../repository';
 
-export const GRAASP_ACTOR: Actor = {
-  id: 'actorid',
-};
-
 export const GRAASP_PUBLISHER = {
-  id: v4(),
+  id: APPS_PUBLISHER_ID,
   name: 'graasp',
   origins: ['http://origin.org'],
 };
 
 export const MOCK_APP_ORIGIN = 'http://app.localhost:3000';
 
-export const buildMockAuthTokenSubject = ({ app = v4(), item = v4() } = {}) => ({
+export const buildMockAuthTokenSubject = ({ app = v4(), member = v4(), item = v4() } = {}) => ({
   item,
-  member: GRAASP_ACTOR.id,
+  member,
   app,
   origin: MOCK_APP_ORIGIN,
 });
@@ -91,15 +88,24 @@ export const saveAppList = async () => {
 };
 
 // save apps, app settings, and get token
-export const setUp = async (app, actor: Member, creator?: Member, permission?: PermissionLevel) => {
+export const setUp = async (
+  app,
+  actor: Actor,
+  creator: Member,
+  permission?: PermissionLevel,
+  setPublic?: boolean,
+) => {
   const apps = await saveAppList();
   const chosenApp = apps[0];
-  const { item } = await saveApp({ url: chosenApp.url, member: creator ?? actor });
+  const { item } = await saveApp({ url: chosenApp.url, member: creator });
+  if (setPublic) {
+    await setItemPublic(item, creator);
+  }
   const appDetails = { origin: chosenApp.publisher.origins[0], key: chosenApp.key };
 
   // if specified, we have a complex case where actor did not create the items
   // and data, so we need to add a membership
-  if (permission && creator) {
+  if (permission && actor && creator && actor !== creator) {
     await saveMembership({ item, member: actor, permission });
   }
   const response = await app.inject({
@@ -108,5 +114,6 @@ export const setUp = async (app, actor: Member, creator?: Member, permission?: P
     payload: appDetails,
   });
   const token = response.json().token;
+  console.log(response.json());
   return { token, item };
 };

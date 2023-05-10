@@ -8,11 +8,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+import { ItemValidationGroup as GraaspItemValidationGroup } from '@graasp/sdk';
+
 import { Item } from '../../../entities/Item';
 import { ItemValidation } from './ItemValidation';
 
 @Entity()
-export class ItemValidationGroup extends BaseEntity {
+export class ItemValidationGroup extends BaseEntity implements GraaspItemValidationGroup {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

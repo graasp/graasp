@@ -25,7 +25,7 @@ export const sendRequestToClassifier = async (
     }).then((res) => res.json());
     return response;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw new FailedImageClassificationRequestError(error);
   }
 };

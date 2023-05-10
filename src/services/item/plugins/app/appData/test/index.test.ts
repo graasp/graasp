@@ -4,8 +4,9 @@ import { v4 } from 'uuid';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
-import { APP_ITEMS_PREFIX } from '../../../../../../util/config';
-import { Member } from '../../../../../member/entities/member';
+import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
+import { Actor, Member } from '../../../../../member/entities/member';
+import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { AppDataVisibility } from '../../interfaces/app-details';
 import { setUp } from '../../test/fixtures';
@@ -59,11 +60,12 @@ const saveAppData = async ({
 // save apps, app data, and get token
 const setUpForAppData = async (
   app,
-  actor: Member,
-  creator?: Member,
+  actor: Actor,
+  creator: Member,
   permission?: PermissionLevel,
+  setPublic?: boolean,
 ) => {
-  const values = await setUp(app, actor, creator, permission);
+  const values = await setUp(app, actor, creator, permission, setPublic);
   const appData = await saveAppData({ item: values.item, creator: creator ?? actor });
   return { ...values, appData };
 };
@@ -91,9 +93,10 @@ describe('Apps Data Tests', () => {
   describe('GET /:itemId/app-data', () => {
     describe('Sign Out', () => {
       beforeEach(async () => {
-        ({ app, actor } = await build());
+        ({ app } = await build({ member: null }));
+        const member = await saveMember(BOB);
 
-        ({ item, token, appData } = await setUpForAppData(app, actor));
+        ({ item, token, appData } = await setUpForAppData(app, actor, member));
         // logout after getting token and setting up
         await app.inject({
           method: HttpMethod.GET,
@@ -110,12 +113,54 @@ describe('Apps Data Tests', () => {
       });
     });
 
-    // TODO: public
+    describe('Public', () => {
+      it('Throws if is signed out', async () => {
+        ({ app } = await build({ member: null }));
+        const member = await saveMember(BOB);
+        ({ item, appData, token } = await setUpForAppData(
+          app,
+          actor,
+          member,
+          PermissionLevel.Read,
+          true,
+        ));
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+      });
+
+      // TODO: get public data
+      it('Get empty data successfully', async () => {
+        ({ app, actor } = await build());
+        const member = await saveMember(BOB);
+        ({ item, appData, token } = await setUpForAppData(
+          app,
+          member,
+          member,
+          PermissionLevel.Read,
+          true,
+        ));
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.json()).toHaveLength(0);
+      });
+    });
 
     describe('Sign In', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item, appData, token } = await setUpForAppData(app, actor));
+        ({ item, appData, token } = await setUpForAppData(app, actor, actor));
       });
 
       it('Get app data successfully', async () => {
@@ -152,7 +197,7 @@ describe('Apps Data Tests', () => {
         ({ app, actor } = await build());
 
         // unefficient way of registering two apps and their app data
-        ({ item, token, appData } = await setUpForAppData(app, actor));
+        ({ item, token, appData } = await setUpForAppData(app, actor, actor));
 
         // logout after getting token and setting up
         await app.inject({
@@ -181,12 +226,12 @@ describe('Apps Data Tests', () => {
           item: item1,
           token: unusedToken,
           appData: appData1,
-        } = await setUpForAppData(app, actor);
+        } = await setUpForAppData(app, actor, actor);
         const {
           item: item2,
           token: validToken,
           appData: appData2,
-        } = await setUpForAppData(app, actor);
+        } = await setUpForAppData(app, actor, actor);
         items = [item1, item2];
         appDataArray = { [item1.id]: appData1, [item2.id]: appData2 };
         token = validToken;
@@ -201,7 +246,7 @@ describe('Apps Data Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        Object.entries(response.json()).forEach(([itemId, appDatas]) => {
+        Object.entries(response.json().data).forEach(([itemId, appDatas]) => {
           expectAppData(appDatas, appDataArray[itemId]);
         });
       });
@@ -227,7 +272,7 @@ describe('Apps Data Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
 
-        ({ item, token, appData } = await setUpForAppData(app, actor));
+        ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
           method: HttpMethod.GET,
@@ -265,7 +310,7 @@ describe('Apps Data Tests', () => {
     describe('Sign In', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item, token } = await setUpForAppData(app, actor));
+        ({ item, token } = await setUpForAppData(app, actor, actor));
       });
 
       it('Post app data successfully', async () => {
@@ -310,7 +355,7 @@ describe('Apps Data Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
 
-        ({ item, token, appData } = await setUpForAppData(app, actor));
+        ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
           method: HttpMethod.GET,
@@ -333,7 +378,7 @@ describe('Apps Data Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         let appData;
-        ({ item, token, appData } = await setUpForAppData(app, actor));
+        ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         chosenAppData = appData[0];
       });
 
@@ -408,7 +453,7 @@ describe('Apps Data Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
 
-        ({ item, token, appData } = await setUpForAppData(app, actor));
+        ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
           method: HttpMethod.GET,
@@ -432,7 +477,7 @@ describe('Apps Data Tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item, token, appData } = await setUpForAppData(app, actor));
+        ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         chosenAppData = appData[0];
       });
 
@@ -448,7 +493,7 @@ describe('Apps Data Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expect(response.body).toEqual(chosenAppData.id);
 
-        const appSetting = await AppDataRepository.get(chosenAppData.id);
+        const appSetting = await AppDataRepository.findOneBy({ id: chosenAppData.id });
         expect(appSetting).toBeFalsy();
       });
 

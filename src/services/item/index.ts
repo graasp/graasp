@@ -3,17 +3,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import {
   APPS_JWT_SECRET,
-  APPS_PLUGIN,
   APPS_PUBLISHER_ID,
   APP_ITEMS_PREFIX,
-  AUTH_CLIENT_HOST,
-  CHATBOX_PLUGIN,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-  EMBEDDED_LINK_ITEM_PLUGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
-  PROTOCOL,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../utils/config';
 import graaspChatbox from '../chat';
@@ -53,16 +48,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     localConfig: FILE_ITEM_PLUGIN_OPTIONS,
   });
 
-  // deployed w/o the '/items' prefix and w/o auth pre-handler
-  if (APPS_PLUGIN) {
-    // this needs to execute before 'create()' and 'updateOne()' are called
-    // because graaspApps extends the schemas
-    fastify.register(graaspApps, {
-      jwtSecret: APPS_JWT_SECRET,
-      prefix: APP_ITEMS_PREFIX,
-      publisherId: APPS_PUBLISHER_ID,
-    });
-  }
+  // this needs to execute before 'create()' and 'updateOne()' are called
+  // because graaspApps extends the schemas
+  fastify.register(graaspApps, {
+    jwtSecret: APPS_JWT_SECRET,
+    prefix: APP_ITEMS_PREFIX,
+    publisherId: APPS_PUBLISHER_ID,
+  });
 
   // we move this from fluent schema because it was a global value
   // this did not fit well with tests
@@ -90,7 +82,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemPublish, {
         // publishedTagId: PUBLISHED_TAG_ID,
         // publicTagId: PUBLIC_TAG_ID,
-        // graaspActor: GRAASP_ACTOR,
         // hostname: CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname,
       });
 
@@ -114,12 +105,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(thumbnailsPlugin);
 
-        if (EMBEDDED_LINK_ITEM_PLUGIN) {
-          // 'await' necessary because internally it uses 'extendCreateSchema'
-          await fastify.register(graaspEmbeddedLinkItem, {
-            iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
-          });
-        }
+        // 'await' necessary because internally it uses 'extendCreateSchema'
+        await fastify.register(graaspEmbeddedLinkItem, {
+          iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+        });
 
         await fastify.register(graaspDocumentItem);
 
@@ -136,9 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemLikes);
 
-        if (CHATBOX_PLUGIN) {
-          fastify.register(graaspChatbox);
-        }
+        fastify.register(graaspChatbox);
 
         // if (WEBSOCKETS_PLUGIN) {
         //   registerItemWsHooks(

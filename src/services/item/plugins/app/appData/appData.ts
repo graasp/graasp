@@ -10,9 +10,10 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { AppDataVisibility, AppData as GraaspAppData } from '@graasp/sdk';
+
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
-import { AppDataVisibility } from '../interfaces/app-details';
 
 export type Filters = {
   visibility?: AppDataVisibility;
@@ -20,7 +21,7 @@ export type Filters = {
 };
 
 @Entity()
-export class AppData extends BaseEntity {
+export class AppData extends BaseEntity implements GraaspAppData {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

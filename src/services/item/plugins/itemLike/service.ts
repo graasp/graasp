@@ -11,19 +11,16 @@ export class ItemLikeService {
     this.itemService = itemService;
   }
 
-  async getItemsForMember(actor: Actor, repositories: Repositories, memberId: string) {
+  async getItemsForMember(actor: Actor, repositories: Repositories) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
     const { itemLikeRepository } = repositories;
 
     // only own items
-    // TODO: allow with future implementation
-    if (memberId !== actor.id) {
-      throw new CannotGetOthersLikes(memberId);
-    }
+    // TODO: allow to get other's like?
 
-    return itemLikeRepository.getItemsForMember(memberId);
+    return itemLikeRepository.getItemsForMember(actor.id);
   }
 
   async getForItem(actor: Actor, repositories: Repositories, itemId: string) {

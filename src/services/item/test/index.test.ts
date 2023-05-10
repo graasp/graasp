@@ -39,7 +39,14 @@ import { Item } from '../entities/Item';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
 import { pathToId } from '../utils';
-import { expectItem, expectManyItems, getDummyItem, saveItem, saveItems } from './fixtures/items';
+import {
+  expectItem,
+  expectManyItems,
+  getDummyItem,
+  saveItem,
+  saveItems,
+  savePublicItem,
+} from './fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -315,7 +322,6 @@ describe('Item routes tests', () => {
     });
   });
   describe('GET /items/:id', () => {
-    // warning: this will change if it becomes a public endpoint
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
@@ -326,7 +332,7 @@ describe('Item routes tests', () => {
         url: `/items/${item.id}`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
 
     describe('Signed In', () => {
@@ -378,6 +384,23 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
     });
+
+    describe('Public', () => {
+      it('Returns successfully', async () => {
+        ({ app } = await build({ member: null }));
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const item = await savePublicItem({ item: getDummyItem(), actor: member });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${item.id}`,
+        });
+
+        const returnedItem = response.json();
+        expectItem(returnedItem, item, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+    });
   });
   // get many items
   describe('GET /items?id=<id>', () => {
@@ -391,8 +414,8 @@ describe('Item routes tests', () => {
         method: HttpMethod.GET,
         url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
-
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.json().errors[0]).toMatchObject(new MemberCannotAccess(item.id));
     });
 
     describe('Signed In', () => {
@@ -472,6 +495,36 @@ describe('Item routes tests', () => {
 
         expect(errors).toContainEqual(new ItemNotFound(missingId));
         expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+    });
+
+    describe('Public', () => {
+      it('Returns successfully', async () => {
+        ({ app } = await build({ member: null }));
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const items: Item[] = [];
+        for (let i = 0; i < 3; i++) {
+          const item = await savePublicItem({ item: getDummyItem(), actor: member });
+          items.push(item);
+        }
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items?${qs.stringify(
+            { id: items.map(({ id }) => id) },
+            { arrayFormat: 'repeat' },
+          )}`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const { data, errors } = response.json();
+        expect(errors).toHaveLength(0);
+        items.forEach(({ id }) => {
+          expectItem(
+            data[id],
+            items.find(({ id: thisId }) => thisId === id),
+          );
+        });
       });
     });
   });
@@ -684,7 +737,7 @@ describe('Item routes tests', () => {
         url: `/items/${item.id}/children`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
 
     describe('Signed In', () => {
@@ -878,6 +931,35 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
     });
+
+    describe('Public', () => {
+      it('Returns successfully', async () => {
+        ({ app } = await build({ member: null }));
+        const actor = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const parent = await savePublicItem({ item: getDummyItem(), actor });
+        const child1 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
+        const child2 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
+
+        const children = [child1, child2];
+        // create child of child
+        await savePublicItem({ item: getDummyItem(), actor, parentItem: child1 });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children`,
+        });
+
+        const data = response.json();
+        expect(data).toHaveLength(children.length);
+        children.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            children.find(({ id: thisId }) => thisId === id),
+          );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+    });
   });
 
   describe('GET /items/:id/descendants', () => {
@@ -892,7 +974,7 @@ describe('Item routes tests', () => {
         url: `/items/${item.id}/descendants`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
     });
 
     describe('Signed In', () => {
@@ -1035,6 +1117,45 @@ describe('Item routes tests', () => {
 
         expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+    });
+
+    describe('Public', () => {
+      it('Returns successfully', async () => {
+        ({ app } = await build({ member: null }));
+        const parent = await savePublicItem({ item: getDummyItem(), actor });
+        const child1 = await savePublicItem({
+          item: getDummyItem({ name: 'child1' }),
+          actor,
+          parentItem: parent,
+        });
+        const child2 = await savePublicItem({
+          item: getDummyItem({ name: 'child2' }),
+          actor,
+          parentItem: parent,
+        });
+
+        const childOfChild = await savePublicItem({
+          item: getDummyItem({ name: 'child3' }),
+          actor,
+          parentItem: child1,
+        });
+        const descendants = [child1, child2, childOfChild];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/descendants`,
+        });
+
+        const data = response.json();
+        expect(data).toHaveLength(descendants.length);
+        descendants.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            descendants.find(({ id: thisId }) => thisId === id),
+          );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });
   });
@@ -1194,7 +1315,7 @@ describe('Item routes tests', () => {
       const payload = { name: 'new name' };
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.PATCH,
         url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         payload,
       });
@@ -1300,93 +1421,93 @@ describe('Item routes tests', () => {
       });
     });
   });
-  describe('DELETE /items/:id', () => {
-    it('Throws if signed out', async () => {
-      ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-      const { item } = await saveItemAndMembership({ member });
+  // describe('DELETE /items/:id', () => {
+  //   it('Throws if signed out', async () => {
+  //     ({ app } = await build({ member: null }));
+  //     const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+  //     const { item } = await saveItemAndMembership({ member });
 
-      const response = await app.inject({
-        method: HttpMethod.DELETE,
-        url: `/items/${item.id}`,
-      });
+  //     const response = await app.inject({
+  //       method: HttpMethod.DELETE,
+  //       url: `/items/${item.id}`,
+  //     });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-    });
+  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  //   });
 
-    describe('Signed In', () => {
-      beforeEach(async () => {
-        ({ app, actor } = await build());
-      });
-      it('Delete successfully', async () => {
-        const { item, itemMembership } = await saveItemAndMembership({ member: actor });
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const membership = await saveMembership({ item, member });
+  //   describe('Signed In', () => {
+  //     beforeEach(async () => {
+  //       ({ app, actor } = await build());
+  //     });
+  //     it('Delete successfully', async () => {
+  //       const { item, itemMembership } = await saveItemAndMembership({ member: actor });
+  //       const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+  //       const membership = await saveMembership({ item, member });
 
-        const response = await app.inject({
-          method: HttpMethod.DELETE,
-          url: `/items/${item.id}`,
-        });
+  //       const response = await app.inject({
+  //         method: HttpMethod.DELETE,
+  //         url: `/items/${item.id}`,
+  //       });
 
-        expectItem(response.json(), item);
-        expect(response.statusCode).toBe(StatusCodes.OK);
+  //       expectItem(response.json(), item);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
 
-        // expect item and its membership to not exist in the tree
-        expect(await ItemRepository.findOneBy({ id: item.id })).toBeFalsy();
-        expect(await ItemMembershipRepository.findOneBy({ id: itemMembership.id })).toBeFalsy();
-        expect(await ItemMembershipRepository.findOneBy({ id: membership.id })).toBeFalsy();
-      });
-      it('Delete successfully with children', async () => {
-        const { item: anotherItem, itemMembership } = await saveItemAndMembership({
-          member: actor,
-        });
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item: item1 } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        const { item: item2 } = await saveItemAndMembership({ member: actor, parentItem: parent });
+  //       // expect item and its membership to not exist in the tree
+  //       expect(await ItemRepository.findOneBy({ id: item.id })).toBeFalsy();
+  //       expect(await ItemMembershipRepository.findOneBy({ id: itemMembership.id })).toBeFalsy();
+  //       expect(await ItemMembershipRepository.findOneBy({ id: membership.id })).toBeFalsy();
+  //     });
+  //     it('Delete successfully with children', async () => {
+  //       const { item: anotherItem, itemMembership } = await saveItemAndMembership({
+  //         member: actor,
+  //       });
+  //       const { item: parent } = await saveItemAndMembership({ member: actor });
+  //       const { item: item1 } = await saveItemAndMembership({ member: actor, parentItem: parent });
+  //       const { item: item2 } = await saveItemAndMembership({ member: actor, parentItem: parent });
 
-        const response = await app.inject({
-          method: HttpMethod.DELETE,
-          url: `/items/${parent.id}`,
-        });
+  //       const response = await app.inject({
+  //         method: HttpMethod.DELETE,
+  //         url: `/items/${parent.id}`,
+  //       });
 
-        expectItem(response.json(), parent);
-        expect(response.statusCode).toBe(StatusCodes.OK);
+  //       expectItem(response.json(), parent);
+  //       expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const items = await ItemRepository.find();
-        // only one random item still exists
-        expect(items).toHaveLength(1);
-        expect(items.find(({ id }) => id === anotherItem.id)).toBeTruthy();
-        expect(items.find(({ id }) => id === parent.id)).toBeFalsy();
-        expect(items.find(({ id }) => id === item1.id)).toBeFalsy();
-        expect(items.find(({ id }) => id === item2.id)).toBeFalsy();
+  //       const items = await ItemRepository.find();
+  //       // only one random item still exists
+  //       expect(items).toHaveLength(1);
+  //       expect(items.find(({ id }) => id === anotherItem.id)).toBeTruthy();
+  //       expect(items.find(({ id }) => id === parent.id)).toBeFalsy();
+  //       expect(items.find(({ id }) => id === item1.id)).toBeFalsy();
+  //       expect(items.find(({ id }) => id === item2.id)).toBeFalsy();
 
-        // expect memberships to not exist in the tree
-        const memberships = await ItemMembershipRepository.find({
-          where: { id: Not(itemMembership.id) },
-        });
-        expect(memberships).toHaveLength(0);
-      });
-      it('Cannot delete too many descendants', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
+  //       // expect memberships to not exist in the tree
+  //       const memberships = await ItemMembershipRepository.find({
+  //         where: { id: Not(itemMembership.id) },
+  //       });
+  //       expect(memberships).toHaveLength(0);
+  //     });
+  //     it('Cannot delete too many descendants', async () => {
+  //       const { item: parent } = await saveItemAndMembership({ member: actor });
 
-        const children = Array.from({ length: MAX_DESCENDANTS_FOR_DELETE + 1 }, () =>
-          getDummyItem(),
-        );
-        await Promise.all(
-          children.map((item) =>
-            saveItemAndMembership({ item, member: actor, parentItem: parent }),
-          ),
-        );
-        const response = await app.inject({
-          method: HttpMethod.DELETE,
-          url: `/items/${parent.id}`,
-        });
+  //       const children = Array.from({ length: MAX_DESCENDANTS_FOR_DELETE + 1 }, () =>
+  //         getDummyItem(),
+  //       );
+  //       await Promise.all(
+  //         children.map((item) =>
+  //           saveItemAndMembership({ item, member: actor, parentItem: parent }),
+  //         ),
+  //       );
+  //       const response = await app.inject({
+  //         method: HttpMethod.DELETE,
+  //         url: `/items/${parent.id}`,
+  //       });
 
-        expect(response.json()).toEqual(new TooManyDescendants(parent.id));
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-      });
-    });
-  });
+  //       expect(response.json()).toEqual(new TooManyDescendants(parent.id));
+  //       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+  //     });
+  //   });
+  // });
   // // delete many items
   describe('DELETE /items', () => {
     it('Throws if signed out', async () => {

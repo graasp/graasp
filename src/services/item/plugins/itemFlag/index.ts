@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemFlag } from './itemFlag';
 import common, { create, getFlags } from './schemas';
@@ -25,9 +26,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // create item flag
   fastify.post<{ Params: { itemId: string }; Body: Partial<ItemFlag> }>(
     '/:itemId/flags',
-    { schema: create, preHandler: fastify.fetchMemberInSession },
+    { schema: create, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { itemId }, body, log }) => {
       return db.transaction(async (manager) => {
+        if (!member) {
+          throw new UnauthorizedMember(member);
+        }
         return iFS.post(member, buildRepositories(manager), itemId, body);
       });
     },

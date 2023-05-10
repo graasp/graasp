@@ -1,10 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
+import fetch from 'node-fetch';
 import { In } from 'typeorm';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
+import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 import { Item } from '../../item/entities/Item';
 import { generateRandomEmail } from '../../itemLogin/utils';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
@@ -17,10 +19,17 @@ import { InvitationRepository } from '../repository';
 // mock datasource
 jest.mock('../../../plugins/datasource');
 
+// mock captcha
+// bug: cannot reuse mockCaptchaValidation
+jest.mock('node-fetch');
+(fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+  return { json: async () => ({ success: true, action: RecaptchaAction.SignUp, score: 1 }) } as any;
+});
+
 const mockEmail = (app) => {
   return jest.spyOn(app.mailer, 'sendEmail').mockImplementation(async () => {
     // do nothing
-    console.log('SEND EMAIL');
+    console.debug('SEND EMAIL');
   });
 };
 
@@ -443,7 +452,7 @@ describe('Invitation Plugin', () => {
       await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: { email, name: 'some-name' },
+        payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
 
       // invitations should be removed and memberships created
@@ -470,7 +479,7 @@ describe('Invitation Plugin', () => {
       await app.inject({
         method: HttpMethod.POST,
         url: '/register',
-        payload: { email, name: 'some-name' },
+        payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
 
       await new Promise((done) => {

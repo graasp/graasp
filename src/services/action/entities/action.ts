@@ -9,13 +9,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { Anything, Context } from '@graasp/sdk';
+import { Anything, Context, Action as GraaspAction } from '@graasp/sdk';
 
 import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
-export class Action extends BaseEntity {
+export class Action extends BaseEntity implements GraaspAction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -24,7 +24,7 @@ export class Action extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'member_id' })
-  member?: Member;
+  member?: Member | null;
 
   /**
    * action can be related to a behavior not related to an item
@@ -35,7 +35,7 @@ export class Action extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
-  item?: Item;
+  item?: Item | null;
 
   @Column({
     nullable: false,

@@ -14,6 +14,7 @@ import {
   MemberCannotAdminItem,
   ModifyExisting,
 } from '../../../utils/errors';
+import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
@@ -33,8 +34,7 @@ describe('Membership routes tests', () => {
   });
 
   describe('GET /item-memberships?itemId=<itemId>', () => {
-    // TODO: public???
-    it('Throws if signed out', async () => {
+    it('Returns error if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
       const { item } = await saveItemAndMembership({ member });
@@ -44,7 +44,8 @@ describe('Membership routes tests', () => {
         url: `/item-memberships?itemId=${item.id}`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.json().errors[0]).toMatchObject(new MemberCannotAccess(item.id));
     });
 
     describe('Signed In', () => {
@@ -110,8 +111,7 @@ describe('Membership routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      // TODO: it should return one error and all the other data
-      it('Throws if one item is not found', async () => {
+      it('Returns error if one item is not found', async () => {
         await saveItemAndMembership({ member: actor });
         const itemId = v4();
         const response = await app.inject({
@@ -119,13 +119,12 @@ describe('Membership routes tests', () => {
           url: `/item-memberships?itemId=${itemId}`,
         });
 
-        expect(response.json()).toEqual(new ItemNotFound(itemId));
+        expect(response.statusCode).toBe(StatusCodes.OK);
 
-        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+        expect(response.json().errors[0]).toMatchObject(new ItemNotFound(itemId));
       });
 
-      // todo: public endpoint?
-      it('Cannot get memberships if user has no membership', async () => {
+      it('Returns error if user has no membership', async () => {
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         const { item } = await saveItemAndMembership({ member });
 
@@ -133,8 +132,37 @@ describe('Membership routes tests', () => {
           method: HttpMethod.GET,
           url: `/item-memberships?itemId=${item.id}`,
         });
-        expect(response.json()).toEqual(new MemberCannotAccess(item.id));
-        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.json().errors[0]).toMatchObject(new MemberCannotAccess(item.id));
+      });
+    });
+
+    describe('Public', () => {
+      beforeEach(async () => {
+        ({ app } = await build());
+      });
+      it('Returns successfully for one id', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item, itemMembership } = await saveItemAndMembership({ member });
+        await setItemPublic(item, member);
+
+        const member1 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.LOUISA);
+        const membership = await saveMembership({ item, member: member1 });
+
+        const memberships = [itemMembership, membership];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/item-memberships?itemId=${item.id}`,
+        });
+        const { data, errors } = response.json();
+        for (const m of memberships) {
+          const im = data[item.id].find(({ id }) => id === m.id);
+          expect(im).toBeTruthy();
+          expectMembership(m, im, member);
+        }
+        expect(errors).toHaveLength(0);
+        expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });
   });

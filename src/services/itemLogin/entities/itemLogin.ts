@@ -10,12 +10,14 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { ItemLogin as GraaspItemLogin } from '@graasp/sdk';
+
 import { Member } from '../../member/entities/member';
 import { ItemLoginSchema } from './itemLoginSchema';
 
 @Entity()
 @Unique('item-login-member', ['itemLoginSchema', 'member'])
-export class ItemLogin extends BaseEntity {
+export class ItemLogin extends BaseEntity implements GraaspItemLogin {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

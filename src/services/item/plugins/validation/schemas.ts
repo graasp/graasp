@@ -38,7 +38,10 @@ export const itemValidation = {
 
 export const itemValidationGroup = {
   params: {
-    itemValidationId: {
+    itemId: {
+      $ref: 'http://graasp.org/#/definitions/uuid',
+    },
+    itemValidationGroupId: {
       $ref: 'http://graasp.org/#/definitions/uuid',
     },
   },
