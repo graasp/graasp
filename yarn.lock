@@ -2096,7 +2096,7 @@ __metadata:
 
 "@graasp/sdk@github:graasp/graasp-sdk#typeorm":
   version: 0.12.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=c07acff7726c0110e82d84d70ca234c51e2d272c"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=7f718897919dd95d3f24eca9336a338346434bf0"
   dependencies:
     "@fastify/secure-session": 5.3.0
     "@graasp/etherpad-api": 2.1.1
@@ -2108,16 +2108,16 @@ __metadata:
     qs: 6.11.1
     typeorm: 0.3.15
     uuid: 9.0.0
-  checksum: 7cd99e9b4e89ead83f3c7fcb930730e43d157c009f079dd897da082d1279d0137d815adcc4e5b12b34e7f72d638a10fe17761dfc4ee54519071bfee613aeddbd
+  checksum: 5e2c1d163777394f2f8944b96dc06b6eece21e54d40a5ad3865724c548111134e9dfbf43fbe2a33ae5964ecefec06e20cac8adf5bd06b54b5d6b6c02659cbcd0
   languageName: node
   linkType: hard
 
-"@graasp/translations@github:graasp/graasp-translations#89-email":
-  version: 1.12.0
-  resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=abb5efba645674807ef983f26d35697de814f110"
+"@graasp/translations@npm:1.13.0":
+  version: 1.13.0
+  resolution: "@graasp/translations@npm:1.13.0"
   dependencies:
     i18next: 22.4.15
-  checksum: c8e75f55e45ec2f180bcf56619ad26aa45d120efd7bf2acfc269ba48a6c933ab707d76210ed7ecb963fad5229f3c93d1f1e6334a482ae7c81bd837019b9bc7ec
+  checksum: 319a62cf134e7427f31ba8fb7e9e91b536b9e97b05f773f0d459c42ab933a54c9175af3aa5017b82fcfdf91b934e5faf0f6a7c6dfb98e0b788698ebf2a9a64e1
   languageName: node
   linkType: hard
 
@@ -5908,7 +5908,7 @@ __metadata:
     "@fastify/static": 6.9.0
     "@fastify/view": 7.4.1
     "@graasp/sdk": "github:graasp/graasp-sdk#typeorm"
-    "@graasp/translations": "github:graasp/graasp-translations#89-email"
+    "@graasp/translations": 1.13.0
     "@sentry/node": 7.44.2
     "@sentry/profiling-node": 0.3.0
     "@sentry/tracing": 7.44.2

@@ -62,7 +62,7 @@
     "@fastify/static": "6.9.0",
     "@fastify/view": "7.4.1",
     "@graasp/sdk": "github:graasp/graasp-sdk#typeorm",
-    "@graasp/translations": "github:graasp/graasp-translations#89-email",
+    "@graasp/translations": "1.13.0",
     "@sentry/node": "7.44.2",
     "@sentry/profiling-node": "0.3.0",
     "@sentry/tracing": "7.44.2",
