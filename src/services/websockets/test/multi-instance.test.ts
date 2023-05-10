@@ -8,8 +8,6 @@ import waitForExpect from 'wait-for-expect';
 
 import { Websocket } from '@graasp/sdk';
 
-import globalConfig from '../src/config';
-import { createMockFastifyLogger } from './mocks';
 import {
   PortGenerator,
   clientSend,
@@ -30,10 +28,10 @@ test('multi-instance broker', async () => {
   const instance2 = await createWsFastifyInstance(config2);
 
   // register same topic on both instances
-  instance1.websockets?.register('foo', async (req) => {
+  instance1.websockets.register('foo', async (req) => {
     /* don't reject */
   });
-  instance2.websockets?.register('foo', async (req) => {
+  instance2.websockets.register('foo', async (req) => {
     /* don't reject */
   });
 
@@ -68,7 +66,7 @@ test('multi-instance broker', async () => {
   const msg = {
     hello: 'world',
   };
-  instance1.websockets?.publish('foo', 'test', msg);
+  instance1.websockets.publish('foo', 'test', msg);
   const values = await Promise.all([test1, test2]);
   values.forEach((value) => {
     expect(value).toStrictEqual({
@@ -86,7 +84,7 @@ test('multi-instance broker', async () => {
   const broadcast = {
     baz: 42,
   };
-  instance2.websockets?.publish('foo', 'broadcast', broadcast);
+  instance2.websockets.publish('foo', 'broadcast', broadcast);
   const values2 = await Promise.all([b1, b2]);
   values2.forEach((value) => {
     expect(value).toStrictEqual({
@@ -106,20 +104,17 @@ test('multi-instance broker', async () => {
 
 test('incorrect Redis message format', async () => {
   const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
-  const logger = createMockFastifyLogger();
-  const logInfoSpy = jest.spyOn(logger, 'info');
+  let logInfoSpy;
   const server = await createWsFastifyInstance(config, async (instance) => {
-    instance.log = logger;
+    logInfoSpy = jest.spyOn(instance.log, 'info');
   });
   const pub = new Redis({
-    port: globalConfig.redis.port,
-    host: globalConfig.redis.host,
-    password: globalConfig.redis.password,
+    host: config.redis.config.host,
   });
-  pub.publish(globalConfig.redis.notifChannel, JSON.stringify('Mock invalid redis message'));
+  pub.publish(config.redis.channelName, JSON.stringify('Mock invalid redis message'));
   await waitForExpect(() => {
     expect(logInfoSpy).toHaveBeenCalledWith(
-      `graasp-plugin-websockets: MultiInstanceChannelsBroker incorrect message received from Redis channel "${globalConfig.redis.notifChannel}": "Mock invalid redis message"`,
+      `graasp-plugin-websockets: MultiInstanceChannelsBroker incorrect message received from Redis channel "${config.redis.channelName}": "Mock invalid redis message"`,
     );
   });
   pub.disconnect();

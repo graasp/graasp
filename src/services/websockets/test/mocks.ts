@@ -4,23 +4,6 @@
  * Mock instances for testing in graasp-plugin-websockets
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-/* eslint-disable @typescript-eslint/no-empty-function */
-
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { FastifyLoggerInstance } from 'fastify';
-
-export const createMockFastifyLogger = (): FastifyLoggerInstance => ({
-  info: (...args: any[]) => {},
-  warn: (...args: any[]) => {},
-  error: (...args: any[]) => {},
-  fatal: (...args: any[]) => {},
-  trace: (...args: any[]) => {},
-  debug: (...args: any[]) => {},
-  child: (bindings) => createMockFastifyLogger(),
-});
-
 export const createMockMember = (extra?) => ({
   name: 'mockMemberName',
   email: 'mockMemberEmail',

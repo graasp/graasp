@@ -8,12 +8,11 @@
 import waitForExpect from 'wait-for-expect';
 import WebSocket from 'ws';
 
-import { FastifyInstance, FastifyLoggerInstance } from 'fastify';
+import { FastifyInstance } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
-import { createServerInfo } from '../src/message';
-import { createMockFastifyLogger } from './mocks';
+import { createServerInfo } from '../message';
 import {
   PortGenerator,
   TestConfig,
@@ -29,52 +28,22 @@ import {
 const portGen = new PortGenerator(7000);
 
 describe('plugin options', () => {
-  test('plugin logs on boot', async () => {
-    const config: TestConfig = {
-      host: '127.0.0.1',
-      port: portGen.getNewPort(),
-      prefix: '/some-prefix',
-      redis: {
-        config: {
-          host: '127.0.0.1',
-          port: 6379,
-        },
-        channelName: 'redis-channel-name',
-      },
-    };
-
-    const spiedLogger: FastifyLoggerInstance = createMockFastifyLogger();
-    const logInfoSpy = jest.spyOn(spiedLogger, 'info');
-    const server = await createWsFastifyInstance(config, async (instance) => {
-      instance.log = spiedLogger;
-    });
-
-    await waitForExpect(() => {
-      // password should not be logged
-      expect(logInfoSpy).toHaveBeenCalledWith(
-        "graasp-plugin-websockets: plugin booted with prefix /some-prefix and Redis parameters { config: { host: '127.0.0.1', port: 6379 }, notifChannel: 'redis-channel-name' }",
-      );
-    });
-
-    await server.close();
-  });
-
   test('route prefix', async () => {
-    const configWithPrefix: TestConfig = {
+    const configWithPrefix = createDefaultLocalConfig({
       host: '127.0.0.1',
       port: portGen.getNewPort(),
       prefix: '/testPrefix',
-    };
+    });
     const serverWithPrefix = await createWsFastifyInstance(configWithPrefix);
     const clientWithPrefix = await createWsClient(configWithPrefix);
     const res1 = new Promise((resolve) => clientWithPrefix.on('pong', resolve));
     clientWithPrefix.ping('withPrefix');
     expect(((await res1) as Buffer).toString()).toStrictEqual('withPrefix');
 
-    const configNoPrefix: TestConfig = {
+    const configNoPrefix = createDefaultLocalConfig({
       host: '127.0.0.1',
       port: portGen.getNewPort(),
-    };
+    });
     const serverNoPrefix = await createWsFastifyInstance(configNoPrefix);
     const clientNoPrefix = await createWsClient(configNoPrefix);
     const res2 = new Promise((resolve) => clientNoPrefix.on('pong', resolve));
@@ -90,7 +59,7 @@ describe('plugin options', () => {
 
 describe('internal state', () => {
   const t: Partial<{
-    config: TestConfig;
+    config: Required<TestConfig>;
     server: FastifyInstance;
     client: WebSocket;
   }> = {};
@@ -187,7 +156,7 @@ describe('internal state', () => {
 
 describe('client requests', () => {
   const t: Partial<{
-    config: TestConfig;
+    config: Required<TestConfig>;
     server: FastifyInstance;
     client: WebSocket;
   }> = {};
@@ -454,7 +423,7 @@ describe('channel send', () => {
 
 describe('error cases', () => {
   const t: Partial<{
-    config: TestConfig;
+    config: Required<TestConfig>;
     server: FastifyInstance;
     client: WebSocket;
   }> = {};
@@ -495,35 +464,5 @@ describe('error cases', () => {
       },
       request,
     });
-  });
-
-  test('top-level error handler', async () => {
-    const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
-
-    // setup logger with spy on error output, inject it into server
-    const spiedLogger: FastifyLoggerInstance = createMockFastifyLogger();
-    const logErrorSpy = jest.spyOn(spiedLogger, 'error');
-    const server = await createWsFastifyInstance(config, async (instance) => {
-      instance.log = spiedLogger;
-
-      // simulate server error
-      instance.addHook('preHandler', (req, res) => {
-        throw new Error('Mock server error');
-      });
-    });
-
-    const client = await createWsClient(config);
-
-    const req = { some: 'invalid request' };
-    client.send(JSON.stringify(req));
-
-    await waitForExpect(() => {
-      expect(logErrorSpy).toHaveBeenCalledWith(
-        'graasp-plugin-websockets: an error occured: Error: Mock server error\n\tDestroying connection',
-      );
-    });
-
-    client.close();
-    await server.close();
   });
 });

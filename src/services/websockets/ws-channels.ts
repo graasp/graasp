@@ -119,7 +119,7 @@ class WebSocketChannels {
   constructor(
     wsServer: WebSocket.Server,
     serialize: (data: Websocket.ServerMessage) => WebSocket.Data,
-    log?: FastifyBaseLogger,
+    log?: FastifyBaseLogger | Console,
     heartbeatInterval: number = 30000,
   ) {
     this.wsServer = wsServer;

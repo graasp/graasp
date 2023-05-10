@@ -21,7 +21,7 @@ import { WebsocketService } from './ws-service';
 /**
  * Type definition for plugin options
  */
-interface WebsocketsPluginOptions {
+export interface WebsocketsPluginOptions {
   prefix: string;
   redis: {
     config: RedisOptions;
