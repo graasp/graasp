@@ -3,57 +3,47 @@
  *
  * Test utility functions and configuration
  */
-import { RedisOptions } from 'ioredis';
 import WebSocket from 'ws';
 
-import fastify, { FastifyLoggerInstance } from 'fastify';
+import fastify from 'fastify';
 import { FastifyInstance } from 'fastify/types/instance';
-import { Bindings, ChildLoggerOptions } from 'fastify/types/logger';
 
 import { Websocket } from '@graasp/sdk';
 
-import graaspWebSockets from '../src';
-import { AjvMessageSerializer } from '../src/message-serializer';
-import { WebSocketChannels } from '../src/ws-channels';
+import { AjvMessageSerializer } from '../message-serializer';
+import graaspWebSockets, { WebsocketsPluginOptions } from '../service-api';
+import { WebSocketChannels } from '../ws-channels';
 import { mockSessionPreHandler, mockValidateSession } from './mocks';
 
 const clientSerdes = { serialize: JSON.stringify, parse: JSON.parse };
 const serverSerdes = new AjvMessageSerializer();
 
-export const TestingLogger: FastifyLoggerInstance = {
-  ...console,
-  fatal: console.error,
-  child: function (
-    bindings: Bindings,
-    options?: ChildLoggerOptions | undefined,
-  ): FastifyLoggerInstance {
-    throw new Error('Function not implemented.');
-  },
-};
-
 /**
  * Test config type
  * Specifies server configuration for test run
  */
-export interface TestConfig {
+export type TestConfig = Partial<WebsocketsPluginOptions> & {
   host: string;
   port: number;
-  prefix?: string;
-  redis?: {
-    config?: RedisOptions;
-    channelName?: string;
-  };
-}
+};
 
 /**
  * Creates a default local config for tests with 127.0.0.1 host and /ws prefix
  * @param options server configuration
  */
-export function createDefaultLocalConfig(options: { port: number }): TestConfig {
+export function createDefaultLocalConfig(
+  options: { port: number } & Partial<TestConfig>,
+): Required<TestConfig> {
   return {
-    host: '127.0.0.1',
+    host: options.host || '127.0.0.1',
     port: options.port,
-    prefix: '/ws',
+    prefix: options.prefix || '/ws',
+    redis: options.redis || {
+      config: {
+        host: 'graasp-redis',
+      },
+      channelName: 'notifications',
+    },
   };
 }
 
@@ -90,7 +80,7 @@ export function createWsChannels(
   const wsChannels = new WebSocketChannels(
     server,
     serverSerdes.serialize,
-    TestingLogger,
+    console,
     heartbeatInterval,
   );
 
@@ -130,7 +120,7 @@ export async function createFastifyInstance(
   const promise = new Promise<FastifyInstance>((resolve, reject) => {
     const server = fastify({ logger: true });
 
-    server.validateSession = mockValidateSession;
+    server.verifyAuthentication = mockValidateSession;
     server.addHook('preHandler', mockSessionPreHandler);
 
     setupFn(server).then(() => {
@@ -152,7 +142,7 @@ export async function createFastifyInstance(
  * @returns Promise of fastify server instance with graasp-plugin-websockets plugin
  */
 export async function createWsFastifyInstance(
-  config: TestConfig,
+  config: Required<TestConfig>,
   setupFn: (instance: FastifyInstance) => Promise<void> = (_) => Promise.resolve(),
 ): Promise<FastifyInstance> {
   return createFastifyInstance(config, async (instance) => {

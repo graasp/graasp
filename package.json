@@ -61,7 +61,7 @@
     "@fastify/secure-session": "6.0.0",
     "@fastify/static": "6.9.0",
     "@fastify/view": "7.4.1",
-    "@fastify/websocket": "8.0.0",
+    "@fastify/websocket": "7.2.0",
     "@graasp/sdk": "github:graasp/graasp-sdk#typeorm",
     "@graasp/translations": "1.13.0",
     "@sentry/node": "7.44.2",
@@ -130,7 +130,8 @@
     "standard-version": "9.5.0",
     "ts-jest": "29.0.5",
     "ts-node": "10.9.1",
-    "typescript": "5.0.2"
+    "typescript": "5.0.2",
+    "wait-for-expect": "3.0.2"
   },
   "packageManager": "yarn@3.2.4"
 }

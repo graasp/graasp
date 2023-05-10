@@ -2074,13 +2074,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/websocket@npm:8.0.0":
-  version: 8.0.0
-  resolution: "@fastify/websocket@npm:8.0.0"
+"@fastify/websocket@npm:7.2.0":
+  version: 7.2.0
+  resolution: "@fastify/websocket@npm:7.2.0"
   dependencies:
     fastify-plugin: ^4.0.0
     ws: ^8.0.0
-  checksum: 6fa60861e28fb3ae6e760fadea390f62721c90a2f80da62a65658dab9e0c1ea21e432b7f0766a5415b928cb153422401858fc5ab69d14bcbc35a3ac3847334bf
+  checksum: e9f66a906db152a8a66bafecd2da382911884f3bbf97eb312a01e0fe94126bd986cec092524436a976377a9111d98f913e73acdd0caa17d6d1e33d3703b4f84a
   languageName: node
   linkType: hard
 
@@ -5938,7 +5938,7 @@ __metadata:
     "@fastify/secure-session": 6.0.0
     "@fastify/static": 6.9.0
     "@fastify/view": 7.4.1
-    "@fastify/websocket": 8.0.0
+    "@fastify/websocket": 7.2.0
     "@graasp/sdk": "github:graasp/graasp-sdk#typeorm"
     "@graasp/translations": 1.13.0
     "@sentry/node": 7.44.2
@@ -6002,6 +6002,7 @@ __metadata:
     typeorm: 0.3.15
     typescript: 5.0.2
     uuid: 9.0.0
+    wait-for-expect: 3.0.2
     ws: 8.13.0
     yarn: 1.22.19
   languageName: unknown
@@ -10433,6 +10434,13 @@ __metadata:
     spdx-correct: ^3.0.0
     spdx-expression-parse: ^3.0.0
   checksum: 35703ac889d419cf2aceef63daeadbe4e77227c39ab6287eeb6c1b36a746b364f50ba22e88591f5d017bc54685d8137bc2d328d0a896e4d3fd22093c0f32a9ad
+  languageName: node
+  linkType: hard
+
+"wait-for-expect@npm:3.0.2":
+  version: 3.0.2
+  resolution: "wait-for-expect@npm:3.0.2"
+  checksum: 2ec1ebd78023fa10bdcf53d78bbd65feea68fdfa0de0b00f3a72f3df089118b91517839ff3926e5ef6cfd1ede65085326d85b0378d4db62c266cc9c859c2de56
   languageName: node
   linkType: hard
 
