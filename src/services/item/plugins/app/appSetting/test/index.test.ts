@@ -35,7 +35,7 @@ const saveAppSettings = async ({ item, creator }) => {
 const setUpForAppSettings = async (
   app,
   actor: Member,
-  creator?: Member,
+  creator: Member,
   permission?: PermissionLevel,
 ) => {
   const values = await setUp(app, actor, creator, permission);
@@ -66,7 +66,7 @@ describe('Apps Settings Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         member = actor;
-        ({ item, token, appSettings } = await setUpForAppSettings(app, actor));
+        ({ item, token, appSettings } = await setUpForAppSettings(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
           method: HttpMethod.GET,
@@ -102,7 +102,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Get app setting without token throws', async () => {
-        const { item } = await setUpForAppSettings(app, actor);
+        const { item } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -112,7 +112,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Get app settings successfully', async () => {
-        const { item, appSettings, token } = await setUpForAppSettings(app, actor);
+        const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -126,7 +126,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Get app setting with invalid item id throws', async () => {
-        const { token } = await setUpForAppSettings(app, actor);
+        const { token } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -162,7 +162,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Post app setting successfully', async () => {
-        ({ item, token } = await setUpForAppSettings(app, actor));
+        ({ item, token } = await setUpForAppSettings(app, actor, actor));
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -260,7 +260,7 @@ describe('Apps Settings Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         let appSettings;
-        ({ item, token, appSettings } = await setUpForAppSettings(app, actor));
+        ({ item, token, appSettings } = await setUpForAppSettings(app, actor, actor));
         chosenAppSetting = appSettings[0];
       });
 
@@ -394,7 +394,7 @@ describe('Apps Settings Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         let appSettings;
-        ({ item, token, appSettings } = await setUpForAppSettings(app, actor));
+        ({ item, token, appSettings } = await setUpForAppSettings(app, actor, actor));
         chosenAppSetting = appSettings[0];
       });
 

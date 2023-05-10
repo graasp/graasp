@@ -3,27 +3,27 @@ import { sortChildrenWith } from '../utils';
 
 const a = {
   id: 'a',
-  createdAt: Date.now(),
+  createdAt: new Date(),
 } as unknown as Item;
 const b = {
   id: 'b',
-  createdAt: Date.now() + 1,
+  createdAt: new Date(Date.now() + 1),
 } as unknown as Item;
 const c = {
   id: 'c',
-  createdAt: Date.now() + 2,
+  createdAt: new Date(Date.now() + 2),
 } as unknown as Item;
 const d = {
   id: 'd',
-  createdAt: Date.now() + 3,
+  createdAt: new Date(Date.now() + 3),
 } as unknown as Item;
 const e = {
   id: 'e',
-  createdAt: Date.now() + 4,
+  createdAt: new Date(Date.now() + 4),
 } as unknown as Item;
 const f = {
   id: 'f',
-  createdAt: Date.now() + 5,
+  createdAt: new Date(Date.now() + 5),
 } as unknown as Item;
 
 const items = [a, b, c, d, e, f];

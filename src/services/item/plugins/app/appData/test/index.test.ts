@@ -1,14 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { AppDataVisibility, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Actor, Member } from '../../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
-import { AppDataVisibility } from '../../interfaces/app-details';
 import { setUp } from '../../test/fixtures';
 import { AppDataRepository } from '../repository';
 
@@ -38,21 +37,21 @@ const saveAppData = async ({
     creator,
     member: member ?? creator,
     ...defaultData,
-    visibility: AppDataVisibility.ITEM,
+    visibility: AppDataVisibility.Item,
   });
   const s2 = await AppDataRepository.save({
     item,
     creator,
     member: member ?? creator,
     ...defaultData,
-    visibility: AppDataVisibility.ITEM,
+    visibility: AppDataVisibility.Item,
   });
   const s3 = await AppDataRepository.save({
     item,
     creator,
     member: member ?? creator,
     ...defaultData,
-    visibility: AppDataVisibility.MEMBER,
+    visibility: AppDataVisibility.Member,
   });
   return [s1, s2, s3];
 };

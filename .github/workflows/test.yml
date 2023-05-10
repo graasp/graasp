@@ -80,12 +80,14 @@ jobs:
         env:
           CI: true
           # random keys
+          APPS_JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           BUILDER_CLIENT_HOST: 'http://localhost:3111'
           COOKIE_DOMAIN: localhost
           DB_NAME: ${{ env.TEST_DB_NAME }}
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
           DB_USERNAME: ${{ env.TEST_DB_USER }}
+          EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: 'http://localhost:1234'
           ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           ETHERPAD_URL: http://etherpad:9001
           EXPLORER_CLIENT_HOST: 'http://localhost:3113'

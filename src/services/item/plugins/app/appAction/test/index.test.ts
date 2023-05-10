@@ -34,7 +34,7 @@ const saveAppActions = async ({ item, member }: { item: Item; member?: Member })
 const setUpForAppActions = async (
   app,
   actor: Member,
-  creator?: Member,
+  creator: Member,
   permission?: PermissionLevel,
 ) => {
   const values = await setUp(app, actor, creator, permission);
@@ -67,7 +67,7 @@ describe('App Actions Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
 
-        ({ item, token, appActions } = await setUpForAppActions(app, actor));
+        ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
           method: HttpMethod.GET,
@@ -90,7 +90,7 @@ describe('App Actions Tests', () => {
       describe('Admin', () => {
         beforeEach(async () => {
           ({ app, actor } = await build());
-          ({ item, appActions, token } = await setUpForAppActions(app, actor));
+          ({ item, appActions, token } = await setUpForAppActions(app, actor, actor));
         });
 
         it('Get all app actions with admin permission', async () => {
@@ -172,7 +172,7 @@ describe('App Actions Tests', () => {
         ({ app, actor } = await build());
 
         // unefficient way of registering two apps and their app actions
-        ({ item, token, appActions } = await setUpForAppActions(app, actor));
+        ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
 
         // logout after getting token and setting up
         await app.inject({
@@ -201,12 +201,12 @@ describe('App Actions Tests', () => {
           item: item1,
           token: unusedToken,
           appActions: appActions1,
-        } = await setUpForAppActions(app, actor);
+        } = await setUpForAppActions(app, actor, actor);
         const {
           item: item2,
           token: validToken,
           appActions: appActions2,
-        } = await setUpForAppActions(app, actor);
+        } = await setUpForAppActions(app, actor, actor);
         items = [item1, item2];
         appActionsArray = { [item1.id]: appActions1, [item2.id]: appActions2 };
         token = validToken;
@@ -247,7 +247,7 @@ describe('App Actions Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
 
-        ({ item, token, appActions } = await setUpForAppActions(app, actor));
+        ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
           method: HttpMethod.GET,
@@ -285,7 +285,7 @@ describe('App Actions Tests', () => {
     describe('Sign In', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item, token } = await setUpForAppActions(app, actor));
+        ({ item, token } = await setUpForAppActions(app, actor, actor));
       });
 
       it('Post app actions successfully', async () => {
