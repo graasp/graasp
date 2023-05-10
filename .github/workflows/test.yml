@@ -2,13 +2,14 @@ name: Node CI
 
 on: [push]
 
+env: 
+  TEST_DB_NAME: docker
+  TEST_DB_USER: docker
+  TEST_DB_PASSWORD: docker
+
 jobs:
   build-node:
     runs-on: ubuntu-latest
-    env: 
-      TEST_DB_NAME: docker
-      TEST_DB_USER: docker
-      TEST_DB_PASSWORD: docker
 
     # abort running jobs if newer version is detected on same branch
     concurrency:
