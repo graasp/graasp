@@ -2,14 +2,13 @@ name: Node CI
 
 on: [push]
 
-env: 
-  TEST_DB_NAME: docker
-  TEST_DB_USER: docker
-  TEST_DB_PASSWORD: docker
-
 jobs:
   build-node:
     runs-on: ubuntu-latest
+    env: 
+      TEST_DB_NAME: docker
+      TEST_DB_USER: docker
+      TEST_DB_PASSWORD: docker
 
     # abort running jobs if newer version is detected on same branch
     concurrency:
@@ -64,14 +63,14 @@ jobs:
       - name: apply migrations on empty database
         env:
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
-          DB_USERNAME: ${{ env.TEST_DB_USERNAME }}
+          DB_USERNAME: ${{ env.TEST_DB_USER }}
           DB_NAME: ${{ env.TEST_DB_NAME }}
         run: yarn migration:run
         
       - name: check migrations are synced with the current codebase
         env:
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
-          DB_USERNAME: ${{ env.TEST_DB_USERNAME }}
+          DB_USERNAME: ${{ env.TEST_DB_USER }}
           DB_NAME: ${{ env.TEST_DB_NAME }}
         run: yarn migration:check
 
@@ -86,7 +85,7 @@ jobs:
           COOKIE_DOMAIN: localhost
           DB_NAME: ${{ env.TEST_DB_NAME }}
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
-          DB_USERNAME: ${{ env.TEST_DB_USERNAME }}
+          DB_USERNAME: ${{ env.TEST_DB_USER }}
           ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           ETHERPAD_URL: http://etherpad:9001
           EXPLORER_CLIENT_HOST: 'http://localhost:3113'
