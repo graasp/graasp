@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 
 import { FastifyBaseLogger } from 'fastify';
-
+import {PasswordNotDefined} from './errors';
 import { SALT_ROUNDS } from '../../../../utils/config';
 import { MemberPassword } from './entities/password';
 
@@ -33,8 +33,7 @@ export async function verifyCurrentPassword(memberPassword: MemberPassword, pass
   // if the member already has a password set: return verified
   if (memberPassword?.password) {
     if (!password) {
-      // TODO
-      throw new Error('password is not defined');
+      throw new PasswordNotDefined();
     }
     const verified = bcrypt
       .compare(password, memberPassword.password)

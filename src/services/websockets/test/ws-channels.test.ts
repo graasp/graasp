@@ -60,7 +60,7 @@ test('adding / removing channels', () => {
   wss.close();
 });
 
-test("lost client is gc'd by heartbeat", async () => {
+test('lost client is gc\'d by heartbeat', async () => {
   const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
   const { channels, wss } = createWsChannels(config, 100);
   const clients = await createWsClients(config, 2);
@@ -75,7 +75,7 @@ test("lost client is gc'd by heartbeat", async () => {
   wss.close();
 });
 
-test("empty channel gc'd by heartbeat", async () => {
+test('empty channel gc\'d by heartbeat', async () => {
   const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
   const { channels, wss } = createWsChannels(config, 100);
   // create with empty gc flag
@@ -87,7 +87,7 @@ test("empty channel gc'd by heartbeat", async () => {
   wss.close();
 });
 
-test("client without mapping gc'd by heartbeat", async () => {
+test('client without mapping gc\'d by heartbeat', async () => {
   const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
   const { channels, wss } = createWsChannels(config, 100);
   const client = await createWsClient(config);

@@ -161,8 +161,6 @@ describe('Thumbnail Plugin Tests', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
 
-    // TODO: PUBLIC
-
     describe('Signed In', () => {
       let item;
 

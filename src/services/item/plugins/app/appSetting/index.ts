@@ -36,8 +36,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {
-    // TODO: allow CORS but only the origins in the table from approved publishers - get all
-    // origins from the publishers table an build a rule with that.
 
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 

@@ -238,9 +238,7 @@ export class ImportExportService {
       case ItemType.FOLDER: {
         // append description
         const folderPath = path.join(archiveRootPath, item.name);
-        // eslint-disable-next-line no-case-declarations
-        // TODO: UPDATE TYPE
-        const children = await repositories.itemRepository.getChildren(item as Item);
+        const children = await repositories.itemRepository.getChildren(item );
         await Promise.all(
           children.map((child) =>
             this._addItemToZip(actor, repositories, {

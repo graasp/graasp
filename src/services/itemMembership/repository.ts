@@ -254,8 +254,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     // check existing memberships lower in the tree
     const membershipsBelow = await this.getAllBelow(item, memberOfMembership.id);
-    // TODO: fix type?
-    let tasks: Promise<void | unknown>[] = [];
+    let tasks: Promise<void>[] = [];
     if (membershipsBelow.length > 0) {
       // check if any have the same or a worse permission level
       const membershipsBelowToDiscard = membershipsBelow.filter((m) =>

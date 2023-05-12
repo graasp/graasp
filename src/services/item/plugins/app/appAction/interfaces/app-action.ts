@@ -1,13 +1,5 @@
-import { Anything } from '@graasp/sdk';
 
 export interface InputAppAction {
-  data: { [key: string]: Anything };
+  data: { [key: string]: unknown };
   type: string;
-}
-
-export interface AppAction extends InputAppAction {
-  id: string;
-  memberId: string;
-  itemId: string;
-  createdAt: string;
 }

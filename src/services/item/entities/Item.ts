@@ -22,7 +22,6 @@ import {
   LocalFileItemExtra,
   S3FileItemExtra,
   ShortcutItemExtra,
-  UnknownExtra,
 } from '@graasp/sdk';
 
 import { Member } from '../../member/entities/member';

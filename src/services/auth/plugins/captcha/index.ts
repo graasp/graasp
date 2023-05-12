@@ -26,7 +26,7 @@ const plugin: FastifyPluginAsync<{ secretAccessKey: string }> = async (fastify, 
     captcha: string,
     actionType: RecaptchaActionType,
   ) => {
-    // TODO: better? to allow dev
+    // TODO: find a better solution? to allow dev
     if (DEV) {
       return;
     }

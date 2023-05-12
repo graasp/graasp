@@ -184,7 +184,6 @@ describe('Item routes tests', () => {
         expect(await ItemMembershipRepository.count()).toEqual(3);
       });
 
-      // TODO: schema create()
       it('Bad request if name is invalid', async () => {
         // by default the item creator use an invalid item type
         const newItem = getDummyItem({ name: '' });
@@ -207,7 +206,6 @@ describe('Item routes tests', () => {
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      // TODO: schema
       it('Bad request if type is invalid', async () => {
         // by default the item creator use an invalid item type
         const newItem = getDummyItem();
@@ -220,7 +218,6 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      // TODO: schema
       it('Bad request if parentId id is invalid', async () => {
         const payload = getDummyItem({ type: ItemType.FOLDER });
         const parentId = 'invalid-id';

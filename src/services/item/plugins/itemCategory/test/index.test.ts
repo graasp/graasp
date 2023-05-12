@@ -15,6 +15,7 @@ import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
 import { CategoryRepository } from '../repositories/category';
 import { ItemCategoryRepository } from '../repositories/itemCategory';
+import { setItemPublic } from '../../itemTag/test/fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -182,7 +183,27 @@ describe('Categories', () => {
         expect(res.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
 
-      // TODO: public
+    });
+
+    describe('Public', () => {
+      beforeEach(async () => {
+        ({ app } = await build({ member: null }));
+        member = await saveMember(BOB);
+        ({ item } = await saveItemAndMembership({ member }));
+        await setItemPublic(item, member);
+        ({ itemCategories, categories } = await setUp({ actor: member, item }));
+      });
+
+      it('Get categories of an item', async () => {
+        const result = itemCategories;
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectItemCategories(res.json(), result);
+      });
     });
 
     describe('Signed in', () => {

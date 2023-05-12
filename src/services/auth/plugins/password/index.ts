@@ -24,7 +24,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // validate captcha
       await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword);
 
-      // TODO: actor
       const token = await memberPasswordService.login(null, buildRepositories(), body);
 
       // link for graasp web

@@ -78,7 +78,6 @@ export class AppService {
       [ItemType.FOLDER, ItemType.APP],
       item.path,
     );
-    console.log(foldersAndAppItems);
 
     const parent: { children?: Partial<Item>[]; members?: Partial<Member>[] } =
       foldersAndAppItems.length

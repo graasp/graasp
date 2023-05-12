@@ -114,6 +114,5 @@ export const setUp = async (
     payload: appDetails,
   });
   const token = response.json().token;
-  console.log(response.json());
   return { token, item };
 };

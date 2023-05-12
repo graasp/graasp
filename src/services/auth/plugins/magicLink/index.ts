@@ -35,7 +35,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // validate captcha
       await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUp);
 
-      // TODO: not best, too much logic here
       return db.transaction(async (manager) => {
         try {
           // we use member service to allow post hook for invitation

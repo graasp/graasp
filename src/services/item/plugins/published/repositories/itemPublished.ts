@@ -31,7 +31,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     return mapById({
       keys: ids,
       findElement: (id) => entries.find((e) => e.item.id === id),
-      buildError: (p) => new ItemPublishedNotFound(p),
+      buildError: (id) => new ItemPublishedNotFound(id),
     });
   },
 

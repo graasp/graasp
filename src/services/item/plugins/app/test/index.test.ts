@@ -164,7 +164,6 @@ describe('Apps Plugin Tests', () => {
             Authorization: `Bearer ${MOCK_TOKEN}`,
           },
         });
-        console.log(response);
         expect(response.statusCode).toEqual(StatusCodes.OK);
         const data = response.json();
         expect(data.id).toEqual(item.id);
