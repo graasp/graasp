@@ -40,7 +40,7 @@ export class ChatMention extends BaseEntity implements GraaspChatMention {
     type: 'enum',
     enum: Object.values(MentionStatus),
     nullable: false,
-    default: MentionStatus.UNREAD,
+    default: MentionStatus.Unread,
   })
   status: MentionStatus;
 }

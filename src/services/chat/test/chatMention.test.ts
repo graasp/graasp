@@ -83,7 +83,7 @@ describe('Chat Mention tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = { status: MentionStatus.READ };
+      const payload = { status: MentionStatus.Read };
 
       const response = await app.inject({
         method: HttpMethod.PATCH,
@@ -96,7 +96,7 @@ describe('Chat Mention tests', () => {
 
     describe('Signed In', () => {
       let chatMessages, chatMentions;
-      const payload = { status: MentionStatus.READ };
+      const payload = { status: MentionStatus.Read };
 
       beforeEach(async () => {
         ({ app, actor } = await build());

@@ -63,6 +63,27 @@ export class ItemPublishedService {
     return itemPublishedRepository.getForItem(item);
   }
 
+  async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
+    const { itemPublishedRepository, itemTagRepository } = repositories;
+
+    const { data: itemsMap, errors } = await this.itemService.getMany(actor, repositories, itemIds);
+
+    const items = Object.values(itemsMap);
+    // item should be public first
+    const { data: areItemsPublic, errors: publicErrors } = await itemTagRepository.hasForMany(
+      items,
+      ItemTagType.PUBLIC,
+    );
+
+    const { data: publishedInfo, errors: publishedErrors } =
+      await itemPublishedRepository.getForItems(items.filter((i) => areItemsPublic[i.id]));
+
+    return {
+      data: publishedInfo,
+      errors: [...errors, ...publicErrors, ...publishedErrors],
+    };
+  }
+
   async post(actor: Actor, repositories: Repositories, itemId: string) {
     if (!actor) {
       throw new UnauthorizedMember(actor);

@@ -24,7 +24,6 @@ describe('migrations1679669193720', () => {
     app.close();
   });
 
-
   it('Up', async () => {
     await migration.up(app.db.createQueryRunner());
 

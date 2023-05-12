@@ -100,6 +100,10 @@ jobs:
           PLAYER_CLIENT_HOST: 'http://localhost:3112'
           REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
           S3_FILE_ITEM_PLUGIN: true
+          S3_FILE_ITEM_REGION: us-east-1
+          S3_FILE_ITEM_BUCKET: graasp
+          S3_FILE_ITEM_ACCESS_KEY_ID: graasp-user
+          S3_FILE_ITEM_SECRET_ACCESS_KEY: graasp-pwd
           SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           # mock uuid

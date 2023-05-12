@@ -1,7 +1,10 @@
+import { In } from 'typeorm';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { Actor } from '../../../../member/entities/member';
+import { mapById } from '../../../../utils';
 import { Item } from '../../../entities/Item';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
@@ -17,6 +20,19 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     }
 
     return entry;
+  },
+  async getForItems(items: Item[]) {
+    const ids = items.map((i) => i.id);
+    const entries = await this.find({
+      where: { item: { id: In(ids) } },
+      relations: { item: true, creator: true },
+    });
+
+    return mapById({
+      keys: ids,
+      findElement: (id) => entries.find((e) => e.item.id === id),
+      buildError: (p) => new ItemPublishedNotFound(p),
+    });
   },
 
   // return public item entry? contains when it was published

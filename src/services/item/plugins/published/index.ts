@@ -8,6 +8,7 @@ import {
   getCollections,
   getCollectionsForMember,
   getInformations,
+  getManyInformations,
   publishItem,
   unpublishItem,
 } from './schemas';
@@ -49,6 +50,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ params, member }) => {
       return pIS.get(member, buildRepositories(), params.itemId);
+    },
+  );
+
+  fastify.get<{ Querystring: { itemId: string[] } }>(
+    '/collections/informations',
+    {
+      preHandler: fastify.fetchMemberInSession,
+      schema: getManyInformations,
+    },
+    async ({ member, query: { itemId } }) => {
+      return pIS.getMany(member, buildRepositories(), itemId);
     },
   );
 

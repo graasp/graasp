@@ -1,5 +1,7 @@
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
+import { UUID_REGEX } from '../../../../schemas/global';
+
 const publishEntry = {
   type: 'object',
   properties: {
@@ -114,5 +116,35 @@ export const getInformations = {
 
   response: {
     200: publishEntry,
+  },
+};
+
+export const getManyInformations = {
+  querystring: {
+    allOf: [
+      { $ref: 'http://graasp.org/#/definitions/idsQuery' },
+      {
+        type: 'object',
+        properties: { id: { type: 'array', maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
+      },
+    ],
+  },
+
+  response: {
+    type: 'object',
+    properties: {
+      data: {
+        type: 'object',
+        patternProperties: {
+          [UUID_REGEX]: publishEntry,
+        },
+      },
+      errors: {
+        type: 'array',
+        items: {
+          $ref: 'http://graasp.org/#/definitions/error',
+        },
+      },
+    },
   },
 };

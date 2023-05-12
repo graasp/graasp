@@ -14,7 +14,7 @@ export const getTableNames = async (db) => {
   return result.map(({ table_name }) => table_name);
 };
 
-export const getCustomTypes =async (app) => {
+export const getCustomTypes = async (app) => {
   const result = await app.db.query(`SELECT pg_type.typname AS enumtype, 
   pg_enum.enumlabel AS enumlabel
 FROM pg_type 
@@ -32,9 +32,9 @@ export const checkDatabaseIsEmpty = async (app) => {
 
 export const parseValue = (v) => {
   if (Array.isArray(v)) {
-    return '\'{' + v.map((str) => `"${str}"`).join(',') + '}\'';
+    return `'{${v.map((str) => `"${str}"`).join(',')}}'`;
   } else if (typeof v === 'object') {
-    return '\'' + JSON.stringify(v) + '\'';
+    return `'${JSON.stringify(v)}'`;
   }
   return `'${v}'`;
 };

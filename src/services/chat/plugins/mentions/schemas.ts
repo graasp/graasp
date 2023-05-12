@@ -33,15 +33,7 @@ export default {
       type: 'object',
       properties: {
         id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-        // todo: use chat definition
-        message: {
-          id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-          creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
-          createdAt: { type: 'string' },
-          updatedAt: { type: 'string' },
-          body: { type: 'string' },
-          member: { $ref: 'http://graasp.org/members/#/definitions/member' },
-        },
+        message: { $ref: 'http://graasp.org/chat/#/definitions/chatMessage' },
         member: { $ref: 'http://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },

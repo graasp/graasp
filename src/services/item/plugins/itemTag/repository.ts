@@ -1,6 +1,6 @@
 import { Brackets, In } from 'typeorm';
 
-import { ItemTagType } from '@graasp/sdk';
+import { ItemTagType, ResultOf } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
@@ -75,7 +75,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     });
   },
 
-  async hasForMany(items: Item[], tagType: ItemTagType) {
+  async hasForMany(items: Item[], tagType: ItemTagType): Promise<ResultOf<boolean>> {
     const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
 
     query.where(

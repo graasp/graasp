@@ -29,6 +29,8 @@ export interface GraaspChatPluginOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, options) => {
+  await fastify.addSchema(commonChat);
+
   await fastify.register(fp(mentionPlugin));
 
   const {
@@ -44,8 +46,6 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
   // isolate plugin content using fastify.register to ensure that the hooks will not be called when other routes match
   // routes associated with mentions should not trigger the action hook
   fastify.register(async function (fastify) {
-    fastify.addSchema(commonChat);
-
     // register websocket behaviours for chats
     // if (websockets) {
     //   registerChatWsHooks(

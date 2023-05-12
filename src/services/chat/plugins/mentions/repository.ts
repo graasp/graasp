@@ -16,7 +16,7 @@ export const ChatMentionRepository = AppDataSource.getRepository(ChatMention).ex
   async getForMember(memberId: string): Promise<ChatMention[]> {
     return this.find({
       where: { member: { id: memberId } },
-      relations: { message: true, member: true },
+      relations: ['message', 'message.item', 'message.creator', 'member'],
     });
   },
 
@@ -86,7 +86,7 @@ export const ChatMentionRepository = AppDataSource.getRepository(ChatMention).ex
         member: { id: member },
         item,
         message,
-        status: MentionStatus.UNREAD,
+        status: MentionStatus.Unread,
       })),
     );
     await this.insert(entries);
