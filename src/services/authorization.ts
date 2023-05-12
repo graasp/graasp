@@ -11,7 +11,7 @@ import {
 import { Repositories } from '../utils/repositories';
 import { Item } from './item/entities/Item';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
-import { Actor, Member } from './member/entities/member';
+import { Actor } from './member/entities/member';
 
 const ownItemAbility = (member) =>
   defineAbility((can, cannot) => {
@@ -26,6 +26,15 @@ const permissionMapping = {
   [PermissionLevel.Admin]: [PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin],
 };
 
+/**
+ * Verify if actor has access (or has the necessary rights) to a given item 
+ * This function checks the member's memberships, if the item is public and if it is hidden.
+ * @param repositories
+ * @param permission minimum permission required
+ * @param member member that tries to access the item
+ * @param item 
+ * @throws if the user cannot access the item
+ */
 export const validatePermission = async (
   { itemMembershipRepository, itemTagRepository }: Repositories,
   permission: PermissionLevel,
@@ -85,9 +94,10 @@ export const validatePermission = async (
   }
 };
 
-// filtering functions, that takes out limited items (eg. hidden children)
-// actor can be undefined...
-export const filterOutItems = async (actor: Member | undefined, repositories, items: Item[]) => {
+/**
+ * Filtering function that takes out limited items (eg. hidden children)
+ *  */
+export const filterOutItems = async (actor: Actor, repositories, items: Item[]) => {
   const { itemMembershipRepository } = repositories;
 
   if (!items.length) {
@@ -114,9 +124,11 @@ export const filterOutItems = async (actor: Member | undefined, repositories, it
     .filter(Boolean);
 };
 
-// filter out children based on tag only -> does not show hidden for admin as well
-// useful for published items
-export const filterOutHiddenItems = async (repositories, items: Item[]) => {
+/**
+ * Filter out children based on tag only. 
+ * It does not show hidden for admin as well, which is useful for published items
+ *  */ 
+export const filterOutHiddenItems = async (repositories: Repositories, items: Item[]) => {
   const { itemTagRepository } = repositories;
 
   if (!items.length) {
