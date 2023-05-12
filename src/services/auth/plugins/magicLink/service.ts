@@ -9,13 +9,12 @@ import { DEFAULT_LANG } from '@graasp/sdk';
 import { JWT_SECRET } from '../../../../utils/config';
 import {
   InvalidToken,
-  MemberAlreadySignedUp,
   MemberNotSignedUp,
   TokenExpired,
   UnexpectedError,
 } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { Member } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -33,24 +32,24 @@ export class MagicLinkService {
     this.log = log;
   }
 
-  async sendRegisterMail(actor, repositories: Repositories, member: Member) {
-    await this.fastify.generateRegisterLinkAndEmailIt(member);
+  async sendRegisterMail(actor:Actor, repositories: Repositories, member: Member, url?:string) {
+    await this.fastify.generateRegisterLinkAndEmailIt(member, {url});
   }
 
-  async login(actor, repositories: Repositories, body, lang = DEFAULT_LANG) {
+  async login(actor:Actor, repositories: Repositories, body, lang = DEFAULT_LANG, url?:string) {
     const { memberRepository } = repositories;
     const { email } = body;
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.fastify.generateLoginLinkAndEmailIt(member, undefined, lang);
+      await this.fastify.generateLoginLinkAndEmailIt(member, { lang, url});
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });
     }
   }
 
-  async auth(actor, repositories: Repositories, token) {
+  async auth(actor:Actor, repositories: Repositories, token) {
     try {
       // verify and extract member info
       const result = await promisifiedJwtVerify(token, JWT_SECRET, {});

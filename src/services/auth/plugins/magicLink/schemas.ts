@@ -13,6 +13,9 @@ export const register = {
     type: 'object',
     properties: {
       lang: { type: 'string' },
+      url: {
+        type: 'string',
+      },
     },
     additionalProperties: false,
   },
@@ -31,6 +34,9 @@ export const login = {
     type: 'object',
     properties: {
       lang: { type: 'string' },
+      url: {
+        type: 'string',
+      },
     },
     additionalProperties: false,
   },
@@ -41,6 +47,9 @@ export const auth = {
     required: ['t'],
     properties: {
       t: { type: 'string' },
+      url: {
+        type: 'string',
+      },
     },
     additionalProperties: false,
   },

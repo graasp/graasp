@@ -241,8 +241,6 @@ export const SUBSCRIPTION_PLUGIN = process.env.SUBSCRIPTION_PLUGIN === 'true';
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
 
-export const REDIRECT_URL = `//${CLIENT_HOST}/redirect`;
-
 // used for hashing password
 export const SALT_ROUNDS = 10;
 

@@ -29,7 +29,7 @@ import { WebsocketService } from './services/websockets/ws-service';
 declare module 'fastify' {
   interface FastifyInstance {
     db: DataSource;
-    
+
     // remove once fastify-nodemailer has types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nodemailer: any;
@@ -61,7 +61,7 @@ declare module 'fastify' {
     // TODO
     hosts: any;
     websockets: WebsocketService;
-    
+
     corsPluginOptions: any;
     verifyAuthentication: (request: FastifyRequest) => Promise<void>;
     validateCaptcha: (
@@ -76,15 +76,21 @@ declare module 'fastify' {
     }>;
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
-      challenge?: string,
+      options: {
+        challenge?: string,
+        url?: string
+      }
     ) => Promise<{
       authToken: string;
       refreshToken: string;
     }>;
     generateLoginLinkAndEmailIt: (
       member: Member,
-      challenge?: string,
-      lang?: string,
+      options: {
+        challenge?: string,
+        lang?: string,
+        url?: string
+      }
     ) => Promise<{
       authToken: string;
       refreshToken: string;

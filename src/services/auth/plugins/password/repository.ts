@@ -1,9 +1,10 @@
-import { UUID } from '@graasp/sdk';
+import { UUID , isPasswordStrong} from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { EmptyCurrentPassword, IncorrectPassword, InvalidPassword } from '../../../../utils/errors';
 import { MemberPassword } from './entities/password';
 import { encryptPassword, verifyCredentials, verifyCurrentPassword } from './utils';
+import { PasswordNotStrong } from './errors';
 
 export const MemberPasswordRepository = AppDataSource.getRepository(MemberPassword).extend({
   async getForMemberId(memberId: string, args: { shoudlExist: boolean } = { shoudlExist: true }) {
@@ -17,6 +18,11 @@ export const MemberPasswordRepository = AppDataSource.getRepository(MemberPasswo
   },
 
   async patch(memberId: UUID, newPassword: string) {
+
+    if(!isPasswordStrong(newPassword)) {
+      throw new PasswordNotStrong(newPassword);
+    }
+
     // auto-generate a salt and a hash
     const hash = await encryptPassword(newPassword);
 
