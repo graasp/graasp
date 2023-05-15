@@ -184,7 +184,7 @@ export class ImportExportService {
           (item.extra[ItemType.LOCAL_FILE] as LocalFileItemExtra);
         const fileStream = await this.fileItemService.download(actor, repositories, {
           reply,
-          replyUrl:true,
+          replyUrl:false,
           itemId: item.id,
         });
 

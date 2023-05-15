@@ -178,7 +178,7 @@ class FileItemService {
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.type] as FileItemProperties;
     const result = await this.fileService.download(actor, {
-      reply: this.shouldRedirectOnDownload || replyUrl ? reply : undefined,
+      reply: this.shouldRedirectOnDownload || !replyUrl ? reply : undefined,
       id: itemId,
       replyUrl,
       ...extraData,
