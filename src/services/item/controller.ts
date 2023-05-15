@@ -21,7 +21,6 @@ import {
   updateMany,
 } from './fluent-schema';
 import { Ordered } from './interfaces/requests';
-import { ActionItemService } from './plugins/action/service';
 
 // import { registerItemWsHooks } from './ws/hooks';
 
@@ -29,9 +28,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     db,
     items,
-    members: { service: memberService },
-    actions: { service: actionService },
-    hosts,
   } = fastify;
   const itemService = items.service;
   const actionItemService = items.actions.service;
