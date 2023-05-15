@@ -98,7 +98,13 @@ const publishMessage = {
  */
 const patchMessage = {
   params: { $ref: 'http://graasp.org/chat/#/definitions/messageParam' },
-  body: { $ref: 'http://graasp.org/chat/#/definitions/partialChatMessage' },
+  body: {
+    type: 'object',
+    required: ['body'],
+    properties: {
+      body: { type: 'string' }
+    }
+  },
   response: {
     200: { $ref: 'http://graasp.org/chat/#/definitions/chatMessage' },
   },

@@ -19,9 +19,9 @@ export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledIt
       .innerJoin(
         'item_membership',
         'im',
-        `im.item_path <@ item.path 
-    AND im.permission = :permission 
-    AND im.member_id = :memberId`,
+        `im.item_path @> item.path 
+        AND im.permission = :permission 
+        AND im.member_id = :memberId`,
         { permission: PermissionLevel.Admin, memberId: member.id },
       )
       .getMany();

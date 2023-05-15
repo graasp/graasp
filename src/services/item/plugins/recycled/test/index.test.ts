@@ -13,26 +13,23 @@ import {
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import {
-  ItemNotFound,
-  MemberCannotAccess,
-  MemberCannotAdminItem,
-} from '../../../../../utils/errors';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
-import { expectManyItems, getDummyItem } from '../../../test/fixtures/items';
-import { CannotRestoreNonDeletedItem } from '../errors';
+import { expectManyItems, getDummyItem, saveItem } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
-import { expectManyRecycledItems, expectRecycledItem } from './fixtures';
+import { expectManyRecycledItems } from './fixtures';
+import { Item } from '../../../entities/Item';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
-const saveRecycledItem = async (member: Member) => {
-  const { item } = await saveItemAndMembership({ member });
+const saveRecycledItem = async (member: Member, defaultItem?:Item) => {
+  let item = defaultItem;
+  if(!item){
+   ({ item } = await saveItemAndMembership({ member }));
+  }
   await RecycledItemDataRepository.recycleOne(item, member);
   await ItemRepository.softRemove(item);
   return item;
@@ -91,6 +88,34 @@ describe('Recycle Bin Tests', () => {
             withDeleted: true,
           });
           expect(response).toHaveLength(recycled.length);
+          expectManyItems(dbDeletedItems, recycled);
+          // check response recycled item
+          expectManyRecycledItems(response, recycled, actor);
+        });
+
+        it('Successfully get subitems recycled items', async () => {
+          const item0 = await saveRecycledItem(actor);
+          const {item:parentItem} = await saveItemAndMembership({member:actor});
+          const deletedChild = await saveItem({item: getDummyItem({name:'child'}), parentItem, actor});
+          await saveRecycledItem(actor, deletedChild);
+
+          // actor does not have access
+          const member = await saveMember(BOB);
+          await saveRecycledItem(member);
+
+          // we should not get item2
+          const recycled = [item0, deletedChild];
+
+          const res = await app.inject({
+            method: HttpMethod.GET,
+            url: '/items/recycled',
+          });
+
+          const response = res.json();
+          expect(res.statusCode).toBe(StatusCodes.OK);
+          
+          expect(response).toHaveLength(recycled.length);
+          const dbDeletedItems = response.map(({item})=>item);
           expectManyItems(dbDeletedItems, recycled);
           // check response recycled item
           expectManyRecycledItems(response, recycled, actor);
