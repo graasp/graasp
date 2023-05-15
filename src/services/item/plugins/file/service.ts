@@ -170,7 +170,7 @@ class FileItemService {
   async download(
     actor,
     repositories: Repositories,
-    { reply, itemId, replyUrl }: { reply: FastifyReply; itemId: string; replyUrl?: boolean },
+    { reply, itemId, replyUrl }: { reply?: FastifyReply; itemId: string; replyUrl?: boolean },
   ) {
     // prehook: get item and input in download call ?
     // check rights
@@ -178,7 +178,7 @@ class FileItemService {
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.type] as FileItemProperties;
     const result = await this.fileService.download(actor, {
-      reply: this.shouldRedirectOnDownload ? reply : undefined,
+      reply: this.shouldRedirectOnDownload || replyUrl ? reply : undefined,
       id: itemId,
       replyUrl,
       ...extraData,

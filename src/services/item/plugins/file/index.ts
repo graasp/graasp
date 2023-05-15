@@ -7,7 +7,6 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { download, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from './utils/errors';
 
 export interface GraaspPluginFileOptions {
   shouldRedirectOnDownload?: boolean; // redirect value on download
