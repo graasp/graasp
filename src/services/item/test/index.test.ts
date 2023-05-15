@@ -1195,7 +1195,7 @@ describe('Item routes tests', () => {
             },
           },
           settings: {
-            someSetting: 'value',
+            hasThumbnail: true,
           },
         };
 

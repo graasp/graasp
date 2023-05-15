@@ -160,7 +160,7 @@ describe('Document Item tests', () => {
             },
           },
           settings: {
-            someSetting: 'value',
+            hasThumbnail: true,
           },
         };
 
@@ -255,7 +255,7 @@ describe('Document Item tests', () => {
             },
           },
           settings: {
-            someSetting: 'value',
+            hasThumbnail: true,
           },
         };
 
