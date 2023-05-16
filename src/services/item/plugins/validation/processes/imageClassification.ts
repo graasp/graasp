@@ -14,7 +14,7 @@ import { FailedImageClassificationRequestError } from '../errors';
  */
 export const sendRequestToClassifier = async (
   classifierApi: string,
-  filePath: string,
+  url: string,
 ): Promise<{
   prediction?: {
     image?: {
@@ -24,8 +24,9 @@ export const sendRequestToClassifier = async (
   };
 }> => {
   try {
-    const image = readFileSync(filePath);
-    const encodedImage = image.toString('base64');
+    const imageUrlData = await fetch(url);
+    const buffer = await imageUrlData.arrayBuffer();
+    const encodedImage = Buffer.from(buffer).toString('base64');
     const response = await fetch(classifierApi, {
       method: HttpMethod.POST,
       body: JSON.stringify({data:{image:{encodedImage}}}),
@@ -38,8 +39,8 @@ export const sendRequestToClassifier = async (
   }
 };
 
-export const classifyImage = async (classifierApi: string, filePath: string): Promise<boolean> => {
-  const response = await sendRequestToClassifier(classifierApi, filePath);
+export const classifyImage = async (classifierApi: string, url: string): Promise<boolean> => {
+  const response = await sendRequestToClassifier(classifierApi, url);
 
   const prediction = response?.prediction?.image;
   if (!prediction) {
