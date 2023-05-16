@@ -138,7 +138,6 @@ class FileItemService {
 
     const items: Item[] = [];
     // postHook: create items from file properties
-    // get metadata from upload task
     for (const { filename, filepath, mimetype, size } of fileProperties) {
       const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
       const item = {
@@ -174,13 +173,11 @@ class FileItemService {
     actor: Actor,
     repositories: Repositories,
     {
-      encoding,
       fileStorage,
       itemId,
       reply,
       replyUrl,
     }: {
-      encoding?: BufferEncoding;
       fileStorage?: string;
       itemId: string;
       reply?: FastifyReply;
@@ -193,7 +190,6 @@ class FileItemService {
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.type] as FileItemProperties;
     const result = await this.fileService.download(actor, {
-      encoding,
       fileStorage,
       id: itemId,
       reply: this.shouldRedirectOnDownload || !replyUrl ? reply : undefined,

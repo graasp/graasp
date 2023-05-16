@@ -194,15 +194,13 @@ export class ItemValidationService {
             if (!this.imageClassifierApi) {
               throw new Error('imageClassifierApi is not defined');
             }
-            // return readstream in base64
-            const fileStream = (await this.fileService.download(actor, {
-              encoding: 'base64',
-              fileStorage: this.buildStoragePath(groupId),
+            // return url 
+            const filePath = (await this.fileService.download(actor, {
               id: item?.id,
               mimetype,
               path: filepath,
-            })) as ReadStream;
-            const isSafe = await classifyImage(this.imageClassifierApi, fileStream);
+            })) as string;
+            const isSafe = await classifyImage(this.imageClassifierApi, filePath);
             status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
           }
           break;

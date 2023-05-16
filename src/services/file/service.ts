@@ -92,7 +92,6 @@ class FileService {
   async download(
     member: Actor,
     data: {
-      encoding?: BufferEncoding;
       expiration?: number;
       fileStorage?: string;
       id: string;
@@ -103,7 +102,6 @@ class FileService {
     },
   ) {
     const {
-      encoding,
       expiration,
       fileStorage,
       id,
@@ -122,7 +120,6 @@ class FileService {
 
     return (
       this.repository.downloadFile({
-        encoding,
         expiration,
         filepath,
         fileStorage,
