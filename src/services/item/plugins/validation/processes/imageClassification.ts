@@ -25,9 +25,11 @@ export const sendRequestToClassifier = async (
 }> => {
   const data = { image: encodedImage };
   try {
+    console.log(data);
     const response = await fetch(classifierApi, {
       method: HttpMethod.POST,
       body: JSON.stringify(data),
+      headers: {'Content-Type': 'application/json'}
     }).then((res) => res.json());
     return response;
   } catch (error) {
