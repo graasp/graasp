@@ -1,4 +1,3 @@
-import { mkdirSync, rmSync } from 'fs';
 import mime from 'mime-types';
 import path from 'path';
 
@@ -28,7 +27,7 @@ import {
 } from './errors';
 import { detectFieldNameWithBadWords } from './processes/badWordsDetection';
 import { classifyImage } from './processes/imageClassification';
-import { buildStoragePath, stripHtml } from './utils';
+import {  stripHtml } from './utils';
 
 export class ItemValidationService {
   itemService: ItemService;
@@ -80,20 +79,11 @@ export class ItemValidationService {
     const item = await this.itemService.get(member, repositories, itemId);
     await validatePermission(repositories, PermissionLevel.Admin, member, item);
 
-    // create folder to store files
-    const fileStorage = buildStoragePath(itemId);
-    await mkdirSync(fileStorage, {
-      recursive: true,
-    });
-
     // create record in item-validation
     const iVG = await itemValidationGroupRepository.post(itemId);
 
     // create validation and execute for each node recursively
-    await this._post(member, repositories, item, iVG, fileStorage);
-
-    // delete tmp folder
-    rmSync(fileStorage, { recursive: true });
+    await this._post(member, repositories, item, iVG, );
   }
 
   async _post(
@@ -101,7 +91,6 @@ export class ItemValidationService {
     repositories: Repositories,
     item: Item,
     itemValidationGroup: ItemValidationGroup,
-    fileStorage: string,
   ) {
     // execute each process on item
     await Promise.all(
@@ -122,7 +111,6 @@ export class ItemValidationService {
             item,
             itemValidationGroup.id,
             process,
-            fileStorage,
           );
         } catch (error) {
           throw new ProcessExecutionError(process, error);
@@ -135,7 +123,7 @@ export class ItemValidationService {
       const subItems = await this.itemService.getChildren(actor, repositories, item.id);
       await Promise.all(
         subItems.map(async (subitem) => {
-          await this._post(actor, repositories, subitem, itemValidationGroup, fileStorage).catch(
+          await this._post(actor, repositories, subitem, itemValidationGroup).catch(
             (error) => {
               throw new ItemValidationError(error);
             },
@@ -151,7 +139,6 @@ export class ItemValidationService {
     item: Item,
     groupId: string,
     process: ItemValidationProcess,
-    fileStorage: string,
   ) {
     const { itemValidationReviewRepository, itemValidationRepository } = repositories;
 
@@ -206,11 +193,11 @@ export class ItemValidationService {
             if (!this.imageClassifierApi) {
               throw new Error('imageClassifierApi is not defined');
             }
+            // return string if does not supply reply or filestorage
             const filePath = (await this.fileService.download(actor, {
               path: filepath,
               id: item?.id,
               mimetype,
-              fileStorage,
             })) as string;
             const isSafe = await classifyImage(this.imageClassifierApi, filePath);
             status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
