@@ -1,4 +1,4 @@
-import { ReadStream } from 'fs';
+import { ReadStream, mkdirSync } from 'fs';
 import mime from 'mime-types';
 import path from 'path';
 
@@ -44,7 +44,9 @@ export class ItemValidationService {
   }
 
   buildStoragePath(itemValidationId: UUID) {
-    return path.join(TMP_FOLDER, 'validation', itemValidationId);
+    const p = path.join(TMP_FOLDER, 'validation', itemValidationId);
+    mkdirSync(p, { recursive: true });
+    return p;
   }
 
   async getLastItemValidationGroupForItem(
