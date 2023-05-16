@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs';
 import fetch from 'node-fetch';
 
 import { HttpMethod } from '@graasp/sdk';

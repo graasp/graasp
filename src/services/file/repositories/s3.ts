@@ -215,6 +215,7 @@ export class S3FileRepository implements FileRepository {
 
         // create and return read stream (similar to local file service)
         const file = fs.createReadStream(tmpPath);
+        
         file.on('close', function (err: Error) {
           if (err) {
             console.error(err);

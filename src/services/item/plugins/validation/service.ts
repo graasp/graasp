@@ -1,5 +1,4 @@
-import { ReadStream, mkdirSync } from 'fs';
-import mime from 'mime-types';
+import {  mkdirSync } from 'fs';
 import path from 'path';
 
 import {
@@ -8,6 +7,7 @@ import {
   ItemValidationReviewStatus,
   ItemValidationStatus,
   LocalFileItemExtra,
+  MimeTypes,
   PermissionLevel,
   S3FileItemExtra,
   UUID,
@@ -20,7 +20,6 @@ import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
-import { IMAGE_FILE_EXTENSIONS } from './constants';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
   InvalidFileItemError,
@@ -180,14 +179,8 @@ export class ItemValidationService {
             throw new InvalidFileItemError(item);
           }
 
-          let ext = path.extname(item.name);
-          if (!ext) {
-            // only add a dot in case of building file name with mimetype, otherwise there will be two dots in file name
-            ext = `.${mime.extension(mimetype)}`;
-          }
-
           // if file is not an image, return success
-          if (!IMAGE_FILE_EXTENSIONS.includes(ext)) {
+          if (!MimeTypes.isImage(mimetype)) {
             // TODO: update validation entry
             status = ItemValidationStatus.Success;
           } else {
