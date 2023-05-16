@@ -12,6 +12,7 @@ import {
   LocalFileItemType,
   PermissionLevel,
   S3FileItemExtra,
+  S3FileItemType,
 } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
@@ -26,13 +27,15 @@ import { StorageExceeded } from './utils/errors';
 
 const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
 
+type Options = {
+  maxMemberStorage: number;
+};
+
 class FileItemService {
   fileService: FileService;
   itemService: ItemService;
   shouldRedirectOnDownload: boolean;
-  options: {
-    maxMemberStorage: number;
-  };
+  options: Options;
 
   buildFilePath() {
     // TODO: CHANGE ??
@@ -44,7 +47,7 @@ class FileItemService {
     fileService: FileService,
     itemService: ItemService,
     shouldRedirectOnDownload: boolean,
-    options,
+    options: Options,
   ) {
     this.fileService = fileService;
     this.itemService = itemService;
@@ -168,9 +171,21 @@ class FileItemService {
   }
 
   async download(
-    actor,
+    actor: Actor,
     repositories: Repositories,
-    { reply, itemId, replyUrl, fileStorage }: { reply?: FastifyReply; itemId: string; replyUrl?: boolean, fileStorage?:string },
+    {
+      encoding,
+      fileStorage,
+      itemId,
+      reply,
+      replyUrl,
+    }: {
+      encoding?: BufferEncoding;
+      fileStorage?: string;
+      itemId: string;
+      reply?: FastifyReply;
+      replyUrl?: boolean;
+    },
   ) {
     // prehook: get item and input in download call ?
     // check rights
@@ -178,17 +193,18 @@ class FileItemService {
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.type] as FileItemProperties;
     const result = await this.fileService.download(actor, {
-      reply: this.shouldRedirectOnDownload || !replyUrl ? reply : undefined,
-      id: itemId,
-      replyUrl,
+      encoding,
       fileStorage,
+      id: itemId,
+      reply: this.shouldRedirectOnDownload || !replyUrl ? reply : undefined,
+      replyUrl,
       ...extraData,
     });
 
     return result;
   }
 
-  async copy(actor, repositories: Repositories, { original, copy }) {
+  async copy(actor: Member, repositories: Repositories, { original, copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
     const { size, path: originalPath, mimetype } = extra[this.fileService.type];
     // filenames are not used

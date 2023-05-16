@@ -27,12 +27,12 @@ const permissionMapping = {
 };
 
 /**
- * Verify if actor has access (or has the necessary rights) to a given item 
+ * Verify if actor has access (or has the necessary rights) to a given item
  * This function checks the member's memberships, if the item is public and if it is hidden.
  * @param repositories
  * @param permission minimum permission required
  * @param member member that tries to access the item
- * @param item 
+ * @param item
  * @throws if the user cannot access the item
  */
 export const validatePermission = async (
@@ -125,9 +125,9 @@ export const filterOutItems = async (actor: Actor, repositories, items: Item[]) 
 };
 
 /**
- * Filter out children based on tag only. 
+ * Filter out children based on tag only.
  * It does not show hidden for admin as well, which is useful for published items
- *  */ 
+ *  */
 export const filterOutHiddenItems = async (repositories: Repositories, items: Item[]) => {
   const { itemTagRepository } = repositories;
 

@@ -93,7 +93,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     /**
      * Patch Chat Message
      * ignore mentions
-     *  */ 
+     *  */
     fastify.patch<{
       Params: { itemId: string; messageId: string };
       Body: { body: string };

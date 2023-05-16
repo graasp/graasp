@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import {  Context, Action as GraaspAction } from '@graasp/sdk';
+import { Context, Action as GraaspAction } from '@graasp/sdk';
 
 import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
@@ -49,7 +49,7 @@ export class Action extends BaseEntity implements GraaspAction {
   type: string;
 
   @Column('simple-json', { nullable: false })
-  extra: {[key:string]: unknown};
+  extra: { [key: string]: unknown };
 
   @Column('simple-json', { nullable: true, default: null })
   geolocation?: geoip.Lookup;

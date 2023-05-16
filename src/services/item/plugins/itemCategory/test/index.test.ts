@@ -10,12 +10,12 @@ import { Item } from '../../../../item/entities/Item';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { setItemPublic } from '../../itemTag/test/fixtures';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
 import { CategoryRepository } from '../repositories/category';
 import { ItemCategoryRepository } from '../repositories/itemCategory';
-import { setItemPublic } from '../../itemTag/test/fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -182,7 +182,6 @@ describe('Categories', () => {
         });
         expect(res.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
-
     });
 
     describe('Public', () => {

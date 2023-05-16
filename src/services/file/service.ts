@@ -92,16 +92,26 @@ class FileService {
   async download(
     member: Actor,
     data: {
-      reply?: FastifyReply;
-      path?: string;
-      mimetype?: string;
-      fileStorage?: string;
+      encoding?: BufferEncoding;
       expiration?: number;
-      replyUrl?: boolean;
+      fileStorage?: string;
       id: string;
+      mimetype?: string;
+      path?: string;
+      reply?: FastifyReply;
+      replyUrl?: boolean;
     },
   ) {
-    const { reply, id, path: filepath, mimetype, fileStorage, expiration, replyUrl } = data;
+    const {
+      encoding,
+      expiration,
+      fileStorage,
+      id,
+      mimetype,
+      path: filepath,
+      reply,
+      replyUrl,
+    } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
         filepath,
@@ -112,13 +122,14 @@ class FileService {
 
     return (
       this.repository.downloadFile({
-        reply,
-        filepath,
-        mimetype,
-        fileStorage,
+        encoding,
         expiration,
-        replyUrl,
+        filepath,
+        fileStorage,
         id,
+        mimetype,
+        reply,
+        replyUrl,
       }) || null
     );
   }

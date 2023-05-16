@@ -77,9 +77,9 @@ declare module 'fastify' {
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
       options: {
-        challenge?: string,
-        url?: string
-      }
+        challenge?: string;
+        url?: string;
+      },
     ) => Promise<{
       authToken: string;
       refreshToken: string;
@@ -87,15 +87,14 @@ declare module 'fastify' {
     generateLoginLinkAndEmailIt: (
       member: Member,
       options: {
-        challenge?: string,
-        lang?: string,
-        url?: string
-      }
+        challenge?: string;
+        lang?: string;
+        url?: string;
+      },
     ) => Promise<{
       authToken: string;
       refreshToken: string;
     }>;
-
   }
 
   interface FastifyRequest {

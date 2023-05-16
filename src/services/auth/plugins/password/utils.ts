@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt';
 
 import { FastifyBaseLogger } from 'fastify';
-import {PasswordNotDefined} from './errors';
+
 import { SALT_ROUNDS } from '../../../../utils/config';
 import { MemberPassword } from './entities/password';
+import { PasswordNotDefined } from './errors';
 
 export const verifyCredentials = (
   memberPassword: MemberPassword,

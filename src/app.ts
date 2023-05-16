@@ -1,7 +1,5 @@
-
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-
 
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
@@ -25,8 +23,6 @@ import {
   MAILER_CONFIG_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './utils/config';
-
-
 
 export default async function (instance: FastifyInstance): Promise<void> {
   instance.decorate('hosts', CLIENT_HOSTS);

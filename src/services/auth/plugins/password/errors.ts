@@ -1,5 +1,6 @@
-import { ErrorFactory } from '@graasp/sdk';
 import { StatusCodes } from 'http-status-codes';
+
+import { ErrorFactory } from '@graasp/sdk';
 
 export const GraaspPasswordError = ErrorFactory('graasp-plugin-password');
 

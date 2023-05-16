@@ -40,7 +40,7 @@ export class ItemService {
     const { item, parentId } = args;
     let createdItem = itemRepository.create({ ...item, creator: actor });
 
-      await this.hooks.runPostHooks('create', actor, repositories, { item });
+    await this.hooks.runPostHooks('create', actor, repositories, { item });
 
     let inheritedMembership;
     let parentItem: Item | undefined = undefined;

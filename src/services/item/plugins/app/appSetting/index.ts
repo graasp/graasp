@@ -36,7 +36,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {
-
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
     fastify.register(appSettingFilePlugin, { appSettingService });

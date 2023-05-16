@@ -17,6 +17,7 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
+import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
@@ -31,7 +32,6 @@ import {
 } from './constants';
 import { FileIsInvalidArchiveError, UnexpectedExportError } from './errors';
 import { buildTextContent, handleItemDescription, prepareZip } from './utils';
-import { TMP_FOLDER } from '../../../../utils/config';
 
 const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
@@ -40,7 +40,7 @@ export class ImportExportService {
   fileItemService: FileItemService;
   // h5pService;
   itemService: ItemService;
-  fileStorage:string;
+  fileStorage: string;
 
   constructor(
     fileItemService: FileItemService,
@@ -51,7 +51,7 @@ export class ImportExportService {
     // this.h5pService = h5pService;
     this.itemService = itemService;
     // save temp files
-    this.fileStorage = path.join(TMP_FOLDER, 'export-zip'); 
+    this.fileStorage = path.join(TMP_FOLDER, 'export-zip');
   }
 
   private async _buildItemFromFilename(
@@ -167,7 +167,8 @@ export class ImportExportService {
       reply;
       item: Item;
       archiveRootPath: string;
-      archive: Archiver;fileStorage:string
+      archive: Archiver;
+      fileStorage: string;
     },
   ) {
     const { item, archiveRootPath, archive, reply, fileStorage } = args;
@@ -242,14 +243,15 @@ export class ImportExportService {
       case ItemType.FOLDER: {
         // append description
         const folderPath = path.join(archiveRootPath, item.name);
-        const children = await repositories.itemRepository.getChildren(item );
+        const children = await repositories.itemRepository.getChildren(item);
         await Promise.all(
           children.map((child) =>
             this._addItemToZip(actor, repositories, {
               item: child,
               archiveRootPath: folderPath,
               archive,
-              reply,fileStorage
+              reply,
+              fileStorage,
             }),
           ),
         );
@@ -290,7 +292,8 @@ export class ImportExportService {
       item,
       reply,
       archiveRootPath: rootPath,
-      archive,fileStorage
+      archive,
+      fileStorage,
     }).catch((error) => {
       throw new UnexpectedExportError(error);
     });

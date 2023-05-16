@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { ReadStream } from 'fs';
 import fetch from 'node-fetch';
 
 import { HttpMethod } from '@graasp/sdk';
@@ -6,9 +6,15 @@ import { HttpMethod } from '@graasp/sdk';
 import { IMAGE_CLASSIFIER_PREDICTION_THRESHOLD } from '../constants';
 import { FailedImageClassificationRequestError } from '../errors';
 
+/**
+ *
+ * @param classifierApi
+ * @param encodedImage image in base64 read stream
+ * @returns classifier response
+ */
 export const sendRequestToClassifier = async (
   classifierApi: string,
-  encodedImage: string,
+  encodedImage: ReadStream,
 ): Promise<{
   prediction?: {
     image?: {
@@ -30,10 +36,8 @@ export const sendRequestToClassifier = async (
   }
 };
 
-export const classifyImage = async (classifierApi: string, filePath: string): Promise<boolean> => {
-  const image = fs.readFileSync(filePath);
-  const encodedImage = image.toString('base64');
-  const response = await sendRequestToClassifier(classifierApi, encodedImage);
+export const classifyImage = async (classifierApi: string, image: ReadStream): Promise<boolean> => {
+  const response = await sendRequestToClassifier(classifierApi, image);
 
   const prediction = response?.prediction?.image;
   if (!prediction) {

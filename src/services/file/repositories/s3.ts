@@ -155,6 +155,7 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
+  // TODO: split in many functions for simplicity
   async downloadFile({
     reply,
     filepath,
@@ -162,6 +163,7 @@ export class S3FileRepository implements FileRepository {
     fileStorage,
     expiration,
     replyUrl,
+    encoding = 'utf8',
   }: {
     reply?: FastifyReply;
     filepath: string;
@@ -169,6 +171,7 @@ export class S3FileRepository implements FileRepository {
     fileStorage?: string;
     expiration?: number;
     replyUrl?: boolean;
+    encoding?: BufferEncoding;
   }) {
     const { s3Bucket: bucket } = this.options;
     try {
@@ -213,7 +216,7 @@ export class S3FileRepository implements FileRepository {
         fileStream.end();
 
         // create and return read stream (similar to local file service)
-        const file = fs.createReadStream(tmpPath);
+        const file = fs.createReadStream(tmpPath, { encoding });
         file.on('close', function (err: Error) {
           if (err) {
             console.error(err);

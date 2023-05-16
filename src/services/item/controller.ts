@@ -25,10 +25,7 @@ import { Ordered } from './interfaces/requests';
 // import { registerItemWsHooks } from './ws/hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    items,
-  } = fastify;
+  const { db, items } = fastify;
   const itemService = items.service;
   const actionItemService = items.actions.service;
 

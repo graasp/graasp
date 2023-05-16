@@ -24,6 +24,7 @@ export interface FileRepository {
     expiration?: number;
     replyUrl?: boolean;
     id: string;
+    encoding?: BufferEncoding;
   }): Promise<ReadStream | string | void>;
 
   uploadFile(args: {
