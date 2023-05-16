@@ -9,20 +9,23 @@ import {
     ParentIdParam,
     PermissionLevel,
   } from '@graasp/sdk';
+import { ItemTagService } from 'graasp-item-tags';
 
 function getParentId(path:string){
   const separator = '.';
   const split_path = path.split(separator);
   if (split_path.length == 1)
     return null;
-  return split_path[split_path.length - 2];
+  const regx = /_/g;
+  return split_path[split_path.length - 2].replace(regx,'-');
 }
-const searchPlugin = async (instance:FastifyInstance) => {
-
+const searchPlugin = async (instance:FastifyInstance, options: { tags: { service: ItemTagService }}) => {
+          const { tags: { service: itemTagService }} = options;
           //create indexes to store different filesmm
-          const { publish, items } = instance;
+          const { publish, items, db } = instance;
           const { taskManager: publishTaskManager } = publish;
           const { taskManager: itemsTaskManager, dbService: itemService } = items;
+          const { pool } = db;
           const { taskRunner } = instance;
           const publishItemTaskName = publishTaskManager.getPublishItemTaskName();
           const updateItemTaskName = itemsTaskManager.getUpdateTaskName();
@@ -141,40 +144,69 @@ const searchPlugin = async (instance:FastifyInstance) => {
             },
 
           );
-
+          
+          let wasARoot = false;
+          taskRunner.setTaskPreHookHandler<Item>(
+            moveItemTaskName,
+            async (item, member, { log, handler }) => {
+                wasARoot = false;
+                const parentID = getParentId(item.path);
+                if (parentID == null){
+                  wasARoot = true;
+                } 
+              },
+          );
 
           taskRunner.setTaskPostHookHandler<Item>(
             moveItemTaskName,
             async (item, member, { log, handler }) => {
-                meilisearchClient.isHealthy().then(() => {
+                const isReady = await meilisearchClient.isHealthy();
+                if (!isReady) {
+                  return;
+                }
 
-                  const parentID = getParentId(item.path);
-                    meilisearchClient.getIndex(itemIndex).catch(err => {
-                      console.log('Document can not be moved: ' + err);
-                    });
-                    if (parentID != null){
-                      (itemService.isPublished(parentID,handler)).then((published)=>{
-                        if (published){
-                          meilisearchClient.index(itemIndex).updateDocuments([item]).then(() => {
-                            console.log('Item moved');
-                          }).catch(err => {
-                            console.log('There was a problem moving ' + item + 'to meilisearch ' + err);
-                          });
-                        } else{
-                          meilisearchClient.index(itemIndex).deleteDocument(item.id).then(() => {
-                            console.log('Item deleted');
-                          }).catch(err => {
-                            console.log('There was a problem deleting ' + item + 'to meilisearch ' + err);
-                          });
-                        }
-                      });
+                const parentID = getParentId(item.path);
+                let published = false;
+                const id_publish = 'a8d8e09d-a0b9-4551-b300-125abe25a0f9';
+                if (parentID != null && !wasARoot)
+                {
+                  
+                  const parent = await itemService.get(parentID, handler);
+                  published = await itemTagService.hasTag(parent, id_publish,handler);
+                } 
+                else 
+                {
+                  //this is a root, and therefore we should check if this is published
+                  published = await itemTagService.hasTag(item, id_publish,handler);
+                  if (parentID != null && !published)
+                  {
+                    const parent = await itemService.get(parentID, handler);
+                    published = await itemTagService.hasTag(parent, id_publish,handler);
+                  }
+                  console.log('the top file published res' + published);
+                }
+                try
+                {
+                  await  meilisearchClient.getIndex(itemIndex);
+                  
+                  if(published) {
+                    await meilisearchClient.index(itemIndex).updateDocuments([item]);
+                  } else {
+
+                    try
+                    {
+                      await meilisearchClient.index(itemIndex).getDocument(item.id);
+                      await meilisearchClient.index(itemIndex).deleteDocument(item.id);
                     }
-    
-                  }).catch(err => {
-                    console.log('Server is not healthy' + err);
-                  });
-
-                    
+                    catch
+                    {
+                      //the item has never been published
+                    }
+                  }
+                }
+                catch(err){
+                  console.log('There was a problem in moving operations: ' + err);
+                }
             },
 
           );

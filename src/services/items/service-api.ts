@@ -296,7 +296,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
 
-        await fastify.register(searchPlugin);
+        await fastify.register(searchPlugin, { tags: { service: itemTagService }});
         // search plugin
         // await fastify.register(async (instance) => 
         // {
