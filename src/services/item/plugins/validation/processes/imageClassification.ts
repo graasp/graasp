@@ -1,4 +1,4 @@
-import {  readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 import fetch from 'node-fetch';
 
 import { HttpMethod } from '@graasp/sdk';
@@ -29,10 +29,10 @@ export const sendRequestToClassifier = async (
     const encodedImage = Buffer.from(buffer).toString('base64');
     const response = await fetch(classifierApi, {
       method: HttpMethod.POST,
-      body: JSON.stringify({data:{image:encodedImage}}),
-      headers: {'Content-Type': 'application/json'}
-    }).then((res) => res.json());
-    return response;
+      body: JSON.stringify({ data: { image: encodedImage } }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.json();
   } catch (error) {
     console.error(error);
     throw new FailedImageClassificationRequestError(error);
@@ -41,6 +41,7 @@ export const sendRequestToClassifier = async (
 
 export const classifyImage = async (classifierApi: string, url: string): Promise<boolean> => {
   const response = await sendRequestToClassifier(classifierApi, url);
+  console.debug('image classification result', response);
 
   const prediction = response?.prediction?.image;
   if (!prediction) {
