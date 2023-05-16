@@ -170,7 +170,7 @@ class FileItemService {
   async download(
     actor,
     repositories: Repositories,
-    { reply, itemId, replyUrl }: { reply?: FastifyReply; itemId: string; replyUrl?: boolean },
+    { reply, itemId, replyUrl, fileStorage }: { reply?: FastifyReply; itemId: string; replyUrl?: boolean, fileStorage?:string },
   ) {
     // prehook: get item and input in download call ?
     // check rights
@@ -181,6 +181,7 @@ class FileItemService {
       reply: this.shouldRedirectOnDownload || !replyUrl ? reply : undefined,
       id: itemId,
       replyUrl,
+      fileStorage,
       ...extraData,
     });
 

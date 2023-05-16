@@ -31,6 +31,7 @@ import {
 } from './constants';
 import { FileIsInvalidArchiveError, UnexpectedExportError } from './errors';
 import { buildTextContent, handleItemDescription, prepareZip } from './utils';
+import { TMP_FOLDER } from '../../../../utils/config';
 
 const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
@@ -39,6 +40,7 @@ export class ImportExportService {
   fileItemService: FileItemService;
   // h5pService;
   itemService: ItemService;
+  fileStorage:string;
 
   constructor(
     fileItemService: FileItemService,
@@ -48,6 +50,8 @@ export class ImportExportService {
     this.fileItemService = fileItemService;
     // this.h5pService = h5pService;
     this.itemService = itemService;
+    // save temp files
+    this.fileStorage = path.join(TMP_FOLDER, 'export-zip'); 
   }
 
   private async _buildItemFromFilename(
@@ -163,10 +167,10 @@ export class ImportExportService {
       reply;
       item: Item;
       archiveRootPath: string;
-      archive: Archiver;
+      archive: Archiver;fileStorage:string
     },
   ) {
-    const { item, archiveRootPath, archive, reply } = args;
+    const { item, archiveRootPath, archive, reply, fileStorage } = args;
 
     // save description in file
     if (item.description) {
@@ -183,8 +187,7 @@ export class ImportExportService {
           (item.extra[ItemType.S3_FILE] as S3FileItemExtra) ||
           (item.extra[ItemType.LOCAL_FILE] as LocalFileItemExtra);
         const fileStream = await this.fileItemService.download(actor, repositories, {
-          reply,
-          replyUrl:false,
+          fileStorage,
           itemId: item.id,
         });
 
@@ -246,7 +249,7 @@ export class ImportExportService {
               item: child,
               archiveRootPath: folderPath,
               archive,
-              reply,
+              reply,fileStorage
             }),
           ),
         );
@@ -287,7 +290,7 @@ export class ImportExportService {
       item,
       reply,
       archiveRootPath: rootPath,
-      archive,
+      archive,fileStorage
     }).catch((error) => {
       throw new UnexpectedExportError(error);
     });
