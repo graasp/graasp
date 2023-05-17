@@ -101,15 +101,7 @@ class FileService {
       replyUrl?: boolean;
     },
   ) {
-    const {
-      expiration,
-      fileStorage,
-      id,
-      mimetype,
-      path: filepath,
-      reply,
-      replyUrl,
-    } = data;
+    const { expiration, fileStorage, id, mimetype, path: filepath, reply, replyUrl } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
         filepath,

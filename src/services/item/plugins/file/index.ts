@@ -52,6 +52,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   const fileItemService = new FileItemService(
     fileService,
     items.service,
+    items.thumbnails.service,
     shouldRedirectOnDownload,
     {
       maxMemberStorage,

@@ -2,12 +2,12 @@ import { existsSync, mkdirSync } from 'fs';
 import { rm } from 'fs/promises';
 import path from 'path';
 
-import { SavedMultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import { TMP_FOLDER } from '../../utils/config';
 import FileService from '../file/service';
 import { THUMBNAIL_MIMETYPE } from './constants';
+import { UploadedFile } from './types';
 import { createThumbnails } from './utils';
 
 export class ThumbnailService {
@@ -26,7 +26,7 @@ export class ThumbnailService {
     return path.join(this.prefix, itemId, name);
   }
 
-  async upload(actor, id: string, file: SavedMultipartFile) {
+  async upload(actor, id: string, file: UploadedFile) {
     // ?? it might not be saved correctly in the original upload
     const fileStorage = path.join(TMP_FOLDER, 'thumbnails', id);
     mkdirSync(fileStorage, { recursive: true });

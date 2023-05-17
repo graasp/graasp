@@ -79,11 +79,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspCategoryPlugin);
 
-      fastify.register(graaspItemPublish, {
-        // publishedTagId: PUBLISHED_TAG_ID,
-        // publicTagId: PUBLIC_TAG_ID,
-        // hostname: CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname,
-      });
+      fastify.register(graaspItemPublish);
+
+      fastify.register(thumbnailsPlugin);
 
       fastify.register(graaspFileItem, {});
 
@@ -102,8 +100,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // });
 
         fastify.register(graaspZipPlugin);
-
-        fastify.register(thumbnailsPlugin);
 
         // 'await' necessary because internally it uses 'extendCreateSchema'
         await fastify.register(graaspEmbeddedLinkItem, {

@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import {  ItemType, UnknownExtra } from '@graasp/sdk';
+import { ItemType, UnknownExtra } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
@@ -45,8 +45,9 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
     items: { extendCreateSchema, service: itemService },
   } = fastify;
 
-  if (!iframelyHrefOrigin) {throw new Error('graasp-embedded-link-item: mandatory options missing');
-}
+  if (!iframelyHrefOrigin) {
+    throw new Error('graasp-embedded-link-item: mandatory options missing');
+  }
   // "install" custom schema for validating embedded link items creation
   extendCreateSchema(createSchema);
 
@@ -58,7 +59,9 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   ) => {
     const { embeddedLink } = (item?.extra as EmbeddedLinkItemExtra) ?? {};
 
-    if (item.type !== ItemType.LINK || !embeddedLink) {return;}
+    if (item.type !== ItemType.LINK || !embeddedLink) {
+      return;
+    }
 
     const { url } = embeddedLink;
 

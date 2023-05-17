@@ -1,4 +1,4 @@
-import {  mkdirSync } from 'fs';
+import { mkdirSync } from 'fs';
 import path from 'path';
 
 import {
@@ -187,7 +187,7 @@ export class ItemValidationService {
             if (!this.imageClassifierApi) {
               throw new Error('imageClassifierApi is not defined');
             }
-            // return url 
+            // return url
             const url = (await this.fileService.download(actor, {
               id: item?.id,
               mimetype,

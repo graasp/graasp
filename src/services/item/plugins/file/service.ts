@@ -6,13 +6,11 @@ import { FastifyReply } from 'fastify';
 
 import {
   FileItemProperties,
-  FileItemType,
   ItemType,
   LocalFileItemExtra,
-  LocalFileItemType,
+  MimeTypes,
   PermissionLevel,
   S3FileItemExtra,
-  S3FileItemType,
 } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
@@ -20,9 +18,11 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Actor, Member } from '../../../member/entities/member';
+import { UploadedFile } from '../../../thumbnail/types';
 import { randomHexOf4 } from '../../../utils';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
+import { ItemThumbnailService } from '../thumbnail/service';
 import { StorageExceeded } from './utils/errors';
 
 const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
@@ -34,6 +34,7 @@ type Options = {
 class FileItemService {
   fileService: FileService;
   itemService: ItemService;
+  itemThumbnailService: ItemThumbnailService;
   shouldRedirectOnDownload: boolean;
   options: Options;
 
@@ -46,11 +47,13 @@ class FileItemService {
   constructor(
     fileService: FileService,
     itemService: ItemService,
+    itemThumbnailService: ItemThumbnailService,
     shouldRedirectOnDownload: boolean,
     options: Options,
   ) {
     this.fileService = fileService;
     this.itemService = itemService;
+    this.itemThumbnailService = itemThumbnailService;
     this.shouldRedirectOnDownload = shouldRedirectOnDownload;
     this.options = options;
   }
@@ -74,18 +77,12 @@ class FileItemService {
     }
   }
 
-  async upload(
-    actor: Actor,
-    repositories: Repositories,
-    files: (Partial<SavedMultipartFile> &
-      Pick<SavedMultipartFile, 'filename' | 'mimetype' | 'filepath'>)[],
-    parentId: string,
-  ) {
+  async upload(actor: Actor, repositories: Repositories, files: UploadedFile[], parentId: string) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
-    // TODO: check rights
+    // check rights
     if (parentId) {
       const item = await repositories.itemRepository.get(parentId);
       await validatePermission(repositories, PermissionLevel.Write, actor, item);
@@ -96,6 +93,7 @@ class FileItemService {
       filename: string;
       size: number;
       mimetype: string;
+      uploaded: UploadedFile;
     }>[] = [];
     for (const fileObject of files) {
       const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
@@ -124,7 +122,7 @@ class FileItemService {
             size,
           })
           .then(() => {
-            return { filepath, filename, size, mimetype };
+            return { filepath, filename, size, mimetype, uploaded: fileObject };
           })
           .catch((e) => {
             throw e;
@@ -138,7 +136,8 @@ class FileItemService {
 
     const items: Item[] = [];
     // postHook: create items from file properties
-    for (const { filename, filepath, mimetype, size } of fileProperties) {
+    for (const properties of fileProperties) {
+      const { filename, filepath, mimetype, size, uploaded } = properties;
       const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
       const item = {
         name,
@@ -150,21 +149,25 @@ class FileItemService {
             mimetype,
             size,
           },
+          // todo: fix type
         } as any,
-        settings: {
-          // image files get automatically generated thumbnails
-          hasThumbnail: mimetype.startsWith('image'),
-        },
         parentId,
         creator: actor,
       };
 
-      items.push(
-        await this.itemService.post(actor, repositories, {
-          item,
-          parentId,
-        }),
-      );
+      const newItem = await this.itemService.post(actor, repositories, {
+        item,
+        parentId,
+      });
+      items.push(newItem);
+
+      // add thumbnails if image
+      // allow failures
+      if (MimeTypes.isImage(mimetype)) {
+        this.itemThumbnailService
+          .upload(actor, repositories, newItem.id, uploaded)
+          .catch((e) => console.error(e));
+      }
     }
     return items;
   }

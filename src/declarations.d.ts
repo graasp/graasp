@@ -19,6 +19,7 @@ import FileService from './services/file/service';
 import ItemServiceApi from './services/item';
 import { ActionItemService } from './services/item/plugins/action/service';
 import FileItemService from './services/item/plugins/file/service';
+import { ItemThumbnailService } from './services/item/plugins/thumbnail/service';
 import ItemService from './services/item/service';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
@@ -53,6 +54,9 @@ declare module 'fastify' {
       };
       actions: {
         service: ActionItemService;
+      };
+      thumbnails: {
+        service: ItemThumbnailService;
       };
     };
     members: { service: MemberService };
