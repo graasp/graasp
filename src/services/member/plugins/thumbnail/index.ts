@@ -7,10 +7,7 @@ import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
-import {
-  DownloadFileUnexpectedError,
-  UploadFileUnexpectedError,
-} from '../../../item/plugins/file/utils/errors';
+import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { download, upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';

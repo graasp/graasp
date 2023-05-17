@@ -4,11 +4,11 @@ import { FastifyPluginAsync } from 'fastify';
 import { HttpMethod, IdParam, UUID } from '@graasp/sdk';
 
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
-import { Actor } from '../../../../../../member/entities/member';
 import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
-} from '../../../../file/utils/errors';
+} from '../../../../../../file/utils/errors';
+import { Actor, Member } from '../../../../../../member/entities/member';
 import { AppData } from '../../appData';
 import { PreventUpdateAppDataFile } from '../../errors';
 import type { AppDataService } from '../../service';
@@ -53,7 +53,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (actor: Actor, repositories: Repositories, appData: AppData) => {
+  const deleteHook = async (actor: Member, repositories: Repositories, appData: AppData) => {
     await appDataFileService.deleteOne(actor, repositories, appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);

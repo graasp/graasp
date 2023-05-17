@@ -16,13 +16,9 @@ import { FastifyReply } from 'fastify';
 
 import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
-import {
-  DownloadFileUnexpectedError,
-  UploadFileUnexpectedError,
-} from '../../item/plugins/file/utils/errors';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
-import { S3FileNotFound } from '../utils/errors';
+import { DownloadFileUnexpectedError, S3FileNotFound } from '../utils/errors';
 
 export class S3FileRepository implements FileRepository {
   private readonly options: S3FileConfiguration;

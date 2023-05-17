@@ -1,6 +1,7 @@
 import * as eta from 'eta';
+import type { i18n } from 'i18next';
 import { promisify } from 'util';
-import type {i18n} from 'i18next';
+
 import pointOfView from '@fastify/view';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
@@ -27,7 +28,7 @@ export interface MailerDecoration {
     html: string,
     from?: string,
   ) => Promise<void>;
-  translate: (lang: string)=> i18n['t']
+  translate: (lang: string) => i18n['t'];
 }
 
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
@@ -56,7 +57,7 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     text: string,
     html: string,
     from: string = fromEmail,
-  )=> {
+  ) => {
     await promisifiedNodemailerSendMail({ from, to, subject, text, html: applyLayout(html) });
   };
 

@@ -13,6 +13,7 @@ import { AuthenticationError } from './errors';
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
 export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 
+// todo: this does not really need to be a fastify plugin?
 const plugin: FastifyPluginAsync<{ secretAccessKey: string }> = async (fastify, options) => {
   const { secretAccessKey } = options;
 

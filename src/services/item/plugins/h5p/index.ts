@@ -226,9 +226,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
               return item;
             } catch (error) {
               // delete public storage folder of this H5P if upload or creation fails
-              await fileService.deleteFolder(member, {
-                folderPath: remoteRootPath,
-              });
+              await fileService.deleteFolder(member, remoteRootPath);
               // rethrow above
               throw error;
             }

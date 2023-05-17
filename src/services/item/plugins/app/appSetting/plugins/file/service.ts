@@ -147,7 +147,7 @@ class AppSettingFileService {
     return result;
   }
 
-  async copyMany(actor: Actor, repositories: Repositories, toCopy: AppSetting[]) {
+  async copyMany(actor: Member, repositories: Repositories, toCopy: AppSetting[]) {
     const fileItemType = this.fileService.type;
     for (const appS of toCopy) {
       if (!appS.data) {
@@ -190,7 +190,7 @@ class AppSettingFileService {
       }
 
       const filepath = fileProp.path;
-      await this.fileService.delete(actor, { filepath });
+      await this.fileService.delete(actor, filepath);
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not
       // this is especially useful for the files uploaded before the migration to the new plugin

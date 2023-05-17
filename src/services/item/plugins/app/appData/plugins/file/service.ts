@@ -9,7 +9,7 @@ import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
-import { Actor } from '../../../../../../member/entities/member';
+import { Actor, Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
 import { AppData } from '../../appData';
@@ -134,7 +134,7 @@ class AppDataFileService {
     return result;
   }
 
-  async deleteOne(actor: Actor, repositories: Repositories, appData: AppData) {
+  async deleteOne(actor: Member, repositories: Repositories, appData: AppData) {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
@@ -144,7 +144,7 @@ class AppDataFileService {
       }
 
       const filepath = fileProp.path;
-      await this.fileService.delete(actor, { filepath });
+      await this.fileService.delete(actor, filepath);
     } catch (err) {
       // we catch the error, it ensures the item is deleted even if the file is not
       // this is especially useful for the files uploaded before the migration to the new plugin

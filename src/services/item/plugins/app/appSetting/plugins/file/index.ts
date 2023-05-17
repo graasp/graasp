@@ -4,12 +4,12 @@ import { FastifyPluginAsync } from 'fastify';
 import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
-import { Actor } from '../../../../../../member/entities/member';
-import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
 import {
   DownloadFileUnexpectedError,
   UploadFileUnexpectedError,
-} from '../../../../file/utils/errors';
+} from '../../../../../../file/utils/errors';
+import { Actor, Member } from '../../../../../../member/entities/member';
+import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
 import { AppSetting } from '../../appSettings';
 import { PreventUpdateAppSettingFile } from '../../errors';
 import type { AppSettingService } from '../../service';
@@ -60,7 +60,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   appSettingService.hooks.setPostHook('delete', deleteHook);
 
   // app setting copy hook
-  const hook = async (actor: Actor, repositories: Repositories, newAppSettings: AppSetting[]) => {
+  const hook = async (actor: Member, repositories: Repositories, newAppSettings: AppSetting[]) => {
     // copy file only if content is a file
     const isFileSetting = (a: AppSetting) => a.data[fileService.type];
     const toCopy = newAppSettings.filter(isFileSetting);

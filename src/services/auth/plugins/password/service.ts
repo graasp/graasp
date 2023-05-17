@@ -1,15 +1,30 @@
-import { FastifyLoggerInstance } from 'fastify';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import { promisify } from 'util';
 
-import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES } from '../../../../utils/config';
+import { FastifyBaseLogger } from 'fastify';
+
+import { JWT_SECRET, LOGIN_TOKEN_EXPIRATION_IN_MINUTES } from '../../../../utils/config';
 import { MemberWithoutPassword } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { generateToken } from '../../token';
+
+const promisifiedJwtSign = promisify<
+  { sub: string; challenge?: string },
+  Secret,
+  SignOptions,
+  string
+>(jwt.sign);
 
 export class MemberPasswordService {
-  log: FastifyLoggerInstance;
+  log: FastifyBaseLogger;
 
   constructor(log) {
     this.log = log;
+  }
+
+  generateToken(data, expiration) {
+    return promisifiedJwtSign(data, JWT_SECRET, {
+      expiresIn: expiration,
+    });
   }
 
   async patch(actor, repositories: Repositories, newPassword: string, currentPassword?: string) {
@@ -45,7 +60,7 @@ export class MemberPasswordService {
     // validate credentials to build token
     await memberPasswordRepository.validateCredentials(memberPassword, body);
 
-    const token = await generateToken(
+    const token = await this.generateToken(
       { sub: member.id, challenge },
       `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
     );

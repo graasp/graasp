@@ -68,7 +68,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         // delete file only if type is the current file type
         if (!id || type !== fileService.type) return;
         const filepath = extra[fileService.type].path;
-        await fileService.delete(actor, { filepath });
+        await fileService.delete(actor, filepath);
       } catch (err) {
         // we catch the error, it ensures the item is deleted even if the file is not
         // this is especially useful for the files uploaded before the migration to the new plugin
