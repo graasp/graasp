@@ -31,6 +31,18 @@ export class CopyFileInvalidPathError extends GraaspFileError {
     );
   }
 }
+export class CopyFolderInvalidPathError extends GraaspFileError {
+  constructor(filepath?: unknown) {
+    super(
+      {
+        code: 'GPFERR009',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: FAILURE_MESSAGES.INVALID_FILE_PATH_FOR_COPY,
+      },
+      filepath,
+    );
+  }
+}
 export class DeleteFileInvalidPathError extends GraaspFileError {
   constructor(filepath?: unknown) {
     super(
@@ -101,6 +113,34 @@ export class UploadEmptyFileError extends GraaspFileError {
         code: 'GPFERR008',
         statusCode: StatusCodes.BAD_REQUEST,
         message: FAILURE_MESSAGES.UPLOAD_EMPTY_FILE,
+      },
+      data,
+    );
+  }
+}
+
+export class UploadFileUnexpectedError extends GraaspFileError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPFERR010',
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        // TODO: change message
+        message: FAILURE_MESSAGES.UPLOAD_FILE_UNEXPECTED_ERROR,
+      },
+      data,
+    );
+  }
+}
+
+export class DownloadFileUnexpectedError extends GraaspFileError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPFERR011',
+        statusCode: StatusCodes.BAD_REQUEST,
+        // TODO: change message
+        message: FAILURE_MESSAGES.DOWNLOAD_FILE_UNEXPECTED_ERROR,
       },
       data,
     );

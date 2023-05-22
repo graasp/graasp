@@ -12,7 +12,9 @@ import { FILE_ITEM_TYPE, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config'
 import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/errors';
 import {
   DownloadFileInvalidParameterError,
+  DownloadFileUnexpectedError,
   UploadEmptyFileError,
+  UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
 import { expectItem, expectManyItems, getDummyItem } from '../../../../item/test/fixtures/items';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
@@ -21,7 +23,6 @@ import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../utils/errors';
 
 // TODO: LOCAL FILE TESTS
 

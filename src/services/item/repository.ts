@@ -6,6 +6,7 @@ import {
   ItemSettings,
   ItemType,
   MAX_TREE_LEVELS,
+  PermissionLevel,
   ResultOf,
   UUID,
 } from '@graasp/sdk';
@@ -14,6 +15,7 @@ import { AppDataSource } from '../../plugins/datasource';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
+  ItemNotFolder,
   ItemNotFound,
   TooManyDescendants,
 } from '../../utils/errors';
@@ -129,8 +131,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   async getChildren(parent: Item, ordered?: boolean): Promise<Item[]> {
     if (parent.type !== ItemType.FOLDER) {
-      // TODO
-      throw new Error('Item is not a folder');
+      throw new ItemNotFolder(parent);
     }
 
     // CHECK SQL
@@ -222,7 +223,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .where('creator.id = :id', { id: memberId })
-      .andWhere('im.permission = \'admin\'')
+      .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
       .andWhere('nlevel(item.path) = 1')
       .orderBy('item.updatedAt', 'DESC')
       .getMany();
@@ -337,7 +338,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
     for (let i = 0; i < tree.length; i++) {
       const original = tree[i];
-      const { name, description, type, path, extra, settings } = original;
+      const { name, description, type, path, extra, settings, createdAt } = original;
       const pathSplit = path.split('.');
       const oldPath = pathSplit.pop();
       // this shouldn't happen

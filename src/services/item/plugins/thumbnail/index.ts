@@ -6,11 +6,12 @@ import { FastifyPluginAsync } from 'fastify';
 import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
 
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../file/utils/errors';
 import { download, upload } from './schemas';
-import { FileThumbnailService } from './service';
+import { ItemThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
 
 type GraaspThumbnailsOptions = {
@@ -23,9 +24,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
   const {
     log: defaultLogger,
     files: { service: fileService },
-    items: { service: itemService },
+    items,
     db,
   } = fastify;
+
+  const { service: itemService } = items;
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -39,7 +42,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
   });
 
-  const thumbnailService = new FileThumbnailService(itemService, fileService);
+  const thumbnailService = new ItemThumbnailService(itemService, fileService);
+
+  // decorate thumbnail service
+  items.thumbnails = { service: thumbnailService };
 
   fastify.post<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
@@ -53,6 +59,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
         params: { id: itemId },
         log,
       } = request;
+
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
 
       return db
         .transaction(async (manager) => {

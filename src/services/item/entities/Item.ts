@@ -13,6 +13,7 @@ import { v4 } from 'uuid';
 
 import {
   AppItemExtra,
+  EmbeddedLinkItemExtra,
   EtherpadItemExtra,
   FolderItemExtra,
   Item as GraaspItem,
@@ -26,7 +27,6 @@ import {
 
 import { Member } from '../../member/entities/member';
 import { DocumentExtra } from '../plugins/document';
-import { EmbeddedLinkItemExtra } from '../plugins/embeddedLink';
 
 export type ItemExtra =
   | DocumentExtra

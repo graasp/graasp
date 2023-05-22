@@ -1,6 +1,7 @@
+import { BaseGraaspError } from '@graasp/sdk';
+
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
-import { Item } from '../../../entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
 
@@ -8,7 +9,7 @@ import { DuplicateItemCategoryError } from '../errors';
  * Database's first layer of abstraction for Categorys
  */
 export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).extend({
-  async get(id: string): Promise<ItemCategory[]> {
+  async get(id: string): Promise<ItemCategory | null> {
     return this.findOne({ where: { id }, relations: { category: true } });
   },
 
@@ -20,13 +21,13 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
     return this.find({ where: { item: { id: itemId } }, relations: { category: true } });
   },
 
-  async post(itemPath: string, categoryId: string): Promise<ItemCategory> {
+  async post(itemPath: string, categoryId: string): Promise<ItemCategory | null> {
     try {
       const created = await this.insert({ item: { path: itemPath }, category: { id: categoryId } });
       return this.get(created.identifiers[0].id);
     } catch (e) {
       // TODO: e instanceof QueryFailedError
-      if (e.code === DUPLICATE_ENTRY_ERROR_CODE) {
+      if (e instanceof BaseGraaspError && e.code === DUPLICATE_ENTRY_ERROR_CODE) {
         throw new DuplicateItemCategoryError({ itemPath, categoryId });
       }
       throw e;

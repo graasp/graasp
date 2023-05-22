@@ -102,8 +102,8 @@ const patchMessage = {
     type: 'object',
     required: ['body'],
     properties: {
-      body: { type: 'string' }
-    }
+      body: { type: 'string' },
+    },
   },
   response: {
     200: { $ref: 'http://graasp.org/chat/#/definitions/chatMessage' },

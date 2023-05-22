@@ -12,16 +12,11 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
    * Create given action and return it.
    * @param action Action to create
    */
-  async postMany(actions: Partial<Action>[]): Promise<Action[]> {
+  async postMany(actions: Pick<Action, 'member' | 'type'>[]): Promise<void> {
     // save action
-    const result = await Promise.all(
-      actions.map(async (action) => {
-        const actionResult = await this.insert(action);
-        return actionResult;
-      }),
-    );
-
-    return result;
+    for (const action of actions) {
+      await this.insert(action);
+    }
   },
 
   /**

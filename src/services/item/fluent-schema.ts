@@ -100,7 +100,7 @@ export const itemUpdate = S.object()
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
   .prop('settings', settings)
-  .anyOf([S.required(['name']), S.required(['description'])]);
+  .anyOf([S.required(['name']), S.required(['description']), S.required(['settings'])]);
 
 export const create =
   (...itemSchemas: JSONSchema[]) =>

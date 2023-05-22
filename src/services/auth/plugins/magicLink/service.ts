@@ -32,24 +32,24 @@ export class MagicLinkService {
     this.log = log;
   }
 
-  async sendRegisterMail(actor:Actor, repositories: Repositories, member: Member, url?:string) {
-    await this.fastify.generateRegisterLinkAndEmailIt(member, {url});
+  async sendRegisterMail(actor: Actor, repositories: Repositories, member: Member, url?: string) {
+    await this.fastify.generateRegisterLinkAndEmailIt(member, { url });
   }
 
-  async login(actor:Actor, repositories: Repositories, body, lang = DEFAULT_LANG, url?:string) {
+  async login(actor: Actor, repositories: Repositories, body, lang = DEFAULT_LANG, url?: string) {
     const { memberRepository } = repositories;
     const { email } = body;
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
-      await this.fastify.generateLoginLinkAndEmailIt(member, { lang, url});
+      await this.fastify.generateLoginLinkAndEmailIt(member, { lang, url });
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });
     }
   }
 
-  async auth(actor:Actor, repositories: Repositories, token) {
+  async auth(actor: Actor, repositories: Repositories, token) {
     try {
       // verify and extract member info
       const result = await promisifiedJwtVerify(token, JWT_SECRET, {});

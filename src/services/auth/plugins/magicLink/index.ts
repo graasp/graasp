@@ -4,12 +4,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { AUTH_CLIENT_HOST,  } from '../../../../utils/config';
+import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { getRedirectionUrl } from '../../utils';
 import { auth, login, register } from './schemas';
 import { MagicLinkService } from './service';
-import { getRedirectionUrl } from '../../utils';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
@@ -25,7 +25,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // register
     fastify.post<{
       Body: { name: string; email: string; captcha: string };
-      Querystring: { lang?: string, url?:string };
+      Querystring: { lang?: string; url?: string };
     }>('/register', { schema: register }, async (request, reply) => {
       const {
         body,
@@ -46,7 +46,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             lang,
           );
 
-          await magicLinkService.sendRegisterMail(undefined, buildRepositories(manager), member, url);
+          await magicLinkService.sendRegisterMail(
+            undefined,
+            buildRepositories(manager),
+            member,
+            url,
+          );
           reply.status(StatusCodes.NO_CONTENT);
         } catch (e) {
           if (!(e instanceof MemberAlreadySignedUp)) {
@@ -60,41 +65,44 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     });
 
     // login
-    fastify.post<{ Body: { email: string; captcha: string }; Querystring: { lang?: string, url?:string } }>(
-      '/login',
-      { schema: login },
-      async (request, reply) => {
-        const {
-          body,
-          query: { lang, url },
-        } = request;
+    fastify.post<{
+      Body: { email: string; captcha: string };
+      Querystring: { lang?: string; url?: string };
+    }>('/login', { schema: login }, async (request, reply) => {
+      const {
+        body,
+        query: { lang, url },
+      } = request;
 
-        // validate captcha
-        await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignIn);
+      // validate captcha
+      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignIn);
 
-        await magicLinkService.login(undefined, buildRepositories(), body, lang, url);
-        reply.status(StatusCodes.NO_CONTENT);
-      },
-    );
+      await magicLinkService.login(undefined, buildRepositories(), body, lang, url);
+      reply.status(StatusCodes.NO_CONTENT);
+    });
 
     // authenticate
-    fastify.get<{ Querystring: { t: string, url?:string } }>(
+    fastify.get<{ Querystring: { t: string; url?: string } }>(
       '/auth',
       { schema: auth },
       async (request, reply) => {
         const {
-          query: { t: token , url},
+          query: { t: token, url },
           session,
         } = request;
 
         try {
-          const { sub: memberId } = await magicLinkService.auth(undefined, buildRepositories(), token);
+          const { sub: memberId } = await magicLinkService.auth(
+            undefined,
+            buildRepositories(),
+            token,
+          );
 
           // add member id to session
           session.set('member', memberId);
           const redirectionUrl = getRedirectionUrl(url);
 
-          if(redirectionUrl) {
+          if (redirectionUrl) {
             reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
           } else {
             reply.status(StatusCodes.NO_CONTENT);

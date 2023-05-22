@@ -70,7 +70,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       const token = await memberPasswordService.login(
-        null,
+        undefined,
         buildRepositories(),
         body,
         body.challenge,

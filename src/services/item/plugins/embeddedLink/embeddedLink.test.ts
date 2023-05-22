@@ -1,8 +1,8 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import fetch from 'node-fetch';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { EmbeddedLinkItemExtra, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { EmbeddedLinkItemExtra } from '.';
 import build, { clearDatabase } from '../../../../../test/app';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
@@ -10,11 +10,27 @@ import { BOB, saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
 import { expectItem } from '../../test/fixtures/items';
 
+jest.mock('node-fetch');
+
 // mock datasource
 jest.mock('../../../../plugins/datasource');
 
+const iframelyMeta = {
+  title: 'title',
+  description: 'description',
+};
+
+const iframelyResult = {
+  meta: iframelyMeta,
+  html: 'html',
+  icons: [],
+  thumbnails: [],
+};
 const extra = {
   [ItemType.LINK]: {
+    html: 'html',
+    icons: [],
+    thumbnails: [],
     url: 'http://myurl.com',
   },
 } as EmbeddedLinkItemExtra;
@@ -24,6 +40,12 @@ const extra = {
 describe('Link Item tests', () => {
   let app;
   let actor;
+
+  beforeEach(() => {
+    (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+      return { json: async () => iframelyResult } as any;
+    });
+  });
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -36,7 +58,7 @@ describe('Link Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = { type: ItemType.LINK, extra, name: 'mylink' };
+      const payload = { type: ItemType.LINK, extra };
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/items',
@@ -60,14 +82,21 @@ describe('Link Item tests', () => {
           payload,
         });
 
+        const expectedItem = {
+          name: iframelyMeta.title,
+          type: ItemType.LINK,
+          extra,
+          description: iframelyMeta.description,
+        };
+
         // check response value
         const newItem = response.json();
-        expectItem(newItem, payload);
+        expectItem(newItem, expectedItem);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check item exists in db
         const item = await ItemRepository.get(newItem.id);
-        expectItem(item, payload);
+        expectItem(item, expectedItem);
 
         // a membership is created for this item
         const membership = await ItemMembershipRepository.findOneBy({ item: { id: newItem.id } });

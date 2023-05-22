@@ -19,30 +19,3 @@ export class StorageExceeded extends GraaspFileItemError {
     );
   }
 }
-export class UploadFileUnexpectedError extends GraaspFileItemError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR010',
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        // TODO: change message
-        message: FAILURE_MESSAGES.UPLOAD_FILE_UNEXPECTED_ERROR,
-      },
-      data,
-    );
-  }
-}
-
-export class DownloadFileUnexpectedError extends GraaspFileItemError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPFERR011',
-        statusCode: StatusCodes.BAD_REQUEST,
-        // TODO: change message
-        message: FAILURE_MESSAGES.DOWNLOAD_FILE_UNEXPECTED_ERROR,
-      },
-      data,
-    );
-  }
-}

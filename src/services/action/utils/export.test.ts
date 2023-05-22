@@ -70,7 +70,7 @@ describe('exportActionsInArchive', () => {
     app.close();
   });
 
-  it.only('Create archive successfully', async () => {
+  it('Create archive successfully', async () => {
     const member = await saveMember(BOB);
     const { baseAnalytics, views } = await setUpActions(app, member);
 

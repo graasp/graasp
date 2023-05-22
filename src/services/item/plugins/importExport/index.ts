@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { zipExport, zipImport } from './schema';
@@ -39,6 +40,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
         query: { parentId },
       } = request;
+
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
 
       log.debug('Import zip content');
 

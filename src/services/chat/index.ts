@@ -9,6 +9,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
@@ -82,6 +83,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
           body,
           log,
         } = request;
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
         const message = await db.transaction(async (manager) => {
           return chatService.postOne(member, buildRepositories(manager), itemId, body);
         });
@@ -93,7 +97,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     /**
      * Patch Chat Message
      * ignore mentions
-     *  */ 
+     *  */
     fastify.patch<{
       Params: { itemId: string; messageId: string };
       Body: { body: string };
@@ -110,6 +114,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
           body,
           log,
         } = request;
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
         const message = await db.transaction(async (manager) => {
           return chatService.patchOne(member, buildRepositories(manager), itemId, messageId, body);
         });
@@ -131,6 +138,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
           params: { itemId, messageId },
           log,
         } = request;
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
         const message = await db.transaction(async (manager) => {
           return chatService.deleteOne(member, buildRepositories(manager), itemId, messageId);
         });
@@ -152,6 +162,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
           params: { itemId },
           log,
         } = request;
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
         await db.transaction(async (manager) => {
           return chatService.clear(member, buildRepositories(manager), itemId);
         });

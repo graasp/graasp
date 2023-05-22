@@ -16,19 +16,19 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { expectManyItems, getDummyItem, saveItem } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyRecycledItems } from './fixtures';
-import { Item } from '../../../entities/Item';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
-const saveRecycledItem = async (member: Member, defaultItem?:Item) => {
+const saveRecycledItem = async (member: Member, defaultItem?: Item) => {
   let item = defaultItem;
-  if(!item){
-   ({ item } = await saveItemAndMembership({ member }));
+  if (!item) {
+    ({ item } = await saveItemAndMembership({ member }));
   }
   await RecycledItemDataRepository.recycleOne(item, member);
   await ItemRepository.softRemove(item);
@@ -95,8 +95,12 @@ describe('Recycle Bin Tests', () => {
 
         it('Successfully get subitems recycled items', async () => {
           const item0 = await saveRecycledItem(actor);
-          const {item:parentItem} = await saveItemAndMembership({member:actor});
-          const deletedChild = await saveItem({item: getDummyItem({name:'child'}), parentItem, actor});
+          const { item: parentItem } = await saveItemAndMembership({ member: actor });
+          const deletedChild = await saveItem({
+            item: getDummyItem({ name: 'child' }),
+            parentItem,
+            actor,
+          });
           await saveRecycledItem(actor, deletedChild);
 
           // actor does not have access
@@ -113,9 +117,9 @@ describe('Recycle Bin Tests', () => {
 
           const response = res.json();
           expect(res.statusCode).toBe(StatusCodes.OK);
-          
+
           expect(response).toHaveLength(recycled.length);
-          const dbDeletedItems = response.map(({item})=>item);
+          const dbDeletedItems = response.map(({ item }) => item);
           expectManyItems(dbDeletedItems, recycled);
           // check response recycled item
           expectManyRecycledItems(response, recycled, actor);

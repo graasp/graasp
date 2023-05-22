@@ -7,6 +7,7 @@ import path from 'path';
 import util from 'util';
 
 import { MultipartFile } from '@fastify/multipart';
+import { FastifyReply } from 'fastify';
 
 import {
   AppItemExtraProperties,
@@ -15,9 +16,12 @@ import {
   ItemType,
   LocalFileItemExtra,
   S3FileItemExtra,
+  UUID,
 } from '@graasp/sdk';
 
+import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
+import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';
@@ -31,7 +35,6 @@ import {
 } from './constants';
 import { FileIsInvalidArchiveError, UnexpectedExportError } from './errors';
 import { buildTextContent, handleItemDescription, prepareZip } from './utils';
-import { TMP_FOLDER } from '../../../../utils/config';
 
 const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
@@ -40,7 +43,7 @@ export class ImportExportService {
   fileItemService: FileItemService;
   // h5pService;
   itemService: ItemService;
-  fileStorage:string;
+  fileStorage: string;
 
   constructor(
     fileItemService: FileItemService,
@@ -51,11 +54,11 @@ export class ImportExportService {
     // this.h5pService = h5pService;
     this.itemService = itemService;
     // save temp files
-    this.fileStorage = path.join(TMP_FOLDER, 'export-zip'); 
+    this.fileStorage = path.join(TMP_FOLDER, 'export-zip');
   }
 
   private async _buildItemFromFilename(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     options: {
       filename: string;
@@ -161,13 +164,14 @@ export class ImportExportService {
    * @param args
    */
   private async _addItemToZip(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     args: {
       reply;
       item: Item;
       archiveRootPath: string;
-      archive: Archiver;fileStorage:string
+      archive: Archiver;
+      fileStorage: string;
     },
   ) {
     const { item, archiveRootPath, archive, reply, fileStorage } = args;
@@ -242,14 +246,15 @@ export class ImportExportService {
       case ItemType.FOLDER: {
         // append description
         const folderPath = path.join(archiveRootPath, item.name);
-        const children = await repositories.itemRepository.getChildren(item );
+        const children = await repositories.itemRepository.getChildren(item);
         await Promise.all(
           children.map((child) =>
             this._addItemToZip(actor, repositories, {
               item: child,
               archiveRootPath: folderPath,
               archive,
-              reply,fileStorage
+              reply,
+              fileStorage,
             }),
           ),
         );
@@ -258,7 +263,11 @@ export class ImportExportService {
     }
   }
 
-  async export(actor, repositories: Repositories, { itemId, reply }) {
+  async export(
+    actor: Actor,
+    repositories: Repositories,
+    { itemId, reply }: { itemId: UUID; reply: FastifyReply },
+  ) {
     // check item and permission
     const item = await this.itemService.get(actor, repositories, itemId);
 
@@ -290,7 +299,8 @@ export class ImportExportService {
       item,
       reply,
       archiveRootPath: rootPath,
-      archive,fileStorage
+      archive,
+      fileStorage,
     }).catch((error) => {
       throw new UnexpectedExportError(error);
     });
@@ -338,7 +348,7 @@ export class ImportExportService {
    * @param repositories
    * @param param2
    */
-  async _import(actor, repositories, { parent, folderPath }) {
+  async _import(actor: Member, repositories: Repositories, { parent, folderPath }) {
     const filenames = fs.readdirSync(folderPath);
     const folderName = path.basename(folderPath);
 
@@ -399,8 +409,8 @@ export class ImportExportService {
   }
 
   async import(
-    actor,
-    repositories,
+    actor: Member,
+    repositories: Repositories,
     { zipFile, parentId }: { zipFile: MultipartFile; parentId?: string },
   ): Promise<void> {
     // throw if file is not a zip

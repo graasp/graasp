@@ -128,8 +128,9 @@ export const getManyInformations = {
         properties: {
           itemId: {
             type: 'array',
-            items: { 
-              $ref: 'http://graasp.org/#/definitions/uuid', },
+            items: {
+              $ref: 'http://graasp.org/#/definitions/uuid',
+            },
             uniqueItems: true,
           },
         },
@@ -143,21 +144,22 @@ export const getManyInformations = {
   },
 
   response: {
-    200:{
-    type: 'object',
-    properties: {
-      data: {
-        type: 'object',
-        patternProperties: {
-          [UUID_REGEX]: publishEntry,
+    200: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'object',
+          patternProperties: {
+            [UUID_REGEX]: publishEntry,
+          },
+        },
+        errors: {
+          type: 'array',
+          items: {
+            $ref: 'http://graasp.org/#/definitions/error',
+          },
         },
       },
-      errors: {
-        type: 'array',
-        items: {
-          $ref: 'http://graasp.org/#/definitions/error',
-        },
-      },
-    },}
+    },
   },
 };

@@ -1,4 +1,5 @@
 import * as eta from 'eta';
+import type { i18n } from 'i18next';
 import { promisify } from 'util';
 
 import pointOfView from '@fastify/view';
@@ -27,8 +28,7 @@ export interface MailerDecoration {
     html: string,
     from?: string,
   ) => Promise<void>;
-  // TODO: this is i18next's t type
-  translate: (lang: string) => (key: string, variables?: any) => string;
+  translate: (lang: string) => i18n['t'];
 }
 
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
@@ -51,16 +51,15 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     // sendMail() uses 'this' internally and 'promisify' breaks that, so it needs to be passed
     promisify(fastify.nodemailer.sendMail.bind(fastify.nodemailer));
 
-  async function sendEmail(
+  const sendEmail = async (
     subject: string,
     to: string,
     text: string,
     html: string,
     from: string = fromEmail,
-  ) {
-    // TODO: does it make sense to return the return value of nodemailer?
+  ) => {
     await promisifiedNodemailerSendMail({ from, to, subject, text, html: applyLayout(html) });
-  }
+  };
 
   const buildButton = (link: string, text: string): string => {
     return `
@@ -88,59 +87,6 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     i18n.changeLanguage(lang);
     return i18n.t;
   };
-
-  // // Notification for publish an item
-  // async function sendPublishNotificationEmail(
-  //   member: { email: string; name: string },
-  //   link: string,
-  //   itemName: string,
-  //   lang = DEFAULT_LANG,
-  // ) {
-  //   fastify.i18n.locale(lang);
-  //   const translated = fastify.i18n.locales[lang] ?? fastify.i18n.locales[DEFAULT_LANG];
-  //   // this line necessary for .t() to correctly use the changed locale
-  //   fastify.i18n.replace(translated);
-  //   const text = fastify.i18n.t('publishNotification', {
-  //     itemName,
-  //   });
-  //   const html = await fastify.view(`${modulePath}/templates/publishNotification.eta`, {
-  //     member,
-  //     text,
-  //     translated,
-  //     link,
-  //   });
-  //   const title = fastify.i18n.t('publishNotificationTitle', { itemName });
-  //   await sendMail(fromEmail, member.email, title, link, html);
-  // }
-
-  // // Notification for chat mention
-  // async function sendChatMentionNotificationEmail(
-  //   member: { email: string; name: string },
-  //   link: string,
-  //   itemName: string,
-  //   creatorName: string,
-  //   lang = DEFAULT_LANG,
-  // ) {
-  //   fastify.i18n.locale(lang);
-  //   const translated = fastify.i18n.locales[lang] ?? fastify.i18n.locales[DEFAULT_LANG];
-  //   // this line necessary for .t() to correctly use the changed locale
-  //   fastify.i18n.replace(translated);
-  //   const text = fastify.i18n.t('chatMentionNotification', {
-  //     creatorName,
-  //     itemName,
-  //   });
-  //   const html = await fastify.view(`${modulePath}/templates/chatMentionNotification.eta`, {
-  //     member,
-  //     text,
-  //     translated,
-  //     link,
-  //   });
-  //   const title = fastify.i18n.t('chatMentionNotificationTitle', {
-  //     creatorName,
-  //     itemName,
-  //   });
-  //   await sendMail(fromEmail, member.email, title, link, html);
-  // }
 
   const decorations: MailerDecoration = {
     buildButton,

@@ -1,4 +1,4 @@
-import mime from 'mime-types';
+import { mkdirSync } from 'fs';
 import path from 'path';
 
 import {
@@ -7,17 +7,19 @@ import {
   ItemValidationReviewStatus,
   ItemValidationStatus,
   LocalFileItemExtra,
+  MimeTypes,
   PermissionLevel,
   S3FileItemExtra,
+  UUID,
 } from '@graasp/sdk';
 
+import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
-import { IMAGE_FILE_EXTENSIONS } from './constants';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
   InvalidFileItemError,
@@ -27,7 +29,7 @@ import {
 } from './errors';
 import { detectFieldNameWithBadWords } from './processes/badWordsDetection';
 import { classifyImage } from './processes/imageClassification';
-import {  stripHtml } from './utils';
+import { stripHtml } from './utils';
 
 export class ItemValidationService {
   itemService: ItemService;
@@ -38,6 +40,12 @@ export class ItemValidationService {
     this.itemService = itemService;
     this.fileService = fileService;
     this.imageClassifierApi = imageClassifierApi;
+  }
+
+  buildStoragePath(itemValidationId: UUID) {
+    const p = path.join(TMP_FOLDER, 'validation', itemValidationId);
+    mkdirSync(p, { recursive: true });
+    return p;
   }
 
   async getLastItemValidationGroupForItem(
@@ -83,7 +91,7 @@ export class ItemValidationService {
     const iVG = await itemValidationGroupRepository.post(itemId);
 
     // create validation and execute for each node recursively
-    await this._post(member, repositories, item, iVG, );
+    await this._post(member, repositories, item, iVG);
   }
 
   async _post(
@@ -105,13 +113,7 @@ export class ItemValidationService {
           }
 
           // create and validate item
-          await this.validateItem(
-            actor,
-            repositories,
-            item,
-            itemValidationGroup.id,
-            process,
-          );
+          await this.validateItem(actor, repositories, item, itemValidationGroup.id, process);
         } catch (error) {
           throw new ProcessExecutionError(process, error);
         }
@@ -123,11 +125,9 @@ export class ItemValidationService {
       const subItems = await this.itemService.getChildren(actor, repositories, item.id);
       await Promise.all(
         subItems.map(async (subitem) => {
-          await this._post(actor, repositories, subitem, itemValidationGroup).catch(
-            (error) => {
-              throw new ItemValidationError(error);
-            },
-          );
+          await this._post(actor, repositories, subitem, itemValidationGroup).catch((error) => {
+            throw new ItemValidationError(error);
+          });
         }),
       );
     }
@@ -179,27 +179,21 @@ export class ItemValidationService {
             throw new InvalidFileItemError(item);
           }
 
-          let ext = path.extname(item.name);
-          if (!ext) {
-            // only add a dot in case of building file name with mimetype, otherwise there will be two dots in file name
-            ext = `.${mime.extension(mimetype)}`;
-          }
-
           // if file is not an image, return success
-          if (!IMAGE_FILE_EXTENSIONS.includes(ext)) {
+          if (!MimeTypes.isImage(mimetype)) {
             // TODO: update validation entry
             status = ItemValidationStatus.Success;
           } else {
             if (!this.imageClassifierApi) {
               throw new Error('imageClassifierApi is not defined');
             }
-            // return string if does not supply reply or filestorage
-            const filePath = (await this.fileService.download(actor, {
-              path: filepath,
+            // return url
+            const url = (await this.fileService.download(actor, {
               id: item?.id,
               mimetype,
+              path: filepath,
             })) as string;
-            const isSafe = await classifyImage(this.imageClassifierApi, filePath);
+            const isSafe = await classifyImage(this.imageClassifierApi, url);
             status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
           }
           break;
@@ -213,7 +207,9 @@ export class ItemValidationService {
       // log.error(error);
       // if some error happend during the execution of a process, it is counted as failure
       status = ItemValidationStatus.Failure;
-      result = error.message;
+      if (error instanceof Error) {
+        result = error.message;
+      }
     } finally {
       // create review entry if validation failed
       if (status === ItemValidationStatus.Failure) {

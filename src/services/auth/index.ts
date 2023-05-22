@@ -171,8 +171,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   }
   fastify.decorate('generateAuthTokensPair', generateAuthTokensPair);
 
-  async function generateRegisterLinkAndEmailIt(member, options:{challenge?, url?:string}={}) {
-    const {challenge, url} = options;
+  async function generateRegisterLinkAndEmailIt(
+    member,
+    options: { challenge?; url?: string } = {},
+  ) {
+    const { challenge, url } = options;
 
     // generate token with member info and expiration
     const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
@@ -202,9 +205,12 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   fastify.decorate('generateRegisterLinkAndEmailIt', generateRegisterLinkAndEmailIt);
 
-  async function generateLoginLinkAndEmailIt(member: Member, options:{challenge?: string, lang?: string, url?:string}={}) {
-    const {challenge, lang, url} = options;
-    
+  async function generateLoginLinkAndEmailIt(
+    member: Member,
+    options: { challenge?: string; lang?: string; url?: string } = {},
+  ) {
+    const { challenge, lang, url } = options;
+
     // generate token with member info and expiration
     const token = await promisifiedJwtSign({ sub: member.id, challenge }, JWT_SECRET, {
       expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
@@ -213,7 +219,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     const redirectionUrl = getRedirectionUrl(url);
     const linkPath = challenge ? '/m/deep-link' : '/auth';
     const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}&url=${redirectionUrl}`;
-    
+
     const memberLang = getLangFromMember(member) ?? lang;
 
     const translated = mailer.translate(memberLang);

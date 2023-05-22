@@ -19,6 +19,7 @@ import FileService from './services/file/service';
 import ItemServiceApi from './services/item';
 import { ActionItemService } from './services/item/plugins/action/service';
 import FileItemService from './services/item/plugins/file/service';
+import { ItemThumbnailService } from './services/item/plugins/thumbnail/service';
 import ItemService from './services/item/service';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
@@ -54,6 +55,9 @@ declare module 'fastify' {
       actions: {
         service: ActionItemService;
       };
+      thumbnails: {
+        service: ItemThumbnailService;
+      };
     };
     members: { service: MemberService };
     actions: { service: ActionService };
@@ -77,9 +81,9 @@ declare module 'fastify' {
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
       options: {
-        challenge?: string,
-        url?: string
-      }
+        challenge?: string;
+        url?: string;
+      },
     ) => Promise<{
       authToken: string;
       refreshToken: string;
@@ -87,15 +91,14 @@ declare module 'fastify' {
     generateLoginLinkAndEmailIt: (
       member: Member,
       options: {
-        challenge?: string,
-        lang?: string,
-        url?: string
-      }
+        challenge?: string;
+        lang?: string;
+        url?: string;
+      },
     ) => Promise<{
       authToken: string;
       refreshToken: string;
     }>;
-
   }
 
   interface FastifyRequest {

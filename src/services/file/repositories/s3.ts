@@ -16,13 +16,9 @@ import { FastifyReply } from 'fastify';
 
 import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
-import {
-  DownloadFileUnexpectedError,
-  UploadFileUnexpectedError,
-} from '../../item/plugins/file/utils/errors';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
-import { S3FileNotFound } from '../utils/errors';
+import { DownloadFileUnexpectedError, S3FileNotFound } from '../utils/errors';
 
 export class S3FileRepository implements FileRepository {
   private readonly options: S3FileConfiguration;
@@ -155,19 +151,20 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
+  // TODO: split in many functions for simplicity
   async downloadFile({
-    reply,
-    filepath,
-    id,
-    fileStorage,
     expiration,
+    filepath,
+    fileStorage,
+    id,
+    reply,
     replyUrl,
   }: {
-    reply?: FastifyReply;
-    filepath: string;
-    id: UUID;
-    fileStorage?: string;
     expiration?: number;
+    filepath: string;
+    fileStorage?: string;
+    id: UUID;
+    reply?: FastifyReply;
     replyUrl?: boolean;
   }) {
     const { s3Bucket: bucket } = this.options;
@@ -214,6 +211,7 @@ export class S3FileRepository implements FileRepository {
 
         // create and return read stream (similar to local file service)
         const file = fs.createReadStream(tmpPath);
+
         file.on('close', function (err: Error) {
           if (err) {
             console.error(err);

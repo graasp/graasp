@@ -1,4 +1,5 @@
 import { AppDataSource } from '../../plugins/datasource';
+import { Member } from '../member/entities/member';
 import { ChatMessage } from './chatMessage';
 import { ChatMessageNotFound } from './errors';
 
@@ -37,7 +38,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
    * Adds a message to the given chat
    * @param message Message
    */
-  async postOne(message: { itemId: string; creator: string; body: string }): Promise<ChatMessage> {
+  async postOne(message: { itemId: string; creator: Member; body: string }): Promise<ChatMessage> {
     const entry = this.create({ ...message, item: message.itemId });
     const created = await this.insert(entry);
     // TODO: optimize

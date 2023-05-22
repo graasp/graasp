@@ -44,9 +44,10 @@ export class ItemService {
     const { itemRepository, itemMembershipRepository } = repositories;
 
     const { item, parentId } = args;
-    let createdItem = itemRepository.create({ ...item, creator: actor });
+    
+    await this.hooks.runPreHooks('create', actor, repositories, { item });
 
-    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem });
+    let createdItem = itemRepository.create({ ...item, creator: actor });
 
     let inheritedMembership;
     let parentItem: Item | undefined = undefined;
@@ -84,6 +85,10 @@ export class ItemService {
         permission: PermissionLevel.Admin,
       });
     }
+
+
+    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem });
+    
     return createdItem;
   }
 
@@ -111,7 +116,9 @@ export class ItemService {
         await validatePermission(repositories, PermissionLevel.Read, actor, item);
       } catch (e) {
         delete result.data[id];
-        result.errors.push(e);
+        if (e instanceof Error) {
+          result.errors.push(e);
+        }
       }
     }
     return result;
