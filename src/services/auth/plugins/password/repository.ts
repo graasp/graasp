@@ -7,10 +7,10 @@ import { PasswordNotStrong } from './errors';
 import { encryptPassword, verifyCredentials, verifyCurrentPassword } from './utils';
 
 export const MemberPasswordRepository = AppDataSource.getRepository(MemberPassword).extend({
-  async getForMemberId(memberId: string, args: { shoudlExist: boolean } = { shoudlExist: true }) {
+  async getForMemberId(memberId: string, args: { shouldExist: boolean } = { shouldExist: true }) {
     const memberPassword = this.findOneBy({ member: { id: memberId } });
 
-    if (!memberPassword && args.shoudlExist) {
+    if (!memberPassword && args.shouldExist) {
       throw new Error('password does not exist');
     }
 
@@ -52,8 +52,11 @@ export const MemberPasswordRepository = AppDataSource.getRepository(MemberPasswo
     }
   },
 
-  async validateCredentials(memberPassword, body) {
-    const verified = await verifyCredentials(memberPassword, body, this.log);
+  async validateCredentials(
+    memberPassword: MemberPassword,
+    body: { email: string; password: string },
+  ) {
+    const verified = await verifyCredentials(memberPassword, body);
     if (!verified) {
       throw new IncorrectPassword(body);
     }

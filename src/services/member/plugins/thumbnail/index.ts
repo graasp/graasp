@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../../file/utils/errors';
@@ -48,6 +49,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     },
     async (request, reply) => {
       const { member, log } = request;
+
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
 
       return db
         .transaction(async (manager) => {

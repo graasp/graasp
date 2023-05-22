@@ -6,6 +6,7 @@ import { FastifyReply } from 'fastify';
 
 import { TMP_FOLDER } from '../../utils/config';
 import FileService from '../file/service';
+import { Actor, Member } from '../member/entities/member';
 import { THUMBNAIL_MIMETYPE } from './constants';
 import { UploadedFile } from './types';
 import { createThumbnails } from './utils';
@@ -26,7 +27,7 @@ export class ThumbnailService {
     return path.join(this.prefix, itemId, name);
   }
 
-  async upload(actor, id: string, file: UploadedFile) {
+  async upload(actor: Member, id: string, file: UploadedFile) {
     // ?? it might not be saved correctly in the original upload
     const fileStorage = path.join(TMP_FOLDER, 'thumbnails', id);
     mkdirSync(fileStorage, { recursive: true });
@@ -61,7 +62,7 @@ export class ThumbnailService {
   }
 
   async download(
-    actor,
+    actor: Actor,
     {
       reply,
       id,

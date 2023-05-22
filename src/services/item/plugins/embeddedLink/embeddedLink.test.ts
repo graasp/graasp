@@ -1,6 +1,6 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-
 import fetch from 'node-fetch';
+
 import { EmbeddedLinkItemExtra, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -16,15 +16,15 @@ jest.mock('node-fetch');
 jest.mock('../../../../plugins/datasource');
 
 const iframelyMeta = {
-  title:'title',
-  description:'description'
+  title: 'title',
+  description: 'description',
 };
 
 const iframelyResult = {
-  meta:iframelyMeta,
-  'html': 'html',
-         'icons': [],
-         'thumbnails': [],
+  meta: iframelyMeta,
+  html: 'html',
+  icons: [],
+  thumbnails: [],
 };
 const extra = {
   [ItemType.LINK]: {
@@ -41,9 +41,9 @@ describe('Link Item tests', () => {
   let app;
   let actor;
 
-  beforeEach(()=>{
+  beforeEach(() => {
     (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-      return { json: async () => (iframelyResult) } as any;
+      return { json: async () => iframelyResult } as any;
     });
   });
 
@@ -82,7 +82,12 @@ describe('Link Item tests', () => {
           payload,
         });
 
-        const expectedItem = { name: iframelyMeta.title, type: ItemType.LINK, extra, description:iframelyMeta.description };
+        const expectedItem = {
+          name: iframelyMeta.title,
+          type: ItemType.LINK,
+          extra,
+          description: iframelyMeta.description,
+        };
 
         // check response value
         const newItem = response.json();

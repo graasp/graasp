@@ -9,7 +9,7 @@ import { PasswordNotDefined } from './errors';
 export const verifyCredentials = (
   memberPassword: MemberPassword,
   body: { email: string; password: string },
-  log: FastifyBaseLogger,
+  log?: FastifyBaseLogger,
 ) => {
   /* the verified variable is used to store the output of bcrypt.compare() 
   bcrypt.compare() allows to compare the provided password with a stored hash. 
@@ -20,11 +20,14 @@ export const verifyCredentials = (
   const verified = bcrypt
     .compare(body.password, memberPassword.password)
     .then((res) => res)
-    .catch((err) => log.error(err.message));
+    .catch((err) => log?.error(err.message));
   return verified;
 };
 
-export async function verifyCurrentPassword(memberPassword: MemberPassword, password?: string) {
+export async function verifyCurrentPassword(
+  memberPassword?: MemberPassword | null,
+  password?: string,
+) {
   /* verified: stores the output of bcrypt.compare().
   bcrypt.compare() allows to compare the provided password with a stored hash. 
   It deduces the salt from the hash and is able to then hash the provided password correctly for comparison
@@ -54,6 +57,9 @@ export async function encryptPassword(password: string) {
   const encrypted = bcrypt
     .hash(password, SALT_ROUNDS)
     .then((hash) => hash)
-    .catch((err) => console.error(err.message));
+    .catch((err) => {
+      console.error(err.message);
+      throw err;
+    });
   return encrypted;
 }

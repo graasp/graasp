@@ -207,7 +207,9 @@ export class ItemValidationService {
       // log.error(error);
       // if some error happend during the execution of a process, it is counted as failure
       status = ItemValidationStatus.Failure;
-      result = error.message;
+      if (error instanceof Error) {
+        result = error.message;
+      }
     } finally {
       // create review entry if validation failed
       if (status === ItemValidationStatus.Failure) {

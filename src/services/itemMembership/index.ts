@@ -79,7 +79,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // create many item memberships
       fastify.post<{
         Params: { itemId: string };
-        Body: { memberships: { permission; memberId }[] };
+        Body: { memberships: { permission: PermissionLevel; memberId: UUID }[] };
       }>(
         '/:itemId',
         { schema: createMany, preHandler: fastify.verifyAuthentication },

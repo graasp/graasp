@@ -33,7 +33,7 @@ export class ActionService {
     repositories: Repositories,
     request: FastifyRequest,
     actions: (Partial<Action> & Pick<Action, 'extra' | 'type'>)[],
-  ): Promise<Action[]> {
+  ): Promise<void> {
     const { headers } = request;
 
     // todo: prevent saving here if member disabled or if item disabled analytics
@@ -52,6 +52,6 @@ export class ActionService {
       ...a,
     }));
 
-    return repositories.actionRepository.postMany(completeActions);
+    await repositories.actionRepository.postMany(completeActions);
   }
 }

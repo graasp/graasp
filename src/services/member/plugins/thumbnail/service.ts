@@ -4,6 +4,7 @@ import { FastifyReply } from 'fastify';
 import { Repositories } from '../../../../utils/repositories';
 import FileService from '../../../file/service';
 import { ThumbnailService } from '../../../thumbnail/service';
+import { Actor, Member } from '../../entities/member';
 import { MemberService } from '../../service';
 
 export class MemberThumbnailService {
@@ -16,7 +17,7 @@ export class MemberThumbnailService {
   }
 
   // upload self avatar
-  async upload(actor, repositories: Repositories, file: SavedMultipartFile) {
+  async upload(actor: Member, repositories: Repositories, file: SavedMultipartFile) {
     await this.thumbnailService.upload(actor, actor.id, file);
 
     // update item that should have thumbnail
@@ -27,7 +28,7 @@ export class MemberThumbnailService {
 
   // get member's avatar
   async download(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     {
       reply,

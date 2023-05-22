@@ -2976,6 +2976,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/mmmagic@npm:0.4.30":
+  version: 0.4.30
+  resolution: "@types/mmmagic@npm:0.4.30"
+  dependencies:
+    "@types/node": "*"
+  checksum: ce3dce1f3071b05bb34c455dd8fa94ad6b8ccee04e396044ab0df19658814f8bb83545fade4e78f8783093d57590205e5f66c262c947b7f5c639d2254a979c58
+  languageName: node
+  linkType: hard
+
 "@types/node-fetch@npm:2":
   version: 2.6.2
   resolution: "@types/node-fetch@npm:2.6.2"
@@ -3011,6 +3020,13 @@ __metadata:
   version: 2.7.2
   resolution: "@types/prettier@npm:2.7.2"
   checksum: b47d76a5252265f8d25dd2fe2a5a61dc43ba0e6a96ffdd00c594cb4fd74c1982c2e346497e3472805d97915407a09423804cc2110a0b8e1b22cffcab246479b7
+  languageName: node
+  linkType: hard
+
+"@types/qs@npm:6.9.7":
+  version: 6.9.7
+  resolution: "@types/qs@npm:6.9.7"
+  checksum: 7fd6f9c25053e9b5bb6bc9f9f76c1d89e6c04f7707a7ba0e44cc01f17ef5284adb82f230f542c2d5557d69407c9a40f0f3515e8319afd14e1e16b5543ac6cdba
   languageName: node
   linkType: hard
 
@@ -5955,8 +5971,10 @@ __metadata:
     "@types/jest": 29.5.0
     "@types/jsonwebtoken": 9.0.1
     "@types/mime": 3.0.1
+    "@types/mmmagic": 0.4.30
     "@types/node": 18.15.5
     "@types/node-fetch": 2
+    "@types/qs": 6.9.7
     "@types/sharp": 0.31.1
     "@types/striptags": 3.1.1
     "@types/uuid": 9.0.1

@@ -1,9 +1,12 @@
 import fs, { ReadStream } from 'fs';
 import sharp from 'sharp';
 
+import { UUID } from '@graasp/sdk';
+
 import { THUMBNAIL_FORMAT, ThumbnailSizeFormat } from './constants';
 
-const buildThumbnailPath = (name, itemId, folderPath) => `${folderPath}/${itemId}-${name}`;
+const buildThumbnailPath = (name: string, itemId: UUID, folderPath: string) =>
+  `${folderPath}/${itemId}-${name}`;
 
 export const createThumbnails = async (imagePath: string, itemId: string, folderPath: string) => {
   // generate sizes for given image

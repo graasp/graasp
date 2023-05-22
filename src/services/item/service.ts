@@ -105,7 +105,9 @@ export class ItemService {
         await validatePermission(repositories, PermissionLevel.Read, actor, item);
       } catch (e) {
         delete result.data[id];
-        result.errors.push(e);
+        if (e instanceof Error) {
+          result.errors.push(e);
+        }
       }
     }
     return result;

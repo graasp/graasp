@@ -3,12 +3,13 @@ import { PermissionLevel } from '@graasp/sdk';
 import { SearchFields } from '.';
 import { Repositories } from '../../../../../../utils/repositories';
 import { filterOutHiddenItems, validatePermission } from '../../../../../authorization';
+import { Actor } from '../../../../../member/entities/member';
 
 // this file is not quite necessary, it could be merged with published items
 // but we might change the search logic, so let's not mix everything
 export class SearchService {
   // WORKS ONLY FOR PUBLISHED ITEMS
-  async search(actor, repositories: Repositories, searchFields: SearchFields) {
+  async search(actor: Actor, repositories: Repositories, searchFields: SearchFields) {
     const { itemRepository, itemPublishedRepository } = repositories;
 
     const { parentId, name, keywords, tags, creator } = searchFields;
