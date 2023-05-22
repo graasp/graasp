@@ -7,6 +7,7 @@ import path from 'path';
 import util from 'util';
 
 import { MultipartFile } from '@fastify/multipart';
+import { FastifyReply } from 'fastify';
 
 import {
   AppItemExtraProperties,
@@ -15,10 +16,12 @@ import {
   ItemType,
   LocalFileItemExtra,
   S3FileItemExtra,
+  UUID,
 } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
+import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';
@@ -55,7 +58,7 @@ export class ImportExportService {
   }
 
   private async _buildItemFromFilename(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     options: {
       filename: string;
@@ -161,7 +164,7 @@ export class ImportExportService {
    * @param args
    */
   private async _addItemToZip(
-    actor,
+    actor: Actor,
     repositories: Repositories,
     args: {
       reply;
@@ -260,7 +263,11 @@ export class ImportExportService {
     }
   }
 
-  async export(actor, repositories: Repositories, { itemId, reply }) {
+  async export(
+    actor: Actor,
+    repositories: Repositories,
+    { itemId, reply }: { itemId: UUID; reply: FastifyReply },
+  ) {
     // check item and permission
     const item = await this.itemService.get(actor, repositories, itemId);
 
@@ -341,7 +348,7 @@ export class ImportExportService {
    * @param repositories
    * @param param2
    */
-  async _import(actor, repositories, { parent, folderPath }) {
+  async _import(actor: Member, repositories: Repositories, { parent, folderPath }) {
     const filenames = fs.readdirSync(folderPath);
     const folderName = path.basename(folderPath);
 
@@ -402,8 +409,8 @@ export class ImportExportService {
   }
 
   async import(
-    actor,
-    repositories,
+    actor: Member,
+    repositories: Repositories,
     { zipFile, parentId }: { zipFile: MultipartFile; parentId?: string },
   ): Promise<void> {
     // throw if file is not a zip

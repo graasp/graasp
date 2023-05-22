@@ -1,8 +1,7 @@
-import { Context, Hostname, PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
+import { Hostname, PermissionLevel } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
-import { CLIENT_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -48,7 +47,7 @@ export class MentionService {
   }
 
   async createManyForItem(
-    actor,
+    actor: Member,
     repositories: Repositories,
     message: ChatMessage,
     mentionedMembers: string[],
@@ -72,7 +71,7 @@ export class MentionService {
     return mentionRepository.getForMember(member.id);
   }
 
-  async get(actor, repositories: Repositories, mentionId: string) {
+  async get(actor: Member, repositories: Repositories, mentionId: string) {
     const { mentionRepository } = repositories;
     const mentionContent = await mentionRepository.get(mentionId);
 
@@ -83,7 +82,7 @@ export class MentionService {
     return mentionContent;
   }
 
-  async patch(actor, repositories: Repositories, mentionId: string, status) {
+  async patch(actor: Member, repositories: Repositories, mentionId: string, status) {
     const { mentionRepository } = repositories;
 
     // check permission
@@ -92,7 +91,7 @@ export class MentionService {
     return mentionRepository.patch(mentionId, status);
   }
 
-  async deleteOne(actor, repositories: Repositories, mentionId: string) {
+  async deleteOne(actor: Member, repositories: Repositories, mentionId: string) {
     const { mentionRepository } = repositories;
 
     // check permission
@@ -101,7 +100,7 @@ export class MentionService {
     return mentionRepository.deleteOne(mentionId);
   }
 
-  async deleteAll(actor, repositories: Repositories) {
+  async deleteAll(actor: Member, repositories: Repositories) {
     const { mentionRepository } = repositories;
     return mentionRepository.deleteAll(actor.id);
     //     const clearedChat: Chat = { id: this.targetId, messages: [] };

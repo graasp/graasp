@@ -15,15 +15,7 @@ import commonMentions, {
 } from './schemas';
 import { MentionService } from './service';
 
-/**
- * Type definition for plugin options
- */
-export interface GraaspChatPluginOptions {
-  prefix?: string;
-  hosts: Hostname[];
-}
-
-const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes
   const { db, mailer, hosts } = fastify;
   const mentionService = new MentionService(mailer, hosts);
@@ -83,6 +75,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     '/mentions/:mentionId',
     { schema: patchMention, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { mentionId }, body: { status }, log }) => {
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
       return db.transaction(async (manager) => {
         return mentionService.patch(member, buildRepositories(manager), mentionId, status);
       });
@@ -94,6 +89,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     '/mentions/:mentionId',
     { schema: deleteMention, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { mentionId }, log }) => {
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
       return db.transaction(async (manager) => {
         return mentionService.deleteOne(member, buildRepositories(manager), mentionId);
       });
@@ -105,6 +103,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     '/mentions',
     { schema: clearAllMentions, preHandler: fastify.verifyAuthentication },
     async ({ member, log }, reply) => {
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
       await db.transaction(async (manager) => {
         await mentionService.deleteAll(member, buildRepositories(manager));
       });

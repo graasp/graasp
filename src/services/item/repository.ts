@@ -15,6 +15,7 @@ import { AppDataSource } from '../../plugins/datasource';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
+  ItemNotFolder,
   ItemNotFound,
   TooManyDescendants,
 } from '../../utils/errors';
@@ -130,8 +131,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   async getChildren(parent: Item, ordered?: boolean): Promise<Item[]> {
     if (parent.type !== ItemType.FOLDER) {
-      // TODO
-      throw new Error('Item is not a folder');
+      throw new ItemNotFolder(parent);
     }
 
     // CHECK SQL
@@ -223,7 +223,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .where('creator.id = :id', { id: memberId })
-      .andWhere('im.permission = :permission', {permission:PermissionLevel.Admin})
+      .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
       .andWhere('nlevel(item.path) = 1')
       .orderBy('item.updatedAt', 'DESC')
       .getMany();

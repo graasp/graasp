@@ -22,7 +22,10 @@ const underscoreToDash = (value: string) => value.replace(/_/g, '-');
 // replace children order with new ids
 export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: Item }>) => {
   // get copied with original createdAt to later compare
-  const copyItemsArray = Array.from(itemsMap.values()).map(({ copy, original }) => ({...copy, createdAt:original.createdAt}));
+  const copyItemsArray = Array.from(itemsMap.values()).map(({ copy, original }) => ({
+    ...copy,
+    createdAt: original.createdAt,
+  }));
   itemsMap.forEach((value) => {
     const { copy, original } = value;
     // set order for all copied folder

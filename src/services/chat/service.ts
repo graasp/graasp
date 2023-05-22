@@ -4,6 +4,7 @@ import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
 import ItemService from '../item/service';
+import { Actor, Member } from '../member/entities/member';
 import { ChatMessage } from './chatMessage';
 import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
@@ -18,7 +19,11 @@ export class ChatMessageService {
     this.mentionService = mentionService;
   }
 
-  async getForItem(actor, repositories: Repositories, itemId: string): Promise<ChatMessage[]> {
+  async getForItem(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: string,
+  ): Promise<ChatMessage[]> {
     const { chatMessageRepository } = repositories;
 
     // check permission
@@ -29,7 +34,7 @@ export class ChatMessageService {
   }
 
   async postOne(
-    actor,
+    actor: Member,
     repositories: Repositories,
     itemId: string,
     data: { body: string; mentions: string[] },
@@ -53,7 +58,7 @@ export class ChatMessageService {
   }
 
   async patchOne(
-    actor,
+    actor: Member,
     repositories: Repositories,
     itemId: string,
     messageId: string,
@@ -74,7 +79,7 @@ export class ChatMessageService {
     return chatMessageRepository.patchOne(messageId, message);
   }
 
-  async deleteOne(actor, repositories: Repositories, itemId: string, messageId: string) {
+  async deleteOne(actor: Member, repositories: Repositories, itemId: string, messageId: string) {
     const { chatMessageRepository } = repositories;
 
     // check permission
@@ -92,7 +97,7 @@ export class ChatMessageService {
     return messageContent;
   }
 
-  async clear(actor, repositories: Repositories, itemId: string) {
+  async clear(actor: Member, repositories: Repositories, itemId: string) {
     const { chatMessageRepository } = repositories;
 
     // check rights for accessing the chat and sufficient right to clear the conversation

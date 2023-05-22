@@ -74,7 +74,7 @@ export const handleItemDescription = async (options: {
   filepath: string;
   folderName: string;
   items: Partial<Item>[];
-  updateParentDescription: (description: string) => Promise<void>;
+  updateParentDescription: (description: string) => Promise<unknown | void>;
 }): Promise<void> => {
   const { filename, items, filepath, folderName, updateParentDescription } = options;
 

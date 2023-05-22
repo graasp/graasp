@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { RecaptchaAction } from '@graasp/sdk';
 
 import { EMAIL_LINKS_HOST, PROTOCOL } from '../../../../utils/config';
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { passwordLogin, updatePassword } from './schemas';
 import { MemberPasswordService } from './service';
@@ -24,7 +25,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // validate captcha
       await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword);
 
-      const token = await memberPasswordService.login(null, buildRepositories(), body);
+      const token = await memberPasswordService.login(undefined, buildRepositories(), body);
 
       // link for graasp web
       const linkPath = '/auth';
@@ -39,6 +40,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/members/update-password',
     { schema: updatePassword, preHandler: fastify.verifyAuthentication },
     async ({ member, body: { currentPassword, password } }) => {
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
       return db.transaction(async (manager) => {
         return memberPasswordService.patch(
           member,

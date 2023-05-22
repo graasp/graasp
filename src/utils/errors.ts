@@ -371,3 +371,16 @@ export class UnexpectedError extends CoreError {
     this.origin = 'unknown';
   }
 }
+
+export class ItemNotFolder extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR001',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Item is not a folder',
+      },
+      data,
+    );
+  }
+}

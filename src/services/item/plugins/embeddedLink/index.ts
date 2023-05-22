@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemType, UnknownExtra } from '@graasp/sdk';
+import { EmbeddedLinkItemExtra, ItemType } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
@@ -12,17 +12,6 @@ import { createSchema } from './schemas';
 interface GraaspEmbeddedLinkItemOptions {
   /** \<protocol\>://\<hostname\>:\<port\> */
   iframelyHrefOrigin: string;
-}
-
-export interface EmbeddedLinkItemExtra extends UnknownExtra {
-  embeddedLink: {
-    title: string;
-    descritpion: string;
-    url: string;
-    html: string;
-    thumbnails: string[];
-    icons: string[];
-  };
 }
 
 type IframelyLink = {
