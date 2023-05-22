@@ -24,7 +24,13 @@ import { mapById } from '../utils';
 import { Item } from './entities/Item';
 
 export class ItemService {
-  hooks = new HookManager();
+  hooks = new HookManager<{
+    create: { pre: { item: Partial<Item> }; post: { item: Item } };
+    update: { pre: { item: Item }; post: { item: Item } };
+    delete: { pre: { item: Item }; post: { item: Item } };
+    copy: { pre: { original: Item }; post: { original: Item; copy: Item } };
+    move: { pre: { source: Item }; post: { source: Item; destination: Item } };
+  }>();
 
   async post(
     actor: Actor,
@@ -40,7 +46,7 @@ export class ItemService {
     const { item, parentId } = args;
     let createdItem = itemRepository.create({ ...item, creator: actor });
 
-      await this.hooks.runPostHooks('create', actor, repositories, { item });
+    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem });
 
     let inheritedMembership;
     let parentItem: Item | undefined = undefined;

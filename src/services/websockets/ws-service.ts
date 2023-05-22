@@ -2,13 +2,9 @@ import WebSocket from 'ws';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import {
-  WebsocketService as IWebsocketService,
-  Member,
-  UnknownExtra,
-  Websocket,
-} from '@graasp/sdk';
+import { UnknownExtra, Websocket } from '@graasp/sdk';
 
+import { Member } from '../member/entities/member';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,
@@ -17,14 +13,25 @@ import {
 import { MultiInstanceChannelsBroker } from './multi-instance';
 import { WebSocketChannels } from './ws-channels';
 
-type ValidationFn = (request: Websocket.SubscriptionRequest) => Promise<void>;
+export interface SubscriptionRequest {
+  /**
+   * Subscription target channel name
+   */
+  channel: string;
+  /**
+   * Member requesting a subscription
+   */
+  member: Member;
+}
+
+type ValidationFn = (request: SubscriptionRequest) => Promise<void>;
 
 /**
  * Concrete implementation of the WebSocket service
  * Provides WebSocket connectivity to the rest of the server
  * @see {WebSocketService}
  */
-export class WebsocketService implements IWebsocketService {
+export class WebsocketService {
   // store for validation functions indexed by topic
   private validators: Map<string, ValidationFn> = new Map();
   // channels abstraction reference

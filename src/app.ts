@@ -1,7 +1,5 @@
-
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-
 
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
@@ -13,6 +11,7 @@ import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
+import websocketsPlugin from './services/websockets';
 import {
   CLIENT_HOSTS,
   COOKIE_DOMAIN,
@@ -23,10 +22,12 @@ import {
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_USERNAME,
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
+  REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './utils/config';
-
-
 
 export default async function (instance: FastifyInstance): Promise<void> {
   instance.decorate('hosts', CLIENT_HOSTS);
@@ -38,6 +39,18 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(metaPlugin))
     .register(fp(databasePlugin), {
       logs: DATABASE_LOGS,
+    })
+    .register(fp(websocketsPlugin), {
+      prefix: '/ws',
+      redis: {
+        channelName: 'graasp-realtime-updates',
+        config: {
+          host: REDIS_HOST,
+          port: parseInt(REDIS_PORT ?? '6379'),
+          username: REDIS_USERNAME,
+          password: REDIS_PASSWORD,
+        },
+      },
     })
     .register(fp(decoratorPlugin))
     .register(mailerPlugin, {
@@ -58,20 +71,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
       local: FILE_ITEM_PLUGIN_OPTIONS,
     },
   });
-
-  // if (WEBSOCKETS_PLUGIN) {
-  //   await instance.register(graaspWebSockets, {
-  //     prefix: '/ws',
-  //     redis: {
-  //       config: {
-  //         host: REDIS_HOST,
-  //         port: +REDIS_PORT,
-  //         username: REDIS_USERNAME,
-  //         password: REDIS_PASSWORD,
-  //       },
-  //     },
-  //   });
-  // }
 
   instance.register(async (instance) => {
     // core API modules

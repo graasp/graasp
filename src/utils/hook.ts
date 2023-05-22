@@ -1,46 +1,56 @@
 import { Member } from '../services/member/entities/member';
 import { Repositories } from './repositories';
 
-type Handler = (actor: Member, repositories: Repositories, args: any) => Promise<void>;
+type Handler<Data> = (actor: Member, repositories: Repositories, args: Data) => Promise<void>;
 
-class HookManager {
-  postHooks: {
-    [key: string]: Handler[];
-  } = {};
+class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unknown } }> {
+  private readonly postHooks = new Map<keyof EventMap, Handler<unknown>[]>();
+  private readonly preHooks = new Map<keyof EventMap, Handler<unknown>[]>();
 
-  preHooks: {
-    [key: string]: Handler[];
-  } = {};
-
-  setPostHook(key, handler) {
-    const hooks = this.postHooks[key];
+  setPostHook<Event extends keyof EventMap>(
+    event: Event,
+    handler: Handler<EventMap[Event]['post']>,
+  ) {
+    const hooks = this.postHooks.get(event);
     if (!hooks) {
-      this.postHooks[key] = [handler];
+      this.postHooks.set(event, [handler]);
     } else {
-      this.postHooks[key].push(handler);
+      hooks.push(handler);
     }
   }
 
-  async runPostHooks(key, actor, repositories, data) {
+  async runPostHooks<Event extends keyof EventMap>(
+    event: Event,
+    actor: Member,
+    repositories: Repositories,
+    data: EventMap[Event]['post'],
+  ) {
     // TODO: allsettled?
-    if (this.postHooks[key]) {
-      await Promise.all(this.postHooks[key].map((f) => f(actor, repositories, data)));
+    const hooks = this.postHooks.get(event);
+    if (hooks) {
+      await Promise.all(hooks.map((f) => f(actor, repositories, data)));
     }
   }
 
-  setPreHook(key, handler) {
-    const hooks = this.preHooks[key];
+  setPreHook<Event extends keyof EventMap>(event: Event, handler: Handler<EventMap[Event]['pre']>) {
+    const hooks = this.preHooks.get(event);
     if (!hooks) {
-      this.preHooks[key] = [handler];
+      this.preHooks.set(event, [handler]);
     } else {
-      this.preHooks[key].push(handler);
+      hooks.push(handler);
     }
   }
 
-  async runPreHooks(key, actor, repositories, data) {
+  async runPreHooks<Event extends keyof EventMap>(
+    event: Event,
+    actor: Member,
+    repositories: Repositories,
+    data: EventMap[Event]['pre'],
+  ) {
     // TODO: allsettled?
-    if (this.preHooks[key]) {
-      await Promise.all(this.preHooks[key].map((f) => f(actor, repositories, data)));
+    const hooks = this.preHooks.get(event);
+    if (hooks) {
+      await Promise.all(hooks.map((f) => f(actor, repositories, data)));
     }
   }
 }
