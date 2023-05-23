@@ -1,24 +1,73 @@
 import {fastify, FastifyInstance} from 'fastify';
 import { MeiliSearch } from 'meilisearch';
 import {
-    IdParam,
-    IdsParams,
     Item,
-    ItemTaskManager,
-    MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE,
-    ParentIdParam,
-    PermissionLevel,
+    getParentFromPath,
+    DocumentItemExtraProperties,
+    FileItemProperties,
+    EtherpadItemExtraProperties,
   } from '@graasp/sdk';
+
+import { PUBLISHED_TAG_ID } from '../../util/config';
 import { ItemTagService } from 'graasp-item-tags';
 
-function getParentId(path:string){
-  const separator = '.';
-  const split_path = path.split(separator);
-  if (split_path.length == 1)
-    return null;
-  const regx = /_/g;
-  return split_path[split_path.length - 2].replace(regx,'-');
+
+interface customDocument{
+    id: string;
+    name: string;
+    description: string;
+    type: string;
+    extra: string;
+    creator: string;
+    createdAt: string;
+    updatedAt: string;
 }
+
+function removeHTMLTags(s:string):string {
+  //is this the best way to delete html 
+  //are we sure that the users dont want to insert htmls tags in the conten
+  if (s == null)
+    return null;
+  const regx = /<[^>]+>/g;
+  return s.replace(regx,'');
+}
+function getSearchTextFromExtra(item:Item): string{
+
+  // let extraInfo = {};
+  // local document is not being displayed, there is a problem loading it
+  console.log('enter here');
+  let extraInfo = '';
+  const extraProp = item.extra;
+  switch (item.type.toString()){
+    case 'document':
+      extraInfo = removeHTMLTags((<DocumentItemExtraProperties>extraProp[item.type]).content);
+      break;
+    case 'file':
+      // extraInfo = (<FileItemProperties>extraProp[item.type]).path;
+      break;
+    case 'etherpad':
+      const padID = (<EtherpadItemExtraProperties>extraProp[item.type]).padID;
+      extraInfo = 'TO-DO' + padID;
+      break;
+  }
+  return extraInfo;
+}
+
+function parseItem(item:Item): customDocument {
+  const document: customDocument = {
+    id: item.id,
+    name: item.name,
+    description: removeHTMLTags(item.description),
+    type: item.type.toString(),
+    extra: getSearchTextFromExtra(item),
+    creator: item.creator,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+  return document;
+}
+
+const selSearchableAttr = ['name','description','extra'];
 const searchPlugin = async (instance:FastifyInstance, options: { tags: { service: ItemTagService }}) => {
           const { tags: { service: itemTagService }} = options;
           //create indexes to store different filesmm
@@ -32,7 +81,6 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
           const deleteItemTaskName = itemsTaskManager.getDeleteTaskName();
           const moveItemTaskName = itemsTaskManager.getMoveTaskName();
           const itemIndex = 'testitem';
-          
           // itemsTaskManager.get
           
           const meilisearchClient = new MeiliSearch({
@@ -52,6 +100,9 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
             });
           }
 
+          //on publish hook is not working correctly
+          //if a folder is published, and then a new items is created 
+          //this does not gets triggered
           taskRunner.setTaskPostHookHandler<Item>(
             publishItemTaskName,
             async (item, member, { log, handler }) => {
@@ -62,7 +113,7 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
                 });
                 
                 // const jsonChildItem = JSON.string
-                meilisearchClient.index(itemIndex).addDocuments([item]).then(() => {
+                meilisearchClient.index(itemIndex).addDocuments([parseItem(item)]).then(() => {
                   console.log('Item added to meilisearch');
                 }).catch(err => {
                   console.log('There was a problem adding ' + item + 'to meilisearch ' + err);
@@ -72,7 +123,7 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
                 console.log('Server is not healthy' + err);
               });
               
-              meilisearchClient.index(itemIndex).updateSearchableAttributes(['name','description']).then(() => {
+              meilisearchClient.index(itemIndex).updateSearchableAttributes(selSearchableAttr).then(() => {
                 console.log('Setting for searchable Attributes has changed');
               }).catch( err => {
                 console.log('There was an error changing the configuration of meilisearch db' + err);
@@ -86,7 +137,7 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
                       });
                       
                       // const jsonChildItem = JSON.string
-                      meilisearchClient.index(itemIndex).addDocuments([childItem]).then(() => {
+                      meilisearchClient.index(itemIndex).addDocuments([parseItem(childItem)]).then(() => {
                         console.log('Item added to meilisearch');
                       }).catch(err => {
                         console.log('There was a problem adding ' + childItem + 'to meilisearch ' + err);
@@ -101,6 +152,7 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
               }
             },
           );
+          
 
           taskRunner.setTaskPreHookHandler<Item>(
             deleteItemTaskName,
@@ -132,7 +184,7 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
                       console.log('Document can not be deleted: ' + err);
                     });
                     
-                    meilisearchClient.index(itemIndex).updateDocuments([item]).then(() => {
+                    meilisearchClient.index(itemIndex).updateDocuments([parseItem(item)]).then(() => {
                       console.log('Item updated');
                     }).catch(err => {
                       console.log('There was a problem updating ' + item + 'to meilisearch ' + err);
@@ -150,8 +202,8 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
             moveItemTaskName,
             async (item, member, { log, handler }) => {
                 wasARoot = false;
-                const parentID = getParentId(item.path);
-                if (parentID == null){
+                const parentID = getParentFromPath(item.path);
+                if (parentID === undefined){
                   wasARoot = true;
                 } 
               },
@@ -165,23 +217,22 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
                   return;
                 }
 
-                const parentID = getParentId(item.path);
+                const parentID = getParentFromPath(item.path);
                 let published = false;
-                const id_publish = 'a8d8e09d-a0b9-4551-b300-125abe25a0f9';
-                if (parentID != null && !wasARoot)
+                if (parentID !== undefined && !wasARoot)
                 {
                   
                   const parent = await itemService.get(parentID, handler);
-                  published = await itemTagService.hasTag(parent, id_publish,handler);
+                  published = await itemTagService.hasTag(parent, PUBLISHED_TAG_ID,handler);
                 } 
                 else 
                 {
                   //this is a root, and therefore we should check if this is published
-                  published = await itemTagService.hasTag(item, id_publish,handler);
+                  published = await itemTagService.hasTag(item, PUBLISHED_TAG_ID,handler);
                   if (parentID != null && !published)
                   {
                     const parent = await itemService.get(parentID, handler);
-                    published = await itemTagService.hasTag(parent, id_publish,handler);
+                    published = await itemTagService.hasTag(parent, PUBLISHED_TAG_ID,handler);
                   }
                   console.log('the top file published res' + published);
                 }
@@ -190,7 +241,7 @@ const searchPlugin = async (instance:FastifyInstance, options: { tags: { service
                   await  meilisearchClient.getIndex(itemIndex);
                   
                   if(published) {
-                    await meilisearchClient.index(itemIndex).updateDocuments([item]);
+                    await meilisearchClient.index(itemIndex).updateDocuments([parseItem(item)]);
                   } else {
 
                     try
