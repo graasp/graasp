@@ -44,7 +44,7 @@ export class ItemService {
     const { itemRepository, itemMembershipRepository } = repositories;
 
     const { item, parentId } = args;
-    
+
     await this.hooks.runPreHooks('create', actor, repositories, { item });
 
     let createdItem = itemRepository.create({ ...item, creator: actor });
@@ -86,9 +86,8 @@ export class ItemService {
       });
     }
 
-
     await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem });
-    
+
     return createdItem;
   }
 
@@ -217,7 +216,7 @@ export class ItemService {
   }
 
   // QUESTION? DELETE BY PATH???
-  async delete(actor: Actor, repositories: Repositories, itemId: UUID) {
+  async delete(actor: Member, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     // check memberships
     const item = await itemRepository.get(itemId, { withDeleted: true });
@@ -383,7 +382,7 @@ export class ItemService {
     }
 
     // TODO: post hook - for loop on descendants
-    await this.hooks.runPreHooks('copy', actor, repositories, { item });
+    await this.hooks.runPreHooks('copy', actor, repositories, { original: item });
 
     // TODO: args?
     const result = await itemRepository.copy(item, actor, parentItem);

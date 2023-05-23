@@ -1,7 +1,7 @@
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { FileProperties, HttpMethod, IdParam } from '@graasp/sdk';
+import { FileItemProperties, HttpMethod, IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { download, upload } from './schema';
@@ -64,10 +64,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   itemService.hooks.setPostHook(
     'delete',
     async (actor, repositories, { item: { id, type, extra } }) => {
+      if (!actor) {
+        return;
+      }
       try {
         // delete file only if type is the current file type
         if (!id || type !== fileService.type) return;
-        const filepath = extra[fileService.type].path;
+        const filepath = (extra[fileService.type] as FileItemProperties).path;
         await fileService.delete(actor, filepath);
       } catch (err) {
         // we catch the error, it ensures the item is deleted even if the file is not
@@ -78,18 +81,26 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   );
 
   // register post copy handler to copy the file object after item copy
-  itemService.hooks.setPreHook('copy', async (actor, repositories, { item }) => {
+  itemService.hooks.setPreHook('copy', async (actor, repositories, { original: item }) => {
+    if (!actor) {
+      return;
+    }
+
     const { id, type } = item; // full copy with new `id`
 
     // copy file only if type is the current file type
     if (!id || type !== fileService.type) return;
-    const size = (item.extra[fileService.type] as FileProperties & { size?: number })?.size;
+    const size = (item.extra[fileService.type] as FileItemProperties & { size?: number })?.size;
 
     await fileItemService.checkRemainingStorage(actor, repositories, size);
   });
 
   // register post copy handler to copy the file object after item copy
   itemService.hooks.setPostHook('copy', async (actor, repositories, { original, copy }) => {
+    if (!actor) {
+      return;
+    }
+
     const { id, type } = copy; // full copy with new `id`
 
     // copy file only if type is the current file type

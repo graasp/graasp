@@ -1,7 +1,7 @@
-import { Member } from '../services/member/entities/member';
+import { Actor } from '../services/member/entities/member';
 import { Repositories } from './repositories';
 
-type Handler<Data> = (actor: Member, repositories: Repositories, args: Data) => Promise<void>;
+type Handler<Data> = (actor: Actor, repositories: Repositories, args: Data) => Promise<void>;
 
 class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unknown } }> {
   private readonly postHooks = new Map<keyof EventMap, Handler<unknown>[]>();
@@ -21,7 +21,7 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
 
   async runPostHooks<Event extends keyof EventMap>(
     event: Event,
-    actor: Member,
+    actor: Actor,
     repositories: Repositories,
     data: EventMap[Event]['post'],
   ) {
@@ -43,7 +43,7 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
 
   async runPreHooks<Event extends keyof EventMap>(
     event: Event,
-    actor: Member,
+    actor: Actor,
     repositories: Repositories,
     data: EventMap[Event]['pre'],
   ) {

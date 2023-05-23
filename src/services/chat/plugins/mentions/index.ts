@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { Hostname, MentionStatus } from '@graasp/sdk';
+import { MentionStatus } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -45,6 +45,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   mentionService.hooks.setPostHook(
     'createMany',
     async (creator, repositories, { mentions, item }) => {
+      if (!creator) {
+        return;
+      }
       mentions.forEach((mention) => {
         mentionService.sendMentionNotificationEmail({
           item,

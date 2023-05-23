@@ -88,10 +88,6 @@ export class WebsocketService {
         await validate({
           channel: request.channel,
           member,
-          // allow consumer to reject valiation by throwing an error
-          reject: (error: Error) => {
-            throw error;
-          },
         });
 
         // scope channel into topic

@@ -37,6 +37,7 @@ import graaspItemPublish from './plugins/published';
 import graaspRecycledItemData from './plugins/recycled';
 import thumbnailsPlugin from './plugins/thumbnail';
 import graaspValidationPlugin from './plugins/validation';
+import { itemWsHooks } from './ws/hooks';
 
 // import { registerItemWsHooks } from './ws/hooks';
 
@@ -89,6 +90,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       // core routes - require authentication
       fastify.register(async function (fastify) {
+        fastify.register(itemWsHooks);
+
         // // H5P plugin must be registered before ZIP
         // fastify.register(graaspItemH5P, {
         //   pathPrefix: H5P_PATH_PREFIX,
@@ -122,17 +125,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(graaspItemLikes);
 
         fastify.register(graaspChatbox);
-
-        // if (WEBSOCKETS_PLUGIN) {
-        //   registerItemWsHooks(
-        //     websockets,
-        //     runner,
-        //     dbService,
-        //     itemMembershipsDbService,
-        //     taskManager,
-        //     db.pool,
-        //   );
-        // }
 
         fastify.register(actionItemPlugin);
 
