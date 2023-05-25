@@ -45,7 +45,7 @@
     "migration:fake": "yarn migration:run:fake && migration:revert:fake",
     "migration:run:fake": "npx typeorm-ts-node-commonjs  migration:run --fake",
     "migration:revert:fake": "npx typeorm-ts-node-commonjs migration:revert --fake",
-    "migration:check": "npx typeorm-ts-node-commonjs schema:log -d src/plugins/datasource.ts"
+    "migration:check": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations --check -d src/plugins/datasource.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.306.0",
