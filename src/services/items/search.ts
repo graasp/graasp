@@ -17,7 +17,7 @@ import {
 import { ItemTagService } from 'graasp-item-tags';
 
 // import {PadOptionalRev} from ''
-import { PUBLISHED_TAG_ID } from '../../util/config';
+import { MEILISEARCH_API_MASTERKEY, PUBLISHED_TAG_ID } from '../../util/config';
 
 const stripOpts: Partial<Opts> = {
   ignoreTags: [],
@@ -104,7 +104,7 @@ const searchPlugin = async (
 
   const meilisearchClient = new MeiliSearch({
     host: 'http://meilisearch:8080',
-    apiKey: '',
+    apiKey: MEILISEARCH_API_MASTERKEY,
   });
 
   const status = await meilisearchClient.isHealthy();
