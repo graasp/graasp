@@ -1,3 +1,5 @@
+import { MeiliSearch } from 'meilisearch';
+
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
@@ -40,8 +42,6 @@ import thumbnailsPlugin, {
 } from 'graasp-plugin-thumbnails';
 import graaspValidationPlugin from 'graasp-plugin-validation';
 
-import { MeiliSearch } from 'meilisearch';
-import searchPlugin  from './search';
 import {
   APPS_JWT_SECRET,
   APPS_PLUGIN,
@@ -95,6 +95,7 @@ import {
 } from './fluent-schema';
 import { itemActionHandler } from './handler/item-action-handler';
 import { Ordered } from './interfaces/requests';
+import searchPlugin from './search';
 import { TaskManager } from './task-manager';
 import { registerItemWsHooks } from './ws/hooks';
 
@@ -292,8 +293,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             db.pool,
           );
         }
-        
-        await fastify.register(searchPlugin, { tags: { service: itemTagService }});
+
+        await fastify.register(searchPlugin, { tags: { service: itemTagService } });
 
         // isolate the core actions using fastify.register
         fastify.register(async function (fastify) {
@@ -513,13 +514,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         });
       });
-
     },
     { prefix: ITEMS_ROUTE_PREFIX },
   );
-
-
-
 };
 
 export default plugin;
