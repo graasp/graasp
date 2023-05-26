@@ -17,7 +17,7 @@ export default {
         },
         type: { type: 'string' },
         visibility: { type: 'string' }, // TODO: should we always return this
-        creator: { type: 'string' },
+        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },
