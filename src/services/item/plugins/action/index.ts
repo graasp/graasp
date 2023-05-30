@@ -13,9 +13,11 @@ import {
 } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import { AggregateAttribute, AggregateFunctionType } from '../../../action/utils/actions';
 import { ActionRequestExportService } from './requestExport/service';
-import { exportAction, getItemActions } from './schemas';
+import { exportAction, getAggregateActions, getItemActions } from './schemas';
 import { ActionItemService } from './service';
+import { validateAggregateRequest } from './utils';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
@@ -59,6 +61,50 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view,
+      });
+    },
+  );
+
+  // get actions aggregate data matching the given `id`
+  fastify.get<{
+    Params: IdParam;
+    Querystring: {
+      requestedSampleSize?: number;
+      view?: Context;
+      type?: string;
+      countGroupBy: AggregateAttribute[];
+      aggregateFunction: AggregateFunctionType;
+      aggregateMetric: AggregateAttribute;
+      aggregateBy: AggregateAttribute[];
+    };
+  }>(
+    '/:id/actions/aggregation',
+    {
+      schema: getAggregateActions,
+      preHandler: fastify.verifyAuthentication,
+    },
+    async ({ member, params: { id }, query }, reply) => {
+      // validate request
+      const isValid = validateAggregateRequest(
+        query.countGroupBy,
+        query.aggregateFunction,
+        query.aggregateMetric,
+        query.aggregateBy,
+      );
+
+      if (!isValid) {
+        return reply.status(400).send({ message: 'Invalid aggregation.' });
+      }
+
+      return actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
+        sampleSize: query.requestedSampleSize,
+        itemId: id,
+        view: query.view,
+        type: query.type,
+        countGroupBy: query.countGroupBy,
+        aggregateFunction: query.aggregateFunction,
+        aggregateMetric: query.aggregateMetric,
+        aggregateBy: query.aggregateBy,
       });
     },
   );
