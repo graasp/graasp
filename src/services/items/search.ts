@@ -15,9 +15,74 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 import { ItemTagService } from 'graasp-item-tags';
+import fs from 'fs';
+import path from 'path';
+import pdf from 'pdf-parse';
+// import 'pdf-extract';
+
+
+// import { PDFJS } from 'pdfjs-dist/build/pdf';
+import Tesseract from 'tesseract.js';
+// PDFJS.
+
+import { getDocument, getXfaPageViewport, getPdfFilenameFromUrl } from 'pdfjs-dist';
 
 // import {PadOptionalRev} from ''
-import { MEILISEARCH_API_MASTERKEY, PUBLISHED_TAG_ID } from '../../util/config';
+import { MEILISEARCH_API_MASTERKEY, PUBLISHED_TAG_ID,FILE_STORAGE_ROOT_PATH } from '../../util/config';
+import { constants } from 'fs/promises';
+
+
+
+//code taken from chatGPT for prototyping 
+const loadAndRenderPDF = async (pdfPath) => {
+  try {
+
+    fs.access(pdfPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        console.error('File does not exist.');
+        return;
+      }
+    
+      console.log('File exists.');
+    });
+    const loadingTask = getDocument(pdfPath);
+    console.log('ok');
+
+    loadingTask.promise.then((pdf) => {
+      console.log(pdf.numPages);
+    }).catch((err) => {
+      console.log(err);
+      return;
+    });
+    const pdf = await loadingTask.promise;
+    console.log('problem here');
+    const numPages = pdf.numPages;
+    console.log(numPages);
+    // Render each page of the PDF
+    for (let pageIndex = 1; pageIndex <= numPages; pageIndex++) {
+      const page = await pdf.getPage(pageIndex);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      console.log('here');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      const renderTask = page.render({ canvasContext: context, viewport });
+      await renderTask.promise;
+      console.log('problem here');
+      // Perform OCR on the rendered image
+      const imageDataURL = canvas.toDataURL(); // Convert canvas to data URL
+      const result = await Tesseract.recognize(imageDataURL, 'eng');
+      const text = result.data.text;
+
+      // Handle the OCR result as needed
+      console.log(`Page ${pageIndex} OCR Result:`, text);
+    }
+  } catch (error) {
+    console.error('Error loading and rendering PDF:', error);
+  }
+};
 
 const stripOpts: Partial<Opts> = {
   ignoreTags: [],
@@ -54,7 +119,37 @@ async function getSearchTextFromExtra(item: DiscriminatedItem, etherpad: Etherpa
       extraInfo = removeHTMLTags(getDocumentExtra(item.extra).content);
       break;
     case ItemType.LOCAL_FILE:
-      extraInfo = getFileExtra(item.extra).path;
+      const path_to_file = getFileExtra(item.extra).path;
+      const {name, mimetype} = getFileExtra(item.extra);
+      const pathLocalFile = path.join(FILE_STORAGE_ROOT_PATH,path_to_file);
+      console.log(pathLocalFile);
+      await loadAndRenderPDF(pathLocalFile);
+      // const buffer = fs.readFileSync(pathLocalFile);
+      // if (name.toLowerCase().startsWith('scannedpdf'))
+      // {
+        
+      //   const options = {
+      //     type: 'ocr' // perform ocr to get the text within the scanned image
+      //   };
+         
+      //   // const processor = pdf_extract(absolute_path_to_pdf, options, function(err) {
+      //   //   if (err) {
+      //   //     return callback(err);
+      //   //   }
+      //   // });
+      //   // processor.on('complete', function(data) {
+      //   //   inspect(data.text_pages, 'extracted text pages');
+      //   //   callback(null, text_pages);
+      //   // });
+      //   // processor.on('error', function(err) {
+      //   //   inspect(err, 'error while extracting pages');
+      //   //   return callback(err);
+      //   // });
+        
+      // } else{
+      //   const data = await pdf(buffer);
+      //   extraInfo = removeHTMLTags(data.text);
+      // }
       // extraInfo = (<FileItemProperties>extraProp[item.type]).path;
       break;
     case ItemType.ETHERPAD:
@@ -101,7 +196,9 @@ const searchPlugin = async (
   const deleteItemTaskName = itemsTaskManager.getDeleteTaskName();
   const moveItemTaskName = itemsTaskManager.getMoveTaskName();
   const itemIndex = 'testitem';
-
+  
+  await loadAndRenderPDF('sample_ocr.pdf');
+  console.log(FILE_STORAGE_ROOT_PATH);
   const meilisearchClient = new MeiliSearch({
     host: 'http://meilisearch:8080',
     apiKey: MEILISEARCH_API_MASTERKEY,
