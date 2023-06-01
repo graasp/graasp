@@ -863,7 +863,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.HIDDEN });
+        await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
 
         const children = [child2];
 
@@ -1030,7 +1030,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({ item: child1, creator: member, type: ItemTagType.HIDDEN });
+        await ItemTagRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
 
         await saveItemAndMembership({
           member,

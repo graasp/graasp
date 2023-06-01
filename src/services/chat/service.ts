@@ -2,7 +2,6 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { validatePermission } from '../authorization';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ChatMessage } from './chatMessage';

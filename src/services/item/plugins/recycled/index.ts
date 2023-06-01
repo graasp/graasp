@@ -1,8 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import {
-  Actor,
-  GraaspError,
   IdParam,
   IdsParams,
   MAX_TARGETS_FOR_MODIFY_REQUEST,

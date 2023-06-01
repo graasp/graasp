@@ -28,11 +28,8 @@ interface MentionEvent extends ChatMentionEvent {
  * @param mention message value
  * @returns instance of item chat event
  */
-export const MentionEvent = (
-  op: MentionEvent['op'],
-  mention?: ChatMention,
-): // eslint-disable-next-line @typescript-eslint/no-unused-vars
-MentionEvent => ({
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const MentionEvent = (op: MentionEvent['op'], mention?: ChatMention): MentionEvent => ({
   op,
   mention,
 });

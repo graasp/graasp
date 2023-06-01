@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { UnknownExtra, Websocket } from '@graasp/sdk';
+import { Websocket } from '@graasp/sdk';
 
 import { Member } from '../member/entities/member';
 import {
@@ -73,7 +73,7 @@ export class WebsocketService {
    */
   private async handleSubscribe(
     request: Websocket.ClientSubscribe | Websocket.ClientSubscribeOnly,
-    member: Member<UnknownExtra>,
+    member: Member,
     client: WebSocket,
     subscribeFn: (client: WebSocket, channelName: string) => boolean,
   ) {
@@ -130,7 +130,7 @@ export class WebsocketService {
    * @param member member performing the request
    * @param socket client socket
    */
-  handleRequest(data: WebSocket.Data, member: Member<UnknownExtra>, client: WebSocket): void {
+  handleRequest(data: WebSocket.Data, member: Member, client: WebSocket): void {
     const request = this.parse(typeof data === 'string' ? data : data?.toString());
 
     // validation error, send bad request

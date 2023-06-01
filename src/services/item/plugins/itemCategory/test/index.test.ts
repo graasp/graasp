@@ -37,14 +37,14 @@ export const expectItemCategories = (newItemCategories, correctItemCategories) =
 
 export const saveCategories = async () => {
   const categories: Category[] = [];
-  categories.push(await CategoryRepository.save({ name: 'level-1', type: CategoryType.LEVEL }));
-  categories.push(await CategoryRepository.save({ name: 'level-2', type: CategoryType.LEVEL }));
-  categories.push(await CategoryRepository.save({ name: 'level-3', type: CategoryType.LEVEL }));
+  categories.push(await CategoryRepository.save({ name: 'level-1', type: CategoryType.Level }));
+  categories.push(await CategoryRepository.save({ name: 'level-2', type: CategoryType.Level }));
+  categories.push(await CategoryRepository.save({ name: 'level-3', type: CategoryType.Level }));
   categories.push(
-    await CategoryRepository.save({ name: 'discipline-1', type: CategoryType.DISCIPLINE }),
+    await CategoryRepository.save({ name: 'discipline-1', type: CategoryType.Discipline }),
   );
   categories.push(
-    await CategoryRepository.save({ name: 'discipline-2', type: CategoryType.DISCIPLINE }),
+    await CategoryRepository.save({ name: 'discipline-2', type: CategoryType.Discipline }),
   );
   return categories;
 };

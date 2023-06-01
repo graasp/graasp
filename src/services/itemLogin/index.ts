@@ -1,11 +1,10 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { Actor, ItemLoginSchemaType } from '@graasp/sdk';
+import { ItemLoginSchemaType } from '@graasp/sdk';
 
 import { buildRepositories } from '../../utils/repositories';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
-  credentials,
   deleteLoginSchema,
   getLoginSchema,
   getLoginSchemaType,
@@ -14,13 +13,7 @@ import {
 } from './schemas';
 import { ItemLoginService } from './service';
 
-export interface GraaspItemLoginOptions {
-  /** id of the tag to look for in the item to allow the "log in" to item */
-  tagId: string;
-  graaspActor: Actor;
-}
-
-const plugin: FastifyPluginAsync<GraaspItemLoginOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync = async (fastify, options) => {
   const { db, items } = fastify;
 
   const iLService = new ItemLoginService(fastify, items.service);

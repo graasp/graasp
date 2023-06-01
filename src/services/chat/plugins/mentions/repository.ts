@@ -2,7 +2,6 @@ import { MentionStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Item } from '../../../item/entities/Item';
-import { Member } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
 import { ChatMentionNotFound } from '../../errors';
 import { ChatMention } from './chatMention';

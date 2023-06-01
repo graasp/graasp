@@ -77,7 +77,7 @@ describe('Item Published', () => {
         await ItemTagRepository.save({
           item: hiddenCollection,
           creator: actor,
-          type: ItemTagType.HIDDEN,
+          type: ItemTagType.Hidden,
         });
         const res = await app.inject({
           method: HttpMethod.GET,
@@ -255,7 +255,7 @@ describe('Item Published', () => {
           member: actor,
           permission: PermissionLevel.Admin,
         });
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC, creator: member });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.POST,
@@ -288,7 +288,7 @@ describe('Item Published', () => {
           member: actor,
           permission: PermissionLevel.Write,
         });
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC, creator: member });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.POST,
@@ -304,7 +304,7 @@ describe('Item Published', () => {
           member: actor,
           permission: PermissionLevel.Read,
         });
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC, creator: member });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.POST,
@@ -360,7 +360,7 @@ describe('Item Published', () => {
           member: actor,
           permission: PermissionLevel.Admin,
         });
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC, creator: member });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
@@ -378,7 +378,7 @@ describe('Item Published', () => {
           member: actor,
           permission: PermissionLevel.Admin,
         });
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC, creator: member });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.DELETE,
@@ -395,7 +395,7 @@ describe('Item Published', () => {
           member: actor,
           permission: PermissionLevel.Write,
         });
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC, creator: member });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
@@ -412,7 +412,7 @@ describe('Item Published', () => {
           member: actor,
           permission: PermissionLevel.Read,
         });
-        await ItemTagRepository.save({ item, type: ItemTagType.PUBLIC, creator: member });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({

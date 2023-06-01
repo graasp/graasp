@@ -7,7 +7,6 @@ import { HttpMethod, ItemTagType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTag } from '../ItemTag';
@@ -19,7 +18,7 @@ jest.mock('../../../../../plugins/datasource');
 
 const saveTagsForItem = async ({ item, creator }) => {
   const itemTags: ItemTag[] = [];
-  itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.HIDDEN }));
+  itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.Hidden }));
 
   return itemTags;
 };
@@ -67,7 +66,7 @@ describe('Tags', () => {
         const itemTag = await ItemTagRepository.save({
           item,
           creator: member,
-          type: ItemTagType.PUBLIC,
+          type: ItemTagType.Public,
         });
 
         const res = await app.inject({
@@ -138,7 +137,7 @@ describe('Tags', () => {
         const itemTag = await ItemTagRepository.save({
           item,
           creator: member,
-          type: ItemTagType.PUBLIC,
+          type: ItemTagType.Public,
         });
 
         const res = await app.inject({
@@ -230,7 +229,7 @@ describe('Tags', () => {
 
   describe('POST /:itemId/tags', () => {
     let item;
-    const type = ItemTagType.HIDDEN;
+    const type = ItemTagType.Hidden;
 
     describe('Signed Out', () => {
       let member;
@@ -316,7 +315,7 @@ describe('Tags', () => {
 
   describe('DELETE /:itemId/tags/:id', () => {
     let item, itemTags;
-    const type = ItemTagType.PUBLIC;
+    const type = ItemTagType.Public;
 
     describe('Signed Out', () => {
       let member;
@@ -377,14 +376,14 @@ describe('Tags', () => {
 
         const res = await app.inject({
           method: HttpMethod.DELETE,
-          url: `${ITEMS_ROUTE_PREFIX}/${itemWithoutTag.id}/tags/${ItemTagType.HIDDEN}`,
+          url: `${ITEMS_ROUTE_PREFIX}/${itemWithoutTag.id}/tags/${ItemTagType.Hidden}`,
         });
         expect(res.json()).toMatchObject(new ItemTagNotFound(expect.anything()));
       });
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.DELETE,
-          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${ItemTagType.HIDDEN}`,
+          url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${ItemTagType.Hidden}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });

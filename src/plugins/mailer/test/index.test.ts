@@ -7,16 +7,14 @@ jest.mock('../../../plugins/datasource');
 
 describe('Mailer', () => {
   let app;
-  let actor;
 
   beforeAll(async () => {
-    ({ app, actor } = await build());
+    ({ app } = await build());
   });
 
   afterAll(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
     app.close();
   });
 

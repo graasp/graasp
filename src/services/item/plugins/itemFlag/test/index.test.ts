@@ -23,7 +23,7 @@ const expectItemFlag = (flag, correctFlag) => {
 describe('Item Flag Tests', () => {
   let app;
   let actor;
-  const payload = { type: FlagType.FALSE_INFORMATION };
+  const payload = { type: FlagType.FalseInformation };
 
   afterEach(async () => {
     jest.clearAllMocks();

@@ -57,16 +57,14 @@ fs.mkdirSync(storageFolder, { recursive: true });
 
 describe('exportActionsInArchive', () => {
   let app;
-  let actor;
 
   beforeEach(async () => {
-    ({ app, actor } = await build());
+    ({ app } = await build());
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
     app.close();
   });
 

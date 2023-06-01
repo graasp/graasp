@@ -13,16 +13,12 @@ import {
   Member as GraaspMember,
   MemberExtra,
   MemberType,
-  UnknownExtra,
   isPseudonymizedMember,
 } from '@graasp/sdk';
 
 @Entity()
 @Unique('email', ['email'])
-export class Member<Extra extends UnknownExtra = MemberExtra>
-  extends BaseEntity
-  implements GraaspMember
-{
+export class Member extends BaseEntity implements GraaspMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -47,7 +43,7 @@ export class Member<Extra extends UnknownExtra = MemberExtra>
   type: MemberType;
 
   @Column('simple-json', { nullable: false, default: '{}' })
-  extra: Extra;
+  extra: MemberExtra;
 
   @CreateDateColumn({
     update: false,

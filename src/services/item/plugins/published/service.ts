@@ -58,7 +58,7 @@ export class ItemPublishedService {
     const item = await this.itemService.get(actor, repositories, itemId);
 
     // item should be public first
-    await itemTagRepository.getType(item, ItemTagType.PUBLIC, { shouldThrow: true });
+    await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
 
     return itemPublishedRepository.getForItem(item);
   }
@@ -72,7 +72,7 @@ export class ItemPublishedService {
     // item should be public first
     const { data: areItemsPublic, errors: publicErrors } = await itemTagRepository.hasForMany(
       items,
-      ItemTagType.PUBLIC,
+      ItemTagType.Public,
     );
 
     const { data: publishedInfo, errors: publishedErrors } =
@@ -93,7 +93,7 @@ export class ItemPublishedService {
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     // item should be public first
-    await itemTagRepository.getType(item, ItemTagType.PUBLIC, { shouldThrow: true });
+    await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
 
     // TODO: check validation is alright
 

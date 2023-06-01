@@ -1,10 +1,9 @@
 import { UUID } from 'crypto';
-import { StatusCodes } from 'http-status-codes';
 
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, PermissionLevel, UnknownExtra } from '@graasp/sdk';
+import { IdParam, PermissionLevel } from '@graasp/sdk';
 
 import { WEBSOCKETS_PLUGIN } from '../../utils/config';
 import { buildRepositories } from '../../utils/repositories';

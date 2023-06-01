@@ -6,7 +6,7 @@ import { AppDataSource } from '../../plugins/datasource';
 import { MemberNotFound } from '../../utils/errors';
 import { Item } from '../item/entities/Item';
 import { mapById } from '../utils';
-import { Actor, Member } from './entities/member';
+import { Member } from './entities/member';
 
 export const MemberRepository = AppDataSource.getRepository(Member).extend({
   async deleteOne(id: string) {
