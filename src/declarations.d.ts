@@ -1,28 +1,18 @@
 import { DataSource } from 'typeorm';
 
-import { FastifyInstance } from 'fastify';
-import fp from 'fastify-plugin';
+import 'fastify';
 
 import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 
-import databasePlugin from './plugins/database';
-import decoratorPlugin from './plugins/decorator';
 import type { MailerDecoration } from './plugins/mailer';
-import mailerPlugin from './plugins/mailer';
-import metaPlugin from './plugins/meta';
-import shared from './schemas/fluent-schema';
 import { ActionService } from './services/action/services/action';
-import authPlugin from './services/auth';
 import { MentionService } from './services/chat/plugins/mentions/service';
-import filePlugin from './services/file';
 import FileService from './services/file/service';
-import ItemServiceApi from './services/item';
 import { ActionItemService } from './services/item/plugins/action/service';
 import FileItemService from './services/item/plugins/file/service';
+import { H5PService } from './services/item/plugins/h5p/service';
 import { ItemThumbnailService } from './services/item/plugins/thumbnail/service';
 import ItemService from './services/item/service';
-import ItemMembershipServiceApi from './services/itemMembership';
-import MemberServiceApi from './services/member';
 import { Actor, Member } from './services/member/entities/member';
 import { MemberService } from './services/member/service';
 import { WebsocketService } from './services/websockets/ws-service';
@@ -65,6 +55,7 @@ declare module 'fastify' {
     // TODO
     hosts: any;
     websockets: WebsocketService;
+    h5p: H5PService;
 
     corsPluginOptions: any;
     verifyAuthentication: (request: FastifyRequest) => Promise<void>;

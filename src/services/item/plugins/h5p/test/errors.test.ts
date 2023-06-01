@@ -1,16 +1,18 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { Item } from '../../../entities/Item';
 import {
   H5PImportError,
+  H5PInvalidFileError,
   H5PItemMissingExtraError,
   H5PItemNotFoundError,
-  InvalidH5PFileError,
-} from '../src/errors';
-import { MOCK_ITEM } from './fixtures';
+} from '../errors';
+
+const MOCK_ITEM = new Item();
 
 describe('Custom errors', () => {
   it('builds correct InvalidH5PFileError', () => {
-    const error = new InvalidH5PFileError(MOCK_ITEM);
+    const error = new H5PInvalidFileError(MOCK_ITEM);
 
     expect(error.code).toEqual('GPH5PERR001');
     expect(error.data).toEqual(MOCK_ITEM);

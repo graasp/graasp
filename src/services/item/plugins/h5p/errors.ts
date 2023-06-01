@@ -6,7 +6,7 @@ import { PLUGIN_NAME } from './constants';
 
 export const GraaspH5PError = ErrorFactory(PLUGIN_NAME);
 
-export class InvalidH5PFileError extends GraaspH5PError {
+export class H5PInvalidFileError extends GraaspH5PError {
   constructor(data?: unknown) {
     super(
       {

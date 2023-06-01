@@ -4,19 +4,17 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import secureJSON from 'secure-json-parse';
 
+import { h5pManifestSchema } from '../schemas';
 import { H5P } from './h5p';
 
-// const ajv = new Ajv();
+const ajv = new Ajv();
 
 /**
  * Utility class containing the logic to validate a .h5p package
  * This object should be implementation-agnostic (could be reused for other H5P projects)
  */
 export class H5PValidator {
-  // ajv JSON validator for the manifest schema
-
-  // TODO: enable back
-  // private isValidManifest = ajv.compile(h5pManifestSchema);
+  private isValidManifest = ajv.compile(h5pManifestSchema);
 
   // Helper to locate the main h5p.json inside an extracted H5P package
   private buildManifestPath = (extractedContentDir: string) =>
@@ -56,16 +54,15 @@ export class H5PValidator {
     const manifestJSON = await readFile(manifestPath, { encoding: 'utf-8' });
     let manifest = secureJSON.safeParse(manifestJSON);
 
-    // TODO: enable back
-    // if (manifest === null || !this.isValidManifest(manifest)) {
-    //   const errors = this.isValidManifest.errors
-    //     ?.map((e) => `${e.instancePath && `${path.basename(e.instancePath)} `}${e.message}`)
-    //     ?.join('\n\t');
-    //   return {
-    //     isValid: false,
-    //     error: `Invalid h5p.json manifest file: ${errors}`,
-    //   };
-    // }
+    if (manifest === null || !this.isValidManifest(manifest)) {
+      const errors = this.isValidManifest.errors
+        ?.map((e) => `${e.instancePath && `${path.basename(e.instancePath)} `}${e.message}`)
+        ?.join('\n\t');
+      return {
+        isValid: false,
+        error: `Invalid h5p.json manifest file: ${errors}`,
+      };
+    }
 
     manifest = manifest as { preloadedDependencies: any; mainLibrary: any };
     // The 'preloadedDependencies' field must at least contain the main library of the package

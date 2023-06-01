@@ -3,8 +3,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import tmp, { DirectoryResult } from 'tmp-promise';
 
-import { H5P } from '../../src/validation/h5p';
-import { H5PValidator } from '../../src/validation/h5p-validator';
+import { H5P } from '../../validation/h5p';
+import { H5PValidator } from '../../validation/h5p-validator';
 import { H5P_PACKAGES } from '../fixtures';
 
 describe('H5PValidator', () => {

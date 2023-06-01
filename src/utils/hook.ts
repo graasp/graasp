@@ -1,7 +1,7 @@
 import { Actor } from '../services/member/entities/member';
 import { Repositories } from './repositories';
 
-type Handler<Data> = (actor: Actor, repositories: Repositories, args: Data) => Promise<void>;
+export type Handler<Data> = (actor: Actor, repositories: Repositories, args: Data) => Promise<void>;
 
 class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unknown } }> {
   private readonly postHooks = new Map<keyof EventMap, Handler<unknown>[]>();

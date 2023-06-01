@@ -1,7 +1,13 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-import { Context, FileItemType, ItemSettings, ItemType, S3FileConfiguration } from '@graasp/sdk';
+import {
+  Context,
+  FileItemType,
+  ItemType,
+  LocalFileConfiguration,
+  S3FileConfiguration,
+} from '@graasp/sdk';
 
 enum Environment {
   production = 'production',
@@ -176,22 +182,51 @@ if (S3_FILE_ITEM_PLUGIN) {
   };
 }
 
-export const H5P_CONTENT_REGION = process.env.H5P_CONTENT_REGION;
-export const H5P_CONTENT_BUCKET = process.env.H5P_CONTENT_BUCKET;
-export const H5P_CONTENT_ACCESS_KEY_ID = process.env.H5P_CONTENT_ACCESS_KEY_ID;
-export const H5P_CONTENT_SECRET_ACCESS_KEY = process.env.H5P_CONTENT_SECRET_ACCESS_KEY;
+export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
+
+// ugly runtime type checking since typescript cannot infer types
+// todo: please use a typed env checker library, this is awful
+if (
+  process.env.H5P_FILE_STORAGE_TYPE !== ItemType.S3_FILE &&
+  process.env.H5P_FILE_STORAGE_TYPE !== ItemType.LOCAL_FILE
+) {
+  throw new Error('Invalid H5P file storage type provided');
+}
+export const H5P_FILE_STORAGE_TYPE = process.env.H5P_FILE_STORAGE_PATH as FileItemType;
+
+// ugly runtime type checking since typescript cannot infer types
+if (H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE) {
+  if (
+    !process.env.H5P_CONTENT_REGION ||
+    !process.env.H5P_CONTENT_BUCKET ||
+    !process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID ||
+    !process.env.H5P_CONTENT_ACCESS_KEY_ID
+  )
+    throw new Error('H5P S3 configuration missing');
+}
+export const H5P_S3_CONFIG = {
+  s3Region: process.env.H5P_CONTENT_REGION,
+  s3Bucket: process.env.H5P_CONTENT_BUCKET,
+  s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY,
+  s3AccessKeyId: process.env.H5P_CONTENT_ACCESS_KEY_ID,
+} as S3FileConfiguration;
+
+// ugly runtime type checking since typescript cannot infer types
+if (H5P_FILE_STORAGE_TYPE === ItemType.LOCAL_FILE) {
+  if (!process.env.H5P_STORAGE_ROOT_PATH) throw new Error('H5P local storage root path missing');
+}
+export const H5P_LOCAL_CONFIG = {
+  storageRootPath: process.env.H5P_STORAGE_ROOT_PATH,
+} as LocalFileConfiguration;
+
+// ugly runtime type checking since typescript cannot infer types
+export const H5P_FILE_STORAGE_CONFIG =
+  H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE ? H5P_S3_CONFIG : H5P_LOCAL_CONFIG;
 
 export const ETHERPAD_URL = process.env.ETHERPAD_URL;
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
-
-export const H5P_CONTENT_PLUGIN_OPTIONS = {
-  s3Region: H5P_CONTENT_REGION,
-  s3Bucket: H5P_CONTENT_BUCKET,
-  s3AccessKeyId: H5P_CONTENT_ACCESS_KEY_ID,
-  s3SecretAccessKey: H5P_CONTENT_SECRET_ACCESS_KEY,
-};
 
 export const FILE_ITEM_TYPE: FileItemType = S3_FILE_ITEM_PLUGIN
   ? ItemType.S3_FILE
@@ -223,7 +258,6 @@ export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
 // export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
 // export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
 // export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
-// export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
 
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root' };
 

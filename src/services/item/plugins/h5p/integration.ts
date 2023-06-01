@@ -1,7 +1,19 @@
+/**
+ * Renders the integration HTML for H5P in Graasp
+ * @param h5pAssetsBaseUrl Root url where the H5P runtime is located
+ * @param h5pContentBaseUrl Root url where the H5P packages are stored (the subfolders are expected to be named by content ID, which each contain the relevant extracted H5P package)
+ * @param h5pHostDomains Hostnames where the integration should be allowed (domain(s) name(s) of the caller which will display this source)
+ * @returns The rendered H5P integration HTML
+ */
+export const renderHtml = (
+  h5pAssetsBaseUrl: string,
+  h5pContentBaseUrl: string,
+  h5pHostDomains: Array<string>,
+) => `
 <!DOCTYPE html>
 <html>
   <head>
-    <script type="text/javascript" src="{{ & H5P_ASSETS_BASE_URL }}/main.bundle.js"></script>
+    <script type="text/javascript" src="${h5pAssetsBaseUrl}/main.bundle.js"></script>
   </head>
 
   <body>
@@ -9,9 +21,7 @@
     <script type="text/javascript">
       function initH5P() {
         const targetOrigins = [
-          {{ #H5P_HOST_DOMAINS }}
-          '{{ & . }}',
-          {{ /H5P_HOST_DOMAINS }}
+          ${h5pHostDomains.map((host) => `"${host}"`).join(',\n')}
         ];
 
         const queryParams = new URLSearchParams(window.location.search);
@@ -23,9 +33,9 @@
         }
 
         const options = {
-          h5pJsonPath: new URL(`{{ & H5P_CONTENT_BASE_URL }}/${contentId}/content`).href,
-          frameJs: '{{ & H5P_ASSETS_BASE_URL }}/frame.bundle.js',
-          frameCss: '{{ & H5P_ASSETS_BASE_URL }}/styles/h5p.css',
+          h5pJsonPath: new URL(\`${h5pContentBaseUrl}/\$\{contentId\}/content\`).href,
+          frameJs: '${h5pAssetsBaseUrl}/frame.bundle.js',
+          frameCss: '${h5pAssetsBaseUrl}/styles/h5p.css',
         };
         const el = document.getElementById('h5p-root');
         new H5PStandalone.H5P(el, options);
@@ -46,3 +56,4 @@
     </script>
   </body>
 </html>
+`;

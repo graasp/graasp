@@ -8,13 +8,10 @@ import { H5P } from './validation/h5p';
  * Throws if an error is encountered
  */
 export function validatePluginOptions(options: H5PPluginOptions) {
-  const { pathPrefix, routes } = options;
+  const { fileStorage, routes } = options;
+  const { pathPrefix } = fileStorage;
 
-  if (!pathPrefix) {
-    throw new Error('H5P path prefix environment variable is not defined!');
-  }
-
-  if (pathPrefix.startsWith('/')) {
+  if (pathPrefix && pathPrefix.startsWith('/')) {
     throw new Error('H5P path prefix should not start with a "/"!');
   }
 

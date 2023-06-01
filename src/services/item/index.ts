@@ -7,6 +7,9 @@ import {
   APP_ITEMS_PREFIX,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
   FILE_ITEM_PLUGIN_OPTIONS,
+  H5P_FILE_STORAGE_CONFIG,
+  H5P_FILE_STORAGE_TYPE,
+  H5P_PATH_PREFIX,
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -28,6 +31,7 @@ import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import graaspFileItem from './plugins/file';
+import graaspH5PPlugin from './plugins/h5p';
 import graaspZipPlugin from './plugins/importExport';
 import graaspCategoryPlugin from './plugins/itemCategory';
 import graaspItemFlags from './plugins/itemFlag';
@@ -92,15 +96,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(async function (fastify) {
         fastify.register(itemWsHooks);
 
-        // // H5P plugin must be registered before ZIP
-        // fastify.register(graaspItemH5P, {
-        //   pathPrefix: H5P_PATH_PREFIX,
-        //   fileItemType: FILE_ITEM_TYPE,
-        //   fileConfigurations: {
-        //     s3: H5P_CONTENT_PLUGIN_OPTIONS,
-        //     local: FILE_ITEM_PLUGIN_OPTIONS,
-        //   },
-        // });
+        // H5P plugin must be registered before ZIP
+        fastify.register(graaspH5PPlugin, {
+          fileStorage: {
+            type: H5P_FILE_STORAGE_TYPE,
+            pathPrefix: H5P_PATH_PREFIX,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            config: H5P_FILE_STORAGE_CONFIG as any,
+          },
+        });
 
         fastify.register(graaspZipPlugin);
 

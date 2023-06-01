@@ -4,35 +4,19 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 import tmp, { DirectoryResult } from 'tmp-promise';
-import { createMock } from 'ts-auto-mock';
 import util from 'util';
 
-import fastify, { FastifyInstance, FastifyLoggerInstance } from 'fastify';
+import fastify, { FastifyInstance, FastifyRequest } from 'fastify';
 
-import {
-  Actor,
-  DatabaseTransactionHandler,
-  Item,
-  ItemMembershipTaskManager,
-  ItemTaskManager,
-  ItemType,
-  TaskRunner,
-  UnknownExtra,
-} from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
-import plugin from '../src/service-api';
-import {
-  H5P_PACKAGES,
-  MOCK_ITEM,
-  MOCK_MEMBER,
-  MOCK_MEMBERSHIP,
-  mockParentId,
-  mockTask,
-} from './fixtures';
+import plugin from '../';
+import { Member } from '../../../../member/entities/member';
+import ItemService from '../../../service';
+import { H5P_PACKAGES } from './fixtures';
 
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
 export type BuildAppType = Awaited<ReturnType<typeof buildApp>>;
-export type CoreSpiesType = ReturnType<typeof mockCoreServices>;
 
 const checksum = {
   file: util.promisify(cs.file),
@@ -47,15 +31,8 @@ export async function buildApp(args?: {
     storageRootPath?: string;
     extractionRootPath?: string;
   };
-  services?: {
-    itemTaskManager?: ItemTaskManager;
-    itemMembershipTaskManager?: ItemMembershipTaskManager;
-    taskRunner?: TaskRunner<Actor>;
-    dbTrxHandler?: DatabaseTransactionHandler;
-    logger?: FastifyLoggerInstance;
-  };
 }) {
-  const { options, services } = args ?? {};
+  const { options } = args ?? {};
 
   const tmpDirs: Array<DirectoryResult> = [];
   async function tmpDir(options: any = { unsafeCleanup: true }) {
@@ -68,21 +45,12 @@ export async function buildApp(args?: {
   const storageRootPath = options?.storageRootPath ?? (await tmpDir());
   const extractionRootPath = options?.extractionRootPath ?? (await tmpDir());
 
-  /* mocks */
-  const itemTaskManager = services?.itemTaskManager ?? createMock<ItemTaskManager>();
-  const itemMembershipTaskManager =
-    services?.itemMembershipTaskManager ?? createMock<ItemMembershipTaskManager>();
-  const taskRunner = services?.taskRunner ?? createMock<TaskRunner<Actor>>();
-  const dbTrxHandler = services?.dbTrxHandler ?? createMock<DatabaseTransactionHandler>();
-  const logger = services?.logger ?? createMock<FastifyLoggerInstance>();
-
   const app = fastify();
 
-  app.decorate('db', { pool: dbTrxHandler });
-  app.decorate('items', { taskManager: itemTaskManager });
-  app.decorate('itemMemberships', { taskManager: itemMembershipTaskManager });
-  app.decorate('taskRunner', taskRunner);
-  app.addHook('onRequest', async (request) => (request.member = MOCK_MEMBER));
+  app.decorate('items', { service: new ItemService() });
+  app.decorate('verifyAuthentication', (request: FastifyRequest) => {
+    request.member = new Member();
+  });
 
   // uuid schema referenced from h5pImport schema should be registered by core
   // we use a simple string schema instead
@@ -96,20 +64,15 @@ export async function buildApp(args?: {
 
   const registerH5PPlugin = async () =>
     await app.register(plugin, {
-      fileItemType: ItemType.LOCAL_FILE,
-      fileConfigurations: {
-        local: {
-          storageRootPath,
-        },
-        // todo: file service refactor should not require both configs
-        s3: {
-          s3Region: 'mock-s3-region',
-          s3Bucket: 'mock-s3-bucket',
-          s3AccessKeyId: 'mock-s3-access-key-id',
-          s3SecretAccessKey: 'mock-s3-secret-access-key',
+      fileStorage: {
+        type: ItemType.LOCAL_FILE,
+        pathPrefix,
+        config: {
+          local: {
+            storageRootPath,
+          },
         },
       },
-      pathPrefix,
       tempDir: extractionRootPath,
     });
 
@@ -124,13 +87,6 @@ export async function buildApp(args?: {
       pathPrefix,
       storageRootPath,
       extractionRootPath,
-    },
-    services: {
-      itemTaskManager,
-      itemMembershipTaskManager,
-      taskRunner,
-      dbTrxHandler,
-      logger,
     },
     cleanup,
   };
@@ -153,7 +109,7 @@ export function injectH5PImport(
     url: '/h5p-import',
     payload: formData,
     headers: formData.getHeaders(),
-    query: { parentId: parentId ?? mockParentId },
+    query: { parentId: parentId ?? 'mock-parent-id' },
   });
 }
 
@@ -185,59 +141,4 @@ export async function expectH5PFiles(
   expect(fs.existsSync(manifestFile)).toBeTruthy();
   const parsedManifest = JSON.parse(await fsp.readFile(manifestFile, { encoding: 'utf-8' }));
   expect(parsedManifest).toEqual(h5p.manifest);
-}
-
-/**
- * Helper to mock base functionality
- */
-export function mockCoreServices(build: BuildAppType) {
-  const {
-    services: { itemTaskManager, itemMembershipTaskManager, taskRunner, dbTrxHandler, logger },
-  } = build;
-
-  const createItem = jest
-    .spyOn(itemTaskManager, 'createCreateTaskSequence')
-    .mockImplementation((actor, item, extra) => [
-      mockTask<unknown>('MockCreateItemTask', actor, { ...MOCK_ITEM, ...item }),
-    ]);
-
-  const getItem = jest
-    .spyOn(itemTaskManager, 'createGetTask')
-    .mockImplementation((actor, id) =>
-      mockTask<Item<UnknownExtra>>('MockGetItemTask', actor, MOCK_ITEM),
-    );
-
-  const getMembership = jest
-    .spyOn(itemMembershipTaskManager, 'createGetMemberItemMembershipTask')
-    .mockImplementation((member) =>
-      mockTask('MockGetMemberItemMembershipTask', member, MOCK_MEMBERSHIP),
-    );
-
-  const runSingle = jest
-    .spyOn(taskRunner, 'runSingle')
-    .mockImplementation((task) => task.run(dbTrxHandler, logger));
-
-  const runSingleSequence = jest
-    .spyOn(taskRunner, 'runSingleSequence')
-    .mockImplementation(async (tasks) => {
-      tasks = [...tasks];
-      for (const task of tasks) {
-        await task.run(dbTrxHandler, logger);
-      }
-      return tasks.pop()?.result;
-    });
-
-  const setTaskPreHookHandler = jest.spyOn(taskRunner, 'setTaskPreHookHandler');
-
-  const setTaskPostHookHandler = jest.spyOn(taskRunner, 'setTaskPostHookHandler');
-
-  return {
-    createItem,
-    getItem,
-    getMembership,
-    runSingle,
-    runSingleSequence,
-    setTaskPreHookHandler,
-    setTaskPostHookHandler,
-  };
 }

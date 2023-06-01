@@ -1647,6 +1647,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@commitlint/cli@npm:^17.6.3":
+  version: 17.6.3
+  resolution: "@commitlint/cli@npm:17.6.3"
+  dependencies:
+    "@commitlint/format": ^17.4.4
+    "@commitlint/lint": ^17.6.3
+    "@commitlint/load": ^17.5.0
+    "@commitlint/read": ^17.5.1
+    "@commitlint/types": ^17.4.4
+    execa: ^5.0.0
+    lodash.isfunction: ^3.0.9
+    resolve-from: 5.0.0
+    resolve-global: 1.0.0
+    yargs: ^17.0.0
+  bin:
+    commitlint: cli.js
+  checksum: e5a597ef453b74b243d1a479746a14938fc68f3fa5ac0210c9f1b5895b6507860b2761c27742e3c1a069ee64de69ef12bea76bcde6a7cb80d6d07bf1b4272c14
+  languageName: node
+  linkType: hard
+
 "@commitlint/config-conventional@npm:17.4.4":
   version: 17.4.4
   resolution: "@commitlint/config-conventional@npm:17.4.4"
@@ -1707,7 +1727,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/lint@npm:^17.4.4":
+"@commitlint/lint@npm:^17.4.4, @commitlint/lint@npm:^17.6.3":
   version: 17.6.3
   resolution: "@commitlint/lint@npm:17.6.3"
   dependencies:
@@ -1759,7 +1779,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/read@npm:^17.4.4":
+"@commitlint/read@npm:^17.4.4, @commitlint/read@npm:^17.5.1":
   version: 17.5.1
   resolution: "@commitlint/read@npm:17.5.1"
   dependencies:
@@ -2049,9 +2069,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/static@npm:6.9.0":
-  version: 6.9.0
-  resolution: "@fastify/static@npm:6.9.0"
+"@fastify/static@npm:6.10.2":
+  version: 6.10.2
+  resolution: "@fastify/static@npm:6.10.2"
   dependencies:
     "@fastify/accept-negotiator": ^1.0.0
     "@fastify/send": ^2.0.0
@@ -2060,7 +2080,7 @@ __metadata:
     glob: ^8.0.1
     p-limit: ^3.1.0
     readable-stream: ^4.0.0
-  checksum: 75738150ce82a5bf829fa4cd549b7f79f1408c4d34dd425d9a2f78f05e150d1db951f9f4917cdc5d95f78c9d90ce28d94c240fb08b0f0dd52f843fcc74e21cd0
+  checksum: 724fe72346ff0fa280f6a281ebcf784a7ede9da3e49cc28c19c7f2a2886d25c735883f77ff99fc13425b4a1d3cb831f7b21a20a1996db221cfec2cfa25e9c3c8
   languageName: node
   linkType: hard
 
@@ -4030,6 +4050,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"checksum@npm:1.0.0":
+  version: 1.0.0
+  resolution: "checksum@npm:1.0.0"
+  dependencies:
+    optimist: ~0.3.5
+  bin:
+    checksum: bin/checksum-cli.js
+  checksum: a20d56a530ba5ef3c9be2f707f4dd69e86bb2cb34a9e57bc8009c039a2a1e94f2fff2f82413f5acead0707ba21b01e49434f6627d1b953c21b8f02298f473214
+  languageName: node
+  linkType: hard
+
 "chokidar@npm:^3.5.2":
   version: 3.5.3
   resolution: "chokidar@npm:3.5.3"
@@ -4792,6 +4823,16 @@ __metadata:
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: f2c09b0ce4e6b301c221addd83bf3f454c0bc00caa3dd837cf6c127d6edf7223aa2bbe3b688feea110b7f262adbfc845b757c44c8a9f8c0c5b15d8fa9ce9d20d
+  languageName: node
+  linkType: hard
+
+"dir-compare@npm:4.0.0":
+  version: 4.0.0
+  resolution: "dir-compare@npm:4.0.0"
+  dependencies:
+    minimatch: ^3.0.4
+    p-limit: "^3.1.0 "
+  checksum: 54d7620453d239c8c64cb8ca54e8ca6ea3f9f9633eb2923f1143f0822b4bb63702029d8d18570186b950d4e1a7575691a0730b3e22f3fa3d2102c1279562091a
   languageName: node
   linkType: hard
 
@@ -5953,7 +5994,7 @@ __metadata:
     "@fastify/jwt": 6.7.1
     "@fastify/multipart": 7.5.0
     "@fastify/secure-session": 6.0.0
-    "@fastify/static": 6.9.0
+    "@fastify/static": 6.10.2
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/sdk": "github:graasp/graasp-sdk#typeorm"
@@ -5983,8 +6024,10 @@ __metadata:
     archiver: 5.3.1
     bad-words: 3.0.4
     bcrypt: 5.1.0
+    checksum: 1.0.0
     concurrently: 7.6.0
     content-disposition: 0.5.4
+    dir-compare: 4.0.0
     dotenv: 16.0.3
     eslint: 8.36.0
     eslint-config-prettier: 8.8.0
@@ -5997,6 +6040,7 @@ __metadata:
     form-data: 4.0.0
     french-badwords-list: 1.0.6
     geoip-lite: 1.4.7
+    h5p-standalone: 3.6.0
     http-status-codes: 2.2.0
     husky: 8.0.3
     ioredis: 5.3.2
@@ -6038,6 +6082,15 @@ __metadata:
   version: 1.0.4
   resolution: "grapheme-splitter@npm:1.0.4"
   checksum: 0c22ec54dee1b05cd480f78cf14f732cb5b108edc073572c4ec205df4cd63f30f8db8025afc5debc8835a8ddeacf648a1c7992fe3dcd6ad38f9a476d84906620
+  languageName: node
+  linkType: hard
+
+"h5p-standalone@npm:3.6.0":
+  version: 3.6.0
+  resolution: "h5p-standalone@npm:3.6.0"
+  dependencies:
+    "@commitlint/cli": ^17.6.3
+  checksum: 41138a2fd52fc596b77cad34152877139577eca86a249f49d514305e55d9d8159de2e2c82814b0611a99a2a35be2dd1469b9120b59076b740e585bb90623e6fa
   languageName: node
   linkType: hard
 
@@ -8217,6 +8270,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"optimist@npm:~0.3.5":
+  version: 0.3.7
+  resolution: "optimist@npm:0.3.7"
+  dependencies:
+    wordwrap: ~0.0.2
+  checksum: adc02acb8b76d242e56714b47c8c96916b25a5ac2da7b9f735e1f946a970f266f71d53eff0b61d9582ef948301e94734f03b784fa7c309aed0fe7db403d22046
+  languageName: node
+  linkType: hard
+
 "optionator@npm:^0.9.1":
   version: 0.9.1
   resolution: "optionator@npm:0.9.1"
@@ -8249,7 +8311,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-limit@npm:^3.0.2, p-limit@npm:^3.1.0":
+"p-limit@npm:^3.0.2, p-limit@npm:^3.1.0, p-limit@npm:^3.1.0 ":
   version: 3.1.0
   resolution: "p-limit@npm:3.1.0"
   dependencies:
@@ -10541,6 +10603,13 @@ __metadata:
   version: 1.0.0
   resolution: "wordwrap@npm:1.0.0"
   checksum: 2a44b2788165d0a3de71fd517d4880a8e20ea3a82c080ce46e294f0b68b69a2e49cff5f99c600e275c698a90d12c5ea32aff06c311f0db2eb3f1201f3e7b2a04
+  languageName: node
+  linkType: hard
+
+"wordwrap@npm:~0.0.2":
+  version: 0.0.3
+  resolution: "wordwrap@npm:0.0.3"
+  checksum: dfc2d3512e857ae4b3bc2e8d4e5d2c285c28a4b87cd1d81c977ce9a1a99152d355807e046851a3d61148f39d877fbb889352e07b65a9cbdd2256aa928e159026
   languageName: node
   linkType: hard
 

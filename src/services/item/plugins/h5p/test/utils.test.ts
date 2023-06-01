@@ -1,5 +1,21 @@
-import { buildContentPath, buildH5PPath, buildRootPath, validatePluginOptions } from '../src/utils';
-import { DEFAULT_PLUGIN_OPTIONS } from './fixtures';
+import path from 'path';
+
+import { ItemType } from '@graasp/sdk';
+
+import { H5PPluginOptions } from '../types';
+import { buildContentPath, buildH5PPath, buildRootPath, validatePluginOptions } from '../utils';
+
+const DEFAULT_PLUGIN_OPTIONS: H5PPluginOptions = {
+  fileStorage: {
+    type: ItemType.LOCAL_FILE,
+    pathPrefix: 'mock-prefix',
+    config: {
+      local: {
+        storageRootPath: path.join(__dirname, 'tmp/'),
+      },
+    },
+  },
+};
 
 describe('Utils', () => {
   describe('validatePluginOptions', () => {
@@ -15,20 +31,13 @@ describe('Utils', () => {
       expect(() => validatePluginOptions(options)).not.toThrowError();
     });
 
-    it('throws if path prefix is empty', () => {
-      const options = {
-        ...DEFAULT_PLUGIN_OPTIONS,
-        pathPrefix: '',
-      };
-      expect(() => validatePluginOptions(options)).toThrow(
-        'H5P path prefix environment variable is not defined!',
-      );
-    });
-
     it('throws if path prefix starts with /', () => {
       const options = {
         ...DEFAULT_PLUGIN_OPTIONS,
-        pathPrefix: '/mock-prefix',
+        fileStorage: {
+          ...DEFAULT_PLUGIN_OPTIONS.fileStorage,
+          pathPrefix: '/mock-prefix',
+        },
       };
       expect(() => validatePluginOptions(options)).toThrow(
         'H5P path prefix should not start with a "/"!',

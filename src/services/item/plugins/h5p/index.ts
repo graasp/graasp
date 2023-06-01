@@ -8,17 +8,21 @@ import tmp from 'tmp-promise';
 import { v4 } from 'uuid';
 
 import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { H5PItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
+import { H5PItemExtra, H5PItemType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
+import FileService from '../../../file/service';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import {
+  DEFAULT_H5P_ASSETS_ROUTE,
+  DEFAULT_H5P_CONTENT_ROUTE,
   DEFAULT_MIME_TYPE,
   H5P_FILE_DOT_EXTENSION,
   MAX_FILES,
@@ -26,10 +30,11 @@ import {
   MAX_NON_FILE_FIELDS,
   PLUGIN_NAME,
 } from './constants';
-import { GraaspH5PError, H5PImportError, InvalidH5PFileError } from './errors';
+import { GraaspH5PError, H5PImportError, H5PInvalidFileError } from './errors';
+import { renderHtml } from './integration';
 import { h5pImport } from './schemas';
 import { H5PService } from './service';
-import { H5PPluginOptions } from './types';
+import { FastifyStaticReply, H5PPluginOptions } from './types';
 import { buildContentPath, buildH5PPath, buildRootPath, validatePluginOptions } from './utils';
 import { H5PValidator } from './validation/h5p-validator';
 
@@ -38,12 +43,14 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
   const {
     items: { service: itemService },
     db,
-    log,
-    files: { service: fileService },
   } = fastify;
 
   validatePluginOptions(options);
-  const { pathPrefix, tempDir } = options;
+  const { tempDir, routes, hosts, fileStorage } = options;
+  const { pathPrefix = '' } = fileStorage;
+
+  // todo: file service should be a singleton with mutliple storage drivers
+  const fileService = new FileService(fileStorage.config, fileStorage.type);
 
   const h5pValidator = new H5PValidator();
 
@@ -157,6 +164,9 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
       },
     });
 
+    /* routes in this scope are authenticated */
+    fastify.addHook('preHandler', fastify.verifyAuthentication);
+
     fastify.post<{ Querystring: { parentId?: string } }>(
       '/h5p-import',
       { schema: h5pImport },
@@ -186,7 +196,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
           const h5pFile = await request.file();
 
           if (!h5pFile) {
-            throw new InvalidH5PFileError(h5pFile);
+            throw new H5PInvalidFileError(h5pFile);
           }
 
           /*
@@ -215,7 +225,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
 
             const result = await h5pValidator.validatePackage(contentFolder);
             if (!result.isValid) {
-              throw new InvalidH5PFileError((result as { error: string }).error);
+              throw new H5PInvalidFileError((result as { error: string }).error);
             }
 
             // try-catch block for remote storage cleanup
@@ -248,65 +258,101 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
         });
       },
     );
+  });
 
-    /**
-     * Delete H5P assets on item delete
-     */
-    // itemService.hooks.setPostHook(
-    //   'delete',
-    //   async (actor: Member, repositories: Repositories, { item }: { item: Item }) => {
-    //     if (item.type !== ItemType.H5P) {
-    //       return;
-    //     }
-    //     await fileService.deleteFolder(actor, {
-    //       folderPath: buildRootPath(pathPrefix, item.extra.h5p.contentId),
-    //     });
-    //   },
-    // );
+  /**
+   * In local storage mode, proxy serve the H5P content files
+   * In the future, consider refactoring the fileService so that it can be grabbed from the
+   * core instance and can serve the files directly (with an option to use or not auth)
+   */
+  if (fileStorage.type === ItemType.LOCAL_FILE) {
+    /** Helper to set CORS headers policy */
+    const setHeaders = (response: FastifyStaticReply) => {
+      response.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+    };
 
-    /**
-     * Copy H5P assets on item copy
-     */
-    // itemService.hooks.setPostHook(
-    //   'delete',
-    //   async (
-    //     actor: Member,
-    //     repositories: Repositories,
-    //     { original: item, copy }: { original: Item; copy: Item },
-    //   ) => {
-    //     // only execute this handler for H5P item types
-    //     if (item.type !== ItemType.H5P) {
-    //       return;
-    //     }
-    //     if (!item.name) {
-    //       throw new Error('Invalid state: missing previous H5P item name on copy');
-    //     }
-    //     if (!item.extra?.h5p) {
-    //       throw new Error('Invalid state: missing previous H5P item extra on copy');
-    //     }
+    // serve integration html
+    const integrationRoute = path.join(
+      routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
+      'integration.html',
+    );
+    fastify.get(integrationRoute, async (req, res) => {
+      const html = renderHtml(
+        routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
+        routes?.content ?? DEFAULT_H5P_CONTENT_ROUTE,
+        hosts ?? ['localhost'],
+      );
+      res.send(html);
+    });
 
-    //     const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
-    //     const copySuffix = '-1';
-    //     const newName = `${baseName}${copySuffix}`;
+    // hack to serve the "dist" folder of package "h5p-standalone"
+    const h5pAssetsRoot = path.dirname(require.resolve('h5p-standalone'));
+    fastify.register(fastifyStatic, {
+      root: h5pAssetsRoot,
+      prefix: routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
+      decorateReply: false,
+      setHeaders,
+    });
 
-    //     const newContentId = v4();
-    //     const remoteRootPath = buildRootPath(pathPrefix, newContentId);
+    const h5pStorageRoot = path.join(fileStorage.config.local.storageRootPath, pathPrefix);
+    fastify.register(fastifyStatic, {
+      root: h5pStorageRoot,
+      prefix: routes?.content ?? DEFAULT_H5P_CONTENT_ROUTE,
+      decorateReply: false,
+      setHeaders,
+    });
+  }
 
-    //     // copy .h5p file
-    //     await fileService.copy(actor, {
-    //       originalPath: path.join(pathPrefix, item.extra.h5p.h5pFilePath),
-    //       newFilePath: buildH5PPath(remoteRootPath, newName),
-    //     });
-    //     // copy content folder
-    //     await fileService.copyFolder(actor, {
-    //       originalFolderPath: path.join(pathPrefix, item.extra.h5p.contentFilePath),
-    //       newFolderPath: buildContentPath(remoteRootPath),
-    //     });
+  /**
+   * Delete H5P assets on item delete
+   */
+  itemService.hooks.setPostHook('delete', async (actor, repositories, { item }) => {
+    if (item.type !== ItemType.H5P) {
+      return;
+    }
+    if (!actor) {
+      return;
+    }
+    // TODO: fix types
+    const { extra } = item as H5PItemType;
+    await fileService.deleteFolder(actor, buildRootPath(pathPrefix, extra.h5p.contentId));
+  });
 
-    //     item.name = buildH5PPath('', newName);
-    //     item.extra.h5p = buildH5PExtra(newContentId, newName).h5p;
-    //   },
-    // );
+  /**
+   * Copy H5P assets on item copy
+   */
+  itemService.hooks.setPostHook('copy', async (actor, repositories, { original: item, copy }) => {
+    // only execute this handler for H5P item types
+    if (item.type !== ItemType.H5P) {
+      return;
+    }
+    if (!actor) {
+      return;
+    }
+
+    // TODO: fix types
+    const { extra } = item as H5PItemType;
+
+    const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
+    const copySuffix = '-1';
+    const newName = `${baseName}${copySuffix}`;
+
+    const newContentId = v4();
+    const remoteRootPath = buildRootPath(pathPrefix, newContentId);
+
+    // copy .h5p file
+    await fileService.copy(actor, {
+      originalPath: path.join(pathPrefix, extra.h5p.h5pFilePath),
+      newFilePath: buildH5PPath(remoteRootPath, newName),
+    });
+    // copy content folder
+    await fileService.copyFolder(actor, {
+      originalFolderPath: path.join(pathPrefix, extra.h5p.contentFilePath),
+      newFolderPath: buildContentPath(remoteRootPath),
+    });
+
+    item.name = buildH5PPath('', newName);
+    item.extra.h5p = buildH5PExtra(newContentId, newName).h5p;
   });
 };
 
