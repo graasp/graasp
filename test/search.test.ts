@@ -1,18 +1,23 @@
 import { MeiliSearch, TaskStatus as SearchTaskStatus } from 'meilisearch';
 import searchPlugin from '../src/services/items/search';
+import {parseItem} from '../src/services/items/search';
 import ItemsServiceApi from '../src/services/items/service-api';
 import graaspItemTags, { ItemTagService } from 'graasp-item-tags';
-import { HttpMethod, MAX_ITEM_MEMBERSHIPS_FOR_DELETE, PermissionLevel } from '@graasp/sdk';
+import { Actor, buildDocumentExtra, buildFileExtra, DocumentItemExtraProperties, EtherpadItemExtra, EtherpadItemExtraProperties, FileItemProperties, HttpMethod, ItemType, MAX_ITEM_MEMBERSHIPS_FOR_DELETE, PermissionLevel, TaskHookHandlerHelpers } from '@graasp/sdk';
 import graaspItemPublishPlugin from 'graasp-plugin-item-publish';
 
 import {
   DiscriminatedItem,
   PostHookHandlerType,
   ItemSettings,
+  PreHookHandlerType,
   Item,
 } from '@graasp/sdk';
 
-import fastify from 'fastify';
+import fastify, { FastifyLoggerInstance } from 'fastify';
+import { PadOptionalRev,PadText } from '@graasp/etherpad-api';
+
+import { AuthTokenSubject, Database, EtherpadService, H5PTaskManager, ItemMembershipService, ItemMembershipTaskManager, ItemService, ItemTaskManager, LocalFileConfiguration, Member, MemberService, MemberTaskManager, PublicItemService, PublicItemTaskManager, PublishItemTaskManager, S3FileConfiguration, WebsocketService } from '@graasp/sdk';
 
 import graaspItemEtherpad from '@graasp/plugin-etherpad';
 
@@ -114,9 +119,7 @@ import {
   PUBLIC_TAG_ID,
   PUBLISHED_TAG_ID,
 } from '../src/util/config';
-
-
-// mock auth, decorator and database plugins
+import { type } from 'os';
 jest.mock('../src/plugins/database');
 jest.mock('../src/plugins/auth/auth');
 jest.mock('../src/plugins/decorator');
@@ -125,143 +128,182 @@ const meilisearchClient = new MeiliSearch({
   host: 'http://meilisearch:8080',
   apiKey: MEILISEARCH_API_MASTERKEY,
 });
-const itemIndex = 'testIndex';
+const itemIndex = 'itemjest';
+
 describe('Meilisearch tests', () => {
   beforeEach( async () => {
     jest.clearAllMocks();
-    // await meilisearchClient.deleteIndexIfExists(itemIndex);
+    await meilisearchClient.deleteIndexIfExists(itemIndex);
+    // await new Promise((resolve) => setTimeout(resolve, 2000)); // Needs to wait for enque operations Delay (2 second)
   });
 
   describe('Meilisearch configuration', () => {
 
-    jest.setTimeout(1000*10);
-    it('Create index', async () => {
-      const item = getDummyItem();
-      // const memberships = [buildMembership({ permission: PermissionLevel.Read, path: item.path })];
-      // const status = await meilisearchClient.isHealthy();
-      // expect(status).toEqual(true);
-      // if (status) {
-      //     const index = await meilisearchClient.createIndex(itemIndex);
-      //     expect(index.indexUid).toEqual(itemIndex);
-      // }
-    });
+    let app: FastifyInstance;
+    let log: FastifyLoggerInstance;
+    // let publishHandler: PostHookHandlerType<DiscriminatedItem<ItemSettings>,unknown>;
+    // let publishHandler: PostHookHandlerType<DiscriminatedItem>;
+    let publishHandler: PostHookHandlerType<any>;
+    // let handlertest: (data: DiscriminatedItem, actor: Actor, helpers: TaskHookHandlerHelpers, extraData?: unknown) => Promise<void> | void;
+    // let updateHandler: PostHookHandlerType<T,unknown>;
+    // let moveHandler: PostHookHandlerType<DiscriminatedItem,unknown>;
+    let deleteHandler: PreHookHandlerType<any>;
     
+    let getDescendants: () => null;
+    beforeEach(async () => {
+      app = fastify();
+      log = app.log;
+      app.decorate('taskRunner', {
+        setTaskPostHookHandler: <T>(taskName: string, handler: PostHookHandlerType<T>) => {
+          switch (taskName) {
+            // case 'publish': publishHandler = <PostHookHandlerType<DiscriminatedItem>>(handler);
+            case 'publish': publishHandler = handler;
+          }
+        },
+        setTaskPreHookHandler: <T>(taskName: string, handler: PreHookHandlerType<T>) => {
+          switch (taskName) {
+            // case 'publish': publishHandler = <PostHookHandlerType<DiscriminatedItem>>(handler);
+            case 'delete': deleteHandler = handler;
+          }
+        },
+      });
 
-    it('On publish', async () => {
-      // await app.register(ItemsServiceApi);
+      app.decorate('publish', {
+        taskManager:{
+          getPublishItemTaskName: () => 'publish',
+        },
+      });
+
+      app.decorate('etherpad', {
+        api:{getText: function x():void{console.log('help');}},
+      });
+
+      // app.decorate('publish', {
+      //   taskManager:{
+      //     getPublishItemTaskName: () => 'publish',
+      //   },
+      // });
+
+
+      // function myFunction(): void {
+      //   console.log('My function is called');
+      // }
+
+      
+      app.decorate('items', {
+        dbService: {
+          getDescendants: function x():void{console.log('help');},
+        },
+        taskManager:{
+          getUpdateTaskName:() => '',
+          getDeleteTaskName:() => '',
+          getMoveTaskName:() => '',
+        }
+      });
+      
+      if (app.etherpad === undefined)
+        throw new Error('Error etherpad is undefined');
+      jest.spyOn(app.etherpad.api, 'getText').mockImplementation(async (qs: PadOptionalRev, throwOnEtherpadError?: boolean):Promise<Pick<PadText, 'text'> | null>=> { const sampleTextEtherpad:PadText = {padID:'0001',text:'this is a sample text for etherpad'};
+     return sampleTextEtherpad; 
+    });
       const itemTagService = new ItemTagService();
-      const instance = await build();
-    //   const instance:FastifyInstance = await fastify({
-    //     logger: false,
-    //     ajv: {
-    //       customOptions: {
-    //         coerceTypes: 'array',
-    //       },
-    //     },
-    //   });
+      await app.register(searchPlugin,{ tags: { service: itemTagService }, indexName:itemIndex});
+    });
+    // it('Document item', async () => {
+    //   jest.spyOn(app.items.dbService, 'getDescendants').mockImplementationOnce(async () => { return [];});
+    //   const extra_info:FileItemProperties = {
+    //     name: 'sample',
+    //     path: 'sample',
+    //     mimetype: 'pdf',
+    //     size: 200,
+    //   };
 
-    //   console.log(PG_CONNECTION_URI);
-    //   console.log(REDIS_PORT);
-    //   if (PG_CONNECTION_URI === undefined || REDIS_PORT === undefined)
-    //     throw new Error('Values should not be undefined');
+    //   const extra_info_document:DocumentItemExtraProperties = {content:'this is something'};
+    //   const options = {
+    //     type:  ItemType.DOCUMENT,
+    //     extra: buildDocumentExtra(extra_info_document),
+    //   };
+    //   const item = getDummyItem(options);
+    //   const actor:Actor = {id:'lol',};
+    //   const {etherpad} = app;
+    //   if (etherpad === undefined)
+    //     throw Error('Error etherpad undefined'); 
+    //   const expected = await parseItem(<DiscriminatedItem>(item), etherpad);
+    //   await publishHandler(item,actor,{log});
+    //   await new Promise((resolve) => setTimeout(resolve, 1000)); // Needs to wait for enque operations Delay (1 second)
+    //   const indexDocument = await meilisearchClient.index(itemIndex).getDocument(item.id);
+    //   expect(indexDocument).toEqual(expected);
 
-    //   instance.addSchema(shared);
-    //   instance
-    //   .register(fp(databasePlugin), {
-    //     uri: PG_CONNECTION_URI,
-    //     readReplicaUris: PG_READ_REPLICAS_CONNECTION_URIS,
-    //     logs: DATABASE_LOGS,
-    //   })
-    //   .register(fp(decoratorPlugin))
-    // .register(metaPlugin);
+    //   await app.close();
 
-    // instance.register(async (instance) => {
-    //   // core API modules
-    //   await instance
-    //     .register(fp(MemberServiceApi))
-    //     .register(fp(ItemMembershipsServiceApi))
-    //     .register(fp(ItemsServiceApi));
-  
-    //   if (PUBLIC_PLUGIN) {
-    //     await instance.register(publicPlugin);
-    //   }
     // });
 
-    
-    // instance.register(
-    //   async (instance) => {
-    //     // add CORS support
-    //     if (instance.corsPluginOptions) {
-    //       instance.register(fastifyCors, instance.corsPluginOptions);
-    //     }
-    //     instance.addHook('preHandler', instance.verifyAuthentication);
-    //   },
-    //   { prefix: '/analytics' },
-    // );
-       
-   const x = instance.taskRunner;
+    // it('Etherpad item', async () => {
+    //   const extra_info:EtherpadItemExtraProperties = {
+    //     padID: 'xxxx',
+    //     groupID: 'xxxx',
+    //   };
       
-      const handlerPromise = new Promise<PostHookHandlerType<DiscriminatedItem<ItemSettings>,unknown>>((resolve, reject) => {
-        jest
-        .spyOn(instance.taskRunner, 'setTaskPostHookHandler')
-        .mockImplementationOnce( (taskName,handler) => {
-          console.log('calling we can resolve');
-          // const x:PostHookHandlerType<DiscriminatedItem<ItemSettings>,unknown> = handler;
-          resolve(handler);
-        });
-      });
-      // const app = await build();
-      // await app.register(searchPlugin, { tags: { service: itemTagService } });
+    //   const y:EtherpadItemExtra = {[ItemType.ETHERPAD]:extra_info};
+    //   const options = {
+    //     type:  ItemType.ETHERPAD,
+    //     extra: y,
+    //   };
+    //   const item = getDummyItem(options);
+    //   const actor:Actor = {id:'lol',};
+    //   const {etherpad} = app;
+    //   if (etherpad === undefined)
+    //     throw Error('Error etherpad undefined'); 
+    //   const expected = await parseItem(<DiscriminatedItem>(item), etherpad);
+    //   await publishHandler(item,actor,{log});
+    //   await new Promise((resolve) => setTimeout(resolve, 1000)); // Needs to wait for enque operations Delay (1 second)
+    //   const indexDocument = await meilisearchClient.index(itemIndex).getDocument(item.id);
+    //   expect(indexDocument).toEqual(expected);
 
-      // if (CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname !== undefined)
-      //   client_host = CLIENT_HOSTS.find(({ name }) => name === 'explorer')?.hostname;
-      const client_host = 'http://localhost:3005';
-      console.log(client_host);
-      console.log(PUBLISHED_TAG_ID);
-      console.log(PUBLIC_TAG_ID);
-      if (PUBLISHED_TAG_ID === undefined || PUBLIC_TAG_ID === undefined
-        ||client_host === undefined)
-          throw new Error('Values should not be undefined');
+    //   await app.close();
 
+    // });
 
-      await instance.register(fp(graaspItemPublishPlugin), {
-        publishedTagId: PUBLISHED_TAG_ID,
-        publicTagId: PUBLIC_TAG_ID,
-        graaspActor: GRAASP_ACTOR,
-        hostname:client_host,
-      });
-
+    it('Local file item', async () => {
+      const extra_info:FileItemProperties = {
+        name: 'sample_ocr',
+        path: 'files/1111/test/3ac9-1115440217608.pdf',
+        mimetype: 'pdf',
+        size: 10,
+      };
       
-      await instance.register(searchPlugin, { tags: { service: itemTagService } });
-
-      // const handler = await handlerPromise;
-
-      // app.decorate('file', {
-      //   s3Config: S3_FILE_ITEM_PLUGIN_OPTIONS,
-      //   localConfig: FILE_ITEM_PLUGIN_OPTIONS,
-      // });
-
-      // let ether_url = '';
-      // if (ETHERPAD_URL !== undefined)
-      //   ether_url = ETHERPAD_URL;
-      // let api_key = '';
-      // if(ETHERPAD_API_KEY !== undefined)
-      //   api_key = ETHERPAD_API_KEY;
-
-      // await app.register(graaspItemEtherpad, {
-      //   url: ether_url,
-      //   apiKey: api_key,
-      //   publicUrl: ETHERPAD_PUBLIC_URL,
-      //   cookieDomain: ETHERPAD_COOKIE_DOMAIN,
-      // });
-
-      // await app.register(searchPlugin, { tags: { service: itemTagService } });
-      // const handler = await handlerPromise;
-      instance.close();
-
-      // const item:Partial<DiscriminatedItem<ItemSettings>> = getDummyItem();
-      // await handler(null,null,{log,handler});
+      const options = {
+        type:  ItemType.LOCAL_FILE,
+        extra: buildFileExtra(extra_info),
+      };
+      const item = getDummyItem(options);
+      const actor:Actor = {id:'lol',};
+      const {etherpad} = app;
+      if (etherpad === undefined)
+        throw Error('Error etherpad undefined'); 
+      const expected = await parseItem(<DiscriminatedItem>(item), etherpad);
+      await publishHandler(item,actor,{log});
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Needs to wait for enque operations Delay (1 second)
+      const indexDocument = await meilisearchClient.index(itemIndex).getDocument(item.id);
+      expect(indexDocument).toEqual(expected);
+      await app.close();
     });
+    
+
+    // it('On publish', async () => {
+
+    //   jest.spyOn(app.items.dbService, 'getDescendants').mockImplementationOnce(async () => { return [];});
+      
+    //   const options = {
+    //     type:  ItemType.DOCUMENT,
+    //   };
+
+    //   const item = getDummyItem(options);
+    //   const actor:Actor = {id:'lol',};
+    //   publishHandler(item,actor,{log});
+    //   await app.close();
+
+    // });
   });
 
   // describe('Meilisearch hooks', () => {

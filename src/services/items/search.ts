@@ -18,73 +18,42 @@ import { ItemTagService } from 'graasp-item-tags';
 import fs from 'fs';
 import path from 'path';
 import pdf from 'pdf-parse';
+
+import { pdfToText } from 'pdf-to-text';
+
 // import 'pdf-extract';
 
 
 // import { PDFJS } from 'pdfjs-dist/build/pdf';
 import Tesseract from 'tesseract.js';
 // PDFJS.
-
 import { getDocument, getXfaPageViewport, getPdfFilenameFromUrl } from 'pdfjs-dist';
-
 // import {PadOptionalRev} from ''
 import { MEILISEARCH_API_MASTERKEY, PUBLISHED_TAG_ID,FILE_STORAGE_ROOT_PATH } from '../../util/config';
 import { constants } from 'fs/promises';
+import pdf2img from 'pdf-img-convert';
 
+async function getTextFromPDF(path_fle: string|Uint8Array|Buffer) {
+  const pdfArray = await pdf2img.convert(path_fle);
+  let content = '';
+  console.log(pdfArray);
+  for (let i = 0; i < pdfArray.length; i++){
+    const filepath = path.join(FILE_STORAGE_ROOT_PATH, 'output'+i+'.png');
+    fs.writeFile(filepath, pdfArray[i], function (error) {
+      if (error) { console.error('Error: ' + error); }
+    }); //writeFile
 
-
-//code taken from chatGPT for prototyping 
-const loadAndRenderPDF = async (pdfPath) => {
-  try {
-
-    fs.access(pdfPath, fs.constants.F_OK, (err) => {
-      if (err) {
-        console.error('File does not exist.');
-        return;
-      }
-    
-      console.log('File exists.');
-    });
-    const loadingTask = getDocument(pdfPath);
-    console.log('ok');
-
-    loadingTask.promise.then((pdf) => {
-      console.log(pdf.numPages);
-    }).catch((err) => {
-      console.log(err);
-      return;
-    });
-    const pdf = await loadingTask.promise;
-    console.log('problem here');
-    const numPages = pdf.numPages;
-    console.log(numPages);
-    // Render each page of the PDF
-    for (let pageIndex = 1; pageIndex <= numPages; pageIndex++) {
-      const page = await pdf.getPage(pageIndex);
-      const viewport = page.getViewport({ scale: 1.5 });
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      console.log('here');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      const renderTask = page.render({ canvasContext: context, viewport });
-      await renderTask.promise;
-      console.log('problem here');
-      // Perform OCR on the rendered image
-      const imageDataURL = canvas.toDataURL(); // Convert canvas to data URL
-      const result = await Tesseract.recognize(imageDataURL, 'eng');
-      const text = result.data.text;
-
-      // Handle the OCR result as needed
-      console.log(`Page ${pageIndex} OCR Result:`, text);
+    try{
+      content = content.concat((await Tesseract.recognize(filepath)).data.text);
+    } catch(error){
+      console.error('Error loading and rendering PDF:', error);
     }
-  } catch (error) {
-    console.error('Error loading and rendering PDF:', error);
-  }
-};
+  } // for
 
-const stripOpts: Partial<Opts> = {
+  console.log(content);
+  return content;
+}
+  const stripOpts: Partial<Opts> = {
   ignoreTags: [],
   ignoreTagsWithTheirContents: [],
   onlyStripTags: [],
@@ -111,60 +80,40 @@ function removeHTMLTags(s: string): string {
   return stripHtml(s, stripOpts).result;
 }
 async function getSearchTextFromExtra(item: DiscriminatedItem, etherpad: EtherpadService) {
-  // let extraInfo = {};
+  const extraInfo = {};
   // local document is not being displayed, there is a problem loading it
-  let extraInfo = '';
+  // let extraInfo = '';
   switch (item.type) {
     case ItemType.DOCUMENT:
-      extraInfo = removeHTMLTags(getDocumentExtra(item.extra).content);
+      extraInfo['content'] = removeHTMLTags(getDocumentExtra(item.extra).content);
       break;
     case ItemType.LOCAL_FILE:
-      const path_to_file = getFileExtra(item.extra).path;
-      const {name, mimetype} = getFileExtra(item.extra);
+      const {name, mimetype, path : path_to_file} = getFileExtra(item.extra);
+      extraInfo['mimetype'] = mimetype;
       const pathLocalFile = path.join(FILE_STORAGE_ROOT_PATH,path_to_file);
-      console.log(pathLocalFile);
-      await loadAndRenderPDF(pathLocalFile);
-      // const buffer = fs.readFileSync(pathLocalFile);
-      // if (name.toLowerCase().startsWith('scannedpdf'))
-      // {
-        
-      //   const options = {
-      //     type: 'ocr' // perform ocr to get the text within the scanned image
-      //   };
-         
-      //   // const processor = pdf_extract(absolute_path_to_pdf, options, function(err) {
-      //   //   if (err) {
-      //   //     return callback(err);
-      //   //   }
-      //   // });
-      //   // processor.on('complete', function(data) {
-      //   //   inspect(data.text_pages, 'extracted text pages');
-      //   //   callback(null, text_pages);
-      //   // });
-      //   // processor.on('error', function(err) {
-      //   //   inspect(err, 'error while extracting pages');
-      //   //   return callback(err);
-      //   // });
-        
-      // } else{
-      //   const data = await pdf(buffer);
-      //   extraInfo = removeHTMLTags(data.text);
-      // }
-      // extraInfo = (<FileItemProperties>extraProp[item.type]).path;
+      if (name.toLowerCase().startsWith('scannedpdf'))
+      {
+        extraInfo['content'] = removeHTMLTags(await getTextFromPDF(pathLocalFile));
+      } else if(mimetype === 'pdf'){
+
+        const buffer = fs.readFileSync(pathLocalFile);
+        const data = await pdf(buffer);
+        extraInfo['content'] = removeHTMLTags(data.text);
+      }
       break;
     case ItemType.ETHERPAD:
       const padID = getEtherpadExtra(item.extra).padID;
       const qs: PadOptionalRev = { padID: padID };
       const x = await etherpad.api.getText(qs);
       if (x !== null) {
-        extraInfo = removeHTMLTags(x.text);
+        extraInfo['content'] = removeHTMLTags(x.text);
       }
       break;
   }
   return extraInfo;
 }
 
-async function parseItem(item: DiscriminatedItem, etherpad: EtherpadService) {
+export async function parseItem(item: DiscriminatedItem, etherpad: EtherpadService) {
   console.log('check here in case:' + (await getSearchTextFromExtra(item, etherpad)));
   return {
     id: item.id,
@@ -175,34 +124,67 @@ async function parseItem(item: DiscriminatedItem, etherpad: EtherpadService) {
     creator: item.creator,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
+    timestamp_creation: Date.parse(item.createdAt)/1000,
   };
 }
 
-const selSearchableAttr = ['name', 'description', 'extra'];
+const selSearchableAttr = ['name', 'description', 'extra', 'type'];
+const selFilterAttr = ['type','extra.mimetype','timestamp_creation'];
 const searchPlugin = async (
   instance: FastifyInstance,
-  options: { tags: { service: ItemTagService } },
+  options: { tags: { service: ItemTagService },indexName:string },
 ) => {
   const {
-    tags: { service: itemTagService },
+    tags: { service: itemTagService },indexName:itemIndex
   } = options;
   //create indexes to store different filesmm
-  const { publish, items, db, taskRunner, etherpad } = instance;
+  const { publish, items, taskRunner, etherpad } = instance;
   const { taskManager: publishTaskManager } = publish;
   const { taskManager: itemsTaskManager, dbService: itemService } = items;
-  const { pool } = db;
   const publishItemTaskName = publishTaskManager.getPublishItemTaskName();
   const updateItemTaskName = itemsTaskManager.getUpdateTaskName();
   const deleteItemTaskName = itemsTaskManager.getDeleteTaskName();
   const moveItemTaskName = itemsTaskManager.getMoveTaskName();
-  const itemIndex = 'testitem';
+  // const itemIndex = 'testitem';
+
+
+  const opts = {
+    normalizeWhitespace: true,
+  };
+
+
+  // const pdfExtract = PDF();
+
+  //  pdfToText('sample_ocr.pdf', { from: 0,to:1 }, (error, data) => {
+  //   if (error) {
+  //     console.error('Error extracting text:', error);
+  //   } else {
+  //     // Process the extracted text
+  //     console.log(data.text);
+  //   }
+  // });
+
+
+  // const pdf = await getDocument('./sample_ocr.pdf').promise;
+  // for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+  //   const page = await pdf.getPage(pageNum);
+  // }
+  // const buffer = fs.readFileSync('./sample_ocr.pdf');
+  // const data = await pdf(buffer,opts);
+  // console.log(data.text);
+
+  const startTime = performance.now();
+  // await getTextFromPDF('./sample_ocr.pdf');
+  console.log(performance.now()-startTime);
   
-  await loadAndRenderPDF('sample_ocr.pdf');
+  // await loadAndRenderPDF('sample_ocr.pdf');
   console.log(FILE_STORAGE_ROOT_PATH);
   const meilisearchClient = new MeiliSearch({
     host: 'http://meilisearch:8080',
     apiKey: MEILISEARCH_API_MASTERKEY,
   });
+
+
 
   const status = await meilisearchClient.isHealthy();
   if (status) {
@@ -213,6 +195,15 @@ const searchPlugin = async (
       if (res.status !== SearchTaskStatus.TASK_SUCCEEDED) {
         console.log('Index' + itemIndex + 'could not be created');
       }
+    }
+
+    try{
+      const resUpdateSearchAttr = await meilisearchClient.index(itemIndex).updateSearchableAttributes(selSearchableAttr);
+      const resUpdateFilterAttr = await meilisearchClient.index(itemIndex).updateFilterableAttributes(selFilterAttr);
+
+    }
+    catch(err){
+      console.log('Error: searchable attributes were not updated in Index:' + itemIndex);
     }
   }
   //on publish hook is not working correctly
@@ -236,16 +227,16 @@ const searchPlugin = async (
       } catch (err) {
         console.log('There was a problem adding ' + item + 'to meilisearch ' + err);
       }
-
-      meilisearchClient
-        .index(itemIndex)
-        .updateSearchableAttributes(selSearchableAttr)
-        .then(() => {
-          console.log('Setting for searchable Attributes has changed');
-        })
-        .catch((err) => {
-          console.log('There was an error changing the configuration of meilisearch db' + err);
-        });
+      
+      // meilisearchClient
+      //   .index(itemIndex)
+      //   .updateSearchableAttributes(selSearchableAttr)
+      //   .then(() => {
+      //     console.log('Setting for searchable Attributes has changed');
+      //   })
+      //   .catch((err) => {
+      //     console.log('There was an error changing the configuration of meilisearch db' + err);
+      //   });
 
       if (item.type === ItemType.FOLDER) {
         try {
@@ -305,25 +296,16 @@ const searchPlugin = async (
     },
   );
 
-  let wasARoot = false;
-  taskRunner.setTaskPreHookHandler<DiscriminatedItem>(
-    moveItemTaskName,
-    async (item, member, { log, handler }) => {
-      wasARoot = false;
-      const parentID = getParentFromPath(item.path);
-      if (parentID === undefined) {
-        wasARoot = true;
-      }
-    },
-  );
-
   taskRunner.setTaskPostHookHandler<DiscriminatedItem>(
     moveItemTaskName,
-    async (item, member, { log, handler }) => {
+    async (item, member, { log, handler }, { original }) => {
       const isReady = await meilisearchClient.isHealthy();
       if (!isReady) {
         return;
       }
+
+      const originalParentID = getParentFromPath(original.path);
+      const wasARoot = (originalParentID === undefined);
 
       const parentID = getParentFromPath(item.path);
       let published = false;
