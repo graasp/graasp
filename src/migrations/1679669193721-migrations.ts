@@ -649,6 +649,9 @@ export class Migrations1679669193721 implements MigrationInterface {
       'ALTER TABLE "app" ADD CONSTRAINT "FK_37eb7baab82e11150157ec0b5a6" FOREIGN KEY ("publisher_id") REFERENCES "publisher"("id") ON DELETE CASCADE ON UPDATE NO ACTION',
     );
     await queryRunner.query(
+      `ALTER TABLE "app" ADD CONSTRAINT "UQ_f36adbb7b096ceeb6f3e80ad14c" UNIQUE ("name")`,
+    );
+    await queryRunner.query(
       'ALTER TABLE "recycled_item_data" ADD CONSTRAINT "FK_3e3650ebd5c49843013429d510a" FOREIGN KEY ("creator_id") REFERENCES "member"("id") ON DELETE SET NULL ON UPDATE NO ACTION',
     );
     await queryRunner.query(
@@ -1032,6 +1035,7 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "app" ADD CONSTRAINT "app_publisher_id_fkey1" FOREIGN KEY ("publisher_id") REFERENCES "publisher"("id") ON DELETE CASCADE ON UPDATE NO ACTION',
     );
+    await queryRunner.query('ALTER TABLE "app" DROP CONSTRAINT "UQ_f36adbb7b096ceeb6f3e80ad14c"');
     await queryRunner.query(
       'ALTER TABLE "app_setting" ADD CONSTRAINT "app_setting_item_id_fkey1" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE NO ACTION',
     );
