@@ -5,7 +5,7 @@ on: [push]
 jobs:
   build-node:
     runs-on: ubuntu-latest
-    env: 
+    env:
       TEST_DB_NAME: docker
       TEST_DB_USER: docker
       TEST_DB_PASSWORD: docker
@@ -14,7 +14,7 @@ jobs:
     concurrency:
       group: ${{ github.head_ref || github.ref }}
       cancel-in-progress: true
-      
+
     # Service containers to run with `container-job`
     services:
       # Label used to access the service container
@@ -42,7 +42,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          
+
       - name: Get yarn cache directory
         id: yarn-cache-dir-path
         run: |
@@ -66,7 +66,7 @@ jobs:
           DB_USERNAME: ${{ env.TEST_DB_USER }}
           DB_NAME: ${{ env.TEST_DB_NAME }}
         run: yarn migration:run
-        
+
       - name: check migrations are synced with the current codebase
         env:
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
@@ -75,7 +75,7 @@ jobs:
         run: yarn migration:check
 
       - name: yarn test
-        run: 
+        run:
           yarn test:ci
         env:
           CI: true
@@ -93,6 +93,7 @@ jobs:
           EXPLORER_CLIENT_HOST: 'http://localhost:3113'
           FILE_STORAGE_ROOT_PATH: /
           H5P_PATH_PREFIX: h5p
+          H5P_FILE_STORAGE_TYPE: s3File
           JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
           MAILER_CONFIG_PASSWORD: password
           MAILER_CONFIG_SMTP_HOST: localhost

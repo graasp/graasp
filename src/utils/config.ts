@@ -192,7 +192,7 @@ if (
 ) {
   throw new Error('Invalid H5P file storage type provided');
 }
-export const H5P_FILE_STORAGE_TYPE = process.env.H5P_FILE_STORAGE_PATH as FileItemType;
+export const H5P_FILE_STORAGE_TYPE = process.env.H5P_FILE_STORAGE_TYPE as FileItemType;
 
 // ugly runtime type checking since typescript cannot infer types
 if (H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE) {
