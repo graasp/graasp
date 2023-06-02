@@ -35,6 +35,11 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      # Label used to access the service container
+      graasp-redis:
+        # Docker Hub image
+        image: redis
+
     steps:
       - uses: actions/checkout@v3
 

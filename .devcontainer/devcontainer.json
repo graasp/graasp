@@ -5,38 +5,41 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   // Set *default* container specific settings.json values on container create.
-  "settings": {
-    "terminal.integrated.shell.linux": "/bin/bash",
-    "sqltools.connections": [
-      {
-        "name": "Graasp database",
-        "driver": "PostgreSQL",
-        "previewLimit": 50,
-        "server": "db",
-        "port": 5432,
-        "database": "docker",
-        "username": "docker",
-        "password": "docker"
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "sqltools.connections": [
+          {
+            "name": "Graasp database",
+            "driver": "PostgreSQL",
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5432,
+            "database": "docker",
+            "username": "docker",
+            "password": "docker"
+          },
+          {
+            "name": "Etherpad database",
+            "driver": "PostgreSQL",
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5433,
+            "database": "etherpad",
+            "username": "etherpad",
+            "password": "etherpad"
+          }
+        ]
       },
-      {
-        "name": "Etherpad database",
-        "driver": "PostgreSQL",
-        "previewLimit": 50,
-        "server": "db",
-        "port": 5432,
-        "database": "etherpad",
-        "username": "etherpad",
-        "password": "etherpad"
-      }
-    ]
-  },
-  // Add the IDs of extensions you want installed when the container is created.
-  "extensions": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
-    "mtxr.sqltools",
-    "mtxr.sqltools-driver-pg"
-  ],
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg"
+      ]
+    }
+  }
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [3000, 5432],
   // Use 'postCreateCommand' to run commands after the container is created.
