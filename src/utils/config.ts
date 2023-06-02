@@ -216,8 +216,10 @@ if (H5P_FILE_STORAGE_TYPE === ItemType.LOCAL_FILE) {
   if (!process.env.H5P_STORAGE_ROOT_PATH) throw new Error('H5P local storage root path missing');
 }
 export const H5P_LOCAL_CONFIG = {
-  storageRootPath: process.env.H5P_STORAGE_ROOT_PATH,
-} as LocalFileConfiguration;
+  local: {
+    storageRootPath: process.env.H5P_STORAGE_ROOT_PATH,
+  } as LocalFileConfiguration,
+};
 
 // ugly runtime type checking since typescript cannot infer types
 export const H5P_FILE_STORAGE_CONFIG =

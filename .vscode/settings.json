@@ -9,13 +9,13 @@
   ],
   "editor.formatOnSave": true,
   "[javascript]": {
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "[typescript]": {
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "[markdown]": {
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "search.exclude": {
     "**/node_modules": true,

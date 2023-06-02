@@ -9,6 +9,16 @@ export const passwordLogin = {
     },
     additionalProperties: false,
   },
+  querystring: {
+    type: 'object',
+    properties: {
+      lang: { type: 'string' },
+      url: {
+        type: 'string',
+      },
+    },
+    additionalProperties: false,
+  },
 };
 
 export const updatePassword = {

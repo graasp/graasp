@@ -40,6 +40,15 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(databasePlugin), {
       logs: DATABASE_LOGS,
     })
+    .register(fp(decoratorPlugin))
+    .register(mailerPlugin, {
+      host: MAILER_CONFIG_SMTP_HOST,
+      username: MAILER_CONFIG_USERNAME,
+      password: MAILER_CONFIG_PASSWORD,
+      fromEmail: MAILER_CONFIG_FROM_EMAIL,
+    })
+    // need to be defined before member and item for auth check
+    .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN })
     .register(fp(websocketsPlugin), {
       prefix: '/ws',
       redis: {
@@ -51,17 +60,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
           password: REDIS_PASSWORD,
         },
       },
-    })
-    .register(fp(decoratorPlugin))
-    .register(mailerPlugin, {
-      host: MAILER_CONFIG_SMTP_HOST,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
     });
-
-  // need to be defined before member and item for auth check
-  await instance.register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
 
   // file
   await instance.register(fp(filePlugin), {
