@@ -33,7 +33,7 @@ import { Member } from '../../services/member/entities/member';
 // dropSchema and synchronize could kill the database
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'db',
+  host: process.env.DB_HOST,
   port: 5432,
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
