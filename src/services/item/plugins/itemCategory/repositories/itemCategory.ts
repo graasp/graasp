@@ -1,4 +1,4 @@
-import { BaseGraaspError } from '@graasp/sdk';
+import { QueryFailedError } from 'typeorm';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
@@ -27,7 +27,7 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
       return this.get(created.identifiers[0].id);
     } catch (e) {
       // TODO: e instanceof QueryFailedError
-      if (e instanceof BaseGraaspError && e.code === DUPLICATE_ENTRY_ERROR_CODE) {
+      if (e instanceof QueryFailedError && e.driverError.code === DUPLICATE_ENTRY_ERROR_CODE) {
         throw new DuplicateItemCategoryError({ itemPath, categoryId });
       }
       throw e;

@@ -205,11 +205,13 @@ if (H5P_FILE_STORAGE_TYPE === ItemType.S3_FILE) {
     throw new Error('H5P S3 configuration missing');
 }
 export const H5P_S3_CONFIG = {
-  s3Region: process.env.H5P_CONTENT_REGION,
-  s3Bucket: process.env.H5P_CONTENT_BUCKET,
-  s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY,
-  s3AccessKeyId: process.env.H5P_CONTENT_ACCESS_KEY_ID,
-} as S3FileConfiguration;
+  s3: {
+    s3Region: process.env.H5P_CONTENT_REGION,
+    s3Bucket: process.env.H5P_CONTENT_BUCKET,
+    s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY,
+    s3AccessKeyId: process.env.H5P_CONTENT_ACCESS_KEY_ID,
+  } as S3FileConfiguration,
+};
 
 // ugly runtime type checking since typescript cannot infer types
 if (H5P_FILE_STORAGE_TYPE === ItemType.LOCAL_FILE) {

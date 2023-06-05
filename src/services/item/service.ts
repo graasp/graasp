@@ -16,6 +16,7 @@ import {
   TooManyDescendants,
   UnauthorizedMember,
 } from '../../utils/errors';
+import { CoreError } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission } from '../authorization';
@@ -115,7 +116,7 @@ export class ItemService {
         await validatePermission(repositories, PermissionLevel.Read, actor, item);
       } catch (e) {
         delete result.data[id];
-        if (e instanceof Error) {
+        if (e instanceof CoreError || e instanceof Error) {
           result.errors.push(e);
         }
       }

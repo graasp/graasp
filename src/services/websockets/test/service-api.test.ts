@@ -442,7 +442,7 @@ describe('error cases', () => {
   test('rejected validation', async () => {
     t.server!.websockets!.register('foo', async (req) => {
       // always reject
-      req.reject(new Websocket.AccessDeniedError());
+      throw new Websocket.AccessDeniedError();
     });
 
     // subscribe to channel a, expect error response

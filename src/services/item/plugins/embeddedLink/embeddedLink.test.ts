@@ -58,7 +58,7 @@ describe('Link Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = { type: ItemType.LINK, extra };
+      const payload = { name: 'link', type: ItemType.LINK, extra };
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/items',
