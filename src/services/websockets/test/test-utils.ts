@@ -10,6 +10,7 @@ import { FastifyInstance } from 'fastify/types/instance';
 
 import { Websocket } from '@graasp/sdk';
 
+import { REDIS_HOST } from '../../../utils/config';
 import { AjvMessageSerializer } from '../message-serializer';
 import graaspWebSockets, { WebsocketsPluginOptions } from '../service-api';
 import { WebSocketChannels } from '../ws-channels';
@@ -40,7 +41,7 @@ export function createDefaultLocalConfig(
     prefix: options.prefix || '/ws',
     redis: options.redis || {
       config: {
-        host: 'graasp-redis',
+        host: REDIS_HOST,
       },
       channelName: 'notifications',
     },
