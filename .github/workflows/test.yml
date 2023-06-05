@@ -120,6 +120,8 @@ jobs:
           S3_FILE_ITEM_BUCKET: graasp
           S3_FILE_ITEM_ACCESS_KEY_ID: graasp-user
           S3_FILE_ITEM_SECRET_ACCESS_KEY: graasp-pwd
+          REDIS_HOST: graasp-redis
+          REDIS_PORT: 6379
           SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           # mock uuid
