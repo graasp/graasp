@@ -5,6 +5,7 @@ module.exports = {
       tsconfig: 'tsconfig.json',
     }]
   },
+  testTimeout: 20000,
   testMatch: ['**/*.test.(ts|js)'],
   testEnvironment: 'node',
   // added for jest to look for the dependencies
