@@ -135,8 +135,10 @@ describe('File Item routes tests', () => {
           const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
           expectItem(item, newItem);
 
-          // s3 upload function
-          expect(putObjectMock).toHaveBeenCalledTimes(1);
+          // s3 upload function: We expect on image AND the thumbnails
+          expect(putObjectMock).toHaveBeenCalledTimes(
+            Object.entries(ThumbnailSizeFormat).length + 1,
+          );
 
           // check file properties
           // TODO: more precise check
@@ -166,8 +168,10 @@ describe('File Item routes tests', () => {
           const newItems = await ItemRepository.findBy({ type: FILE_ITEM_TYPE });
           expectManyItems(items, newItems);
 
-          // s3 upload function
-          expect(putObjectMock).toHaveBeenCalledTimes(2);
+          // s3 upload function: We expect on image AND the thumbnails
+          expect(putObjectMock).toHaveBeenCalledTimes(
+            Object.entries(ThumbnailSizeFormat).length * 2 + 2,
+          );
 
           // check file properties
           // TODO: more precise check

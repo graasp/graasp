@@ -140,9 +140,8 @@ describe('Item Like', () => {
           url: `/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-
         // get item like from repository with item (not returned in request)
-        const fullItemLike = await getFullItemLike(res.json().id);
+        const fullItemLike = await getFullItemLike(res.json()[0].id);
         expectItemLike(fullItemLike!, likes[0]);
       });
     });
@@ -163,7 +162,7 @@ describe('Item Like', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         // get item like from repository with item (not returned in request)
-        const fullItemLike = await getFullItemLike(res.json().id);
+        const fullItemLike = await getFullItemLike(res.json()[0].id);
         expectItemLike(fullItemLike!, likes.find(({ item }) => item.id === item1.id)!);
       });
 
@@ -191,7 +190,7 @@ describe('Item Like', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         // get item like from repository with item (not returned in request)
-        const fullItemLike = await getFullItemLike(res.json().id);
+        const fullItemLike = await getFullItemLike(res.json()[0].id);
         expectItemLike(fullItemLike!, likes[0]);
       });
     });
