@@ -16,6 +16,7 @@ import { FastifyReply } from 'fastify';
 
 import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
+import { S3_FILE_ITEM_HOST } from '../../../utils/config';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import { DownloadFileUnexpectedError, S3FileNotFound } from '../utils/errors';
@@ -38,6 +39,12 @@ export class S3FileRepository implements FileRepository {
       region,
       useAccelerateEndpoint,
       credentials: { accessKeyId, secretAccessKey },
+      // this is necessary because localstack doesn't support hostnames eg: <bucket>.s3.<region>.amazonaws.com/<key>
+      // so it we must use pathStyle buckets eg: localhost:4566/<bucket>/<key>
+      forcePathStyle: true,
+      // this is necessary to use the localstack instance running on graasp-localstack or localhost
+      // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
+      endpoint: S3_FILE_ITEM_HOST,
     });
   }
 

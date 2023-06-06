@@ -161,6 +161,7 @@ export const S3_FILE_ITEM_REGION = process.env.S3_FILE_ITEM_REGION;
 export const S3_FILE_ITEM_BUCKET = process.env.S3_FILE_ITEM_BUCKET;
 export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID;
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
+export const S3_FILE_ITEM_HOST = process.env.S3_FILE_ITEM_HOST;
 
 export let S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration;
 
