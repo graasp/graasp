@@ -20,6 +20,7 @@ import { expectItem, expectManyItems, getDummyItem } from '../../../../item/test
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
 import { ItemRepository } from '../../../repository';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
@@ -200,8 +201,10 @@ describe('File Item routes tests', () => {
           const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
           expectItem(item, newItem);
 
-          // s3 upload function
-          expect(putObjectMock).toHaveBeenCalledTimes(1);
+          // s3 upload function: We expect on image AND the thumbnails
+          expect(putObjectMock).toHaveBeenCalledTimes(
+            Object.entries(ThumbnailSizeFormat).length + 1,
+          );
 
           // check file properties
           // TODO: more precise check

@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 
-import { SavedMultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import {
@@ -164,7 +163,7 @@ class FileItemService {
       // add thumbnails if image
       // allow failures
       if (MimeTypes.isImage(mimetype)) {
-        this.itemThumbnailService
+        await this.itemThumbnailService
           .upload(actor, repositories, newItem.id, uploaded)
           .catch((e) => console.error(e));
       }
