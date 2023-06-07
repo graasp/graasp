@@ -21,6 +21,7 @@ import commonChat, {
   publishMessage,
 } from './schemas';
 import { ChatMessageService } from './service';
+import { registerChatWsHooks } from './ws/hooks';
 
 /**
  * Type definition for plugin options
@@ -39,6 +40,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     actions: { service: actionService },
     mentions: { service: mentionService },
     items: { service: itemService },
+    websockets: websockets,
   } = fastify;
 
   const chatService = new ChatMessageService(itemService, mentionService);
@@ -48,16 +50,9 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
   // routes associated with mentions should not trigger the action hook
   fastify.register(async function (fastify) {
     // register websocket behaviours for chats
-    // if (websockets) {
-    //   registerChatWsHooks(
-    //     websockets,
-    //     runner,
-    //     itemService,
-    //     itemMembershipsService,
-    //     taskManager,
-    //     db.pool,
-    //   );
-    // }
+    if (websockets) {
+      registerChatWsHooks(buildRepositories(), websockets, chatService, itemService);
+    }
 
     fastify.get<{ Params: { itemId: string } }>(
       '/:itemId/chat',

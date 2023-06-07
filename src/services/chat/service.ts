@@ -53,6 +53,9 @@ export class ChatMessageService {
     if (data.mentions?.length) {
       await this.mentionService.createManyForItem(actor, repositories, message, data.mentions);
     }
+
+    await this.hooks.runPostHooks('publish', actor, repositories, { message: message });
+
     return message;
   }
 
@@ -75,7 +78,11 @@ export class ChatMessageService {
       throw new MemberCannotEditMessage(messageId);
     }
 
-    return chatMessageRepository.patchOne(messageId, message);
+    const updatedMessage = await chatMessageRepository.patchOne(messageId, message);
+
+    await this.hooks.runPostHooks('update', actor, repositories, { message: updatedMessage });
+
+    return updatedMessage;
   }
 
   async deleteOne(actor: Member, repositories: Repositories, itemId: string, messageId: string) {
@@ -93,6 +100,9 @@ export class ChatMessageService {
     // await mentionRepository.getMany()
 
     await chatMessageRepository.deleteOne(messageId);
+
+    await this.hooks.runPostHooks('delete', actor, repositories, { message: messageContent });
+
     return messageContent;
   }
 
@@ -102,6 +112,8 @@ export class ChatMessageService {
     // check rights for accessing the chat and sufficient right to clear the conversation
     // user should be an admin of the item
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+
+    await this.hooks.runPostHooks('clear', actor, repositories, { itemId });
 
     await chatMessageRepository.clearChat(itemId);
   }
