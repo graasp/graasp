@@ -41,7 +41,7 @@ jobs:
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET }}
-      h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
+      h5p-content-secret-access-key-id: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
       jwt-secret: ${{ secrets.JWT_SECRET }}
       mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
       mailer-config-password: ${{ secrets.MAILER_CONFIG_PASSWORD }}
