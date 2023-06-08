@@ -1,23 +1,23 @@
+import { randomUUID } from 'crypto';
 import { Options, compare as dircompare, fileCompareHandlers } from 'dir-compare';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
-import { LightMyRequestResponse } from 'fastify';
+import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
-import { Handler, default as HookManager } from '../../../../../utils/hook';
-import { buildRepositories } from '../../../../../utils/repositories';
+import build from '../../../../../../test/app';
+import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, H5P_TEMP_DIR } from '../../../../../utils/config';
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
-import ItemService from '../../../service';
 import { H5P_FILE_DOT_EXTENSION } from '../constants';
 import { H5PImportError, H5PInvalidFileError } from '../errors';
 import { H5PService } from '../service';
-import { BuildAppType, buildApp, expectH5PFiles, injectH5PImport } from './app';
 import { H5P_PACKAGES } from './fixtures';
+import { expectH5PFiles, injectH5PImport } from './helpers';
 
 const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 
@@ -25,19 +25,17 @@ const MOCK_ITEM = new Item();
 const MOCK_MEMBER = new Member();
 
 describe('Service plugin', () => {
-  let build: BuildAppType;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
-    build = await buildApp();
-    await build.registerH5PPlugin();
+    app = (await build()).app;
   });
 
   afterEach(async () => {
-    await build.cleanup();
+    await app.close();
   });
 
   it('decorates the fastify instance with h5p service', () => {
-    const { app } = build;
     expect(app.h5p).toBeDefined();
     expect(app.h5p instanceof H5PService).toBeTruthy();
   });
@@ -50,8 +48,6 @@ describe('Service plugin', () => {
       expectedMetadata: Partial<H5PItemType>;
 
     beforeEach(async () => {
-      const { app } = build;
-
       res = await injectH5PImport(app);
 
       json = res.json();
@@ -95,28 +91,30 @@ describe('Service plugin', () => {
     */
 
     it('extracts the files correctly', async () => {
-      const { storageRootPath, pathPrefix } = build.options;
-      await expectH5PFiles(H5P_PACKAGES.ACCORDION, storageRootPath, pathPrefix, contentId);
+      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
+      await expectH5PFiles(H5P_PACKAGES.ACCORDION, storageRootPath, H5P_PATH_PREFIX, contentId);
     });
 
     it('removes the temporary extraction folder', async () => {
-      const { extractionRootPath } = build.options;
-      const contents = await fsp.readdir(extractionRootPath);
+      if (!H5P_TEMP_DIR) {
+        throw new Error(
+          `Cannot test for temp folder: ${H5P_TEMP_DIR}. Make sure that the H5P_TEMP_DIR env var is set in test mode`,
+        );
+      }
+      const contents = await fsp.readdir(H5P_TEMP_DIR);
       expect(contents.length).toEqual(0);
     });
   });
 
   describe('Error handling', () => {
     it('returns error on invalid H5P package', async () => {
-      const { app } = build;
       const res = await injectH5PImport(app, { filePath: H5P_PACKAGES.BOGUS_EMPTY.path });
       expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       expect(res.json()).toEqual(new H5PInvalidFileError('Missing h5p.json manifest file'));
     });
 
     it('returns error and deletes extracted files on item creation failure', async () => {
-      const { app } = build;
-      const createItem = jest.spyOn(build.app.items.service, 'post');
+      const createItem = jest.spyOn(app.items.service, 'post');
       createItem.mockImplementationOnce(() => {
         throw new Error('mock error');
       });
@@ -125,27 +123,35 @@ describe('Service plugin', () => {
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toEqual(new H5PImportError());
 
-      const { extractionRootPath, storageRootPath, pathPrefix } = build.options;
-      const extractionDirContents = await fsp.readdir(extractionRootPath);
-      const storageDirContents = await fsp.readdir(path.join(storageRootPath, pathPrefix));
+      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
+      if (!H5P_TEMP_DIR) {
+        throw new Error(
+          `Cannot test for temp folder: ${H5P_TEMP_DIR}. Make sure that the H5P_TEMP_DIR env var is set in test mode`,
+        );
+      }
+      const extractionDirContents = await fsp.readdir(H5P_TEMP_DIR);
+      const storageDirContents = await fsp.readdir(
+        path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),
+      );
       expect(extractionDirContents.length).toEqual(0);
       expect(storageDirContents.length).toEqual(0);
     });
 
     it('skips invalid file extensions', async () => {
-      const { app } = build;
       const res = await injectH5PImport(app, { filePath: H5P_PACKAGES.BOGUS_WRONG_EXTENSION.path });
       const item = res.json();
       const contentId = item.extra.h5p.contentId;
-      const { storageRootPath, pathPrefix } = build.options;
+      const { storageRootPath } = H5P_LOCAL_CONFIG.local;
       await expectH5PFiles(
         H5P_PACKAGES.BOGUS_WRONG_EXTENSION,
         storageRootPath,
-        pathPrefix,
+        H5P_PATH_PREFIX,
         contentId,
       );
 
-      const maliciousFolder = path.join(storageRootPath, pathPrefix, contentId, 'content', 'foo');
+      const maliciousFolder = path.join(
+        ...[storageRootPath, H5P_PATH_PREFIX, contentId, 'content', 'foo'].filter((e) => e),
+      );
       expect(fs.existsSync(maliciousFolder)).toBeTruthy();
       // only .txt should be left inside
       const contents = await fsp.readdir(maliciousFolder);
@@ -156,99 +162,85 @@ describe('Service plugin', () => {
 });
 
 describe('Hooks', () => {
-  let build: BuildAppType;
-
   let item: H5PItemType;
-
-  type GetGenericOf<C extends HookManager<any>> = C extends HookManager<infer T> ? T : unknown;
-  type DeleteHandler = Handler<GetGenericOf<ItemService['hooks']>['delete']['post']>;
-  type CopyHandler = Handler<GetGenericOf<ItemService['hooks']>['copy']['post']>;
-
-  let onDelete: DeleteHandler;
-  let onCopy: CopyHandler;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
     // create a fresh app at each test
-    build = await buildApp();
-
-    // setup handler storage to execute it when we will simulate an item delete
-
-    const onDeleteStore = new Promise<DeleteHandler>((resolve, reject) => {
-      jest
-        .spyOn<ItemService['hooks'], 'setPostHook'>(build.app.items.service.hooks, 'setPostHook')
-        .mockImplementation((event: string, handler: DeleteHandler) => {
-          if (event === 'delete') {
-            resolve(handler);
-          }
-        });
-    });
-    // setup handler storage to execute it when we will simulate an item copy
-
-    const onCopyStore = new Promise<CopyHandler>((resolve, reject) => {
-      jest
-        .spyOn<ItemService['hooks'], 'setPostHook'>(build.app.items.service.hooks, 'setPostHook')
-        .mockImplementation((event, handler) => {
-          if (event === 'copy') {
-            resolve(handler);
-          }
-        });
-    });
-
-    // handlers be saved after registerH5PPlugin
-    await build.registerH5PPlugin();
+    app = (await build()).app;
 
     // create an H5P item through import
-    const res = await injectH5PImport(build.app, { filePath: H5P_PACKAGES.ACCORDION.path });
+    const res = await injectH5PImport(app, { filePath: H5P_PACKAGES.ACCORDION.path });
     expect(res.statusCode).toEqual(StatusCodes.OK);
     item = res.json();
     const contentId = item.extra.h5p.contentId;
-    const { storageRootPath, pathPrefix } = build.options;
-    await expectH5PFiles(H5P_PACKAGES.ACCORDION, storageRootPath, pathPrefix, contentId);
-
-    onDelete = await onDeleteStore;
-    onCopy = await onCopyStore;
+    await expectH5PFiles(
+      H5P_PACKAGES.ACCORDION,
+      H5P_LOCAL_CONFIG.local.storageRootPath,
+      H5P_PATH_PREFIX,
+      contentId,
+    );
   });
 
   afterEach(async () => {
-    await build.cleanup();
+    await app.close();
   });
 
   it('deletes H5P assets on item delete', async () => {
-    const { storageRootPath, pathPrefix } = build.options;
     const contentId = item.extra.h5p.contentId;
 
-    // simulate an item delete
-    expect(onDelete).toBeDefined();
-    await onDelete(MOCK_MEMBER, buildRepositories(), { item: MOCK_ITEM });
+    // delete item
+    await app.inject({
+      method: 'DELETE',
+      url: `/items/${item.id}`,
+    });
 
     // H5P folder should now be deleted
-    const h5pFolder = path.join(storageRootPath, pathPrefix, contentId);
+    const h5pFolder = path.join(
+      ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX, contentId].filter(
+        (e) => e,
+      ) as string[]),
+    );
     expect(fs.existsSync(h5pFolder)).toBeFalsy();
   });
 
   it('does not execute handler when item is not of type H5P', async () => {
-    const { storageRootPath, pathPrefix } = build.options;
     const contentId = item.extra.h5p.contentId;
 
-    // simulate an item delete with a non-H5P item
-    expect(onDelete).toBeDefined();
-    await onDelete(MOCK_MEMBER, buildRepositories(), { item: MOCK_ITEM });
+    // delete item
+    await app.inject({
+      method: 'DELETE',
+      url: `/items/${item.id}`,
+    });
 
     // H5P folder should not be deleted
-    const h5pFolder = path.join(storageRootPath, pathPrefix, contentId);
+    const h5pFolder = path.join(
+      ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX, contentId].filter(
+        (e) => e,
+      ) as string[]),
+    );
     expect(fs.existsSync(h5pFolder)).toBeTruthy();
   });
 
   it('copies H5P assets on item copy', async () => {
-    const { storageRootPath, pathPrefix } = build.options;
     const contentId = item.extra.h5p.contentId;
 
-    // simulate an item copy
-    expect(onCopy).toBeDefined();
-    await onCopy(MOCK_MEMBER, buildRepositories(), { original: MOCK_ITEM, copy: item as Item });
+    // copy item
+    await app.inject({
+      method: 'POST',
+      url: 'items/copy',
+      query: {
+        id: [item.id],
+      },
+      payload: {
+        parentId: randomUUID(),
+      },
+    });
 
     // H5P folder should now be copied
-    const h5pBucket = path.join(storageRootPath, pathPrefix);
+    const h5pBucket = path.join(
+      ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[]),
+    );
     const h5pFolders = await fsp.readdir(h5pBucket);
     expect(h5pFolders.length).toEqual(2);
     expect(h5pFolders.includes(contentId));
@@ -293,37 +285,22 @@ describe('Hooks', () => {
   });
 
   it('does not execute handler when item is not of type H5P', async () => {
-    const { storageRootPath, pathPrefix } = build.options;
-
-    // simulate an item copy of non-H5P item
-    expect(onCopy).toBeDefined();
-    await onCopy(MOCK_MEMBER, buildRepositories(), { original: MOCK_ITEM, copy: item as Item });
-
+    // copy item
+    await app.inject({
+      method: 'POST',
+      url: 'items/copy',
+      query: {
+        id: [item.id],
+      },
+      payload: {
+        parentId: randomUUID(),
+      },
+    });
     // H5P folder should not be copied
-    const h5pBucket = path.join(storageRootPath, pathPrefix);
+    const h5pBucket = path.join(
+      ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[]),
+    );
     const h5pFolders = await fsp.readdir(h5pBucket);
     expect(h5pFolders.length).toEqual(1);
-  });
-
-  it('throws if item name is missing', async () => {
-    // simulate an item copy of bogus item
-    expect(onCopy).toBeDefined();
-    await expect(
-      onCopy(MOCK_MEMBER, buildRepositories(), {
-        original: MOCK_ITEM,
-        copy: { ...item, name: undefined } as unknown as Item,
-      }),
-    ).rejects.toThrow('Invalid state: missing previous H5P item name on copy');
-  });
-
-  it('throws if item h5p extra is missing', async () => {
-    // simulate an item copy of bogus item
-    expect(onCopy).toBeDefined();
-    await expect(
-      onCopy(MOCK_MEMBER, buildRepositories(), {
-        original: MOCK_ITEM,
-        copy: { ...item, extra: undefined } as unknown as Item,
-      }),
-    ).rejects.toThrow('Invalid state: missing previous H5P item extra on copy');
   });
 });

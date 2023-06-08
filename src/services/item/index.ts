@@ -10,6 +10,7 @@ import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
   H5P_PATH_PREFIX,
+  H5P_TEMP_DIR,
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -104,6 +105,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             config: H5P_FILE_STORAGE_CONFIG as any,
           },
+          tempDir: H5P_TEMP_DIR,
         });
 
         fastify.register(graaspZipPlugin);

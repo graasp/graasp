@@ -184,6 +184,7 @@ if (S3_FILE_ITEM_PLUGIN) {
 }
 
 export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
+export const H5P_TEMP_DIR = process.env.H5P_TEMP_DIR;
 
 // ugly runtime type checking since typescript cannot infer types
 // todo: please use a typed env checker library, this is awful
