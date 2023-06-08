@@ -106,9 +106,10 @@ jobs:
           ETHERPAD_URL: http://etherpad:9001
           EXPLORER_CLIENT_HOST: 'http://localhost:3113'
           FILE_STORAGE_ROOT_PATH: /
-          H5P_PATH_PREFIX: h5p
+          H5P_PATH_PREFIX: h5p-content/
           H5P_FILE_STORAGE_TYPE: file
-          H5P_STORAGE_ROOT_PATH: /tmp
+          H5P_STORAGE_ROOT_PATH: /tmp/h5p
+          H5P_TEMP_DIR: /tmp/h5p/extract
           JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
           MAILER_CONFIG_PASSWORD: password
           MAILER_CONFIG_SMTP_HOST: localhost
