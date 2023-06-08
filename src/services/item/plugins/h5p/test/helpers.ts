@@ -1,12 +1,17 @@
-import checksum from 'checksum';
+import cs from 'checksum';
 import FormData from 'form-data';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
+import util from 'util';
 
 import { FastifyInstance } from 'fastify';
 
 import { H5P_PACKAGES } from './fixtures';
+
+const checksum = {
+  file: util.promisify(cs.file),
+};
 
 /**
  * Injects a test client request to import an H5P file
@@ -20,12 +25,14 @@ export function injectH5PImport(
   const formData = new FormData();
   formData.append('file', fs.createReadStream(filePath ?? H5P_PACKAGES.ACCORDION.path));
 
+  const query = parentId ? { parentId } : undefined;
+
   return app.inject({
     method: 'POST',
-    url: '/h5p-import',
+    url: '/items/h5p-import',
     payload: formData,
     headers: formData.getHeaders(),
-    query: { parentId: parentId ?? 'mock-parent-id' },
+    query,
   });
 }
 /**

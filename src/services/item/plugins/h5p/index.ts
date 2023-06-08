@@ -2,6 +2,7 @@ import extract from 'extract-zip';
 import fs from 'fs';
 import { lstat, mkdir, readdir } from 'fs/promises';
 import mime from 'mime';
+import os from 'os';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 import tmp from 'tmp-promise';
@@ -46,8 +47,16 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
   } = fastify;
 
   validatePluginOptions(options);
-  const { tempDir, routes, hosts, fileStorage } = options;
+  const {
+    tempDir = path.resolve(os.tmpdir(), 'graasp', 'h5p'),
+    routes,
+    hosts,
+    fileStorage,
+  } = options;
   const { pathPrefix = '' } = fileStorage;
+
+  // create temp extraction dir if it does not exist
+  fs.mkdirSync(tempDir, { recursive: true });
 
   // todo: file service should be a singleton with mutliple storage drivers
   const fileService = new FileService(fileStorage.config, fileStorage.type);
@@ -148,6 +157,50 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
         item: metadata,
         parentId,
       });
+    });
+  }
+
+  /**
+   * In local storage mode, proxy serve the H5P content files
+   * In the future, consider refactoring the fileService so that it can be grabbed from the
+   * core instance and can serve the files directly (with an option to use or not auth)
+   */
+  if (fileStorage.type === ItemType.LOCAL_FILE) {
+    /** Helper to set CORS headers policy */
+    const setHeaders = (response: FastifyStaticReply) => {
+      response.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+    };
+
+    // serve integration html
+    const integrationRoute = path.join(
+      routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
+      'integration.html',
+    );
+    fastify.get(integrationRoute, async (req, res) => {
+      const html = renderHtml(
+        routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
+        routes?.content ?? DEFAULT_H5P_CONTENT_ROUTE,
+        hosts ?? ['localhost'],
+      );
+      res.send(html);
+    });
+
+    // hack to serve the "dist" folder of package "h5p-standalone"
+    const h5pAssetsRoot = path.dirname(require.resolve('h5p-standalone'));
+    fastify.register(fastifyStatic, {
+      root: h5pAssetsRoot,
+      prefix: routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
+      decorateReply: false,
+      setHeaders,
+    });
+
+    const h5pStorageRoot = path.join(fileStorage.config.local.storageRootPath, pathPrefix);
+    fs.mkdirSync(h5pStorageRoot, { recursive: true });
+    fastify.register(fastifyStatic, {
+      root: h5pStorageRoot,
+      prefix: routes?.content ?? DEFAULT_H5P_CONTENT_ROUTE,
+      decorateReply: false,
+      setHeaders,
     });
   }
 
@@ -261,49 +314,6 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
   });
 
   /**
-   * In local storage mode, proxy serve the H5P content files
-   * In the future, consider refactoring the fileService so that it can be grabbed from the
-   * core instance and can serve the files directly (with an option to use or not auth)
-   */
-  if (fileStorage.type === ItemType.LOCAL_FILE) {
-    /** Helper to set CORS headers policy */
-    const setHeaders = (response: FastifyStaticReply) => {
-      response.setHeader('Cross-Origin-Resource-Policy', 'same-site');
-    };
-
-    // serve integration html
-    const integrationRoute = path.join(
-      routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
-      'integration.html',
-    );
-    fastify.get(integrationRoute, async (req, res) => {
-      const html = renderHtml(
-        routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
-        routes?.content ?? DEFAULT_H5P_CONTENT_ROUTE,
-        hosts ?? ['localhost'],
-      );
-      res.send(html);
-    });
-
-    // hack to serve the "dist" folder of package "h5p-standalone"
-    const h5pAssetsRoot = path.dirname(require.resolve('h5p-standalone'));
-    fastify.register(fastifyStatic, {
-      root: h5pAssetsRoot,
-      prefix: routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
-      decorateReply: false,
-      setHeaders,
-    });
-
-    const h5pStorageRoot = path.join(fileStorage.config.local.storageRootPath, pathPrefix);
-    fastify.register(fastifyStatic, {
-      root: h5pStorageRoot,
-      prefix: routes?.content ?? DEFAULT_H5P_CONTENT_ROUTE,
-      decorateReply: false,
-      setHeaders,
-    });
-  }
-
-  /**
    * Delete H5P assets on item delete
    */
   itemService.hooks.setPostHook('delete', async (actor, repositories, { item }) => {
@@ -315,7 +325,8 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
     }
     // TODO: fix types
     const { extra } = item as H5PItemType;
-    await fileService.deleteFolder(actor, buildRootPath(pathPrefix, extra.h5p.contentId));
+    const folderPath = buildRootPath(pathPrefix, extra.h5p.contentId);
+    await fileService.deleteFolder(actor, folderPath);
   });
 
   /**
