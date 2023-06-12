@@ -31,7 +31,7 @@ services:
 
   db:
     container_name: graasp-postgres
-    image: postgres:14
+    image: postgres:15
     restart: on-failure
     ports:
       - 5432:5432
@@ -78,10 +78,10 @@ services:
 
   etherpad-db:
     container_name: graasp-postgres-etherpad
-    image: postgres:14
+    image: postgres:15
     restart: on-failure
     ports:
-      - 5433:5433
+      - 5433:5432
     volumes:
       - postgres-data-etherpad:/var/lib/postgresql/data
     environment:
