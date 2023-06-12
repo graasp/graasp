@@ -44,14 +44,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: data,
         log,
       } = request;
-      const item = await db.transaction(async (manager) => {
-        return itemService.post(member, buildRepositories(manager), {
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const item = await itemService.post(member, repositories, {
           item: data,
           parentId,
         });
+        await actionItemService.postPostAction(request, reply, repositories, item);
+        return item;
       });
-      actionItemService.postPostAction(request, reply, item);
-      return item;
     },
   );
 
@@ -141,8 +142,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
       } = request;
       return await db.transaction(async (manager) => {
-        const item = await itemService.patch(member, buildRepositories(manager), id, body);
-        await actionItemService.postPatchAction(request, reply, item);
+        const repositories = buildRepositories(manager);
+        const item = await itemService.patch(member, repositories, id, body);
+        await actionItemService.postPatchAction(request, reply, repositories, item);
         return item;
       });
     },
@@ -163,8 +165,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       db.transaction(async (manager) => {
         // TODO: implement queue
-        const items = await itemService.patchMany(member, buildRepositories(manager), ids, body);
-        await actionItemService.postManyPatchAction(request, reply, resultOfToList(items));
+        const repositories = buildRepositories(manager);
+        const items = await itemService.patchMany(member, repositories, ids, body);
+        await actionItemService.postManyPatchAction(
+          request,
+          reply,
+          repositories,
+          resultOfToList(items),
+        );
       }).catch((e) => {
         // TODO: return feedback in queue
         console.error(e);
@@ -206,8 +214,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       db.transaction(async (manager) => {
         // TODO: implement queue
-        const items = await itemService.deleteMany(member, buildRepositories(manager), ids);
-        await actionItemService.postManyDeleteAction(request, reply, items);
+        const repositories = buildRepositories(manager);
+        const items = await itemService.deleteMany(member, repositories, ids);
+        await actionItemService.postManyDeleteAction(request, reply, repositories, items);
       }).catch((e) => {
         // TODO: return feedback in queue
         console.error(e);
@@ -247,8 +256,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       // TODO: implement queue
       db.transaction(async (manager) => {
-        const items = await itemService.moveMany(member, buildRepositories(manager), ids, parentId);
-        await actionItemService.postManyMoveAction(request, reply, items);
+        const repositories = buildRepositories(manager);
+        const items = await itemService.moveMany(member, repositories, ids, parentId);
+        await actionItemService.postManyMoveAction(request, reply, repositories, items);
       }).catch((e) => {
         // TODO: return feedback in queue
         console.error(e);
@@ -293,11 +303,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       // TODO: implement queue
       db.transaction(async (manager) => {
-        // await new Promise(r => setTimeout(r, 5000));
-        const items = await itemService.copyMany(member, buildRepositories(manager), ids, {
+        const repositories = buildRepositories(manager);
+        const items = await itemService.copyMany(member, repositories, ids, {
           parentId,
         });
-        await actionItemService.postManyCopyAction(request, reply, items);
+        await actionItemService.postManyCopyAction(request, reply, repositories, items);
       }).catch((e) => {
         // TODO: return feedback in queue
         console.error(e);
