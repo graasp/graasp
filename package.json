@@ -44,6 +44,7 @@
     "migration:generate": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations -d src/plugins/datasource.ts && yarn build-ts",
     "migration:run": "npx typeorm-ts-node-commonjs migration:run -d src/plugins/datasource.ts",
     "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d src/plugins/datasource.ts",
+    "migration:drop": "npx typeorm-ts-node-commonjs schema:drop -d src/plugins/datasource.ts",
     "migration:fake": "yarn migration:run:fake && migration:revert:fake",
     "migration:run:fake": "npx typeorm-ts-node-commonjs  migration:run --fake",
     "migration:revert:fake": "npx typeorm-ts-node-commonjs migration:revert --fake",

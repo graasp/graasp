@@ -81,11 +81,12 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
         if (!member) {
           throw new UnauthorizedMember();
         }
-        const message = await db.transaction(async (manager) => {
-          return chatService.postOne(member, buildRepositories(manager), itemId, body);
+        return await db.transaction(async (manager) => {
+          const repositories = buildRepositories(manager);
+          const message = await chatService.postOne(member, repositories, itemId, body);
+          await actionChatService.postPostMessageAction(request, reply, repositories, message);
+          return message;
         });
-        actionChatService.postPostMessageAction(request, reply, message);
-        return message;
       },
     );
 
@@ -112,11 +113,12 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
         if (!member) {
           throw new UnauthorizedMember();
         }
-        const message = await db.transaction(async (manager) => {
-          return chatService.patchOne(member, buildRepositories(manager), itemId, messageId, body);
+        return await db.transaction(async (manager) => {
+          const repositories = buildRepositories(manager);
+          const message = await chatService.patchOne(member, repositories, itemId, messageId, body);
+          await actionChatService.postPatchMessageAction(request, reply, repositories, message);
+          return message;
         });
-        actionChatService.postPatchMessageAction(request, reply, message);
-        return message;
       },
     );
 
@@ -136,11 +138,12 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
         if (!member) {
           throw new UnauthorizedMember();
         }
-        const message = await db.transaction(async (manager) => {
-          return chatService.deleteOne(member, buildRepositories(manager), itemId, messageId);
+        return await db.transaction(async (manager) => {
+          const repositories = buildRepositories(manager);
+          const message = await chatService.deleteOne(member, repositories, itemId, messageId);
+          await actionChatService.postDeleteMessageAction(request, reply, repositories, message);
+          return message;
         });
-        actionChatService.postDeleteMessageAction(request, reply, message);
-        return message;
       },
     );
 
@@ -161,9 +164,11 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
           throw new UnauthorizedMember();
         }
         await db.transaction(async (manager) => {
-          return chatService.clear(member, buildRepositories(manager), itemId);
+          const repositories = buildRepositories(manager);
+          await chatService.clear(member, repositories, itemId);
+          await actionChatService.postClearMessageAction(request, reply, repositories, itemId);
         });
-        actionChatService.postClearMessageAction(request, reply, itemId);
+
         return;
       },
     );
