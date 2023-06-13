@@ -13,6 +13,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, H5P_TEMP_DIR } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Item } from '../../../entities/Item';
+import { ItemRepository } from '../../../repository';
 import { H5P_FILE_DOT_EXTENSION } from '../constants';
 import { H5PImportError, H5PInvalidFileError } from '../errors';
 import { H5P_PACKAGES } from './fixtures';
@@ -141,7 +142,15 @@ describe('Service plugin', () => {
         ...([H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[]),
       );
       let h5pFolders;
+      let itemsInDb;
       await waitForExpect(async () => {
+        itemsInDb = await ItemRepository.find({
+          where: {
+            name: item.name,
+            type: item.type,
+          },
+        });
+        expect(itemsInDb.length).toEqual(2);
         h5pFolders = await fsp.readdir(h5pBucket);
         expect(h5pFolders.length).toEqual(2);
         expect(h5pFolders.includes(contentId));

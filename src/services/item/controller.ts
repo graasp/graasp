@@ -44,14 +44,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: data,
         log,
       } = request;
-      const item = await db.transaction(async (manager) => {
-        return itemService.post(member, buildRepositories(manager), {
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const item = await itemService.post(member, repositories, {
           item: data,
           parentId,
         });
+        await actionItemService.postPostAction(request, reply, repositories, item);
+        return item;
       });
-      actionItemService.postPostAction(request, reply, item);
-      return item;
     },
   );
 
@@ -140,11 +141,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body,
         log,
       } = request;
-      const item = await db.transaction((manager) => {
-        return itemService.patch(member, buildRepositories(manager), id, body);
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const item = await itemService.patch(member, repositories, id, body);
+        await actionItemService.postPatchAction(request, reply, repositories, item);
+        return item;
       });
-      actionItemService.postPatchAction(request, reply, item);
-      return item;
     },
   );
 
@@ -161,18 +163,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body,
         log,
       } = request;
-      db.transaction((manager) => {
+      db.transaction(async (manager) => {
         // TODO: implement queue
-        return itemService.patchMany(member, buildRepositories(manager), ids, body);
-      })
-        .then((resultItems) => {
-          // do not wait
-          actionItemService.postManyPatchAction(request, reply, resultOfToList(resultItems));
-        })
-        .catch((e) => {
-          // TODO: return feedback in queue
-          console.error(e);
-        });
+        const repositories = buildRepositories(manager);
+        const items = await itemService.patchMany(member, repositories, ids, body);
+        await actionItemService.postManyPatchAction(
+          request,
+          reply,
+          repositories,
+          resultOfToList(items),
+        );
+      }).catch((e) => {
+        // TODO: return feedback in queue
+        console.error(e);
+      });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -208,18 +212,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         query: { id: ids },
         log,
       } = request;
-      db.transaction((manager) => {
+      db.transaction(async (manager) => {
         // TODO: implement queue
-        return itemService.deleteMany(member, buildRepositories(manager), ids);
-      })
-        .then((items) => {
-          // do not wait
-          actionItemService.postManyDeleteAction(request, reply, items);
-        })
-        .catch((e) => {
-          // TODO: return feedback in queue
-          console.error(e);
-        });
+        const repositories = buildRepositories(manager);
+        const items = await itemService.deleteMany(member, repositories, ids);
+        await actionItemService.postManyDeleteAction(request, reply, repositories, items);
+      }).catch((e) => {
+        // TODO: return feedback in queue
+        console.error(e);
+      });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -255,16 +256,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       // TODO: implement queue
       db.transaction(async (manager) => {
-        return itemService.moveMany(member, buildRepositories(manager), ids, parentId);
-      })
-        .then((items) => {
-          // we do not wait
-          actionItemService.postManyMoveAction(request, reply, items);
-        })
-        .catch((e) => {
-          // TODO: return feedback in queue
-          console.error(e);
-        });
+        const repositories = buildRepositories(manager);
+        const items = await itemService.moveMany(member, repositories, ids, parentId);
+        await actionItemService.postManyMoveAction(request, reply, repositories, items);
+      }).catch((e) => {
+        // TODO: return feedback in queue
+        console.error(e);
+      });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -305,18 +303,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       // TODO: implement queue
       db.transaction(async (manager) => {
-        return itemService.copyMany(member, buildRepositories(manager), ids, {
+        const repositories = buildRepositories(manager);
+        const items = await itemService.copyMany(member, repositories, ids, {
           parentId,
         });
-      })
-        .then((items) => {
-          // do not wait
-          actionItemService.postManyCopyAction(request, reply, items);
-        })
-        .catch((e) => {
-          // TODO: return feedback in queue
-          console.error(e);
-        });
+        await actionItemService.postManyCopyAction(request, reply, repositories, items);
+      }).catch((e) => {
+        // TODO: return feedback in queue
+        console.error(e);
+      });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
