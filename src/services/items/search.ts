@@ -144,7 +144,6 @@ const searchPlugin = async (
   const opts = {
     normalizeWhitespace: true,
   };
-  console.log(FILE_STORAGE_ROOT_PATH);
   const meilisearchClient = new MeiliSearch({
     host: 'http://meilisearch:8080',
     apiKey: MEILISEARCH_API_MASTERKEY,
@@ -254,14 +253,10 @@ const searchPlugin = async (
       let published = false;
       if (destination !== undefined) {
         published = await itemTagService.hasTag(destination, PUBLISHED_TAG_ID, handler);
-        console.log('it is working', published);
       }
       if (wasARoot) {
         //if this was moved from root, check if item was published before
-
-        console.log('it is working', published);
         published = published || (await itemTagService.hasTag(item, PUBLISHED_TAG_ID, handler));
-        console.log('it is working', published);
       }
 
       let documentInMeilisearchDB = undefined;
