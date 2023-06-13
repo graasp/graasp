@@ -294,7 +294,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
 
-        await fastify.register(searchPlugin, { tags: { service: itemTagService } });
+        await fastify.register(searchPlugin, {
+          tags: { service: itemTagService },
+          indexName: 'testitem',
+        });
 
         // isolate the core actions using fastify.register
         fastify.register(async function (fastify) {

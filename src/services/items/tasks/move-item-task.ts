@@ -48,6 +48,9 @@ export class MoveItemTask extends BaseItemTask<Item> {
     const { item, parentItem } = this.input;
     this.targetId = item.id;
 
+    //get old path
+    const oldItemPath = item.path;
+
     // check how "big the tree is" below the item
     const numberOfDescendants = await this.itemService.getNumberOfDescendants(item, handler);
     if (numberOfDescendants > MAX_DESCENDANTS_FOR_MOVE) {
@@ -92,7 +95,7 @@ export class MoveItemTask extends BaseItemTask<Item> {
       movedItem,
       this.actor,
       { log, handler },
-      { destination: parentItem },
+      { destination: parentItem, originalItemPath: oldItemPath },
     );
 
     this._result = movedItem;

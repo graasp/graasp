@@ -456,28 +456,4 @@ export class ItemService implements DbService {
         WHERE path <@ ${item.path}`);
   }
 
-
-  /**
-   * Check if item id has published id tag
-   * @param transactionHandler Database transaction handler
-   */
-  async isPublished(item_id: string, transactionHandler: TrxHandler): Promise<boolean> {
-    const const_published_id = 'a8d8e09d-a0b9-4551-b300-125abe25a0f9';
-    return transactionHandler
-      .oneFirst<string>(
-        sql`
-        SELECT tag_id FROM item_tag
-        WHERE id = ${item_id}
-      `,
-      ) // `AND id != ${item.id}` because <@ includes the item's path
-      .then((tag_id) => {
-        console.log('The tag id is' + tag_id);
-        if (tag_id == const_published_id) {
-          return true;
-        } 
-        else
-          return false;
-      });
-  }
-
 }

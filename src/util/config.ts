@@ -151,7 +151,7 @@ export const ETHERPAD_URL = process.env.ETHERPAD_URL;
 export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
-
+export const MEILISEARCH_API_MASTERKEY = process.env.MEILISEARCH_API_MASTERKEY;
 let S3_INSTANCE: S3;
 
 // Enable localstack, only create the instance in test or dev environments
