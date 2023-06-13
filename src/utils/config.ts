@@ -210,7 +210,7 @@ export const H5P_S3_CONFIG = {
   s3: {
     s3Region: process.env.H5P_CONTENT_REGION,
     s3Bucket: process.env.H5P_CONTENT_BUCKET,
-    s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY,
+    s3SecretAccessKey: process.env.H5P_CONTENT_SECRET_ACCESS_KEY_ID,
     s3AccessKeyId: process.env.H5P_CONTENT_ACCESS_KEY_ID,
   } as S3FileConfiguration,
 };
