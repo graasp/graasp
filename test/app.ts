@@ -1,8 +1,16 @@
 import fastify from 'fastify';
 
 import registerAppPlugins from '../src/app';
+import { Member } from '../src/services/member/entities/member';
+import { saveMember } from '../src/services/member/test/fixtures/members';
+import { DB_TEST_SCHEMA } from './constants';
 
-const build = async (opts = {}) => {
+const ACTOR = {
+  name: 'actor',
+  email: 'graasp@email.org',
+};
+
+const build = async ({ member }: { member?: Partial<Member> | null } = { member: ACTOR }) => {
   // const app = fastify({
   //   logger: {
   //     prettyPrint: true,
@@ -14,8 +22,9 @@ const build = async (opts = {}) => {
   //     },
   //   },
   // });
+
   const app = fastify({
-    logger: false,
+    logger: true,
     ajv: {
       customOptions: {
         coerceTypes: 'array',
@@ -25,7 +34,31 @@ const build = async (opts = {}) => {
 
   await registerAppPlugins(app);
 
-  return app;
+  let actor: Member | null = null;
+  if (member) {
+    actor = await saveMember(member);
+    const authenticatedActor = actor as Member;
+
+    jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request) => {
+      request.member = authenticatedActor;
+    });
+    jest.spyOn(app, 'fetchMemberInSession').mockImplementation(async (request) => {
+      request.session.set('member', authenticatedActor.id);
+      request.member = authenticatedActor;
+    });
+  }
+
+  return { app, actor };
+};
+
+export const clearDatabase = async (db) => {
+  const entities = db.entityMetadatas;
+  for (const entity of entities) {
+    const repository = await db.getRepository(entity.name);
+    await repository.query(
+      `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
+    );
+  }
 };
 
 export default build;

@@ -1,21 +1,20 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { GlobalTaskRunner } from '../services/global-task-runner';
-import { ItemMembershipService } from '../services/item-memberships/db-service';
-import { ItemService } from '../services/items/db-service';
-import { MemberService } from '../services/members/db-service';
+import { ActionService } from '../services/action/services/action';
+import ItemService from '../services/item/service';
+import { MemberService } from '../services/member/service';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
-  const { db, log } = fastify;
-  fastify.decorate('taskRunner', new GlobalTaskRunner(db, log));
+  fastify.decorateRequest('member', null);
 
-  fastify.decorate('members', { dbService: new MemberService(), taskManager: null });
-  fastify.decorate('items', { dbService: new ItemService(), taskManager: null });
-  fastify.decorate('itemMemberships', {
-    dbService: new ItemMembershipService(),
-    taskManager: null,
+  fastify.decorate('members', { service: new MemberService() });
+
+  fastify.decorate('items', {
+    service: new ItemService(),
   });
 
-  fastify.decorateRequest('member', null);
+  fastify.decorate('actions', {
+    service: new ActionService(fastify.items.service, fastify.members.service, fastify.hosts),
+  });
 };
 export default decoratorPlugin;

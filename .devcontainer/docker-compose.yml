@@ -12,32 +12,26 @@ services:
         # On Linux, you may need to update USER_UID and USER_GID below if not your local UID is not 1000.
         USER_UID: 1000
         USER_GID: 1000
-
     environment:
       HOSTNAME: localhost
       PG_CONNECTION_URI: "postgresql://docker:docker@localhost:5432/docker"
       FILE_STORAGE_ROOT_PATH: "/tmp/graasp-file-item-storage"
+      DB_NAME: docker
+      DB_USERNAME: docker
+      DB_PASSWORD: docker
+      DB_HOST: db
 
     volumes:
       - ..:/workspace:cached
       - ../tmp:/tmp/graasp-file-item-storage
-
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
-
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
-    # Uncomment the next line to use a non-root user for all processes.
-    # user: node
-
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
+    ports:
+      - 3000:3000
 
   db:
     container_name: graasp-postgres
-    build:
-      context: ../
-      dockerfile: .devcontainer/db/Dockerfile
+    image: postgres:15
     restart: on-failure
     ports:
       - 5432:5432
@@ -47,9 +41,6 @@ services:
       POSTGRES_DB: docker
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
-      POSTGRES_ETHERPAD_DB: etherpad
-      POSTGRES_ETHERPAD_USER: etherpad
-      POSTGRES_ETHERPAD_PASSWORD: etherpad
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward MongoDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
@@ -71,7 +62,7 @@ services:
       - 9001:9001
     environment:
       - DB_TYPE=postgres
-      - DB_HOST=db
+      - DB_HOST=etherpad-db
       - DB_PORT=5432
       - DB_NAME=etherpad
       - DB_USER=etherpad
@@ -85,6 +76,19 @@ services:
     depends_on:
       - db
 
+  etherpad-db:
+    container_name: graasp-postgres-etherpad
+    image: postgres:15
+    restart: on-failure
+    ports:
+      - 5433:5432
+    volumes:
+      - postgres-data-etherpad:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: etherpad
+      POSTGRES_USER: etherpad
+      POSTGRES_PASSWORD: etherpad
+
   # Localstack is used to test aws services locally
   localstack:
     container_name: graasp-localstack
@@ -93,7 +97,6 @@ services:
       - ${TMPDIR}/localstack:/tmp/graasp-localstack
       - ./localstack:/docker-entrypoint-initaws.d
       - /var/run/docker.sock:/var/run/docker.sock
-
     environment:
       - SERVICES=s3
       - DEBUG=1
@@ -112,4 +115,5 @@ services:
       - 8061:8061
 
 volumes:
-  postgres-data: null
+  postgres-data:
+  postgres-data-etherpad:

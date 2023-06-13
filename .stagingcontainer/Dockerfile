@@ -38,7 +38,4 @@ RUN yarn install
 
 RUN yarn build-ts
 
-RUN yarn add shelljs @types/uuid typescript@`node -p "require('./package.json').devDependencies.typescript"` 
-RUN yarn copy-static-assets
-
 CMD NODE_PATH=./dist node dist/server.js

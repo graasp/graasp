@@ -4,11 +4,11 @@ import fastify from 'fastify';
 import registerAppPlugins from './app';
 import { initSentry } from './sentry';
 // import fastifyCompress from 'fastify-compress';
-import { CORS_ORIGIN_REGEX, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './util/config';
+import { CORS_ORIGIN_REGEX, DEV, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
 
 const start = async () => {
   const instance = fastify({
-    logger: !DISABLE_LOGS,
+    logger: DEV ?? DISABLE_LOGS,
     ajv: {
       customOptions: {
         // This allow routes that take array to correctly interpret single values as an array
@@ -17,19 +17,6 @@ const start = async () => {
       },
     },
   });
-  /*const instance = fastify({ 
-    logger: { 
-      prettyPrint: true, 
-      level: 'debug' 
-    },
-    ajv: {
-      customOptions: {
-        // This allow routes that take array to correctly interpret single values as an array
-        // https://github.com/fastify/fastify/blob/main/docs/Validation-and-Serialization.md
-        coerceTypes: 'array',
-      }
-    }
-  });*/
 
   const { SentryConfig, Sentry } = initSentry(instance);
 
@@ -46,26 +33,26 @@ const start = async () => {
 
   await registerAppPlugins(instance);
 
-  const mainMetric = SentryConfig.enable
-    ? Sentry.startTransaction({
-        op: 'main',
-        name: 'Main server listen',
-      })
-    : null;
+  // const mainMetric = SentryConfig.enable
+  //   ? Sentry.startTransaction({
+  //       op: 'main',
+  //       name: 'Main server listen',
+  //     })
+  //   : null;
 
   try {
-    await instance.listen(+PORT, HOSTNAME);
+    await instance.listen({ port: PORT, host: HOSTNAME });
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);
     Sentry?.withScope((scope) => {
-      scope.setSpan(mainMetric);
-      scope.setTransactionName(mainMetric.name);
+      // scope.setSpan(mainMetric);
+      // scope.setTransactionName(mainMetric.name);
       Sentry?.captureException(err);
     });
     process.exit(1);
   } finally {
-    mainMetric?.finish();
+    // mainMetric?.finish();
   }
 };
 

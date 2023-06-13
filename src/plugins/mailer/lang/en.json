@@ -1,0 +1,23 @@
+{
+  "greetings": "Thank you for signing up to our platform.",
+  "verifyinfos": "Please verify your email by clicking on the following button.",
+  "registerButton": "Complete registration and sign in",
+  "unrequestedregister": "If you don't remember signing up to Graasp, you can just ignore this email.",
+  "signin": "Sign In",
+  "register": "Register",
+  "magiclink": "You asked us to send you a magic link for quickly signing in to your account. Here your go:",
+  "unrequestedlink": "If you haven't requested the link, no further action is required. It will expire soon, don't worry your account and data are safe.",
+  "exportActionsInformation": "You requested to download actions from item %{itemName}, here is the link to download the files. It will be available for %{days} days",
+  "download": "Download",
+  "signInMailTitle": "Sign In Link",
+  "registrationMailTitle": "Register",
+  "exportActionsMailTitle": "Analytic Traces Download Link for %{itemName}",
+  "invitationText": "%{creatorName} shared %{itemName} with you on the Graasp platform. Click on the following button to complete your registration.",
+  "invitationMailTitle": "This item was shared with you on Graasp",
+  "publishNotification": "Your item %{itemName} has been published to Graasp Explorer. Click on the following link to view it.",
+  "viewItem": "View Item",
+  "publishNotificationTitle": "%{itemName} has been published",
+  "chatMentionNotification": "You have been mentioned in a message by %{creatorName} in %{itemName}. Click on the following link to view the conversation.",
+  "chatMentionNotificationTitle": "%{creatorName} mentioned you in %{itemName}",
+  "viewChat": "View Conversation"
+}

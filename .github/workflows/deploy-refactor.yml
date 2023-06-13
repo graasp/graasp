@@ -11,7 +11,7 @@ jobs:
   refactor-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    uses: graasp/graasp-deploy/.github/workflows/deploy-refactor.yml@main
+    uses: graasp/graasp-deploy/.github/workflows/deploy-refactor.yml@fix-refactor
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -30,13 +30,18 @@ jobs:
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET }}
       container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
       container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
+      db-host: ${{ secrets.DB_HOST }}
+      db-name: ${{ secrets.DB_NAME }}
+      db-password: ${{ secrets.DB_PASSWORD }}
+      db-username: ${{ secrets.DB_USERNAME }}
+      db-read-replica-host : ${{ secrets.DB_READ_REPLICA_HOST }}
       ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP }}
       ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP }}
       ecs-service: ${{ secrets.ECS_SERVICE_GRAASP }}
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET }}
-      h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
+      h5p-content-secret-access-key-id: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
       jwt-secret: ${{ secrets.JWT_SECRET }}
       mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
       mailer-config-password: ${{ secrets.MAILER_CONFIG_PASSWORD }}
@@ -44,6 +49,7 @@ jobs:
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME }}
       pg-connection-uri: ${{ secrets.PG_CONNECTION_URI }}
       pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS }}
+      recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       redis-host: ${{ secrets.REDIS_HOST }}
       redis-port: ${{ secrets.REDIS_PORT }}
       redis-password: ${{ secrets.REDIS_PASSWORD }}

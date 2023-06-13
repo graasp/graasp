@@ -17,7 +17,7 @@ jobs:
     # repository name
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
-    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@fix-refactor
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -27,24 +27,17 @@ jobs:
     # ecs-task-definition with template file.
     with:
       ecs-task-definition: '.aws/graasp-dev.json'
-      apps-plugin: true
-      chatbox-plugin: true
       database-logs: false
-      embedded-link-item-plugin: true
       etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_DEV }}
       etherpad-url: ${{ vars.ETHERPAD_URL_DEV }}
-      hidden-items-plugin: true
+      h5p-file-storage-type: ${{ vars.H5P_FILE_STORAGE_TYPE }}
       node-env: production
       node-env-iframely: production
-      public-plugin: true
       roarr-log: false
       s3-file-item-plugin: true
-      save-actions: true
-      sign-up-email-white-list: ${{ vars.SIGN_UP_EMAIL_WHITE_LIST }}
       subscriptions-plugin: true
       token-based-auth: true
       websockets-plugin: true
-
 
     # required secrets
     secrets:
@@ -59,13 +52,16 @@ jobs:
       container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
       container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
       container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
+      db-host: ${{ secrets.DB_HOST }}
+      db-name: ${{ secrets.DB_NAME }}
+      db-password: ${{ secrets.DB_PASSWORD }}
+      db-username: ${{ secrets.DB_USERNAME }}
       analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_DEV }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_DEV }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
       auth-client-host: ${{ secrets.AUTH_CLIENT_HOST_DEV }}
       auth-token-expiration-in-minutes: ${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET_DEV }}
-      avatars-path-prefix: ${{ secrets.AVATARS_PATH_PREFIX }}
       builder-client-host: ${{ secrets.BUILDER_CLIENT_HOST_DEV }}
       client-host: ${{ secrets.CLIENT_HOST_DEV }}
       cookie-domain: ${{ secrets.COOKIE_DOMAIN_DEV }}
@@ -75,27 +71,20 @@ jobs:
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_DEV }}
       explorer-client-host: ${{ secrets.EXPLORER_CLIENT_HOST_DEV }}
       file-storage-root-path: ${{ secrets.FILE_STORAGE_ROOT_PATH }}
-      files-path-prefix: ${{ secrets.FILES_PATH_PREFIX }}
       h5p-content-access-key-id: ${{ secrets.H5P_CONTENT_ACCESS_KEY_ID_DEV }}
       h5p-content-bucket-name: ${{ secrets.H5P_CONTENT_BUCKET_DEV }}
       h5p-content-region: ${{ secrets.H5P_CONTENT_REGION_DEV }}
-      h5p-content-secret-access-key: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY_DEV }}
+      h5p-content-secret-access-key-id: ${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY_DEV }}
       h5p-path-prefix: ${{ secrets.H5P_PATH_PREFIX_DEV }}
-      hidden-tag-id: ${{ secrets.HIDDEN_TAG_ID }}
       hostname: ${{ secrets.HOSTNAME_DEV}}
       image-classifier-api: ${{ secrets.IMAGE_CLASSIFIER_API }}
       jwt-secret: ${{ secrets.JWT_SECRET_DEV }}
-      login-item-tag-id: ${{ secrets.LOGIN_ITEM_TAG_ID }}
       mailer-config-from-email: ${{ secrets.MAILER_CONFIG_FROM_EMAIL_DEV }}
       mailer-config-password: ${{ secrets.MAILER_CONFIG_PASSWORD_DEV }}
       mailer-config-smtp-host: ${{ secrets.MAILER_CONFIG_SMTP_HOST }}
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_DEV }}
-      pg-connection-uri: ${{ secrets.PG_CONNECTION_URI_DEV }}
-      pg-read-replicas-connection-uris: ${{ secrets.PG_READ_REPLICAS_CONNECTION_URIS_DEV }}
       player-client-host: ${{ secrets.PLAYER_CLIENT_HOST_DEV }}
       port: ${{ secrets.PORT }}
-      public-tag-id: ${{ secrets.PUBLIC_TAG_ID }}
-      published-tag-id: ${{ secrets.PUBLISHED_TAG_ID }}
       recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       redis-host: ${{ secrets.REDIS_HOST_DEV }}
       redis-port: ${{ secrets.REDIS_PORT }}
@@ -110,4 +99,3 @@ jobs:
       sentry-dsn: ${{ secrets.SENTRY_DSN }}
       stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
-      thumbnails-path-prefix: ${{ secrets.THUMBNAILS_PATH_PREFIX }}

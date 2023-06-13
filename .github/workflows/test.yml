@@ -1,0 +1,130 @@
+name: Node CI
+
+on: [push]
+
+jobs:
+  build-node:
+    runs-on: ubuntu-latest
+    env:
+      TEST_DB_NAME: docker
+      TEST_DB_USER: docker
+      TEST_DB_PASSWORD: docker
+
+    # abort running jobs if newer version is detected on same branch
+    concurrency:
+      group: ${{ github.head_ref || github.ref }}
+      cancel-in-progress: true
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+          POSTGRES_USER: ${{ env.TEST_DB_USER }}
+          POSTGRES_DB: ${{ env.TEST_DB_NAME }}
+        ports:
+          - 5432:5432 # exposing 5432 port for application to use
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # Label used to access the service container
+      graasp-redis:
+        # Docker Hub image
+        image: redis
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Get yarn cache directory
+        id: yarn-cache-dir-path
+        run: |
+          echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: yarn install and build
+        run: |
+          yarn
+          yarn build
+
+      - name: apply migrations on empty database
+        env:
+          DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+          DB_USERNAME: ${{ env.TEST_DB_USER }}
+          DB_NAME: ${{ env.TEST_DB_NAME }}
+        run: yarn migration:run
+
+      - name: check migrations are synced with the current codebase
+        env:
+          DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+          DB_USERNAME: ${{ env.TEST_DB_USER }}
+          DB_NAME: ${{ env.TEST_DB_NAME }}
+        run: yarn migration:check
+
+      - name: yarn test
+        run:
+          yarn test:ci
+        env:
+          CI: true
+          # random keys
+          APPS_JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
+          AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
+          BUILDER_CLIENT_HOST: 'http://localhost:3111'
+          COOKIE_DOMAIN: localhost
+          DB_NAME: ${{ env.TEST_DB_NAME }}
+          DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+          DB_USERNAME: ${{ env.TEST_DB_USER }}
+          EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: 'http://localhost:1234'
+          ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          ETHERPAD_URL: http://etherpad:9001
+          EXPLORER_CLIENT_HOST: 'http://localhost:3113'
+          FILE_STORAGE_ROOT_PATH: /
+          H5P_PATH_PREFIX: h5p-content/
+          H5P_FILE_STORAGE_TYPE: file
+          H5P_STORAGE_ROOT_PATH: /tmp/h5p
+          H5P_TEMP_DIR: /tmp/h5p/extract
+          JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
+          MAILER_CONFIG_PASSWORD: password
+          MAILER_CONFIG_SMTP_HOST: localhost
+          MAILER_CONFIG_USERNAME: username
+          PLAYER_CLIENT_HOST: 'http://localhost:3112'
+          REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
+          S3_FILE_ITEM_PLUGIN: true
+          S3_FILE_ITEM_REGION: us-east-1
+          S3_FILE_ITEM_BUCKET: graasp
+          S3_FILE_ITEM_ACCESS_KEY_ID: graasp-user
+          S3_FILE_ITEM_SECRET_ACCESS_KEY: graasp-pwd
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          # mock uuid
+          APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7
+          RECAPTCHA_SECRET_ACCESS_KEY: 'iamamockkey'

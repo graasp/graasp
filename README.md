@@ -64,46 +64,32 @@ Then open the folder locally and run the following command to install the requir
 
 `yarn install`
 
-### Database creation
+### Database and Migrations
 
-Before running the application you'll need to install the PostgreSQL database.
+The application will run migrations on start. 
 
-You'll need to create the necessary tables. Copy & paste the commands from the file bellow into a SQL prompt.
+#### Create a migration
+Migrations are saved in `src/migrations/*.ts`. They are then transformed into js files so typeorm can run them.
 
-- The SQL commands are available in [`db-schema.sql`](https://github.com/graasp/graasp/blob/master/db-schema.sql)
+Run the generate and run command to create and apply the migration.
+```` bash
+yarn migration:generate
+yarn migration:run
+````
 
-Install the corresponding schema if you are using any fo the following plugins :
+If you need to revert
+```` bash
+yarn migration:revert
+````
 
-- Item Tags : [`db-schema.sql`](https://github.com/graasp/graasp-item-tags/blob/master/db-schema.sql)
+To test your migrations, you can run
+```` bash
+yarn migration:fake
+````
 
-- Public : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-public/blob/main/db-schema.sql)
+Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`. 
 
-- Apps : [`db-schema.sql`](https://github.com/graasp/graasp-apps/blob/main/db-schema.sql)
-
-- Item Flagging : [`db-schema.sql`](https://github.com/graasp/graasp-item-flagging/blob/master/db-schema.sql)
-
-- ChatBox : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/db-schema.sql)
-
-- Recycle Items : [`db-schema.sql`](https://github.com/graasp/graasp-plugin-recycle-bin/blob/main/db-schema.sql)
-
-- Item Login : [`db-schema.sql`](https://github.com/graasp/graasp-item-login/blob/master/db-schema.sql)
-
-- Item Categories [`db-schema.sql`](https://github.com/graasp/graasp-plugin-categories/blob/main/db-schema.sql)
-
-- Actions [`db-schema.sql`](https://github.com/graasp/graasp-plugin-actions/blob/main/db-schema.sql)
-
-- Invitations [`db-schema.sql`](https://github.com/graasp/graasp-plugin-invitations/blob/main/db-schema.sql)
-
-- Subscriptions [`db-schema.sql`](https://github.com/graasp/graasp-plugin-subscriptions/blob/main/db-schema.sql)
-
-Also you will need to run all the migrations associated with the plugins you wish to use. For each plugin run **all** migrations in the folder **in increasing order**.
-
-- ChatBox : [`migrations`](https://github.com/graasp/graasp-plugin-chatbox/tree/main/migrations)
-    - [`migration1.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/migrations/migration1.sql)
-    - [`migration2.sql`](https://github.com/graasp/graasp-plugin-chatbox/blob/main/migrations/migration2.sql)
-
-- Actions : [`migrations`](https://github.com/graasp/graasp-plugin-actions/tree/main/migrations)
-    - [`migration1.sql`](https://github.com/graasp/graasp-plugin-actions/blob/main/migrations/migration1.sql)
+Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
 
 ### Configuration
 

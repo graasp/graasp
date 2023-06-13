@@ -1,0 +1,23 @@
+{
+  "greetings": "Merci de vous être inscrit sur notre plateforme.",
+  "verifyinfos": "Vérifiez votre e-mail en cliquant sur le bouton ci-dessous.",
+  "registerButton": "Compléter l'inscription et se connecter",
+  "unrequestedregister": "Si vous ne pensez pas vous être inscrit sur Graasp, vous pouvez ignorer cet email.",
+  "signin": "Se connecter",
+  "register": "S'inscrire",
+  "magiclink": "Vous nous avez demandé un lien magique pour vous connecter rapidement. Il est là:",
+  "unrequestedlink": "Si vous n'avez pas demandé de lien, aucune action supplémentaire n'est requise. Il va bientôt expirer, ne vous inquiétez pas votre compte et vos données sont en sécurité.",
+  "exportActionsInformation": "Une demande d'export des traces analytiques pour l'élément %{itemName} a bien été reçue, voici le lien pour télécharger les fichiers. Les fichiers seront disponibles pendant %{days} jours.",
+  "download": "Télécharger",
+  "signInMailTitle": "Lien de connexion",
+  "registrationMailTitle": "Inscription",
+  "exportActionsMailTitle": "Lien de téléchargement des traces analytiques de %{itemName}",
+  "invitationText": "%{creatorName} a partagé %{itemName} avec vous sur la plateforme Graasp. Cliquez sur le bouton suivant pour compléter votre inscription.",
+  "invitationMailTitle": "Cet élément a été partagé avec vous sur Graasp",
+  "publishNotification": "Votre élément %{itemName} a été publié sur Graasp Library. Cliquez sur le lien suivant pour le voir.",
+  "viewItem": "Voir l'élément",
+  "publishNotificationTitle": "%{itemName} a été publié",
+  "chatMentionNotification": "Vous avez été mentionné par %{creatorName} dans la conversation liée à %{itemName}. Cliquez sur le lien suivant pour voir la conversation.",
+  "chatMentionNotificationTitle": "%{creatorName} vous a mentionné dans %{itemName}",
+  "viewChat": "Voir la conversation"
+}

@@ -1,0 +1,21 @@
+<% layout('./layout') %>
+<h2><b>Hello!</b></h2>
+
+<p><%= it.text %></p>
+
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+  <tbody>
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+          <tbody>
+            <tr>
+              <td><a href="<%= it.link %>" target="_blank"><%= it.translated["register"] %></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+

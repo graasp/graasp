@@ -1,7 +1,8 @@
 {
   "parser": "@typescript-eslint/parser",
   "extends": [
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
   ],
   "parserOptions": {
     "ecmaVersion": 2018,
@@ -11,10 +12,6 @@
     "semi": [
       "error",
       "always"
-    ],
-    "quotes": [
-      "error",
-      "single"
     ],
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-explicit-any": 1,
