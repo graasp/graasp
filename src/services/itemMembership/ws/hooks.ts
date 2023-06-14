@@ -5,6 +5,15 @@
 //   getChildFromPath,
 // } from '@graasp/sdk';
 // import { AccessDenied, NotFound, WebSocketService } from 'graasp-websockets';
+import { PermissionLevel } from '@graasp/sdk';
+
+import { Repositories } from '../../../utils/repositories';
+import ItemService from '../../item/service';
+import { SharedItemsEvent, memberItemsTopic } from '../../item/ws/events';
+import { WebsocketService } from '../../websockets/ws-service';
+import { ItemMembership } from '../entities/ItemMembership';
+import ItemMembershipService from '../service';
+import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 
 // import { SharedItemsEvent, memberItemsTopic } from '../../items/ws/events';
 // import { ItemMembership } from '../entities/ItemMembership';
@@ -19,72 +28,67 @@
 //  * @param itemMembershipTaskManager ItemMembership task manager
 //  * @param validationDbHandler Database transaction handler used to validate subscriptions
 //  */
-// export function registerItemMembershipWsHooks(
-//   websockets: WebSocketService,
-//   runner: TaskRunner<Actor>,
-//   validationDbHandler: DatabaseTransactionHandler,
-// ): void {
-//   websockets.register(itemMembershipsTopic, async (req) => {
-//     const { channel: itemId, member, reject } = req;
-//     // item must exist
-//     const item = await itemService.get(itemId, validationDbHandler);
-//     if (!item) {
-//       reject(NotFound());
-//     }
-//     // member must have at least read access to item
-//     const allowed = await itemMembershipService.canRead(member.id, item, validationDbHandler);
-//     if (!allowed) {
-//       reject(AccessDenied());
-//     }
-//   });
+export function registerItemMembershipWsHooks(
+  repositories: Repositories,
+  websockets: WebsocketService,
+  itemService: ItemService,
+  itemMembershipService: ItemMembershipService,
+): void {
+  websockets.register(itemMembershipsTopic, async (req) => {
+    const { channel: itemId, member } = req;
+    // item must exist with read permission, else exception is thrown
+    await itemService.get(member, repositories, itemId, PermissionLevel.Read);
+  });
 
-//   // on create:
-//   // - notify member of new shared item IF creator != member
-//   // - notify item itself of new membership
-//   const createItemMembershipTaskName = itemMembershipTaskManager.getCreateTaskName();
-//   runner.setTaskPostHookHandler<ItemMembership>(
-//     createItemMembershipTaskName,
-//     async (membership, actor, { handler }) => {
-//       const itemId = getChildFromPath(membership.itemPath);
-//       const item = await itemService.get(itemId, handler);
-//       if (!item) {
-//         return;
-//       }
-//       if (membership.memberId !== item.creator) {
-//         websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent('create', item));
-//       }
-//       websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('create', membership));
-//     },
-//   );
+  // on create:
+  // - notify member of new shared item IF creator != member
+  // - notify item itself of new membership
+  itemMembershipService.hooks.setPostHook(
+    'create',
+    async (member, repositories, membership: ItemMembership) => {
+      if (membership.member.id !== membership.item.creator.id) {
+        websockets.publish(
+          memberItemsTopic,
+          membership.member.id,
+          SharedItemsEvent('create', membership.item),
+        );
+      }
+      websockets.publish(
+        itemMembershipsTopic,
+        membership.item.id,
+        ItemMembershipEvent('create', membership),
+      );
+    },
+  );
 
-//   // on update notify item itself of updated membership
-//   const updateItemMembershipTaskName = itemMembershipTaskManager.getUpdateTaskName();
-//   runner.setTaskPostHookHandler<ItemMembership>(
-//     updateItemMembershipTaskName,
-//     async (membership, actor, { handler }) => {
-//       const itemId = getChildFromPath(membership.itemPath);
-//       const item = await itemService.get(itemId, handler);
-//       if (!item) {
-//         return;
-//       }
-//       websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('update', membership));
-//     },
-//   );
+  // on update notify item itself of updated membership
+  itemMembershipService.hooks.setPostHook(
+    'update',
+    async (member, repositories, membership: ItemMembership) => {
+      websockets.publish(
+        itemMembershipsTopic,
+        membership.item.id,
+        ItemMembershipEvent('update', membership),
+      );
+    },
+  );
 
-//   // on delete
-//   // - notify member of deleted shared item
-//   // - notify item itself of deleted membership
-//   const deleteItemMembershipTaskName = itemMembershipTaskManager.getDeleteTaskName();
-//   runner.setTaskPostHookHandler<ItemMembership>(
-//     deleteItemMembershipTaskName,
-//     async (membership, actor, { handler }) => {
-//       const itemId = getChildFromPath(membership.itemPath);
-//       const item = await itemService.get(itemId, handler);
-//       if (!item) {
-//         return;
-//       }
-//       websockets.publish(memberItemsTopic, membership.memberId, SharedItemsEvent('delete', item));
-//       websockets.publish(itemMembershipsTopic, item.id, ItemMembershipEvent('delete', membership));
-//     },
-//   );
-// }
+  // on delete
+  // - notify member of deleted shared item
+  // - notify item itself of deleted membership
+  itemMembershipService.hooks.setPostHook(
+    'delete',
+    async (member, repositories, membership: ItemMembership) => {
+      websockets.publish(
+        memberItemsTopic,
+        membership.member.id,
+        SharedItemsEvent('delete', membership.item),
+      );
+      websockets.publish(
+        itemMembershipsTopic,
+        membership.item.id,
+        ItemMembershipEvent('delete', membership),
+      );
+    },
+  );
+}

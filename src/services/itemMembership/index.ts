@@ -11,6 +11,7 @@ import { ItemMembership } from './entities/ItemMembership';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteAll, deleteOne, getItems, updateOne } from './schemas';
 import ItemMembershipService from './service';
+import { registerItemMembershipWsHooks } from './ws/hooks';
 
 // import { registerItemMembershipWsHooks } from './ws/hooks';
 
@@ -22,8 +23,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     items: { service: itemService },
     mailer,
     hosts,
+    websockets,
   } = fastify;
-  const itemMembershipService = new ItemMembershipService(itemService, hosts, fastify.mailer);
+  const itemMembershipService = new ItemMembershipService(itemService, hosts, mailer);
 
   // schemas
   fastify.addSchema(common);
@@ -36,16 +38,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      // if (WEBSOCKETS_PLUGIN) {
-      //   registerItemMembershipWsHooks(
-      //     websockets,
-      //     runner,
-      //     itemsDbService,
-      //     dbService,
-      //     taskManager,
-      //     db.pool,
-      //   );
-      // }
+      if (WEBSOCKETS_PLUGIN) {
+        registerItemMembershipWsHooks(
+          buildRepositories(),
+          websockets,
+          itemService,
+          itemMembershipService,
+        );
+      }
 
       // get many item's memberships
       // returns empty for item not found

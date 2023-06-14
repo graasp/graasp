@@ -7,6 +7,7 @@ import {
   ItemMembershipNotFound,
   UnauthorizedMember,
 } from '../../utils/errors';
+import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
@@ -18,6 +19,7 @@ export class ItemMembershipService {
   itemService: ItemService;
   hosts: Hostname[];
   mailer: MailerDecoration;
+  hooks = new HookManager();
 
   constructor(itemService: ItemService, hosts: Hostname[], mailer: MailerDecoration) {
     this.itemService = itemService;
@@ -69,6 +71,7 @@ export class ItemMembershipService {
     });
 
     await this._notifyMember(actor, repositories, member, item);
+    await this.hooks.runPostHooks('create', actor, repositories, result);
 
     return result;
   }
@@ -127,7 +130,16 @@ export class ItemMembershipService {
     const member = await memberRepository.get(memberId);
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
-    return itemMembershipRepository.post({ item, member, creator: actor, permission });
+    const result = await itemMembershipRepository.post({
+      item,
+      member,
+      creator: actor,
+      permission,
+    });
+
+    await this.hooks.runPostHooks('create', actor, repositories, result);
+
+    return result;
   }
 
   async postMany(
@@ -146,7 +158,14 @@ export class ItemMembershipService {
     return Promise.all(
       memberships.map(async ({ memberId, permission }) => {
         const member = await memberRepository.get(memberId);
-        return itemMembershipRepository.post({ item, member, creator: actor, permission });
+        const result = await itemMembershipRepository.post({
+          item,
+          member,
+          creator: actor,
+          permission,
+        });
+        await this.hooks.runPostHooks('create', actor, repositories, result);
+        return result;
       }),
     );
   }
@@ -165,7 +184,11 @@ export class ItemMembershipService {
     const iM = await itemMembershipRepository.get(itemMembershipId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, iM.item);
 
-    return itemMembershipRepository.patch(itemMembershipId, data);
+    const result = await itemMembershipRepository.patch(itemMembershipId, data);
+
+    await this.hooks.runPostHooks('update', actor, repositories, result);
+
+    return result;
   }
 
   async deleteOne(
@@ -196,7 +219,13 @@ export class ItemMembershipService {
       throw new CannotDeleteOnlyAdmin(item);
     }
 
-    return itemMembershipRepository.deleteOne(itemMembershipId, { purgeBelow: args.purgeBelow });
+    const result = await itemMembershipRepository.deleteOne(itemMembershipId, {
+      purgeBelow: args.purgeBelow,
+    });
+
+    await this.hooks.runPostHooks('delete', actor, repositories, result);
+
+    return result;
   }
 }
 
