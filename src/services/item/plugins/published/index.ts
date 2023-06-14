@@ -9,6 +9,7 @@ import {
   getCollectionsForMember,
   getInformations,
   getManyInformations,
+  getRecentCollections,
   publishItem,
   unpublishItem,
 } from './schemas';
@@ -87,6 +88,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return db.transaction(async (manager) => {
         return pIS.delete(member, buildRepositories(manager), params.itemId);
       });
+    },
+  );
+
+  fastify.get<{ Querystring: { limit?: number } }>(
+    '/collections/recent',
+    {
+      preHandler: fastify.fetchMemberInSession,
+      schema: getRecentCollections,
+    },
+    async ({ member, query: { limit } }) => {
+      return pIS.getRecentItems(member, buildRepositories(), limit);
     },
   );
 };

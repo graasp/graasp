@@ -69,19 +69,15 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     return entry;
   },
 
-  // async arePublished(items: Item[]) {
-  //   const query = this.createQueryBuilder('publishedItem')
-  //     .leftJoinAndSelect('publishedItem.item', 'item')
-  //     .where('item.path @> ARRAY[:...paths]::ltree[]', { paths: items.map(({ path }) => path) });
+  async getRecentItems(limit: number = 10): Promise<Item[]> {
+    const publishedInfos = await this.createQueryBuilder('item_published')
+      .leftJoinAndSelect('item_published.item', 'item')
+      .orderBy('item.createdAt', 'DESC')
+      .take(limit)
+      .getMany();
 
-  //   const arePublished = await query.getMany();
-
-  //   return mapById({
-  //     keys: items.map(({ path }) => path),
-  //     findElement: (path) => Boolean(arePublished.find(({ item }) => path.includes(item.path))),
-  //     buildError: (id) => new Error(`item with ${id} is not published`), // TODO
-  //   });
-  // },
+    return publishedInfos.map(({ item }) => item);
+  },
 
   // QUESTION: where should we define this? mix between publish and category
   /**
