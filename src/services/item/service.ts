@@ -11,6 +11,7 @@ import {
 } from '@graasp/sdk';
 
 import {
+  InvalidMembership,
   MemberCannotWriteItem,
   TooManyChildren,
   TooManyDescendants,
@@ -364,7 +365,7 @@ export class ItemService {
       throw new UnauthorizedMember(actor);
     }
 
-    const { itemRepository } = repositories;
+    const { itemRepository, itemMembershipRepository } = repositories;
 
     const item = await this.get(actor, repositories, itemId);
 
@@ -387,6 +388,22 @@ export class ItemService {
 
     // TODO: args?
     const result = await itemRepository.copy(item, actor, parentItem);
+
+    // create a membership if needed
+    await itemMembershipRepository
+      .post({
+        item: result,
+        member: actor,
+        creator: actor,
+        permission: PermissionLevel.Admin,
+      })
+      .catch((e) => {
+        // admin permission already exists and does not need to be added
+        if (e instanceof InvalidMembership) {
+          return;
+        }
+        throw e;
+      });
 
     // TODO: post hook - for loop on descendants
     await this.hooks.runPostHooks('copy', actor, repositories, { original: item, copy: result });

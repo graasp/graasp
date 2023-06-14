@@ -320,10 +320,10 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
     _fixChildrenOrder(treeItemsCopy);
     // return copy item + all descendants
-    await this.insert([...treeItemsCopy.values()].map(({ copy }) => copy));
+    const createdItem = await this.insert([...treeItemsCopy.values()].map(({ copy }) => copy));
 
     // TODO: copy item + all descendants
-    return item;
+    return this.get(createdItem.identifiers[0].id);
   },
 
   // UTILS
