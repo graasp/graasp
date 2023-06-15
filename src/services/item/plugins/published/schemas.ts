@@ -1,6 +1,10 @@
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { UUID_REGEX } from '../../../../schemas/global';
+import {
+  GET_MOST_LIKED_ITEMS_MAXIMUM,
+  GET_MOST_RECENT_ITEMS_MAXIMUM,
+} from '../../../../utils/config';
 
 const publishEntry = {
   type: 'object',
@@ -56,8 +60,30 @@ export const getRecentCollections = {
     properties: {
       limit: {
         type: 'number',
-        maximum: 50,
-        minimum: 0,
+        maximum: GET_MOST_RECENT_ITEMS_MAXIMUM,
+        minimum: 1,
+      },
+    },
+  },
+
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        $ref: 'http://graasp.org/items/#/definitions/item',
+      },
+    },
+  },
+};
+
+export const getMostLikedItems = {
+  querystring: {
+    type: 'object',
+    properties: {
+      limit: {
+        type: 'number',
+        maximum: GET_MOST_LIKED_ITEMS_MAXIMUM,
+        minimum: 1,
       },
     },
   },

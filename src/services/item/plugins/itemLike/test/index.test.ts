@@ -1,22 +1,21 @@
 import { StatusCodes } from 'http-status-codes';
-import { v4 } from 'uuid';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../test/app';
-import { MemberCannotAccess } from '../../../../utils/errors';
-import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../member/entities/member';
-import { BOB, saveMember } from '../../../member/test/fixtures/members';
-import { Item } from '../../entities/Item';
-import { expectManyItems, saveItem } from '../../test/fixtures/items';
-import { setItemPublic } from '../itemTag/test/fixtures';
-import { ItemLikeNotFound } from './errors';
-import { ItemLike } from './itemLike';
-import { ItemLikeRepository } from './repository';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { MemberCannotAccess } from '../../../../../utils/errors';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { Member } from '../../../../member/entities/member';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { expectManyItems } from '../../../test/fixtures/items';
+import { setItemPublic } from '../../itemTag/test/fixtures';
+import { ItemLikeNotFound } from '../errors';
+import { ItemLike } from '../itemLike';
+import { ItemLikeRepository } from '../repository';
+import { saveItemLikes } from './utils';
 
 // mock datasource
-jest.mock('../../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 export const expectItemLike = (newLike: ItemLike, correctLike: ItemLike, creator?: Member) => {
   expect(newLike.item.id).toEqual(correctLike.item.id);
@@ -39,15 +38,6 @@ export const expectManyItemLikes = (
     }
     expectItemLike(l, like, creator);
   });
-};
-
-const saveItemLikes = async (items: Item[], member: Member) => {
-  const likes: ItemLike[] = [];
-  for (const item of items) {
-    const like = await ItemLikeRepository.save({ item, creator: member });
-    likes.push(like);
-  }
-  return likes;
 };
 
 const getFullItemLike = (id) => {

@@ -9,10 +9,15 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { MEMBERS } from '../../../../member/test/fixtures/members';
+import { saveMembers } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { expectManyItems } from '../../../test/fixtures/items';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
+import { ItemLike } from '../../itemLike/itemLike';
+import { ItemLikeRepository } from '../../itemLike/repository';
+import { saveItemLikes } from '../../itemLike/test/utils';
 import { ItemTagNotFound } from '../../itemTag/errors';
 import { ItemTagRepository } from '../../itemTag/repository';
 import { ItemPublishedNotFound } from '../errors';
@@ -223,6 +228,54 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         expectManyItems(res.json(), collections.slice(1));
+      });
+    });
+  });
+
+  describe('GET /collections/liked', () => {
+    describe('Signed Out', () => {
+      let members;
+      let collections: Item[];
+      const likes: ItemLike[] = [];
+
+      beforeEach(async () => {
+        ({ app } = await build({ member: null }));
+        members = await saveMembers(Object.values(MEMBERS));
+        collections = await saveCollections(members[0]);
+
+        // add idx x likes
+        for (const [idx, c] of collections.entries()) {
+          for (const m of members.slice(idx)) {
+            likes.concat(await saveItemLikes([c], m));
+          }
+        }
+      });
+
+      it('Get 2 most liked collections', async () => {
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
+          query: { limit: 2 },
+        });
+
+        const result = collections.slice(0, -1);
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectManyItems(res.json(), result);
+      });
+
+      it('Get 2 most liked collections without hidden', async () => {
+        // hide first collection
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
+        });
+
+        const result = collections.slice(1);
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectManyItems(res.json(), result);
       });
     });
   });

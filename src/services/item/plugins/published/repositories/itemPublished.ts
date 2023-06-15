@@ -115,4 +115,18 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     });
     return query.getMany();
   },
+
+  // return public items sorted by most liked
+  // bug: does not take into account child items
+  async getLikedItems(limit: number = 10): Promise<Item[]> {
+    const itemPublished = await this.createQueryBuilder('item_published')
+      .leftJoinAndSelect('item_published.item', 'i')
+      .innerJoin('item_like', 'il', 'il.item_id = i.id')
+      .groupBy(['i.id', 'item_published.id'])
+      .orderBy('COUNT(il.id)', 'DESC')
+      .limit(limit)
+      .getMany();
+
+    return itemPublished.map(({ item }) => item);
+  },
 });
