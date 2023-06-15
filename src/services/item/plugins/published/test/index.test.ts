@@ -189,17 +189,11 @@ describe('Item Published', () => {
     describe('Signed Out', () => {
       let member;
       let collections: Item[];
-      let categories;
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember(BOB);
         collections = await saveCollections(member);
-        categories = await saveCategories();
-
-        // add category to a non-published item
-        const { item } = await saveItemAndMembership({ member });
-        await ItemCategoryRepository.save({ item, category: categories[0] });
       });
 
       it('Get 2 most recent collections', async () => {
@@ -210,7 +204,7 @@ describe('Item Published', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
 
-        const result = collections.sort(({ createdAt: a }, { createdAt: b }) => (a > b ? -1 : 1));
+        const result = collections.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
         expectManyItems(res.json(), result.slice(0, -1));
       });
