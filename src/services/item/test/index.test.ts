@@ -1,17 +1,12 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
-import { Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
   FolderItemExtraProperties,
-  FolderItemType,
   HttpMethod,
   ItemTagType,
   ItemType,
-  MAX_DESCENDANTS_FOR_COPY,
-  MAX_DESCENDANTS_FOR_DELETE,
-  MAX_DESCENDANTS_FOR_MOVE,
   MAX_NUMBER_OF_CHILDREN,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TREE_LEVELS,
@@ -26,7 +21,6 @@ import {
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
-  TooManyDescendants,
 } from '../../../utils/errors';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import {
@@ -38,7 +32,6 @@ import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
-import { pathToId } from '../utils';
 import {
   expectItem,
   expectManyItems,
