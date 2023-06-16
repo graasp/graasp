@@ -18,6 +18,7 @@ import {
   ItemNotFolder,
   ItemNotFound,
   TooManyDescendants,
+  UnexpectedError,
 } from '../../utils/errors';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
@@ -320,10 +321,15 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
     _fixChildrenOrder(treeItemsCopy);
     // return copy item + all descendants
-    await this.insert([...treeItemsCopy.values()].map(({ copy }) => copy));
+    const createdOp = await this.insert([...treeItemsCopy.values()].map(({ copy }) => copy));
+
+    const newItemRef = createdOp?.identifiers?.[0];
+    if (!newItemRef) {
+      throw new UnexpectedError({ operation: 'copy', itemId: item.id });
+    }
 
     // TODO: copy item + all descendants
-    return item;
+    return this.get(newItemRef.id);
   },
 
   // UTILS
