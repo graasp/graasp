@@ -134,4 +134,12 @@ export class ItemPublishedService {
 
     return filterOutHiddenItems(repositories, items);
   }
+
+  async getRecentItems(actor: Actor, repositories: Repositories, limit?: number) {
+    const { itemPublishedRepository } = repositories;
+
+    const items = await itemPublishedRepository.getRecentItems(limit);
+
+    return filterOutHiddenItems(repositories, items);
+  }
 }

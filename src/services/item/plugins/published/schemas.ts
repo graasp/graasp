@@ -50,6 +50,28 @@ export const getCollections = {
   },
 };
 
+export const getRecentCollections = {
+  querystring: {
+    type: 'object',
+    properties: {
+      limit: {
+        type: 'number',
+        maximum: 50,
+        minimum: 0,
+      },
+    },
+  },
+
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        $ref: 'http://graasp.org/items/#/definitions/item',
+      },
+    },
+  },
+};
+
 export const getCollectionsForMember = {
   params: {
     type: 'object',

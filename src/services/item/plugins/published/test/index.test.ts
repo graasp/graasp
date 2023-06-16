@@ -185,6 +185,48 @@ describe('Item Published', () => {
     });
   });
 
+  describe('GET /collections/recent', () => {
+    describe('Signed Out', () => {
+      let member;
+      let collections: Item[];
+
+      beforeEach(async () => {
+        ({ app } = await build({ member: null }));
+        member = await saveMember(BOB);
+        collections = await saveCollections(member);
+      });
+
+      it('Get 2 most recent collections', async () => {
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
+          query: { limit: 2 },
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        const result = collections.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+        expectManyItems(res.json(), result.slice(0, -1));
+      });
+
+      it('Get recent published collections without hidden', async () => {
+        const hiddenCollection = collections[0];
+        await ItemTagRepository.save({
+          item: hiddenCollection,
+          creator: actor,
+          type: ItemTagType.Hidden,
+        });
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        expectManyItems(res.json(), collections.slice(1));
+      });
+    });
+  });
+
   describe('GET /collections/members/:memberId', () => {
     describe('Signed Out', () => {
       it('Returns published collections for member', async () => {
