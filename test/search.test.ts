@@ -279,6 +279,8 @@ describe('Meilisearch tests', () => {
         }
       }
 
+
+
       const {etherpad} = app;
       if (etherpad === undefined)
         throw Error('Error etherpad undefined'); 
@@ -327,6 +329,20 @@ describe('Meilisearch tests', () => {
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Needs to wait some seconds to process task
       const indexDocument = await meilisearchClient.index(itemIndex).getDocument(folder.id);
       expect(indexDocument).toEqual(expectedFolder);
+      await app.close();
+    });
+
+    it('Update hook is triggered but item is not in meilisearch DB', async () => {
+      const {etherpad} = app;
+      if (etherpad === undefined)
+        throw Error('Error etherpad undefined'); 
+        
+      const folder = getDummyItem();
+      folder.description = 'update text';
+      await updateHandler(folder,actor,{log});
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Needs to wait some seconds to process task
+      await expect(() =>  meilisearchClient.index(itemIndex).getDocument(folder.id)).rejects.toThrow(/Document .* not found/);
+
       await app.close();
     });
 

@@ -70,6 +70,17 @@ async function logTaskCompletion(
     );
   }
 }
+
+async function checkItemExist(meilisearch:MeiliSearch, indexName:string,itemID:string){
+  let exist = true;
+  try{
+    await meilisearch.index(indexName).getDocument(itemID);
+  }
+  catch{
+   exist = false;
+  }
+  return exist;
+}
 async function getSearchTextFromExtra(item: DiscriminatedItem, etherpad: EtherpadService) {
   const extraInfo = {};
   switch (item.type) {
@@ -213,8 +224,12 @@ const searchPlugin = async (
 
       try {
         await meilisearchClient.getIndex(itemIndex);
-        const onDeleteRes = await meilisearchClient.index(itemIndex).deleteDocument(item.id);
-        logTaskCompletion(meilisearchClient, itemIndex, onDeleteRes, item.name);
+        const itemIsInMeilisearch =  await checkItemExist(meilisearchClient, itemIndex,item.id);
+        if(itemIsInMeilisearch)
+        {
+          const onDeleteRes = await meilisearchClient.index(itemIndex).deleteDocument(item.id);
+          logTaskCompletion(meilisearchClient, itemIndex, onDeleteRes, item.name);
+        }
       } catch (err) {
         console.log('There was a problem deleting ' + item + 'to meilisearch ' + err);
       }
@@ -229,13 +244,17 @@ const searchPlugin = async (
         return;
       }
 
+      
       try {
         await meilisearchClient.getIndex(itemIndex);
-        const document = await parseItem(item, etherpad);
-        const onUpdateRes = await meilisearchClient.index(itemIndex).updateDocuments([document]);
-        logTaskCompletion(meilisearchClient, itemIndex, onUpdateRes, item.name);
+        const itemIsInMeilisearch =  await checkItemExist(meilisearchClient, itemIndex,item.id);
+        if (itemIsInMeilisearch){
+          const document = await parseItem(item, etherpad);
+          const onUpdateRes = await meilisearchClient.index(itemIndex).updateDocuments([document]);
+          logTaskCompletion(meilisearchClient, itemIndex, onUpdateRes, item.name);
+        }
       } catch (err) {
-        console.log('There was a problem deleting ' + item + 'to meilisearch ' + err);
+        console.log('There was a problem updading ' + item + 'to meilisearch ' + err);
       }
     },
   );
