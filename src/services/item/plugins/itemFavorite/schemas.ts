@@ -10,7 +10,7 @@ export default {
         item: {
           $ref: 'http://graasp.org/items/#/definitions/item',
         },
-        createdAt: {},
+        createdAt: { type: 'string' },
       },
       additionalProperties: false,
     },
