@@ -8,10 +8,10 @@ export class Migrations1683637099103 implements MigrationInterface {
       'CREATE TABLE "item_favorite" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "member_id" uuid NOT NULL, "item_id" uuid NOT NULL, CONSTRAINT "favorite_key" UNIQUE ("member_id", "item_id"), CONSTRAINT "PK_495675cec4fb09666704e4f610f" PRIMARY KEY ("id"))',
     );
     await queryRunner.query(
-      'ALTER TABLE "item_favorite" ADD CONSTRAINT "FK_832e296058cb8be34ad6986dac9" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION',
+      'ALTER TABLE "item_favorite" ADD CONSTRAINT "FK_a169d350392956511697f7e7d38" FOREIGN KEY ("member_id") REFERENCES "member"("id") ON DELETE CASCADE ON UPDATE NO ACTION',
     );
     await queryRunner.query(
-      'ALTER TABLE "item_favorite" ADD CONSTRAINT "FK_fa18c8a7e7b3aa288ebd18885d0" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE CASCADE',
+      'ALTER TABLE "item_favorite" ADD CONSTRAINT "FK_10ea93bde287762010695378f94" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE CASCADE ON UPDATE CASCADE',
     );
 
     // Backfill old favorites
@@ -28,10 +28,10 @@ export class Migrations1683637099103 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      'ALTER TABLE "item_favorite" DROP CONSTRAINT "FK_fa18c8a7e7b3aa288ebd18885d0"',
+      'ALTER TABLE "item_favorite" DROP CONSTRAINT "FK_10ea93bde287762010695378f94"',
     );
     await queryRunner.query(
-      'ALTER TABLE "item_favorite" DROP CONSTRAINT "FK_832e296058cb8be34ad6986dac9"',
+      'ALTER TABLE "item_favorite" DROP CONSTRAINT "FK_a169d350392956511697f7e7d38"',
     );
     await queryRunner.query('DROP TABLE "item_favorite"');
   }
