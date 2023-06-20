@@ -20,9 +20,12 @@ export class FavoriteService {
       throw new UnauthorizedMember(actor);
     }
 
+    // Really unoptimal of checking the permissions, but we currently need to do this as the user might lose the permission for an Item.
     return (await itemFavoriteRepository.getFavoriteForMember(actor.id)).filter(
       async (f) =>
-        (await validatePermission(repositories, PermissionLevel.Read, actor, f.item)) !== null,
+        (await validatePermission(repositories, PermissionLevel.Read, actor, f.item).catch(
+          () => null,
+        )) !== null,
     );
   }
 
