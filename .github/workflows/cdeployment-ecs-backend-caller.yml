@@ -12,7 +12,7 @@ jobs:
     # Replace with repository name
     name: Graasp
     # Replace 'main' with the hash of a commit, so it points to an specific version of the reusable workflow that is used
-    uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@backend-environments
+    uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@v1
 
     # abort previous deployment if a newer one is in progress
     concurrency:
