@@ -52,10 +52,6 @@ jobs:
       container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
       container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
       container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
-      db-host: ${{ secrets.DB_HOST }}
-      db-name: ${{ secrets.DB_NAME }}
-      db-password: ${{ secrets.DB_PASSWORD }}
-      db-username: ${{ secrets.DB_USERNAME }}
       analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_DEV }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_DEV }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
@@ -66,6 +62,11 @@ jobs:
       client-host: ${{ secrets.CLIENT_HOST_DEV }}
       cookie-domain: ${{ secrets.COOKIE_DOMAIN_DEV }}
       cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_DEV }}
+      db-host: ${{ secrets.DB_HOST }}
+      db-name: ${{ secrets.DB_NAME }}
+      db-password: ${{ secrets.DB_PASSWORD }}
+      db-username: ${{ secrets.DB_USERNAME }}
+      db-read-replica-host: ${{ secrets.DB_READ_REPLICA_HOST }}
       email-links-host: ${{ secrets.EMAIL_LINKS_HOST_DEV }}
       embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_DEV }}
