@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.1](https://github.com/graasp/graasp/compare/v1.0.0...v1.0.1) (2023-06-20)
+
+
+### Bug Fixes
+
+* fix deploy workflows ([#401](https://github.com/graasp/graasp/issues/401)) ([8f3a404](https://github.com/graasp/graasp/commit/8f3a404860270f7c17f55a2d254c183e1acb016f))
+
+## [1.0.0](https://github.com/graasp/graasp/compare/v0.9.0...v1.0.0) (2023-06-20)
+
+
+### Features
+
+* add get recent collections endpoint ([#393](https://github.com/graasp/graasp/issues/393)) ([5c91bf2](https://github.com/graasp/graasp/commit/5c91bf299224c801e508a5e3af3db7a9ccd075f0))
+
+
+### Bug Fixes
+
+* create membership for copied item ([#391](https://github.com/graasp/graasp/issues/391)) ([0e8af6c](https://github.com/graasp/graasp/commit/0e8af6c7281493c924f8bfa58d328a23907fe25d))
+* h5p secret key env var typo ([#387](https://github.com/graasp/graasp/issues/387)) ([5e59ae4](https://github.com/graasp/graasp/commit/5e59ae491aac520d4e1510c7dbf3bba43106b8c4))
+* update deployment workflows ([#400](https://github.com/graasp/graasp/issues/400)) ([4bfac3b](https://github.com/graasp/graasp/commit/4bfac3bb779332baced9d6aaa1043b75e9ebce25))
+
+
+### chore
+
+* release 1.0.0 ([cf11c2c](https://github.com/graasp/graasp/commit/cf11c2c7faedb2c973fcff45c12d5ced845e54a9))
+
 ## [0.9.0](https://github.com/graasp/graasp/compare/v0.8.1...v0.9.0) (2023-04-20)
 
 
