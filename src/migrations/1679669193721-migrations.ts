@@ -129,8 +129,10 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'CREATE TABLE "recycled_item_data" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid, "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "recycled-item-data" UNIQUE ("item_path"), CONSTRAINT "PK_d6f781e5054e98174c35c87c225" PRIMARY KEY ("id"))',
     );
+
+    // we use item_id because item_path was not constrained in the previous schema
     await queryRunner.query(
-      'INSERT INTO "recycled_item_data" (id, creator_id, item_path, created_at) SELECT id, creator, item_path, created_at FROM recycled_item_old',
+      'INSERT INTO "recycled_item_data" (id, creator_id, item_path, created_at) SELECT recycled_item_old.id, creator, item.path, recycled_item_old.created_at FROM recycled_item_old LEFT JOIN item ON item.id = item_id',
     );
 
     // item like
