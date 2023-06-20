@@ -2,7 +2,11 @@ import { Hostname, PermissionLevel, UUID } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import { MailerDecoration } from '../../plugins/mailer';
-import { UnauthorizedMember } from '../../utils/errors';
+import {
+  CannotDeleteOnlyAdmin,
+  ItemMembershipNotFound,
+  UnauthorizedMember,
+} from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
@@ -177,6 +181,20 @@ export class ItemMembershipService {
     // check memberships
     const { item } = await itemMembershipRepository.get(itemMembershipId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+
+    // check if last admin, in which case prevent deletion
+    const { data: itemIdToMemberships } = await itemMembershipRepository.getForManyItems([item]);
+    if (!(item.id in itemIdToMemberships)) {
+      throw new ItemMembershipNotFound(itemMembershipId);
+    }
+
+    const memberships = itemIdToMemberships[item.id];
+    const otherAdminMemberships = memberships.filter(
+      (m) => m.id !== itemMembershipId && m.permission === PermissionLevel.Admin,
+    );
+    if (otherAdminMemberships.length === 0) {
+      throw new CannotDeleteOnlyAdmin(item);
+    }
 
     return itemMembershipRepository.deleteOne(itemMembershipId, { purgeBelow: args.purgeBelow });
   }
