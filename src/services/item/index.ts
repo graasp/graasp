@@ -35,6 +35,7 @@ import graaspFileItem from './plugins/file';
 import graaspH5PPlugin from './plugins/h5p';
 import graaspZipPlugin from './plugins/importExport';
 import graaspCategoryPlugin from './plugins/itemCategory';
+import graaspFavoritePlugin from './plugins/itemFavorite';
 import graaspItemFlags from './plugins/itemFlag';
 import graaspItemLikes from './plugins/itemLike';
 import graaspItemTags from './plugins/itemTag';
@@ -84,6 +85,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspItemLogin);
 
       fastify.register(graaspCategoryPlugin);
+
+      fastify.register(graaspFavoritePlugin);
 
       fastify.register(graaspItemPublish);
 

@@ -9,6 +9,7 @@ import {
   getCollectionsForMember,
   getInformations,
   getManyInformations,
+  getMostLikedItems,
   getRecentCollections,
   publishItem,
   unpublishItem,
@@ -62,6 +63,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ member, query: { itemId } }) => {
       return pIS.getMany(member, buildRepositories(), itemId);
+    },
+  );
+
+  fastify.get<{ Querystring: { limit?: number } }>(
+    '/collections/liked',
+    {
+      preHandler: fastify.fetchMemberInSession,
+      schema: getMostLikedItems,
+    },
+    async ({ member, query: { limit } }) => {
+      return pIS.getLikedItems(member, buildRepositories(), limit);
     },
   );
 

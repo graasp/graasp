@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/graasp/graasp/compare/v1.0.1...v1.1.0) (2023-06-21)
+
+
+### Features
+
+* refactor favorite items ([#379](https://github.com/graasp/graasp/issues/379)) ([6e4111f](https://github.com/graasp/graasp/commit/6e4111f3870b7c470a1b87b6e1e2f9471e94c461))
+
+
+### Bug Fixes
+
+* fix migrations for recycled items ([#405](https://github.com/graasp/graasp/issues/405)) ([e48c88d](https://github.com/graasp/graasp/commit/e48c88dfe6d411853db07a2f65d91b29cee6947f))
+
 ## [1.0.1](https://github.com/graasp/graasp/compare/v1.0.0...v1.0.1) (2023-06-20)
 
 

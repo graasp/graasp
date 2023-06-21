@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -64,7 +64,7 @@
     "@fastify/static": "6.10.2",
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
-    "@graasp/sdk": "1.0.0-rc1",
+    "@graasp/sdk": "1.0.0",
     "@graasp/translations": "1.14.0",
     "@sentry/node": "7.53.1",
     "@sentry/profiling-node": "0.3.0",
