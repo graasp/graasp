@@ -13,6 +13,7 @@ import { PublisherRepository } from '../services/item/plugins/app/publisherRepos
 import { AppRepository } from '../services/item/plugins/app/repository';
 import { CategoryRepository } from '../services/item/plugins/itemCategory/repositories/category';
 import { ItemCategoryRepository } from '../services/item/plugins/itemCategory/repositories/itemCategory';
+import { FavoriteRepository } from '../services/item/plugins/itemFavorite/repositories/favorite';
 import { ItemFlagRepository } from '../services/item/plugins/itemFlag/repository';
 import { ItemLikeRepository } from '../services/item/plugins/itemLike/repository';
 import { ItemTagRepository } from '../services/item/plugins/itemTag/repository';
@@ -38,6 +39,7 @@ export type Repositories = {
   chatMessageRepository: typeof ChatMessageRepository;
   invitationRepository: typeof InvitationRepository;
   itemCategoryRepository: typeof ItemCategoryRepository;
+  itemFavoriteRepository: typeof FavoriteRepository;
   itemFlagRepository: typeof ItemFlagRepository;
   itemLikeRepository: typeof ItemLikeRepository;
   itemLoginRepository: typeof ItemLoginRepository;
@@ -98,6 +100,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemCategoryRepository: manager
     ? manager.withRepository(ItemCategoryRepository)
     : ItemCategoryRepository,
+  itemFavoriteRepository: manager ? manager.withRepository(FavoriteRepository) : FavoriteRepository,
   categoryRepository: manager ? manager.withRepository(CategoryRepository) : CategoryRepository,
   itemTagRepository: manager ? manager.withRepository(ItemTagRepository) : ItemTagRepository,
   itemValidationRepository: manager

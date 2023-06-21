@@ -92,8 +92,10 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'INSERT INTO "item" (id, name, type, description, path, creator_id, extra, settings, created_at, updated_at) SELECT id, name, type, description, path, creator, extra, settings, created_at, updated_at from item_old',
     );
+
+    // we use item_id instead of item_path since it is constrained
     await queryRunner.query(`UPDATE "item" as a1 SET deleted_at = (
-                        SELECT created_at FROM recycled_item_old WHERE a1.path = recycled_item_old.item_path)`);
+                        SELECT created_at FROM recycled_item_old WHERE a1.id = recycled_item_old.item_id)`);
 
     await queryRunner.query(`CREATE TABLE "item_membership" (
             "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
@@ -129,8 +131,10 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'CREATE TABLE "recycled_item_data" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "creator_id" uuid, "item_path" ltree NOT NULL REFERENCES item("path") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "recycled-item-data" UNIQUE ("item_path"), CONSTRAINT "PK_d6f781e5054e98174c35c87c225" PRIMARY KEY ("id"))',
     );
+
+    // we use item_id because item_path was not constrained in the previous schema
     await queryRunner.query(
-      'INSERT INTO "recycled_item_data" (id, creator_id, item_path, created_at) SELECT id, creator, item_path, created_at FROM recycled_item_old',
+      'INSERT INTO "recycled_item_data" (id, creator_id, item_path, created_at) SELECT recycled_item_old.id, creator, item.path, recycled_item_old.created_at FROM recycled_item_old LEFT JOIN item ON item.id = item_id',
     );
 
     // item like
@@ -1193,7 +1197,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
     await queryRunner.query(
-      `INSERT INTO "recycled_item_old" (id,creator, item_path, item_id, created_at) SELECT rid.id, rid.creator_id, item_path, i.id, rid.created_at FROM recycled_item_data as rid
+      `INSERT INTO "recycled_item_old" (id, creator, item_path, item_id, created_at) SELECT rid.id, rid.creator_id, item_path, i.id, rid.created_at FROM recycled_item_data as rid
       INNER JOIN item as i on path=item_path
       `,
     );

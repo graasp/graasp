@@ -136,7 +136,7 @@ const values = {
     {
       id: '3f901df1-d246-d672-bb01-34269f4c0fed',
       item_path: recycledItemPath,
-      item_id: itemId,
+      item_id: recycledItemId,
       creator: memberId,
       created_at: '2021-05-31T12:40:04.571Z',
     },
