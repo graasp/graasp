@@ -92,8 +92,10 @@ export class Migrations1679669193721 implements MigrationInterface {
     await queryRunner.query(
       'INSERT INTO "item" (id, name, type, description, path, creator_id, extra, settings, created_at, updated_at) SELECT id, name, type, description, path, creator, extra, settings, created_at, updated_at from item_old',
     );
+
+    // we use item_id instead of item_path since it is constrained
     await queryRunner.query(`UPDATE "item" as a1 SET deleted_at = (
-                        SELECT created_at FROM recycled_item_old WHERE a1.path = recycled_item_old.item_path)`);
+                        SELECT created_at FROM recycled_item_old WHERE a1.id = recycled_item_old.item_id)`);
 
     await queryRunner.query(`CREATE TABLE "item_membership" (
             "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
@@ -1195,7 +1197,7 @@ export class Migrations1679669193721 implements MigrationInterface {
             "created_at" timestamp NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc')
             )`);
     await queryRunner.query(
-      `INSERT INTO "recycled_item_old" (id,creator, item_path, item_id, created_at) SELECT rid.id, rid.creator_id, item_path, i.id, rid.created_at FROM recycled_item_data as rid
+      `INSERT INTO "recycled_item_old" (id, creator, item_path, item_id, created_at) SELECT rid.id, rid.creator_id, item_path, i.id, rid.created_at FROM recycled_item_data as rid
       INNER JOIN item as i on path=item_path
       `,
     );
