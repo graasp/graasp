@@ -7045,6 +7045,7 @@ __metadata:
     "@fastify/static": 6.10.2
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
+    "@graasp/etherpad-api": 2.1.1
     "@graasp/sdk": 1.1.0
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.53.1
@@ -7096,6 +7097,7 @@ __metadata:
     jsonwebtoken: 9.0.0
     lodash.groupby: 4.6.0
     lodash.uniqby: 4.7.0
+    luxon: 3.3.0
     mime: 3.0.0
     mime-types: 2.1.35
     mmmagic: 0.5.3
@@ -8602,6 +8604,13 @@ __metadata:
   version: 0.3.3
   resolution: "lru_map@npm:0.3.3"
   checksum: ca9dd43c65ed7a4f117c548028101c5b6855e10923ea9d1f635af53ad20c5868ff428c364d454a7b57fe391b89c704982275410c3c5099cca5aeee00d76e169a
+  languageName: node
+  linkType: hard
+
+"luxon@npm:3.3.0":
+  version: 3.3.0
+  resolution: "luxon@npm:3.3.0"
+  checksum: 50cf17a0dc155c3dcacbeae8c0b7e80db425e0ba97b9cbdf12a7fc142d841ff1ab1560919f033af46240ed44e2f70c49f76e3422524c7fc8bb8d81ca47c66187
   languageName: node
   linkType: hard
 
