@@ -14,6 +14,7 @@ import { App } from '../services/item/plugins/app/entities/app';
 import { Publisher } from '../services/item/plugins/app/entities/publisher';
 import { Category } from '../services/item/plugins/itemCategory/entities/Category';
 import { ItemCategory } from '../services/item/plugins/itemCategory/entities/ItemCategory';
+import { ItemFavorite } from '../services/item/plugins/itemFavorite/entities/ItemFavorite';
 import { ItemFlag } from '../services/item/plugins/itemFlag/itemFlag';
 import { ItemLike } from '../services/item/plugins/itemLike/itemLike';
 import { ItemTag } from '../services/item/plugins/itemTag/ItemTag';
@@ -80,6 +81,7 @@ export const AppDataSource = new DataSource({
     ItemLike,
     ItemTag,
     Category,
+    ItemFavorite,
     ItemCategory,
     ItemFlag,
     Invitation,
