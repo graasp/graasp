@@ -120,6 +120,12 @@ export class ItemPublishedService {
     return itemPublishedRepository.getItemsForMember(memberId);
   }
 
+  async getLikedItems(actor: Actor, repositories: Repositories, limit?: number) {
+    const { itemPublishedRepository } = repositories;
+    const items = await itemPublishedRepository.getLikedItems(limit);
+    return filterOutHiddenItems(repositories, items);
+  }
+
   // filter out by categories, not defined will return all items
   async getItemsByCategories(actor: Actor, repositories: Repositories, categoryIds?: string[]) {
     const { itemPublishedRepository } = repositories;
@@ -131,6 +137,14 @@ export class ItemPublishedService {
 
     // get by categories
     const items = await itemPublishedRepository.getByCategories(categoryIds);
+
+    return filterOutHiddenItems(repositories, items);
+  }
+
+  async getRecentItems(actor: Actor, repositories: Repositories, limit?: number) {
+    const { itemPublishedRepository } = repositories;
+
+    const items = await itemPublishedRepository.getRecentItems(limit);
 
     return filterOutHiddenItems(repositories, items);
   }

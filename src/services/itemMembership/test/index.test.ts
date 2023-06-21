@@ -4,8 +4,8 @@ import { v4 } from 'uuid';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import {
+  CannotDeleteOnlyAdmin,
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
@@ -757,6 +757,7 @@ describe('Membership routes tests', () => {
         expect(await ItemMembershipRepository.count()).toEqual(initialCount);
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
       });
+
       it('Cannot delete membership if can only write', async () => {
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         const { item } = await saveItemAndMembership({ member });
@@ -776,6 +777,18 @@ describe('Membership routes tests', () => {
 
         expect(response.json()).toEqual(new MemberCannotAdminItem(item.id));
         expect(await ItemMembershipRepository.count()).toEqual(initialCount);
+      });
+
+      it('Cannot delete last admin membership', async () => {
+        const { item, itemMembership } = await saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.DELETE,
+          url: `/item-memberships/${itemMembership.id}`,
+        });
+        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
+
+        expect(response.json()).toMatchObject(new CannotDeleteOnlyAdmin(expect.anything()));
       });
     });
   });

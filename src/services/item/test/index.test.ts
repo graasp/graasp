@@ -1,17 +1,12 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
-import { Not } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
   FolderItemExtraProperties,
-  FolderItemType,
   HttpMethod,
   ItemTagType,
   ItemType,
-  MAX_DESCENDANTS_FOR_COPY,
-  MAX_DESCENDANTS_FOR_DELETE,
-  MAX_DESCENDANTS_FOR_MOVE,
   MAX_NUMBER_OF_CHILDREN,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TREE_LEVELS,
@@ -26,7 +21,6 @@ import {
   MemberCannotAccess,
   MemberCannotWriteItem,
   TooManyChildren,
-  TooManyDescendants,
 } from '../../../utils/errors';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import {
@@ -38,7 +32,6 @@ import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
-import { pathToId } from '../utils';
 import {
   expectItem,
   expectManyItems,
@@ -71,7 +64,9 @@ const saveNbOfItems = async ({
   nb,
   actor,
   parentItem,
+  member,
 }: {
+  member?: Member;
   nb: number;
   actor: Member;
   parentItem?: Item;
@@ -80,8 +75,9 @@ const saveNbOfItems = async ({
   for (let i = 0; i < nb; i++) {
     const { item } = await saveItemAndMembership({
       item: getDummyItem({ name: 'item ' + i }),
-      member: actor,
+      member: member ?? actor,
       parentItem,
+      creator: actor,
     });
     items.push(item);
   }
@@ -2338,15 +2334,50 @@ describe('Item routes tests', () => {
     });
 
     describe('Signed In', () => {
-      const name = 'item to duplicate';
-
       beforeEach(async () => {
         ({ app, actor } = await build());
       });
 
-      it('Copy successfully from root to item', async () => {
+      it('Copy successfully from root to root', async () => {
+        const items = await saveNbOfItems({ nb: 3, actor });
+        const initialCount = await ItemRepository.count();
+        const initialCountMembership = await ItemMembershipRepository.count();
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/copy?${qs.stringify(
+            { id: items.map(({ id }) => id) },
+            { arrayFormat: 'repeat' },
+          )}`,
+          payload: {},
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // wait a bit for tasks to complete
+        await new Promise((res) =>
+          setTimeout(async () => {
+            // contains twice the items (and the target item)
+            const newCount = await ItemRepository.count();
+            expect(newCount).toEqual(initialCount + items.length);
+            for (const { name } of items) {
+              const itemsInDb = await ItemRepository.findBy({ name });
+              expect(itemsInDb).toHaveLength(2);
+            }
+
+            // check it created a new membership per item
+            const newCountMembership = await ItemMembershipRepository.count();
+            expect(newCountMembership).toEqual(initialCountMembership + items.length);
+
+            res(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME),
+        );
+      });
+
+      it('Copy successfully from root to item with admin rights', async () => {
         const { item: targetItem } = await saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor });
+        const initialCountMembership = await ItemMembershipRepository.count();
         const initialCount = await ItemRepository.count();
 
         const response = await app.inject({
@@ -2372,14 +2403,65 @@ describe('Item routes tests', () => {
               const itemsInDb = await ItemRepository.findBy({ name });
               expect(itemsInDb).toHaveLength(2);
             }
+
+            // check it did not create a new membership because user is admin of parent
+            const newCountMembership = await ItemMembershipRepository.count();
+            expect(newCountMembership).toEqual(initialCountMembership);
+
             res(true);
           }, MULTIPLE_ITEMS_LOADING_TIME),
         );
       });
+
+      it('Copy successfully from root to item with write rights', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: targetItem } = await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Write,
+        });
+        const items = await saveNbOfItems({ nb: 3, actor: member, member: actor });
+        const initialCountMembership = await ItemMembershipRepository.count();
+        const initialCount = await ItemRepository.count();
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/copy?${qs.stringify(
+            { id: items.map(({ id }) => id) },
+            { arrayFormat: 'repeat' },
+          )}`,
+          payload: {
+            parentId: targetItem.id,
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // wait a bit for tasks to complete
+        await new Promise((res) =>
+          setTimeout(async () => {
+            // contains twice the items (and the target item)
+            const newCount = await ItemRepository.count();
+            expect(newCount).toEqual(initialCount + items.length);
+            for (const { name } of items) {
+              const itemsInDb = await ItemRepository.findBy({ name });
+              expect(itemsInDb).toHaveLength(2);
+            }
+
+            // check it created a new membership because user is writer of parent
+            const newCountMembership = await ItemMembershipRepository.count();
+            expect(newCountMembership).toEqual(initialCountMembership + items.length);
+
+            res(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME),
+        );
+      });
+
       it('Copy successfully from item to root', async () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
         const initialCount = await ItemRepository.count();
+        const initialCountMembership = await ItemMembershipRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -2402,6 +2484,11 @@ describe('Item routes tests', () => {
               const itemsInDb = await ItemRepository.findBy({ name });
               expect(itemsInDb).toHaveLength(2);
             }
+
+            // check it did not create a new membership because user is admin of parent
+            const newCountMembership = await ItemMembershipRepository.count();
+            expect(newCountMembership).toEqual(initialCountMembership + items.length);
+
             res(true);
           }, MULTIPLE_ITEMS_LOADING_TIME),
         );

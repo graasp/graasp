@@ -9,6 +9,8 @@ import {
   getCollectionsForMember,
   getInformations,
   getManyInformations,
+  getMostLikedItems,
+  getRecentCollections,
   publishItem,
   unpublishItem,
 } from './schemas';
@@ -64,6 +66,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  fastify.get<{ Querystring: { limit?: number } }>(
+    '/collections/liked',
+    {
+      preHandler: fastify.fetchMemberInSession,
+      schema: getMostLikedItems,
+    },
+    async ({ member, query: { limit } }) => {
+      return pIS.getLikedItems(member, buildRepositories(), limit);
+    },
+  );
+
   fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/publish',
     {
@@ -87,6 +100,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return db.transaction(async (manager) => {
         return pIS.delete(member, buildRepositories(manager), params.itemId);
       });
+    },
+  );
+
+  fastify.get<{ Querystring: { limit?: number } }>(
+    '/collections/recent',
+    {
+      preHandler: fastify.fetchMemberInSession,
+      schema: getRecentCollections,
+    },
+    async ({ member, query: { limit } }) => {
+      return pIS.getRecentItems(member, buildRepositories(), limit);
     },
   );
 };

@@ -69,19 +69,15 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     return entry;
   },
 
-  // async arePublished(items: Item[]) {
-  //   const query = this.createQueryBuilder('publishedItem')
-  //     .leftJoinAndSelect('publishedItem.item', 'item')
-  //     .where('item.path @> ARRAY[:...paths]::ltree[]', { paths: items.map(({ path }) => path) });
+  async getRecentItems(limit: number = 10): Promise<Item[]> {
+    const publishedInfos = await this.createQueryBuilder('item_published')
+      .leftJoinAndSelect('item_published.item', 'item')
+      .orderBy('item.createdAt', 'DESC')
+      .take(limit)
+      .getMany();
 
-  //   const arePublished = await query.getMany();
-
-  //   return mapById({
-  //     keys: items.map(({ path }) => path),
-  //     findElement: (path) => Boolean(arePublished.find(({ item }) => path.includes(item.path))),
-  //     buildError: (id) => new Error(`item with ${id} is not published`), // TODO
-  //   });
-  // },
+    return publishedInfos.map(({ item }) => item);
+  },
 
   // QUESTION: where should we define this? mix between publish and category
   /**
@@ -118,5 +114,19 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       }
     });
     return query.getMany();
+  },
+
+  // return public items sorted by most liked
+  // bug: does not take into account child items
+  async getLikedItems(limit: number = 10): Promise<Item[]> {
+    const itemPublished = await this.createQueryBuilder('item_published')
+      .leftJoinAndSelect('item_published.item', 'i')
+      .innerJoin('item_like', 'il', 'il.item_id = i.id')
+      .groupBy(['i.id', 'item_published.id'])
+      .orderBy('COUNT(il.id)', 'DESC')
+      .limit(limit)
+      .getMany();
+
+    return itemPublished.map(({ item }) => item);
   },
 });

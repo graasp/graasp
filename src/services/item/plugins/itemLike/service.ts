@@ -2,7 +2,6 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import ItemService from '../../../item/service';
 import { Actor } from '../../../member/entities/member';
-import { CannotGetOthersLikes } from './errors';
 
 export class ItemLikeService {
   private itemService: ItemService;

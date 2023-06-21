@@ -359,6 +359,32 @@ export class AuthenticationError extends CoreError {
   }
 }
 
+export class ItemNotFolder extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR029',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Item is not a folder',
+      },
+      data,
+    );
+  }
+}
+
+export class CannotDeleteOnlyAdmin extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR030',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: 'Cannot delete the only admin on item',
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);
@@ -369,18 +395,5 @@ export class UnexpectedError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR999', statusCode: 500, message: FAILURE_MESSAGES.UNEXPECTED_ERROR }, data);
     this.origin = 'unknown';
-  }
-}
-
-export class ItemNotFolder extends CoreError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GERR001',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Item is not a folder',
-      },
-      data,
-    );
   }
 }
