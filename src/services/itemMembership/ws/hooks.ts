@@ -1,10 +1,3 @@
-// import {
-//   Actor,
-//   DatabaseTransactionHandler,
-//   TaskRunner,
-//   getChildFromPath,
-// } from '@graasp/sdk';
-// import { AccessDenied, NotFound, WebSocketService } from 'graasp-websockets';
 import { PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../utils/repositories';
@@ -15,19 +8,6 @@ import { ItemMembership } from '../entities/ItemMembership';
 import ItemMembershipService from '../service';
 import { ItemMembershipEvent, itemMembershipsTopic } from './events';
 
-// import { SharedItemsEvent, memberItemsTopic } from '../../items/ws/events';
-// import { ItemMembership } from '../entities/ItemMembership';
-// import { ItemMembershipEvent, itemMembershipsTopic } from './events';
-
-// /**
-//  * Registers real-time websocket events for the item memberships service
-//  * @param websockets Websocket service instance of the server
-//  * @param runner TaskRunner executor of the server
-//  * @param itemService Item database layer
-//  * @param itemMembershipService ItemMembership database layer
-//  * @param itemMembershipTaskManager ItemMembership task manager
-//  * @param validationDbHandler Database transaction handler used to validate subscriptions
-//  */
 export function registerItemMembershipWsHooks(
   repositories: Repositories,
   websockets: WebsocketService,
