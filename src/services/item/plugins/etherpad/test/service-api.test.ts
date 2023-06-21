@@ -2,18 +2,10 @@ import { StatusCodes } from 'http-status-codes';
 import { DateTime } from 'luxon';
 import nock from 'nock';
 
-import {
-  Actor,
-  HttpMethod,
-  Item,
-  PermissionLevel,
-  PostHookHandlerType,
-  PreHookHandlerType,
-  TaskStatus,
-} from '@graasp/sdk';
+import { HttpMethod, Item, PermissionLevel } from '@graasp/sdk';
 
-import { MAX_SESSIONS_IN_COOKIE } from '../src/constants';
-import plugin from '../src/service-api';
+import { MAX_SESSIONS_IN_COOKIE } from '../constants';
+import plugin from '../service-api';
 import { setUpApi } from './api';
 import { BuildAppType, buildApp } from './app';
 import { TEST_ENV } from './config';

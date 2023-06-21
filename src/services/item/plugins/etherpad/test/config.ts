@@ -1,6 +1,4 @@
-import 'jest-ts-auto-mock';
-
-import { EtherpadPluginOptions } from '../src/types';
+import { EtherpadPluginOptions } from '../types';
 
 export const TEST_ENV: EtherpadPluginOptions = {
   url: 'http://localhost:9001',

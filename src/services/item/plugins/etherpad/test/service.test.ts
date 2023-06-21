@@ -1,4 +1,4 @@
-import { EtherpadItemService } from '../src/service';
+import { EtherpadItemService } from '../service';
 
 describe('Service helper methods', () => {
   it('builds correct pad ID', () => {

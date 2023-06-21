@@ -1,5 +1,5 @@
-import { EtherpadPluginOptions } from '../src';
-import { validatePluginOptions } from '../src/utils';
+import { EtherpadPluginOptions } from '../types';
+import { validatePluginOptions } from '../utils';
 import { TEST_ENV } from './config';
 
 describe('Utils', () => {
