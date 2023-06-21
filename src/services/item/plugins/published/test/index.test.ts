@@ -266,6 +266,12 @@ describe('Item Published', () => {
 
       it('Get 2 most liked collections without hidden', async () => {
         // hide first collection
+        const hiddenCollection = collections[0];
+        await ItemTagRepository.save({
+          item: hiddenCollection,
+          creator: actor,
+          type: ItemTagType.Hidden,
+        });
 
         const res = await app.inject({
           method: HttpMethod.GET,
