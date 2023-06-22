@@ -36,7 +36,14 @@ export class ActionService {
   ): Promise<void> {
     const { headers } = request;
 
-    // todo: prevent saving here if member disabled or if item disabled analytics
+    // prevent saving if member disabled
+    const enableMemberSaving = member?.extra?.enableSaveActions ?? true;
+    if (!enableMemberSaving) {
+      return [];
+    }
+
+    // prevent saving if item disabled analytics
+    actions.filter((action) => action.item?.settings?.enableSaveActions ?? true);
 
     const view = getView(headers, this.hosts);
     // warning: addresses might contained spoofed ips

@@ -19,12 +19,12 @@ export const validateAggregateRequest = (
   aggregateBy: AggregateAttribute[],
 ) => {
   // Aggregate by user is not allowed
-  if (aggregateBy.includes('user')) {
+  if (aggregateBy?.includes('user')) {
     return false;
   }
 
   // Perform aggregation on a grouping expression is not allowed
-  if (aggregateBy.includes(aggregateMetric)) {
+  if (aggregateBy?.includes(aggregateMetric)) {
     return false;
   }
 
@@ -33,7 +33,7 @@ export const validateAggregateRequest = (
     return false;
   }
   let falseFlag = false;
-  aggregateBy.forEach((element) => {
+  aggregateBy?.forEach((element) => {
     if (!(countGroupBy.includes(element) || element === 'actionCount')) {
       falseFlag = true;
     }

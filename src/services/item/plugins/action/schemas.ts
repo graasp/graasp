@@ -102,7 +102,6 @@ export const getAggregateActions = {
       'countGroupBy',
       'aggregateFunction',
       'aggregateMetric',
-      'aggregateBy',
     ],
   },
 };
