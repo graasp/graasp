@@ -3196,9 +3196,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:1.0.0":
+"@graasp/sdk@github:graasp/graasp-sdk#162-add-alttext-to-settings-fileitem":
   version: 1.0.0
-  resolution: "@graasp/sdk@npm:1.0.0"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=63b87720f04b9c5dd1b1c1a97e38e1fec8475090"
   dependencies:
     "@aws-sdk/client-s3": 3.353.0
     "@fastify/secure-session": 6.1.0
@@ -3211,7 +3211,7 @@ __metadata:
     typeorm: 0.3.16
     uuid: 9.0.0
     validator: 13.9.0
-  checksum: b0df0352ea73445d3c98024e457dbaec1160cb2281865b017b82eba6595cc2a6d8d1e68aac8ee273c1cf453418329324865c4a4aa8be2c5ab859edb6259291e9
+  checksum: 141faa9187386f5427d00e022aa98997e1f8ffa56dcd003e6011307dd632e45759db62228b6e0d2f0fe7cbb03b630561eeda1ac525970851b75db9b2186439ac
   languageName: node
   linkType: hard
 
@@ -7039,7 +7039,7 @@ __metadata:
     "@fastify/static": 6.10.2
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
-    "@graasp/sdk": 1.0.0
+    "@graasp/sdk": "github:graasp/graasp-sdk#162-add-alttext-to-settings-fileitem"
     "@graasp/translations": 1.14.0
     "@sentry/node": 7.53.1
     "@sentry/profiling-node": 0.3.0
