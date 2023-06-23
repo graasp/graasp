@@ -45,7 +45,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     },
   });
 
-  // "install" custom schema for validating document items update
+  // "install" custom schema for validating file items update
   extendExtrasUpdateSchema(updateSchema(fileService.type));
 
   const fileItemService = new FileItemService(

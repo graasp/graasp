@@ -457,7 +457,6 @@ describe('File Item routes tests', () => {
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
         payload: { extra: { [FILE_ITEM_TYPE]: { altText: 'new name' } } },
       });
-      console.log(response.json());
       expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
     });
 
