@@ -1,7 +1,7 @@
 import { UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
-import { DEFAULT_ACTIONS_SAMPLE_SIZE, VIEW_UNKNOWN_NAME } from '../constants/constants';
+import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
 import {
   AggregateAttribute,
@@ -71,7 +71,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
    * @param filters.view get actions only for a given view
    */
   async getAggregationForItem(
-    itemId: UUID,
+    itemPath: UUID,
     filters?: { sampleSize?: number; view?: string; type?: string },
     countGroupBy?: AggregateAttribute[],
     aggregateFunction?: AggregateFunctionType,
@@ -79,7 +79,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
     aggregateBy?: AggregateAttribute[],
   ): Promise<unknown[]> {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
-    const view = filters?.view ?? VIEW_UNKNOWN_NAME;
+    const view = filters?.view ?? 'Unknown';
     const type = filters?.type;
 
     // Get the actionCount from the first stage aggregation.
@@ -90,7 +90,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
     });
 
     // Filtering.
-    subquery.where('action.item_path <@ :path').where('action.view = :view').limit(size);
+    subquery.where('action.item_path <@ :path').andWhere('action.view = :view').limit(size);
     if (type) {
       subquery.andWhere('action.type = :type');
     }
@@ -102,7 +102,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
         'aggregateResult',
       )
       .from('(' + subquery.getQuery() + ')', 'subquery')
-      .setParameter('path', itemId)
+      .setParameter('path', itemPath)
       .setParameter('view', view);
     if (type) {
       query.setParameter('type', type);

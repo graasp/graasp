@@ -39,7 +39,7 @@ export class ActionService {
     // prevent saving if member disabled
     const enableMemberSaving = member?.extra?.enableSaveActions ?? true;
     if (!enableMemberSaving) {
-      return [];
+      return;
     }
 
     // prevent saving if item disabled analytics

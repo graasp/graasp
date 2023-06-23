@@ -1,3 +1,5 @@
+import { exportDefaultSpecifier } from '@babel/types';
+
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { Context, Hostname, PermissionLevel } from '@graasp/sdk';
@@ -53,7 +55,7 @@ export class ActionItemService {
     itemId: string,
     filters: { view?: Context; sampleSize?: number },
   ): Promise<Action[]> {
-    const { view = Context.BUILDER, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
+    const { view = Context.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
 
     // get item
     const item = await this.itemService.get(actor, repositories, itemId);
@@ -102,11 +104,11 @@ export class ActionItemService {
     },
   ): Promise<unknown[]> {
     // check rights
-    await this.itemService.get(actor, repositories, payload.itemId);
+    const item = await this.itemService.get(actor, repositories, payload.itemId);
 
     // get actions aggregation
     const aggregateActions = await repositories.actionRepository.getAggregationForItem(
-      payload.itemId,
+      item.path,
       {
         sampleSize: payload.sampleSize,
         view: payload.view,
@@ -141,14 +143,14 @@ export class ActionItemService {
     let actions;
     if (!permission || !actor) {
       actions = [];
+    } else {
+      // check membership and get actions
+      actions = await repositories.actionRepository.getForItem(item.path, {
+        sampleSize: payload.sampleSize,
+        view: payload.view,
+        memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
+      });
     }
-
-    // check membership and get actions
-    actions = await repositories.actionRepository.getForItem(item.path, {
-      sampleSize: payload.sampleSize,
-      view: payload.view,
-      memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
-    });
 
     // get memberships
     const inheritedMemberships =

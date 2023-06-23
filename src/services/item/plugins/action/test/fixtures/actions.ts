@@ -33,7 +33,7 @@ const buildActions = (item: Item, member: Member[]) => {
   let dummyAction;
 
   dummyAction = getDummyAction(
-    Context.BUILDER,
+    Context.Builder,
     ItemActionType.Create,
     new Date('2023-05-20T08:46:52.939Z'),
     member[0],
@@ -42,7 +42,7 @@ const buildActions = (item: Item, member: Member[]) => {
   actions.push(dummyAction);
 
   dummyAction = getDummyAction(
-    Context.BUILDER,
+    Context.Builder,
     ItemActionType.Update,
     new Date('2023-05-21T08:46:52.939Z'),
     member[0],
@@ -51,7 +51,7 @@ const buildActions = (item: Item, member: Member[]) => {
   actions.push(dummyAction);
 
   dummyAction = getDummyAction(
-    Context.BUILDER,
+    Context.Builder,
     ItemActionType.Update,
     new Date('2023-05-21T08:46:52.939Z'),
     member[0],
@@ -60,7 +60,7 @@ const buildActions = (item: Item, member: Member[]) => {
   actions.push(dummyAction);
 
   dummyAction = getDummyAction(
-    Context.BUILDER,
+    Context.Builder,
     ItemActionType.Update,
     new Date('2023-05-21T08:46:52.939Z'),
     member[1],
@@ -69,7 +69,7 @@ const buildActions = (item: Item, member: Member[]) => {
   actions.push(dummyAction);
 
   dummyAction = getDummyAction(
-    Context.BUILDER,
+    Context.Builder,
     ItemActionType.Update,
     new Date('2023-05-21T03:46:52.939Z'),
     member[2],
