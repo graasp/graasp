@@ -37,7 +37,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['user', 'createdDay', 'actionType'],
           aggregateFunction: 'avg',
           aggregateMetric: 'actionCount',
@@ -59,7 +59,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['user', 'createdDay', 'actionType'],
           aggregateFunction: 'avg',
           aggregateMetric: 'actionCount',
@@ -87,7 +87,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['user', 'createdDay', 'actionType'],
           aggregateFunction: 'avg',
           aggregateMetric: 'actionCount',
@@ -117,7 +117,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['user', 'createdDay'],
           aggregateFunction: 'count',
           aggregateMetric: 'actionCount',
@@ -145,7 +145,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['actionType'],
           aggregateFunction: 'sum',
           aggregateMetric: 'actionCount',
@@ -173,7 +173,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['createdTimeOfDay'],
           aggregateFunction: 'sum',
           aggregateMetric: 'actionCount',
@@ -201,7 +201,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['user', 'createdDay', 'actionType'],
           aggregateFunction: 'avg',
           aggregateMetric: 'actionCount',
@@ -223,7 +223,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['user', 'createdDay'],
           aggregateFunction: 'avg',
           aggregateMetric: 'actionCount',
@@ -245,7 +245,7 @@ describe('Aggregate Tests', () => {
 
         const parameters = {
           requestedSampleSize: 5000,
-          view: Context.BUILDER,
+          view: Context.Builder,
           countGroupBy: ['user', 'createdDay'],
           aggregateFunction: 'avg',
           aggregateMetric: 'user',
