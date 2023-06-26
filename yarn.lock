@@ -3196,9 +3196,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@graasp/sdk@npm:1.0.0"
+"@graasp/sdk@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@graasp/sdk@npm:1.1.0"
   dependencies:
     "@aws-sdk/client-s3": 3.353.0
     "@fastify/secure-session": 6.1.0
@@ -3211,16 +3211,16 @@ __metadata:
     typeorm: 0.3.16
     uuid: 9.0.0
     validator: 13.9.0
-  checksum: b0df0352ea73445d3c98024e457dbaec1160cb2281865b017b82eba6595cc2a6d8d1e68aac8ee273c1cf453418329324865c4a4aa8be2c5ab859edb6259291e9
+  checksum: d78fbef71fbaec66762433d571eb969c2c5c4b26fc8eec06a9b46e503ff507a9f8398414918e87f02319f1d0c08bbbc150e30f743a1d951caa45556e068fe474
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.14.0":
-  version: 1.14.0
-  resolution: "@graasp/translations@npm:1.14.0"
+"@graasp/translations@npm:1.15.0":
+  version: 1.15.0
+  resolution: "@graasp/translations@npm:1.15.0"
   dependencies:
     i18next: 22.4.15
-  checksum: 54001bdd6c37bb03a9f6d9677c10f8a7f29c1c488ec2d04b80aa92eeeb6582221c0171b4d9d66de048acca8707c46cf00d0660ad03e63b305d48cff0a71dd173
+  checksum: e073b83374462f2d108f1d697b7aa14460d05f4ec2e10757db0e0a0a72574bff4721f997851d8e88e871f3704c8bcf887533590dd7acdcbf9d607109bae25c8a
   languageName: node
   linkType: hard
 
@@ -7039,8 +7039,8 @@ __metadata:
     "@fastify/static": 6.10.2
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
-    "@graasp/sdk": 1.0.0
-    "@graasp/translations": 1.14.0
+    "@graasp/sdk": 1.1.0
+    "@graasp/translations": 1.15.0
     "@sentry/node": 7.53.1
     "@sentry/profiling-node": 0.3.0
     "@sentry/tracing": 7.53.1

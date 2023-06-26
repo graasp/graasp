@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { FileItemProperties, HttpMethod, IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { download, upload } from './schema';
+import { download, updateSchema, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
@@ -31,7 +31,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     items,
   } = fastify;
 
-  const { service: itemService } = items;
+  const { service: itemService, extendExtrasUpdateSchema } = items;
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -45,9 +45,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     },
   });
 
-  // if (!buildFilePath) {
-  //   throw new Error('graasp-plugin-file: buildFilePath is not defined');
-  // }
+  // "install" custom schema for validating file items update
+  extendExtrasUpdateSchema(updateSchema(fileService.type));
 
   const fileItemService = new FileItemService(
     fileService,

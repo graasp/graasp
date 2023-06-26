@@ -407,7 +407,6 @@ describe('Item routes tests', () => {
         method: HttpMethod.GET,
         url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
-      console.log(response.json());
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.json().errors[0]).toMatchObject(new MemberCannotAccess(item.id));
     });

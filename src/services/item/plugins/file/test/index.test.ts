@@ -442,6 +442,33 @@ describe('File Item routes tests', () => {
     });
   });
 
+  describe('Edit file - PATCH /items/id', () => {
+    let item, actor;
+
+    beforeEach(async () => {
+      ({ app, actor } = await build());
+      ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor }));
+    });
+
+    it('Edit file item altText', async () => {
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
+        payload: { extra: { [FILE_ITEM_TYPE]: { altText: 'new name' } } },
+      });
+      expect(response.json().extra[FILE_ITEM_TYPE].altText).toEqual('new name');
+    });
+
+    it('Cannot edit another file item field', async () => {
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
+        payload: { extra: { [FILE_ITEM_TYPE]: { size: 10 } } },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+    });
+  });
+
   describe('Hooks', () => {
     beforeEach(async () => {
       ({ app, actor } = await build());

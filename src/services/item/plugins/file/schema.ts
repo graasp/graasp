@@ -1,4 +1,8 @@
-const upload = {
+import S from 'fluent-json-schema';
+
+import { FileItemType } from '@graasp/sdk';
+
+export const upload = {
   querystring: {
     type: 'object',
     properties: {
@@ -8,7 +12,7 @@ const upload = {
   },
 };
 
-const download = {
+export const download = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   querystring: {
     type: 'object',
@@ -22,4 +26,13 @@ const download = {
   },
 };
 
-export { upload, download };
+export const updateSchema = (type: FileItemType) =>
+  S.object()
+    // TODO: .additionalProperties(false) in schemas don't seem to work properly and
+    // are very counter-intuitive. We should change to JTD format (as soon as it is supported)
+    // .additionalProperties(false)
+    .prop(
+      type,
+      S.object().additionalProperties(false).prop('altText', S.string()).required(['altText']),
+    )
+    .required([type]);
