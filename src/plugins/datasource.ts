@@ -53,14 +53,10 @@ export const AppDataSource = new DataSource({
     slaves,
   },
 
-  // cache: true, // TODO
-
-  logging: true,
+  // log queries that take more than 2s to execute
+  maxQueryExecutionTime: 2000,
+  logging: ['migration', 'error'],
   migrationsRun: true,
-
-  // TODO: REMOVE
-  // dropSchema: true,
-  // synchronize: true,
 
   entities: [
     Member,
