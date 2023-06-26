@@ -133,9 +133,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemLikes);
 
-        fastify.register(graaspChatbox);
+        await fastify.register(graaspChatbox);
 
-        fastify.register(actionItemPlugin);
+        await fastify.register(actionItemPlugin);
 
         fastify.register(itemController);
       });
