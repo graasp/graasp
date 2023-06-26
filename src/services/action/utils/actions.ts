@@ -16,27 +16,16 @@ export type AggregateAttribute =
   | 'actionLocation'
   | 'itemId'
   | 'actionCount';
-export type AggregateFunctionType = 'AVG' | 'COUNT' | 'SUM';
+export type AggregateFunctionType = 'avg' | 'count' | 'sum';
 
-export const convertToExpressionName = (attribute: AggregateAttribute): string => {
-  switch (attribute) {
-    case 'user':
-      return 'action.member_id';
-    case 'actionType':
-      return 'action.type';
-    case 'actionLocation':
-      return 'action.geolocation';
-    case 'itemId':
-      return 'action.item_path';
-    case 'createdDay':
-      return "date_trunc('day', action.createdAt)";
-    case 'createdTimeOfDay':
-      return 'extract(hour from created_at)';
-    case 'createdDayOfWeek':
-      return 'extract(dow from created_at)';
-    default:
-      throw new Error(`${attribute} Attribute does not exist.`);
-  }
+export const aggregateExpressionNames = {
+  user: 'action.member_id',
+  actionType: 'action.type',
+  actionLocation: 'action.geolocation',
+  itemId: 'action.item_path',
+  createdDay: "date_trunc('day', action.createdAt)",
+  createdTimeOfDay: 'extract(hour from created_at)',
+  createdDayOfWeek: 'extract(dow from created_at)',
 };
 
 export const buildAggregateExpression = (
@@ -44,5 +33,5 @@ export const buildAggregateExpression = (
   func?: AggregateFunctionType,
   metric?: AggregateAttribute,
 ): string => {
-  return func + '(' + subqueryName + '."' + metric + '")';
+  return `${func}(${subqueryName}."${metric}")`;
 };

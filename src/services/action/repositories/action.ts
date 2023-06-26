@@ -6,8 +6,8 @@ import { Action } from '../entities/action';
 import {
   AggregateAttribute,
   AggregateFunctionType,
+  aggregateExpressionNames,
   buildAggregateExpression,
-  convertToExpressionName,
 } from '../utils/actions';
 
 /**
@@ -85,7 +85,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
     // Get the actionCount from the first stage aggregation.
     const subquery = this.createQueryBuilder('action').select('COUNT(*)', 'actionCount');
     countGroupBy?.forEach((attribute) => {
-      const columnName = convertToExpressionName(attribute);
+      const columnName = aggregateExpressionNames[attribute];
       subquery.addSelect(columnName, attribute).addGroupBy(columnName);
     });
 
