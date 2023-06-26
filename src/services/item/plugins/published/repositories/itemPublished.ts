@@ -37,7 +37,8 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
 
   // return public item entry? contains when it was published
   async getAllItems() {
-    const publishedRows = await this.find({ relations: { item: true } });
+    // we get the nested relation of item.creator because we only return the item and without this the creator is not returned
+    const publishedRows = await this.find({ relations: ['item', 'item.creator'] });
     return publishedRows.map(({ item }) => item);
   },
 
