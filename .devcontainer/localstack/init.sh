@@ -24,7 +24,7 @@ corsConfig='{
             ],
             "AllowedMethods": [
                 "HEAD",
-                "GET",
+                "GET"
             ],
             "AllowedOrigins": [
                 "*"

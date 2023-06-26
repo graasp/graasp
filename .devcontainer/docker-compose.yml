@@ -95,7 +95,7 @@ services:
     image: localstack/localstack
     volumes:
       - ${TMPDIR}/localstack:/tmp/graasp-localstack
-      - ./localstack:/docker-entrypoint-initaws.d
+      - './localstack/init.sh:/etc/localstack/init/ready.d/init-aws.sh'
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - SERVICES=s3
