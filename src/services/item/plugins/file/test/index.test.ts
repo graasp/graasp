@@ -443,12 +443,11 @@ describe('File Item routes tests', () => {
   });
 
   describe('Edit file - PATCH /items/id', () => {
-    let item, member;
+    let item, actor;
 
     beforeEach(async () => {
-      ({ app } = await build());
-      member = await saveMember(BOB);
-      ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member }));
+      ({ app, actor } = await build());
+      ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor }));
     });
 
     it('Edit file item altText', async () => {
@@ -457,7 +456,7 @@ describe('File Item routes tests', () => {
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
         payload: { extra: { [FILE_ITEM_TYPE]: { altText: 'new name' } } },
       });
-      expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
+      expect(response.json().extra[FILE_ITEM_TYPE].altText).toEqual('new name');
     });
 
     it('Cannot edit another file item field', async () => {
