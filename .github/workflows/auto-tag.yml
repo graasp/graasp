@@ -1,0 +1,15 @@
+name: Auto Tag
+
+on:
+  issues:
+    types:
+      - reopened
+      - closed
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  auto-tag:
+    name: Auto tag issues and PRs
+    uses: graasp/graasp-deploy/.github/workflows/auto-tag.yml@v1
