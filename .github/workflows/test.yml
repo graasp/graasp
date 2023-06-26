@@ -212,3 +212,4 @@ jobs:
           S3_FILE_ITEM_SECRET_ACCESS_KEY: graasp-pwd
           SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          JOB_SCHEDULING: false

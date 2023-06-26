@@ -24,7 +24,7 @@ const build = async ({ member }: { member?: Partial<Member> | null } = { member:
   // });
 
   const app = fastify({
-    logger: { level: 'error' },
+    logger: { level: 'info' },
     ajv: {
       customOptions: {
         coerceTypes: 'array',

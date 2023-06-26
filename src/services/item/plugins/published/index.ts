@@ -1,4 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
 import { UUID } from '@graasp/sdk';
 
@@ -17,10 +18,9 @@ import {
 import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items, log, mailer } = fastify;
-  const pIS = new ItemPublishedService(items.service, mailer, log);
+  const { db, itemsPublished } = fastify;
 
-  fastify.register(graaspSearchPlugin);
+  await fastify.register(fp(graaspSearchPlugin));
 
   fastify.get<{ Querystring: { categoryId: string[] } }>(
     '/collections',
@@ -29,7 +29,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ query, member }) => {
-      return pIS.getItemsByCategories(member, buildRepositories(), query.categoryId);
+      return itemsPublished.service.getItemsByCategories(
+        member,
+        buildRepositories(),
+        query.categoryId,
+      );
     },
   );
 
@@ -40,7 +44,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { memberId } }) => {
-      return pIS.getItemsForMember(member, buildRepositories(), memberId);
+      return itemsPublished.service.getItemsForMember(member, buildRepositories(), memberId);
     },
   );
 
@@ -51,7 +55,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getInformations,
     },
     async ({ params, member }) => {
-      return pIS.get(member, buildRepositories(), params.itemId);
+      return itemsPublished.service.get(member, buildRepositories(), params.itemId);
     },
   );
 
@@ -62,7 +66,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getManyInformations,
     },
     async ({ member, query: { itemId } }) => {
-      return pIS.getMany(member, buildRepositories(), itemId);
+      return itemsPublished.service.getMany(member, buildRepositories(), itemId);
     },
   );
 
@@ -73,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getMostLikedItems,
     },
     async ({ member, query: { limit } }) => {
-      return pIS.getLikedItems(member, buildRepositories(), limit);
+      return itemsPublished.service.getLikedItems(member, buildRepositories(), limit);
     },
   );
 
@@ -85,12 +89,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ params, member }) => {
       return db.transaction(async (manager) => {
-        return pIS.post(member, buildRepositories(manager), params.itemId);
+        return itemsPublished.service.post(member, buildRepositories(manager), params.itemId);
       });
     },
   );
 
-  fastify.delete<{ Params: { itemId: string } }>(
+  fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
       preHandler: fastify.verifyAuthentication,
@@ -98,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ params, member }) => {
       return db.transaction(async (manager) => {
-        return pIS.delete(member, buildRepositories(manager), params.itemId);
+        return itemsPublished.service.delete(member, buildRepositories(manager), params.itemId);
       });
     },
   );
@@ -110,7 +114,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getRecentCollections,
     },
     async ({ member, query: { limit } }) => {
-      return pIS.getRecentItems(member, buildRepositories(), limit);
+      return itemsPublished.service.getRecentItems(member, buildRepositories(), limit);
     },
   );
 };

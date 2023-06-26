@@ -74,7 +74,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = initializedCreate;
   items.extendExtrasUpdateSchema = initializedUpdate;
 
-  fastify.register(
+  await fastify.register(
     async function (fastify) {
       // add CORS support
       if (fastify.corsPluginOptions) {
@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspFavoritePlugin);
 
-      fastify.register(graaspItemPublish);
+      await fastify.register(fp(graaspItemPublish));
 
       fastify.register(thumbnailsPlugin);
 

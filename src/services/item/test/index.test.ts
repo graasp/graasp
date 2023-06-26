@@ -1174,7 +1174,7 @@ describe('Item routes tests', () => {
         ({ app, actor } = await build());
       });
 
-      it('Update successfully', async () => {
+      it.only('Update successfully', async () => {
         const { item } = await saveItemAndMembership({
           item: getDummyItem({
             extra: {

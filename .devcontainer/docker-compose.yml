@@ -111,6 +111,21 @@ services:
       POSTGRES_DB: etherpad
       POSTGRES_USER: etherpad
       POSTGRES_PASSWORD: etherpad
+  
+  meilisearch:
+    container_name: graasp-meilisearch
+    image: getmeili/meilisearch:v1.2
+    restart: on-failure
+    environment:
+      - MEILI_MASTER_KEY=masterKey
+      - MEILI_NO_ANALYTICS=true
+      # - MEILI_ENV=development
+      - MEILI_LOG_LEVEL
+    ports:
+      - 7700:7700
+    volumes:
+      - ./meilisearch_data:/meili_data
+
 
   # Localstack is used to test aws services locally
   localstack:

@@ -1,8 +1,8 @@
+import { MultiSearchParams } from 'meilisearch';
+
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../../../utils/repositories';
-import { search } from './schemas';
-import { SearchService } from './service';
 
 export type SearchFields = {
   keywords?: string;
@@ -13,19 +13,21 @@ export type SearchFields = {
 };
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const searchService = new SearchService();
+  const searchService = fastify.search.service;
 
-  fastify.decorate('search', { service: searchService });
-
-  // search for items with keyword
-  // range: title, tag, all, author
-  fastify.get<{ Querystring: SearchFields }>(
+  fastify.post(
     '/collections/search',
-    { schema: search, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, query, log }) => {
-      return searchService.search(member, buildRepositories(), query);
+    // { schema: search, preHandler: fastify.fetchMemberInSession }, // tmp ignore schema
+    { preHandler: fastify.fetchMemberInSession },
+    async ({ params, member, body }) => {
+      return searchService.search(member, buildRepositories(), body as MultiSearchParams);
     },
   );
+
+  // TODO: delete this endpoint (only for testing full rebuild)
+  fastify.get('/collections/search/rebuild', async () => {
+    return searchService.rebuildIndex();
+  });
 };
 
 export default plugin;
