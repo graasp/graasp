@@ -3,10 +3,11 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { Context, Hostname, PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { Repositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { validatePermission } from '../../../authorization';
+import { ChatMessageService } from '../../../chat/service';
 import { Actor } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { Item } from '../../entities/Item';
@@ -23,29 +24,22 @@ export class ActionItemService {
   itemService: ItemService;
   memberService: MemberService;
   actionService: ActionService;
+  chatMessageService: ChatMessageService;
   hosts: Hostname[];
 
   constructor(
     actionService: ActionService,
     itemService: ItemService,
     memberService: MemberService,
+    chatMessageService: ChatMessageService,
     hosts: Hostname[],
   ) {
     this.actionService = actionService;
     this.hosts = hosts;
     this.itemService = itemService;
     this.memberService = memberService;
+    this.chatMessageService = chatMessageService;
   }
-
-  // async postMany(
-  //   member: Actor,
-  //   repositories: Repositories,
-  //   actions: Partial<Action>[]
-  // ): Promise<Action[]> {
-
-  //     return repositories.actionRepository.postMany(actions);
-
-  // }
 
   async getForItem(
     actor: Actor,
@@ -106,6 +100,13 @@ export class ActionItemService {
     // get descendants items
     const descendants = await this.itemService.getDescendants(actor, repositories, payload.itemId);
 
+    // chatbox
+    const chatMessages = await this.chatMessageService.getForItem(
+      actor,
+      repositories,
+      payload.itemId,
+    );
+
     // set all data in last task's result
     return new BaseAnalytics({
       item,
@@ -113,6 +114,7 @@ export class ActionItemService {
       actions,
       members,
       itemMemberships: allMemberships,
+      chatMessages,
       metadata: {
         numActionsRetrieved: actions.length,
         requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,

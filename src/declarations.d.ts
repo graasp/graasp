@@ -7,6 +7,7 @@ import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 import type { MailerDecoration } from './plugins/mailer';
 import { ActionService } from './services/action/services/action';
 import { MentionService } from './services/chat/plugins/mentions/service';
+import { ChatMessageService } from './services/chat/service';
 import FileService from './services/file/service';
 import { ActionItemService } from './services/item/plugins/action/service';
 import FileItemService from './services/item/plugins/file/service';
@@ -51,6 +52,7 @@ declare module 'fastify' {
     };
     members: { service: MemberService };
     actions: { service: ActionService };
+    chat: { service: ChatMessageService };
 
     // TODO
     hosts: any;
