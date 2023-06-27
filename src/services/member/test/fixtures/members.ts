@@ -39,16 +39,35 @@ export const expectMinimalMember = (
   expect(m.email).toEqual(validation.email);
 };
 
-export const ANNA = { name: 'anna', email: 'anna@email.org' };
+export const ANNA = {
+  name: 'anna',
+  email: 'anna@email.org',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
-export const BOB = { name: 'bob', email: 'bob@email.org', extra: { lang: 'fr' } };
+export const BOB = {
+  name: 'bob',
+  email: 'bob@email.org',
+  extra: { lang: 'fr' },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
-export const CEDRIC = { name: 'cedric', email: 'cedric@email.org', extra: { favoriteItems: [] } };
+export const CEDRIC = {
+  name: 'cedric',
+  email: 'cedric@email.org',
+  extra: { favoriteItems: [] },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
 
 export const LOUISA = {
   name: 'louisa',
   email: 'louisa@email.org',
   extra: { lang: 'fr' },
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 export const MEMBERS = [ANNA, BOB, LOUISA];
