@@ -103,7 +103,7 @@ describe('Item Published', () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryIds: category.id },
+            { categoryId: category.id },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
@@ -126,7 +126,7 @@ describe('Item Published', () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryIds: selectedCategories.map(({ id }) => id) },
+            { categoryId: selectedCategories.map(({ id }) => id) },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
@@ -151,7 +151,7 @@ describe('Item Published', () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryIds: selectedCategories.map(({ id }) => id).join(',') },
+            { categoryId: selectedCategories.map(({ id }) => id).join(',') },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
@@ -170,7 +170,7 @@ describe('Item Published', () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryIds: category.id },
+            { categoryId: category.id },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
@@ -181,7 +181,7 @@ describe('Item Published', () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryIds: 'invalid-id' },
+            { categoryId: 'invalid-id' },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
