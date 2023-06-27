@@ -36,7 +36,7 @@ export const getCollections = {
   querystring: {
     type: 'object',
     properties: {
-      categoryIds: {
+      categoryId: {
         type: 'array',
         items: concatenatedIds,
         maxItems: MAX_TARGETS_FOR_READ_REQUEST,
