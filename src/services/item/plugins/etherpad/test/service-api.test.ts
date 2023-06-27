@@ -35,7 +35,7 @@ const MODES: Array<'read' | 'write'> = ['read', 'write'];
 
 describe('Service API', () => {
   let app: FastifyInstance;
-  let member: Member | null;
+  let member: Member;
 
   const payloadCreate = {
     method: HttpMethod.POST,
@@ -45,18 +45,20 @@ describe('Service API', () => {
     },
   };
 
-  beforeAll(async () => {
-    ({ app, actor: member } = await build());
+  beforeEach(async () => {
+    let actor: Member | null;
+    ({ app, actor } = await build());
+    if (!actor) {
+      throw new Error('Test error: member should be defined');
+    }
+    member = actor;
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    nock.cleanAll();
-  });
-
-  afterAll(() => {
     app.close();
+    nock.cleanAll();
   });
 
   describe('create a pad', () => {
@@ -261,9 +263,6 @@ describe('Service API', () => {
           }),
         },
       });
-      if (!member) {
-        throw new Error('Test error: member should be defined');
-      }
       saveMembership({ item, member, permission: PermissionLevel.Read });
       const reqParams = setUpApi({
         getReadOnlyID: [
@@ -587,9 +586,6 @@ describe('Service API', () => {
         ],
       });
 
-      if (!member) {
-        throw new Error('Test error: member should exist');
-      }
       const { item: bogusItem } = await saveItemAndMembership({ member });
 
       const res = await app.inject(payloadView(mode, bogusItem.id));
@@ -714,9 +710,6 @@ describe('Service API', () => {
     });
 
     it('copies pad when item is copied', async () => {
-      if (!member) {
-        throw new Error('Test error: member should exist');
-      }
       const parent = await saveItemAndMembership({ member });
 
       const reqsParams = setUpApi({
@@ -759,9 +752,6 @@ describe('Service API', () => {
     });
 
     it('throws if pad ID is not defined on copy', async () => {
-      if (!member) {
-        throw new Error('Test error: member should exist');
-      }
       const { item: parent } = await saveItemAndMembership({ member });
       const { item: bogusItem } = await saveItemAndMembership({ member });
 
