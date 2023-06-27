@@ -1,15 +1,25 @@
 import { StatusCodes } from 'http-status-codes';
 import { DateTime } from 'luxon';
 import nock from 'nock';
+import uuid from 'uuid';
+import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { HttpMethod, Item } from '@graasp/sdk';
+import { EtherpadItemType, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ETHERPAD_URL } from '../../../../../utils/config';
+import {
+  saveItemAndMembership,
+  saveMembership,
+} from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
+import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { Item } from '../../../entities/Item';
+import { ItemRepository } from '../../../repository';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
+import { EtherpadItemService } from '../service';
 import { setUpApi } from './api';
 
 // mock datasource
@@ -17,7 +27,8 @@ jest.mock('../../../../../plugins/datasource');
 
 const MOCK_GROUP_ID = 'g.s8oes9dhwrvt0zif';
 const MOCK_PAD_READ_ONLY_ID = 'r.s8oes9dhwrvt0zif';
-const MOCK_PAD_ID = 'g.s8oes9dhwrvt0zif$mock-pad-name';
+const MOCK_PAD_NAME = 'mock-pad-name';
+const MOCK_PAD_ID = `${MOCK_GROUP_ID}\$${MOCK_PAD_NAME}`;
 const MOCK_AUTHOR_ID = 'a.s8oes9dhwrvt0zif';
 const MOCK_SESSION_ID = 's.s8oes9dhwrvt0zif';
 const MODES: Array<'read' | 'write'> = ['read', 'write'];
@@ -25,7 +36,14 @@ const MODES: Array<'read' | 'write'> = ['read', 'write'];
 describe('Service API', () => {
   let app: FastifyInstance;
   let member: Member | null;
-  let parent: Item;
+
+  const payloadCreate = {
+    method: HttpMethod.POST,
+    url: 'items/etherpad/create',
+    payload: {
+      name: 'test-item-name',
+    },
+  };
 
   beforeAll(async () => {
     ({ app, actor: member } = await build());
@@ -42,14 +60,6 @@ describe('Service API', () => {
   });
 
   describe('create a pad', () => {
-    const payloadCreate = {
-      method: HttpMethod.POST,
-      url: 'items/etherpad/create',
-      payload: {
-        name: 'test-item-name',
-      },
-    };
-
     it('creates a pad successfully', async () => {
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
@@ -145,12 +155,29 @@ describe('Service API', () => {
   });
 
   describe('view a pad', () => {
-    const payloadView = (mode: 'read' | 'write') => ({
+    let item: Item;
+
+    const payloadView = (mode: 'read' | 'write', itemId: string) => ({
       method: HttpMethod.GET,
-      url: '/etherpad/view/mock-item-id',
+      url: `items/etherpad/view/${itemId}`,
       query: {
         mode,
       },
+    });
+
+    beforeEach(async () => {
+      // create an existing etherpad item to test reading it
+      setUpApi({
+        createGroupIfNotExistsFor: [
+          StatusCodes.OK,
+          { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
+        ],
+        createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
+      });
+      const res = await app.inject(payloadCreate);
+      expect(res.statusCode).toBe(StatusCodes.OK);
+      item = res.json();
+      nock.cleanAll();
     });
 
     it('views a pad in read mode successfully', async () => {
@@ -169,7 +196,7 @@ describe('Service API', () => {
         ],
         listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-      const res = await app.inject(payloadView('read'));
+      const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
@@ -192,7 +219,7 @@ describe('Service API', () => {
         listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
 
-      const res = await app.inject(payloadView('write'));
+      const res = await app.inject(payloadView('write', item.id));
 
       const { createAuthorIfNotExistsFor, createSession } = await reqParams;
       expect(createAuthorIfNotExistsFor?.get('authorMapper')).toEqual(member?.id);
@@ -224,6 +251,20 @@ describe('Service API', () => {
     });
 
     it('views a pad in write mode returns a read-only pad ID if user has read permission only', async () => {
+      const bob = await saveMember(BOB);
+      const { item } = await saveItemAndMembership({
+        member: bob,
+        item: {
+          extra: EtherpadItemService.buildEtherpadExtra({
+            groupID: MOCK_GROUP_ID,
+            padName: MOCK_PAD_NAME,
+          }),
+        },
+      });
+      if (!member) {
+        throw new Error('Test error: member should be defined');
+      }
+      saveMembership({ item, member, permission: PermissionLevel.Read });
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -239,7 +280,7 @@ describe('Service API', () => {
         ],
         listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-      const res = await app.inject(payloadView('write')); // <- we request write mode and should get a read ID
+      const res = await app.inject(payloadView('write', item.id)); // <- we request write mode and should get a read ID
 
       const { getReadOnlyID } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
@@ -284,7 +325,7 @@ describe('Service API', () => {
         ],
       });
 
-      const res = await app.inject(payloadView('read'));
+      const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
@@ -345,7 +386,7 @@ describe('Service API', () => {
         deleteSession: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
 
-      const res = await app.inject(payloadView('read'));
+      const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID, deleteSession } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
@@ -416,7 +457,7 @@ describe('Service API', () => {
         deleteSession: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
 
-      const res = await app.inject(payloadView('read'));
+      const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID, deleteSession } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
@@ -476,7 +517,6 @@ describe('Service API', () => {
             code: 0,
             message: 'ok',
             data: {
-              // todo: fix types in etherpad-api
               // the server may return null as mapping
               's.0000000000000000': null,
             },
@@ -485,7 +525,7 @@ describe('Service API', () => {
         deleteSession: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
 
-      const res = await app.inject(payloadView('read'));
+      const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID, deleteSession } = await reqParams;
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
@@ -522,7 +562,13 @@ describe('Service API', () => {
         ],
       });
 
-      const res = await app.inject(payloadView(mode));
+      // generate an id for an item that does not exist
+      let randomId;
+      do {
+        randomId = uuid.v4();
+        // probability if infinitely low, but just for sanity
+      } while (randomId === item.id);
+      const res = await app.inject(payloadView(mode, randomId));
 
       expect(res.statusCode).toEqual(StatusCodes.NOT_FOUND);
       expect(res.json()).toEqual({
@@ -541,7 +587,12 @@ describe('Service API', () => {
         ],
       });
 
-      const res = await app.inject(payloadView(mode));
+      if (!member) {
+        throw new Error('Test error: member should exist');
+      }
+      const { item: bogusItem } = await saveItemAndMembership({ member });
+
+      const res = await app.inject(payloadView(mode, bogusItem.id));
 
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toEqual({
@@ -553,6 +604,17 @@ describe('Service API', () => {
     });
 
     it.each(MODES)('returns error if member does not have %p permission', async (mode) => {
+      const bob = await saveMember(BOB);
+      const { item } = await saveItemAndMembership({
+        member: bob,
+        item: {
+          extra: EtherpadItemService.buildEtherpadExtra({
+            groupID: MOCK_GROUP_ID,
+            padName: MOCK_PAD_NAME,
+          }),
+        },
+      });
+
       setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -560,7 +622,7 @@ describe('Service API', () => {
         ],
       });
 
-      const res = await app.inject(payloadView(mode));
+      const res = await app.inject(payloadView(mode, item.id));
 
       expect(res.statusCode).toEqual(StatusCodes.FORBIDDEN);
       expect(res.json()).toEqual({
@@ -575,7 +637,7 @@ describe('Service API', () => {
       setUpApi({
         getReadOnlyID: [StatusCodes.GATEWAY_TIMEOUT],
       });
-      const res = await app.inject(payloadView('read'));
+      const res = await app.inject(payloadView('read', item.id));
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toMatchObject({
         code: 'GPEPERR001',
@@ -588,7 +650,7 @@ describe('Service API', () => {
       setUpApi({
         getReadOnlyID: [StatusCodes.OK, { code: 1, message: 'padID does not exist', data: null }],
       });
-      const res = await app.inject(payloadView('read'));
+      const res = await app.inject(payloadView('read', item.id));
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toMatchObject({
         code: 'GPEPERR001',
@@ -607,7 +669,7 @@ describe('Service API', () => {
           ],
           createSession: [StatusCodes.OK, { code: 1, message: error, data: null }],
         });
-        const res = await app.inject(payloadView('write'));
+        const res = await app.inject(payloadView('write', item.id));
         expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
         expect(res.json()).toMatchObject({
           code: 'GPEPERR001',
@@ -619,13 +681,44 @@ describe('Service API', () => {
   });
 
   describe('hook handlers', () => {
+    let item: EtherpadItemType;
+
+    beforeEach(async () => {
+      // create an existing etherpad item to test hooks
+      setUpApi({
+        createGroupIfNotExistsFor: [
+          StatusCodes.OK,
+          { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
+        ],
+        createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
+      });
+      const res = await app.inject(payloadCreate);
+      expect(res.statusCode).toBe(StatusCodes.OK);
+      item = res.json();
+      nock.cleanAll();
+    });
+
     it('deletes pad when item is deleted', async () => {
       const reqsParams = setUpApi({
         deletePad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
+      await app.inject({
+        method: 'DELETE',
+        url: `/items/`,
+        query: {
+          id: [item.id],
+        },
+      });
+      const { deletePad } = await reqsParams;
+      expect(deletePad?.get('padID')).toEqual(item.extra.etherpad.padID);
     });
 
     it('copies pad when item is copied', async () => {
+      if (!member) {
+        throw new Error('Test error: member should exist');
+      }
+      const parent = await saveItemAndMembership({ member });
+
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -633,16 +726,65 @@ describe('Service API', () => {
         ],
         copyPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
+
+      await app.inject({
+        method: 'POST',
+        url: 'items/copy',
+        query: {
+          id: [item.id],
+        },
+        payload: {
+          parentId: parent.item.id,
+        },
+      });
+
+      // wait until the copy is in the db
+      await waitForExpect(async () => {
+        expect(await ItemRepository.count()).toEqual(3);
+      });
+
+      const items = (await ItemRepository.find()).filter(
+        (i) => i.id !== item.id && i.id !== parent.item.id,
+      );
+      expect(items.length).toEqual(1); // this is the copied item
+      const [copy] = items as EtherpadItemType[];
+
+      const { createGroupIfNotExistsFor, copyPad } = await reqsParams;
+      expect(copyPad?.get('destinationID')).toEqual(
+        `${copy.extra.etherpad.groupID}$${createGroupIfNotExistsFor?.get('groupMapper')}`,
+      );
+      expect(copyPad?.get('sourceID')).toEqual(item.extra.etherpad.padID);
+      // verify that the handler mutated the item on its extra (should have created a newly copied pad)
+      expect(item.extra).not.toEqual(copy.extra);
     });
 
     it('throws if pad ID is not defined on copy', async () => {
-      const reqsParams = setUpApi({
+      if (!member) {
+        throw new Error('Test error: member should exist');
+      }
+      const parent = await saveItemAndMembership({ member });
+      const bogusItem = await saveItemAndMembership({ member });
+
+      setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
         ],
         copyPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: 'items/copy',
+        query: {
+          id: [item.id],
+        },
+        payload: {
+          parentId: parent.item.id,
+        },
+      });
+
+      expect(res.statusCode).not.toEqual(StatusCodes.OK);
     });
   });
 });
