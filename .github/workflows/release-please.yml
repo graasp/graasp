@@ -47,3 +47,9 @@ jobs:
           repository: graasp/graasp-deploy
           event-type: update-staging-version
           client-payload: ${{steps.set-tag.outputs.json}}
+
+      - name: Auto Tag
+        uses: graasp/graasp-deploy/.github/actions/auto-tag-after-release@v1
+        with:
+          releases_created: ${{ steps.release.outputs.releases_created }}
+          tag_name: ${{ steps.release.outputs.tag_name }}
