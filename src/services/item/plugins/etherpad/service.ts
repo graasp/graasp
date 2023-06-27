@@ -43,6 +43,7 @@ export class EtherpadItemService {
     this.padNameFactory = padNameFactory;
     this.publicUrl = publicUrl;
     this.cookieDomain = cookieDomain;
+    this.itemService = itemService;
     this.log = log;
   }
 

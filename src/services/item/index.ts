@@ -6,6 +6,10 @@ import {
   APPS_PUBLISHER_ID,
   APP_ITEMS_PREFIX,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+  ETHERPAD_API_KEY,
+  ETHERPAD_COOKIE_DOMAIN,
+  ETHERPAD_PUBLIC_URL,
+  ETHERPAD_URL,
   FILE_ITEM_PLUGIN_OPTIONS,
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
@@ -31,6 +35,7 @@ import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
+import graaspEtherpadPlugin from './plugins/etherpad';
 import graaspFileItem from './plugins/file';
 import graaspH5PPlugin from './plugins/h5p';
 import graaspZipPlugin from './plugins/importExport';
@@ -109,6 +114,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             config: H5P_FILE_STORAGE_CONFIG as any,
           },
           tempDir: H5P_TEMP_DIR,
+        });
+
+        fastify.register(graaspEtherpadPlugin, {
+          url: ETHERPAD_URL,
+          apiKey: ETHERPAD_API_KEY,
+          publicUrl: ETHERPAD_PUBLIC_URL,
+          cookieDomain: ETHERPAD_COOKIE_DOMAIN,
         });
 
         fastify.register(graaspZipPlugin);

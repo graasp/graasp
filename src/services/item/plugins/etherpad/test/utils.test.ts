@@ -1,10 +1,10 @@
+import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config';
 import { EtherpadPluginOptions } from '../types';
 import { validatePluginOptions } from '../utils';
-import { TEST_ENV } from './config';
 
 describe('Utils', () => {
   describe('validate plugin options', () => {
-    const correctOptions = { url: TEST_ENV.url, apiKey: TEST_ENV.apiKey };
+    const correctOptions = { url: ETHERPAD_URL, apiKey: ETHERPAD_API_KEY };
     it('accepts correct options', () => {
       expect(() => validatePluginOptions(correctOptions)).not.toThrow();
     });

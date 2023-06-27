@@ -25,6 +25,8 @@ export function validatePluginOptions(options: EtherpadPluginOptions) {
 
   return {
     ...options,
+    url,
+    apiKey,
     publicUrl,
     cookieDomain,
   };

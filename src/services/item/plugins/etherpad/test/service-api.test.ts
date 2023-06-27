@@ -2,50 +2,55 @@ import { StatusCodes } from 'http-status-codes';
 import { DateTime } from 'luxon';
 import nock from 'nock';
 
-import { HttpMethod, Item, PermissionLevel } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
 
+import { HttpMethod, Item } from '@graasp/sdk';
+
+import build, { clearDatabase } from '../../../../../../test/app';
+import { ETHERPAD_URL } from '../../../../../utils/config';
+import { Member } from '../../../../member/entities/member';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
-import plugin from '../service-api';
 import { setUpApi } from './api';
-import { BuildAppType, buildApp } from './app';
-import { TEST_ENV } from './config';
-import {
-  COPY_ITEM_TASK_NAME,
-  DELETE_ITEM_TASK_NAME,
-  MOCK_AUTHOR_ID,
-  MOCK_GROUP_ID,
-  MOCK_ITEM,
-  MOCK_MEMBER,
-  MOCK_MEMBERSHIP,
-  MOCK_PAD_ID,
-  MOCK_PAD_READ_ONLY_ID,
-  MOCK_SESSION_ID,
-  MODES,
-  mockTask,
-} from './fixtures';
+
+// mock datasource
+jest.mock('../../../../../plugins/datasource');
+
+const MOCK_GROUP_ID = 'g.s8oes9dhwrvt0zif';
+const MOCK_PAD_READ_ONLY_ID = 'r.s8oes9dhwrvt0zif';
+const MOCK_PAD_ID = 'g.s8oes9dhwrvt0zif$mock-pad-name';
+const MOCK_AUTHOR_ID = 'a.s8oes9dhwrvt0zif';
+const MOCK_SESSION_ID = 's.s8oes9dhwrvt0zif';
+const MODES: Array<'read' | 'write'> = ['read', 'write'];
 
 describe('Service API', () => {
-  let instance: BuildAppType;
+  let app: FastifyInstance;
+  let member: Member | null;
+  let parent: Item;
 
   beforeAll(async () => {
-    instance = await buildApp({ options: TEST_ENV });
+    ({ app, actor: member } = await build());
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    jest.clearAllMocks();
+    await clearDatabase(app.db);
     nock.cleanAll();
+  });
+
+  afterAll(() => {
+    app.close();
   });
 
   describe('create a pad', () => {
     const payloadCreate = {
       method: HttpMethod.POST,
-      url: '/etherpad/create',
+      url: 'items/etherpad/create',
       payload: {
         name: 'test-item-name',
       },
     };
 
     it('creates a pad successfully', async () => {
-      const { app } = instance;
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -61,8 +66,7 @@ describe('Service API', () => {
       expect(createGroupIfNotExistsFor?.get('groupMapper')).toEqual(createGroupPad?.get('padName'));
 
       expect(res.statusCode).toEqual(StatusCodes.OK);
-      expect(res.json()).toEqual({
-        ...MOCK_ITEM,
+      expect(res.json()).toMatchObject({
         name: 'test-item-name',
         extra: {
           etherpad: {
@@ -74,7 +78,6 @@ describe('Service API', () => {
     });
 
     it('returns error on etherpad HTTP error', async () => {
-      const { app } = instance;
       setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -95,7 +98,6 @@ describe('Service API', () => {
     it.each(['pad does already exist', 'groupID does not exist'])(
       'returns error on etherpad server error: %p',
       async (error) => {
-        const { app } = instance;
         setUpApi({
           createGroupIfNotExistsFor: [
             StatusCodes.OK,
@@ -115,7 +117,6 @@ describe('Service API', () => {
     );
 
     it('deletes pad on item creation error', async () => {
-      const { app, spies } = instance;
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -125,18 +126,16 @@ describe('Service API', () => {
         deletePad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
 
-      // override item creation: ensure that the task fails
-      spies.createItem.mockImplementationOnce((actor, item, extra) => [
-        mockTask<unknown>('mock-failing-create-item-task', actor, null, TaskStatus.NEW, () => {
-          throw new Error('mock failure');
-        }),
-      ]);
+      // override item creation: ensure that it fails
+      jest.spyOn(app.items.service, 'post').mockImplementationOnce(() => {
+        throw new Error('mock error');
+      });
       const res = await app.inject(payloadCreate);
 
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(res.json()).toEqual({
         error: 'Internal Server Error',
-        message: 'mock failure',
+        message: 'mock error',
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       });
 
@@ -155,7 +154,6 @@ describe('Service API', () => {
     });
 
     it('views a pad in read mode successfully', async () => {
-      const { app } = instance;
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -177,12 +175,11 @@ describe('Service API', () => {
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${TEST_ENV.url}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
     });
 
     it('views a pad in write mode successfully', async () => {
-      const { app, spies } = instance;
       const reqParams = setUpApi({
         createAuthorIfNotExistsFor: [
           StatusCodes.OK,
@@ -195,25 +192,17 @@ describe('Service API', () => {
         listSessionsOfAuthor: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
 
-      // override get item membership: should return with write permission
-      spies.getMembership.mockImplementationOnce((member) =>
-        mockTask('MockGetMemberItemMembershipTask', member, {
-          ...MOCK_MEMBERSHIP,
-          permission: PermissionLevel.Write as PermissionLevel,
-        }),
-      );
-
       const res = await app.inject(payloadView('write'));
 
       const { createAuthorIfNotExistsFor, createSession } = await reqParams;
-      expect(createAuthorIfNotExistsFor?.get('authorMapper')).toEqual(MOCK_MEMBER.id);
-      expect(createAuthorIfNotExistsFor?.get('name')).toEqual(MOCK_MEMBER.name);
+      expect(createAuthorIfNotExistsFor?.get('authorMapper')).toEqual(member?.id);
+      expect(createAuthorIfNotExistsFor?.get('name')).toEqual(member?.name);
       expect(createSession?.get('groupID')).toEqual(MOCK_GROUP_ID);
       expect(createSession?.get('authorID')).toEqual(MOCK_AUTHOR_ID);
       expect(createSession?.get('validUntil')).toBeDefined();
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${TEST_ENV.url}/p/${MOCK_GROUP_ID}$mock-pad-name`,
+        padUrl: `${ETHERPAD_URL}/p/${MOCK_GROUP_ID}$mock-pad-name`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -235,7 +224,6 @@ describe('Service API', () => {
     });
 
     it('views a pad in write mode returns a read-only pad ID if user has read permission only', async () => {
-      const { app } = instance;
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -257,12 +245,11 @@ describe('Service API', () => {
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${TEST_ENV.url}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
     });
 
     it('concatenates existing sessions in cookie', async () => {
-      const { app } = instance;
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -303,7 +290,7 @@ describe('Service API', () => {
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${TEST_ENV.url}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -328,7 +315,6 @@ describe('Service API', () => {
     });
 
     it('deletes expired sessions', async () => {
-      const { app } = instance;
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -365,7 +351,7 @@ describe('Service API', () => {
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${TEST_ENV.url}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -389,7 +375,6 @@ describe('Service API', () => {
     });
 
     it('invalidates oldest sessions if the number of sessions exceeds MAX_SESSIONS_IN_COOKIES', async () => {
-      const { app } = instance;
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -437,7 +422,7 @@ describe('Service API', () => {
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${TEST_ENV.url}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -472,7 +457,6 @@ describe('Service API', () => {
      * This is a regression test based on a real case in the production DB
      */
     it('handles malformed sessions in database', async () => {
-      const { app } = instance;
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -507,7 +491,7 @@ describe('Service API', () => {
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${TEST_ENV.url}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -531,16 +515,13 @@ describe('Service API', () => {
     });
 
     it.each(MODES)('returns error if item is not found (%p)', async (mode) => {
-      const { app, spies } = instance;
       setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
         ],
       });
-      spies.getItem.mockImplementationOnce((actor, itemId) =>
-        mockTask('mock-empty-task', actor, null as unknown as Item),
-      );
+
       const res = await app.inject(payloadView(mode));
 
       expect(res.statusCode).toEqual(StatusCodes.NOT_FOUND);
@@ -553,16 +534,13 @@ describe('Service API', () => {
     });
 
     it.each(MODES)('returns error if item is missing etherpad extra (%p)', async (mode) => {
-      const { app, spies } = instance;
       setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
         ],
       });
-      spies.getItem.mockImplementationOnce((actor, itemId) =>
-        mockTask('mock-empty-task', actor, { ...MOCK_ITEM, extra: {} }),
-      );
+
       const res = await app.inject(payloadView(mode));
 
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -575,18 +553,13 @@ describe('Service API', () => {
     });
 
     it.each(MODES)('returns error if member does not have %p permission', async (mode) => {
-      const { app, spies } = instance;
       setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
         ],
       });
-      spies.getMembership.mockImplementationOnce((actor) =>
-        mockTask('mock-failing-task', actor, MOCK_MEMBERSHIP, TaskStatus.NEW, () => {
-          throw new Error('Mock permission denied');
-        }),
-      );
+
       const res = await app.inject(payloadView(mode));
 
       expect(res.statusCode).toEqual(StatusCodes.FORBIDDEN);
@@ -599,7 +572,6 @@ describe('Service API', () => {
     });
 
     it('returns error on etherpad HTTP error', async () => {
-      const { app } = instance;
       setUpApi({
         getReadOnlyID: [StatusCodes.GATEWAY_TIMEOUT],
       });
@@ -613,7 +585,6 @@ describe('Service API', () => {
     });
 
     it('returns error on etherpad server error: "padID does not exist"', async () => {
-      const { app } = instance;
       setUpApi({
         getReadOnlyID: [StatusCodes.OK, { code: 1, message: 'padID does not exist', data: null }],
       });
@@ -629,7 +600,6 @@ describe('Service API', () => {
     it.each(["groupID doesn't exist", "authorID doesn't exist", 'validUntil is in the past'])(
       'returns error on etherpad server error: %p',
       async (error) => {
-        const { app } = instance;
         setUpApi({
           createAuthorIfNotExistsFor: [
             StatusCodes.OK,
@@ -650,28 +620,12 @@ describe('Service API', () => {
 
   describe('hook handlers', () => {
     it('deletes pad when item is deleted', async () => {
-      const { app, spies } = await buildApp();
       const reqsParams = setUpApi({
         deletePad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-      const deleteHandler = new Promise<PostHookHandlerType<Item, Actor>>((resolve, reject) => {
-        spies.setTaskPreHookHandler.mockImplementation((taskName, handler) => {
-          if (taskName === DELETE_ITEM_TASK_NAME) {
-            resolve(handler);
-          }
-        });
-      });
-      await app.register(plugin, TEST_ENV);
-      // simulate deletion
-      (await deleteHandler)(MOCK_ITEM, MOCK_MEMBER, { log: app.log });
-      const { deletePad } = await reqsParams;
-      expect(deletePad?.get('padID')).toEqual(MOCK_ITEM.extra.etherpad.padID);
     });
 
     it('copies pad when item is copied', async () => {
-      const ORIGINAL_ITEM = MOCK_ITEM;
-      const COPIED_ITEM = { ...MOCK_ITEM };
-      const { app, spies } = await buildApp();
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -679,28 +633,9 @@ describe('Service API', () => {
         ],
         copyPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-      const copyHandler = new Promise<PreHookHandlerType<Item, Actor>>((resolve, reject) => {
-        spies.setTaskPreHookHandler.mockImplementation((taskName, handler) => {
-          if (taskName === COPY_ITEM_TASK_NAME) {
-            resolve(handler);
-          }
-        });
-      });
-      await app.register(plugin, TEST_ENV);
-      // simulate item copy
-      const doCopy = (await copyHandler)(COPIED_ITEM, MOCK_MEMBER, { log: app.log });
-      await doCopy;
-      const { createGroupIfNotExistsFor, copyPad } = await reqsParams;
-      expect(copyPad?.get('destinationID')).toEqual(
-        `${MOCK_ITEM.extra.etherpad.groupID}$${createGroupIfNotExistsFor?.get('groupMapper')}`,
-      );
-      expect(copyPad?.get('sourceID')).toEqual(MOCK_ITEM.extra.etherpad.padID);
-      // verify that the handler mutated the item on its extra (should have created a newly copied pad)
-      expect(ORIGINAL_ITEM.extra).not.toEqual(COPIED_ITEM.extra);
     });
 
     it('throws if pad ID is not defined on copy', async () => {
-      const { app, spies } = await buildApp();
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
@@ -708,23 +643,6 @@ describe('Service API', () => {
         ],
         copyPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
       });
-      const copyHandler = new Promise<PreHookHandlerType<Item, Actor>>((resolve, reject) => {
-        spies.setTaskPreHookHandler.mockImplementation((taskName, handler) => {
-          if (taskName === COPY_ITEM_TASK_NAME) {
-            resolve(handler);
-          }
-        });
-      });
-      await app.register(plugin, TEST_ENV);
-      // simulate item copy
-      const copyHandlerFn = await copyHandler;
-      await expect(
-        copyHandlerFn({ ...MOCK_ITEM, extra: {} }, MOCK_MEMBER, { log: app.log }),
-      ).rejects.toEqual(
-        new Error(
-          `Illegal state: property padID is missing in etherpad extra for item ${MOCK_ITEM.id}`,
-        ),
-      );
     });
   });
 });

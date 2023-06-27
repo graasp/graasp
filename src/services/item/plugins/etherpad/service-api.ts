@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
 import Etherpad from '@graasp/etherpad-api';
 
@@ -44,6 +45,8 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
   // create a route prefix for etherpad
   await fastify.register(
     async (fastify: FastifyInstance) => {
+      fastify.addHook('preHandler', verifyAuthentication);
+
       /**
        * Etherpad creation
        */
@@ -56,7 +59,6 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
             query: { parentId },
             body: { name },
           } = request;
-          verifyAuthentication(request);
           if (!member) {
             throw new InvalidSession();
           }
@@ -79,7 +81,6 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
             params: { itemId },
             query: { mode = 'read' },
           } = request;
-          verifyAuthentication(request);
           if (!member) {
             throw new InvalidSession();
           }
@@ -119,4 +120,6 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
   );
 };
 
-export default plugin;
+export default fp(plugin, {
+  name: 'graasp-plugin-etherpad',
+});

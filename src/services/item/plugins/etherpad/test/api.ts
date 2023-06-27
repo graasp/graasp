@@ -2,8 +2,8 @@ import nock from 'nock';
 
 import Etherpad from '@graasp/etherpad-api';
 
+import { ETHERPAD_API_KEY, ETHERPAD_URL } from '../../../../../utils/config';
 import { ETHERPAD_API_VERSION } from '../constants';
-import { TEST_ENV } from './config';
 
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -25,7 +25,7 @@ type Api = {
  * @param replies Enables which endpoints should be emulated with the given responses
  */
 export function setUpApi(replies: Api): Promise<{ [Endpoint in keyof Api]: URLSearchParams }> {
-  const api = nock(`${TEST_ENV.url}/api/${ETHERPAD_API_VERSION}/`);
+  const api = nock(`${ETHERPAD_URL}/api/${ETHERPAD_API_VERSION}/`);
 
   const endpointAndParams = Object.entries(replies).map(
     ([endpoint, response]) =>
@@ -34,9 +34,9 @@ export function setUpApi(replies: Api): Promise<{ [Endpoint in keyof Api]: URLSe
           .get(`/${endpoint}`)
           .query(true)
           .reply((uri, body) => {
-            const url = new URL(uri, TEST_ENV.url);
+            const url = new URL(uri, ETHERPAD_URL);
             // check that API key is always sent
-            expect(url.searchParams.get('apikey')).toEqual(TEST_ENV.apiKey);
+            expect(url.searchParams.get('apikey')).toEqual(ETHERPAD_API_KEY);
             resolve([endpoint, url.searchParams]);
             return response;
           });

@@ -2,7 +2,7 @@ export interface EtherpadPluginOptions {
   /**
    * URL (incl. protocol and port) of the etherpad server
    */
-  url: string;
+  url?: string;
   /**
    * Public URL (incl. protocol and port) of the etherpad server, e.g.
    * if the back-end communicates with the etherpad service through a
@@ -17,5 +17,5 @@ export interface EtherpadPluginOptions {
   /**
    * secret api key to authorize this app against the etherpad server
    */
-  apiKey: string;
+  apiKey?: string;
 }

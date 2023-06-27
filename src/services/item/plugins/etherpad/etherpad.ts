@@ -11,8 +11,12 @@ export const wrapErrors = (etherpad: EtherpadApi) =>
       if (typeof target[property] === 'function') {
         return new Proxy(target[property], {
           apply: async (method, thisArg, args) => {
+            const call = Reflect.apply(method, thisArg, args);
+            if (!(call instanceof Promise)) {
+              return call;
+            }
             try {
-              return Reflect.apply(method, thisArg, args);
+              return await call;
             } catch (error) {
               throw new EtherpadServerError(error);
             }
