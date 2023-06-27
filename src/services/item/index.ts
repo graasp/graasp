@@ -1,5 +1,6 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
 import {
   APPS_JWT_SECRET,
@@ -133,9 +134,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemLikes);
 
-        await fastify.register(graaspChatbox);
+        fastify.register(fp(graaspChatbox));
 
-        await fastify.register(actionItemPlugin);
+        fastify.register(actionItemPlugin);
 
         fastify.register(itemController);
       });
