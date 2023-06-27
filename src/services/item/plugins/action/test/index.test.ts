@@ -55,7 +55,7 @@ describe('Aggregate Tests', () => {
       it('Succeed if the user has READ permission', async () => {
         const members = await saveMembers(MEMBERS);
         const { item } = await saveItemAndMembership({ member: members[0] });
-        saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+        await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
 
         const parameters = {
           requestedSampleSize: 5000,
@@ -195,9 +195,7 @@ describe('Aggregate Tests', () => {
       });
 
       it('Bad request if query parameters are invalid (aggregated by user)', async () => {
-        const members = await saveMembers(MEMBERS);
         const { item } = await saveItemAndMembership({ member: actor });
-        await saveActions(item, members);
 
         const parameters = {
           requestedSampleSize: 5000,
@@ -217,9 +215,7 @@ describe('Aggregate Tests', () => {
       });
 
       it('Bad request if query parameters are invalid (parameters mismatch)', async () => {
-        const members = await saveMembers(MEMBERS);
         const { item } = await saveItemAndMembership({ member: actor });
-        await saveActions(item, members);
 
         const parameters = {
           requestedSampleSize: 5000,
@@ -239,9 +235,7 @@ describe('Aggregate Tests', () => {
       });
 
       it('Bad request if query parameters are invalid (perform numeric function on a non numeric expression)', async () => {
-        const members = await saveMembers(MEMBERS);
         const { item } = await saveItemAndMembership({ member: actor });
-        await saveActions(item, members);
 
         const parameters = {
           requestedSampleSize: 5000,
