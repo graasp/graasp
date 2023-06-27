@@ -762,8 +762,8 @@ describe('Service API', () => {
       if (!member) {
         throw new Error('Test error: member should exist');
       }
-      const parent = await saveItemAndMembership({ member });
-      const bogusItem = await saveItemAndMembership({ member });
+      const { item: parent } = await saveItemAndMembership({ member });
+      const { item: bogusItem } = await saveItemAndMembership({ member });
 
       setUpApi({
         createGroupIfNotExistsFor: [
@@ -777,10 +777,10 @@ describe('Service API', () => {
         method: 'POST',
         url: 'items/copy',
         query: {
-          id: [item.id],
+          id: [bogusItem.id],
         },
         payload: {
-          parentId: parent.item.id,
+          parentId: parent.id,
         },
       });
 
