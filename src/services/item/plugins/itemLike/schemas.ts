@@ -11,7 +11,7 @@ export default {
           $ref: 'http://graasp.org/items/#/definitions/item',
         },
         creator: {
-          $ref: 'http://graasp.org/member/#/definitions/member',
+          $ref: 'http://graasp.org/members/#/definitions/member',
         },
         createdAt: {},
       },
