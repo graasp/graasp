@@ -10,10 +10,9 @@ export default {
         item: {
           $ref: 'http://graasp.org/items/#/definitions/item',
         },
-        // warning: do not include for privacy for now
-        // member: {
-        //   $ref: 'http://graasp.org/#/definitions/uuid',
-        // },
+        creator: {
+          $ref: 'http://graasp.org/member/#/definitions/member',
+        },
         createdAt: {},
       },
       additionalProperties: false,
