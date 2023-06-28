@@ -7,7 +7,6 @@ import { Repositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { validatePermission } from '../../../authorization';
-import { ChatMessageService } from '../../../chat/service';
 import { Actor } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { Item } from '../../entities/Item';
@@ -24,21 +23,18 @@ export class ActionItemService {
   itemService: ItemService;
   memberService: MemberService;
   actionService: ActionService;
-  chatMessageService: ChatMessageService;
   hosts: Hostname[];
 
   constructor(
     actionService: ActionService,
     itemService: ItemService,
     memberService: MemberService,
-    chatMessageService: ChatMessageService,
     hosts: Hostname[],
   ) {
     this.actionService = actionService;
     this.hosts = hosts;
     this.itemService = itemService;
     this.memberService = memberService;
-    this.chatMessageService = chatMessageService;
   }
 
   async getForItem(
@@ -100,12 +96,15 @@ export class ActionItemService {
     // get descendants items
     const descendants = await this.itemService.getDescendants(actor, repositories, payload.itemId);
 
-    // chatbox
-    const chatMessages = await this.chatMessageService.getForItem(
-      actor,
-      repositories,
-      payload.itemId,
-    );
+    // chatbox for all items
+    const chatMessages = Object.values(
+      (
+        await repositories.chatMessageRepository.getForItems([
+          payload.itemId,
+          ...descendants.map(({ id }) => id),
+        ])
+      ).data,
+    ).flat();
 
     // set all data in last task's result
     return new BaseAnalytics({

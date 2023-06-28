@@ -30,19 +30,12 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
     actions: { service: actionService },
     items: { service: itemService },
     members: { service: memberService },
-    chat: { service: chatMessageService },
     hosts,
     mailer,
     db,
   } = fastify;
 
-  const actionItemService = new ActionItemService(
-    actionService,
-    itemService,
-    memberService,
-    chatMessageService,
-    hosts,
-  );
+  const actionItemService = new ActionItemService(actionService, itemService, memberService, hosts);
   fastify.items.actions = { service: actionItemService };
 
   const requestExportService = new ActionRequestExportService(
