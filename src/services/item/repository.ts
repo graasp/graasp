@@ -311,7 +311,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   /////// -------- COPY
-  async copy(item: Item, creator: Member, parentItem?: Item): Promise<Item> {
+  async copy(
+    item: Item,
+    creator: Member,
+    parentItem?: Item,
+  ): Promise<{ copyRoot: Item; treeCopyMap: Map<string, { original: Item; copy: Item }> }> {
     const descendants = await this.getDescendants(item);
 
     // copy (memberships from origin are not copied/kept)
@@ -329,7 +333,10 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
 
     // TODO: copy item + all descendants
-    return this.get(newItemRef.id);
+    return {
+      copyRoot: await this.get(newItemRef.id),
+      treeCopyMap: treeItemsCopy,
+    };
   },
 
   // UTILS

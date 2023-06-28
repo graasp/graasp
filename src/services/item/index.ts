@@ -50,8 +50,6 @@ import thumbnailsPlugin from './plugins/thumbnail';
 import graaspValidationPlugin from './plugins/validation';
 import { itemWsHooks } from './ws/hooks';
 
-// import { registerItemWsHooks } from './ws/hooks';
-
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(itemSchema);
 

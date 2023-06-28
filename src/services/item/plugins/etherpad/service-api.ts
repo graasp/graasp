@@ -103,7 +103,7 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
         if (!actor) {
           return;
         }
-        etherpadItemService.deleteEtherpadForItem(actor, item);
+        await etherpadItemService.deleteEtherpadForItem(actor, item);
       });
 
       /**
@@ -113,7 +113,7 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
         if (!actor) {
           return;
         }
-        etherpadItemService.copyEtherpadInMutableItem(actor, item);
+        await etherpadItemService.copyEtherpadInMutableItem(actor, item);
       });
     },
     { prefix: 'etherpad' },

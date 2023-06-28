@@ -1,7 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { DateTime } from 'luxon';
 import nock from 'nock';
-import uuid from 'uuid';
+import { And, Not } from 'typeorm';
+import * as uuid from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
@@ -9,14 +10,14 @@ import { FastifyInstance } from 'fastify';
 import { EtherpadItemType, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { ETHERPAD_URL } from '../../../../../utils/config';
+import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
+import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
 import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
-import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
 import { EtherpadItemService } from '../service';
@@ -157,7 +158,7 @@ describe('Service API', () => {
   });
 
   describe('view a pad', () => {
-    let item: Item;
+    let item: EtherpadItemType;
 
     const payloadView = (mode: 'read' | 'write', itemId: string) => ({
       method: HttpMethod.GET,
@@ -201,10 +202,10 @@ describe('Service API', () => {
       const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
+      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
     });
 
@@ -231,7 +232,7 @@ describe('Service API', () => {
       expect(createSession?.get('validUntil')).toBeDefined();
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${ETHERPAD_URL}/p/${MOCK_GROUP_ID}$mock-pad-name`,
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${item.extra.etherpad.padID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -257,13 +258,14 @@ describe('Service API', () => {
       const { item } = await saveItemAndMembership({
         member: bob,
         item: {
+          name: "bob's test etherpad item",
           extra: EtherpadItemService.buildEtherpadExtra({
             groupID: MOCK_GROUP_ID,
             padName: MOCK_PAD_NAME,
           }),
         },
       });
-      saveMembership({ item, member, permission: PermissionLevel.Read });
+      await saveMembership({ item, member, permission: PermissionLevel.Read });
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -285,7 +287,7 @@ describe('Service API', () => {
       expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
     });
 
@@ -327,10 +329,10 @@ describe('Service API', () => {
       const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
+      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -388,10 +390,10 @@ describe('Service API', () => {
       const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID, deleteSession } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
+      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -459,10 +461,10 @@ describe('Service API', () => {
       const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID, deleteSession } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
+      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -527,10 +529,10 @@ describe('Service API', () => {
       const res = await app.inject(payloadView('read', item.id));
 
       const { getReadOnlyID, deleteSession } = await reqParams;
-      expect(getReadOnlyID?.get('padID')).toEqual(MOCK_PAD_ID);
+      expect(getReadOnlyID?.get('padID')).toEqual(item.extra.etherpad.padID);
       expect(res.statusCode).toEqual(StatusCodes.OK);
       expect(res.json()).toEqual({
-        padUrl: `${ETHERPAD_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
+        padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
       expect(res.cookies.length).toEqual(1);
@@ -550,6 +552,7 @@ describe('Service API', () => {
       expect(expiration > DateTime.now().plus({ days: 1 }).minus({ minutes: 1 })).toBeTruthy();
       expect(expiration < DateTime.now().plus({ days: 1 }).plus({ minutes: 1 })).toBeTruthy();
 
+      // check that the malformed session is deleted
       expect(deleteSession?.get('sessionID')).toEqual('s.0000000000000000');
     });
 
@@ -570,12 +573,7 @@ describe('Service API', () => {
       const res = await app.inject(payloadView(mode, randomId));
 
       expect(res.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      expect(res.json()).toEqual({
-        code: 'GPEPERR002',
-        message: 'Item not found',
-        origin: 'graasp-plugin-etherpad',
-        statusCode: StatusCodes.NOT_FOUND,
-      });
+      expect(res.json()).toMatchObject(new ItemNotFound(randomId));
     });
 
     it.each(MODES)('returns error if item is missing etherpad extra (%p)', async (mode) => {
@@ -604,6 +602,7 @@ describe('Service API', () => {
       const { item } = await saveItemAndMembership({
         member: bob,
         item: {
+          name: "bob's test etherpad item",
           extra: EtherpadItemService.buildEtherpadExtra({
             groupID: MOCK_GROUP_ID,
             padName: MOCK_PAD_NAME,
@@ -621,12 +620,7 @@ describe('Service API', () => {
       const res = await app.inject(payloadView(mode, item.id));
 
       expect(res.statusCode).toEqual(StatusCodes.FORBIDDEN);
-      expect(res.json()).toEqual({
-        code: 'GPEPERR004',
-        message: 'Access forbidden to this item',
-        origin: 'graasp-plugin-etherpad',
-        statusCode: StatusCodes.FORBIDDEN,
-      });
+      expect(res.json()).toMatchObject(new MemberCannotAccess(item.id));
     });
 
     it('returns error on etherpad HTTP error', async () => {
@@ -710,7 +704,7 @@ describe('Service API', () => {
     });
 
     it('copies pad when item is copied', async () => {
-      const parent = await saveItemAndMembership({ member });
+      const parent = await saveItemAndMembership({ member, item: { name: 'test parent' } });
 
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
@@ -736,11 +730,10 @@ describe('Service API', () => {
         expect(await ItemRepository.count()).toEqual(3);
       });
 
-      const items = (await ItemRepository.find()).filter(
-        (i) => i.id !== item.id && i.id !== parent.item.id,
-      );
-      expect(items.length).toEqual(1); // this is the copied item
-      const [copy] = items as EtherpadItemType[];
+      const copy = (await ItemRepository.findOneBy({
+        id: And(Not(item.id), Not(parent.item.id)),
+      })) as EtherpadItemType;
+      expect(copy).not.toBeNull();
 
       const { createGroupIfNotExistsFor, copyPad } = await reqsParams;
       expect(copyPad?.get('destinationID')).toEqual(

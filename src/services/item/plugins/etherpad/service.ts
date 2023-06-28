@@ -115,6 +115,33 @@ export class EtherpadItemService {
   }
 
   /**
+   * Helper to determine the final viewing mode of an etherpad
+   */
+  private async checkMode(
+    requestedMode: 'read' | 'write',
+    member: Member,
+    item: Item,
+  ): Promise<'read' | 'write'> {
+    // no specific check if read mode was requested
+    if (requestedMode === 'read') {
+      return 'read';
+    }
+    // if mode was write, check that permission is at least write
+    try {
+      // validatePermission will throw if user does not have write rights
+      await validatePermission(buildRepositories(), PermissionLevel.Write, member, item);
+      return 'write';
+    } catch (error) {
+      // something else failed in the authorization
+      if (!(error instanceof MemberCannotWriteItem)) {
+        throw error;
+      }
+      // the user simply does not have write permission, so fallback to read
+      return 'read';
+    }
+  }
+
+  /**
    * Retrieves the Etherpad service URL of the requested pad for a given item and a cookie
    * containing all valid sessions for pads for a given member (including the requested pad)
    */
@@ -126,21 +153,7 @@ export class EtherpadItemService {
       throw new ItemNotFoundError(itemId);
     }
 
-    let checkedMode: typeof mode;
-    try {
-      // if mode was write, check that permission is at least write
-      // otherwise automatically fallback to read
-      mode === 'write' && (await validatePermission(repos, PermissionLevel.Write, member, item));
-      // if the above does not throw then we indeed have write permission
-      checkedMode = 'write';
-    } catch (error) {
-      // something else failed in the authorization
-      if (!(error instanceof MemberCannotWriteItem)) {
-        throw error;
-      }
-      // the user simply does not have write permission, so fallback to read
-      checkedMode = 'read';
-    }
+    const checkedMode = await this.checkMode(mode, member, item);
 
     if (!item.extra?.etherpad) {
       throw new ItemMissingExtraError(item);
