@@ -11,10 +11,11 @@ import { ItemPublishedNotFound } from '../errors';
 
 export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished).extend({
   async getForItem(item: Item) {
-    const entry = await this.findOne({
-      where: { item: { id: item.id } },
-      relations: { item: true, creator: true },
-    });
+    // this returns the root published item when querying a child item
+    const entry = await this.createQueryBuilder('pi')
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item_path @> :itemPath', { itemPath: item.path })
+      .innerJoinAndSelect('pi.creator', 'member')
+      .getOne();
     if (!entry) {
       throw new ItemPublishedNotFound(item.id);
     }
