@@ -1,5 +1,3 @@
-import { In } from 'typeorm';
-
 import { PermissionLevel } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
@@ -23,15 +21,19 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     return entry;
   },
   async getForItems(items: Item[]) {
+    const paths = items.map((i) => i.path);
     const ids = items.map((i) => i.id);
-    const entries = await this.find({
-      where: { item: { id: In(ids) } },
-      relations: { item: true, creator: true },
-    });
+    const entries = await this.createQueryBuilder('pi')
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item_path @> ARRAY[:...paths]::ltree[]', {
+        paths,
+      })
+      .innerJoinAndSelect('pi.creator', 'member')
+      .getMany();
 
     return mapById({
       keys: ids,
-      findElement: (id) => entries.find((e) => e.item.id === id),
+      findElement: (id) =>
+        entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
   },
