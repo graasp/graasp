@@ -5,15 +5,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, PermissionLevel } from '@graasp/sdk';
 
-import { WEBSOCKETS_PLUGIN } from '../../utils/config';
 import { buildRepositories } from '../../utils/repositories';
-import { ItemMembership } from './entities/ItemMembership';
 import { PurgeBelowParam } from './interfaces/requests';
-import common, { create, createMany, deleteAll, deleteOne, getItems, updateOne } from './schemas';
+import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
 import ItemMembershipService from './service';
-import { registerItemMembershipWsHooks } from './ws/hooks';
-
-// import { registerItemMembershipWsHooks } from './ws/hooks';
+import { membershipWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/item-memberships';
 
@@ -23,7 +19,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     items: { service: itemService },
     mailer,
     hosts,
-    websockets,
   } = fastify;
   const itemMembershipService = new ItemMembershipService(itemService, hosts, mailer);
 
@@ -38,14 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      if (WEBSOCKETS_PLUGIN) {
-        registerItemMembershipWsHooks(
-          buildRepositories(),
-          websockets,
-          itemService,
-          itemMembershipService,
-        );
-      }
+      fastify.register(membershipWsHooks);
 
       // get many item's memberships
       // returns empty for item not found
