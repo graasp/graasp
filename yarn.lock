@@ -3116,9 +3116,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@graasp/sdk@npm:1.1.0"
+"@graasp/sdk@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@graasp/sdk@npm:1.1.1"
   dependencies:
     "@aws-sdk/client-s3": 3.353.0
     "@fastify/secure-session": 6.1.0
@@ -3131,7 +3131,7 @@ __metadata:
     typeorm: 0.3.16
     uuid: 9.0.0
     validator: 13.9.0
-  checksum: d78fbef71fbaec66762433d571eb969c2c5c4b26fc8eec06a9b46e503ff507a9f8398414918e87f02319f1d0c08bbbc150e30f743a1d951caa45556e068fe474
+  checksum: 48eda9d8528591df34f27763cd86835b3f2be52c22eb21cf0d432b5a21ef8a2654c910528178611883d1bb05f0b4908b69771cd5fbebbd19c2cebbc1994dbd3b
   languageName: node
   linkType: hard
 
@@ -7040,7 +7040,7 @@ __metadata:
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
-    "@graasp/sdk": 1.1.0
+    "@graasp/sdk": 1.1.1
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.53.1
     "@sentry/profiling-node": 0.3.0
