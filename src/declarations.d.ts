@@ -9,6 +9,7 @@ import { ActionService } from './services/action/services/action';
 import { MentionService } from './services/chat/plugins/mentions/service';
 import FileService from './services/file/service';
 import { ActionItemService } from './services/item/plugins/action/service';
+import { EtherpadItemService } from './services/item/plugins/etherpad/service';
 import FileItemService from './services/item/plugins/file/service';
 import { H5PService } from './services/item/plugins/h5p/service';
 import { ItemThumbnailService } from './services/item/plugins/thumbnail/service';
@@ -54,8 +55,10 @@ declare module 'fastify' {
 
     // TODO
     hosts: any;
+
     websockets: WebsocketService;
     h5p: H5PService;
+    etherpad: EtherpadItemService;
 
     corsPluginOptions: any;
     verifyAuthentication: (request: FastifyRequest) => Promise<void>;

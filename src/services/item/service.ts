@@ -11,13 +11,13 @@ import {
 } from '@graasp/sdk';
 
 import {
+  CoreError,
   InvalidMembership,
   MemberCannotWriteItem,
   TooManyChildren,
   TooManyDescendants,
   UnauthorizedMember,
 } from '../../utils/errors';
-import { CoreError } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission } from '../authorization';
@@ -232,6 +232,12 @@ export class ItemService {
     }
 
     const items = [...descendants, item];
+
+    // pre hook
+    for (const item of items) {
+      await this.hooks.runPreHooks('delete', actor, repositories, { item });
+    }
+
     await itemRepository.deleteMany(items.map((i) => i.id));
 
     // post hook
@@ -273,6 +279,12 @@ export class ItemService {
     );
 
     const items = [...allDescendants.flat(), ...allItems];
+
+    // pre hook
+    for (const item of items) {
+      await this.hooks.runPreHooks('delete', actor, repositories, { item });
+    }
+
     await itemRepository.deleteMany(items.map((i) => i.id));
 
     // post hook
@@ -383,16 +395,21 @@ export class ItemService {
       await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
-    // TODO: post hook - for loop on descendants
-    await this.hooks.runPreHooks('copy', actor, repositories, { original: item });
+    const descendants = await itemRepository.getDescendants(item);
+    const items = [...descendants, item];
+
+    // pre hook
+    for (const original of items) {
+      await this.hooks.runPreHooks('copy', actor, repositories, { original });
+    }
 
     // TODO: args?
-    const result = await itemRepository.copy(item, actor, parentItem);
+    const { copyRoot, treeCopyMap } = await itemRepository.copy(item, actor, parentItem);
 
     // create a membership if needed
     await itemMembershipRepository
       .post({
-        item: result,
+        item: copyRoot,
         member: actor,
         creator: actor,
         permission: PermissionLevel.Admin,
@@ -405,10 +422,12 @@ export class ItemService {
         throw e;
       });
 
-    // TODO: post hook - for loop on descendants
-    await this.hooks.runPostHooks('copy', actor, repositories, { original: item, copy: result });
+    // post hook
+    for (const { original, copy } of treeCopyMap.values()) {
+      await this.hooks.runPostHooks('copy', actor, repositories, { original, copy });
+    }
 
-    return result;
+    return copyRoot;
   }
 
   // TODO: optimize
