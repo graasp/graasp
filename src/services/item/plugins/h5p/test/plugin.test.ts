@@ -12,6 +12,7 @@ import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, H5P_TEMP_DIR } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { H5P_FILE_DOT_EXTENSION } from '../constants';
@@ -32,7 +33,7 @@ async function cleanFiles() {
 
 describe('Service plugin', () => {
   let app: FastifyInstance;
-  let member: any;
+  let member: Member | null;
   let parent: Item;
 
   let res: LightMyRequestResponse,
@@ -43,6 +44,9 @@ describe('Service plugin', () => {
 
   beforeEach(async () => {
     ({ app, actor: member } = await build());
+    if (!member) {
+      throw new Error('Test member not defined');
+    }
     ({ item: parent } = await saveItemAndMembership({ member }));
     res = await injectH5PImport(app, { parentId: parent.id });
     item = res.json();

@@ -1,7 +1,9 @@
 import build, { clearDatabase } from '../../../../../test/app';
+import { ChatMessageRepository } from '../../../chat/repository';
 import { Member } from '../../../member/entities/member';
-import { BOB, CEDRIC, saveMember } from '../../../member/test/fixtures/members';
+import { BOB, CEDRIC, MEMBERS, saveMember } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
+import { getDummyItem } from '../../test/fixtures/items';
 import { BaseAnalytics } from './base-analytics';
 
 const item = {} as unknown as Item;
@@ -34,6 +36,13 @@ describe('Base Analytics', () => {
     for (const m of data) {
       members.push(await saveMember(m));
     }
+    const chatMessages = [
+      await ChatMessageRepository.create({
+        item: getDummyItem(),
+        creator: MEMBERS[0] as Member,
+        body: 'message',
+      }),
+    ];
     const analytics = new BaseAnalytics({
       item,
       descendants,
@@ -41,6 +50,7 @@ describe('Base Analytics', () => {
       members,
       itemMemberships,
       metadata,
+      chatMessages,
     });
 
     for (const m of data) {
@@ -52,6 +62,11 @@ describe('Base Analytics', () => {
       }
       // no favorites
       expect(member?.extra.favoriteItems).toBeUndefined();
+      expect(member?.createdAt).toBeUndefined();
+    }
+
+    for (const cm of analytics.chatMessages) {
+      expect(cm.creator?.createdAt).toBeUndefined();
     }
   });
 });

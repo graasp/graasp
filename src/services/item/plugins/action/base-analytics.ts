@@ -1,6 +1,7 @@
 import Ajv from 'ajv';
 
 import { Action } from '../../../action/entities/action';
+import { ChatMessage } from '../../../chat/chatMessage';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
@@ -12,6 +13,7 @@ export class BaseAnalytics {
   readonly itemMemberships: ItemMembership[];
   readonly descendants: Item[];
   readonly item: Item;
+  readonly chatMessages: ChatMessage[];
   readonly metadata: {
     numActionsRetrieved: number;
     requestedSampleSize: number;
@@ -23,6 +25,7 @@ export class BaseAnalytics {
     actions: Action[];
     members: Member[];
     itemMemberships: ItemMembership[];
+    chatMessages: ChatMessage[];
     metadata: {
       numActionsRetrieved: number;
       requestedSampleSize: number;
@@ -45,11 +48,14 @@ export class BaseAnalytics {
 
     args.actions.forEach((a) => validateMember(a.member));
 
+    args.chatMessages.forEach((m) => validateMember(m.creator));
+
     this.actions = args.actions;
     this.members = args.members;
     this.item = args.item;
     this.descendants = args.descendants;
     this.metadata = args.metadata;
     this.itemMemberships = args.itemMemberships;
+    this.chatMessages = args.chatMessages;
   }
 }

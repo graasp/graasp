@@ -22,8 +22,6 @@ import {
 } from './fluent-schema';
 import { Ordered } from './interfaces/requests';
 
-// import { registerItemWsHooks } from './ws/hooks';
-
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;
   const itemService = items.service;
@@ -310,7 +308,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await actionItemService.postManyCopyAction(request, reply, repositories, items);
       }).catch((e) => {
         // TODO: return feedback in queue
-        console.error(e);
+        log.error(e);
       });
       reply.status(StatusCodes.ACCEPTED);
       return ids;

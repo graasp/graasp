@@ -1,11 +1,16 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
 import {
   APPS_JWT_SECRET,
   APPS_PUBLISHER_ID,
   APP_ITEMS_PREFIX,
   EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+  ETHERPAD_API_KEY,
+  ETHERPAD_COOKIE_DOMAIN,
+  ETHERPAD_PUBLIC_URL,
+  ETHERPAD_URL,
   FILE_ITEM_PLUGIN_OPTIONS,
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
@@ -31,6 +36,7 @@ import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
+import graaspEtherpadPlugin from './plugins/etherpad';
 import graaspFileItem from './plugins/file';
 import graaspH5PPlugin from './plugins/h5p';
 import graaspZipPlugin from './plugins/importExport';
@@ -44,8 +50,6 @@ import graaspRecycledItemData from './plugins/recycled';
 import thumbnailsPlugin from './plugins/thumbnail';
 import graaspValidationPlugin from './plugins/validation';
 import { itemWsHooks } from './ws/hooks';
-
-// import { registerItemWsHooks } from './ws/hooks';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(itemSchema);
@@ -111,6 +115,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           tempDir: H5P_TEMP_DIR,
         });
 
+        fastify.register(graaspEtherpadPlugin, {
+          url: ETHERPAD_URL,
+          apiKey: ETHERPAD_API_KEY,
+          publicUrl: ETHERPAD_PUBLIC_URL,
+          cookieDomain: ETHERPAD_COOKIE_DOMAIN,
+        });
+
         fastify.register(graaspZipPlugin);
 
         // 'await' necessary because internally it uses 'extendCreateSchema'
@@ -133,7 +144,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspItemLikes);
 
-        fastify.register(graaspChatbox);
+        fastify.register(fp(graaspChatbox));
 
         fastify.register(actionItemPlugin);
 

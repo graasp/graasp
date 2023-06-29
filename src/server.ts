@@ -8,7 +8,7 @@ import { CORS_ORIGIN_REGEX, DEV, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } fro
 
 const start = async () => {
   const instance = fastify({
-    logger: DEV ?? DISABLE_LOGS,
+    logger: DEV || !DISABLE_LOGS,
     ajv: {
       customOptions: {
         // This allow routes that take array to correctly interpret single values as an array

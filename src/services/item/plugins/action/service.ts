@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { Context, Hostname, PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
-import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { Repositories } from '../../../../utils/repositories';
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { validatePermission } from '../../../authorization';
@@ -36,16 +36,6 @@ export class ActionItemService {
     this.itemService = itemService;
     this.memberService = memberService;
   }
-
-  // async postMany(
-  //   member: Actor,
-  //   repositories: Repositories,
-  //   actions: Partial<Action>[]
-  // ): Promise<Action[]> {
-
-  //     return repositories.actionRepository.postMany(actions);
-
-  // }
 
   async getForItem(
     actor: Actor,
@@ -106,6 +96,16 @@ export class ActionItemService {
     // get descendants items
     const descendants = await this.itemService.getDescendants(actor, repositories, payload.itemId);
 
+    // chatbox for all items
+    const chatMessages = Object.values(
+      (
+        await repositories.chatMessageRepository.getForItems([
+          payload.itemId,
+          ...descendants.map(({ id }) => id),
+        ])
+      ).data,
+    ).flat();
+
     // set all data in last task's result
     return new BaseAnalytics({
       item,
@@ -113,6 +113,7 @@ export class ActionItemService {
       actions,
       members,
       itemMemberships: allMemberships,
+      chatMessages,
       metadata: {
         numActionsRetrieved: actions.length,
         requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
