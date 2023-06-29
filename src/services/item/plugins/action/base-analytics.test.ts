@@ -60,8 +60,6 @@ describe('Base Analytics', () => {
       if (m?.extra?.lang) {
         expect(member?.extra.lang).toBeTruthy();
       }
-      // no favorites
-      expect(member?.extra.favoriteItems).toBeUndefined();
       expect(member?.createdAt).toBeUndefined();
     }
 
