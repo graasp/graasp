@@ -13,7 +13,7 @@ services:
         USER_UID: 1000
         USER_GID: 1000
     environment:
-      HOSTNAME: localhost
+      HOSTNAME: 0.0.0.0
       PG_CONNECTION_URI: "postgresql://docker:docker@localhost:5432/docker"
       FILE_STORAGE_ROOT_PATH: "/tmp/graasp-file-item-storage"
       DB_NAME: docker
