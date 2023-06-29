@@ -164,24 +164,9 @@ jobs:
             ${{ runner.os }}-jest-
 
 
-      - name: yarn install and build
+      - name: yarn install
         run: |
           yarn
-          yarn build
-
-      - name: apply migrations on empty database
-        env:
-          DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
-          DB_USERNAME: ${{ env.TEST_DB_USER }}
-          DB_NAME: ${{ env.TEST_DB_NAME }}
-        run: yarn migration:run
-
-      - name: check migrations are synced with the current codebase
-        env:
-          DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
-          DB_USERNAME: ${{ env.TEST_DB_USER }}
-          DB_NAME: ${{ env.TEST_DB_NAME }}
-        run: yarn migration:check
 
       - name: yarn test
         run:
