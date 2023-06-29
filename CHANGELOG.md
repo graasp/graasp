@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/graasp/graasp/compare/v1.1.0...v1.2.0) (2023-06-29)
+
+
+### Features
+
+* add etherpad features in core ([#467](https://github.com/graasp/graasp/issues/467)) ([7e0ca67](https://github.com/graasp/graasp/commit/7e0ca67bfc09275fed2bc35bc48595f7e024eb67))
+* add get most liked collections endpoint ([#397](https://github.com/graasp/graasp/issues/397)) ([ced62da](https://github.com/graasp/graasp/commit/ced62da1270130d2edd7e7f2d5b06d50d9fdf2c9))
+* allow to edit file item extra's alttext ([#423](https://github.com/graasp/graasp/issues/423)) ([4f0c73c](https://github.com/graasp/graasp/commit/4f0c73cd476c3a40d526cc5b38895792bd5693fb))
+* export chat messages ([#459](https://github.com/graasp/graasp/issues/459)) ([1010399](https://github.com/graasp/graasp/commit/1010399b32b2e0f7e3bf21c6c81f8aba57d22bec))
+
+
+### Bug Fixes
+
+* bundle chat action in db transaction ([#386](https://github.com/graasp/graasp/issues/386)) ([405109e](https://github.com/graasp/graasp/commit/405109e2c01a5de21070518a8e90384498233a17))
+* **dev:** localstack and s3 bucket ([280dfc5](https://github.com/graasp/graasp/commit/280dfc553d68703dfa8a8bec1c051b6a9ac6ca3e))
+* getItemsByCategories only return root items ([#427](https://github.com/graasp/graasp/issues/427)) ([36223a3](https://github.com/graasp/graasp/commit/36223a3508df54ce6ff5a75c689449ed02b547da))
+* prevent deletion of only / last admin on item ([#403](https://github.com/graasp/graasp/issues/403)) ([eacd3d0](https://github.com/graasp/graasp/commit/eacd3d05776b858f223ae0bb0c54298404c6825e))
+* return creator for published items ([#457](https://github.com/graasp/graasp/issues/457)) ([280dfc5](https://github.com/graasp/graasp/commit/280dfc553d68703dfa8a8bec1c051b6a9ac6ca3e))
+
 ## [1.1.0](https://github.com/graasp/graasp/compare/v1.0.1...v1.1.0) (2023-06-21)
 
 
