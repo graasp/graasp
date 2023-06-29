@@ -35,7 +35,7 @@ import { Member } from '../../services/member/entities/member';
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
-  port: process.env.CI === 'true' ? 5432 + parseInt(process.env.JEST_WORKER_ID) - 1 : 5432,
+  port: process.env.CI === 'true' ? 5432 + parseInt(process.env.JEST_WORKER_ID ?? '1') - 1 : 5432,
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
