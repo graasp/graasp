@@ -13,6 +13,7 @@ import FileItemService from './services/item/plugins/file/service';
 import { H5PService } from './services/item/plugins/h5p/service';
 import { ItemThumbnailService } from './services/item/plugins/thumbnail/service';
 import ItemService from './services/item/service';
+import ItemMembershipService from './services/itemMembership/service';
 import { Actor, Member } from './services/member/entities/member';
 import { MemberService } from './services/member/service';
 import { WebsocketService } from './services/websockets/ws-service';
@@ -47,6 +48,9 @@ declare module 'fastify' {
       };
       thumbnails: {
         service: ItemThumbnailService;
+      };
+      membserships: {
+        service: ItemMembershipService;
       };
     };
     members: { service: MemberService };

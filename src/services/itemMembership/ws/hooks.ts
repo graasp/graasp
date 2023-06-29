@@ -69,11 +69,11 @@ export function registerItemMembershipWsHooks(
  * Registers real-time websocket events for the item service
  */
 export const membershipWsHooks: FastifyPluginAsync = async (fastify) => {
-  const { websockets, items, hosts, mailer } = fastify;
+  const { websockets, items } = fastify;
   registerItemMembershipWsHooks(
     buildRepositories(),
     websockets,
     items.service,
-    new ItemMembershipService(items.service, hosts, mailer),
+    items.membserships.service,
   );
 };
