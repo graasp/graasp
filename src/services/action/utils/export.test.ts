@@ -6,6 +6,8 @@ import { Context } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { TMP_FOLDER } from '../../../utils/config';
+import { ChatMessage } from '../../chat/chatMessage';
+import { ChatMessageRepository } from '../../chat/repository';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
 import { getDummyItem } from '../../item/test/fixtures/items';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
@@ -41,18 +43,27 @@ const setUpActions = async (app, member: Member) => {
     await createDummyAction({ item, member, view: views[0] }),
     await createDummyAction({ item, member, view: views[0] }),
   ];
+  const chatMessages: ChatMessage[] = [];
+  chatMessages.push(await ChatMessageRepository.save({ item, creator: member, body: 'some-text' }));
+  chatMessages.push(
+    await ChatMessageRepository.save({ item, creator: member, body: 'some-text-1' }),
+  );
+  chatMessages.push(
+    await ChatMessageRepository.save({ item, creator: member, body: 'some-text-2' }),
+  );
   const baseAnalytics = new BaseAnalytics({
     actions,
     members: [member],
     itemMemberships: [itemMembership],
     item,
     descendants: [getDummyItem()],
+    chatMessages,
     metadata: { numActionsRetrieved: 5, requestedSampleSize: 5 },
   });
   return { baseAnalytics, actions, views };
 };
 
-const storageFolder = path.join(TMP_FOLDER, 'tmp');
+const storageFolder = path.join(TMP_FOLDER, 'export-actions');
 fs.mkdirSync(storageFolder, { recursive: true });
 
 describe('exportActionsInArchive', () => {
@@ -82,31 +93,14 @@ describe('exportActionsInArchive', () => {
 
     // call on success callback
     expect(result).toBeTruthy();
-    // create files for all views, items, members and memberships
-    expect(writeFileSyncMock).toHaveBeenCalledTimes(views.length + 4);
+    // create files for all views, items, members and memberships, chat messages
+    expect(writeFileSyncMock).toHaveBeenCalledTimes(views.length + 5);
     const files = fs.readdirSync(storageFolder);
     expect(files.length).toBeTruthy();
 
+    // assume only 2 files exist in the folder
     const [folder, zip] = files;
     expect(zip.includes(baseAnalytics.item.name)).toBeTruthy();
-    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(views.length + 4);
+    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(views.length + 5);
   });
-
-  // it('Throws if a file is not created', async () => {
-  //   jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {
-  //     throw new Error();
-  //   });
-
-  //   const onSuccess = jest.fn();
-  //   await expect(async () => {
-  //     await exportActionsInArchive({
-  //       baseAnalytics,
-  //       storageFolder,
-  //       views,
-  //     });
-  //   }).rejects.toBeInstanceOf(CannotWriteFileError);
-
-  //   // call on success callback
-  //   expect(onSuccess).not.toHaveBeenCalled();
-  // });
 });

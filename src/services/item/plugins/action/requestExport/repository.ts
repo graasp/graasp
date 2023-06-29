@@ -22,19 +22,18 @@ export const ActionRequestExportRepository = AppDataSource.getRepository(
   /**
    * Get last request export given item id and member id
    */
-  // TODO: what about moving item??
   async getLast({
     memberId,
-    itemId,
+    itemPath,
   }: {
     memberId: UUID;
-    itemId: UUID;
+    itemPath: string;
   }): Promise<ActionRequestExport> {
     const lowerLimitDate = new Date(Date.now() - DEFAULT_REQUEST_EXPORT_INTERVAL);
     return this.createQueryBuilder('actionRequestExport')
       .where('actionRequestExport.member_id = :memberId', { memberId })
-      .where('actionRequestExport.item_id = :memberId', { itemId })
-      .where('actionRequestExport.created_at >= :lowerLimitDate', { lowerLimitDate })
+      .andWhere('actionRequestExport.item_path = :itemPath', { itemPath })
+      .andWhere('actionRequestExport.created_at >= :lowerLimitDate', { lowerLimitDate })
       .getOne();
   },
 });

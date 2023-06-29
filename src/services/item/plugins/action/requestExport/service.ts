@@ -65,7 +65,7 @@ export class ActionRequestExportService {
     // get last export entry within interval
     const lastRequestExport = await repositories.actionRequestExportRepository.getLast({
       memberId: member?.id,
-      itemId,
+      itemPath: item.path,
     });
 
     // check if a previous request already created the file and send it back
@@ -123,7 +123,7 @@ export class ActionRequestExportService {
     `;
     const title = t(MAIL.EXPORT_ACTIONS_TITLE, { itemName: item.name });
     this.mailer.sendEmail(title, actor.email, link, html).catch((err) => {
-      console.debug(err, `mailer failed. invitation link: ${link}`);
+      console.debug(err, `mailer failed. export zip link: ${link}`);
     });
   }
 

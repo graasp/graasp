@@ -27,9 +27,7 @@ export const saveItemWithChatMessages = async (creator) => {
   for (let i = 0; i < MEMBERS.length; i++) {
     const member = await saveMember(MEMBERS[i]);
     members.push(member);
-    chatMessages.push(
-      await ChatMessageRepository.save({ item, member, creator, body: 'some-text-' + i }),
-    );
+    chatMessages.push(await ChatMessageRepository.save({ item, creator, body: 'some-text-' + i }));
   }
   return { item, chatMessages, members };
 };

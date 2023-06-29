@@ -75,6 +75,10 @@ export const exportActionsInArchive = async (args: {
     );
     fs.writeFileSync(iMembershipsPath, JSON.stringify(baseAnalytics.itemMemberships));
 
+    // create file for the chat messages
+    const chatPath = path.join(fileFolderPath, buildActionFileName('chat', archiveDate));
+    fs.writeFileSync(chatPath, JSON.stringify(baseAnalytics.chatMessages));
+
     // add directory in archive
     archive.directory(fileFolderPath, fileName);
   } catch (e) {

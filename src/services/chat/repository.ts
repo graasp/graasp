@@ -1,5 +1,10 @@
+import { In } from 'typeorm';
+
+import { ResultOf } from '@graasp/sdk';
+
 import { AppDataSource } from '../../plugins/datasource';
 import { Member } from '../member/entities/member';
+import { mapById } from '../utils';
 import { ChatMessage } from './chatMessage';
 import { ChatMessageNotFound } from './errors';
 
@@ -13,6 +18,21 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
       where: { item: { id: itemId } },
       relations: { creator: true, item: true },
       order: { createdAt: 'ASC' },
+    });
+  },
+
+  /**
+   * Retrieves all the messages related to the given items
+   * @param itemIds Id of items to retrieve messages for
+   */
+  async getForItems(itemIds: string[]): Promise<ResultOf<ChatMessage[]>> {
+    const messages = await this.find({
+      where: { item: { id: In(itemIds) } },
+      relations: { creator: true, item: true },
+    });
+    return mapById({
+      keys: itemIds,
+      findElement: (id) => messages.filter(({ item }) => item.id === id),
     });
   },
 
