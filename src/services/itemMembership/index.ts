@@ -16,7 +16,7 @@ const ROUTES_PREFIX = '/item-memberships';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, mailer, hosts } = fastify;
   const itemMembershipService = new ItemMembershipService(items.service, hosts, mailer);
-  items.membserships = { service: itemMembershipService };
+  fastify.decorate('memberships', { service: itemMembershipService });
 
   // schemas
   fastify.addSchema(common);
