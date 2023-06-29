@@ -308,7 +308,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await actionItemService.postManyCopyAction(request, reply, repositories, items);
       }).catch((e) => {
         // TODO: return feedback in queue
-        console.error(e);
+        log.error(e);
       });
       reply.status(StatusCodes.ACCEPTED);
       return ids;

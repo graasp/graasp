@@ -34,7 +34,7 @@ const MOCK_AUTHOR_ID = 'a.s8oes9dhwrvt0zif';
 const MOCK_SESSION_ID = 's.s8oes9dhwrvt0zif';
 const MODES: Array<'read' | 'write'> = ['read', 'write'];
 
-describe('Service API', () => {
+describe('Etherpad service API', () => {
   let app: FastifyInstance;
   let member: Member;
 
@@ -573,7 +573,7 @@ describe('Service API', () => {
       const res = await app.inject(payloadView(mode, randomId));
 
       expect(res.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      expect(res.json()).toMatchObject(new ItemNotFound(randomId));
+      expect(res.json()).toEqual(new ItemNotFound(randomId));
     });
 
     it.each(MODES)('returns error if item is missing etherpad extra (%p)', async (mode) => {

@@ -17,7 +17,7 @@ import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
-import { EtherpadServerError, ItemMissingExtraError, ItemNotFoundError } from './errors';
+import { EtherpadServerError, ItemMissingExtraError } from './errors';
 
 /**
  * Handles interactions between items and the remote Etherpad service
@@ -148,10 +148,6 @@ export class EtherpadItemService {
   public async getEtherpadFromItem(member: Member, itemId: string, mode: 'read' | 'write') {
     const repos = buildRepositories();
     const item = await this.itemService.get(member, repos, itemId);
-
-    if (!item) {
-      throw new ItemNotFoundError(itemId);
-    }
 
     const checkedMode = await this.checkMode(mode, member, item);
 
