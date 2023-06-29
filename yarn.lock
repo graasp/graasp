@@ -2990,13 +2990,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/helmet@npm:10.1.0":
-  version: 10.1.0
-  resolution: "@fastify/helmet@npm:10.1.0"
+"@fastify/helmet@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@fastify/helmet@npm:10.1.1"
   dependencies:
     fastify-plugin: ^4.2.1
     helmet: ^6.0.0
-  checksum: a2260ea660157a8c55af6a6ad82bcb7999c453fee7b9ff21377c6b2605351dfc8a36788742b7096e1141e83b539aed48ff44a9a5ac08b86257184abb81d22883
+  checksum: 1146291058a1f58817f4851f76ba17f9aa31e17e8a17659d091f46a1cafa79925476c87ebb7174c9b513590e12089a8242e244bee0f4caa894ebfedc4985d41e
   languageName: node
   linkType: hard
 
@@ -7032,7 +7032,7 @@ __metadata:
     "@fastify/bearer-auth": 9.0.0
     "@fastify/cors": 8.2.1
     "@fastify/forwarded": 2.2.0
-    "@fastify/helmet": 10.1.0
+    "@fastify/helmet": 10.1.1
     "@fastify/jwt": 6.7.1
     "@fastify/multipart": 7.5.0
     "@fastify/secure-session": 6.0.0
