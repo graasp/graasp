@@ -20,7 +20,6 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   /**
    * Create multiple memberships given an array of partial membership objects.
    * @param memberships Array of objects with properties: `memberId`, `itemPath`, `permission`, `creator`
-   * @param transactionHandler Database transaction handler
    */
   async createMany(memberships: Partial<ItemMembership>[]): Promise<ItemMembership[]> {
     return this.insert(memberships);
@@ -51,13 +50,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    * Delete multiple memberships matching `memberId`+`itemPath`
    * from partial memberships in given array.
    * @param memberships List of objects with: `memberId`, `itemPath`
-   * @param transactionHandler Database transaction handler
    */
   async deleteMany(memberships: Partial<ItemMembership>[]): Promise<readonly ItemMembership[]> {
     return this.delete(memberships);
   },
 
-  async get(id: string) {
+  async get(id: string): Promise<ItemMembership> {
     const item = await this.findOne({
       where: { id },
       relations: {
