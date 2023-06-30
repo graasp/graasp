@@ -57,7 +57,7 @@ export const BOB = {
 export const CEDRIC = {
   name: 'cedric',
   email: 'cedric@email.org',
-  extra: { favoriteItems: [] },
+  extra: {},
   createdAt: new Date(),
   updatedAt: new Date(),
 };
