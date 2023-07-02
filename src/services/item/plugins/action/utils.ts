@@ -1,4 +1,5 @@
 import { AggregateAttribute, AggregateFunctionType } from '../../../action/utils/actions';
+import { InvalidAggregationError } from '../../../action/utils/errors';
 
 export const PLUGIN_NAME = 'graasp-plugin-item-actions';
 
@@ -20,34 +21,31 @@ export const validateAggregateRequest = (
 ) => {
   // Aggregate by user is not allowed
   if (aggregateBy?.includes('user')) {
-    return false;
+    throw new InvalidAggregationError();
   }
 
   // Perform aggregation on a grouping expression is not allowed
   if (aggregateBy?.includes(aggregateMetric)) {
-    return false;
+    throw new InvalidAggregationError();
   }
 
   // The input of the second stage aggregation should be the output of the first stage aggregation
   if (!(countGroupBy.includes(aggregateMetric) || aggregateMetric === 'actionCount')) {
-    return false;
+    throw new InvalidAggregationError();
   }
-  let falseFlag = false;
+
   aggregateBy?.forEach((element) => {
     if (!(countGroupBy.includes(element) || element === 'actionCount')) {
-      falseFlag = true;
+      throw new InvalidAggregationError();
     }
   });
-  if (falseFlag) {
-    return false;
-  }
 
   // avg and sum functions can only be applied on numeric expressions
   if (['avg', 'sum'].includes(aggregateFuction) && aggregateMetric !== 'actionCount') {
-    return false;
+    throw new InvalidAggregationError();
   }
 
-  return true;
+  return;
 };
 
 // Constants to check the validity of the query parameters when obtaining actions

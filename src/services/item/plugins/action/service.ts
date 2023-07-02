@@ -2,7 +2,7 @@ import { exportDefaultSpecifier } from '@babel/types';
 
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { Context, Hostname, PermissionLevel } from '@graasp/sdk';
+import { Context, Hostname, Member, PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
@@ -57,17 +57,17 @@ export class ActionItemService {
   ): Promise<Action[]> {
     const { view = Context.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
 
-    // get item
-    const item = await this.itemService.get(actor, repositories, itemId);
+    // prevent access from unautorized members
+    if (!actor) {
+      throw new UnauthorizedMember();
+    }
+
+    // check right and get item
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Read);
 
     // check permission
-    const permission = actor
-      ? (await repositories.itemMembershipRepository.getInherited(item, actor, true))?.permission
-      : null;
-
-    if (!permission || !actor) {
-      return [];
-    }
+    const permission = (await repositories.itemMembershipRepository.getInherited(item, actor, true))
+      ?.permission;
 
     // Check validity of the requestSampleSize parameter (it is a number between min and max constants)
     let size = DEFAULT_ACTIONS_SAMPLE_SIZE;
@@ -104,7 +104,12 @@ export class ActionItemService {
     },
   ): Promise<unknown[]> {
     // check rights
-    const item = await this.itemService.get(actor, repositories, payload.itemId);
+    const item = await this.itemService.get(
+      actor,
+      repositories,
+      payload.itemId,
+      PermissionLevel.Read,
+    );
 
     // get actions aggregation
     const aggregateActions = await repositories.actionRepository.getAggregationForItem(
@@ -128,29 +133,30 @@ export class ActionItemService {
     repositories: Repositories,
     payload: { itemId: string; sampleSize?: number; view?: string },
   ): Promise<BaseAnalytics> {
+    // prevent access from unautorized members
     if (!actor) {
       throw new UnauthorizedMember();
     }
 
-    // get item
-    const item = await this.itemService.get(actor, repositories, payload.itemId);
+    // check right and get item
+    const item = await this.itemService.get(
+      actor,
+      repositories,
+      payload.itemId,
+      PermissionLevel.Read,
+    );
 
     // check permission
     const permission = actor
       ? (await repositories.itemMembershipRepository.getInherited(item, actor, true))?.permission
       : null;
 
-    let actions;
-    if (!permission || !actor) {
-      actions = [];
-    } else {
-      // check membership and get actions
-      actions = await repositories.actionRepository.getForItem(item.path, {
-        sampleSize: payload.sampleSize,
-        view: payload.view,
-        memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
-      });
-    }
+    // check membership and get actions
+    const actions = await repositories.actionRepository.getForItem(item.path, {
+      sampleSize: payload.sampleSize,
+      view: payload.view,
+      memberId: permission === PermissionLevel.Admin ? undefined : actor.id,
+    });
 
     // get memberships
     const inheritedMemberships =

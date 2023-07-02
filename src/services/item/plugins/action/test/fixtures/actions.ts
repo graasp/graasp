@@ -29,54 +29,43 @@ const getDummyAction = (
 };
 
 const buildActions = (item: Item, member: Member[]) => {
-  const actions: Action[] = [];
-  let dummyAction;
-
-  dummyAction = getDummyAction(
-    Context.Builder,
-    ItemActionType.Create,
-    new Date('2023-05-20T08:46:52.939Z'),
-    member[0],
-    item,
-  );
-  actions.push(dummyAction);
-
-  dummyAction = getDummyAction(
-    Context.Builder,
-    ItemActionType.Update,
-    new Date('2023-05-21T08:46:52.939Z'),
-    member[0],
-    item,
-  );
-  actions.push(dummyAction);
-
-  dummyAction = getDummyAction(
-    Context.Builder,
-    ItemActionType.Update,
-    new Date('2023-05-21T08:46:52.939Z'),
-    member[0],
-    item,
-  );
-  actions.push(dummyAction);
-
-  dummyAction = getDummyAction(
-    Context.Builder,
-    ItemActionType.Update,
-    new Date('2023-05-21T08:46:52.939Z'),
-    member[1],
-    item,
-  );
-  actions.push(dummyAction);
-
-  dummyAction = getDummyAction(
-    Context.Builder,
-    ItemActionType.Update,
-    new Date('2023-05-21T03:46:52.939Z'),
-    member[2],
-    item,
-  );
-  actions.push(dummyAction);
-
+  const actions: Action[] = [
+    getDummyAction(
+      Context.Builder,
+      ItemActionType.Create,
+      new Date('2023-05-20T08:46:52.939Z'),
+      member[0],
+      item,
+    ),
+    getDummyAction(
+      Context.Builder,
+      ItemActionType.Update,
+      new Date('2023-05-21T08:46:52.939Z'),
+      member[0],
+      item,
+    ),
+    getDummyAction(
+      Context.Builder,
+      ItemActionType.Update,
+      new Date('2023-05-21T08:46:52.939Z'),
+      member[0],
+      item,
+    ),
+    getDummyAction(
+      Context.Builder,
+      ItemActionType.Update,
+      new Date('2023-05-21T08:46:52.939Z'),
+      member[1],
+      item,
+    ),
+    getDummyAction(
+      Context.Builder,
+      ItemActionType.Update,
+      new Date('2023-05-21T03:46:52.939Z'),
+      member[2],
+      item,
+    ),
+  ];
   return actions;
 };
 

@@ -1,3 +1,5 @@
+import { LENGTH_REQUIRED } from 'http-status-codes';
+
 import forwarded from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
@@ -44,6 +46,9 @@ export class ActionService {
 
     // prevent saving if item disabled analytics
     actions.filter((action) => action.item?.settings?.enableSaveActions ?? true);
+    if (actions.length === 0) {
+      return;
+    }
 
     const view = getView(headers, this.hosts);
     // warning: addresses might contained spoofed ips

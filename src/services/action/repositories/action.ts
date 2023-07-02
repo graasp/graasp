@@ -109,7 +109,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
     }
 
     aggregateBy?.forEach((attribute) => {
-      const expression = 'subquery.' + '"' + attribute + '"';
+      const expression = `subquery."${attribute}"`;
       query.addSelect(expression).addGroupBy(expression);
     });
 

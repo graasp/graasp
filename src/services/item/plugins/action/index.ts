@@ -14,6 +14,7 @@ import {
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { AggregateAttribute, AggregateFunctionType } from '../../../action/utils/actions';
+import { InvalidAggregationError } from '../../../action/utils/errors';
 import { ActionRequestExportService } from './requestExport/service';
 import { exportAction, getAggregateActions, getItemActions } from './schemas';
 import { ActionItemService } from './service';
@@ -83,17 +84,17 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
       schema: getAggregateActions,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, params: { id }, query }, reply) => {
+    async ({ member, params: { id }, query }) => {
       // validate request
-      const isValid = validateAggregateRequest(
-        query.countGroupBy,
-        query.aggregateFunction,
-        query.aggregateMetric,
-        query.aggregateBy,
-      );
-
-      if (!isValid) {
-        return reply.status(400).send({ message: 'Invalid aggregation.' });
+      try {
+        validateAggregateRequest(
+          query.countGroupBy,
+          query.aggregateFunction,
+          query.aggregateMetric,
+          query.aggregateBy,
+        );
+      } catch (e) {
+        throw new InvalidAggregationError(e);
       }
 
       return actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
