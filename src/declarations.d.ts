@@ -7,12 +7,15 @@ import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 import type { MailerDecoration } from './plugins/mailer';
 import { ActionService } from './services/action/services/action';
 import { MentionService } from './services/chat/plugins/mentions/service';
+import { ChatMessageService } from './services/chat/service';
 import FileService from './services/file/service';
 import { ActionItemService } from './services/item/plugins/action/service';
+import { EtherpadItemService } from './services/item/plugins/etherpad/service';
 import FileItemService from './services/item/plugins/file/service';
 import { H5PService } from './services/item/plugins/h5p/service';
 import { ItemThumbnailService } from './services/item/plugins/thumbnail/service';
 import ItemService from './services/item/service';
+import ItemMembershipService from './services/itemMembership/service';
 import { Actor, Member } from './services/member/entities/member';
 import { MemberService } from './services/member/service';
 import { WebsocketService } from './services/websockets/ws-service';
@@ -49,13 +52,19 @@ declare module 'fastify' {
         service: ItemThumbnailService;
       };
     };
+    memberships: {
+      service: ItemMembershipService;
+    };
     members: { service: MemberService };
     actions: { service: ActionService };
+    chat: { service: ChatMessageService };
 
     // TODO
     hosts: any;
+
     websockets: WebsocketService;
     h5p: H5PService;
+    etherpad: EtherpadItemService;
 
     corsPluginOptions: any;
     verifyAuthentication: (request: FastifyRequest) => Promise<void>;

@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
       schema: getItemActions,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, params: { id }, query }, reply) => {
+    async ({ member, params: { id }, query }) => {
       return actionItemService.getBaseAnalyticsForItem(member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
