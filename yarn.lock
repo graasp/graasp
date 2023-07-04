@@ -2990,13 +2990,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/helmet@npm:10.1.0":
-  version: 10.1.0
-  resolution: "@fastify/helmet@npm:10.1.0"
+"@fastify/helmet@npm:10.1.1":
+  version: 10.1.1
+  resolution: "@fastify/helmet@npm:10.1.1"
   dependencies:
     fastify-plugin: ^4.2.1
     helmet: ^6.0.0
-  checksum: a2260ea660157a8c55af6a6ad82bcb7999c453fee7b9ff21377c6b2605351dfc8a36788742b7096e1141e83b539aed48ff44a9a5ac08b86257184abb81d22883
+  checksum: 1146291058a1f58817f4851f76ba17f9aa31e17e8a17659d091f46a1cafa79925476c87ebb7174c9b513590e12089a8242e244bee0f4caa894ebfedc4985d41e
   languageName: node
   linkType: hard
 
@@ -3116,9 +3116,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@graasp/sdk@npm:1.1.0"
+"@graasp/sdk@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@graasp/sdk@npm:1.1.1"
   dependencies:
     "@aws-sdk/client-s3": 3.353.0
     "@fastify/secure-session": 6.1.0
@@ -3131,7 +3131,7 @@ __metadata:
     typeorm: 0.3.16
     uuid: 9.0.0
     validator: 13.9.0
-  checksum: d78fbef71fbaec66762433d571eb969c2c5c4b26fc8eec06a9b46e503ff507a9f8398414918e87f02319f1d0c08bbbc150e30f743a1d951caa45556e068fe474
+  checksum: 48eda9d8528591df34f27763cd86835b3f2be52c22eb21cf0d432b5a21ef8a2654c910528178611883d1bb05f0b4908b69771cd5fbebbd19c2cebbc1994dbd3b
   languageName: node
   linkType: hard
 
@@ -7032,7 +7032,7 @@ __metadata:
     "@fastify/bearer-auth": 9.0.0
     "@fastify/cors": 8.2.1
     "@fastify/forwarded": 2.2.0
-    "@fastify/helmet": 10.1.0
+    "@fastify/helmet": 10.1.1
     "@fastify/jwt": 6.7.1
     "@fastify/multipart": 7.5.0
     "@fastify/secure-session": 6.0.0
@@ -7040,7 +7040,7 @@ __metadata:
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
-    "@graasp/sdk": 1.1.0
+    "@graasp/sdk": 1.1.1
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.53.1
     "@sentry/profiling-node": 0.3.0
@@ -7100,7 +7100,7 @@ __metadata:
     nodemon: 2.0.22
     pg: 8.10.0
     prettier: 2.8.8
-    qs: 6.11.1
+    qs: 6.11.2
     sharp: 0.31.3
     standard-version: 9.5.0
     striptags: 3.2.0
@@ -9883,15 +9883,6 @@ __metadata:
   version: 1.5.1
   resolution: "q@npm:1.5.1"
   checksum: 147baa93c805bc1200ed698bdf9c72e9e42c05f96d007e33a558b5fdfd63e5ea130e99313f28efc1783e90e6bdb4e48b67a36fcc026b7b09202437ae88a1fb12
-  languageName: node
-  linkType: hard
-
-"qs@npm:6.11.1":
-  version: 6.11.1
-  resolution: "qs@npm:6.11.1"
-  dependencies:
-    side-channel: ^1.0.4
-  checksum: 82ee78ef12a16f3372fae5b64f76f8aedecb000feea882bbff1af146c147f6eb66b08f9c3f34d7e076f28563586956318b9b2ca41141846cdd6d5ad6f241d52f
   languageName: node
   linkType: hard
 
