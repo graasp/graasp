@@ -2,6 +2,11 @@ name: Node CI
 
 on: [push]
 
+# abort running jobs if newer version is detected on same branch
+concurrency:
+  group: ${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-node:
     runs-on: ubuntu-latest
@@ -9,11 +14,6 @@ jobs:
       TEST_DB_NAME: docker
       TEST_DB_USER: docker
       TEST_DB_PASSWORD: docker
-
-    # abort running jobs if newer version is detected on same branch
-    concurrency:
-      group: ${{ github.head_ref || github.ref }}
-      cancel-in-progress: true
 
     # Service containers to run with `container-job`
     services:
@@ -31,20 +31,6 @@ jobs:
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      # Label used to access the service container
-      graasp-redis:
-        # Docker Hub image
-        image: redis
-        ports:
-          # Opens tcp port 6379 on the host and service container
-          - 6379:6379
-        # Set health checks to wait until redis has started
-        options: >-
-          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -88,9 +74,103 @@ jobs:
           DB_NAME: ${{ env.TEST_DB_NAME }}
         run: yarn migration:check
 
+  test-node:
+    needs: build-node
+    strategy:
+      matrix:
+        shard: [1/4, 2/4, 3/4, 4/4]
+    runs-on: ubuntu-latest
+    env:
+      TEST_DB_NAME: docker
+      TEST_DB_USER: docker
+      TEST_DB_PASSWORD: docker
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+          POSTGRES_USER: ${{ env.TEST_DB_USER }}
+          POSTGRES_DB: ${{ env.TEST_DB_NAME }}
+        ports:
+          - 5432:5432 # exposing 5432 port for application to use
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres-2:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
+          POSTGRES_USER: ${{ env.TEST_DB_USER }}
+          POSTGRES_DB: ${{ env.TEST_DB_NAME }}
+        ports:
+          - 5433:5432 # exposing 5432 port for application to use
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # Label used to access the service container
+      graasp-redis:
+        # Docker Hub image
+        image: redis
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 6379:6379
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Get yarn cache directory
+        id: yarn-cache-dir-path
+        run: |
+          echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      
+      - uses: actions/cache@v3
+        with:
+          path: .jest-cache
+          key: ${{ runner.os }}-jest-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-
+
+
+      - name: yarn install
+        run: |
+          yarn
+
       - name: yarn test
         run:
-          yarn test:ci
+          yarn test:ci --shard=${{ matrix.shard }}
         env:
           CI: true
           # random keys
