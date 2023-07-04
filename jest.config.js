@@ -10,4 +10,5 @@ module.exports = {
   testEnvironment: 'node',
   // added for jest to look for the dependencies
   modulePaths: ['src/'],
+  cacheDirectory: ".jest-cache"
 };
