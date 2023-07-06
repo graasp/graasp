@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -18,7 +18,7 @@
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "test": "DISABLE_LOGS=true jest --forceExit --verbose",
-    "test:ci": "DISABLE_LOGS=true jest --forceExit --verbose --coverage --silent",
+    "test:ci": "DISABLE_LOGS=true jest --forceExit --verbose --coverage --silent --maxWorkers=2",
     "test:watch": "yarn test --watchAll",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
@@ -68,9 +68,9 @@
     "@graasp/etherpad-api": "2.1.1",
     "@graasp/sdk": "1.1.1",
     "@graasp/translations": "1.15.0",
-    "@sentry/node": "7.53.1",
-    "@sentry/profiling-node": "0.3.0",
-    "@sentry/tracing": "7.53.1",
+    "@sentry/node": "7.57.0",
+    "@sentry/profiling-node": "1.0.7",
+    "@sentry/tracing": "7.57.0",
     "@types/sharp": "0.31.1",
     "archiver": "5.3.1",
     "bad-words": "3.0.4",

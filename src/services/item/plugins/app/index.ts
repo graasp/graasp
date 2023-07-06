@@ -70,7 +70,24 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
   };
 
   // bearer token plugin to read and validate token in Bearer header
+  /**
+   * This is done for performance reasons:
+   * 1. First decorateRequest with the empty type of the value to be set (null for an object)
+   *    BUT NEVER SET THE ACTUAL OBJECT IN decorateRequest FOR SECURITY (reference is shared)
+   * 2. Then later use a hook such as preHandler or onRequest to store the actual value
+   *    (it will be properly encapsulated)
+   * @example
+   *  fastify.decorateRequest('user', null) // <-- must use null here if user will be an object
+   *  // later in the code
+   *  fastify.addHook('preHandler', (request) => {
+   *     request.user = { name: 'John Doe' } // <-- must set the actual object here
+   *  })
+   * @see
+   *  https://www.fastify.io/docs/latest/Reference/Decorators/#decoraterequestname-value-dependencies
+   *  https://www.fastify.io/docs/latest/Reference/Decorators/
+   */
   fastify.decorateRequest('authTokenSubject', null);
+
   fastify.register(fastifyBearerAuth, {
     addHook: false,
     keys: new Set<string>(),

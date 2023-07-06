@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.1](https://github.com/graasp/graasp/compare/v1.2.0...v1.2.1) (2023-07-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/helmet to v10.1.1 ([7ecc3a0](https://github.com/graasp/graasp/commit/7ecc3a0e64c588036f2dd13ba4c57429920c37cc))
+* **deps:** update dependency @graasp/sdk to v1.1.1 ([#468](https://github.com/graasp/graasp/issues/468)) ([345e2f5](https://github.com/graasp/graasp/commit/345e2f5c16197825cb9c7e3565aacdd305e8b73e))
+* **deps:** update dependency qs to v6.11.2 ([a9003c1](https://github.com/graasp/graasp/commit/a9003c1c0b64716fbf42ca63ed694c9bcd6be069))
+* make membership websockets hooks work again ([#408](https://github.com/graasp/graasp/issues/408)) ([9172daf](https://github.com/graasp/graasp/commit/9172dafb302ee8c9ab8c05de4e6b1d701b62dd68))
+
 ## [1.2.0](https://github.com/graasp/graasp/compare/v1.1.0...v1.2.0) (2023-06-29)
 
 

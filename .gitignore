@@ -49,5 +49,8 @@ types
 !.yarn/sdks
 !.yarn/versions
 
+# jest
+.jest-cache
+
 # Secrets
 secret-key
