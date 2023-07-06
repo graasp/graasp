@@ -53,7 +53,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.306.0",
     "@aws-sdk/s3-request-presigner": "3.306.0",
-    "@casl/ability": "6.3.3",
+    "@casl/ability": "6.3.4",
     "@fastify/auth": "4.2.0",
     "@fastify/bearer-auth": "9.0.0",
     "@fastify/cors": "8.2.1",
