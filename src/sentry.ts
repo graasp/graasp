@@ -62,22 +62,40 @@ export function initSentry(instance: FastifyInstance): {
     },
   });
 
-  // if (SentryConfig.enablePerformance) {
-  //   // fastify Sentry hooks
-  //   // https://www.fastify.io/docs/latest/Reference/Decorators/
-  //   instance.decorateRequest('metrics', {
-  //     sentry: {},
-  //   });
-  //   instance.addHook('onRequest', async (request, reply) => {
-  //     request.metrics.sentry.transaction = Sentry.startTransaction({
-  //       op: 'request',
-  //       name: `${request.routerMethod ?? request.method} ${request.routerPath ?? request.url}`,
-  //     });
-  //   });
-  //   instance.addHook('onResponse', async (request, reply) => {
-  //     request.metrics.sentry.transaction.finish();
-  //   });
-  // }
+  if (SentryConfig.enablePerformance) {
+    /**
+     * This is done for performance reasons:
+     * 1. First decorateRequest with the empty type of the value to be set (null for an object)
+     *    BUT NEVER SET THE ACTUAL OBJECT IN decorateRequest FOR SECURITY (reference is shared)
+     * 2. Then later use a hook such as preHandler or onRequest to store the actual value
+     *    (it will be properly encapsulated)
+     * @example
+     *  fastify.decorateRequest('user', null) // <-- must use null here if user will be an object
+     *  // later in the code
+     *  fastify.addHook('preHandler', (request) => {
+     *     request.user = { name: 'John Doe' } // <-- must set the actual object here
+     *  })
+     * @see
+     *  https://www.fastify.io/docs/latest/Reference/Decorators/#decoraterequestname-value-dependencies
+     *  https://www.fastify.io/docs/latest/Reference/Decorators/
+     */
+    instance.decorateRequest('metrics', null);
+
+    instance.addHook('onRequest', async (request, reply) => {
+      request.metrics = {
+        sentry: {
+          transaction: Sentry.startTransaction({
+            op: 'request',
+            name: `${request.routerMethod ?? request.method} ${request.routerPath ?? request.url}`,
+          }),
+        },
+      };
+    });
+
+    instance.addHook('onResponse', async (request, reply) => {
+      request.metrics?.sentry?.transaction?.finish();
+    });
+  }
 
   instance.addHook('onError', async (request, reply, error) => {
     Sentry.withScope((scope) => {
