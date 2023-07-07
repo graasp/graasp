@@ -21,9 +21,9 @@ In order to run the Graasp backend, it requires:
 
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
 
-    - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environnement.
+  - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environnement.
 
-    - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
+  - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
 
 ## Installation
 
@@ -39,6 +39,7 @@ We recommend to set up the development environment using Docker, as it allows to
 First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd> (or <kbd>ctrl</kbd> instead of <kbd>cmd</kbd>), and typing `Open Folder in Container`.
 
 This will create 3 containers :
+
 - `app` : Node.js backend of Graasp
 - `db` : PostgreSQL database used by the backend
 - `redis` : Redis instance to enable websockets
@@ -66,75 +67,103 @@ Then open the folder locally and run the following command to install the requir
 
 ### Database and Migrations
 
-The application will run migrations on start. 
+The application will run migrations on start.
 
 #### Create a migration
+
 Migrations are saved in `src/migrations/*.ts`. They are then transformed into js files so typeorm can run them.
 
 Run the generate and run command to create and apply the migration.
-```` bash
+
+```bash
 yarn migration:generate
 yarn migration:run
-````
+```
 
 If you need to revert
-```` bash
+
+```bash
 yarn migration:revert
-````
+```
 
 To test your migrations, you can run
-```` bash
-yarn migration:fake
-````
 
-Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`. 
+```bash
+yarn migration:fake
+```
+
+Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`.
 
 Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
 
 ### Configuration
 
-To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :
+To configure the application, you'll need to change the values in `.env.development`. The file should have the following structure :
 
-```` bash
-# Application server
+> We provide sample values for development purposes aligned with the devcontainer configuration. Adjust these values as needed.
+
+```bash
+### Graasp back-end configuration
+
+### Network configuration
+
+# Default protocol is already set
 # PROTOCOL=http
-# HOSTNAME=localhost
+# The hostname is set by ./.devcontainer/docker-compose.yml
+# HOSTNAME=0.0.0.0
 PORT=3000
-# EMAIL_LINKS_HOST=
-# CLIENT_HOST=
-# COOKIE_DOMAIN=
+# The public URL is set by ./.devcontainer/docker-compose.yml
+# PUBLIC_URL=
+COOKIE_DOMAIN=localhost
 CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
-# Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
+### Database configuration (set by ./.devcontainer/docker-compose.yml)
+# DB_NAME=docker
+# DB_USERNAME=docker
+# DB_PASSWORD=docker
+# DB_HOST=db
+# If you use read replicas, set the hostnames here (separated by commas)
+# DB_READ_REPLICA_HOSTS=
+DATABASE_LOGS=true
+
+### Sessions
+
+# Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key)
+# TLDR: npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
 SECURE_SESSION_SECRET_KEY=<content>
 
-# JWT secrets
-JWT_SECRET=<content>
+
+### Auth
 
 TOKEN_BASED_AUTH=true
+# JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
+JWT_SECRET=<content>
+# Auth JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 AUTH_TOKEN_JWT_SECRET=<content>
 AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
+# Refresh JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 REFRESH_TOKEN_JWT_SECRET=<content>
 REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 
-# PostgreSQL connection string
-# If you are using dev-containers, this value is overwritten in docker-compose.yml
-PG_CONNECTION_URI=postgresql://<user>:<password>@localhost:5432/<dbname>
-# If you want to add read replicas to your DB cluster, provide their connection URIs here separated by commas
-PG_READ_REPLICA_CONNECTION_URIS=
 
-# Slonik database logging (uncomment both)
-# DATABASE_LOGS=true
-# ROARR_LOG=true
+### Mail server configuration
 
-# Mailer config
-# MAILER_CONFIG_SMTP_HOST=
-# MAILER_CONFIG_USERNAME=
-# MAILER_CONFIG_PASSWORD=
+# Mailer config (see ./.devcontainer/docker-compose.yml)
+# Set to random values if you don't want to use the mock mailbox at http://localhost:1080
+MAILER_CONFIG_SMTP_HOST=mailer
+MAILER_CONFIG_USERNAME=graasp
+MAILER_CONFIG_PASSWORD=graasp
+
+
+### File storages configuration
+
+# If you are using a local installation of localstack replace by http://localhost:4566
+# This value is only used for Dev or Test environments
+S3_FILE_ITEM_HOST=http://graasp-localstack:4566
 
 # Graasp file item file storage path
-# If you are using dev-containers, this value is overwritten in docker-compose.yml
-FILE_STORAGE_ROOT_PATH=
+# File item storage is set by ./.devcontainer/docker-compose.yml
+# FILE_STORAGE_ROOT_PATH=
 
 # Graasp s3 file item
 S3_FILE_ITEM_PLUGIN=false
@@ -147,16 +176,13 @@ FILES_PATH_PREFIX=files/
 AVATARS_PATH_PREFIX=avatars/
 THUMBNAILS_PATH_PREFIX=items/
 
-# If you are using a local installation of localstack replace by http://localhost:4566
-# This value is only used for Dev or Test environments
-S3_FILE_ITEM_HOST=http://graasp-localstack:4566
-
 # Graasp H5P
-H5P_CONTENT_REGION=us-east-1
-H5P_CONTENT_BUCKET=graasp-h5p
-H5P_CONTENT_ACCESS_KEY_ID=graasp-user
-H5P_CONTENT_SECRET_ACCESS_KEY=graasp-pwd
+H5P_FILE_STORAGE_TYPE=file
+H5P_STORAGE_ROOT_PATH=/tmp/graasp-h5p/
 H5P_PATH_PREFIX=h5p-content/
+
+
+### External services configuration
 
 # Graasp Etherpad
 ETHERPAD_URL=http://etherpad:9001
@@ -164,11 +190,12 @@ ETHERPAD_URL=http://etherpad:9001
 ETHERPAD_PUBLIC_URL=http://localhost:9001
 # Optional, if the etherpad cookie domain is different from the domain of the public URL
 ETHERPAD_COOKIE_DOMAIN=localhost:9001
+# Api key is set by ./.devcontainer/etherpad/devApiKey.txt
 ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Graasp embedded link item
 EMBEDDED_LINK_ITEM_PLUGIN=false
-# EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=<protocol>://<hostname>:<port>
+EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://localhost:8061
 
 # Graasp apps
 APPS_PLUGIN=true
@@ -202,7 +229,10 @@ AUTH_CLIENT_HOST=<value>
 
 # validation containers
 IMAGE_CLASSIFIER_API=<url>
-````
+
+# get a recaptcha secret access key for your hostname at http://www.google.com/recaptcha/admin
+RECAPTCHA_SECRET_ACCESS_KEY=<content>
+```
 
 ## Running
 

@@ -21,6 +21,7 @@ import {
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_SMTP_HOST,
+  MAILER_CONFIG_SMTP_PORT,
   MAILER_CONFIG_USERNAME,
   REDIS_HOST,
   REDIS_PASSWORD,
@@ -43,6 +44,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(decoratorPlugin))
     .register(mailerPlugin, {
       host: MAILER_CONFIG_SMTP_HOST,
+      port: MAILER_CONFIG_SMTP_PORT,
       username: MAILER_CONFIG_USERNAME,
       password: MAILER_CONFIG_PASSWORD,
       fromEmail: MAILER_CONFIG_FROM_EMAIL,

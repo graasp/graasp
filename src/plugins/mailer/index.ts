@@ -13,6 +13,7 @@ import { applyLayout } from './layout';
 
 export interface MailerOptions {
   host: string;
+  port?: number;
   username: string;
   password: string;
   fromEmail: string;
@@ -32,7 +33,7 @@ export interface MailerDecoration {
 }
 
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
-  const { host, username: user, password: pass, fromEmail } = options;
+  const { host, port = 465, username: user, password: pass, fromEmail } = options;
 
   fastify.register(pointOfView, { engine: { eta } });
 
@@ -41,7 +42,7 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     host,
     auth: { user, pass },
     pool: true,
-    port: 465,
+    port,
     secure: true,
   });
 

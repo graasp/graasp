@@ -20,19 +20,19 @@ export let ENVIRONMENT: Environment;
 
 switch (process.env.NODE_ENV) {
   case Environment.production:
-    dotenv.config({ path: '.env.production' });
+    dotenv.config({ path: '.env.production', override: true });
     ENVIRONMENT = Environment.production;
     break;
   case Environment.staging:
-    dotenv.config({ path: '.env.staging' });
+    dotenv.config({ path: '.env.staging', override: true });
     ENVIRONMENT = Environment.staging;
     break;
   case Environment.test:
-    dotenv.config({ path: '.env.test' });
+    dotenv.config({ path: '.env.test', override: true });
     ENVIRONMENT = Environment.test;
     break;
   default:
-    dotenv.config({ path: '.env.development' });
+    dotenv.config({ path: '.env.development', override: true });
     ENVIRONMENT = Environment.development;
     break;
 }
@@ -72,23 +72,11 @@ if (!process.env.COOKIE_DOMAIN) {
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 
-export const CLIENT_HOST = process.env.CLIENT_HOST;
 export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
-export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
+export const PUBLIC_URL = process.env.PUBLIC_URL || HOST;
 
-// export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;
-// export const PG_READ_REPLICAS_CONNECTION_URIS =
-//   // note: we don't use the elvis operator because we also want to exclude e.g. empty string
-//   process.env.PG_READ_REPLICAS_CONNECTION_URIS
-//     ? process.env.PG_READ_REPLICAS_CONNECTION_URIS.split(',')
-//     : undefined;
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
-
-// if (!PG_CONNECTION_URI && !TEST) {
-//   console.error('PG_CONNECTION_URI environment variable missing.');
-//   process.exit(1);
-// }
 
 // Graasp constants
 /**
@@ -145,6 +133,7 @@ if (
   );
 }
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
+export const MAILER_CONFIG_SMTP_PORT = parseInt(process.env.MAILER_CONFIG_SMTP_PORT ?? '465');
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
 export const MAILER_CONFIG_FROM_EMAIL =

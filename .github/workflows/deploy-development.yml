@@ -26,13 +26,13 @@ jobs:
 
     # ecs-task-definition with template file.
     with:
-      ecs-task-definition: '.aws/graasp-dev.json'
       database-logs: false
+      ecs-task-definition: '.aws/graasp-dev.json'
       etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_DEV }}
       etherpad-url: ${{ vars.ETHERPAD_URL_DEV }}
       h5p-file-storage-type: ${{ vars.H5P_FILE_STORAGE_TYPE }}
-      node-env: production
       node-env-iframely: production
+      node-env: production
       roarr-log: false
       s3-file-item-plugin: true
       subscriptions-plugin: true
@@ -41,33 +41,32 @@ jobs:
 
     # required secrets
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-      aws-region: ${{ secrets.AWS_REGION_DEV }}
-      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_DEV }}
-      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_DEV }}
-      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_DEV }}
-      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_DEV }}
-      container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_DEV }}
-      container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
-      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
-      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
       analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_DEV }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_DEV }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
       auth-client-host: ${{ secrets.AUTH_CLIENT_HOST_DEV }}
       auth-token-expiration-in-minutes: ${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET_DEV }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+      aws-region: ${{ secrets.AWS_REGION_DEV }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
       builder-client-host: ${{ secrets.BUILDER_CLIENT_HOST_DEV }}
       client-host: ${{ secrets.CLIENT_HOST_DEV }}
+      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
+      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
+      container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
+      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_DEV }}
+      container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_DEV }}
       cookie-domain: ${{ secrets.COOKIE_DOMAIN_DEV }}
       cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_DEV }}
       db-host: ${{ secrets.DB_HOST }}
       db-name: ${{ secrets.DB_NAME }}
       db-password: ${{ secrets.DB_PASSWORD }}
+      db-read-replica-hosts: ${{ secrets.DB_READ_REPLICA_HOSTS }}
       db-username: ${{ secrets.DB_USERNAME }}
-      db-read-replica-host: ${{ secrets.DB_READ_REPLICA_HOST }}
-      email-links-host: ${{ secrets.EMAIL_LINKS_HOST_DEV }}
+      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_DEV }}
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_DEV }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_DEV }}
       embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_DEV }}
       explorer-client-host: ${{ secrets.EXPLORER_CLIENT_HOST_DEV }}
@@ -86,6 +85,7 @@ jobs:
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_DEV }}
       player-client-host: ${{ secrets.PLAYER_CLIENT_HOST_DEV }}
       port: ${{ secrets.PORT }}
+      public-url: ${{ secrets.PUBLIC_URL_DEV }}
       recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       redis-host: ${{ secrets.REDIS_HOST_DEV }}
       redis-port: ${{ secrets.REDIS_PORT }}
@@ -98,5 +98,5 @@ jobs:
       s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY_DEV }}
       secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY_DEV }}
       sentry-dsn: ${{ secrets.SENTRY_DSN }}
-      stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
+      stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}

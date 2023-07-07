@@ -13,9 +13,13 @@ services:
         USER_UID: 1000
         USER_GID: 1000
     environment:
+      # sane default to allow the server to bind to any interface in the container
       HOSTNAME: 0.0.0.0
-      PG_CONNECTION_URI: "postgresql://docker:docker@localhost:5432/docker"
+      # the generated links should open the browser locally
+      PUBLIC_URL: localhost
+      # temporary storage for files inside the container
       FILE_STORAGE_ROOT_PATH: "/tmp/graasp-file-item-storage"
+      # the DB config is set by the container below
       DB_NAME: docker
       DB_USERNAME: docker
       DB_PASSWORD: docker
@@ -113,6 +117,13 @@ services:
       NODE_ENV: staging
     ports:
       - 8061:8061
+
+  # a mock mailbox on port 1025 (web UI at http://localhost:1080)
+  mailer:
+    image: schickling/mailcatcher
+    ports:
+      - "1025:1025"
+      - "1080:1080"
 
 volumes:
   postgres-data:
