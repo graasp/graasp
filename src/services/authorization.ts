@@ -130,12 +130,14 @@ export const filterOutItems = async (actor: Actor, repositories, items: Item[]) 
  *  */
 export const filterOutHiddenItems = async (repositories: Repositories, items: Item[]) => {
   const { itemTagRepository } = repositories;
+  console.log(`HOTFIX: filterHiddenInit ${JSON.stringify(items)}`);
 
   if (!items.length) {
     return [];
   }
 
   const isHidden = await itemTagRepository.hasForMany(items, ItemTagType.Hidden);
+  console.log(`HOTFIX: isHidden ${JSON.stringify(isHidden)}`);
   return items.filter((item) => {
     return !isHidden.data[item.id];
   });

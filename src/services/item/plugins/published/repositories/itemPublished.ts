@@ -42,6 +42,8 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   async getAllItems() {
     // we get the nested relation of item.creator because we only return the item and without this the creator is not returned
     const publishedRows = await this.find({ relations: { item: { creator: true } } });
+    console.log(`HOTFIX: getAllItems ${JSON.stringify(publishedRows)}`);
+    console.log(`HOTFIX: getAllItems map ${JSON.stringify(publishedRows.map(({ item }) => item))}`);
     return publishedRows.map(({ item }) => item);
   },
 
