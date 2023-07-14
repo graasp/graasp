@@ -39,11 +39,11 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   },
 
   // return public item entry? contains when it was published
-  async getAllItems() {
+  async getAllPublishedItems(): Promise<Item[]> {
     // we get the nested relation of item.creator because we only return the item and without this the creator is not returned
-    const publishedRows = await this.find({ relations: { item: { creator: true } } });
-    console.log(`HOTFIX: getAllItems ${JSON.stringify(publishedRows)}`);
-    console.log(`HOTFIX: getAllItems map ${JSON.stringify(publishedRows.map(({ item }) => item))}`);
+    const publishedRows = await this.find({
+      relations: { item: { creator: true } },
+    });
     return publishedRows.map(({ item }) => item);
   },
 
@@ -95,7 +95,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
    * @param ids category ids - in the form of ['A1,A2', 'B1', 'C1,C2,C3']
    * @returns object { id } of items with given categories
    */
-  async getByCategories(categoryIds: string[]) {
+  async getByCategories(categoryIds: string[]): Promise<Item[]> {
     const query = this.createQueryBuilder()
       .select(['item'])
       .from(Item, 'item')

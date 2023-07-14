@@ -1,3 +1,5 @@
+import { IsNull } from 'typeorm';
+
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../../member/entities/member';
@@ -15,7 +17,7 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
    */
   async getItemsForMember(memberId: string): Promise<ItemLike[]> {
     const itemLikes = await this.find({
-      where: { creator: { id: memberId } },
+      where: { creator: { id: memberId }, item: { deletedAt: IsNull() } },
       relations: { item: true },
     });
     return itemLikes;
@@ -27,7 +29,7 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
    */
   async getForItem(itemId: string): Promise<ItemLike[]> {
     const itemLikes = await this.find({
-      where: { item: { id: itemId } },
+      where: { item: { id: itemId, deletedAt: IsNull() } },
       relations: { item: true },
     });
     return itemLikes;

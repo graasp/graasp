@@ -16,7 +16,7 @@ const publishEntry = {
     creator: {
       $ref: 'http://graasp.org/members/#/definitions/member',
     },
-    createdAt: {},
+    createdAt: { type: 'string' },
   },
   additionalProperties: false,
 };
@@ -69,9 +69,7 @@ export const getRecentCollections = {
   response: {
     200: {
       type: 'array',
-      items: {
-        $ref: 'http://graasp.org/items/#/definitions/item',
-      },
+      items: publishEntry,
     },
   },
 };

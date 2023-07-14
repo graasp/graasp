@@ -1,3 +1,5 @@
+import { IsNull } from 'typeorm';
+
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
 import { ItemFavorite } from '../entities/ItemFavorite';
@@ -10,7 +12,7 @@ export const FavoriteRepository = AppDataSource.getRepository(ItemFavorite).exte
    */
   async getFavoriteForMember(memberId: string): Promise<ItemFavorite[]> {
     const favorites = await this.find({
-      where: { member: { id: memberId } },
+      where: { member: { id: memberId }, item: { deletedAt: IsNull() } },
       relations: { item: true },
     });
     return favorites;

@@ -1,4 +1,4 @@
-import { In } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 
 import { ResultOf } from '@graasp/sdk';
 
@@ -18,7 +18,10 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    */
   async get(id: string, actor?: Member): Promise<Invitation> {
     const opts = actor ? { creator: true } : {};
-    const invitation = await this.findOne({ where: { id }, relations: { item: true, ...opts } });
+    const invitation = await this.findOne({
+      where: { id, item: { deletedAt: IsNull() } },
+      relations: { item: true, ...opts },
+    });
     if (!invitation) {
       throw new InvitationNotFound(id);
     }
@@ -32,7 +35,7 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
   async getMany(ids: string[], actor?: Member): Promise<ResultOf<Invitation>> {
     const opts = actor ? { creator: true } : {};
     const invitations = await this.find({
-      where: { id: In(ids) },
+      where: { id: In(ids), item: { deletedAt: IsNull() } },
       relations: { item: true, ...opts },
     });
 

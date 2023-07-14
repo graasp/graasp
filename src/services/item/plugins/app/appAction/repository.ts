@@ -1,4 +1,4 @@
-import { In } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 
 import { ResultOf } from '@graasp/sdk';
 
@@ -45,7 +45,7 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
     const { memberId } = filters;
 
     const appActions = await this.find({
-      where: { item: { id: In(itemIds) }, member: { id: memberId } },
+      where: { item: { id: In(itemIds), deletedAt: IsNull() }, member: { id: memberId } },
       relations: { item: true },
     });
     return mapById({

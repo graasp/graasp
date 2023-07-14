@@ -130,13 +130,9 @@ export class ItemPublishedService {
   async getItemsByCategories(actor: Actor, repositories: Repositories, categoryIds?: string[]) {
     const { itemPublishedRepository } = repositories;
 
-    if (!categoryIds?.length) {
-      const items = await itemPublishedRepository.getAllItems();
-      return filterOutHiddenItems(repositories, items);
-    }
-
-    // get by categories
-    const items = await itemPublishedRepository.getByCategories(categoryIds);
+    const items = categoryIds?.length
+      ? await itemPublishedRepository.getByCategories(categoryIds)
+      : await itemPublishedRepository.getAllPublishedItems();
 
     return filterOutHiddenItems(repositories, items);
   }
