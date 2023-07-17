@@ -17,11 +17,14 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * @param id Invitation id
    */
   async get(id: string, actor?: Member): Promise<Invitation> {
-    const opts = actor ? { creator: true } : {};
-    const invitation = await this.findOne({
-      where: { id, item: { deletedAt: IsNull() } },
-      relations: { item: true, ...opts },
-    });
+    const query = this.createQueryBuilder('invitation')
+      .innerJoinAndSelect('invitation.item', 'item')
+      .where('invitation.id = :id', { id });
+
+    if (actor) {
+      query.innerJoinAndSelect('invitation.creator', 'creator');
+    }
+    const invitation = await query.getOne();
     if (!invitation) {
       throw new InvitationNotFound(id);
     }
@@ -33,11 +36,15 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * @param ids Invitation ids
    */
   async getMany(ids: string[], actor?: Member): Promise<ResultOf<Invitation>> {
-    const opts = actor ? { creator: true } : {};
-    const invitations = await this.find({
-      where: { id: In(ids), item: { deletedAt: IsNull() } },
-      relations: { item: true, ...opts },
-    });
+    const query = this.createQueryBuilder('invitation')
+      .innerJoinAndSelect('invitation.item', 'item')
+      .where('invitation.id IN (:...ids)', { ids });
+
+    if (actor) {
+      query.innerJoinAndSelect('invitation.creator', 'creator');
+    }
+    const invitations = await query.getMany();
+    console.log(invitations);
 
     return mapById({
       keys: ids,
@@ -52,7 +59,7 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    */
   async getForItem(itemPath: string): Promise<Invitation[]> {
     return this.createQueryBuilder('invitation')
-      .leftJoinAndSelect('invitation.item', 'item')
+      .innerJoinAndSelect('invitation.item', 'item')
       .where(':path <@ item.path', { path: itemPath })
       .getMany();
   },

@@ -1,4 +1,4 @@
-import { In, IsNull } from 'typeorm';
+import { In } from 'typeorm';
 
 import { ResultOf } from '@graasp/sdk';
 
@@ -45,9 +45,16 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
     const { memberId } = filters;
 
     const appActions = await this.find({
-      where: { item: { id: In(itemIds), deletedAt: IsNull() }, member: { id: memberId } },
+      where: { item: { id: In(itemIds) }, member: { id: memberId } },
       relations: { item: true },
     });
+    // todo: should use something like:
+    // but this does not work. Maybe related to the placement of the IN ?
+    // const appActions = await this.createQueryBuilder('actions')
+    //   .innerJoinAndSelect('actions.item', 'item', 'item.id IN (:...itemIds)', { itemIds })
+    //   .where('actions.member = :memberId', { memberId })
+    //   .andWhere('actions.item IN (:...itemIds)', { itemIds })
+    //   .getMany();
     return mapById({
       keys: itemIds,
       findElement: (id) => appActions.filter(({ item }) => item.id === id),
