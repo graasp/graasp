@@ -1967,13 +1967,12 @@ describe('Item routes tests', () => {
         });
       });
 
-      it.only('Move successfully item to root and create new membership', async () => {
+      it('Move successfully item to root and create new membership', async () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         // manually save item that doesn't need a membership because of inheritance
         const data = getDummyItem();
         data.path = buildPathFromIds(parentItem.id, data.id);
         const item = await ItemRepository.save({ ...data, creator: actor });
-        console.log(item);
 
         const response = await app.inject({
           method: HttpMethod.POST,
