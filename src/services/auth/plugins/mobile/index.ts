@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
+import { AUTH_CLIENT_HOST, GRAASP_MOBILE_BUILDER_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { MemberPasswordService } from '../password/service';
 import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from './schemas';
@@ -92,7 +93,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body.challenge,
       );
 
-      reply.status(StatusCodes.OK).send({ t: token });
+      const redirectionUrl = new URL(`${GRAASP_MOBILE_BUILDER_PROTOCOL}://auth`);
+      redirectionUrl.searchParams.set('t', token);
+      reply.redirect(redirectionUrl.toString());
     },
   );
 
