@@ -337,14 +337,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    * Moving to *no-parent* is simpler so this method is used instead of `moveHousekeeping()`.
    * @param item Item that will be moved
    * @param member Member used as `creator` for any new memberships
-   * @param transactionHandler Database transaction handler
    */
   // TODO: query type
   async detachedMoveHousekeeping(item: Item, member: Member) {
     const index = item.path.lastIndexOf('.');
     const itemIdAsPath = item.path.slice(index + 1);
-
-    const { rows } = await this.query(`
+    const rows = await this.query(`
     SELECT
       member_id AS "memberId",
       max(item_path::text)::ltree AS "itemPath", -- get longest path
@@ -361,11 +359,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     rows?.reduce((chngs, row) => {
       const { memberId, itemPath, permission } = row;
-
       if (itemPath !== item.path) {
         chngs.inserts.push({
-          memberId,
-          itemPath: itemIdAsPath,
+          member: { id: memberId },
+          item: { path: itemIdAsPath } as Item,
           permission,
           creator: member,
         } as Partial<ItemMembership>);

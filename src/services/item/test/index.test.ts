@@ -11,6 +11,7 @@ import {
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TREE_LEVELS,
   PermissionLevel,
+  buildPathFromIds,
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -1961,6 +1962,44 @@ describe('Item routes tests', () => {
               }
               expect(result.path.startsWith(parentItem.path)).toBeFalsy();
             }
+            res(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
+        });
+      });
+
+      it.only('Move successfully item to root and create new membership', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        // manually save item that doesn't need a membership because of inheritance
+        const data = getDummyItem();
+        data.path = buildPathFromIds(parentItem.id, data.id);
+        const item = await ItemRepository.save({ ...data, creator: actor });
+        console.log(item);
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          payload: {},
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // item should have a differnt path
+        await new Promise((res) => {
+          setTimeout(async () => {
+            const result = await ItemRepository.findOneBy({ id: item.id });
+            if (!result) {
+              throw new Error('item does not exist!');
+            }
+            expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+
+            // membership should have been created
+            const im = await ItemMembershipRepository.findOneBy({
+              item: { path: buildPathFromIds(item.id) },
+            });
+            if (!im) {
+              throw new Error('item membership does not exist!');
+            }
+
             res(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);
         });
