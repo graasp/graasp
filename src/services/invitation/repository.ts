@@ -1,5 +1,3 @@
-import { In, IsNull } from 'typeorm';
-
 import { ResultOf } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
