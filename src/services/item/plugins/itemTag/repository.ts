@@ -72,12 +72,10 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
 
   async hasForMany(items: Item[], tagType: ItemTagType): Promise<ResultOf<boolean>> {
     const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
-    console.log(`HOTFIX: itemTagsHasForMany ${JSON.stringify(items)}`);
 
     query.where(
       new Brackets((qb) => {
         items.forEach(({ path }, idx) => {
-          console.log(`HOTFIX: forEach ${JSON.stringify(path)} on ${idx}`);
           const key = `${path}_${idx}`;
           qb.orWhere(`item.path @> :${key}`, { [key]: path });
         });

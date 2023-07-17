@@ -12,6 +12,7 @@ import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { MEMBERS } from '../../../../member/test/fixtures/members';
 import { saveMembers } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
+import { ItemRepository } from '../../../repository';
 import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
@@ -76,6 +77,17 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectManyItems(res.json(), collections);
       });
+
+      it('Get all published collections even when items are trashed', async () => {
+        await ItemRepository.softRemove(collections[0]);
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectManyItems(res.json(), collections.slice(1));
+      });
+
       it('Get all published collections without hidden', async () => {
         const hiddenCollection = collections[0];
         await ItemTagRepository.save({

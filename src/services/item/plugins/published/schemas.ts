@@ -69,7 +69,9 @@ export const getRecentCollections = {
   response: {
     200: {
       type: 'array',
-      items: publishEntry,
+      items: {
+        $ref: 'http://graasp.org/items/#/definitions/item',
+      },
     },
   },
 };

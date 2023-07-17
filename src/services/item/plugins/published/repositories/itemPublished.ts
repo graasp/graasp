@@ -41,10 +41,13 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   // return public item entry? contains when it was published
   async getAllPublishedItems(): Promise<Item[]> {
     // we get the nested relation of item.creator because we only return the item and without this the creator is not returned
-    const publishedRows = await this.find({
-      relations: { item: { creator: true } },
-    });
-    return publishedRows.map(({ item }) => item);
+    const publishedRows = await this.createQueryBuilder()
+      .select(['item'])
+      .from(Item, 'item')
+      .leftJoinAndSelect('item.creator', 'creator')
+      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
+      .getMany();
+    return publishedRows;
   },
 
   // return public item entry? contains when it was published
@@ -80,6 +83,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       .leftJoinAndSelect('item_published.item', 'item')
       .orderBy('item.createdAt', 'DESC')
       .take(limit)
+      .andWhere('item.deletedAt is NULL')
       .getMany();
 
     return publishedInfos.map(({ item }) => item);
