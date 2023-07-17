@@ -217,8 +217,8 @@ describe('Mobile Endpoints', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.OK);
-      expect(response.json()).toHaveProperty('t');
+      expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
+      expect(response.headers.location).toContain('graasp-mobile-builder://auth?t=');
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
