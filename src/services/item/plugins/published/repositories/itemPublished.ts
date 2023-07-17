@@ -80,10 +80,9 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
 
   async getRecentItems(limit: number = 10): Promise<Item[]> {
     const publishedInfos = await this.createQueryBuilder('item_published')
-      .leftJoinAndSelect('item_published.item', 'item')
+      .innerJoinAndSelect('item_published.item', 'item')
       .orderBy('item.createdAt', 'DESC')
       .take(limit)
-      .andWhere('item.deletedAt is NULL')
       .getMany();
 
     return publishedInfos.map(({ item }) => item);
