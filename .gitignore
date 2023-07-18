@@ -54,6 +54,3 @@ types
 
 # Secrets
 secret-key
-
-# caches
-.jest-cache
