@@ -42,7 +42,6 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
       query.innerJoinAndSelect('invitation.creator', 'creator');
     }
     const invitations = await query.getMany();
-    console.log(invitations);
 
     return mapById({
       keys: ids,
