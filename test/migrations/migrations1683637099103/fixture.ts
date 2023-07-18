@@ -10,7 +10,7 @@ const values = {
       name: 'my member',
       email: 'email@email.com',
       type: 'individual',
-      extra: { hasThumbnail: true, favoriteItems: [itemId, itemId, incorrectItemId] }, // migration should handle dupplicated favorites
+      extra: { hasThumbnail: true, favoriteItems: [itemId, itemId, incorrectItemId] }, // migration should handle duplicated favorites
       created_at: '2022-03-31T13:40:04.571Z',
       updated_at: '2022-03-31T13:40:04.571Z',
     },
