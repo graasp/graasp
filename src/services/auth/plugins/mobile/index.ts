@@ -95,7 +95,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       const redirectionUrl = new URL(`${GRAASP_MOBILE_BUILDER_PROTOCOL}://auth`);
       redirectionUrl.searchParams.set('t', token);
-      reply.redirect(redirectionUrl.toString());
+      reply.status(StatusCodes.SEE_OTHER);
+      return { resource: redirectionUrl.toString() };
     },
   );
 
