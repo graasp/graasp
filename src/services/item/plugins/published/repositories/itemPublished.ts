@@ -11,7 +11,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   async getForItem(item: Item) {
     // this returns the root published item when querying a child item
     const entry = await this.createQueryBuilder('pi')
-      .innerJoinAndSelect('pi.item', 'item', 'pi.item_path @> :itemPath', { itemPath: item.path })
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> :itemPath', { itemPath: item.path })
       .innerJoinAndSelect('pi.creator', 'member')
       .getOne();
     if (!entry) {
@@ -24,7 +24,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     const paths = items.map((i) => i.path);
     const ids = items.map((i) => i.id);
     const entries = await this.createQueryBuilder('pi')
-      .innerJoinAndSelect('pi.item', 'item', 'pi.item_path @> ARRAY[:...paths]::ltree[]', {
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
         paths,
       })
       .innerJoinAndSelect('pi.creator', 'member')

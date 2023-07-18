@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { v4 } from 'uuid';
 
-import { HttpMethod, ItemTagType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemPublished, ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
@@ -12,11 +12,10 @@ import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { MEMBERS } from '../../../../member/test/fixtures/members';
 import { saveMembers } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
-import { expectManyItems } from '../../../test/fixtures/items';
+import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
 import { ItemLike } from '../../itemLike/itemLike';
-import { ItemLikeRepository } from '../../itemLike/repository';
 import { saveItemLikes } from '../../itemLike/test/utils';
 import { ItemTagNotFound } from '../../itemTag/errors';
 import { ItemTagRepository } from '../../itemTag/repository';
@@ -177,6 +176,45 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectManyItems(res.json(), [item]);
       });
+      it('Get publish info of child item returns root published item', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member });
+        const { item } = await saveItemAndMembership({ member, parentItem });
+        await ItemTagRepository.post(member, parentItem, ItemTagType.Public);
+        // publish parent
+        await ItemPublishedRepository.save({ item: parentItem, creator: member });
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectItem(res.json()?.item, parentItem);
+      });
+      it('Get publish info of multiple childs returns root published items', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member });
+        const { item: otherParentItem } = await saveItemAndMembership({ member });
+        const { item } = await saveItemAndMembership({ member, parentItem });
+        await ItemTagRepository.post(member, parentItem, ItemTagType.Public);
+        await ItemTagRepository.post(member, otherParentItem, ItemTagType.Public);
+
+        // publish parents
+        await ItemPublishedRepository.save({ item: parentItem, creator: member });
+        await ItemPublishedRepository.save({ item: otherParentItem, creator: member });
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/informations${qs.stringify(
+            { itemId: [item.id, otherParentItem.id] },
+            { addQueryPrefix: true, arrayFormat: 'repeat' },
+          )}`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        const result = (await res.json().data) as { [key: string]: ItemPublished };
+        console.log(result);
+        const items = Object.values(result).map((i) => i.item);
+        console.log(items);
+        expectManyItems(items as Item[], [otherParentItem, parentItem]);
+      });
       it('Throw if category id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.GET,
@@ -327,7 +365,7 @@ describe('Item Published', () => {
     });
   });
 
-  describe('POST /collections/itemId/publish', () => {
+  describe('POST /collections/:itemId/publish', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
         ({ app } = await build({ member: null }));
@@ -432,7 +470,7 @@ describe('Item Published', () => {
     });
   });
 
-  describe('DELETE /collections/itemId/unpublish', () => {
+  describe('DELETE /collections/:itemId/unpublish', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
         ({ app } = await build({ member: null }));
