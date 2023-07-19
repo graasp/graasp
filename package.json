@@ -40,7 +40,7 @@
     "release:minor": "standard-version -a --release-as minor",
     "release:major": "standard-version -a --release-as major",
     "release:patch": "standard-version -a --release-as patch",
-    "migration:create": "typeorm migration:create ./migrations/migrations",
+    "migration:create": "typeorm migration:create ./src/migrations/migrations",
     "migration:generate": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations -d src/plugins/datasource.ts && yarn build-ts",
     "migration:run": "npx typeorm-ts-node-commonjs migration:run -d src/plugins/datasource.ts",
     "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d src/plugins/datasource.ts",
