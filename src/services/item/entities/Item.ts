@@ -85,7 +85,8 @@ export class Item extends BaseEntity implements GraaspItem {
   extra: ItemExtra;
 
   // cosmetic settings
-  @Column('simple-json', { nullable: false, default: '{}' })
+  // do not set default value because it gets serialize as a string in map.values()
+  @Column('simple-json', { nullable: false })
   settings: ItemSettings;
 
   @Column('ltree', { unique: true, nullable: false })
