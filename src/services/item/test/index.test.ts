@@ -1548,7 +1548,7 @@ describe('Item routes tests', () => {
         ({ app, actor } = await build());
       });
 
-      it('Move successfully root item', async () => {
+      it('Move successfully root item to parent', async () => {
         const items = await saveNbOfItems({ nb: 3, actor });
         const { item: parent } = await saveItemAndMembership({ member: actor });
 
@@ -1573,6 +1573,12 @@ describe('Item routes tests', () => {
               throw new Error('item does not exist!');
             }
             expect(result.path.startsWith(parent.path)).toBeTruthy();
+
+            // membership should have been deleted because has admin rights on parent
+            const im = await ItemMembershipRepository.findOneBy({
+              item: { path: buildPathFromIds(parent.id, item.id) },
+            });
+            expect(im).toBeNull();
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
@@ -1628,6 +1634,36 @@ describe('Item routes tests', () => {
           expect(result.path.startsWith(parentItem.path)).toBeFalsy();
 
           // membership should have been created
+          const im = await ItemMembershipRepository.findOneBy({
+            item: { path: buildPathFromIds(item.id) },
+          });
+          if (!im) {
+            throw new Error('item membership does not exist!');
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+
+      it('Move successfully item to child and delete same membership', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item } = await saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          payload: {},
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // item should have a different path
+        await waitForExpect(async () => {
+          const result = await ItemRepository.findOneBy({ id: item.id });
+          if (!result) {
+            throw new Error('item does not exist!');
+          }
+          expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+
+          // membership should have been deleted
           const im = await ItemMembershipRepository.findOneBy({
             item: { path: buildPathFromIds(item.id) },
           });
