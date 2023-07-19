@@ -6,6 +6,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { ItemRepository } from '../../../repository';
 import { DuplicateFavoriteError } from '../errors';
 import { FavoriteRepository } from '../repositories/favorite';
 
@@ -46,6 +47,16 @@ describe('Favorite', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()[0]).toMatchObject({ item: { id: favorite.item.id } });
+      });
+
+      it('Get favorite with trashed favorite item', async () => {
+        await ItemRepository.softDelete(favorite.item.id);
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/favorite`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toStrictEqual([]);
       });
     });
   });

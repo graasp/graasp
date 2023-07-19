@@ -7,6 +7,7 @@ import { MemberCannotAccess } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { ItemRepository } from '../../../repository';
 import { expectManyItems } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { ItemLikeNotFound } from '../errors';
@@ -92,6 +93,29 @@ describe('Item Like', () => {
           actor,
         );
       });
+
+      it('Get item likes of a user without trashed items', async () => {
+        const { item: item1 } = await saveItemAndMembership({ member: actor });
+        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const items = [item1, item2];
+        await saveItemLikes(items, actor);
+        // mimic putting an item in the trash by softRemoving it
+        await ItemRepository.softDelete(item1.id);
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: '/items/liked',
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+
+        // check returned items
+        expectManyItems(
+          res.json().map(({ item }) => item),
+          [item2],
+          actor,
+        );
+      });
     });
   });
 
@@ -133,6 +157,19 @@ describe('Item Like', () => {
         // get item like from repository with item (not returned in request)
         const fullItemLike = await getFullItemLike(res.json()[0].id);
         expectItemLike(fullItemLike!, likes[0]);
+      });
+
+      it('Get like entries for public item in the trash', async () => {
+        const { item } = await saveItemAndMembership({ member });
+        await setItemPublic(item, member);
+        await saveItemLikes([item], member);
+        // mimic putting an item in the trash by softDeleting it
+        await ItemRepository.softDelete(item.id);
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${item.id}/likes`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
     });
 

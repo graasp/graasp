@@ -39,10 +39,15 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   },
 
   // return public item entry? contains when it was published
-  async getAllItems() {
+  async getAllPublishedItems(): Promise<Item[]> {
     // we get the nested relation of item.creator because we only return the item and without this the creator is not returned
-    const publishedRows = await this.find({ relations: ['item', 'item.creator'] });
-    return publishedRows.map(({ item }) => item);
+    const publishedRows = await this.createQueryBuilder()
+      .select(['item'])
+      .from(Item, 'item')
+      .leftJoinAndSelect('item.creator', 'creator')
+      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
+      .getMany();
+    return publishedRows;
   },
 
   // return public item entry? contains when it was published
@@ -75,7 +80,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
 
   async getRecentItems(limit: number = 10): Promise<Item[]> {
     const publishedInfos = await this.createQueryBuilder('item_published')
-      .leftJoinAndSelect('item_published.item', 'item')
+      .innerJoinAndSelect('item_published.item', 'item')
       .orderBy('item.createdAt', 'DESC')
       .take(limit)
       .getMany();
@@ -93,7 +98,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
    * @param ids category ids - in the form of ['A1,A2', 'B1', 'C1,C2,C3']
    * @returns object { id } of items with given categories
    */
-  async getByCategories(categoryIds: string[]) {
+  async getByCategories(categoryIds: string[]): Promise<Item[]> {
     const query = this.createQueryBuilder()
       .select(['item'])
       .from(Item, 'item')

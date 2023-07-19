@@ -16,7 +16,7 @@ const publishEntry = {
     creator: {
       $ref: 'http://graasp.org/members/#/definitions/member',
     },
-    createdAt: {},
+    createdAt: { type: 'string' },
   },
   additionalProperties: false,
 };
