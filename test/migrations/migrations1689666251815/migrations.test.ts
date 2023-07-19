@@ -64,5 +64,15 @@ describe('migrations1689666251815', () => {
       buildSelectQuery('item_tag', { id: migrationData.item_tag[3].id }),
     );
     expect(hiddenTag.type).toEqual(ItemTagType.Hidden);
+
+    const [remainingPublicTag] = await app.db.query(
+      buildSelectQuery('item_tag', { id: migrationData.item_tag[4].id }),
+    );
+    expect(remainingPublicTag.type).toEqual(ItemTagType.Public);
+
+    const duplicateTag = await app.db.query(
+      buildSelectQuery('item_tag', { id: migrationData.item_tag[5].id }),
+    );
+    expect(duplicateTag).toHaveLength(0);
   });
 });
