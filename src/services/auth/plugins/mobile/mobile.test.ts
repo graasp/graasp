@@ -221,8 +221,10 @@ describe('Mobile Endpoints', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
-      expect(response.headers.location).toContain(`${GRAASP_MOBILE_BUILDER_PROTOCOL}://auth?t=`);
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      const result = await response.json();
+      expect(result).toHaveProperty('resource');
+      expect(result.resource).toContain(`${GRAASP_MOBILE_BUILDER_PROTOCOL}://auth?t=`);
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
