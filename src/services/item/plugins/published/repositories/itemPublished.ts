@@ -1,5 +1,3 @@
-import { In } from 'typeorm';
-
 import { PermissionLevel } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
@@ -11,10 +9,11 @@ import { ItemPublishedNotFound } from '../errors';
 
 export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished).extend({
   async getForItem(item: Item) {
-    const entry = await this.findOne({
-      where: { item: { id: item.id } },
-      relations: { item: true, creator: true },
-    });
+    // this returns the root published item when querying a child item
+    const entry = await this.createQueryBuilder('pi')
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> :itemPath', { itemPath: item.path })
+      .innerJoinAndSelect('pi.creator', 'member')
+      .getOne();
     if (!entry) {
       throw new ItemPublishedNotFound(item.id);
     }
@@ -22,15 +21,19 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     return entry;
   },
   async getForItems(items: Item[]) {
+    const paths = items.map((i) => i.path);
     const ids = items.map((i) => i.id);
-    const entries = await this.find({
-      where: { item: { id: In(ids) } },
-      relations: { item: true, creator: true },
-    });
+    const entries = await this.createQueryBuilder('pi')
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
+        paths,
+      })
+      .innerJoinAndSelect('pi.creator', 'member')
+      .getMany();
 
     return mapById({
       keys: ids,
-      findElement: (id) => entries.find((e) => e.item.id === id),
+      findElement: (id) =>
+        entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
   },

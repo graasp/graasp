@@ -1,4 +1,4 @@
-import { Brackets, In } from 'typeorm';
+import { Brackets } from 'typeorm';
 
 import { ItemTagType, ResultOf } from '@graasp/sdk';
 
@@ -8,12 +8,7 @@ import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';
 import { pathToId } from '../../utils';
 import { ItemTag } from './ItemTag';
-import {
-  CannotModifyParentTag,
-  ConflictingTagsInTheHierarchy,
-  ItemHasTag,
-  ItemTagNotFound,
-} from './errors';
+import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from './errors';
 
 /**
  * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)
@@ -43,7 +38,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
   async hasMany(item: Item, tagTypes: ItemTagType[]) {
     const hasTags = await this.createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item')
-      .where('item.path @> :path', { path: item.path })
+      .where('itemTag.item @> :path', { path: item.path })
       .andWhere('itemTag.type IN (:...types)', { types: tagTypes })
       .getMany();
 
