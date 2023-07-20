@@ -11,7 +11,7 @@ import { up } from './fixture';
 // mock datasource
 jest.mock('../../../src/plugins/datasource');
 
-describe('migrations1689666251815', () => {
+describe('migrations1689666251815', () => { 
   let app;
 
   beforeEach(async () => {
