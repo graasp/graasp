@@ -21,9 +21,9 @@ In order to run the Graasp backend, it requires:
 
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
 
-    - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environnement.
+  - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environnement.
 
-    - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
+  - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
 
 ## Installation
 
@@ -39,6 +39,7 @@ We recommend to set up the development environment using Docker, as it allows to
 First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd> (or <kbd>ctrl</kbd> instead of <kbd>cmd</kbd>), and typing `Open Folder in Container`.
 
 This will create 3 containers :
+
 - `app` : Node.js backend of Graasp
 - `db` : PostgreSQL database used by the backend
 - `redis` : Redis instance to enable websockets
@@ -66,28 +67,32 @@ Then open the folder locally and run the following command to install the requir
 
 ### Database and Migrations
 
-The application will run migrations on start. 
+The application will run migrations on start.
 
 #### Create a migration
+
 Migrations are saved in `src/migrations/*.ts`. They are then transformed into js files so typeorm can run them.
 
 Run the generate and run command to create and apply the migration.
+
 ```` bash
 yarn migration:generate
 yarn migration:run
 ````
 
 If you need to revert
+
 ```` bash
 yarn migration:revert
 ````
 
 To test your migrations, you can run
+
 ```` bash
 yarn migration:fake
 ````
 
-Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`. 
+Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`.
 
 Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
 
@@ -199,6 +204,7 @@ BUILDER_CLIENT_HOST=<value>
 PLAYER_CLIENT_HOST=<value>
 EXPLORER_CLIENT_HOST=<value>
 AUTH_CLIENT_HOST=<value>
+GRAASP_MOBILE_BUILDER=<value>
 
 # validation containers
 IMAGE_CLASSIFIER_API=<url>
