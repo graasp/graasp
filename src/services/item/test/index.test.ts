@@ -1650,7 +1650,7 @@ describe('Item routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
-          payload: {},
+          payload: { parentId: parentItem.id },
         });
 
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -1667,9 +1667,7 @@ describe('Item routes tests', () => {
           const im = await ItemMembershipRepository.findOneBy({
             item: { path: buildPathFromIds(item.id) },
           });
-          if (!im) {
-            throw new Error('item membership does not exist!');
-          }
+          expect(im).toBeNull();
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
