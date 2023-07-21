@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.2](https://github.com/graasp/graasp/compare/v1.2.1...v1.2.2) (2023-07-20)
+
+
+### Bug Fixes
+
+* add migration to clean tags ([#488](https://github.com/graasp/graasp/issues/488)) ([788a237](https://github.com/graasp/graasp/commit/788a237dbd83283b85ce6d3119b2678c01007f30))
+* bump sentry and document usage of decorateRequest ([#360](https://github.com/graasp/graasp/issues/360)) ([c4b14b2](https://github.com/graasp/graasp/commit/c4b14b2cd12763ba7e30a646399a0230b3fb8a93))
+* **deps:** update dependency @casl/ability to v6.3.4 ([#410](https://github.com/graasp/graasp/issues/410)) ([8547564](https://github.com/graasp/graasp/commit/854756422d2d41cdc7226182aca10857f46cc7a8))
+* **deps:** update dependency @graasp/sdk to v1.1.3 ([#490](https://github.com/graasp/graasp/issues/490)) ([2152d97](https://github.com/graasp/graasp/commit/2152d97f1b2a3d79c467552170180b5ada9931b4))
+* **deps:** update dependency @sentry/profiling-node to v1.0.8 ([#480](https://github.com/graasp/graasp/issues/480)) ([c9e079f](https://github.com/graasp/graasp/commit/c9e079fba05acf389a7a87ca554afa301e6c117e))
+* **deps:** update dependency french-badwords-list to v1.0.7 ([c6321ee](https://github.com/graasp/graasp/commit/c6321ee34dafaed0d230e71579e01cfd64096088))
+* item relation can be null because of soft-delete ([#483](https://github.com/graasp/graasp/issues/483)) ([ce4a7e3](https://github.com/graasp/graasp/commit/ce4a7e384e0a087949e4b04af880ecb10add7ce7))
+* m/login-password to send the resource in the body ([#486](https://github.com/graasp/graasp/issues/486)) ([448d30e](https://github.com/graasp/graasp/commit/448d30e0094ca87aedbfe01819833f0fd08a39cd))
+* remove duplicate public tag in migration ([#492](https://github.com/graasp/graasp/issues/492)) ([1a24b62](https://github.com/graasp/graasp/commit/1a24b6250da50fc26f280733875b019deedaf74d))
+* return root published item when querying for a child item ([#466](https://github.com/graasp/graasp/issues/466)) ([d5351e9](https://github.com/graasp/graasp/commit/d5351e9cf4548425c33b33f760bf117b28881d1a))
+
 ## [1.2.1](https://github.com/graasp/graasp/compare/v1.2.0...v1.2.1) (2023-07-04)
 
 
