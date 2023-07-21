@@ -17,7 +17,7 @@ jobs:
     # repository name
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
-    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@log-level
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -31,6 +31,7 @@ jobs:
       etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_DEV }}
       etherpad-url: ${{ vars.ETHERPAD_URL_DEV }}
       h5p-file-storage-type: ${{ vars.H5P_FILE_STORAGE_TYPE }}
+      log-level: debug
       node-env: production
       node-env-iframely: production
       roarr-log: false

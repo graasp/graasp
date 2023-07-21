@@ -1,18 +1,18 @@
 import archiver, { Archiver } from 'archiver';
-import fs from 'fs';
+import fs, { existsSync } from 'fs';
 import { mkdir, readFile } from 'fs/promises';
 import mime from 'mime-types';
 import mmm from 'mmmagic';
 import path from 'path';
 import util from 'util';
 
-import { MultipartFile } from '@fastify/multipart';
-import { FastifyReply } from 'fastify';
+import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
 import {
   AppItemExtraProperties,
   DocumentItemExtraProperties,
   EmbeddedLinkItemExtraProperties,
+  H5PItemType,
   ItemType,
   LocalFileItemExtra,
   S3FileItemExtra,
@@ -21,53 +21,68 @@ import {
 
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
+import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';
+import { H5PService } from '../h5p/service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
   LINK_EXTENSION,
   TMP_EXPORT_ZIP_FOLDER_PATH,
   URL_PREFIX,
-  ZIP_FILE_MIME_TYPES,
 } from './constants';
-import { FileIsInvalidArchiveError, UnexpectedExportError } from './errors';
-import { buildTextContent, handleItemDescription, prepareZip } from './utils';
+import { UnexpectedExportError } from './errors';
+import { buildTextContent } from './utils';
 
 const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
   fileItemService: FileItemService;
-  // h5pService;
+  h5pService: H5PService;
   itemService: ItemService;
   fileStorage: string;
 
-  constructor(
-    fileItemService: FileItemService,
-    itemService: ItemService,
-    // h5pService: H5PService,
-  ) {
+  constructor(fileItemService: FileItemService, itemService: ItemService, h5pService: H5PService) {
     this.fileItemService = fileItemService;
-    // this.h5pService = h5pService;
+    this.h5pService = h5pService;
     this.itemService = itemService;
     // save temp files
     this.fileStorage = path.join(TMP_FOLDER, 'export-zip');
   }
 
-  private async _buildItemFromFilename(
-    actor: Actor,
+  private async _getDescriptionForFilepath(filepath: string): Promise<string> {
+    const descriptionFilePath = filepath + DESCRIPTION_EXTENSION;
+    if (existsSync(descriptionFilePath)) {
+      // get folder description (inside folder) if it exists
+      return readFile(descriptionFilePath, {
+        encoding: 'utf8',
+        flag: 'r',
+      });
+    }
+    return '';
+  }
+
+  /**
+   * private function that create an item and its necessary membership with given parameters
+   * @param {Member} actor creator
+   * @param {Repositories} repositories
+   * @param {any} options.filename filename of the file to import
+   * @returns {any}
+   */
+  private async _saveItemFromFilename(
+    actor: Member,
     repositories: Repositories,
     options: {
       filename: string;
       folderPath: string;
-      parentId: string;
-      // log: FastifyBaseLogger;
+      parent?: Item;
     },
-  ): Promise<Partial<Item> | null> {
-    const { filename, folderPath, parentId } = options;
+  ): Promise<Item | null> {
+    const { filename, folderPath, parent } = options;
 
     // ignore hidden files such as .DS_STORE
     if (filename.startsWith('.')) {
@@ -77,21 +92,29 @@ export class ImportExportService {
     const filepath = path.join(folderPath, filename);
     const stats = fs.lstatSync(filepath);
 
+    // ignore empty files
+    if (!stats.size) {
+      return null;
+    }
+
     // folder
     if (stats.isDirectory()) {
       // element has no extension -> folder
-      return {
-        name: filename,
-        type: ItemType.FOLDER,
-      };
-    }
 
+      const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
+
+      return this.itemService.post(actor, repositories, {
+        item: { description, name: filename, type: ItemType.FOLDER },
+        parentId: parent?.id,
+      });
+    }
     // string content
     // todo: optimize to avoid reading the file twice in case of upload
     const content = await readFile(filepath, {
       encoding: 'utf8',
       flag: 'r',
     });
+    const description = await this._getDescriptionForFilepath(filepath);
 
     // links and apps
     if (filename.endsWith(LINK_EXTENSION)) {
@@ -104,8 +127,9 @@ export class ImportExportService {
       // get if app in content -> url is either a link or an app
       const type = linkType.includes('1') ? ItemType.APP : ItemType.LINK;
       if (type === ItemType.APP) {
-        return {
+        const newItem = {
           name: filename.slice(0, -LINK_EXTENSION.length),
+          description,
           type,
           extra: {
             [type]: {
@@ -113,9 +137,11 @@ export class ImportExportService {
             },
           },
         } as Partial<Item>;
+        return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
       } else if (type === ItemType.LINK) {
-        return {
+        const newItem = {
           name: filename.slice(0, -LINK_EXTENSION.length),
+          description,
           type,
           extra: {
             [type]: {
@@ -123,15 +149,17 @@ export class ImportExportService {
             },
           },
         } as Partial<Item>;
+        return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
       } else {
         throw new Error(`${type} is not handled`);
       }
     }
     // documents
     else if (filename.endsWith(GRAASP_DOCUMENT_EXTENSION)) {
-      return {
+      const newItem = {
         // remove .graasp from name
         name: filename.slice(0, -GRAASP_DOCUMENT_EXTENSION.length),
+        description,
         type: ItemType.DOCUMENT,
         extra: {
           [ItemType.DOCUMENT]: {
@@ -139,18 +167,18 @@ export class ImportExportService {
             content: content,
           },
         },
-      };
+      } as Partial<Item>;
+      return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
     }
     // normal files
     else {
       const mimetype = await asyncDetectFile(filepath);
-
       // upload file
       const [item] = await this.fileItemService.upload(
         actor,
         repositories,
-        [{ filename, mimetype, filepath }],
-        parentId,
+        [{ filename, mimetype, filepath, description }],
+        parent?.id,
       );
 
       return item;
@@ -211,11 +239,15 @@ export class ImportExportService {
         break;
       }
       case ItemType.H5P: {
-        // const fileStream = await this.h5pService.download(actor, repositories, item, fileStorage)
+        const fileStream = await this.h5pService.downloadH5P(
+          item as H5PItemType,
+          actor,
+          fileStorage,
+        );
 
-        // archive.append(fileStream, {
-        //   name: path.join(archiveRootPath, item.name),
-        // });
+        archive.append(fileStream, {
+          name: path.join(archiveRootPath, item.name),
+        });
 
         break;
       }
@@ -346,64 +378,58 @@ export class ImportExportService {
    * Util recursive function that create graasp item given folder content
    * @param actor
    * @param repositories
-   * @param param2
+   * @param options.parent parent item might be saved in
+   * @param options.folderPath current path in archive of the parent
+   * @param log logger
    */
-  async _import(actor: Member, repositories: Repositories, { parent, folderPath }) {
+  async _import(
+    actor: Member,
+    repositories: Repositories,
+    { parent, folderPath }: { parent?: Item; folderPath: string },
+    log: FastifyBaseLogger,
+  ) {
     const filenames = fs.readdirSync(folderPath);
-    const folderName = path.basename(folderPath);
 
-    // we save item in batch for optimization, but also because
-    // order and descriptions are saved separately
-    const items: Partial<Item>[] = [];
-
+    const items: Item[] = [];
     for (const filename of filenames) {
-      const filepath = path.join(folderPath, filename);
-
-      // update items' descriptions
-      if (filename.endsWith(DESCRIPTION_EXTENSION)) {
-        await handleItemDescription({
-          filename,
-          filepath,
-          folderName,
-          items,
-          updateParentDescription: (description) =>
-            repositories.itemRepository.patch(parent.id, { description }),
-        });
-      }
-      // add new item
-      else {
-        const item = await this._buildItemFromFilename(actor, repositories, {
-          filename,
-          folderPath,
-          parentId: parent.id,
-        });
-        // .catch( (e)=> {
-        //   if (e instanceof UploadEmptyFileError) {
-        //     // ignore empty files
-        //   } else {
-        //     // improvement: return a list of failed imports
-        //     throw e;
-        //   }
-        // });
-        if (!item && item !== null) {
-          items.push(item);
+      // import item from file excluding descriptions
+      // descriptions are handled alongside the corresponding file
+      if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
+        try {
+          const item = await this._saveItemFromFilename(actor, repositories, {
+            filename,
+            folderPath,
+            parent,
+          });
+          if (item) {
+            items.push(item);
+          }
+        } catch (e) {
+          if (e instanceof UploadEmptyFileError) {
+            // ignore empty files
+            log.debug(`ignore ${filename} because it is empty`);
+          } else {
+            // improvement: return a list of failed imports
+            log.error(e);
+            throw e;
+          }
         }
       }
     }
 
-    // create the items
-    const newItems = await Promise.all(
-      items.map(async (item) => repositories.itemRepository.post(item, actor, parent)),
-    );
-
     // recursively create children in folders
-    for (const newItem of newItems) {
+    for (const newItem of items) {
       const { type, name } = newItem;
       if (type === ItemType.FOLDER) {
-        await this._import(actor, repositories, {
-          folderPath: path.join(folderPath, name),
-          parent: newItem,
-        });
+        await this._import(
+          actor,
+          repositories,
+          {
+            folderPath: path.join(folderPath, name),
+            parent: newItem,
+          },
+          log,
+        );
       }
     }
   }
@@ -411,24 +437,22 @@ export class ImportExportService {
   async import(
     actor: Member,
     repositories: Repositories,
-    { zipFile, parentId }: { zipFile: MultipartFile; parentId?: string },
+    {
+      folderPath,
+      targetFolder,
+      parentId,
+    }: { folderPath: string; targetFolder: string; parentId?: string },
+    log: FastifyBaseLogger,
   ): Promise<void> {
-    // throw if file is not a zip
-    if (!ZIP_FILE_MIME_TYPES.includes(zipFile.mimetype)) {
-      throw new FileIsInvalidArchiveError(zipFile.mimetype);
-    }
-
-    const { folderPath } = await prepareZip(zipFile.file);
-
     let parent;
     if (parentId) {
       // check item permission
       parent = await this.itemService.get(actor, repositories, parentId);
     }
 
-    await this._import(actor, repositories, { parent, folderPath });
+    await this._import(actor, repositories, { parent, folderPath }, log);
 
     // delete zip and content
-    fs.rmSync(folderPath, { recursive: true });
+    fs.rmSync(targetFolder, { recursive: true });
   }
 }
