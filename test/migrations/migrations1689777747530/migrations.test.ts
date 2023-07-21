@@ -1,9 +1,8 @@
-import { ItemTagType } from '@graasp/sdk';
-
 import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
 import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations';
 import { Migrations1683637099103 } from '../../../src/migrations/1683637099103-add-favorites';
 import { Migrations1689666251815 } from '../../../src/migrations/1689666251815-clean-tags';
+import { Migrations1689777747530 } from '../../../src/migrations/1689777747530-default-item-settings';
 import build from '../../app';
 import { buildInsertIntoQuery, buildSelectQuery, checkDatabaseIsEmpty } from '../utils';
 import { up } from './fixture';
@@ -11,7 +10,7 @@ import { up } from './fixture';
 // mock datasource
 jest.mock('../../../src/plugins/datasource');
 
-describe('migrations1689666251815', () => { 
+describe('Migrations1689777747530', () => {
   let app;
 
   beforeEach(async () => {
@@ -27,6 +26,7 @@ describe('migrations1689666251815', () => {
     await new migrations1679669193720().up(app.db.createQueryRunner());
     await new Migrations1679669193721().up(app.db.createQueryRunner());
     await new Migrations1683637099103().up(app.db.createQueryRunner());
+    await new Migrations1689666251815().up(app.db.createQueryRunner());
   });
 
   afterEach(async () => {
@@ -43,36 +43,13 @@ describe('migrations1689666251815', () => {
       }
     }
 
-    await new Migrations1689666251815().up(app.db.createQueryRunner());
+    await new Migrations1689777747530().up(app.db.createQueryRunner());
 
-    const [publicTag] = await app.db.query(
-      buildSelectQuery('item_tag', { id: migrationData.item_tag[0].id }),
+    const [item] = await app.db.query(
+      buildSelectQuery('item', { id: migrationData.item[0].id }),
     );
-    expect(publicTag.type).toEqual(ItemTagType.Public);
+    console.log(item);
+    expect(JSON.parse(item.settings)).toEqual(migrationData.item[0].settings);
 
-    const publishedTag = await app.db.query(
-      buildSelectQuery('item_tag', { id: migrationData.item_tag[1].id }),
-    );
-    expect(publishedTag).toHaveLength(0);
-
-    const itemLoginTag = await app.db.query(
-      buildSelectQuery('item_tag', { id: migrationData.item_tag[2].id }),
-    );
-    expect(itemLoginTag).toHaveLength(0);
-
-    const [hiddenTag] = await app.db.query(
-      buildSelectQuery('item_tag', { id: migrationData.item_tag[3].id }),
-    );
-    expect(hiddenTag.type).toEqual(ItemTagType.Hidden);
-
-    const [remainingPublicTag] = await app.db.query(
-      buildSelectQuery('item_tag', { id: migrationData.item_tag[4].id }),
-    );
-    expect(remainingPublicTag.type).toEqual(ItemTagType.Public);
-
-    const duplicateTag = await app.db.query(
-      buildSelectQuery('item_tag', { id: migrationData.item_tag[5].id }),
-    );
-    expect(duplicateTag).toHaveLength(0);
   });
 });
