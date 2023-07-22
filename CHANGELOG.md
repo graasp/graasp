@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.3](https://github.com/graasp/graasp/compare/v1.2.2...v1.2.3) (2023-07-21)
+
+
+### Bug Fixes
+
+* do not specify default for item settings in entity ([#494](https://github.com/graasp/graasp/issues/494)) ([972f86b](https://github.com/graasp/graasp/commit/972f86bd482756f3f0e8d25ae4f417429220f4de))
+* fix detachedMoveHousekeeping to move to root ([#484](https://github.com/graasp/graasp/issues/484)) ([7883f2d](https://github.com/graasp/graasp/commit/7883f2d4760874188351b45bcb5bc564068b45d9))
+
 ## [1.2.2](https://github.com/graasp/graasp/compare/v1.2.1...v1.2.2) (2023-07-20)
 
 
