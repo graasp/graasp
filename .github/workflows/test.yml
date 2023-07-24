@@ -179,6 +179,8 @@ jobs:
           CI: true
           # random keys
           APPS_JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
+          APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7 # mock uuid
+          AUTH_CLIENT_HOST: 'localhost:3001'
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           BUILDER_CLIENT_HOST: 'http://localhost:3111'
           COOKIE_DOMAIN: localhost
@@ -186,13 +188,13 @@ jobs:
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
           DB_USERNAME: ${{ env.TEST_DB_USER }}
           EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: 'http://localhost:1234'
-          ETHERPAD_URL: 'http://etherpad:9001'
-          ETHERPAD_PUBLIC_URL: 'http://localhost:9001'
           ETHERPAD_API_KEY: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+          ETHERPAD_PUBLIC_URL: 'http://localhost:9001'
+          ETHERPAD_URL: 'http://etherpad:9001'
           EXPLORER_CLIENT_HOST: 'http://localhost:3113'
           FILE_STORAGE_ROOT_PATH: /
-          H5P_PATH_PREFIX: h5p-content/
           H5P_FILE_STORAGE_TYPE: file
+          H5P_PATH_PREFIX: h5p-content/
           H5P_STORAGE_ROOT_PATH: /tmp/h5p
           H5P_TEMP_DIR: /tmp/h5p/extract
           JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
@@ -200,16 +202,14 @@ jobs:
           MAILER_CONFIG_SMTP_HOST: localhost
           MAILER_CONFIG_USERNAME: username
           PLAYER_CLIENT_HOST: 'http://localhost:3112'
-          REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
-          S3_FILE_ITEM_PLUGIN: true
-          S3_FILE_ITEM_REGION: us-east-1
-          S3_FILE_ITEM_BUCKET: graasp
-          S3_FILE_ITEM_ACCESS_KEY_ID: graasp-user
-          S3_FILE_ITEM_SECRET_ACCESS_KEY: graasp-pwd
+          RECAPTCHA_SECRET_ACCESS_KEY: 'iamamockkey'
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          REFRESH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_REFRESH_TOKEN_JWT_SECRET }}
+          S3_FILE_ITEM_ACCESS_KEY_ID: graasp-user
+          S3_FILE_ITEM_BUCKET: graasp
+          S3_FILE_ITEM_PLUGIN: true
+          S3_FILE_ITEM_REGION: us-east-1
+          S3_FILE_ITEM_SECRET_ACCESS_KEY: graasp-pwd
           SECURE_SESSION_SECRET_KEY: ${{ secrets.MOCK_SECURE_SESSION_SECRET_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          # mock uuid
-          APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7
-          RECAPTCHA_SECRET_ACCESS_KEY: 'iamamockkey'

@@ -7,8 +7,9 @@ import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import {
-  GRAASP_MOBILE_BUILDER_PROTOCOL,
+  AUTH_CLIENT_HOST,
   JWT_SECRET,
+  PROTOCOL,
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../../../utils/config';
 import MemberRepository from '../../../member/repository';
@@ -224,7 +225,7 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const result = await response.json();
       expect(result).toHaveProperty('resource');
-      expect(result.resource).toContain(`${GRAASP_MOBILE_BUILDER_PROTOCOL}://auth?t=`);
+      expect(result.resource).toContain(`${PROTOCOL}://${AUTH_CLIENT_HOST}/auth?t=`);
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
