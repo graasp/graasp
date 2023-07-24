@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { AUTH_CLIENT_HOST, GRAASP_MOBILE_BUILDER_PROTOCOL } from '../../../../utils/config';
+import { AUTH_CLIENT_HOST, PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { MemberPasswordService } from '../password/service';
 import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from './schemas';
@@ -93,7 +93,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body.challenge,
       );
 
-      const redirectionUrl = new URL(`${GRAASP_MOBILE_BUILDER_PROTOCOL}://auth`);
+      const redirectionUrl = new URL(`${PROTOCOL}://${AUTH_CLIENT_HOST}/auth`);
       redirectionUrl.searchParams.set('t', token);
       reply.status(StatusCodes.SEE_OTHER);
       return { resource: redirectionUrl.toString() };
@@ -129,7 +129,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
                 color: white;
                 padding: 1em 1.5em;
                 text-decoration: none;"
-                href="graasp-mobile-builder://auth?t=${t}">Open with Graasp app</>
+                href="${PROTOCOL}://${AUTH_CLIENT_HOST}/auth?t=${t}">Open with Graasp app</>
             </body>
           </html>
         `;
