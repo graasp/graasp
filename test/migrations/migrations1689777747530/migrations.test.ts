@@ -45,11 +45,8 @@ describe('Migrations1689777747530', () => {
 
     await new Migrations1689777747530().up(app.db.createQueryRunner());
 
-    const [item] = await app.db.query(
-      buildSelectQuery('item', { id: migrationData.item[0].id }),
-    );
+    const [item] = await app.db.query(buildSelectQuery('item', { id: migrationData.item[0].id }));
     console.log(item);
     expect(JSON.parse(item.settings)).toEqual(migrationData.item[0].settings);
-
   });
 });

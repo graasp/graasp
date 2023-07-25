@@ -1,6 +1,6 @@
 import S from 'fluent-json-schema';
 
-import { ItemType } from '@graasp/sdk';
+import { DocumentItemExtraFlavor, ItemType } from '@graasp/sdk';
 
 export const updateSchema = S.object()
   // TODO: .additionalProperties(false) in schemas don't seem to work properly and
@@ -11,6 +11,7 @@ export const updateSchema = S.object()
     S.object()
       // .additionalProperties(false)
       .prop('content', S.string())
+      .prop('flavor', S.string().enum(Object.values(DocumentItemExtraFlavor)))
       .required(['content']),
   )
   .required([ItemType.DOCUMENT]);
