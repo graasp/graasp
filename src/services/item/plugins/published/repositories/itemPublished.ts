@@ -58,6 +58,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       .from(Item, 'item')
       .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
+      .innerJoinAndSelect('item.creator', 'member')
       .where('im.member_id = :memberId', { memberId })
       .andWhere('im.permission IN (:...permissions)', {
         permissions: [PermissionLevel.Admin, PermissionLevel.Write],
