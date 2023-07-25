@@ -81,6 +81,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   async getRecentItems(limit: number = 10): Promise<Item[]> {
     const publishedInfos = await this.createQueryBuilder('item_published')
       .innerJoinAndSelect('item_published.item', 'item')
+      .innerJoinAndSelect('item.creator', 'member')
       .orderBy('item.createdAt', 'DESC')
       .take(limit)
       .getMany();
@@ -129,9 +130,10 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   // bug: does not take into account child items
   async getLikedItems(limit: number = 10): Promise<Item[]> {
     const itemPublished = await this.createQueryBuilder('item_published')
-      .leftJoinAndSelect('item_published.item', 'i')
-      .innerJoin('item_like', 'il', 'il.item_id = i.id')
-      .groupBy(['i.id', 'item_published.id'])
+      .innerJoinAndSelect('item_published.item', 'item')
+      .innerJoinAndSelect('item.creator', 'member')
+      .innerJoin('item_like', 'il', 'il.item_id = item.id')
+      .groupBy(['item.id', 'member.id', 'item_published.id'])
       .orderBy('COUNT(il.id)', 'DESC')
       .limit(limit)
       .getMany();
