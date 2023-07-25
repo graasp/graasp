@@ -1,5 +1,3 @@
-import { defineAbility } from '@casl/ability';
-
 import { AppDataVisibility, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { MemberCannotWriteItem, UnauthorizedMember } from '../../../../../utils/errors';
@@ -9,54 +7,39 @@ import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Actor } from '../../../../member/entities/member';
 import { AppData, Filters } from './appData';
-import { AppDataNotAccessible } from './errors';
+import { AppDataNotAccessible, PreventUpdateOtherAppData } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
-const adaptFilters = (
-  filters: Filters,
-  permission: PermissionLevel | undefined,
-  actorId: string,
-) => {
-  // TODO: optimize
-  // admin can get all app data from everyone
-  // otherwise get member's AppData or others' AppData w/ visibility 'item'
-  let finalFilters = { ...filters };
-  const { member: fMember, visibility: fVisibility } = finalFilters;
-  if (permission !== PermissionLevel.Admin) {
-    let op;
+const ownAppDataAbility = (appData: AppData, member: Actor) => {
+  if (!appData.creator || !member) {
+    return false;
+  }
+  return appData.creator.id === member.id;
+};
 
-    if (!fMember?.id) {
-      if (fVisibility !== AppDataVisibility.Item) {
-        finalFilters = { ...finalFilters, member: { id: actorId } }; // get member's AppData
-        if (!fVisibility) {
-          // + any AppData w/ visibility 'item'
-          finalFilters.visibility = AppDataVisibility.Item;
-          op = 'OR';
-        }
-      }
-    } else if (fMember?.id !== actorId) {
-      if (fVisibility !== AppDataVisibility.Item) {
-        if (fVisibility === AppDataVisibility.Member) throw new AppDataNotAccessible();
-        finalFilters.visibility = AppDataVisibility.Item; // force 'item' visibility while fetching others' AppData
-      }
+const itemVisibilityAppDataAbility = (
+  appData,
+  permission: PermissionLevel,
+  memberPermission?: PermissionLevel,
+) => {
+  if (appData.visibility === AppDataVisibility.Item) {
+    // can always read an app data with visibility item
+    if (permission === PermissionLevel.Read) {
+      return true;
     }
-    return finalFilters;
+    // on write/admin
+    else {
+      // cannot update without membership
+      if (!memberPermission) {
+        return false;
+      }
+
+      return permissionMapping[memberPermission].includes(permission);
+    }
   }
 };
 
-const ownAppDataAbility = (member) =>
-  defineAbility((can, cannot) => {
-    can(PermissionLevel.Read, 'AppData', { member: member.id });
-    can(PermissionLevel.Write, 'AppData', { member: member.id });
-    can(PermissionLevel.Admin, 'AppData', { member: member.id });
-  });
-
-const itemVisibilityAppDataAbility = (member) =>
-  defineAbility((can, cannot) => {
-    can(PermissionLevel.Read, 'AppData', { visibility: AppDataVisibility.Item });
-  });
-
-// TODO: factor ut
+// TODO: factor out
 const permissionMapping = {
   [PermissionLevel.Read]: [PermissionLevel.Read],
   [PermissionLevel.Write]: [PermissionLevel.Read, PermissionLevel.Write],
@@ -133,13 +116,16 @@ export class AppDataService {
     const appData = await appDataRepository.get(appDataId);
 
     // patch own or is admin
-    await this.validateAppDataPermission(
+    const isValid = await this.validateAppDataPermission(
       repositories,
       member,
       appData,
       PermissionLevel.Write,
       inheritedMembership,
     );
+    if (!isValid) {
+      throw new PreventUpdateOtherAppData(appDataId);
+    }
 
     await this.hooks.runPreHooks('patch', member, repositories, appData);
 
@@ -242,10 +228,8 @@ export class AppDataService {
     // posting an app data is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
 
-    const finalFilters = adaptFilters(filters, membership?.permission, memberId);
-
     // TODO: get only memberId or with visibility
-    return appDataRepository.getForItem(itemId, { ...finalFilters });
+    return appDataRepository.getForItem(itemId, { ...filters, memberId }, membership?.permission);
   }
 
   // TODO: check for many items
@@ -276,8 +260,11 @@ export class AppDataService {
       }
       // TODO: optimize
       const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
-      const finalFilters = adaptFilters(filters, membership?.permission, memberId);
-      const appData = await appDataRepository.getForItem(itemId, finalFilters);
+      const appData = await appDataRepository.getForItem(
+        itemId,
+        { ...filters, memberId },
+        membership?.permission,
+      );
       result.data[itemId] = appData;
       return result;
     }
@@ -294,9 +281,8 @@ export class AppDataService {
     inheritedMembership?: ItemMembership | null,
   ) {
     const isValid =
-      // inheritedMembership?.permission &&
-      ownAppDataAbility(member).can(permission, appData) ||
-      itemVisibilityAppDataAbility(member).can(permission, appData) ||
+      ownAppDataAbility(appData, member) ||
+      itemVisibilityAppDataAbility(appData, permission, inheritedMembership?.permission) ||
       (inheritedMembership &&
         permissionMapping[inheritedMembership.permission].includes(permission));
 

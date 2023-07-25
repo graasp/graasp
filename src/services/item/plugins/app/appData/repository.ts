@@ -1,9 +1,8 @@
-import { In } from 'typeorm';
+import { Brackets } from 'typeorm';
 
-import { ItemType, ResultOf, UUID } from '@graasp/sdk';
+import { AppDataVisibility, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { mapById } from '../../../../utils';
 import { AppData, Filters } from './appData';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';
@@ -46,7 +45,10 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
   },
 
   async get(id: string): Promise<AppData> {
-    const appData = await this.findOneBy({ id });
+    const appData = await this.findOne({
+      where: { id },
+      relations: { member: true, creator: true, item: true },
+    });
 
     if (!appData) {
       throw new AppDataNotFound();
@@ -55,22 +57,41 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     return appData;
   },
 
-  async getForItem(itemId: string, filters: Filters = {}): Promise<AppData[]> {
-    return this.find({
-      where: { item: { id: itemId }, ...filters },
-      relations: { member: true, creator: true, item: true },
-    });
-  },
+  async getForItem(
+    itemId: string,
+    filters: Filters = {},
+    permission?: PermissionLevel,
+  ): Promise<AppData[]> {
+    const { memberId, visibility } = filters;
 
-  async getForManyItems(itemIds: string[], filters: Filters = {}): Promise<ResultOf<AppData[]>> {
-    const appDatas = await this.find({
-      where: { item: { id: In(itemIds) }, ...filters },
-      relations: { member: true, creator: true, item: true },
-    });
+    const query = this.createQueryBuilder('appData')
+      .leftJoinAndSelect('appData.member', 'member')
+      .leftJoinAndSelect('appData.creator', 'creator')
+      .leftJoinAndSelect('appData.item', 'item')
+      .where('item.id = :itemId', { itemId });
 
-    return mapById({
-      keys: itemIds,
-      findElement: (id) => appDatas.filter(({ itemId }) => itemId === id),
-    });
+    // restrict app data access if user is not an admin
+    if (permission !== PermissionLevel.Admin) {
+      // if set visibility
+      if (visibility) {
+        query.andWhere(`appData.visibility = :visibility`, { visibility });
+      } else {
+        // - visibility: item
+        // - visibility: member & member: id
+        query.andWhere(
+          new Brackets((qb1) => {
+            qb1.where(`appData.visibility = :v1`, { v1: AppDataVisibility.Item }).orWhere(
+              new Brackets((qb2) => {
+                qb2
+                  .where(`appData.visibility = :v2`, { v2: AppDataVisibility.Member })
+                  .andWhere('member.id = :memberId', { memberId });
+              }),
+            );
+          }),
+        );
+      }
+    }
+
+    return query.getMany();
   },
 });
