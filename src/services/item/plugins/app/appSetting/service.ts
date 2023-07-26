@@ -1,4 +1,4 @@
-import { AppItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
@@ -11,7 +11,24 @@ import { InputAppSetting } from './interfaces/app-setting';
 
 export class AppSettingService {
   itemService: ItemService;
-  hooks = new HookManager();
+  hooks = new HookManager<{
+    post: {
+      pre: { appSetting: Partial<InputAppSetting>; itemId: string };
+      post: { appSetting: AppSetting; itemId: string };
+    };
+    patch: {
+      pre: { appSetting: Partial<AppSetting>; itemId: string };
+      post: { appSetting: AppSetting; itemId: string };
+    };
+    delete: {
+      pre: { appSettingId: string; itemId: string };
+      post: { appSetting: AppSetting; itemId: string };
+    };
+    copyMany: {
+      pre: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string };
+      post: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string };
+    };
+  }>();
 
   constructor(itemService: ItemService) {
     this.itemService = itemService;
@@ -30,10 +47,18 @@ export class AppSettingService {
     }
     const member = await memberRepository.get(memberId);
 
+    await this.hooks.runPreHooks('post', member, repositories, { appSetting: body, itemId });
+
     // posting an app setting is allowed to admin only
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    return appSettingRepository.post(itemId, memberId, body);
+    return appSettingRepository.post(itemId, memberId, body).then(async (newAppSetting) => {
+      await this.hooks.runPostHooks('post', member, repositories, {
+        appSetting: newAppSetting,
+        itemId,
+      });
+      return newAppSetting;
+    });
   }
 
   async patch(
@@ -53,11 +78,22 @@ export class AppSettingService {
     // patching requires admin rights
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    const appSetting = await appSettingRepository.get(appSettingId);
+    // const appSetting = await appSettingRepository.get(appSettingId);
 
-    await this.hooks.runPreHooks('patch', member, repositories, appSetting);
+    await this.hooks.runPreHooks('patch', member, repositories, {
+      appSetting: { ...body, id: appSettingId },
+      itemId,
+    });
 
-    return appSettingRepository.patch(itemId, appSettingId, body);
+    return appSettingRepository
+      .patch(itemId, appSettingId, body)
+      .then(async (patchedAppSetting) => {
+        await this.hooks.runPostHooks('patch', member, repositories, {
+          appSetting: patchedAppSetting,
+          itemId,
+        });
+        return patchedAppSetting;
+      });
   }
 
   async deleteOne(
@@ -73,6 +109,8 @@ export class AppSettingService {
     }
     const member = await memberRepository.get(memberId);
 
+    await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
+
     // delete an app data is allowed to admins
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
@@ -80,7 +118,7 @@ export class AppSettingService {
 
     const result = await appSettingRepository.deleteOne(itemId, appSettingId);
 
-    await this.hooks.runPostHooks('delete', member, repositories, appSetting);
+    await this.hooks.runPostHooks('delete', member, repositories, { appSetting, itemId });
 
     return result;
   }
@@ -137,7 +175,11 @@ export class AppSettingService {
         );
         newAppSettings.push(newSetting);
       }
-      await this.hooks.runPostHooks('copyMany', actor, repositories, newAppSettings);
+      await this.hooks.runPostHooks('copyMany', actor, repositories, {
+        appSettings: newAppSettings,
+        originalItemId: original.id,
+        copyItemId: copy.id,
+      });
     } catch (err) {
       console.error(err);
     }

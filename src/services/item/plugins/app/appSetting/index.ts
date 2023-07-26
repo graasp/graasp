@@ -2,9 +2,11 @@ import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
 import { IdParam, ItemType } from '@graasp/sdk';
 
+import { WEBSOCKETS_PLUGIN } from '../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
+import { appSettingsWsHooks } from '../ws/hooks';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 import appSettingFilePlugin from './plugins/file';
@@ -21,6 +23,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(common);
 
   const appSettingService = new AppSettingService(itemService);
+
+  if (WEBSOCKETS_PLUGIN) fastify.register(appSettingsWsHooks, { appSettingService });
 
   // copy app settings and related files on item copy
   const hook = async (

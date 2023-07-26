@@ -1,9 +1,12 @@
+import fastifyView from '@fastify/view';
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam } from '@graasp/sdk';
 
+import { WEBSOCKETS_PLUGIN } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { ManyItemsGetFilter } from '../interfaces/request';
+import { appDataWsHooks } from '../ws/hooks';
 import { AppData } from './appData';
 import { InputAppData } from './interfaces/app-data';
 import appDataFilePlugin from './plugins/file';
@@ -24,6 +27,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     // origins from the publishers table an build a rule with that.
 
     fastify.register(appDataFilePlugin, { appDataService });
+    if (WEBSOCKETS_PLUGIN) fastify.register(appDataWsHooks, { appDataService });
 
     // create app data
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppData> }>(

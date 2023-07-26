@@ -53,16 +53,20 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (actor: Actor, repositories: Repositories, appSetting: AppSetting) => {
+  const deleteHook = async (actor: Actor, repositories: Repositories, { appSetting, itemId }) => {
     await appSettingFileService.deleteOne(actor, repositories, appSetting);
   };
   appSettingService.hooks.setPostHook('delete', deleteHook);
 
   // app setting copy hook
-  const hook = async (actor: Member, repositories: Repositories, newAppSettings: AppSetting[]) => {
+  const hook = async (
+    actor: Member,
+    repositories: Repositories,
+    { appSettings, originalItemId, copyItemId },
+  ) => {
     // copy file only if content is a file
     const isFileSetting = (a: AppSetting) => a.data[fileService.type];
-    const toCopy = newAppSettings.filter(isFileSetting);
+    const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(actor, repositories, toCopy);
     }
@@ -70,7 +74,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   appSettingService.hooks.setPostHook('copyMany', hook);
 
   // prevent patch on app setting file
-  const patchPreHook = async (actor: Actor, repositories: Repositories, appSetting: AppSetting) => {
+  const patchPreHook = async (actor: Actor, repositories: Repositories, { appSetting }) => {
     if (appSetting.data[fileService.type]) {
       throw new PreventUpdateAppSettingFile(appSetting);
     }

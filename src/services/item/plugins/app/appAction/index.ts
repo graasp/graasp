@@ -1,8 +1,10 @@
 import { preHandlerHookHandler } from 'fastify';
 import { FastifyPluginAsync } from 'fastify';
 
+import { WEBSOCKETS_PLUGIN } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
+import { appActionsWsHooks } from '../ws/hooks';
 import { InputAppAction } from './interfaces/app-action';
 import common, { create, getForMany, getForOne } from './schemas';
 import { AppActionService } from './service';
@@ -18,6 +20,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
+
+    if (WEBSOCKETS_PLUGIN) fastify.register(appActionsWsHooks, { appActionService });
 
     // create app action
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppAction> }>(

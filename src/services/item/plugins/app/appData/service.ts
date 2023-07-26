@@ -47,7 +47,20 @@ const permissionMapping = {
 };
 
 export class AppDataService {
-  hooks = new HookManager();
+  hooks = new HookManager<{
+    post: {
+      pre: { appData: Partial<InputAppData>; itemId: string };
+      post: { appData: AppData; itemId: string };
+    };
+    patch: {
+      pre: { appData: Partial<AppData>; itemId: string };
+      post: { appData: AppData; itemId: string };
+    };
+    delete: {
+      pre: { appDataId: string; itemId: string };
+      post: { appData: AppData; itemId: string };
+    };
+  }>();
 
   async post(
     actorId: string | undefined,
@@ -56,11 +69,14 @@ export class AppDataService {
     body: Partial<InputAppData>,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
+
     // check member exists
     if (!actorId) {
       throw new MemberCannotWriteItem();
     }
     const member = await memberRepository.get(actorId);
+
+    await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -85,7 +101,10 @@ export class AppDataService {
       },
     );
 
-    return appDataRepository.post(itemId, actorId, completeData);
+    return appDataRepository.post(itemId, actorId, completeData).then(async (newAppData) => {
+      await this.hooks.runPostHooks('post', member, repositories, { appData: newAppData, itemId });
+      return newAppData;
+    });
   }
 
   async patch(
@@ -101,6 +120,11 @@ export class AppDataService {
       throw new MemberCannotWriteItem();
     }
     const member = await memberRepository.get(memberId);
+
+    await this.hooks.runPreHooks('patch', member, repositories, {
+      appData: { ...body, id: appDataId },
+      itemId,
+    });
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -127,9 +151,13 @@ export class AppDataService {
       throw new PreventUpdateOtherAppData(appDataId);
     }
 
-    await this.hooks.runPreHooks('patch', member, repositories, appData);
-
-    return appDataRepository.patch(itemId, appDataId, body);
+    return appDataRepository.patch(itemId, appDataId, body).then(async (patchedAppData) => {
+      await this.hooks.runPostHooks('patch', member, repositories, {
+        appData: patchedAppData,
+        itemId,
+      });
+      return patchedAppData;
+    });
   }
 
   async deleteOne(
@@ -144,6 +172,8 @@ export class AppDataService {
       throw new MemberCannotWriteItem();
     }
     const member = await memberRepository.get(memberId);
+
+    await this.hooks.runPreHooks('delete', member, repositories, { appDataId, itemId });
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -169,7 +199,7 @@ export class AppDataService {
 
     const result = await appDataRepository.deleteOne(itemId, appDataId);
 
-    await this.hooks.runPostHooks('delete', member, repositories, appData);
+    await this.hooks.runPostHooks('delete', member, repositories, { appData, itemId });
 
     return result;
   }

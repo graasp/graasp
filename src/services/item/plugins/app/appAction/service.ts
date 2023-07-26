@@ -1,5 +1,6 @@
-import { PermissionLevel } from '@graasp/sdk';
+import { AppAction, PermissionLevel } from '@graasp/sdk';
 
+import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
@@ -7,6 +8,12 @@ import { AppActionNotAccessible } from './errors';
 import { InputAppAction } from './interfaces/app-action';
 
 export class AppActionService {
+  hooks = new HookManager<{
+    post: {
+      pre: { appAction: Partial<InputAppAction>; itemId: string };
+      post: { appAction: AppAction; itemId: string };
+    };
+  }>();
   async post(actorId, repositories: Repositories, itemId: string, body: Partial<InputAppAction>) {
     const { appActionRepository, memberRepository, itemRepository } = repositories;
     // TODO: check member exists
@@ -18,7 +25,15 @@ export class AppActionService {
     // posting an app data is allowed to readers
     await validatePermission(repositories, PermissionLevel.Read, member, item);
 
-    return appActionRepository.post(itemId, actorId, body);
+    await this.hooks.runPreHooks('post', member, repositories, { appAction: body, itemId });
+
+    return appActionRepository.post(itemId, actorId, body).then(async (newAppAction) => {
+      await this.hooks.runPostHooks('post', member, repositories, {
+        appAction: newAppAction,
+        itemId,
+      });
+      return newAppAction;
+    });
   }
 
   async getForItem(
