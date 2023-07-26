@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../utils/repositories';
-import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
+import { ManyItemsGetFilter } from '../interfaces/request';
 import { AppData } from './appData';
 import { InputAppData } from './interfaces/app-data';
 import appDataFilePlugin from './plugins/file';
@@ -73,12 +73,12 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     );
 
     // get app data
-    fastify.get<{ Params: { itemId: string }; Querystring: SingleItemGetFilter }>(
+    fastify.get<{ Params: { itemId: string } }>(
       '/:itemId/app-data',
       { schema: getForOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, query: filters, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId }, log }) => {
         const memberId = requestDetails?.memberId;
-        return appDataService.getForItem(memberId, buildRepositories(), itemId, filters);
+        return appDataService.getForItem(memberId, buildRepositories(), itemId);
       },
     );
 
@@ -86,15 +86,10 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Querystring: ManyItemsGetFilter }>(
       '/app-data',
       { schema: getForMany },
-      async ({ authTokenSubject: requestDetails, query: filters, log }) => {
+      async ({ authTokenSubject: requestDetails, query, log }) => {
         const memberId = requestDetails?.memberId;
 
-        return appDataService.getForManyItems(
-          memberId,
-          buildRepositories(),
-          filters.itemId,
-          filters,
-        );
+        return appDataService.getForManyItems(memberId, buildRepositories(), query.itemId);
       },
     );
   });

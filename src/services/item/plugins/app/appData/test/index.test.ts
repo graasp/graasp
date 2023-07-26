@@ -26,10 +26,12 @@ const saveAppData = async ({
   item,
   creator,
   member,
+  visibility,
 }: {
   item: Item;
   creator: Member;
   member?: Member;
+  visibility?: AppDataVisibility;
 }) => {
   const defaultData = { type: 'some-type', data: { some: 'data' } };
   const s1 = await AppDataRepository.save({
@@ -37,21 +39,21 @@ const saveAppData = async ({
     creator,
     member: member ?? creator,
     ...defaultData,
-    visibility: AppDataVisibility.Item,
+    visibility: visibility ?? AppDataVisibility.Item,
   });
   const s2 = await AppDataRepository.save({
     item,
     creator,
     member: member ?? creator,
     ...defaultData,
-    visibility: AppDataVisibility.Item,
+    visibility: visibility ?? AppDataVisibility.Item,
   });
   const s3 = await AppDataRepository.save({
     item,
     creator,
     member: member ?? creator,
     ...defaultData,
-    visibility: AppDataVisibility.Member,
+    visibility: visibility ?? AppDataVisibility.Member,
   });
   return [s1, s2, s3];
 };
@@ -65,11 +67,15 @@ const setUpForAppData = async (
   setPublic?: boolean,
 ) => {
   const values = await setUp(app, actor, creator, permission, setPublic);
-  const appData = await saveAppData({ item: values.item, creator: creator ?? actor });
+  const appData = await saveAppData({
+    item: values.item,
+    creator: creator ?? actor,
+    member: actor ?? creator,
+  });
   return { ...values, appData };
 };
 
-describe('Apps Data Tests', () => {
+describe('App Data Tests', () => {
   let app;
   let actor;
   let item, token;
@@ -133,8 +139,7 @@ describe('Apps Data Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
       });
 
-      // TODO: get public data
-      it('Get empty data successfully', async () => {
+      it('Get data with item visibility successfully', async () => {
         ({ app, actor } = await build());
         const member = await saveMember(BOB);
         ({ item, appData, token } = await setUpForAppData(
@@ -144,6 +149,9 @@ describe('Apps Data Tests', () => {
           PermissionLevel.Read,
           true,
         ));
+        const appDataWithItemVisibility = appData.filter(
+          ({ visibility }) => visibility === AppDataVisibility.Item,
+        );
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
@@ -152,7 +160,7 @@ describe('Apps Data Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        expect(response.json()).toHaveLength(0);
+        expect(response.json()).toHaveLength(appDataWithItemVisibility.length);
       });
     });
 
@@ -183,6 +191,46 @@ describe('Apps Data Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+    });
+
+    describe('Sign In as reader', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+        member = await saveMember(BOB);
+        ({ item, appData, token } = await setUpForAppData(
+          app,
+          actor,
+          member,
+          PermissionLevel.Read,
+        ));
+      });
+      it('Get app data successfully as reader', async () => {
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectAppData(response.json(), appData);
+      });
+      it("Get others' app data with visibility item", async () => {
+        const otherAppData = await saveAppData({
+          item,
+          creator: member,
+          visibility: AppDataVisibility.Item,
+        });
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.json()).toHaveLength(appData.length + otherAppData.length);
       });
     });
   });
@@ -365,7 +413,7 @@ describe('Apps Data Tests', () => {
 
       it('Request without member and token throws', async () => {
         const response = await app.inject({
-          method: 'PATCH',
+          method: HttpMethod.PATCH,
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-data/${v4()}`,
           payload: { data: updatedData.data },
         });
@@ -394,43 +442,9 @@ describe('Apps Data Tests', () => {
         expect(response.json()).toMatchObject(updatedData);
       });
 
-      // it('Throw if app data is a file', async () => {
-      //   const fileAppSetting = buildAppSetting({
-      //     data: buildFileItemData({
-      //       name: 'name',
-      //       type: fileItemType,
-      //       filename: 'filename',
-      //       filepath: 'filepath',
-      //       size: 120,
-      //       mimetype: 'mimetype',
-      //     }),
-      //   });
-      //   appSettingService.getById = jest.fn().mockResolvedValue(fileAppSetting);
-      //   appSettingService.update = jest.fn().mockResolvedValue(fileAppSetting);
-
-      //   const updateTask = new UpdateAppSettingTask(
-      //     GRAASP_ACTOR,
-      //     fileAppSetting.id,
-      //     data,
-      //     itemId,
-      //     requestDetails,
-      //     appSettingService,
-      //     itemService,
-      //     itemMembershipService,
-      //     fileItemType,
-      //   );
-
-      //   try {
-      //     await updateTask.run(handler);
-      //   } catch (e) {
-      //     expect(e).toBeInstanceOf(PreventUpdateAppSettingFile);
-      //     expect(appSettingService.update).not.toHaveBeenCalled();
-      //   }
-      // });
-
       it('Invalid item id throws bad request', async () => {
         const response = await app.inject({
-          method: 'PATCH',
+          method: HttpMethod.PATCH,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
           payload: { data: updatedData.data },
         });
@@ -438,11 +452,81 @@ describe('Apps Data Tests', () => {
       });
       it('Invalid app data id throws bad request', async () => {
         const response = await app.inject({
-          method: 'PATCH',
+          method: HttpMethod.PATCH,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
           payload: { data: updatedData.data },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+      });
+
+      // it('Throw if app data is a file', async () => {
+      //   const fileAppData = ({
+      //     type: 'type',
+      //     member:actor,
+      //     data: ({
+      //       name: 'name',
+      //       type: ItemType.S3_FILE,
+      //       filename: 'filename',
+      //       filepath: 'filepath',
+      //       size: 120,
+      //       mimetype: 'mimetype',
+      //     }),
+      //     visibility: AppDataVisibility.Item,
+      //     item: appData[0].item
+      //   });
+      //   await AppDataRepository.save(fileAppData);
+
+      //   const response = await app.inject({
+      //     method: HttpMethod.PATCH,
+      //     url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
+      //     payload: { data: updatedData.data },
+      //   });
+      //   expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+
+      // });
+    });
+
+    describe('Sign In as reader', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+        member = await saveMember(BOB);
+        let appData;
+        ({ item, token, appData } = await setUpForAppData(
+          app,
+          actor,
+          member,
+          PermissionLevel.Read,
+        ));
+        chosenAppData = appData[0];
+      });
+
+      it('Can patch own app data', async () => {
+        const [a] = await saveAppData({
+          item,
+          creator: actor,
+        });
+        const response = await app.inject({
+          method: HttpMethod.PATCH,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${a.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.json()).toMatchObject(updatedData);
+      });
+
+      it("Cannot patch someone else's app data", async () => {
+        const response = await app.inject({
+          method: HttpMethod.PATCH,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
       });
     });
   });

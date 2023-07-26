@@ -1,5 +1,3 @@
-import { defineAbility } from '@casl/ability';
-
 import { ItemTagType, PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
 
 import {
@@ -12,13 +10,6 @@ import { Repositories } from '../utils/repositories';
 import { Item } from './item/entities/Item';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { Actor } from './member/entities/member';
-
-const ownItemAbility = (member) =>
-  defineAbility((can, cannot) => {
-    can(PermissionLevel.Read, 'Item', { member: member.id });
-    can(PermissionLevel.Write, 'Item', { member: member.id });
-    can(PermissionLevel.Admin, 'Item', { member: member.id });
-  });
 
 const permissionMapping = {
   [PermissionLevel.Read]: [PermissionLevel.Read],
@@ -47,10 +38,7 @@ export const validatePermission = async (
     ? await itemMembershipRepository.getInherited(item, member, true)
     : null;
   const highest = inheritedMembership?.permission;
-  const isValid =
-    highest &&
-    (ownItemAbility(member).can(permission, item) ||
-      permissionMapping[highest].includes(permission));
+  const isValid = highest && permissionMapping[highest].includes(permission);
   let tags;
   if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
     tags = await itemTagRepository.hasMany(item, [ItemTagType.Public, ItemTagType.Hidden]);
