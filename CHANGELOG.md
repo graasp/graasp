@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.4](https://github.com/graasp/graasp/compare/v1.2.3...v1.2.4) (2023-07-26)
+
+
+### Bug Fixes
+
+* add `creator` in recent, liked and publishedByMember collections ([#502](https://github.com/graasp/graasp/issues/502)) ([a4377b9](https://github.com/graasp/graasp/commit/a4377b973c49228ca95f75d888ebbccec1945860))
+* allow multiple extra and settings fields on update ([#507](https://github.com/graasp/graasp/issues/507)) ([cde5967](https://github.com/graasp/graasp/commit/cde5967e82c51606efd3a01ee864e7343ade7e60))
+
 ## [1.2.3](https://github.com/graasp/graasp/compare/v1.2.2...v1.2.3) (2023-07-21)
 
 
