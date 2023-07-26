@@ -123,3 +123,16 @@ export class ItemLoginSchemaNotFound extends GraaspItemLoginError {
     );
   }
 }
+
+export class CannotNestItemLoginSchema extends GraaspItemLoginError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GILERR010',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: 'Item login schema already item exists in an ancestor',
+      },
+      data,
+    );
+  }
+}
