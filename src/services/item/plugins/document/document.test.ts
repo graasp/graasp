@@ -1,6 +1,6 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
-import { DocumentItemExtraProperties, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
@@ -157,10 +157,13 @@ describe('Document Item tests', () => {
           extra: {
             [ItemType.DOCUMENT]: {
               content: 'new value',
+              // test that flavor can be updated
+              flavor: 'info',
             },
           },
           settings: {
             hasThumbnail: true,
+            isCollapsible: true,
           },
         };
 
@@ -175,7 +178,11 @@ describe('Document Item tests', () => {
           ...item,
           ...payload,
           extra: { ...item.extra, ...payload.extra },
+          settings: { ...item.settings, ...payload.settings },
         });
+
+        expect(response.json().settings).toEqual(payload.settings);
+
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
