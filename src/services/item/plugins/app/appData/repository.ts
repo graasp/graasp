@@ -62,7 +62,7 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     filters: Filters = {},
     permission?: PermissionLevel,
   ): Promise<AppData[]> {
-    const { memberId, visibility } = filters;
+    const { memberId } = filters;
 
     const query = this.createQueryBuilder('appData')
       .leftJoinAndSelect('appData.member', 'member')
@@ -72,24 +72,24 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
 
     // restrict app data access if user is not an admin
     if (permission !== PermissionLevel.Admin) {
-      // if set visibility
-      if (visibility) {
-        query.andWhere(`appData.visibility = :visibility`, { visibility });
-      } else {
-        // - visibility: item
-        // - visibility: member & member: id
-        query.andWhere(
-          new Brackets((qb1) => {
-            qb1.where(`appData.visibility = :v1`, { v1: AppDataVisibility.Item }).orWhere(
+      query.andWhere(
+        new Brackets((qb1) => {
+          // - visibility: item
+          qb1.where(`appData.visibility = :v1`, { v1: AppDataVisibility.Item });
+
+          // - visibility: member & member: id
+          // additionally get member's app data if defined
+          if (memberId) {
+            qb1.orWhere(
               new Brackets((qb2) => {
                 qb2
                   .where(`appData.visibility = :v2`, { v2: AppDataVisibility.Member })
                   .andWhere('member.id = :memberId', { memberId });
               }),
             );
-          }),
-        );
-      }
+          }
+        }),
+      );
     }
 
     return query.getMany();

@@ -75,14 +75,6 @@ const deleteOne = {
 
 const getForOne = {
   params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
-  querystring: {
-    type: 'object',
-    properties: {
-      visibility: { type: 'string', enum: Object.values(AppDataVisibility) },
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
-    },
-    additionalProperties: false,
-  },
   response: {
     200: {
       type: 'array',
@@ -101,8 +93,6 @@ const getForMany = {
         items: { $ref: 'http://graasp.org/#/definitions/uuid' },
         uniqueItems: true,
       },
-      visibility: { type: 'string', enum: Object.values(AppDataVisibility) },
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },

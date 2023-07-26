@@ -197,11 +197,11 @@ describe('App Data Tests', () => {
     describe('Sign In as reader', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        const creator = await saveMember(BOB);
+        member = await saveMember(BOB);
         ({ item, appData, token } = await setUpForAppData(
           app,
           actor,
-          creator,
+          member,
           PermissionLevel.Read,
         ));
       });
@@ -215,6 +215,22 @@ describe('App Data Tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expectAppData(response.json(), appData);
+      });
+      it("Get others' app data with visibility item", async () => {
+        const otherAppData = await saveAppData({
+          item,
+          creator: member,
+          visibility: AppDataVisibility.Item,
+        });
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(response.json()).toHaveLength(appData.length + otherAppData.length);
       });
     });
   });

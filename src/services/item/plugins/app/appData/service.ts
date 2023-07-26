@@ -6,7 +6,7 @@ import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Actor } from '../../../../member/entities/member';
-import { AppData, Filters } from './appData';
+import { AppData } from './appData';
 import { AppDataNotAccessible, PreventUpdateOtherAppData } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
@@ -208,12 +208,7 @@ export class AppDataService {
     return appData;
   }
 
-  async getForItem(
-    memberId: string | undefined,
-    repositories: Repositories,
-    itemId: string,
-    filters: Filters,
-  ) {
+  async getForItem(memberId: string | undefined, repositories: Repositories, itemId: string) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
 
     // get member
@@ -228,8 +223,7 @@ export class AppDataService {
     // posting an app data is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
 
-    // TODO: get only memberId or with visibility
-    return appDataRepository.getForItem(itemId, { ...filters, memberId }, membership?.permission);
+    return appDataRepository.getForItem(itemId, { memberId }, membership?.permission);
   }
 
   // TODO: check for many items
@@ -237,7 +231,6 @@ export class AppDataService {
     memberId: string | undefined,
     repositories: Repositories,
     itemIds: string[],
-    filters: Filters,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
 
@@ -262,7 +255,7 @@ export class AppDataService {
       const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
       const appData = await appDataRepository.getForItem(
         itemId,
-        { ...filters, memberId },
+        { memberId },
         membership?.permission,
       );
       result.data[itemId] = appData;
