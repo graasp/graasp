@@ -17,7 +17,7 @@ import { Item } from '../../../entities/Item';
 
 export type Filters = {
   visibility?: AppDataVisibility;
-  member?: Partial<Member>;
+  memberId?: Member['id'];
 };
 
 @Entity()

@@ -30,12 +30,15 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
   },
 
   async get(id: string): Promise<AppAction | null> {
-    return this.findOneBy({ id });
+    return this.findOne({ where: { id }, relations: { member: true } });
   },
 
   getForItem(itemId: string, filters: SingleItemGetFilter): Promise<AppAction[]> {
     const { memberId } = filters;
-    return this.findBy({ item: { id: itemId }, member: { id: memberId } });
+    return this.find({
+      where: { item: { id: itemId }, member: { id: memberId } },
+      relations: { member: true },
+    });
   },
 
   async getForManyItems(
