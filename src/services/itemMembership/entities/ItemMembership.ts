@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -26,14 +27,17 @@ export class ItemMembership extends BaseEntity implements GraaspItemMembership {
     nullable: false,
     enum: Object.values(PermissionLevel),
   })
+  @Index()
   permission: PermissionLevel;
 
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'SET NULL',
   })
+  @Index()
   @JoinColumn({ name: 'creator_id' })
   creator: Member;
 
+  @Index()
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'CASCADE',
     nullable: false,
@@ -46,6 +50,7 @@ export class ItemMembership extends BaseEntity implements GraaspItemMembership {
     onDelete: 'CASCADE',
     nullable: false,
   })
+  @Index()
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;
 
