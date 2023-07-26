@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -29,6 +30,7 @@ export class Action extends BaseEntity implements GraaspAction {
   /**
    * action can be related to a behavior not related to an item
    */
+  @Index()
   @ManyToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
