@@ -1,3 +1,7 @@
+import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy } from '@graasp/sdk';
+
+import { InvalidAggregationError } from '../../../action/utils/errors';
+
 export const PLUGIN_NAME = 'graasp-plugin-item-actions';
 
 export enum ItemActionType {
@@ -7,6 +11,57 @@ export enum ItemActionType {
   Copy = 'copy',
   Move = 'move',
 }
+export const validateAggregateRequest = (
+  countGroupBy: CountGroupBy[],
+  aggregateFuction: AggregateFunction,
+  aggregateMetric: AggregateMetric,
+  aggregateBy: AggregateBy[],
+) => {
+  // Aggregate by user is not allowed
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  if (aggregateBy?.includes('user')) {
+    throw new InvalidAggregationError();
+  }
+
+  // Perform aggregation on a grouping expression is not allowed
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  if (aggregateBy?.includes(aggregateMetric)) {
+    throw new InvalidAggregationError();
+  }
+
+  // The input of the second stage aggregation should be the output of the first stage aggregation
+  if (
+    !(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      (countGroupBy.includes(aggregateMetric) || aggregateMetric === 'actionCount')
+    )
+  ) {
+    throw new InvalidAggregationError();
+  }
+
+  aggregateBy?.forEach((element) => {
+    if (
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      !(countGroupBy.includes(element) || element === 'actionCount')
+    ) {
+      throw new InvalidAggregationError();
+    }
+  });
+
+  // avg and sum functions can only be applied on numeric expressions
+  if (
+    [AggregateFunction.Avg, AggregateFunction.Sum].includes(aggregateFuction) &&
+    aggregateMetric !== 'actionCount'
+  ) {
+    throw new InvalidAggregationError();
+  }
+
+  return;
+};
 
 // Constants to check the validity of the query parameters when obtaining actions
 export const DEFAULT_ACTIONS_SAMPLE_SIZE = 5000;

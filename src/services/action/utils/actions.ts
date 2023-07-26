@@ -1,6 +1,6 @@
 import geoip from 'geoip-lite';
 
-import { Context } from '@graasp/sdk';
+import { AggregateFunction, AggregateMetric, Context } from '@graasp/sdk';
 
 import { CLIENT_HOSTS } from '../../../utils/config';
 
@@ -8,3 +8,21 @@ export const getGeolocationIp = (ip: string | number): geoip.Lookup | null => ge
 
 export const getView = (headers: { origin?: string | string[] }): Context =>
   CLIENT_HOSTS.find(({ url }) => headers?.origin?.includes(url.hostname))?.name ?? Context.Unknown;
+
+export const aggregateExpressionNames = {
+  user: 'action.member_id',
+  actionType: 'action.type',
+  actionLocation: 'action.geolocation',
+  itemId: 'action.item_path',
+  createdDay: "date_trunc('day', action.createdAt)",
+  createdTimeOfDay: 'extract(hour from created_at)',
+  createdDayOfWeek: 'extract(dow from created_at)',
+};
+
+export const buildAggregateExpression = (
+  subqueryName: string,
+  func?: AggregateFunction,
+  metric?: AggregateMetric,
+): string => {
+  return `${func}(${subqueryName}."${metric}")`;
+};

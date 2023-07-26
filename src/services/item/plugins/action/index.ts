@@ -4,7 +4,11 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import {
+  AggregateBy,
+  AggregateFunction,
+  AggregateMetric,
   Context,
+  CountGroupBy,
   FileItemType,
   Hostname,
   IdParam,
@@ -13,9 +17,11 @@ import {
 } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import { InvalidAggregationError } from '../../../action/utils/errors';
 import { ActionRequestExportService } from './requestExport/service';
-import { exportAction, getItemActions } from './schemas';
+import { exportAction, getAggregateActions, getItemActions } from './schemas';
 import { ActionItemService } from './service';
+import { validateAggregateRequest } from './utils';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
@@ -56,7 +62,51 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
       return actionItemService.getBaseAnalyticsForItem(member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
-        view: query.view,
+        view: query.view?.toLowerCase(),
+      });
+    },
+  );
+
+  // get actions aggregate data matching the given `id`
+  fastify.get<{
+    Params: IdParam;
+    Querystring: {
+      requestedSampleSize?: number;
+      view?: Context;
+      type?: string[];
+      countGroupBy: CountGroupBy[];
+      aggregateFunction: AggregateFunction;
+      aggregateMetric: AggregateMetric;
+      aggregateBy: AggregateBy[];
+    };
+  }>(
+    '/:id/actions/aggregation',
+    {
+      schema: getAggregateActions,
+      preHandler: fastify.verifyAuthentication,
+    },
+    async ({ member, params: { id }, query }) => {
+      // validate request
+      try {
+        validateAggregateRequest(
+          query.countGroupBy,
+          query.aggregateFunction,
+          query.aggregateMetric,
+          query.aggregateBy,
+        );
+      } catch (e) {
+        throw new InvalidAggregationError(e);
+      }
+
+      return actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
+        sampleSize: query.requestedSampleSize,
+        itemId: id,
+        view: query.view?.toLowerCase(),
+        type: query.type,
+        countGroupBy: query.countGroupBy,
+        aggregateFunction: query.aggregateFunction,
+        aggregateMetric: query.aggregateMetric,
+        aggregateBy: query.aggregateBy,
       });
     },
   );
