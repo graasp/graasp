@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { JWT_SECRET } from '../../../../utils/config';
+import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
@@ -207,7 +207,7 @@ describe('Auth routes tests', () => {
         method: HttpMethod.GET,
         url: `/auth?t=${t}`,
       });
-      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
     });
 
     it('Fail to authenticate if token is invalid', async () => {
@@ -217,7 +217,15 @@ describe('Auth routes tests', () => {
         method: HttpMethod.GET,
         url: `/auth?t=${t}`,
       });
-      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+
+      if (AUTH_CLIENT_HOST) {
+        expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+        expect(response.headers.location).toEqual(
+          new URL(`${AUTH_CLIENT_HOST}?error=true`).toString(),
+        );
+      } else {
+        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+      }
     });
   });
 

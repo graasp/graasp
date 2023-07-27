@@ -18,7 +18,7 @@ services:
       # the generated links should open the browser locally
       PUBLIC_URL: localhost
       # temporary storage for files inside the container
-      FILE_STORAGE_ROOT_PATH: "/tmp/graasp-file-item-storage"
+      FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
       # the DB config is set by the "db" service below
       DB_NAME: docker
       DB_USERNAME: docker
