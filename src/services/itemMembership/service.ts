@@ -137,7 +137,7 @@ export class ItemMembershipService {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
+    const { memberRepository, itemMembershipRepository } = repositories;
     // check memberships
     const member = await memberRepository.get(membership.memberId);
     const item = await this.itemService.get(

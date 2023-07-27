@@ -6,19 +6,22 @@ import { FastifyPluginAsync } from 'fastify';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
+import { ZIP_FILE_MIME_TYPES } from './constants';
+import { FileIsInvalidArchiveError } from './errors';
 import { zipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
+import { prepareZip } from './utils';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
-    // h5p: { service: h5pS },
     items: {
       service: iS,
       files: { service: fS },
     },
+    h5p: h5pService,
   } = fastify;
 
-  const importExportService = new ImportExportService(fS, iS);
+  const importExportService = new ImportExportService(fS, iS, h5pService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -53,15 +56,29 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         throw new Error('Zip file is undefined');
       }
 
+      // throw if file is not a zip
+      if (!ZIP_FILE_MIME_TYPES.includes(zipFile.mimetype)) {
+        throw new FileIsInvalidArchiveError(zipFile.mimetype);
+      }
+
+      // prepare zip before replying to keep the file stream open
+      const { folderPath, targetFolder } = await prepareZip(zipFile.file, log);
+
       // create items from folder
       // does not wait
       importExportService
-        .import(member, buildRepositories(), {
-          zipFile,
-          parentId,
-        })
+        .import(
+          member,
+          buildRepositories(),
+          {
+            folderPath,
+            targetFolder,
+            parentId,
+          },
+          fastify.log,
+        )
         .catch((e) => {
-          console.error(e);
+          fastify.log.error(e);
         });
 
       reply.status(StatusCodes.ACCEPTED);
