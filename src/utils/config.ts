@@ -78,19 +78,8 @@ export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
 export const GRAASP_MOBILE_BUILDER_PROTOCOL =
   process.env.GRAASP_MOBILE_BUILDER || 'graasp-mobile-builder';
 
-// export const PG_CONNECTION_URI = process.env.PG_CONNECTION_URI;
-// export const PG_READ_REPLICAS_CONNECTION_URIS =
-//   // note: we don't use the elvis operator because we also want to exclude e.g. empty string
-//   process.env.PG_READ_REPLICAS_CONNECTION_URIS
-//     ? process.env.PG_READ_REPLICAS_CONNECTION_URIS.split(',')
-//     : undefined;
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
-
-// if (!PG_CONNECTION_URI && !TEST) {
-//   console.error('PG_CONNECTION_URI environment variable missing.');
-//   process.exit(1);
-// }
 
 // Graasp constants
 /**
