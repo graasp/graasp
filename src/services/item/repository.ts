@@ -273,20 +273,16 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
     // only allow for item type specific changes in extra
     const extraForType = extraChanges?.[item.type];
-    if (data.extra && extraForType) {
-      if (Object.keys(extraForType).length === 1) {
-        data.extra[item.type] = Object.assign({}, item.extra[item.type], extraForType);
-      } else {
-        delete data.extra;
-      }
+    if (extraForType && Object.keys(extraChanges).length === 1) {
+      extraChanges[item.type] = Object.assign({}, item.extra[item.type], extraForType);
+    } else {
+      delete data.extra;
     }
 
     if (settingsChanges) {
-      if (Object.keys(settingsChanges).length === 1) {
-        data.settings = Object.assign({}, item.settings, settingsChanges);
-      } else {
-        delete data.settings;
-      }
+      data.settings = Object.assign({}, item.settings, settingsChanges);
+    } else {
+      delete data.settings;
     }
 
     // TODO: check schema

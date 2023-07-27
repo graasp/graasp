@@ -28,7 +28,7 @@ const values = {
       creator_id: memberId,
       created_at: '2023-03-31T13:40:04.571Z',
       updated_at: '2023-03-31T13:40:04.571Z',
-    }
+    },
   ],
 };
 

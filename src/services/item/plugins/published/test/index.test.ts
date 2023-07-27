@@ -222,9 +222,7 @@ describe('Item Published', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         const result = (await res.json().data) as { [key: string]: ItemPublished };
-        console.log(result);
         const items = Object.values(result).map((i) => i.item);
-        console.log(items);
         expectManyItems(items as Item[], [otherParentItem, parentItem]);
       });
       it('Throw if category id is invalid', async () => {

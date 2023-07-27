@@ -23,4 +23,6 @@ RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
 # [Optional] Uncomment if you want to install more global node packages
 # RUN sudo -u node npm install -g <your-package-list-here>
 
-RUN mkdir -p /tmp/graasp-file-item-storage
+USER node
+
+RUN echo "source /usr/share/bash-completion/completions/git" >> ~/.bashrc

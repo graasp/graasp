@@ -46,11 +46,24 @@ export class PreventUpdateAppDataFile extends GraaspAppDataError {
   }
 }
 
-export class NotAppDataFile extends GraaspAppDataError {
+export class PreventUpdateOtherAppData extends GraaspAppDataError {
   constructor(data?: unknown) {
     super(
       {
         code: 'GAERR009',
+        statusCode: StatusCodes.FORBIDDEN,
+        message: FAILURE_MESSAGES.CANNOT_MODIFY_OTHER_MEMBERS,
+      },
+      data,
+    );
+  }
+}
+
+export class NotAppDataFile extends GraaspAppDataError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GAERR010',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'App data is not a file',
       },

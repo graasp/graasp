@@ -59,6 +59,10 @@ jobs:
         run: |
           yarn
           yarn build
+      
+      - name: yarn check
+        run:
+          yarn check
 
       - name: apply migrations on empty database
         env:
