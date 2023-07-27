@@ -7,11 +7,11 @@ if (!defaultClientHost) {
   throw new Error('Default Builder client host environment variable not set!');
 }
 
-export const getRedirectionUrl = (url?: string) => {
+export const getRedirectionUrl = (targetUrl?: string) => {
   // TODO: improve check
   // TODO: whitelist graasp domains for redirection
-  if (!url || !CLIENT_HOSTS.some(({ hostname }) => url.startsWith(hostname))) {
-    return defaultClientHost.hostname;
+  if (!targetUrl || !CLIENT_HOSTS.some(({ url }) => targetUrl.startsWith(url.origin))) {
+    return defaultClientHost.url.origin;
   }
-  return url;
+  return targetUrl;
 };

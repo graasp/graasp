@@ -47,15 +47,15 @@ const DEFAULT_HOST = 'http://localhost:3000';
 export const CLIENT_HOSTS = [
   {
     name: Context.Builder,
-    hostname: new URL(process.env.BUILDER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
+    url: new URL(process.env.BUILDER_CLIENT_HOST ?? DEFAULT_HOST),
   },
   {
     name: Context.Player,
-    hostname: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
+    url: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST),
   },
   {
     name: Context.Library,
-    hostname: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
+    url: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST),
   },
 ];
 
@@ -73,7 +73,7 @@ export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 
 export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
-export const PUBLIC_URL = process.env.PUBLIC_URL || HOST;
+export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
 
 export const GRAASP_MOBILE_BUILDER_PROTOCOL =
   process.env.GRAASP_MOBILE_BUILDER || 'graasp-mobile-builder';
@@ -137,6 +137,7 @@ if (
 }
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
 export const MAILER_CONFIG_SMTP_PORT = parseInt(process.env.MAILER_CONFIG_SMTP_PORT ?? '465');
+export const MAILER_CONFIG_SMTP_USE_SSL = process.env.MAILER_CONFIG_SMTP_USE_SSL !== 'false';
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
 export const MAILER_CONFIG_FROM_EMAIL =

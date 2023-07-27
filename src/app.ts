@@ -13,7 +13,6 @@ import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
 import websocketsPlugin from './services/websockets';
 import {
-  CLIENT_HOSTS,
   COOKIE_DOMAIN,
   DATABASE_LOGS,
   FILE_ITEM_PLUGIN_OPTIONS,
@@ -22,6 +21,7 @@ import {
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_SMTP_HOST,
   MAILER_CONFIG_SMTP_PORT,
+  MAILER_CONFIG_SMTP_USE_SSL,
   MAILER_CONFIG_USERNAME,
   REDIS_HOST,
   REDIS_PASSWORD,
@@ -31,8 +31,6 @@ import {
 } from './utils/config';
 
 export default async function (instance: FastifyInstance): Promise<void> {
-  instance.decorate('hosts', CLIENT_HOSTS);
-
   // load some shared schema definitions
   instance.addSchema(shared);
 
@@ -45,6 +43,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(mailerPlugin, {
       host: MAILER_CONFIG_SMTP_HOST,
       port: MAILER_CONFIG_SMTP_PORT,
+      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
       username: MAILER_CONFIG_USERNAME,
       password: MAILER_CONFIG_PASSWORD,
       fromEmail: MAILER_CONFIG_FROM_EMAIL,

@@ -18,7 +18,7 @@ describe('Action Utils', () => {
     const headers = {
       origin: `https://${BUILDER_CLIENT_HOST.hostname}`,
     };
-    const view = getView(headers, CLIENT_HOSTS);
+    const view = getView(headers);
     expect(view).toEqual(BUILDER_CLIENT_HOST.name);
   });
 
@@ -26,7 +26,7 @@ describe('Action Utils', () => {
     const headers = {
       origin: 'https://bababubu.com',
     };
-    const view = getView(headers, CLIENT_HOSTS);
+    const view = getView(headers);
     expect(view).toEqual(Context.Unknown);
   });
 });

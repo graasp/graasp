@@ -16,7 +16,7 @@ services:
       # sane default to allow the server to bind to any interface in the container
       HOSTNAME: 0.0.0.0
       # the generated links should open the browser locally
-      PUBLIC_URL: localhost
+      PUBLIC_URL: http://localhost:3000
       # temporary storage for files inside the container
       FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
       # the DB config is set by the "db" service below
@@ -36,6 +36,7 @@ services:
       # the Mailer config is set by the "mailer" service below
       MAILER_CONFIG_SMTP_HOST: mailer
       MAILER_CONFIG_SMTP_PORT: 1025
+      MAILER_CONFIG_SMTP_USE_SSL: false # only for dev purposes
       MAILER_CONFIG_USERNAME: docker
       MAILER_CONFIG_PASSWORD: docker
       # the Localstack config is set by the "localstack" service below
