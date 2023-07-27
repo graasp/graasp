@@ -1,6 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
+import waitForExpect from 'wait-for-expect';
 
 import {
   FolderItemExtraProperties,
@@ -11,6 +12,7 @@ import {
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TREE_LEVELS,
   PermissionLevel,
+  buildPathFromIds,
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -1296,7 +1298,7 @@ describe('Item routes tests', () => {
       });
     });
   });
-  // // update many items
+  // update many items
   describe('PATCH /items', () => {
     const payload = {
       name: 'new name',
@@ -1334,18 +1336,15 @@ describe('Item routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        await new Promise((res) => {
-          setTimeout(async () => {
-            const { data, errors } = await ItemRepository.getMany(items.map(({ id }) => id));
-            Object.entries(data).forEach(([id, result]) => {
-              const changes = { ...items.find(({ id: thisId }) => thisId === id), ...payload };
-              expectItem(result, changes);
-            });
-            expect(Object.keys(data)).toHaveLength(items.length);
-            expect(errors).toHaveLength(0);
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
+        await waitForExpect(async () => {
+          const { data, errors } = await ItemRepository.getMany(items.map(({ id }) => id));
+          Object.entries(data).forEach(([id, result]) => {
+            const changes = { ...items.find(({ id: thisId }) => thisId === id), ...payload };
+            expectItem(result, changes);
+          });
+          expect(Object.keys(data)).toHaveLength(items.length);
+          expect(errors).toHaveLength(0);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Nothing updates if one item id is invalid', async () => {
         const missingItemId = uuidv4();
@@ -1363,20 +1362,17 @@ describe('Item routes tests', () => {
         });
 
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        await new Promise((res) => {
-          setTimeout(async () => {
-            const { data, errors } = await ItemRepository.getMany(items.map(({ id }) => id));
-            Object.entries(data).forEach(([id, result]) => {
-              expectItem(
-                result,
-                items.find(({ id: thisId }) => thisId === id),
-              );
-            });
-            expect(Object.keys(data)).toHaveLength(items.length);
-            expect(errors).toHaveLength(0);
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
+        await waitForExpect(async () => {
+          const { data, errors } = await ItemRepository.getMany(items.map(({ id }) => id));
+          Object.entries(data).forEach(([id, result]) => {
+            expectItem(
+              result,
+              items.find(({ id: thisId }) => thisId === id),
+            );
+          });
+          expect(Object.keys(data)).toHaveLength(items.length);
+          expect(errors).toHaveLength(0);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad Request for one invalid id', async () => {
         const response = await app.inject({
@@ -1414,94 +1410,8 @@ describe('Item routes tests', () => {
       });
     });
   });
-  // describe('DELETE /items/:id', () => {
-  //   it('Throws if signed out', async () => {
-  //     ({ app } = await build({ member: null }));
-  //     const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-  //     const { item } = await saveItemAndMembership({ member });
 
-  //     const response = await app.inject({
-  //       method: HttpMethod.DELETE,
-  //       url: `/items/${item.id}`,
-  //     });
-
-  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //   });
-
-  //   describe('Signed In', () => {
-  //     beforeEach(async () => {
-  //       ({ app, actor } = await build());
-  //     });
-  //     it('Delete successfully', async () => {
-  //       const { item, itemMembership } = await saveItemAndMembership({ member: actor });
-  //       const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-  //       const membership = await saveMembership({ item, member });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.DELETE,
-  //         url: `/items/${item.id}`,
-  //       });
-
-  //       expectItem(response.json(), item);
-  //       expect(response.statusCode).toBe(StatusCodes.OK);
-
-  //       // expect item and its membership to not exist in the tree
-  //       expect(await ItemRepository.findOneBy({ id: item.id })).toBeFalsy();
-  //       expect(await ItemMembershipRepository.findOneBy({ id: itemMembership.id })).toBeFalsy();
-  //       expect(await ItemMembershipRepository.findOneBy({ id: membership.id })).toBeFalsy();
-  //     });
-  //     it('Delete successfully with children', async () => {
-  //       const { item: anotherItem, itemMembership } = await saveItemAndMembership({
-  //         member: actor,
-  //       });
-  //       const { item: parent } = await saveItemAndMembership({ member: actor });
-  //       const { item: item1 } = await saveItemAndMembership({ member: actor, parentItem: parent });
-  //       const { item: item2 } = await saveItemAndMembership({ member: actor, parentItem: parent });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.DELETE,
-  //         url: `/items/${parent.id}`,
-  //       });
-
-  //       expectItem(response.json(), parent);
-  //       expect(response.statusCode).toBe(StatusCodes.OK);
-
-  //       const items = await ItemRepository.find();
-  //       // only one random item still exists
-  //       expect(items).toHaveLength(1);
-  //       expect(items.find(({ id }) => id === anotherItem.id)).toBeTruthy();
-  //       expect(items.find(({ id }) => id === parent.id)).toBeFalsy();
-  //       expect(items.find(({ id }) => id === item1.id)).toBeFalsy();
-  //       expect(items.find(({ id }) => id === item2.id)).toBeFalsy();
-
-  //       // expect memberships to not exist in the tree
-  //       const memberships = await ItemMembershipRepository.find({
-  //         where: { id: Not(itemMembership.id) },
-  //       });
-  //       expect(memberships).toHaveLength(0);
-  //     });
-  //     it('Cannot delete too many descendants', async () => {
-  //       const { item: parent } = await saveItemAndMembership({ member: actor });
-
-  //       const children = Array.from({ length: MAX_DESCENDANTS_FOR_DELETE + 1 }, () =>
-  //         getDummyItem(),
-  //       );
-  //       await Promise.all(
-  //         children.map((item) =>
-  //           saveItemAndMembership({ item, member: actor, parentItem: parent }),
-  //         ),
-  //       );
-  //       const response = await app.inject({
-  //         method: HttpMethod.DELETE,
-  //         url: `/items/${parent.id}`,
-  //       });
-
-  //       expect(response.json()).toEqual(new TooManyDescendants(parent.id));
-  //       expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
-  //     });
-  //   });
-  // });
-  // // delete many items
+  // delete many items
   describe('DELETE /items', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
@@ -1536,17 +1446,14 @@ describe('Item routes tests', () => {
 
         expect(response.json()).toEqual(items.map(({ id }) => id));
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        await new Promise((res) => {
-          setTimeout(async () => {
-            const remaining = await ItemRepository.find();
-            expect(remaining).toHaveLength(0);
-            const memberships = await ItemMembershipRepository.find();
-            expect(memberships).toHaveLength(0);
-            const { errors } = await ItemRepository.getMany(items.map(({ id }) => id));
-            expect(errors).toHaveLength(items.length);
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
+        await waitForExpect(async () => {
+          const remaining = await ItemRepository.find();
+          expect(remaining).toHaveLength(0);
+          const memberships = await ItemMembershipRepository.find();
+          expect(memberships).toHaveLength(0);
+          const { errors } = await ItemRepository.getMany(items.map(({ id }) => id));
+          expect(errors).toHaveLength(items.length);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Delete successfully one item', async () => {
         const { item: item1 } = await saveItemAndMembership({ member: actor });
@@ -1558,16 +1465,13 @@ describe('Item routes tests', () => {
 
         expect(response.json()).toEqual([item1.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-        await new Promise((res) => {
-          setTimeout(async () => {
-            const remaining = await ItemRepository.find();
-            expect(remaining).toHaveLength(0);
+        await waitForExpect(async () => {
+          const remaining = await ItemRepository.find();
+          expect(remaining).toHaveLength(0);
 
-            const memberships = await ItemMembershipRepository.find();
-            expect(memberships).toHaveLength(0);
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
+          const memberships = await ItemMembershipRepository.find();
+          expect(memberships).toHaveLength(0);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad request if one id is invalid', async () => {
         const { item: item1 } = await saveItemAndMembership({ member: actor });
@@ -1604,277 +1508,17 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // items should still exist
-        await new Promise((res) => {
-          setTimeout(async () => {
-            const remaining = await ItemRepository.find();
-            remaining.forEach(({ id }) => {
-              expect(remaining.find(({ id: thisId }) => thisId === id)).toBeTruthy();
-            });
-            res(true);
+        await waitForExpect(async () => {
+          const remaining = await ItemRepository.find();
+          remaining.forEach(({ id }) => {
+            expect(remaining.find(({ id: thisId }) => thisId === id)).toBeTruthy();
           });
         });
       });
     });
   });
-  // describe('POST /items/:id/move', () => {
-  //   it('Throws if signed out', async () => {
-  //     ({ app } = await build({ member: null }));
-  //     const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-  //     const { item } = await saveItemAndMembership({ member });
 
-  //     const response = await app.inject({
-  //       method: HttpMethod.POST,
-  //       url: `/items/${item.id}/move`,
-  //       payload: {
-  //         parentId: item.id,
-  //       },
-  //     });
-
-  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //   });
-
-  //   describe('Signed In', () => {
-  //     beforeEach(async () => {
-  //       ({ app, actor } = await build());
-  //     });
-
-  //     it('Move successfully to root', async () => {
-  //       const { item: parentItem } = await saveItemAndMembership({ member: actor });
-  //       const { item } = await saveItemAndMembership({ member: actor, parentItem });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/move`,
-  //         payload: {},
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have a different path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const result = await ItemRepository.findOneBy({ id: item.id });
-  //           if (!result) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expect(pathToId(result.path)).toEqual(result.id);
-  //           res(true);
-  //         });
-  //       });
-  //     });
-  //     it('Move successfully to another parent', async () => {
-  //       const { item: parentItem } = await saveItemAndMembership({ member: actor });
-  //       const { item } = await saveItemAndMembership({ member: actor });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/move`,
-  //         payload: { parentId: parentItem.id },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have a different path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const result = await ItemRepository.findOneBy({ id: item.id });
-  //           if (!result) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expect(result.path.startsWith(parentItem.path)).toBeTruthy();
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME);
-  //       });
-  //     });
-  //     it('Bad Request if moved item id is invalid', async () => {
-  //       const item = 'invalid-id';
-  //       const { item: parent } = await saveItemAndMembership({ member: actor });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item}/move`,
-  //         payload: {
-  //           parentId: parent.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //       expect(response.statusMessage).toBe(ReasonPhrases.BAD_REQUEST);
-  //     });
-  //     it('Bad Request if target item id is invalid', async () => {
-  //       const { item } = await saveItemAndMembership({ member: actor });
-  //       const targetItem = 'invalid-id';
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/move`,
-  //         payload: {
-  //           parentId: targetItem,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //       expect(response.statusMessage).toBe(ReasonPhrases.BAD_REQUEST);
-  //     });
-  //     it('Cannot move if moved item does not exist', async () => {
-  //       const item = uuidv4();
-  //       const { item: parent } = await saveItemAndMembership({ member: actor });
-  //       const initialChildren = await ItemRepository.getChildren(parent);
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item}/move`,
-  //         payload: {
-  //           parentId: parent.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have the same path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const finalChildren = await ItemRepository.getChildren(parent);
-
-  //           expect(initialChildren).toEqual(finalChildren);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME);
-  //       });
-  //     });
-  //     it('Did not move if target item does not exist', async () => {
-  //       const { item } = await saveItemAndMembership({ member: actor });
-  //       const targetItem = uuidv4();
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/move`,
-  //         payload: {
-  //           parentId: targetItem,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have the same path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const result = await ItemRepository.findOneBy({ id: item.id });
-  //           if (!result) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expectItem(result, item);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME);
-  //       });
-  //     });
-  //     it('Fail to move root item to root', async () => {
-  //       const { item } = await saveItemAndMembership({ member: actor });
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/move`,
-  //         payload: {},
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have the same path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const result = await ItemRepository.findOneBy({ id: item.id });
-  //           if (!result) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expectItem(result, item);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME);
-  //       });
-  //     });
-  //     it('Fail to move if moved item has too many descendants', async () => {
-  //       const { item: itemToMove } = await saveItemAndMembership({ member: actor });
-  //       const { item: targetItem } = await saveItemAndMembership({ member: actor });
-  //       const children = Array.from({ length: MAX_DESCENDANTS_FOR_MOVE + 1 }, () => getDummyItem());
-  //       await Promise.all(
-  //         children.map((item) =>
-  //           saveItemAndMembership({ item, member: actor, parentItem: itemToMove }),
-  //         ),
-  //       );
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${itemToMove.id}/move`,
-  //         payload: {
-  //           parentId: targetItem.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have the same path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const result = await ItemRepository.findOneBy({ id: itemToMove.id });
-  //           if (!result) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expectItem(result, itemToMove);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME);
-  //       });
-  //     });
-  //     it('Fail to move parent in child', async () => {
-  //       const { item: parent } = await saveItemAndMembership({ member: actor });
-  //       const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/move`,
-  //         payload: {
-  //           parentId: parent.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have the same path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const result = await ItemRepository.findOneBy({ id: item.id });
-  //           if (!result) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expectItem(result, item);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME);
-  //       });
-  //     });
-  //     it('Cannot move if hierarchy is too deep', async () => {
-  //       const { item } = await saveItemAndMembership({ member: actor });
-  //       const { item: parent } = await saveItemAndMembership({ member: actor });
-
-  //       const currentParent = await saveUntilMaxDescendants(parent, actor);
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/move`,
-  //         payload: {
-  //           parentId: currentParent.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // item should have the same path
-  //       await new Promise((res) => {
-  //         setTimeout(async () => {
-  //           const result = await ItemRepository.findOneBy({ id: item.id });
-  //           if (!result) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expectItem(result, item);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME);
-  //       });
-  //     });
-  //   });
-  // });
-  // // move many items
+  // move many items
   describe('POST /items/move', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
@@ -1904,7 +1548,7 @@ describe('Item routes tests', () => {
         ({ app, actor } = await build());
       });
 
-      it('Move successfully root item', async () => {
+      it('Move successfully root item to parent', async () => {
         const items = await saveNbOfItems({ nb: 3, actor });
         const { item: parent } = await saveItemAndMembership({ member: actor });
 
@@ -1922,18 +1566,21 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // item should have a different path
-        await new Promise((res) => {
-          setTimeout(async () => {
-            for (const item of items) {
-              const result = await ItemRepository.findOneBy({ id: item.id });
-              if (!result) {
-                throw new Error('item does not exist!');
-              }
-              expect(result.path.startsWith(parent.path)).toBeTruthy();
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const result = await ItemRepository.findOneBy({ id: item.id });
+            if (!result) {
+              throw new Error('item does not exist!');
             }
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
+            expect(result.path.startsWith(parent.path)).toBeTruthy();
+
+            // membership should have been deleted because has admin rights on parent
+            const im = await ItemMembershipRepository.findOneBy({
+              item: { path: buildPathFromIds(parent.id, item.id) },
+            });
+            expect(im).toBeNull();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Move successfully items to root', async () => {
@@ -1952,18 +1599,76 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // item should have a differnt path
-        await new Promise((res) => {
-          setTimeout(async () => {
-            for (const item of items) {
-              const result = await ItemRepository.findOneBy({ id: item.id });
-              if (!result) {
-                throw new Error('item does not exist!');
-              }
-              expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const result = await ItemRepository.findOneBy({ id: item.id });
+            if (!result) {
+              throw new Error('item does not exist!');
             }
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
+            expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+
+      it('Move successfully item to root and create new membership', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        // manually save item that doesn't need a membership because of inheritance
+        const data = getDummyItem();
+        data.path = buildPathFromIds(parentItem.id, data.id);
+        const item = await ItemRepository.save({ ...data, creator: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          payload: {},
         });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // item should have a different path
+        await waitForExpect(async () => {
+          const result = await ItemRepository.findOneBy({ id: item.id });
+          if (!result) {
+            throw new Error('item does not exist!');
+          }
+          expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+
+          // membership should have been created
+          const im = await ItemMembershipRepository.findOneBy({
+            item: { path: buildPathFromIds(item.id) },
+          });
+          if (!im) {
+            throw new Error('item membership does not exist!');
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+
+      it('Move successfully item to child and delete same membership', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item } = await saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          payload: { parentId: parentItem.id },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // item should have a different path
+        await waitForExpect(async () => {
+          const result = await ItemRepository.findOneBy({ id: item.id });
+          if (!result) {
+            throw new Error('item does not exist!');
+          }
+          expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+
+          // membership should have been deleted
+          const im = await ItemMembershipRepository.findOneBy({
+            item: { path: buildPathFromIds(item.id) },
+          });
+          expect(im).toBeNull();
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Move successfully items to another parent', async () => {
@@ -1984,19 +1689,16 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-        // item should have a differnt path
-        await new Promise((res) => {
-          setTimeout(async () => {
-            for (const item of items) {
-              const result = await ItemRepository.findOneBy({ id: item.id });
-              if (!result) {
-                throw new Error('item does not exist!');
-              }
-              expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+        // item should have a different path
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const result = await ItemRepository.findOneBy({ id: item.id });
+            if (!result) {
+              throw new Error('item does not exist!');
             }
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
+            expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad request if one id is invalid', async () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
@@ -2029,19 +1731,16 @@ describe('Item routes tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-        // item should have a differnt path
-        await new Promise((res) => {
-          setTimeout(async () => {
-            for (const item of items) {
-              const result = await ItemRepository.findOneBy({ id: item.id });
-              if (!result) {
-                throw new Error('item does not exist!');
-              }
-              expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+        // item should have a different path
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const result = await ItemRepository.findOneBy({ id: item.id });
+            if (!result) {
+              throw new Error('item does not exist!');
             }
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME);
-        });
+            expect(result.path.startsWith(parentItem.path)).toBeFalsy();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Move lots of items', async () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
@@ -2061,262 +1760,20 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // wait a bit for tasks to complete
-        await new Promise((res) =>
-          setTimeout(async () => {
-            for (const item of items) {
-              const result = await ItemRepository.findOneBy({ id: item.id });
-              if (!result) {
-                throw new Error('item does not exist!');
-              }
-              expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const result = await ItemRepository.findOneBy({ id: item.id });
+            if (!result) {
+              throw new Error('item does not exist!');
             }
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME),
-        );
+            expect(result.path.startsWith(parentItem.path)).toBeTruthy();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
     });
   });
-  // describe('POST /items/:id/copy', () => {
-  //   it('Throws if signed out', async () => {
-  //     ({ app } = await build({ member: null }));
-  //     const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-  //     const { item } = await saveItemAndMembership({ member });
 
-  //     const response = await app.inject({
-  //       method: HttpMethod.POST,
-  //       url: `/items/${item.id}/copy`,
-  //       payload: {},
-  //     });
-
-  //     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-  //   });
-
-  //   describe('Signed In', () => {
-  //     const name = 'item to duplicate';
-
-  //     beforeEach(async () => {
-  //       ({ app, actor } = await build());
-  //     });
-
-  //     it('Copy successfully in root', async () => {
-  //       const { item } = await saveItemAndMembership({
-  //         member: actor,
-  //         item: getDummyItem({ name }),
-  //       });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/copy`,
-  //         payload: {},
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // wait a bit for tasks to complete
-  //       await new Promise((res) =>
-  //         setTimeout(async () => {
-  //           const results = await ItemRepository.findBy({ name });
-  //           if (!results.length) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           expect(results).toHaveLength(2);
-  //           expect(results[0].id).not.toEqual(results[1].id);
-  //           expect(results[0].path).not.toEqual(results[1].path);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME),
-  //       );
-  //     });
-  //     it('Copy successfully with correct order', async () => {
-  //       const { item: parentItem } = await saveItemAndMembership({
-  //         member: actor,
-  //         item: getDummyItem({ name }),
-  //       });
-  //       const children = await saveNbOfItems({ nb: 3, actor, parentItem });
-  //       const childrenOrder = children.map(({ id }) => id).reverse();
-  //       await ItemRepository.patch(parentItem.id, {
-  //         extra: { [ItemType.FOLDER]: { childrenOrder } },
-  //       });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${parentItem.id}/copy`,
-  //         payload: {},
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // wait a bit for tasks to complete
-  //       await new Promise((res) =>
-  //         setTimeout(async () => {
-  //           const results = (await ItemRepository.findBy({ name })) as FolderItemType[];
-  //           if (!results.length) {
-  //             throw new Error('item does not exist!');
-  //           }
-  //           // check order is different and contains same nb of children
-  //           const original = results.find(({ id }) => id === parentItem.id);
-  //           expect(original?.extra.folder?.childrenOrder).toEqual(childrenOrder);
-  //           const copy = results.find(({ id }) => id !== parentItem.id);
-  //           expect(copy?.extra.folder?.childrenOrder).toHaveLength(childrenOrder.length);
-  //           expect(copy?.extra.folder?.childrenOrder).not.toEqual(childrenOrder);
-
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME),
-  //       );
-  //     });
-  //     it('Bad Request if copied item id is invalid', async () => {
-  //       const item = 'invalid-id';
-  //       const { item: parentItem } = await saveItemAndMembership({ member: actor });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item}/copy`,
-  //         payload: {
-  //           parentId: parentItem.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //       expect(response.statusMessage).toBe(ReasonPhrases.BAD_REQUEST);
-  //     });
-  //     it('Bad Request if target item id is invalid', async () => {
-  //       const { item } = await saveItemAndMembership({ member: actor });
-
-  //       const targetItem = 'invalid-id';
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/copy`,
-  //         payload: {
-  //           parentId: targetItem,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  //       expect(response.statusMessage).toBe(ReasonPhrases.BAD_REQUEST);
-  //     });
-  //     it('Fail to copy if moved item does not exist', async () => {
-  //       const item = uuidv4();
-  //       const { item: targetItem } = await saveItemAndMembership({
-  //         member: actor,
-  //         item: getDummyItem({ name }),
-  //       });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item}/move`,
-  //         payload: {
-  //           parentId: targetItem.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // wait a bit for tasks to complete
-  //       await new Promise((res) =>
-  //         setTimeout(async () => {
-  //           // no new item
-  //           const results = await ItemRepository.find();
-  //           expect(results).toHaveLength(1);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME),
-  //       );
-  //     });
-  //     it('Cannot copy if target item does not exist', async () => {
-  //       const targetItem = uuidv4();
-  //       const { item } = await saveItemAndMembership({
-  //         member: actor,
-  //         item: getDummyItem({ name }),
-  //       });
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/copy`,
-  //         payload: {
-  //           parentId: targetItem,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // wait a bit for tasks to complete
-  //       await new Promise((res) =>
-  //         setTimeout(async () => {
-  //           // no new item
-  //           const results = await ItemRepository.find();
-  //           expect(results).toHaveLength(1);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME),
-  //       );
-  //     });
-  //     it('Cannot copy if copied item has too many descendants', async () => {
-  //       const { item } = await saveItemAndMembership({
-  //         member: actor,
-  //         item: getDummyItem({ name }),
-  //       });
-  //       const { item: parent } = await saveItemAndMembership({
-  //         member: actor,
-  //         item: getDummyItem({ name }),
-  //       });
-  //       const children = Array.from({ length: MAX_DESCENDANTS_FOR_COPY + 1 }, () => getDummyItem());
-  //       await Promise.all(
-  //         children.map((item) =>
-  //           saveItemAndMembership({ item, member: actor, parentItem: parent }),
-  //         ),
-  //       );
-
-  //       const initialCount = await ItemRepository.count();
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${parent.id}/copy`,
-  //         payload: {
-  //           parentId: item.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // wait a bit for tasks to complete
-  //       await new Promise((res) =>
-  //         setTimeout(async () => {
-  //           // no new item
-  //           const newCount = await ItemRepository.count();
-  //           expect(newCount).toEqual(initialCount);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME),
-  //       );
-  //     });
-  //     it('Cannot copy if hierarchy is too deep', async () => {
-  //       const { item } = await saveItemAndMembership({
-  //         member: actor,
-  //         item: getDummyItem({ name }),
-  //       });
-  //       const { item: parent } = await saveItemAndMembership({ member: actor });
-  //       const lastParent = await saveUntilMaxDescendants(parent, actor);
-  //       const initialCount = await ItemRepository.count();
-
-  //       const response = await app.inject({
-  //         method: HttpMethod.POST,
-  //         url: `/items/${item.id}/copy`,
-  //         payload: {
-  //           parentId: lastParent.id,
-  //         },
-  //       });
-
-  //       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-  //       // wait a bit for tasks to complete
-  //       await new Promise((res) =>
-  //         setTimeout(async () => {
-  //           // no new item
-  //           const newCount = await ItemRepository.count();
-  //           expect(newCount).toEqual(initialCount);
-  //           res(true);
-  //         }, MULTIPLE_ITEMS_LOADING_TIME),
-  //       );
-  //     });
-  //   });
-  // });
-  // // copy many items
+  // copy many items
   describe('POST /items/copy', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
@@ -2354,23 +1811,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // wait a bit for tasks to complete
-        await new Promise((res) =>
-          setTimeout(async () => {
-            // contains twice the items (and the target item)
-            const newCount = await ItemRepository.count();
-            expect(newCount).toEqual(initialCount + items.length);
-            for (const { name } of items) {
-              const itemsInDb = await ItemRepository.findBy({ name });
-              expect(itemsInDb).toHaveLength(2);
-            }
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const newCount = await ItemRepository.count();
+          expect(newCount).toEqual(initialCount + items.length);
+          for (const { name } of items) {
+            const itemsInDb = await ItemRepository.findBy({ name });
+            expect(itemsInDb).toHaveLength(2);
+          }
 
-            // check it created a new membership per item
-            const newCountMembership = await ItemMembershipRepository.count();
-            expect(newCountMembership).toEqual(initialCountMembership + items.length);
-
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME),
-        );
+          // check it created a new membership per item
+          const newCountMembership = await ItemMembershipRepository.count();
+          expect(newCountMembership).toEqual(initialCountMembership + items.length);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Copy successfully from root to item with admin rights', async () => {
@@ -2393,23 +1846,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // wait a bit for tasks to complete
-        await new Promise((res) =>
-          setTimeout(async () => {
-            // contains twice the items (and the target item)
-            const newCount = await ItemRepository.count();
-            expect(newCount).toEqual(initialCount + items.length);
-            for (const { name } of items) {
-              const itemsInDb = await ItemRepository.findBy({ name });
-              expect(itemsInDb).toHaveLength(2);
-            }
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const newCount = await ItemRepository.count();
+          expect(newCount).toEqual(initialCount + items.length);
+          for (const { name } of items) {
+            const itemsInDb = await ItemRepository.findBy({ name });
+            expect(itemsInDb).toHaveLength(2);
+          }
 
-            // check it did not create a new membership because user is admin of parent
-            const newCountMembership = await ItemMembershipRepository.count();
-            expect(newCountMembership).toEqual(initialCountMembership);
-
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME),
-        );
+          // check it did not create a new membership because user is admin of parent
+          const newCountMembership = await ItemMembershipRepository.count();
+          expect(newCountMembership).toEqual(initialCountMembership);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Copy successfully from root to item with write rights', async () => {
@@ -2437,23 +1886,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // wait a bit for tasks to complete
-        await new Promise((res) =>
-          setTimeout(async () => {
-            // contains twice the items (and the target item)
-            const newCount = await ItemRepository.count();
-            expect(newCount).toEqual(initialCount + items.length);
-            for (const { name } of items) {
-              const itemsInDb = await ItemRepository.findBy({ name });
-              expect(itemsInDb).toHaveLength(2);
-            }
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const newCount = await ItemRepository.count();
+          expect(newCount).toEqual(initialCount + items.length);
+          for (const { name } of items) {
+            const itemsInDb = await ItemRepository.findBy({ name });
+            expect(itemsInDb).toHaveLength(2);
+          }
 
-            // check it created a new membership because user is writer of parent
-            const newCountMembership = await ItemMembershipRepository.count();
-            expect(newCountMembership).toEqual(initialCountMembership + items.length);
-
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME),
-        );
+          // check it created a new membership because user is writer of parent
+          const newCountMembership = await ItemMembershipRepository.count();
+          expect(newCountMembership).toEqual(initialCountMembership + items.length);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Copy successfully from item to root', async () => {
@@ -2474,23 +1919,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // wait a bit for tasks to complete
-        await new Promise((res) =>
-          setTimeout(async () => {
-            // contains twice the items (and the target item)
-            const newCount = await ItemRepository.count();
-            expect(newCount).toEqual(initialCount + items.length);
-            for (const { name } of items) {
-              const itemsInDb = await ItemRepository.findBy({ name });
-              expect(itemsInDb).toHaveLength(2);
-            }
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const newCount = await ItemRepository.count();
+          expect(newCount).toEqual(initialCount + items.length);
+          for (const { name } of items) {
+            const itemsInDb = await ItemRepository.findBy({ name });
+            expect(itemsInDb).toHaveLength(2);
+          }
 
-            // check it did not create a new membership because user is admin of parent
-            const newCountMembership = await ItemMembershipRepository.count();
-            expect(newCountMembership).toEqual(initialCountMembership + items.length);
-
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME),
-        );
+          // check it did not create a new membership because user is admin of parent
+          const newCountMembership = await ItemMembershipRepository.count();
+          expect(newCountMembership).toEqual(initialCountMembership + items.length);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Bad request if one id is invalid', async () => {
@@ -2526,14 +1967,11 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // wait a bit for tasks to complete
-        await new Promise((res) =>
-          setTimeout(async () => {
-            // contains twice the items (and the target item)
-            const newCount = await ItemRepository.count();
-            expect(newCount).toEqual(initialCount);
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME),
-        );
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const newCount = await ItemRepository.count();
+          expect(newCount).toEqual(initialCount);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Copy lots of items', async () => {
         const items = await saveNbOfItems({ nb: MAX_TARGETS_FOR_MODIFY_REQUEST, actor });
@@ -2552,20 +1990,17 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
         // wait a bit for tasks to complete
-        await new Promise((res) =>
-          setTimeout(async () => {
-            for (const item of items) {
-              const results = await ItemRepository.findBy({ name: item.name });
-              if (!results.length) {
-                throw new Error('item does not exist!');
-              }
-              expect(results).toHaveLength(2);
-              const copy = results.find(({ id }) => id !== item.id);
-              expect(copy?.path.startsWith(parentItem.path)).toBeTruthy();
+        await waitForExpect(async () => {
+          for (const item of items) {
+            const results = await ItemRepository.findBy({ name: item.name });
+            if (!results.length) {
+              throw new Error('item does not exist!');
             }
-            res(true);
-          }, MULTIPLE_ITEMS_LOADING_TIME),
-        );
+            expect(results).toHaveLength(2);
+            const copy = results.find(({ id }) => id !== item.id);
+            expect(copy?.path.startsWith(parentItem.path)).toBeTruthy();
+          }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
       });
     });
   });

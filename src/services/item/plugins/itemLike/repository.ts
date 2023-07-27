@@ -14,10 +14,10 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
    * @param memberId user's id
    */
   async getItemsForMember(memberId: string): Promise<ItemLike[]> {
-    const itemLikes = await this.find({
-      where: { creator: { id: memberId } },
-      relations: { item: true },
-    });
+    const itemLikes = await this.createQueryBuilder('itemLike')
+      .innerJoinAndSelect('itemLike.item', 'item')
+      .where('itemLike.creator = :memberId', { memberId })
+      .getMany();
     return itemLikes;
   },
 
@@ -26,10 +26,10 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
    * @param itemId
    */
   async getForItem(itemId: string): Promise<ItemLike[]> {
-    const itemLikes = await this.find({
-      where: { item: { id: itemId } },
-      relations: { item: true },
-    });
+    const itemLikes = await this.createQueryBuilder('itemLike')
+      .innerJoinAndSelect('itemLike.item', 'item')
+      .where('itemLike.item = :itemId', { itemId })
+      .getMany();
     return itemLikes;
   },
 

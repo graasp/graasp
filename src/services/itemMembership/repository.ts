@@ -51,8 +51,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    * from partial memberships in given array.
    * @param memberships List of objects with: `memberId`, `itemPath`
    */
-  async deleteMany(memberships: Partial<ItemMembership>[]): Promise<readonly ItemMembership[]> {
-    return this.delete(memberships);
+  async deleteMany(memberships: Partial<ItemMembership>[]): Promise<void> {
+    for (const m of memberships) {
+      await this.delete(m);
+    }
   },
 
   async get(id: string): Promise<ItemMembership> {
@@ -337,14 +339,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    * Moving to *no-parent* is simpler so this method is used instead of `moveHousekeeping()`.
    * @param item Item that will be moved
    * @param member Member used as `creator` for any new memberships
-   * @param transactionHandler Database transaction handler
    */
   // TODO: query type
   async detachedMoveHousekeeping(item: Item, member: Member) {
     const index = item.path.lastIndexOf('.');
     const itemIdAsPath = item.path.slice(index + 1);
-
-    const { rows } = await this.query(`
+    const rows = await this.query(`
     SELECT
       member_id AS "memberId",
       max(item_path::text)::ltree AS "itemPath", -- get longest path
@@ -361,11 +361,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     rows?.reduce((chngs, row) => {
       const { memberId, itemPath, permission } = row;
-
       if (itemPath !== item.path) {
         chngs.inserts.push({
-          memberId,
-          itemPath: itemIdAsPath,
+          member: { id: memberId },
+          item: { path: itemIdAsPath } as Item,
           permission,
           creator: member,
         } as Partial<ItemMembership>);
@@ -406,7 +405,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const parentItemPath = index > -1 ? item.path.slice(0, index) : undefined;
     const itemIdAsPath = index > -1 ? item.path.slice(index + 1) : item.path;
 
-    const { rows } = await this.query(`
+    const rows = await this.query(`
       SELECT
         member_id AS "memberId", item_path AS "itemPath", permission, action,
         first_value(permission) OVER (PARTITION BY member_id ORDER BY action) AS inherited,
@@ -432,7 +431,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     const changes = {
       inserts: [] as Partial<ItemMembership>[],
-      deletes: [] as Partial<ItemMembership>[],
+      deletes: [],
     };
 
     rows?.reduce((chngs, row) => {
@@ -454,8 +453,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       // permission (inherited) at the "origin" better than inherited one at "destination"
       if (action === 1 && PermissionLevelCompare.gt(permission, inherited)) {
         chngs.inserts.push({
-          memberId,
-          itemPath,
+          member: { id: memberId },
+          item: { path: itemPath },
           permission,
           creator: member,
         } as Partial<ItemMembership>);
@@ -463,7 +462,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
       // permission worse or equal to inherited one at "destination"
       if (action === 2 && PermissionLevelCompare.lte(permission, inherited)) {
-        chngs.deletes.push({ memberId, itemPath } as Partial<ItemMembership>);
+        chngs.deletes.push({
+          member: { id: memberId },
+          item: { path: itemPath },
+        } as Partial<ItemMembership>);
       }
 
       return chngs;

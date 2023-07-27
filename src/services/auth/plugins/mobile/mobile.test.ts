@@ -6,7 +6,11 @@ import fetch from 'node-fetch';
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../../../../utils/config';
+import {
+  GRAASP_MOBILE_BUILDER_PROTOCOL,
+  JWT_SECRET,
+  REFRESH_TOKEN_JWT_SECRET,
+} from '../../../../utils/config';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
@@ -217,8 +221,10 @@ describe('Mobile Endpoints', () => {
           captcha: MOCK_CAPTCHA,
         },
       });
-      expect(response.statusCode).toEqual(StatusCodes.OK);
-      expect(response.json()).toHaveProperty('t');
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      const result = await response.json();
+      expect(result).toHaveProperty('resource');
+      expect(result.resource).toContain(`${GRAASP_MOBILE_BUILDER_PROTOCOL}://auth?t=`);
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {

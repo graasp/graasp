@@ -1,5 +1,3 @@
-import { In } from 'typeorm';
-
 import { PermissionLevel } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
@@ -11,10 +9,11 @@ import { ItemPublishedNotFound } from '../errors';
 
 export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished).extend({
   async getForItem(item: Item) {
-    const entry = await this.findOne({
-      where: { item: { id: item.id } },
-      relations: { item: true, creator: true },
-    });
+    // this returns the root published item when querying a child item
+    const entry = await this.createQueryBuilder('pi')
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> :itemPath', { itemPath: item.path })
+      .innerJoinAndSelect('pi.creator', 'member')
+      .getOne();
     if (!entry) {
       throw new ItemPublishedNotFound(item.id);
     }
@@ -22,24 +21,33 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     return entry;
   },
   async getForItems(items: Item[]) {
+    const paths = items.map((i) => i.path);
     const ids = items.map((i) => i.id);
-    const entries = await this.find({
-      where: { item: { id: In(ids) } },
-      relations: { item: true, creator: true },
-    });
+    const entries = await this.createQueryBuilder('pi')
+      .innerJoinAndSelect('pi.item', 'item', 'pi.item @> ARRAY[:...paths]::ltree[]', {
+        paths,
+      })
+      .innerJoinAndSelect('pi.creator', 'member')
+      .getMany();
 
     return mapById({
       keys: ids,
-      findElement: (id) => entries.find((e) => e.item.id === id),
+      findElement: (id) =>
+        entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
   },
 
   // return public item entry? contains when it was published
-  async getAllItems() {
+  async getAllPublishedItems(): Promise<Item[]> {
     // we get the nested relation of item.creator because we only return the item and without this the creator is not returned
-    const publishedRows = await this.find({ relations: ['item', 'item.creator'] });
-    return publishedRows.map(({ item }) => item);
+    const publishedRows = await this.createQueryBuilder()
+      .select(['item'])
+      .from(Item, 'item')
+      .leftJoinAndSelect('item.creator', 'creator')
+      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
+      .getMany();
+    return publishedRows;
   },
 
   // return public item entry? contains when it was published
@@ -50,6 +58,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       .from(Item, 'item')
       .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
+      .innerJoinAndSelect('item.creator', 'member')
       .where('im.member_id = :memberId', { memberId })
       .andWhere('im.permission IN (:...permissions)', {
         permissions: [PermissionLevel.Admin, PermissionLevel.Write],
@@ -72,7 +81,8 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
 
   async getRecentItems(limit: number = 10): Promise<Item[]> {
     const publishedInfos = await this.createQueryBuilder('item_published')
-      .leftJoinAndSelect('item_published.item', 'item')
+      .innerJoinAndSelect('item_published.item', 'item')
+      .innerJoinAndSelect('item.creator', 'member')
       .orderBy('item.createdAt', 'DESC')
       .take(limit)
       .getMany();
@@ -90,7 +100,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
    * @param ids category ids - in the form of ['A1,A2', 'B1', 'C1,C2,C3']
    * @returns object { id } of items with given categories
    */
-  async getByCategories(categoryIds: string[]) {
+  async getByCategories(categoryIds: string[]): Promise<Item[]> {
     const query = this.createQueryBuilder()
       .select(['item'])
       .from(Item, 'item')
@@ -121,9 +131,10 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   // bug: does not take into account child items
   async getLikedItems(limit: number = 10): Promise<Item[]> {
     const itemPublished = await this.createQueryBuilder('item_published')
-      .leftJoinAndSelect('item_published.item', 'i')
-      .innerJoin('item_like', 'il', 'il.item_id = i.id')
-      .groupBy(['i.id', 'item_published.id'])
+      .innerJoinAndSelect('item_published.item', 'item')
+      .innerJoinAndSelect('item.creator', 'member')
+      .innerJoin('item_like', 'il', 'il.item_id = item.id')
+      .groupBy(['item.id', 'member.id', 'item_published.id'])
       .orderBy('COUNT(il.id)', 'DESC')
       .limit(limit)
       .getMany();

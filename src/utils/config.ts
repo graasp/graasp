@@ -75,6 +75,9 @@ export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
 export const PUBLIC_URL = process.env.PUBLIC_URL || HOST;
 
+export const GRAASP_MOBILE_BUILDER_PROTOCOL =
+  process.env.GRAASP_MOBILE_BUILDER || 'graasp-mobile-builder';
+
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 

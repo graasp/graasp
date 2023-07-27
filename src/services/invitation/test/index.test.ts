@@ -8,6 +8,7 @@ import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 import { Item } from '../../item/entities/Item';
+import { ItemRepository } from '../../item/repository';
 import { generateRandomEmail } from '../../itemLogin/utils';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
@@ -148,7 +149,7 @@ describe('Invitation Plugin', () => {
     });
   });
 
-  describe('GET /:id/invitations', () => {
+  describe('GET /:itemId/invitations', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
@@ -200,6 +201,17 @@ describe('Invitation Plugin', () => {
         expectInvitations(await response.json(), [...invitations, ...childInvitations]);
       });
 
+      it('Throw if item with invitations has been trashed', async () => {
+        await ItemRepository.softDelete(item.id);
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
+          payload: { invitations },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+      });
+
       it('throw if id is invalid', async () => {
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -242,6 +254,16 @@ describe('Invitation Plugin', () => {
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expectInvitations([await response.json()], [invitations[0]]);
+      });
+
+      it("Don't return an invitation for a trashed item", async () => {
+        await ItemRepository.softDelete(invitations[0].item.id);
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
 
       it('throw if id is invalid', async () => {

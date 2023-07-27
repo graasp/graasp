@@ -30,12 +30,15 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
   },
 
   async get(id: string): Promise<AppAction | null> {
-    return this.findOneBy({ id });
+    return this.findOne({ where: { id }, relations: { member: true } });
   },
 
   getForItem(itemId: string, filters: SingleItemGetFilter): Promise<AppAction[]> {
     const { memberId } = filters;
-    return this.findBy({ item: { id: itemId }, member: { id: memberId } });
+    return this.find({
+      where: { item: { id: itemId }, member: { id: memberId } },
+      relations: { member: true },
+    });
   },
 
   async getForManyItems(
@@ -44,10 +47,17 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
   ): Promise<ResultOf<AppAction[]>> {
     const { memberId } = filters;
 
+    // here it is ok to have some app actions where the item or the member are null (because of missing or soft-deleted relations)
     const appActions = await this.find({
       where: { item: { id: In(itemIds) }, member: { id: memberId } },
-      relations: { item: true },
+      relations: { item: true, member: true },
     });
+    // todo: should use something like:
+    // but this does not work. Maybe related to the placement of the IN ?
+    // const appActions = await this.createQueryBuilder('actions')
+    //   .innerJoinAndSelect('actions.item', 'item', 'actions.item IN (:...itemIds)', { itemIds })
+    //   .innerJoinAndSelect('actions.member', 'member', 'actions.member = :memberId', { memberId })
+    //   .getMany();
     return mapById({
       keys: itemIds,
       findElement: (id) => appActions.filter(({ item }) => item.id === id),

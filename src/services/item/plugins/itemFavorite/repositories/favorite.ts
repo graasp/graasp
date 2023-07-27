@@ -9,10 +9,12 @@ export const FavoriteRepository = AppDataSource.getRepository(ItemFavorite).exte
    * @param memberId user's id
    */
   async getFavoriteForMember(memberId: string): Promise<ItemFavorite[]> {
-    const favorites = await this.find({
-      where: { member: { id: memberId } },
-      relations: { item: true },
-    });
+    // alias item_favorite table to favorite
+    const favorites = await this.createQueryBuilder('favorite')
+      // add relation to item, but use innerJoin to remove item that have been soft-deleted
+      .innerJoinAndSelect('favorite.item', 'item')
+      .where('favorite.member_id = :memberId', { memberId })
+      .getMany();
     return favorites;
   },
 
