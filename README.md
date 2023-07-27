@@ -128,7 +128,7 @@ DATABASE_LOGS=true
 
 ### Sessions
 
-# Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key)
+# Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key and https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
 # TLDR: npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
 SECURE_SESSION_SECRET_KEY=<content>
 
@@ -148,18 +148,18 @@ REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 
 ### Mail server configuration
 
-# Mailer config (see ./.devcontainer/docker-compose.yml)
+# Mailer config (set by ./.devcontainer/docker-compose.yml)
 # Set to random values if you don't want to use the mock mailbox at http://localhost:1080
-MAILER_CONFIG_SMTP_HOST=mailer
-MAILER_CONFIG_USERNAME=graasp
-MAILER_CONFIG_PASSWORD=graasp
+# MAILER_CONFIG_SMTP_HOST=mailer
+# MAILER_CONFIG_USERNAME=graasp
+# MAILER_CONFIG_PASSWORD=graasp
 
 
 ### File storages configuration
 
 # If you are using a local installation of localstack replace by http://localhost:4566
-# This value is only used for Dev or Test environments
-S3_FILE_ITEM_HOST=http://graasp-localstack:4566
+# Otherwise this value is already set by ./.devcontainer/docker-compose.yml
+# S3_FILE_ITEM_HOST=http://graasp-localstack:4566
 
 # Graasp file item file storage path
 # File item storage is set by ./.devcontainer/docker-compose.yml
@@ -184,18 +184,19 @@ H5P_PATH_PREFIX=h5p-content/
 
 ### External services configuration
 
-# Graasp Etherpad
-ETHERPAD_URL=http://etherpad:9001
-# Optional, if the etherpad server server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
-ETHERPAD_PUBLIC_URL=http://localhost:9001
+# Graasp Etherpad (set by ./.devcontainer/docker-compose.yml)
+# ETHERPAD_URL=http://etherpad:9001
+# Optional, if the etherpad server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
+# ETHERPAD_PUBLIC_URL=http://localhost:9001
 # Optional, if the etherpad cookie domain is different from the domain of the public URL
-ETHERPAD_COOKIE_DOMAIN=localhost:9001
+# ETHERPAD_COOKIE_DOMAIN=localhost:9001
 # Api key is set by ./.devcontainer/etherpad/devApiKey.txt
-ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+# ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Graasp embedded link item
 EMBEDDED_LINK_ITEM_PLUGIN=false
-EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://localhost:8061
+# Set by ./.devcontainer/docker-compose.yml
+# EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://localhost:8061
 
 # Graasp apps
 APPS_PLUGIN=true
@@ -205,8 +206,9 @@ APPS_PUBLISHER_ID=<id>
 # Graasp websockets
 # If you are using a local installation and don't want to install redis, you can set WEBSOCKETS_PLUGIN to false
 WEBSOCKETS_PLUGIN=true
-REDIS_HOST=graasp-redis
-REDIS_PORT=6379
+# Redis config set by ./.devcontainer/docker-compose.yml
+# REDIS_HOST=redis
+# REDIS_PORT=6379
 # REDIS_USERNAME=
 # REDIS_PASSWORD=
 
