@@ -63,7 +63,7 @@ export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
 export const PORT = process.env.PORT ? +process.env.PORT : 3000;
-export const HOST = `${HOSTNAME}:${PORT}`;
+export const HOST = `${PROTOCOL}://${HOSTNAME}:${PORT}`;
 
 if (!process.env.COOKIE_DOMAIN) {
   throw new Error('COOKIE_DOMAIN is undefined');
@@ -73,6 +73,34 @@ export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 
 export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
+
+/*
+ * Warning for PUBLIC_URL:
+ * make sure that process.env.PUBLIC_URL / HOST have the format ${PROTOCOL}://${HOSTNAME}:${PORT}
+ * See the following example where the format is only ${HOSTNAME}:${PORT} in which case
+ * it interprets the hostname as protocol and the port as the pathname. Using the complete URL
+ * scheme fixes that
+ *
+ * $ node
+ * Welcome to Node.js v16.20.1.
+ * Type ".help" for more information.
+ * > new URL('localhost:3000')
+ * URL {
+ *   href: 'localhost:3000',
+ *   origin: 'null',
+ *   protocol: 'localhost:',
+ *   username: '',
+ *   password: '',
+ *   host: '',
+ *   hostname: '',
+ *   port: '',
+ *   pathname: '3000',
+ *   search: '',
+ *   searchParams: URLSearchParams {},
+ *   hash: ''
+ * }
+ * >
+ */
 export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
 
 export const GRAASP_MOBILE_BUILDER_PROTOCOL =
