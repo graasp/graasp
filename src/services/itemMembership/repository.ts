@@ -291,7 +291,6 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     });
 
     const inheritedMembership = await this.getInherited(item, member, true);
-
     if (inheritedMembership) {
       const { item: itemFromPermission, permission: inheritedPermission, id } = inheritedMembership;
       // fail if trying to add a new membership for the same member and item
@@ -325,8 +324,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     // create new membership
     tasks.push(this.insert(itemMembership));
-
     await Promise.all(tasks);
+
     return itemMembership;
   },
 

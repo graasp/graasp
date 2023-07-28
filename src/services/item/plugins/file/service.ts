@@ -76,7 +76,12 @@ class FileItemService {
     }
   }
 
-  async upload(actor: Actor, repositories: Repositories, files: UploadedFile[], parentId: string) {
+  async upload(
+    actor: Actor,
+    repositories: Repositories,
+    files: (UploadedFile & { description?: string })[],
+    parentId?: string,
+  ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
@@ -87,15 +92,8 @@ class FileItemService {
       await validatePermission(repositories, PermissionLevel.Write, actor, item);
     }
 
-    const promises: Promise<{
-      filepath: string;
-      filename: string;
-      size: number;
-      mimetype: string;
-      uploaded: UploadedFile;
-    }>[] = [];
-    for (const fileObject of files) {
-      const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
+    const promises = files.map(async (fileObject) => {
+      const { filename, mimetype, fields, filepath: tmpPath, description } = fileObject;
       const file = fs.createReadStream(tmpPath);
       const { size } = fs.statSync(tmpPath);
       const filepath = this.buildFilePath(); // parentId, filename
@@ -112,22 +110,20 @@ class FileItemService {
       // check member storage limit
       await this.checkRemainingStorage(actor, repositories, size);
 
-      promises.push(
-        this.fileService
-          .upload(actor, {
-            file,
-            filepath,
-            mimetype,
-            size,
-          })
-          .then(() => {
-            return { filepath, filename, size, mimetype, uploaded: fileObject };
-          })
-          .catch((e) => {
-            throw e;
-          }),
-      );
-    }
+      return await this.fileService
+        .upload(actor, {
+          file,
+          filepath,
+          mimetype,
+          size,
+        })
+        .then(() => {
+          return { filepath, filename, size, mimetype, uploaded: fileObject, description };
+        })
+        .catch((e) => {
+          throw e;
+        });
+    });
 
     // TODO: CHUNK TO AVOID FLOODING
     // fallback?
@@ -136,10 +132,11 @@ class FileItemService {
     const items: Item[] = [];
     // postHook: create items from file properties
     for (const properties of fileProperties) {
-      const { filename, filepath, mimetype, size, uploaded } = properties;
+      const { filename, filepath, mimetype, size, uploaded, description } = properties;
       const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
       const item = {
         name,
+        description,
         type: this.fileService.type,
         extra: {
           [this.fileService.type]: {
