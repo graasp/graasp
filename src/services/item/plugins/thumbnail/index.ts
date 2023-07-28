@@ -1,3 +1,4 @@
+import { WriteStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyMultipart from '@fastify/multipart';
@@ -76,7 +77,13 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), itemId, file.file);
+          await thumbnailService.upload(
+            member,
+            buildRepositories(manager),
+            itemId,
+            // TODO: not good
+            file.file as ReadableStream as WriteStream,
+          );
 
           reply.status(StatusCodes.NO_CONTENT);
         })

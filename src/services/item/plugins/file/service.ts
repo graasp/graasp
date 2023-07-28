@@ -57,9 +57,9 @@ class FileItemService {
     this.options = options;
   }
 
-  // check the user has enough storage to create a new item
+  // check the user has enough storage to create a new item given its size
   // get the complete storage
-  async checkRemainingStorage(actor: Member, repositories: Repositories) {
+  async checkRemainingStorage(actor: Member, repositories: Repositories, size: number = 0) {
     const { id: memberId } = actor;
 
     const currentStorage = await repositories.memberRepository.getMemberStorage(
@@ -67,7 +67,7 @@ class FileItemService {
       this.fileService.type,
     );
 
-    if (currentStorage > this.options.maxMemberStorage) {
+    if (currentStorage + size > this.options.maxMemberStorage) {
       throw new StorageExceeded();
     }
   }
@@ -177,6 +177,7 @@ class FileItemService {
     // allow failures
     if (MimeTypes.isImage(mimetype)) {
       await this.itemThumbnailService
+        // TODO: is type cast okay?
         .upload(actor, repositories, newItem.id, stream as WriteStream)
         .catch((e) => console.error(e));
     }
