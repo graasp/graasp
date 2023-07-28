@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -65,6 +66,7 @@ export class Item extends BaseEntity implements GraaspItem {
   })
   type: `${ItemType}`;
 
+  @Index()
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'SET NULL',
   })
