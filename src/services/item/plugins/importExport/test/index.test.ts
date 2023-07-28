@@ -85,7 +85,7 @@ describe('Member routes tests', () => {
   });
 
   describe('POST /zip-import', () => {
-    it.only('Import successfully if signed in', async () => {
+    it('Import successfully if signed in', async () => {
       ({ app, actor } = await build());
       const form = createFormData('archive.zip');
 
