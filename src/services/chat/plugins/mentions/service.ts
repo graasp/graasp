@@ -1,4 +1,4 @@
-import { Hostname, PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
@@ -14,11 +14,9 @@ import { MemberCannotAccessMention } from '../../errors';
 export class MentionService {
   hooks = new HookManager();
   mailer: MailerDecoration;
-  hosts: Hostname[];
 
-  constructor(mailer: MailerDecoration, hosts: Hostname[]) {
+  constructor(mailer: MailerDecoration) {
     this.mailer = mailer;
-    this.hosts = hosts;
   }
 
   async sendMentionNotificationEmail({
@@ -30,7 +28,7 @@ export class MentionService {
     member: Member;
     creator: Member;
   }) {
-    const itemLink = buildItemLink(this.hosts, item);
+    const itemLink = buildItemLink(item);
     const lang = member?.extra?.lang as string;
 
     const translated = this.mailer.translate(lang);
