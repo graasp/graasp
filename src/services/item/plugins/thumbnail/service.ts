@@ -1,7 +1,5 @@
-import { WriteStream } from 'fs';
 import { Readable } from 'stream';
 
-import { MultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';

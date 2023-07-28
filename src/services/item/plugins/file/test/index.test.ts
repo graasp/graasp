@@ -32,7 +32,7 @@ jest.mock('../../../../../plugins/datasource');
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
-const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
+const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 
 const MOCK_SIGNED_URL = 'signed-url';

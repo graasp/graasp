@@ -2,7 +2,6 @@ import path from 'path';
 import sharp from 'sharp';
 import { Readable } from 'stream';
 
-import { MultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import FileService from '../file/service';

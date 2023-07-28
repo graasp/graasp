@@ -1,8 +1,7 @@
-import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { MultipartFile, SavedMultipartFile } from '@fastify/multipart';
+import { MultipartFile } from '@fastify/multipart';
 
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 

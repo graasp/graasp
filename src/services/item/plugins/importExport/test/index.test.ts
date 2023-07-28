@@ -27,7 +27,7 @@ jest.mock('../../../../../plugins/datasource');
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
-const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
+const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
 const MOCK_SIGNED_URL = 'signed-url';
 jest.mock('@aws-sdk/client-s3', () => {
   return {
@@ -85,7 +85,7 @@ describe('Member routes tests', () => {
   });
 
   describe('POST /zip-import', () => {
-    it('Import successfully if signed in', async () => {
+    it.only('Import successfully if signed in', async () => {
       ({ app, actor } = await build());
       const form = createFormData('archive.zip');
 

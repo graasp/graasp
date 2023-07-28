@@ -1,15 +1,14 @@
-import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { MultipartFile, SavedMultipartFile } from '@fastify/multipart';
+import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, UUID } from '@graasp/sdk';
 
 import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
-import { Actor, Member } from '../../../../../../member/entities/member';
+import { Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
