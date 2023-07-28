@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // copy tags alongside item
   // TODO: AUTOMATIZE WITH OWN CLASS
   const hook = async (actor, repositories, { original, copy }: { original: Item; copy: Item }) => {
-    await repositories.itemTagRepository.copyAll(actor, original, copy);
+    await repositories.itemTagRepository.copyAll(actor, original, copy, [ItemTagType.Public]);
   };
   items.service.hooks.setPostHook('copy', hook);
 
