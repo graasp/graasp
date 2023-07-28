@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { SavedMultipartFile } from '@fastify/multipart';
+import { MultipartFile, SavedMultipartFile } from '@fastify/multipart';
 
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
@@ -34,8 +34,7 @@ class AppDataFileService {
   async upload(
     actorId: string | undefined,
     repositories: Repositories,
-    fileObject: Partial<SavedMultipartFile> &
-      Pick<SavedMultipartFile, 'filename' | 'mimetype' | 'filepath'>,
+    file: MultipartFile,
     itemId?: string,
   ) {
     const { memberRepository } = repositories;
@@ -52,9 +51,7 @@ class AppDataFileService {
     // posting an app data is allowed to readers
     await this.itemService.get(member, repositories, itemId);
 
-    const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
-    const file = fs.createReadStream(tmpPath);
-    const { size } = fs.statSync(tmpPath);
+    const { filename, mimetype, fields, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(itemId, appDataId); // parentId, filename
 
@@ -70,12 +67,12 @@ class AppDataFileService {
 
     const fileProperties = await this.fileService
       .upload(member, {
-        file,
+        file: stream,
         filepath,
         mimetype,
       })
       .then(() => {
-        return { path: filepath, name: filename, size, mimetype };
+        return { path: filepath, name: filename, mimetype };
       })
       .catch((e) => {
         throw e;

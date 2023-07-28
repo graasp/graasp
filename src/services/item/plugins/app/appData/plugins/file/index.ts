@@ -6,6 +6,7 @@ import { HttpMethod, IdParam, UUID } from '@graasp/sdk';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import {
   DownloadFileUnexpectedError,
+  UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
 import { Actor, Member } from '../../../../../../member/entities/member';
@@ -82,8 +83,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
           // only one file is uploaded
-          const files = await request.saveRequestFiles();
-          return appDataFileService.upload(memberId, repositories, files[0], itemId);
+          const file = await request.file();
+          if (!file) {
+            throw new UploadEmptyFileError();
+          }
+          return appDataFileService.upload(memberId, repositories, file, itemId);
         })
         .catch((e) => {
           console.error(e);

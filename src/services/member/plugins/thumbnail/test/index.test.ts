@@ -15,10 +15,11 @@ const textPath = path.resolve(__dirname, './fixtures/emptyFile');
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
-const putObjectMock = jest.fn(async () => console.debug('putObjectMock'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
 const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
+const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+
 const MOCK_SIGNED_URL = 'signed-url';
 jest.mock('@aws-sdk/client-s3', () => {
   return {
@@ -27,7 +28,6 @@ jest.mock('@aws-sdk/client-s3', () => {
       return {
         copyObject: copyObjectMock,
         deleteObject: deleteObjectMock,
-        putObject: putObjectMock,
         headObject: headObjectMock,
       };
     },
@@ -37,6 +37,15 @@ jest.mock('@aws-sdk/s3-request-presigner', () => {
   const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
   return {
     getSignedUrl,
+  };
+});
+jest.mock('@aws-sdk/lib-storage', () => {
+  return {
+    Upload: jest.fn().mockImplementation(() => {
+      return {
+        done: uploadDoneMock,
+      };
+    }),
   };
 });
 
@@ -165,7 +174,7 @@ describe('Thumbnail Plugin Tests', () => {
           headers: form2.getHeaders(),
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-        expect(putObjectMock).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
+        expect(uploadDoneMock).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
       });
 
       it('Throw if try to upload a non-image file', async () => {

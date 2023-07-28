@@ -126,7 +126,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         const files = request.files();
         // files are saved in temporary folder in disk, they are removed when the response ends
         // necessary to get file size -> can use stream busboy only otherwise
-        // const files = await request.saveRequestFiles();
         return fileItemService.uploadFiles(member, repositories, files, parentId);
       });
       // .catch((e) => {

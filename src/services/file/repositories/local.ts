@@ -20,7 +20,7 @@ export class LocalFileRepository implements FileRepository {
 
   buildFullPath = (filepath: string) => path.join(this.options.storageRootPath, filepath);
 
-  async getFileSize(filepath: string): Promise<number | undefined> {
+  async getFileSize(filepath: string) {
     const metadata = fs.statSync(filepath);
     return metadata.size;
   }

@@ -30,10 +30,11 @@ import { DEFAULT_MAX_STORAGE } from '../utils/constants';
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
-const putObjectMock = jest.fn(async () => console.debug('putObjectMock'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
 const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
+const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+
 const MOCK_SIGNED_URL = 'signed-url';
 jest.mock('@aws-sdk/client-s3', () => {
   return {
@@ -42,7 +43,6 @@ jest.mock('@aws-sdk/client-s3', () => {
       return {
         copyObject: copyObjectMock,
         deleteObject: deleteObjectMock,
-        putObject: putObjectMock,
         headObject: headObjectMock,
       };
     },
@@ -52,6 +52,15 @@ jest.mock('@aws-sdk/s3-request-presigner', () => {
   const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
   return {
     getSignedUrl,
+  };
+});
+jest.mock('@aws-sdk/lib-storage', () => {
+  return {
+    Upload: jest.fn().mockImplementation(() => {
+      return {
+        done: uploadDoneMock,
+      };
+    }),
   };
 });
 
@@ -136,7 +145,7 @@ describe('File Item routes tests', () => {
           expectItem(item, newItem);
 
           // s3 upload function: We expect on image AND the thumbnails
-          expect(putObjectMock).toHaveBeenCalledTimes(
+          expect(uploadDoneMock).toHaveBeenCalledTimes(
             Object.entries(ThumbnailSizeFormat).length + 1,
           );
 
@@ -169,7 +178,7 @@ describe('File Item routes tests', () => {
           expectManyItems(items, newItems);
 
           // s3 upload function: We expect on image AND the thumbnails
-          expect(putObjectMock).toHaveBeenCalledTimes(
+          expect(uploadDoneMock).toHaveBeenCalledTimes(
             Object.entries(ThumbnailSizeFormat).length * 2 + 2,
           );
 
@@ -206,7 +215,7 @@ describe('File Item routes tests', () => {
           expectItem(item, newItem);
 
           // s3 upload function: We expect on image AND the thumbnails
-          expect(putObjectMock).toHaveBeenCalledTimes(
+          expect(uploadDoneMock).toHaveBeenCalledTimes(
             Object.entries(ThumbnailSizeFormat).length + 1,
           );
 
@@ -243,7 +252,7 @@ describe('File Item routes tests', () => {
           expect(item).toBeNull();
 
           // s3 upload function
-          expect(putObjectMock).not.toHaveBeenCalled();
+          expect(uploadDoneMock).not.toHaveBeenCalled();
         });
 
         it('Cannot upload empty file', async () => {
@@ -311,7 +320,7 @@ describe('File Item routes tests', () => {
 
       describe('With error', () => {
         it('Gracefully fails if s3 upload throws', async () => {
-          putObjectMock.mockImplementation(() => {
+          uploadDoneMock.mockImplementation(() => {
             throw new Error('putObject throws');
           });
 

@@ -156,7 +156,6 @@ export class ActionRequestExportService {
       file: fs.createReadStream(archive.filepath),
       filepath: buildActionFilePath(itemId, archive.timestamp),
       mimetype: ZIP_MIMETYPE,
-      // size: fs.statSync(archive.filepath).size,
     });
 
     // create request row

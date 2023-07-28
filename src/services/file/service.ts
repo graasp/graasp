@@ -66,12 +66,6 @@ class FileService {
       });
     }
 
-    // if (!size) {
-    //   throw new UploadEmptyFileError({
-    //     file,
-    //     filepath,
-    //   });
-    // }
     try {
       await this.repository.uploadFile({
         fileStream: file,

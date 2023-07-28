@@ -47,7 +47,7 @@ export class S3FileRepository implements FileRepository {
     });
   }
 
-  async getFileSize(filepath: string): Promise<number | undefined> {
+  async getFileSize(filepath: string) {
     const metadata = await this.getMetadata(filepath);
     return metadata.ContentLength;
   }
@@ -273,9 +273,6 @@ export class S3FileRepository implements FileRepository {
       Body: fileStream,
       ContentType: mimetype,
     };
-
-    // // TO CHANGE: use signed url ? but difficult to set up callback
-    // await this.s3Instance.putObject(params);
 
     const upload = new Upload({
       client: this.s3Instance,
