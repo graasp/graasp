@@ -16,7 +16,7 @@ describe('Action Utils', () => {
 
   it('should return a valid view', () => {
     const headers = {
-      origin: `https://${BUILDER_CLIENT_HOST.hostname}`,
+      origin: `https://${BUILDER_CLIENT_HOST.url.hostname}`,
     };
     const view = getView(headers);
     expect(view).toEqual(BUILDER_CLIENT_HOST.name);
