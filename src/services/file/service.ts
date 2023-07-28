@@ -13,7 +13,6 @@ import {
   DeleteFileInvalidPathError,
   DeleteFolderInvalidPathError,
   DownloadFileInvalidParameterError,
-  UploadEmptyFileError,
   UploadFileInvalidParameterError,
   UploadFileUnexpectedError,
 } from './utils/errors';

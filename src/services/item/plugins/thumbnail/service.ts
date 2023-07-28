@@ -1,5 +1,7 @@
 import { WriteStream } from 'fs';
+import { Readable } from 'stream';
 
+import { MultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
@@ -20,7 +22,7 @@ export class ItemThumbnailService {
     this.itemService = itemService;
   }
 
-  async upload(actor: Member, repositories: Repositories, itemId: string, file: WriteStream) {
+  async upload(actor: Member, repositories: Repositories, itemId: string, file: Readable) {
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Write, actor, item);
 

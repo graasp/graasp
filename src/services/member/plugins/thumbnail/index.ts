@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), file);
+          await thumbnailService.upload(member, buildRepositories(manager), file.file);
 
           reply.status(StatusCodes.NO_CONTENT);
         })

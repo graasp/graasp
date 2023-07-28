@@ -1,6 +1,5 @@
-import { WriteStream } from 'fs';
+import { Readable } from 'stream';
 
-import { MultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import { Repositories } from '../../../../utils/repositories';
@@ -19,8 +18,8 @@ export class MemberThumbnailService {
   }
 
   // upload self avatar
-  async upload(actor: Member, repositories: Repositories, file: MultipartFile) {
-    await this.thumbnailService.upload(actor, actor.id, file.file as unknown as WriteStream);
+  async upload(actor: Member, repositories: Repositories, file: Readable) {
+    await this.thumbnailService.upload(actor, actor.id, file);
 
     // update item that should have thumbnail
     await this.memberService.patch(actor, repositories, actor.id, {

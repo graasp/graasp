@@ -189,7 +189,7 @@ describe('Thumbnail Plugin Tests', () => {
           headers: form2.getHeaders(),
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
-        expect(uploadDone).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
+        expect(uploadDoneMock).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
 
         const savedItem = await ItemRepository.findOneBy({ id: item.id });
         expect(savedItem!.settings.hasThumbnail).toBeTruthy();

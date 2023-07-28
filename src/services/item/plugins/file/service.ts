@@ -1,5 +1,5 @@
-import { WriteStream } from 'fs';
 import path from 'path';
+import { Readable } from 'stream';
 
 import { MultipartFields, MultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
@@ -126,7 +126,7 @@ class FileItemService {
       filename;
       mimetype;
       fields?: MultipartFields;
-      stream: ReadableStream;
+      stream: Readable;
     },
   ) {
     // compute body data from file's fields
@@ -178,7 +178,7 @@ class FileItemService {
     if (MimeTypes.isImage(mimetype)) {
       await this.itemThumbnailService
         // TODO: is type cast okay?
-        .upload(actor, repositories, newItem.id, stream as WriteStream)
+        .upload(actor, repositories, newItem.id, stream)
         .catch((e) => console.error(e));
     }
 
