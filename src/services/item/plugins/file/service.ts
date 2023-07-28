@@ -92,7 +92,11 @@ class FileItemService {
       await validatePermission(repositories, PermissionLevel.Write, actor, item);
     }
 
-    const promises = files.map(async (fileObject) => {
+    // upload file one by one
+    // TODO: CHUNK FOR PERFORMANCE
+
+    const items: Item[] = [];
+    for (const fileObject of files) {
       const { filename, mimetype, fields, filepath: tmpPath, description } = fileObject;
       const file = fs.createReadStream(tmpPath);
       const { size } = fs.statSync(tmpPath);
@@ -110,29 +114,14 @@ class FileItemService {
       // check member storage limit
       await this.checkRemainingStorage(actor, repositories, size);
 
-      return await this.fileService
-        .upload(actor, {
-          file,
-          filepath,
-          mimetype,
-          size,
-        })
-        .then(() => {
-          return { filepath, filename, size, mimetype, uploaded: fileObject, description };
-        })
-        .catch((e) => {
-          throw e;
-        });
-    });
+      await this.fileService.upload(actor, {
+        file,
+        filepath,
+        mimetype,
+        size,
+      });
 
-    // TODO: CHUNK TO AVOID FLOODING
-    // fallback?
-    const fileProperties = await Promise.all(promises);
-
-    const items: Item[] = [];
-    // postHook: create items from file properties
-    for (const properties of fileProperties) {
-      const { filename, filepath, mimetype, size, uploaded, description } = properties;
+      // postHook: create item from file properties
       const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
       const item = {
         name,
@@ -161,10 +150,11 @@ class FileItemService {
       // allow failures
       if (MimeTypes.isImage(mimetype)) {
         await this.itemThumbnailService
-          .upload(actor, repositories, newItem.id, uploaded)
+          .upload(actor, repositories, newItem.id, fileObject)
           .catch((e) => console.error(e));
       }
     }
+
     return items;
   }
 
