@@ -7,10 +7,11 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import contentDisposition from 'content-disposition';
-import fs, { ReadStream } from 'fs';
+import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
+import { Stream } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
@@ -46,6 +47,11 @@ export class S3FileRepository implements FileRepository {
       // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
       endpoint: S3_FILE_ITEM_HOST,
     });
+  }
+
+  async getFileSize(filepath: string): Promise<number | undefined> {
+    const metadata = await this.getMetadata(filepath);
+    return metadata.ContentLength;
   }
 
   async copyFile({
@@ -251,7 +257,7 @@ export class S3FileRepository implements FileRepository {
     filepath,
     mimetype,
   }: {
-    fileStream: ReadStream;
+    fileStream: ReadableStream;
     memberId: string;
     filepath: string;
     mimetype?: string;

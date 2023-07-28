@@ -1,5 +1,3 @@
-import { ReadStream } from 'fs';
-
 import { FastifyReply } from 'fastify';
 
 import { FileItemType, ItemType, LocalFileConfiguration, S3FileConfiguration } from '@graasp/sdk';
@@ -47,31 +45,33 @@ class FileService {
     }
   }
 
+  async getFileSize(actor: Actor, filepath: string) {
+    return this.repository.getFileSize(filepath);
+  }
+
   async upload(
     member: Member,
-    data: { file: ReadStream; size: number; filepath: string; mimetype?: string },
+    data: { file: ReadableStream; filepath: string; mimetype?: string },
   ) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
 
-    const { file, size, filepath, mimetype } = data;
+    const { file, filepath, mimetype } = data;
 
     if (!file || !filepath) {
       throw new UploadFileInvalidParameterError({
         file,
         filepath,
-        size,
       });
     }
 
-    if (!size) {
-      throw new UploadEmptyFileError({
-        file,
-        filepath,
-        size,
-      });
-    }
+    // if (!size) {
+    //   throw new UploadEmptyFileError({
+    //     file,
+    //     filepath,
+    //   });
+    // }
     try {
       await this.repository.uploadFile({
         fileStream: file,
@@ -84,7 +84,7 @@ class FileService {
       this.delete(member, filepath).catch((e) => console.error(e));
 
       console.error(e);
-      throw new UploadFileUnexpectedError({ mimetype, memberId: member.id, size });
+      throw new UploadFileUnexpectedError({ mimetype, memberId: member.id });
     }
 
     return data;

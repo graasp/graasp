@@ -123,11 +123,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        // const files = request.files();
+        const files = request.files();
         // files are saved in temporary folder in disk, they are removed when the response ends
         // necessary to get file size -> can use stream busboy only otherwise
-        const files = await request.saveRequestFiles();
-        return fileItemService.upload(member, repositories, files, parentId);
+        // const files = await request.saveRequestFiles();
+        return fileItemService.uploadFiles(member, repositories, files, parentId);
       });
       // .catch((e) => {
       //   console.error(e);

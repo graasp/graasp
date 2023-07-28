@@ -69,14 +69,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
           // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
-          const [file] = await request.saveRequestFiles();
+          const file = await request.file();
 
           // check file is an image
-          if (!file.mimetype.includes('image')) {
+          if (!file || !file.mimetype.includes('image')) {
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), itemId, file);
+          await thumbnailService.upload(member, buildRepositories(manager), itemId, file.file);
 
           reply.status(StatusCodes.NO_CONTENT);
         })

@@ -151,15 +151,15 @@ export class ActionRequestExportService {
       views: Object.values(Context),
     });
 
-    // upload file task
+    // upload file
     await this.fileService.upload(actor, {
       file: fs.createReadStream(archive.filepath),
       filepath: buildActionFilePath(itemId, archive.timestamp),
       mimetype: ZIP_MIMETYPE,
-      size: fs.statSync(archive.filepath).size,
+      // size: fs.statSync(archive.filepath).size,
     });
 
-    // create request row task
+    // create request row
     const requestExport = await repositories.actionRequestExportRepository.post({
       item: baseAnalytics.item,
       member: actor,

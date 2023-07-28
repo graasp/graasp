@@ -86,7 +86,6 @@ class AppSettingFileService {
         file,
         filepath,
         mimetype,
-        size,
       })
       .then(() => {
         return { path: filepath, name: filename, size, mimetype };

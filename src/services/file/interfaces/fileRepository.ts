@@ -1,8 +1,11 @@
 import { ReadStream } from 'fs';
+import { Stream } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
 export interface FileRepository {
+  getFileSize(filepath: string): Promise<number | undefined>;
+
   copyFile(args: {
     newId?: string;
     memberId: string;
@@ -28,7 +31,7 @@ export interface FileRepository {
   }): Promise<ReadStream | string | void>;
 
   uploadFile(args: {
-    fileStream: ReadStream;
+    fileStream: ReadableStream;
     memberId: string;
     filepath: string;
     mimetype?: string;
