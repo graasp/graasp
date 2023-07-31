@@ -103,7 +103,8 @@ class FileItemService {
       );
     }
     // check member storage limit
-    await this.checkRemainingStorage(actor, repositories);
+    // BUG: this creates a big leak!!
+    // await this.checkRemainingStorage(actor, repositories);
 
     // duplicate stream to use in thumbnails
     const streamForThumbnails = new PassThrough();
