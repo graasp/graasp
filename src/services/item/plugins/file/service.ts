@@ -17,6 +17,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
+import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
 import { Item } from '../../entities/Item';
@@ -68,52 +69,15 @@ class FileItemService {
     );
 
     if (currentStorage + size > this.options.maxMemberStorage) {
-      throw new StorageExceeded();
+      throw new StorageExceeded(currentStorage + size);
     }
   }
 
-  async uploadFiles(
-    actor: Actor,
-    repositories: Repositories,
-    files: AsyncIterableIterator<MultipartFile>,
-    parentId?: string,
-  ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
-    // check rights
-    if (parentId) {
-      const item = await repositories.itemRepository.get(parentId);
-      await validatePermission(repositories, PermissionLevel.Write, actor, item);
-    }
-
-    // upload file one by one
-    // TODO: CHUNK FOR PERFORMANCE
-    const items: Item[] = [];
-    for await (const fileObject of files) {
-      const { filename, mimetype, fields, file: stream } = fileObject;
-      const filepath = this.buildFilePath(); // parentId, filename
-      const i = await this._upload(actor, repositories, {
-        filepath,
-        parentId,
-        filename,
-        mimetype,
-        fields,
-        stream,
-      });
-      items.push(i);
-    }
-
-    return items;
-  }
-
-  async _upload(
+  async upload(
     actor,
     repositories,
     {
       description,
-      filepath,
       parentId,
       filename,
       mimetype,
@@ -121,7 +85,6 @@ class FileItemService {
       stream,
     }: {
       description?: string;
-      filepath;
       parentId?: string;
       filename;
       mimetype;
@@ -129,6 +92,7 @@ class FileItemService {
       stream: Readable;
     },
   ) {
+    const filepath = this.buildFilePath(); // parentId, filename
     // compute body data from file's fields
     if (fields) {
       const fileBody = Object.fromEntries(
@@ -139,15 +103,26 @@ class FileItemService {
       );
     }
     // check member storage limit
-    await this.checkRemainingStorage(actor, repositories);
+    await this.checkRemainingStorage(actor, repositories).catch((e) => {
+      // Bug: stream not read does not trigger end event, which leads to hang in the for await
+      stream.emit('end');
+      throw e;
+    });
 
     await this.fileService.upload(actor, {
       file: stream,
       filepath,
       mimetype,
     });
-
     const size = await this.fileService.getFileSize(actor, filepath);
+
+    // throw for empty files
+    if (!size) {
+      await this.fileService.delete(actor, filepath);
+      // Bug: empty stream does not trigger end event, which leads to hang in the for await
+      stream.emit('end');
+      throw new UploadEmptyFileError();
+    }
 
     // postHook: create item from file properties
     const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
@@ -176,10 +151,11 @@ class FileItemService {
     // add thumbnails if image
     // allow failures
     if (MimeTypes.isImage(mimetype)) {
-      await this.itemThumbnailService
-        // TODO: is type cast okay?
-        .upload(actor, repositories, newItem.id, stream)
-        .catch((e) => console.error(e));
+      try {
+        await this.itemThumbnailService.upload(actor, repositories, newItem.id, stream);
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     return newItem;

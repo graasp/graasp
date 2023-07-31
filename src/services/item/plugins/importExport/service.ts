@@ -175,10 +175,9 @@ export class ImportExportService {
       const mimetype = await asyncDetectFile(filepath);
       // upload file
       const file = fs.createReadStream(filepath);
-      const item = await this.fileItemService._upload(actor, repositories, {
+      const item = await this.fileItemService.upload(actor, repositories, {
         filename,
         mimetype,
-        filepath,
         description,
         stream: file,
         parentId: parent?.id,

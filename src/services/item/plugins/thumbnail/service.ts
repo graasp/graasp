@@ -30,7 +30,6 @@ export class ItemThumbnailService {
     await this.itemService.patch(actor, repositories, itemId, {
       settings: { hasThumbnail: true },
     });
-
     return item;
   }
 

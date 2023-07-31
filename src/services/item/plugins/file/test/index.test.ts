@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import { HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
@@ -21,9 +21,11 @@ import { ItemMembershipRepository } from '../../../../itemMembership/repository'
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
+import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { DEFAULT_MAX_STORAGE } from '../utils/constants';
+import { StorageExceeded } from '../utils/errors';
 
 // TODO: LOCAL FILE TESTS
 
@@ -32,7 +34,7 @@ jest.mock('../../../../../plugins/datasource');
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
-const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
+const headObjectMock = jest.fn(async (e) => ({ ContentLength: 10 }));
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 
 const MOCK_SIGNED_URL = 'signed-url';
@@ -137,7 +139,7 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
           // check response value
-          const [newItem] = response.json();
+          const [newItem] = Object.values(response.json().data) as Item[];
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
@@ -170,7 +172,7 @@ describe('File Item routes tests', () => {
           });
 
           // check response value
-          const items = response.json();
+          const items = Object.values(response.json().data) as Item[];
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
@@ -207,7 +209,7 @@ describe('File Item routes tests', () => {
           });
 
           // check response value
-          const [newItem] = response.json();
+          const [newItem] = Object.values(response.json().data) as Item[];
           expect(response.statusCode).toBe(StatusCodes.OK);
 
           // check item exists in db
@@ -255,28 +257,32 @@ describe('File Item routes tests', () => {
           expect(uploadDoneMock).not.toHaveBeenCalled();
         });
 
-        it('Cannot upload empty file', async () => {
-          const form = new FormData();
-          form.append(
-            'myfile',
-            fs.createReadStream(path.resolve(__dirname, './fixtures/emptyFile')),
-          );
-
-          const response = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/upload`,
-            payload: form,
-            headers: form.getHeaders(),
-          });
-
-          expect(response.json()).toMatchObject(new UploadEmptyFileError(expect.anything()));
-
-          // check item exists in db
-          const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
-          expect(item).toBeNull();
-        });
-
         it('Cannot upload with storage exceeded', async () => {
+          const form = createFormData();
+          await saveItemAndMembership({
+            member: actor,
+            item: getDummyItem({
+              type: ItemType.S3_FILE,
+              extra: { [ItemType.S3_FILE]: { size: DEFAULT_MAX_STORAGE + 1 } } as S3FileItemExtra,
+            }),
+          });
+
+          const response = await app.inject({
+            method: HttpMethod.POST,
+            url: `${ITEMS_ROUTE_PREFIX}/upload`,
+            payload: form,
+            headers: form.getHeaders(),
+          });
+
+          expect(response.json().errors[0]).toMatchObject(new StorageExceeded(expect.anything()));
+
+          // check item exists in db
+          const items = await ItemRepository.findBy({ type: FILE_ITEM_TYPE });
+          expect(items).toHaveLength(1);
+        });
+
+        it('Cannot upload empty file', async () => {
+          headObjectMock.mockImplementation(async () => ({ ContentLength: 0 }));
           const form = new FormData();
           form.append(
             'myfile',
@@ -290,35 +296,55 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json()).toMatchObject(new UploadEmptyFileError(expect.anything()));
+          expect(response.json().errors[0].message).toEqual(new UploadEmptyFileError().message);
+          expect(deleteObjectMock).toHaveBeenCalled();
 
           // check item exists in db
           const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
           expect(item).toBeNull();
         });
-
-        // TODO
-        // it('Check rollback if one file fails', async () => {
-        //   const form = new FormData();
-        //   form.append('myfile', fs.createReadStream(path.resolve(__dirname, './fixtures/emptyFile')));
-
-        //   const response = await app.inject({
-        //     method: HttpMethod.POST,
-        //     url: `${ITEMS_ROUTE_PREFIX}/upload`,
-        //     payload: form,
-        //     headers: form.getHeaders(),
-        //   });
-
-        //   expect(response.json()).toMatchObject(new UploadEmptyFileError(expect.anything()));
-
-        //   // check item exists in db
-        //   const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
-        //   expect(item).toBeNull();
-
-        // });
       });
 
       describe('With error', () => {
+        it('Check rollback if one file fails, keep one successful file', async () => {
+          // this simulates an empty file among 2 files -> that triggers an error
+          headObjectMock
+            .mockResolvedValueOnce({ ContentLength: 0 })
+            .mockResolvedValueOnce({ ContentLength: 10 });
+
+          const form = new FormData();
+          form.append(
+            'myfile',
+            fs.createReadStream(path.resolve(__dirname, './fixtures/emptyFile')),
+          );
+
+          const form1 = createFormData(form);
+
+          ({ app, actor } = await build());
+          const response = await app.inject({
+            method: HttpMethod.POST,
+            url: `${ITEMS_ROUTE_PREFIX}/upload`,
+            payload: form1,
+            headers: form1.getHeaders(),
+          });
+
+          expect(response.statusCode).toEqual(StatusCodes.OK);
+          // upload 2 files and one set of thumbnails
+          expect(uploadDoneMock).toHaveBeenCalledTimes(
+            Object.values(ThumbnailSizeFormat).length + 2,
+          );
+          expect(deleteObjectMock).toHaveBeenCalledTimes(1);
+
+          // one empty file error
+          expect(response.json().errors[0].message).toEqual(new UploadEmptyFileError().message);
+
+          // one file has been uploaded
+          expect(Object.entries(response.json().data)).toHaveLength(1);
+
+          // check item exists in db
+          const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
+          expect(item!.type).toEqual(ItemType.S3_FILE);
+        });
         it('Gracefully fails if s3 upload throws', async () => {
           uploadDoneMock.mockImplementation(() => {
             throw new Error('putObject throws');
@@ -334,7 +360,9 @@ describe('File Item routes tests', () => {
             headers: form.getHeaders(),
           });
 
-          expect(response.json()).toMatchObject(new UploadFileUnexpectedError(expect.anything()));
+          expect(response.json().errors[0]).toMatchObject(
+            new UploadFileUnexpectedError(expect.anything()),
+          );
 
           // check item exists in db
           const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
