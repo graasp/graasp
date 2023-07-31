@@ -65,19 +65,24 @@ export class ItemPublishedService {
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
     const { itemPublishedRepository, itemTagRepository } = repositories;
-
+    const random = Math.random();
+    console.time(`INFORMATION ${random} total getMany`);
+    console.time(`INFORMATION ${random} getMany`);
     const { data: itemsMap, errors } = await this.itemService.getMany(actor, repositories, itemIds);
-
+    console.timeEnd(`INFORMATION  ${random} getMany`);
     const items = Object.values(itemsMap);
     // item should be public first
+    console.time(`INFORMATION ${random} hasForMany`);
     const { data: areItemsPublic, errors: publicErrors } = await itemTagRepository.hasForMany(
       items,
       ItemTagType.Public,
     );
-
+    console.timeEnd(`INFORMATION ${random} hasForMany`);
+    console.time(`INFORMATION ${random} getForItems`);
     const { data: publishedInfo, errors: publishedErrors } =
       await itemPublishedRepository.getForItems(items.filter((i) => areItemsPublic[i.id]));
-
+    console.timeEnd(`INFORMATION ${random} getForItems`);
+    console.timeEnd(`INFORMATION ${random} total getMany`);
     return {
       data: publishedInfo,
       errors: [...errors, ...publicErrors, ...publishedErrors],

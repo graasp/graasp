@@ -1,4 +1,7 @@
-import { ItemTagType, PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
+import { Result } from 'ioredis';
+import { resourceLimits } from 'worker_threads';
+
+import { ItemTagType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
 
 import {
   MemberCannotAccess,
@@ -26,6 +29,81 @@ const permissionMapping = {
  * @param item
  * @throws if the user cannot access the item
  */
+
+export const validatePermissionMany = async (
+  { itemMembershipRepository, itemTagRepository }: Repositories,
+  permission: PermissionLevel,
+  member: Actor,
+  items: Item[],
+): Promise<ResultOf<ItemMembership | null>> => {
+  // batch request for all items
+  const inheritedMemberships = member
+    ? await itemMembershipRepository.getInheritedMany(items, member, true)
+    : null;
+  const tags = await itemTagRepository.hasManyForMany(items, [
+    ItemTagType.Public,
+    ItemTagType.Hidden,
+  ]);
+
+  const result: ResultOf<ItemMembership | null> = {
+    data: inheritedMemberships?.data ?? {},
+    errors: [],
+  };
+
+  for (const item of items) {
+    const highest = result.data[item.id]?.permission;
+    const isValid = highest && permissionMapping[highest].includes(permission);
+
+    // HIDDEN CHECK - prevent read
+    // cannot read if your have read access only
+    if (highest === PermissionLevel.Read) {
+      const isHidden = tags.data[item.id].includes(ItemTagType.Hidden);
+      if (isHidden) {
+        delete result.data[item.id];
+        result.errors.push(new MemberCannotAccess(item.id));
+      }
+    }
+
+    // correct membership level pass successfully
+    if (isValid) {
+      continue;
+    }
+
+    // PUBLIC CHECK
+    if (permission === PermissionLevel.Read) {
+      const isPublic = tags.data[item.id].includes(ItemTagType.Public);
+      if (isPublic) {
+        // Old validate permission return null when public, this is a bit odd but this is current behavior
+        // It is used so that the item is not removed from the list when it is public in ItemService.getMany
+        result.data[item.id] = null;
+        continue;
+      }
+    }
+
+    if (!inheritedMemberships?.data[item.id]) {
+      delete inheritedMemberships?.data[item.id];
+      result.errors.push(new MemberCannotAccess(item.id));
+    }
+
+    // add corresponding error
+    delete inheritedMemberships?.data[item.id];
+    switch (permission) {
+      case PermissionLevel.Read:
+        result.errors.push(new MemberCannotReadItem(item.id));
+      case PermissionLevel.Write:
+        result.errors.push(new MemberCannotWriteItem(item.id));
+      case PermissionLevel.Admin:
+        result.errors.push(new MemberCannotAdminItem(item.id));
+      default:
+        result.errors.push(new Error(`${permission} is not a valid permission`));
+    }
+  }
+
+  console.log(result);
+
+  return result;
+};
+
 export const validatePermission = async (
   { itemMembershipRepository, itemTagRepository }: Repositories,
   permission: PermissionLevel,
@@ -34,6 +112,7 @@ export const validatePermission = async (
 ): Promise<ItemMembership | null> => {
   // get best permission for user
   // but do not fetch membership for signed out member
+
   const inheritedMembership = member
     ? await itemMembershipRepository.getInherited(item, member, true)
     : null;

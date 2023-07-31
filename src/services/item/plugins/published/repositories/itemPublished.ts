@@ -1,6 +1,6 @@
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { Actor } from '../../../../member/entities/member';
-import { mapById } from '../../../../utils';
+import { mapById, printFilledSQL } from '../../../../utils';
 import { Item } from '../../../entities/Item';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';

@@ -65,6 +65,7 @@ describe('Membership routes tests', () => {
           url: `/item-memberships?itemId=${item.id}`,
         });
         const { data, errors } = response.json();
+
         for (const m of memberships) {
           const im = data[item.id].find(({ id }) => id === m.id);
           expect(im).toBeTruthy();
@@ -156,6 +157,7 @@ describe('Membership routes tests', () => {
           url: `/item-memberships?itemId=${item.id}`,
         });
         const { data, errors } = response.json();
+        console.log(data);
         for (const m of memberships) {
           const im = data[item.id].find(({ id }) => id === m.id);
           expect(im).toBeTruthy();

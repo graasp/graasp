@@ -36,8 +36,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.get<{ Querystring: { itemId: string[] } }>(
         '/',
         { schema: getItems, preHandler: fastify.fetchMemberInSession },
-        async ({ member, query: { itemId: ids }, log }) => {
-          return itemMembershipService.getForManyItems(member, buildRepositories(), ids);
+        async ({ member, id, query: { itemId: ids }, log }) => {
+          console.time(`METRICS ${id}`);
+          const result = await itemMembershipService.getForManyItems(
+            member,
+            buildRepositories(),
+            ids,
+          );
+          console.timeEnd(`METRICS ${id}`);
+          return result;
         },
       );
 

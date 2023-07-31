@@ -2,6 +2,7 @@ import {
   BaseEntity,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToOne,
@@ -16,6 +17,7 @@ import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 
 @Entity()
+@Index('IDX_gist_item_published_path', { synchronize: false })
 @Unique('published-item', ['item'])
 export class ItemPublished extends BaseEntity implements GraaspItemPublished {
   @PrimaryGeneratedColumn('uuid')

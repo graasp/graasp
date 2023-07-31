@@ -97,21 +97,21 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   },
 
   async getForManyItems(items: Item[], memberId?: UUID): Promise<ResultOf<ItemMembership[]>> {
+    if (items.length === 0) {
+      return { data: {}, errors: [] };
+    }
+
+    const ids = items.map((i) => i.id);
     const query = this.createQueryBuilder('item_membership')
-      .leftJoinAndSelect('item_membership.item', 'item')
-      .leftJoinAndSelect('item_membership.member', 'member');
-
-    query.where(
-      new Brackets((qb) => {
-        items.forEach(({ path }, idx) => {
-          qb.orWhere(`item.path @> :path_${idx}`, { [`path_${idx}`]: path });
-        });
-      }),
-    );
-
+      .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
+      .where('descendant.id in (:...ids)', { ids: ids });
     if (memberId) {
       query.andWhere('member.id = :memberId', { memberId });
     }
+
+    query
+      .leftJoinAndSelect('item_membership.item', 'item')
+      .leftJoinAndSelect('item_membership.member', 'member');
 
     const memberships = await query.getMany();
 
@@ -127,6 +127,54 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     );
 
     return { data: idToMemberships, errors: mapByPath.errors };
+  },
+
+  async getInheritedMany(
+    items: Item[],
+    member: Member,
+    considerLocal = false,
+  ): Promise<ResultOf<ItemMembership>> {
+    if (items.length === 0) {
+      return { data: {}, errors: [] };
+    }
+
+    const ids = items.map((i) => i.id);
+
+    const query = ItemMembershipRepository.createQueryBuilder('item_membership')
+      // Map each membership to the item it can affect
+      .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
+      // Join for entity result
+      .leftJoinAndSelect('item_membership.member', 'member')
+      .leftJoinAndSelect('item_membership.item', 'item')
+      // Only from input
+      .where('descendant.id in (:...ids)', { ids: ids })
+      .andWhere('item_membership.member = :id', { id: member.id });
+    if (!considerLocal) {
+      query.andWhere('item.id not in (:...ids)', { ids: ids });
+    }
+    // Keep only closest membership per descendant
+    query
+      .addSelect('descendant.id')
+      .distinctOn(['descendant.id'])
+      .orderBy('descendant.id')
+      .addOrderBy('nlevel(item_membership.item_path)', 'DESC');
+
+    // annoyingly, getMany removes dupplicate entities, however in this case two items might be linked to the same effective membership
+    const memberships = await query.getRawAndEntities();
+
+    // map entities by id to avoid iterating on the result multiple times
+    const entityMap = new Map(memberships.entities.map((e) => [e.id, e]));
+    const itemIdToMemberships = new Map(
+      memberships.raw.map((e) => [e.descendant_id, entityMap.get(e.item_membership_id)]),
+    ); // unfortunately we lose type safety because of the raw
+
+    const result = mapById({
+      keys: ids,
+      findElement: (id) => itemIdToMemberships.get(id),
+      buildError: (id) => new ItemMembershipNotFound(id),
+    });
+
+    return result;
   },
 
   // check member's membership "at" item
