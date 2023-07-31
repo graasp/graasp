@@ -73,7 +73,7 @@ class FileService {
       });
     } catch (e) {
       // rollback uploaded file
-      this.delete(member, filepath).catch((e) => console.error(e));
+      this.delete(member, filepath);
       console.error(e);
       throw new UploadFileUnexpectedError({ mimetype, memberId: member.id });
     }

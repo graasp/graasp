@@ -142,8 +142,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         await db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
 
-          // files are saved in temporary folder in disk, they are removed when the response ends
-          // necessary to get file size -> can use stream busboy only otherwise
           try {
             const i = await fileItemService.upload(member, repositories, {
               parentId,
@@ -156,19 +154,17 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           } catch (e) {
             // ignore errors
             log.error(e);
-            // force close to avoid hanging
-            stream.emit('end');
             errors.push(e);
+          } finally {
+            // force close to avoid hanging
+            // necessary for errors that don't read the stream
+            stream.emit('end');
           }
         });
       }
 
       return {
-        ...mapById({
-          keys: items.map(({ id }) => id),
-          findElement: (id) => items.find(({ id: thisId }) => id === thisId),
-        }),
-        // replace errors
+        data: items.reduce((data, item) => ({ ...data, [item.id]: item }), {}),
         errors,
       };
     },

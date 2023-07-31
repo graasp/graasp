@@ -128,7 +128,7 @@ class FileItemService {
         throw new UploadEmptyFileError();
       }
 
-      // postHook: create item from file properties
+      // create item from file properties
       const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
       const item = {
         name,
@@ -156,15 +156,17 @@ class FileItemService {
       // allow failures
       if (MimeTypes.isImage(mimetype)) {
         try {
-          await this.itemThumbnailService
-            .upload(actor, repositories, newItem.id, streamForThumbnails)
-            .catch((e) => {
-              console.error(e);
-            });
+          await this.itemThumbnailService.upload(
+            actor,
+            repositories,
+            newItem.id,
+            streamForThumbnails,
+          );
         } catch (e) {
           console.error(e);
         }
       }
+
       return newItem;
     } finally {
       streamForThumbnails.emit('close');
