@@ -23,7 +23,6 @@ export class ItemThumbnailService {
   async upload(actor: Member, repositories: Repositories, itemId: string, file: Readable) {
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Write, actor, item);
-
     await this.thumbnailService.upload(actor, itemId, file);
 
     // update item that should have thumbnail

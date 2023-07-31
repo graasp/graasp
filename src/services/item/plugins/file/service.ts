@@ -1,5 +1,5 @@
 import path from 'path';
-import { Readable } from 'stream';
+import { PassThrough, Readable } from 'stream';
 
 import { MultipartFields, MultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
@@ -103,62 +103,72 @@ class FileItemService {
       );
     }
     // check member storage limit
-    await this.checkRemainingStorage(actor, repositories).catch((e) => {
-      // Bug: stream not read does not trigger end event, which leads to hang in the for await
-      stream.emit('end');
-      throw e;
-    });
+    await this.checkRemainingStorage(actor, repositories);
 
-    await this.fileService.upload(actor, {
-      file: stream,
-      filepath,
-      mimetype,
-    });
-    const size = await this.fileService.getFileSize(actor, filepath);
-
-    // throw for empty files
-    if (!size) {
-      await this.fileService.delete(actor, filepath);
-      // Bug: empty stream does not trigger end event, which leads to hang in the for await
-      stream.emit('end');
-      throw new UploadEmptyFileError();
-    }
-
-    // postHook: create item from file properties
-    const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
-    const item = {
-      name,
-      description,
-      type: this.fileService.type,
-      extra: {
-        [this.fileService.type]: {
-          name: filename,
-          path: filepath,
-          mimetype,
-          size,
-        },
-        // todo: fix type
-      } as any,
-      parentId,
-      creator: actor,
-    };
-
-    const newItem = await this.itemService.post(actor, repositories, {
-      item,
-      parentId,
-    });
-
-    // add thumbnails if image
-    // allow failures
+    // duplicate stream to use in thumbnails
+    const streamForThumbnails = new PassThrough();
     if (MimeTypes.isImage(mimetype)) {
-      try {
-        await this.itemThumbnailService.upload(actor, repositories, newItem.id, stream);
-      } catch (e) {
-        console.error(e);
-      }
+      stream.pipe(streamForThumbnails);
     }
 
-    return newItem;
+    try {
+      await this.fileService.upload(actor, {
+        file: stream,
+        filepath,
+        mimetype,
+      });
+
+      const size = await this.fileService.getFileSize(actor, filepath);
+
+      // throw for empty files
+      if (!size) {
+        await this.fileService.delete(actor, filepath);
+        // Bug: empty stream does not trigger end event, which leads to hang in the for await
+        streamForThumbnails.emit('close');
+        throw new UploadEmptyFileError();
+      }
+
+      // postHook: create item from file properties
+      const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
+      const item = {
+        name,
+        description,
+        type: this.fileService.type,
+        extra: {
+          [this.fileService.type]: {
+            name: filename,
+            path: filepath,
+            mimetype,
+            size,
+          },
+          // todo: fix type
+        } as any,
+        parentId,
+        creator: actor,
+      };
+
+      const newItem = await this.itemService.post(actor, repositories, {
+        item,
+        parentId,
+      });
+
+      // add thumbnails if image
+      // allow failures
+      if (MimeTypes.isImage(mimetype)) {
+        try {
+          await this.itemThumbnailService
+            .upload(actor, repositories, newItem.id, streamForThumbnails)
+            .catch((e) => {
+              console.error(e);
+            });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      return newItem;
+    } finally {
+      streamForThumbnails.emit('close');
+    }
   }
 
   async download(

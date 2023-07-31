@@ -113,7 +113,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   fastify.route<{ Querystring: IdParam; Body: any }>({
     method: HttpMethod.POST,
     url: '/upload',
-    // schema: upload,
+    schema: upload,
     preHandler: fastify.verifyAuthentication,
     handler: async (request) => {
       const {
@@ -156,6 +156,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           } catch (e) {
             // ignore errors
             log.error(e);
+            // force close to avoid hanging
+            stream.emit('end');
             errors.push(e);
           }
         });
