@@ -1,6 +1,7 @@
-import fs from 'fs';
 import path from 'path';
+import { PassThrough, Readable } from 'stream';
 
+import { MultipartFields, MultipartFile } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import {
@@ -16,8 +17,8 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
+import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
-import { UploadedFile } from '../../../thumbnail/types';
 import { randomHexOf4 } from '../../../utils';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
@@ -59,11 +60,7 @@ class FileItemService {
 
   // check the user has enough storage to create a new item given its size
   // get the complete storage
-  async checkRemainingStorage(actor: Member, repositories: Repositories, size?: number) {
-    if (!size) {
-      return;
-    }
-
+  async checkRemainingStorage(actor: Member, repositories: Repositories, size: number = 0) {
     const { id: memberId } = actor;
 
     const currentStorage = await repositories.memberRepository.getMemberStorage(
@@ -72,67 +69,66 @@ class FileItemService {
     );
 
     if (currentStorage + size > this.options.maxMemberStorage) {
-      throw new StorageExceeded();
+      throw new StorageExceeded(currentStorage + size);
     }
   }
 
   async upload(
-    actor: Actor,
-    repositories: Repositories,
-    files: (UploadedFile & { description?: string })[],
-    parentId?: string,
+    actor,
+    repositories,
+    {
+      description,
+      parentId,
+      filename,
+      mimetype,
+      fields,
+      stream,
+    }: {
+      description?: string;
+      parentId?: string;
+      filename;
+      mimetype;
+      fields?: MultipartFields;
+      stream: Readable;
+    },
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
+    const filepath = this.buildFilePath(); // parentId, filename
+    // compute body data from file's fields
+    if (fields) {
+      const fileBody = Object.fromEntries(
+        Object.keys(fields).map((key) => [
+          key,
+          (fields[key] as unknown as { value: string })?.value,
+        ]),
+      );
+    }
+    // check member storage limit
+    await this.checkRemainingStorage(actor, repositories);
+
+    // duplicate stream to use in thumbnails
+    const streamForThumbnails = new PassThrough();
+    if (MimeTypes.isImage(mimetype)) {
+      stream.pipe(streamForThumbnails);
     }
 
-    // check rights
-    if (parentId) {
-      const item = await repositories.itemRepository.get(parentId);
-      await validatePermission(repositories, PermissionLevel.Write, actor, item);
-    }
+    try {
+      await this.fileService.upload(actor, {
+        file: stream,
+        filepath,
+        mimetype,
+      });
 
-    const promises = files.map(async (fileObject) => {
-      const { filename, mimetype, fields, filepath: tmpPath, description } = fileObject;
-      const file = fs.createReadStream(tmpPath);
-      const { size } = fs.statSync(tmpPath);
-      const filepath = this.buildFilePath(); // parentId, filename
+      const size = await this.fileService.getFileSize(actor, filepath);
 
-      // compute body data from file's fields
-      if (fields) {
-        const fileBody = Object.fromEntries(
-          Object.keys(fields).map((key) => [
-            key,
-            (fields[key] as unknown as { value: string })?.value,
-          ]),
-        );
+      // throw for empty files
+      if (!size) {
+        await this.fileService.delete(actor, filepath);
+        // Bug: empty stream does not trigger end event, which leads to hang in the for await
+        streamForThumbnails.emit('close');
+        throw new UploadEmptyFileError();
       }
-      // check member storage limit
-      await this.checkRemainingStorage(actor, repositories, size);
 
-      return await this.fileService
-        .upload(actor, {
-          file,
-          filepath,
-          mimetype,
-          size,
-        })
-        .then(() => {
-          return { filepath, filename, size, mimetype, uploaded: fileObject, description };
-        })
-        .catch((e) => {
-          throw e;
-        });
-    });
-
-    // TODO: CHUNK TO AVOID FLOODING
-    // fallback?
-    const fileProperties = await Promise.all(promises);
-
-    const items: Item[] = [];
-    // postHook: create items from file properties
-    for (const properties of fileProperties) {
-      const { filename, filepath, mimetype, size, uploaded, description } = properties;
+      // create item from file properties
       const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
       const item = {
         name,
@@ -155,17 +151,26 @@ class FileItemService {
         item,
         parentId,
       });
-      items.push(newItem);
 
       // add thumbnails if image
       // allow failures
       if (MimeTypes.isImage(mimetype)) {
-        await this.itemThumbnailService
-          .upload(actor, repositories, newItem.id, uploaded)
-          .catch((e) => console.error(e));
+        try {
+          await this.itemThumbnailService.upload(
+            actor,
+            repositories,
+            newItem.id,
+            streamForThumbnails,
+          );
+        } catch (e) {
+          console.error(e);
+        }
       }
+
+      return newItem;
+    } finally {
+      streamForThumbnails.emit('close');
     }
-    return items;
   }
 
   async download(
