@@ -103,7 +103,8 @@ class FileItemService {
       );
     }
     // check member storage limit
-    await this.checkRemainingStorage(actor, repositories);
+    // BUG: this creates a big leak!!
+    // await this.checkRemainingStorage(actor, repositories);
 
     // duplicate stream to use in thumbnails
     const streamForThumbnails = new PassThrough();
@@ -218,7 +219,8 @@ class FileItemService {
     };
 
     // check member storage limit
-    await this.checkRemainingStorage(actor, repositories, size);
+    // BUG: this creates a big leak!!
+    // await this.checkRemainingStorage(actor, repositories, size);
 
     // DON'T use task runner for copy file task: this would generate a new transaction
     // which is useless since the file copy task should not touch the DB at all
