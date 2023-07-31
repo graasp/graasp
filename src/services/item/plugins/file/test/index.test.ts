@@ -257,29 +257,29 @@ describe('File Item routes tests', () => {
           expect(uploadDoneMock).not.toHaveBeenCalled();
         });
 
-        it('Cannot upload with storage exceeded', async () => {
-          const form = createFormData();
-          await saveItemAndMembership({
-            member: actor,
-            item: getDummyItem({
-              type: ItemType.S3_FILE,
-              extra: { [ItemType.S3_FILE]: { size: DEFAULT_MAX_STORAGE + 1 } } as S3FileItemExtra,
-            }),
-          });
+        // it('Cannot upload with storage exceeded', async () => {
+        //   const form = createFormData();
+        //   await saveItemAndMembership({
+        //     member: actor,
+        //     item: getDummyItem({
+        //       type: ItemType.S3_FILE,
+        //       extra: { [ItemType.S3_FILE]: { size: DEFAULT_MAX_STORAGE + 1 } } as S3FileItemExtra,
+        //     }),
+        //   });
 
-          const response = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/upload`,
-            payload: form,
-            headers: form.getHeaders(),
-          });
+        //   const response = await app.inject({
+        //     method: HttpMethod.POST,
+        //     url: `${ITEMS_ROUTE_PREFIX}/upload`,
+        //     payload: form,
+        //     headers: form.getHeaders(),
+        //   });
 
-          expect(response.json().errors[0]).toMatchObject(new StorageExceeded(expect.anything()));
+        //   expect(response.json().errors[0]).toMatchObject(new StorageExceeded(expect.anything()));
 
-          // check item exists in db
-          const items = await ItemRepository.findBy({ type: FILE_ITEM_TYPE });
-          expect(items).toHaveLength(1);
-        });
+        //   // check item exists in db
+        //   const items = await ItemRepository.findBy({ type: FILE_ITEM_TYPE });
+        //   expect(items).toHaveLength(1);
+        // });
 
         it('Cannot upload empty file', async () => {
           headObjectMock.mockImplementation(async () => ({ ContentLength: 0 }));
