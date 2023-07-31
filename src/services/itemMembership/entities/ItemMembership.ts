@@ -34,7 +34,7 @@ export class ItemMembership extends BaseEntity implements GraaspItemMembership {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member;
+  creator: Member | null;
 
   @Index()
   @ManyToOne(() => Member, (member) => member.id, {

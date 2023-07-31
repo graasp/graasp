@@ -31,7 +31,7 @@ export class ItemService {
     update: { pre: { item: Item }; post: { item: Item } };
     delete: { pre: { item: Item }; post: { item: Item } };
     copy: { pre: { original: Item }; post: { original: Item; copy: Item } };
-    move: { pre: { source: Item }; post: { source: Item; destination: Item } };
+    move: { pre: { source: Item; destination: Item }; post: { source: Item; destination: Item } };
   }>();
 
   async post(
@@ -321,7 +321,21 @@ export class ItemService {
       await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
+    // post hook
+    // question: invoque on all items?
+    await this.hooks.runPreHooks('move', actor, repositories, {
+      source: item,
+      destination: parentItem,
+    });
+
     await this._move(actor, repositories, item, parentItem);
+
+    // post hook
+    // question: invoque on all items?
+    await this.hooks.runPostHooks('move', actor, repositories, {
+      source: item,
+      destination: parentItem,
+    });
 
     // TODO: optimize
     return itemRepository.get(itemId);
