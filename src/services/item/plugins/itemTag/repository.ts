@@ -201,12 +201,17 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
    * @param  {Member} creator
    * @param  {Item} original
    * @param  {Item} copy
+   * @param  {object} excludeTypes
    */
-  async copyAll(creator: Member, original: Item, copy: Item) {
+  async copyAll(creator: Member, original: Item, copy: Item, excludeTypes?: ItemTagType[]) {
     // delete from parent only
     const itemTags = await this.getForItem(original);
     if (itemTags) {
-      await this.insert(itemTags.map(({ type }) => ({ item: copy, type, creator })));
+      await this.insert(
+        itemTags
+          .filter((tag) => !excludeTypes?.includes(tag.type))
+          .map(({ type }) => ({ item: copy, type, creator })),
+      );
     }
   },
 });
