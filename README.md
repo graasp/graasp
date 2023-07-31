@@ -172,10 +172,6 @@ S3_FILE_ITEM_BUCKET=graasp
 S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
 S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
 
-FILES_PATH_PREFIX=files/
-AVATARS_PATH_PREFIX=avatars/
-THUMBNAILS_PATH_PREFIX=items/
-
 # Graasp H5P
 H5P_FILE_STORAGE_TYPE=file
 H5P_STORAGE_ROOT_PATH=/tmp/graasp-h5p/
@@ -194,37 +190,29 @@ H5P_PATH_PREFIX=h5p-content/
 # ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Graasp embedded link item
-EMBEDDED_LINK_ITEM_PLUGIN=false
 # Set by ./.devcontainer/docker-compose.yml
 # EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://localhost:8061
 
 # Graasp apps
-APPS_PLUGIN=true
 APPS_JWT_SECRET=<content>
 APPS_PUBLISHER_ID=<id>
 
 # Graasp websockets
-# If you are using a local installation and don't want to install redis, you can set WEBSOCKETS_PLUGIN to false
-WEBSOCKETS_PLUGIN=true
 # Redis config set by ./.devcontainer/docker-compose.yml
 # REDIS_HOST=redis
 # REDIS_PORT=6379
 # REDIS_USERNAME=
 # REDIS_PASSWORD=
 
-# Graasp chatbox
-CHATBOX_PLUGIN=true
-
-# Graasp public items
-PUBLIC_PLUGIN=true
-
-# Graasp Actions and hosts
+# Graasp Actions
 SAVE_ACTIONS=true
-BUILDER_CLIENT_HOST=<value>
-PLAYER_CLIENT_HOST=<value>
-EXPLORER_CLIENT_HOST=<value>
-AUTH_CLIENT_HOST=<value>
-GRAASP_MOBILE_BUILDER=<value>
+
+# Client hosts
+BUILDER_CLIENT_HOST=http://localhost:3111
+PLAYER_CLIENT_HOST=http://localhost:3112
+EXPLORER_CLIENT_HOST=http://localhost:3005
+AUTH_CLIENT_HOST=http://localhost:3001
+GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
 # validation containers
 IMAGE_CLASSIFIER_API=<url>

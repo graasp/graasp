@@ -266,14 +266,12 @@ export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN =
   process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
 
 // Graasp apps
-export const APPS_PLUGIN = process.env.APPS_PLUGIN === 'true';
 if (!process.env.APPS_JWT_SECRET) {
   throw new Error('APPS_JWT_SECRET is not defined');
 }
 export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
-export const WEBSOCKETS_PLUGIN = process.env.WEBSOCKETS_PLUGIN === 'true';
 export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = process.env.REDIS_PORT;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
@@ -281,10 +279,6 @@ export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
-
-// export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
-// export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
-// export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
 
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root' };
 
