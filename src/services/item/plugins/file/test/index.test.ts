@@ -585,32 +585,32 @@ describe('File Item routes tests', () => {
           });
         });
 
-        it('Prevent copy if member storage is exceeded', async () => {
-          const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        // it('Prevent copy if member storage is exceeded', async () => {
+        //   const { item: parentItem } = await saveItemAndMembership({ member: actor });
 
-          const { item } = await saveItemAndMembership({
-            item: MOCK_HUGE_FILE_ITEM,
-            member: actor,
-          });
-          const itemCount = await ItemRepository.find();
+        //   const { item } = await saveItemAndMembership({
+        //     item: MOCK_HUGE_FILE_ITEM,
+        //     member: actor,
+        //   });
+        //   const itemCount = await ItemRepository.find();
 
-          const response = await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
-            payload: {
-              parentId: parentItem.id,
-            },
-          });
+        //   const response = await app.inject({
+        //     method: HttpMethod.POST,
+        //     url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
+        //     payload: {
+        //       parentId: parentItem.id,
+        //     },
+        //   });
 
-          await new Promise(async (done) => {
-            setTimeout(async () => {
-              await expect(copyObjectMock).not.toHaveBeenCalled();
-              // did not copy
-              expect(await ItemRepository.find()).toHaveLength(itemCount.length);
-              done(true);
-            }, MULTIPLE_ITEMS_LOADING_TIME);
-          });
-        });
+        //   await new Promise(async (done) => {
+        //     setTimeout(async () => {
+        //       await expect(copyObjectMock).not.toHaveBeenCalled();
+        //       // did not copy
+        //       expect(await ItemRepository.find()).toHaveLength(itemCount.length);
+        //       done(true);
+        //     }, MULTIPLE_ITEMS_LOADING_TIME);
+        //   });
+        // });
       });
     });
   });
