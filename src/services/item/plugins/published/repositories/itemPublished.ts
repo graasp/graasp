@@ -106,7 +106,8 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       .from(Item, 'item')
       .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
       .innerJoin('item_category', 'ic', 'ic.item_path @> item.path')
-      .groupBy('item.id');
+      .innerJoinAndSelect('item.creator', 'member')
+      .groupBy(['item.id', 'member.id']);
 
     categoryIds.forEach((idString, idx) => {
       // split categories
