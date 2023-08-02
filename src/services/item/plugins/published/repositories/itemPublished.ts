@@ -4,6 +4,7 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { Actor } from '../../../../member/entities/member';
 import { mapById } from '../../../../utils';
 import { Item } from '../../../entities/Item';
+import { ItemRepository } from '../../../repository';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 
@@ -39,23 +40,11 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
   },
 
   // return public item entry? contains when it was published
-  async getAllPublishedItems(): Promise<Item[]> {
-    // we get the nested relation of item.creator because we only return the item and without this the creator is not returned
-    const publishedRows = await this.createQueryBuilder()
-      .select(['item'])
-      .from(Item, 'item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
-      .getMany();
-    return publishedRows;
-  },
-
-  // return public item entry? contains when it was published
-  async getItemsForMember(memberId: string) {
+  async getItemsForMember(itemRepository: typeof ItemRepository, memberId: string) {
     // get for membership write and admin -> createquerybuilder
-    return this.createQueryBuilder()
-      .select(['item'])
-      .from(Item, 'item')
+    // we need to pass through item repository because typeorm deduces the entity from its original repository
+    return itemRepository
+      .createQueryBuilder('item')
       .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .innerJoinAndSelect('item.creator', 'member')
@@ -88,44 +77,6 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       .getMany();
 
     return publishedInfos.map(({ item }) => item);
-  },
-
-  // QUESTION: where should we define this? mix between publish and category
-  /**
-   * get interesection of category ids and published
-   *
-   * ['A1,A2'] -> the item should have either A1 or A2 as category
-   * ['B1', 'B2'] -> the item should have both categories
-   * Return all if no ids is defined
-   * @param ids category ids - in the form of ['A1,A2', 'B1', 'C1,C2,C3']
-   * @returns object { id } of items with given categories
-   */
-  async getByCategories(categoryIds: string[]): Promise<Item[]> {
-    const query = this.createQueryBuilder()
-      .select(['item'])
-      .from(Item, 'item')
-      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
-      .innerJoin('item_category', 'ic', 'ic.item_path @> item.path')
-      .innerJoinAndSelect('item.creator', 'member')
-      .groupBy(['item.id', 'member.id']);
-
-    categoryIds.forEach((idString, idx) => {
-      // split categories
-      const categoryIdList = idString.split(',');
-      // dynamic key to avoid overlapping
-      const key = `id${idx}`;
-      if (idx === 0) {
-        // item should at least have one category with the category group
-        query.having(`array_agg(DISTINCT ic.category_id) && ARRAY[:...${key}]::uuid[]`, {
-          [key]: categoryIdList,
-        });
-      } else {
-        query.andHaving(`array_agg(DISTINCT ic.category_id) && ARRAY[:...${key}]::uuid[]`, {
-          [key]: categoryIdList,
-        });
-      }
-    });
-    return query.getMany();
   },
 
   // return public items sorted by most liked

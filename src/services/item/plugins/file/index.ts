@@ -94,8 +94,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     if (!id || type !== fileService.type) return;
     const size = (item.extra[fileService.type] as FileItemProperties & { size?: number })?.size;
 
-    // BUG: this creates a big leak!!
-    // await fileItemService.checkRemainingStorage(actor, repositories, size);
+    await fileItemService.checkRemainingStorage(actor, repositories, size);
   });
 
   // register post copy handler to copy the file object after item copy

@@ -116,8 +116,8 @@ export class ItemPublishedService {
   }
 
   async getItemsForMember(actor: Actor, repositories, memberId: UUID) {
-    const { itemPublishedRepository } = repositories;
-    return itemPublishedRepository.getItemsForMember(memberId);
+    const { itemRepository, itemPublishedRepository } = repositories;
+    return itemPublishedRepository.getItemsForMember(itemRepository, memberId);
   }
 
   async getLikedItems(actor: Actor, repositories: Repositories, limit?: number) {
@@ -128,11 +128,11 @@ export class ItemPublishedService {
 
   // filter out by categories, not defined will return all items
   async getItemsByCategories(actor: Actor, repositories: Repositories, categoryIds?: string[]) {
-    const { itemPublishedRepository } = repositories;
+    const { itemRepository } = repositories;
 
     const items = categoryIds?.length
-      ? await itemPublishedRepository.getByCategories(categoryIds)
-      : await itemPublishedRepository.getAllPublishedItems();
+      ? await itemRepository.getByCategories(categoryIds)
+      : await itemRepository.getAllPublishedItems();
 
     return filterOutHiddenItems(repositories, items);
   }

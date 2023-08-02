@@ -257,29 +257,29 @@ describe('File Item routes tests', () => {
           expect(uploadDoneMock).not.toHaveBeenCalled();
         });
 
-        // it('Cannot upload with storage exceeded', async () => {
-        //   const form = createFormData();
-        //   await saveItemAndMembership({
-        //     member: actor,
-        //     item: getDummyItem({
-        //       type: ItemType.S3_FILE,
-        //       extra: { [ItemType.S3_FILE]: { size: DEFAULT_MAX_STORAGE + 1 } } as S3FileItemExtra,
-        //     }),
-        //   });
+        it('Cannot upload with storage exceeded', async () => {
+          const form = createFormData();
+          await saveItemAndMembership({
+            member: actor,
+            item: getDummyItem({
+              type: ItemType.S3_FILE,
+              extra: { [ItemType.S3_FILE]: { size: DEFAULT_MAX_STORAGE + 1 } } as S3FileItemExtra,
+            }),
+          });
 
-        //   const response = await app.inject({
-        //     method: HttpMethod.POST,
-        //     url: `${ITEMS_ROUTE_PREFIX}/upload`,
-        //     payload: form,
-        //     headers: form.getHeaders(),
-        //   });
+          const response = await app.inject({
+            method: HttpMethod.POST,
+            url: `${ITEMS_ROUTE_PREFIX}/upload`,
+            payload: form,
+            headers: form.getHeaders(),
+          });
 
-        //   expect(response.json().errors[0]).toMatchObject(new StorageExceeded(expect.anything()));
+          expect(response.json().errors[0]).toMatchObject(new StorageExceeded(expect.anything()));
 
-        //   // check item exists in db
-        //   const items = await ItemRepository.findBy({ type: FILE_ITEM_TYPE });
-        //   expect(items).toHaveLength(1);
-        // });
+          // check item exists in db
+          const items = await ItemRepository.findBy({ type: FILE_ITEM_TYPE });
+          expect(items).toHaveLength(1);
+        });
 
         it('Cannot upload empty file', async () => {
           headObjectMock.mockImplementation(async () => ({ ContentLength: 0 }));
@@ -585,32 +585,32 @@ describe('File Item routes tests', () => {
           });
         });
 
-        // it('Prevent copy if member storage is exceeded', async () => {
-        //   const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        it('Prevent copy if member storage is exceeded', async () => {
+          const { item: parentItem } = await saveItemAndMembership({ member: actor });
 
-        //   const { item } = await saveItemAndMembership({
-        //     item: MOCK_HUGE_FILE_ITEM,
-        //     member: actor,
-        //   });
-        //   const itemCount = await ItemRepository.find();
+          const { item } = await saveItemAndMembership({
+            item: MOCK_HUGE_FILE_ITEM,
+            member: actor,
+          });
+          const itemCount = await ItemRepository.find();
 
-        //   const response = await app.inject({
-        //     method: HttpMethod.POST,
-        //     url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
-        //     payload: {
-        //       parentId: parentItem.id,
-        //     },
-        //   });
+          const response = await app.inject({
+            method: HttpMethod.POST,
+            url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
+            payload: {
+              parentId: parentItem.id,
+            },
+          });
 
-        //   await new Promise(async (done) => {
-        //     setTimeout(async () => {
-        //       await expect(copyObjectMock).not.toHaveBeenCalled();
-        //       // did not copy
-        //       expect(await ItemRepository.find()).toHaveLength(itemCount.length);
-        //       done(true);
-        //     }, MULTIPLE_ITEMS_LOADING_TIME);
-        //   });
-        // });
+          await new Promise(async (done) => {
+            setTimeout(async () => {
+              await expect(copyObjectMock).not.toHaveBeenCalled();
+              // did not copy
+              expect(await ItemRepository.find()).toHaveLength(itemCount.length);
+              done(true);
+            }, MULTIPLE_ITEMS_LOADING_TIME);
+          });
+        });
       });
     });
   });

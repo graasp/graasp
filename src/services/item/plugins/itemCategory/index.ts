@@ -1,15 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import common, {
-  create,
-  deleteOne,
-  getByCategories,
-  getCategories,
-  getCategory,
-  getCategoryTypes,
-  getItemCategories,
-} from './schemas';
+import common, { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
 import { ItemCategoryService } from './services/itemCategory';
 
