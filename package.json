@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "1.2.5",
+  "version": "1.2.7",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.306.0",
+    "@aws-sdk/lib-storage": "3.379.1",
     "@aws-sdk/s3-request-presigner": "3.306.0",
     "@fastify/auth": "4.2.0",
     "@fastify/bearer-auth": "9.0.0",
@@ -107,8 +108,8 @@
     "yarn": "1.22.19"
   },
   "devDependencies": {
-    "@commitlint/cli": "17.6.6",
-    "@commitlint/config-conventional": "17.6.6",
+    "@commitlint/cli": "17.6.7",
+    "@commitlint/config-conventional": "17.6.7",
     "@trivago/prettier-plugin-sort-imports": "4.1.1",
     "@types/bad-words": "3.0.1",
     "@types/bcrypt": "5.0.0",

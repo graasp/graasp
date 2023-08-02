@@ -1,9 +1,12 @@
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { FileItemProperties, HttpMethod, IdParam } from '@graasp/sdk';
+import { FileItemProperties, HttpMethod, IdParam, PermissionLevel } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import { validatePermission } from '../../../authorization';
+import { mapById } from '../../../utils';
+import { Item } from '../../entities/Item';
 import { download, updateSchema, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
@@ -91,7 +94,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     if (!id || type !== fileService.type) return;
     const size = (item.extra[fileService.type] as FileItemProperties & { size?: number })?.size;
 
-    await fileItemService.checkRemainingStorage(actor, repositories, size);
+    // BUG: this creates a big leak!!
+    // await fileItemService.checkRemainingStorage(actor, repositories, size);
   });
 
   // register post copy handler to copy the file object after item copy
@@ -118,31 +122,53 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         query: { id: parentId },
         log,
       } = request;
-      // TODO: if one file fails, keep other files??? APPLY ROLLBACK
-      // THEN WE SHOULD MOVE THE TRANSACTION
-      return db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
 
-        // const files = request.files();
-        // files are saved in temporary folder in disk, they are removed when the response ends
-        // necessary to get file size -> can use stream busboy only otherwise
-        const files = await request.saveRequestFiles();
-        return fileItemService.upload(member, repositories, files, parentId);
-      });
-      // .catch((e) => {
-      //   console.error(e);
+      // check rights
+      if (parentId) {
+        const repositories = buildRepositories();
+        const item = await repositories.itemRepository.get(parentId);
+        await validatePermission(repositories, PermissionLevel.Write, member, item);
+      }
 
-      //   // TODO rollback uploaded file
+      // upload file one by one
+      // TODO: CHUNK FOR PERFORMANCE
+      const files = request.files();
+      const items: Item[] = [];
+      const errors: Error[] = [];
+      for await (const fileObject of files) {
+        const { filename, mimetype, fields, file: stream } = fileObject;
 
-      //   if (e.code) {
-      //     throw e;
-      //   }
-      //   throw new UploadFileUnexpectedError(e);
-      // });
+        // if one file fails, keep other files
+        // transaction to ensure item is saved with memberships
+        await db.transaction(async (manager) => {
+          const repositories = buildRepositories(manager);
+
+          try {
+            const i = await fileItemService.upload(member, repositories, {
+              parentId,
+              filename,
+              mimetype,
+              fields,
+              stream,
+            });
+            items.push(i);
+          } catch (e) {
+            // ignore errors
+            log.error(e);
+            errors.push(e);
+          } finally {
+            // force close to avoid hanging
+            // necessary for errors that don't read the stream
+            stream.emit('end');
+          }
+        });
+      }
+
+      return {
+        data: items.reduce((data, item) => ({ ...data, [item.id]: item }), {}),
+        errors,
+      };
     },
-    // onResponse: async (request, reply) => {
-    //   uploadOnResponse?.(request, reply);
-    // },
   });
 
   fastify.get<{ Params: IdParam; Querystring: { size?: string; replyUrl?: boolean } }>(

@@ -1,13 +1,8 @@
-import {
-  CopyObjectCommandInput,
-  GetObjectCommand,
-  HeadObjectOutput,
-  PutObjectCommandInput,
-  S3,
-} from '@aws-sdk/client-s3';
+import { CopyObjectCommandInput, GetObjectCommand, HeadObjectOutput, S3 } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import contentDisposition from 'content-disposition';
-import fs, { ReadStream } from 'fs';
+import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
@@ -19,7 +14,11 @@ import { S3FileConfiguration, UUID } from '@graasp/sdk';
 import { S3_FILE_ITEM_HOST } from '../../../utils/config';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
-import { DownloadFileUnexpectedError, S3FileNotFound } from '../utils/errors';
+import {
+  DownloadFileUnexpectedError,
+  S3FileNotFound,
+  UploadFileUnexpectedError,
+} from '../utils/errors';
 
 export class S3FileRepository implements FileRepository {
   private readonly options: S3FileConfiguration;
@@ -46,6 +45,11 @@ export class S3FileRepository implements FileRepository {
       // this overrides the default endpoint (amazonaws.com) with S3_FILE_ITEM_HOST
       endpoint: S3_FILE_ITEM_HOST,
     });
+  }
+
+  async getFileSize(filepath: string) {
+    const metadata = await this.getMetadata(filepath);
+    return metadata.ContentLength;
   }
 
   async copyFile({
@@ -251,7 +255,7 @@ export class S3FileRepository implements FileRepository {
     filepath,
     mimetype,
   }: {
-    fileStream: ReadStream;
+    fileStream: ReadableStream;
     memberId: string;
     filepath: string;
     mimetype?: string;
@@ -259,7 +263,7 @@ export class S3FileRepository implements FileRepository {
   }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
-    const params: PutObjectCommandInput = {
+    const params = {
       Bucket: bucket,
       Key: filepath,
       Metadata: {
@@ -270,7 +274,20 @@ export class S3FileRepository implements FileRepository {
       ContentType: mimetype,
     };
 
-    // TO CHANGE: use signed url ? but difficult to set up callback
-    await this.s3Instance.putObject(params);
+    const upload = new Upload({
+      client: this.s3Instance,
+      params: params,
+      partSize: 5 * 1024 * 1024, // Minimum part size defined by s3 is 5MB
+      queueSize: 1, // This will limit the buffer to the size of one part size
+    });
+
+    try {
+      await upload.done();
+
+      console.debug('Upload successfully');
+    } catch (err) {
+      console.error('Something went wrong:', err);
+      throw new UploadFileUnexpectedError(err);
+    }
   }
 }

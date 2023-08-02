@@ -1,4 +1,4 @@
-import { ReadStream } from 'fs';
+import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
@@ -15,7 +15,6 @@ import {
   DeleteFileInvalidPathError,
   DeleteFolderInvalidPathError,
   DownloadFileInvalidParameterError,
-  UploadEmptyFileError,
   UploadFileInvalidParameterError,
   UploadFileUnexpectedError,
 } from './utils/errors';
@@ -47,31 +46,24 @@ class FileService {
     }
   }
 
-  async upload(
-    member: Member,
-    data: { file: ReadStream; size: number; filepath: string; mimetype?: string },
-  ) {
+  async getFileSize(actor: Actor, filepath: string) {
+    return this.repository.getFileSize(filepath);
+  }
+
+  async upload(member: Member, data: { file: Readable; filepath: string; mimetype?: string }) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
 
-    const { file, size, filepath, mimetype } = data;
+    const { file, filepath, mimetype } = data;
 
     if (!file || !filepath) {
       throw new UploadFileInvalidParameterError({
         file,
         filepath,
-        size,
       });
     }
 
-    if (!size) {
-      throw new UploadEmptyFileError({
-        file,
-        filepath,
-        size,
-      });
-    }
     try {
       await this.repository.uploadFile({
         fileStream: file,
@@ -81,10 +73,9 @@ class FileService {
       });
     } catch (e) {
       // rollback uploaded file
-      this.delete(member, filepath).catch((e) => console.error(e));
-
+      this.delete(member, filepath);
       console.error(e);
-      throw new UploadFileUnexpectedError({ mimetype, memberId: member.id, size });
+      throw new UploadFileUnexpectedError({ mimetype, memberId: member.id });
     }
 
     return data;

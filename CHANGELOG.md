@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.7](https://github.com/graasp/graasp/compare/v1.2.6...v1.2.7) (2023-07-31)
+
+
+### Bug Fixes
+
+* remove check user storage on upload ([#528](https://github.com/graasp/graasp/issues/528)) ([94af996](https://github.com/graasp/graasp/commit/94af9968d5f1697f73e75d4c7176643605b0cbf8))
+
+## [1.2.6](https://github.com/graasp/graasp/compare/v1.2.5...v1.2.6) (2023-07-31)
+
+
+### Bug Fixes
+
+* File upload oom ([#520](https://github.com/graasp/graasp/issues/520)) ([fe3da6e](https://github.com/graasp/graasp/commit/fe3da6e8d341a737536ca05b778723c843ff6157))
+
 ## [1.2.5](https://github.com/graasp/graasp/compare/v1.2.4...v1.2.5) (2023-07-31)
 
 
