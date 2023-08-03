@@ -1,8 +1,10 @@
 import geoip from 'geoip-lite';
 
-import { Context, Hostname } from '@graasp/sdk';
+import { Context } from '@graasp/sdk';
+
+import { CLIENT_HOSTS } from '../../../utils/config';
 
 export const getGeolocationIp = (ip: string | number): geoip.Lookup | null => geoip.lookup(ip);
 
-export const getView = (headers: { origin?: string | string[] }, hosts: Hostname[]): Context =>
-  hosts.find(({ hostname: thisHN }) => headers?.origin?.includes(thisHN))?.name ?? Context.Unknown;
+export const getView = (headers: { origin?: string | string[] }): Context =>
+  CLIENT_HOSTS.find(({ url }) => headers?.origin?.includes(url.hostname))?.name ?? Context.Unknown;

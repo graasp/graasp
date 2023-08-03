@@ -1,8 +1,6 @@
 import forwarded from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
-import { Hostname } from '@graasp/sdk';
-
 import { Repositories } from '../../../utils/repositories';
 import ItemService from '../../item/service';
 import { Actor } from '../../member/entities/member';
@@ -14,15 +12,12 @@ export class ActionService {
   itemService: ItemService;
   memberService: MemberService;
   // itemMembershipsService: ItemMembershipService;
-  hosts: Hostname[];
 
   constructor(
     itemService: ItemService,
     // itemMembershipsService: ItemMembershipService,
     memberService: MemberService,
-    hosts: Hostname[],
   ) {
-    this.hosts = hosts;
     this.itemService = itemService;
     // this.itemMembershipsService = itemMembershipsService;
     this.memberService = memberService;
@@ -38,7 +33,7 @@ export class ActionService {
 
     // todo: prevent saving here if member disabled or if item disabled analytics
 
-    const view = getView(headers, this.hosts);
+    const view = getView(headers);
     // warning: addresses might contained spoofed ips
     const addresses = forwarded(request.raw);
     const ip = addresses.pop();

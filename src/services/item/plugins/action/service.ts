@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 
-import { Context, Hostname, PermissionLevel } from '@graasp/sdk';
+import { Context, PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
@@ -23,16 +23,13 @@ export class ActionItemService {
   itemService: ItemService;
   memberService: MemberService;
   actionService: ActionService;
-  hosts: Hostname[];
 
   constructor(
     actionService: ActionService,
     itemService: ItemService,
     memberService: MemberService,
-    hosts: Hostname[],
   ) {
     this.actionService = actionService;
-    this.hosts = hosts;
     this.itemService = itemService;
     this.memberService = memberService;
   }

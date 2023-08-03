@@ -20,19 +20,19 @@ export let ENVIRONMENT: Environment;
 
 switch (process.env.NODE_ENV) {
   case Environment.production:
-    dotenv.config({ path: '.env.production' });
+    dotenv.config({ path: '.env.production', override: true });
     ENVIRONMENT = Environment.production;
     break;
   case Environment.staging:
-    dotenv.config({ path: '.env.staging' });
+    dotenv.config({ path: '.env.staging', override: true });
     ENVIRONMENT = Environment.staging;
     break;
   case Environment.test:
-    dotenv.config({ path: '.env.test' });
+    dotenv.config({ path: '.env.test', override: true });
     ENVIRONMENT = Environment.test;
     break;
   default:
-    dotenv.config({ path: '.env.development' });
+    dotenv.config({ path: '.env.development', override: true });
     ENVIRONMENT = Environment.development;
     break;
 }
@@ -47,15 +47,15 @@ const DEFAULT_HOST = 'http://localhost:3000';
 export const CLIENT_HOSTS = [
   {
     name: Context.Builder,
-    hostname: new URL(process.env.BUILDER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
+    url: new URL(process.env.BUILDER_CLIENT_HOST ?? DEFAULT_HOST),
   },
   {
     name: Context.Player,
-    hostname: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
+    url: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST),
   },
   {
     name: Context.Library,
-    hostname: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST).hostname,
+    url: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST),
   },
 ];
 
@@ -63,7 +63,7 @@ export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
 export const PORT = process.env.PORT ? +process.env.PORT : 3000;
-export const HOST = `${HOSTNAME}:${PORT}`;
+export const HOST = `${PROTOCOL}://${HOSTNAME}:${PORT}`;
 
 if (!process.env.COOKIE_DOMAIN) {
   throw new Error('COOKIE_DOMAIN is undefined');
@@ -72,9 +72,37 @@ if (!process.env.COOKIE_DOMAIN) {
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 
-export const CLIENT_HOST = process.env.CLIENT_HOST;
 export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
-export const EMAIL_LINKS_HOST = process.env.EMAIL_LINKS_HOST || HOST;
+
+/*
+ * Warning for PUBLIC_URL:
+ * make sure that process.env.PUBLIC_URL / HOST have the format ${PROTOCOL}://${HOSTNAME}:${PORT}
+ * See the following example where the format is only ${HOSTNAME}:${PORT} in which case
+ * it interprets the hostname as protocol and the port as the pathname. Using the complete URL
+ * scheme fixes that
+ *
+ * $ node
+ * Welcome to Node.js v16.20.1.
+ * Type ".help" for more information.
+ * > new URL('localhost:3000')
+ * URL {
+ *   href: 'localhost:3000',
+ *   origin: 'null',
+ *   protocol: 'localhost:',
+ *   username: '',
+ *   password: '',
+ *   host: '',
+ *   hostname: '',
+ *   port: '',
+ *   pathname: '3000',
+ *   search: '',
+ *   searchParams: URLSearchParams {},
+ *   hash: ''
+ * }
+ * >
+ */
+export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
+
 export const GRAASP_MOBILE_BUILDER_PROTOCOL =
   process.env.GRAASP_MOBILE_BUILDER || 'graasp-mobile-builder';
 
@@ -136,6 +164,8 @@ if (
   );
 }
 export const MAILER_CONFIG_SMTP_HOST = process.env.MAILER_CONFIG_SMTP_HOST;
+export const MAILER_CONFIG_SMTP_PORT = parseInt(process.env.MAILER_CONFIG_SMTP_PORT ?? '465');
+export const MAILER_CONFIG_SMTP_USE_SSL = process.env.MAILER_CONFIG_SMTP_USE_SSL !== 'false';
 export const MAILER_CONFIG_USERNAME = process.env.MAILER_CONFIG_USERNAME;
 export const MAILER_CONFIG_PASSWORD = process.env.MAILER_CONFIG_PASSWORD;
 export const MAILER_CONFIG_FROM_EMAIL =
@@ -236,14 +266,12 @@ export const EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN =
   process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN;
 
 // Graasp apps
-export const APPS_PLUGIN = process.env.APPS_PLUGIN === 'true';
 if (!process.env.APPS_JWT_SECRET) {
   throw new Error('APPS_JWT_SECRET is not defined');
 }
 export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
-export const WEBSOCKETS_PLUGIN = process.env.WEBSOCKETS_PLUGIN === 'true';
 export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = process.env.REDIS_PORT;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
@@ -251,10 +279,6 @@ export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
-
-// export const FILES_PATH_PREFIX = process.env.FILES_PATH_PREFIX;
-// export const AVATARS_PATH_PREFIX = process.env.AVATARS_PATH_PREFIX;
-// export const THUMBNAILS_PATH_PREFIX = process.env.THUMBNAILS_PATH_PREFIX;
 
 export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root' };
 
