@@ -224,3 +224,7 @@ RECAPTCHA_SECRET_ACCESS_KEY=<content>
 ## Running
 
 To run the application, use `yarn watch`. If any file change, the application will automatically reload.
+
+## Utilities
+
+The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080). If you do not want to use mailcatcher, set the `MAILER_CONFIG_SMTP_HOST` variable in your `.env.development` to some random value (e.g. empty string). This will log the authentication links in the server console instead.
