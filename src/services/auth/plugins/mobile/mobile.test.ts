@@ -6,12 +6,7 @@ import fetch from 'node-fetch';
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import {
-  AUTH_CLIENT_HOST,
-  JWT_SECRET,
-  PROTOCOL,
-  REFRESH_TOKEN_JWT_SECRET,
-} from '../../../../utils/config';
+import { AUTH_CLIENT_HOST, JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../../../../utils/config';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
@@ -225,7 +220,9 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const result = await response.json();
       expect(result).toHaveProperty('resource');
-      expect(result.resource).toContain(`${PROTOCOL}://${AUTH_CLIENT_HOST}/auth?t=`);
+      const url = new URL('auth', AUTH_CLIENT_HOST);
+      url.searchParams.set('t', '');
+      expect(result.resource).toContain(url.toString());
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {

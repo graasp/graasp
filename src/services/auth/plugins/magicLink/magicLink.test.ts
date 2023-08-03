@@ -218,14 +218,10 @@ describe('Auth routes tests', () => {
         url: `/auth?t=${t}`,
       });
 
-      if (AUTH_CLIENT_HOST) {
-        expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
-        expect(response.headers.location).toEqual(
-          new URL(`${AUTH_CLIENT_HOST}?error=true`).toString(),
-        );
-      } else {
-        expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
-      }
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      const url = new URL('/', AUTH_CLIENT_HOST);
+      url.searchParams.set('error', 'true');
+      expect(response.headers.location).toEqual(url.toString());
     });
   });
 

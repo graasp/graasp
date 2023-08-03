@@ -72,7 +72,15 @@ if (!process.env.COOKIE_DOMAIN) {
 export const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 export const CORS_ORIGIN_REGEX = process.env.CORS_ORIGIN_REGEX;
 
-export const AUTH_CLIENT_HOST = process.env.AUTH_CLIENT_HOST;
+if (!process.env.AUTH_CLIENT_HOST) {
+  throw new Error('Auth client host env var is not defined!');
+}
+export const AUTH_CLIENT_HOST = new URL(
+  // legacy fallback if the env var does not have the protocol prefix
+  process.env.AUTH_CLIENT_HOST.match(/^https?:\/\/.*/)
+    ? process.env.AUTH_CLIENT_HOST
+    : `${PROTOCOL}://${process.env.AUTH_CLIENT_HOST}`,
+);
 
 /*
  * Warning for PUBLIC_URL:
