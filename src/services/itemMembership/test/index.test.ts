@@ -18,6 +18,7 @@ import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
+import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -102,6 +103,55 @@ describe('Membership routes tests', () => {
         }
         expect(errors).toHaveLength(0);
         expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Nested usecase', async () => {
+        // A (Membership)
+        // |-> B
+        //     |-> C (Membership)
+        //         |-> D
+        //             |-> E (Membership)
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: itemA, itemMembership: im1 } = await saveItemAndMembership({ member: member });
+        const { item: item2, itemMembership: im2 } = await saveItemAndMembership({ member: member });
+        const itemB = await saveItem({ item: getDummyItem(), parentItem: itemA, actor: member });
+        const itemC = await saveItem({ item: getDummyItem(), parentItem: itemB, actor: member });
+        const itemD = await saveItem({ item: getDummyItem(), parentItem: itemC, actor: member });
+        const itemE = await saveItem({ item: getDummyItem(), parentItem: itemD, actor: member });
+
+        const membership1 = await saveMembership({ item: itemA, member: actor, permission: PermissionLevel.Read });
+        const membership2 = await saveMembership({ item: itemC, member: actor, permission: PermissionLevel.Write });
+        const membership3 = await saveMembership({ item: itemE, member: actor, permission: PermissionLevel.Admin });
+
+        const memberships1 = [im1, membership1];
+        const memberships2 = [membership2];
+        const memberships3 = [membership3];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/item-memberships?itemId=${item2.id}&itemId=${itemB.id}&itemId=${itemD.id}&itemId=${itemE.id}`,
+        });
+        const { data, errors } = response.json();
+        
+        expect(Object.keys(data)).toHaveLength(3);
+        expect(Object.keys(data)).not.toContain(item2.id);
+        expect(errors).toHaveLength(1);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        for (const m of memberships1) {
+          const im = data[itemB.id].find(({ id }) => id === m.id);
+          expect(im).toBeTruthy();
+          expectMembership(im, m, actor);
+        }
+        for (const m of memberships2) {
+          const im = data[itemD.id].find(({ id }) => id === m.id);
+          expect(im).toBeTruthy();
+          expectMembership(im, m, actor);
+        }
+        for (const m of memberships3) {
+          const im = data[itemE.id].find(({ id }) => id === m.id);
+          expect(im).toBeTruthy();
+          expectMembership(im, m, actor);
+        }
       });
       it('Bad request for invalid id', async () => {
         const response = await app.inject({

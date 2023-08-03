@@ -83,6 +83,7 @@ export const validatePermissionMany = async (
     if (!inheritedMemberships?.data[item.id]) {
       delete inheritedMemberships?.data[item.id];
       result.errors.push(new MemberCannotAccess(item.id));
+      continue;
     }
 
     // add corresponding error
@@ -90,12 +91,16 @@ export const validatePermissionMany = async (
     switch (permission) {
       case PermissionLevel.Read:
         result.errors.push(new MemberCannotReadItem(item.id));
+        break;
       case PermissionLevel.Write:
         result.errors.push(new MemberCannotWriteItem(item.id));
+        break;
       case PermissionLevel.Admin:
         result.errors.push(new MemberCannotAdminItem(item.id));
+        break;
       default:
         result.errors.push(new Error(`${permission} is not a valid permission`));
+        break;
     }
   }
 
