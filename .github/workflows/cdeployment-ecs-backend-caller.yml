@@ -83,7 +83,7 @@ jobs:
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_PROD }}
       player-client-host: ${{ secrets.PLAYER_CLIENT_HOST_PROD }}
       port: ${{ secrets.PORT }}
-      public-url: ${{ secrets.PUBLIC_URL_PROD }}
+      public-url: ${{ secrets.PUBLIC_URL }}
       recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       redis-host: ${{ secrets.REDIS_HOST_PROD }}
       redis-port: ${{ secrets.REDIS_PORT }}
