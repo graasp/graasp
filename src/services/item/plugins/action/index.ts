@@ -30,12 +30,11 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
     actions: { service: actionService },
     items: { service: itemService },
     members: { service: memberService },
-    hosts,
     mailer,
     db,
   } = fastify;
 
-  const actionItemService = new ActionItemService(actionService, itemService, memberService, hosts);
+  const actionItemService = new ActionItemService(actionService, itemService, memberService);
   fastify.items.actions = { service: actionItemService };
 
   const requestExportService = new ActionRequestExportService(
@@ -44,7 +43,6 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
     itemService,
     fileService,
     mailer,
-    hosts,
   );
 
   // get actions and more data matching the given `id`

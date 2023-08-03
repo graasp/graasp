@@ -111,7 +111,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           session.delete();
           if (AUTH_CLIENT_HOST) {
             // todo: provide more detailed message
-            reply.redirect(StatusCodes.SEE_OTHER, `//${AUTH_CLIENT_HOST}?error=true`);
+            reply.redirect(
+              StatusCodes.SEE_OTHER,
+              new URL(`${AUTH_CLIENT_HOST}?error=true`).toString(),
+            );
           } else {
             log.error(error);
             throw error;

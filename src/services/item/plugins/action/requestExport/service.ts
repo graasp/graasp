@@ -4,7 +4,6 @@ import path from 'path';
 import {
   Context,
   DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
-  Hostname,
   PermissionLevel,
   UUID,
 } from '@graasp/sdk';
@@ -33,7 +32,6 @@ export class ActionRequestExportService {
   actionItemService: ActionItemService;
   itemService: ItemService;
   actionService: ActionService;
-  hosts: Hostname[];
   // TODO
   mailer: any;
 
@@ -43,13 +41,11 @@ export class ActionRequestExportService {
     itemService: ItemService,
     fileService: FileService,
     mailer,
-    hosts: Hostname[],
   ) {
     this.actionService = actionService;
     this.actionItemService = actionItemService;
     this.itemService = itemService;
     this.fileService = fileService;
-    this.hosts = hosts;
     this.mailer = mailer;
   }
 

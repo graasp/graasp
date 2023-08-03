@@ -21,50 +21,49 @@ jobs:
 
     # Replace input ecs-task-definition with template file. Format: '.aws/<name>-prod.json'
     with:
-      ecs-task-definition: '.aws/graasp-prod.json'
-      tag: ${{ github.event.client_payload.tag }}
       database-logs: false
+      ecs-task-definition: '.aws/graasp-prod.json'
       etherpad-cookie-domain: ${{ vars.ETHERPAD_COOKIE_DOMAIN_PROD }}
       etherpad-url: ${{ vars.ETHERPAD_URL_PROD }}
       h5p-file-storage-type: ${{ vars.H5P_FILE_STORAGE_TYPE }}
       log-level: error
-      node-env: production
       node-env-iframely: production
+      node-env: production
       roarr-log: false
       s3-file-item-plugin: true
       subscriptions-plugin: true
+      tag: ${{ github.event.client_payload.tag }}
       token-based-auth: true
       websockets-plugin: true
 
     # Insert required secrets based on repository with the following format: ${{ secrets.SECRET_NAME }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
-      aws-region: ${{ secrets.AWS_REGION_PROD }}
-      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_PROD }}
-      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_PROD }}
-      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_PROD }}
-      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_PROD }}
-      container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_PROD }}
-      container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
-      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
-      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
-      db-host: ${{ secrets.DB_HOST }}
-      db-name: ${{ secrets.DB_NAME }}
-      db-password: ${{ secrets.DB_PASSWORD }}
-      db-username: ${{ secrets.DB_USERNAME }}
-      db-read-replica-host: ${{ secrets.DB_READ_REPLICA_HOST }}
       analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_PROD }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_PROD }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
       auth-client-host: ${{ secrets.AUTH_CLIENT_HOST_PROD }}
       auth-token-expiration-in-minutes: ${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET_PROD }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+      aws-region: ${{ secrets.AWS_REGION_PROD }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
       builder-client-host: ${{ secrets.BUILDER_CLIENT_HOST_PROD }}
       client-host: ${{ secrets.CLIENT_HOST_PROD }}
+      container-image-classifier: ${{ secrets.CONTAINER_IMAGE_CLASSIFIER }}
+      container-image-iframely: ${{ secrets.CONTAINER_IMAGE_IFRAMELY }}
+      container-name-classifier: ${{ secrets.CONTAINER_NAME_CLASSIFIER }}
+      container-name-graasp: ${{ secrets.CONTAINER_NAME_GRAASP_PROD }}
+      container-name-iframely: ${{ secrets.CONTAINER_NAME_IFRAMELY_PROD }}
       cookie-domain: ${{ secrets.COOKIE_DOMAIN_PROD }}
       cors-origin-regex: ${{ secrets.CORS_ORIGIN_REGEX_PROD }}
-      email-links-host: ${{ secrets.EMAIL_LINKS_HOST_PROD }}
+      db-host: ${{ secrets.DB_HOST }}
+      db-name: ${{ secrets.DB_NAME }}
+      db-password: ${{ secrets.DB_PASSWORD }}
+      db-read-replica-hosts: ${{ secrets.DB_READ_REPLICA_HOSTS }}
+      db-username: ${{ secrets.DB_USERNAME }}
+      ecr-repository: ${{ secrets.ECR_REPOSITORY_GRAASP_PROD }}
+      ecs-cluster: ${{ secrets.ECS_CLUSTER_GRAASP_PROD }}
+      ecs-service: ${{ secrets.ECS_SERVICE_GRAASP_PROD }}
       embedded-link-item-iframely-href-origin: ${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
       etherpad-api-key: ${{ secrets.ETHERPAD_API_KEY_PROD }}
       explorer-client-host: ${{ secrets.EXPLORER_CLIENT_HOST_PROD }}
@@ -83,6 +82,7 @@ jobs:
       mailer-config-username: ${{ secrets.MAILER_CONFIG_USERNAME_PROD }}
       player-client-host: ${{ secrets.PLAYER_CLIENT_HOST_PROD }}
       port: ${{ secrets.PORT }}
+      public-url: ${{ secrets.PUBLIC_URL }}
       recaptcha-secret-access-key: ${{ secrets.RECAPTCHA_SECRET_ACCESS_KEY }}
       redis-host: ${{ secrets.REDIS_HOST_PROD }}
       redis-port: ${{ secrets.REDIS_PORT }}
@@ -95,5 +95,5 @@ jobs:
       s3-file-item-secret-access-key: ${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY_PROD }}
       secure-session-secret-key: ${{ secrets.SECURE_SESSION_SECRET_KEY_PROD }}
       sentry-dsn: ${{ secrets.SENTRY_DSN }}
-      stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
+      stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
