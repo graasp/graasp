@@ -21,7 +21,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(async function (fastify) {
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
-    if (WEBSOCKETS_PLUGIN) fastify.register(appActionsWsHooks, { appActionService });
+    if (WEBSOCKETS_PLUGIN) {
+      fastify.register(appActionsWsHooks, { appActionService });
+    }
 
     // create app action
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppAction> }>(

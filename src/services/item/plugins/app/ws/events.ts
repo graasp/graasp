@@ -9,8 +9,6 @@ import { AppData } from '../appData/appData';
 export const appDataTopic = 'app-data';
 export const appActionsTopic = 'app-actions';
 export const appSettingsTopic = 'app-settings';
-// changes on items of given user
-// export const memberItemsTopic = 'item/member';
 
 type AppOperations = 'post' | 'patch' | 'delete';
 

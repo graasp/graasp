@@ -1,8 +1,9 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { AppDataVisibility, ItemType, Websocket } from '@graasp/sdk';
+import { AppDataVisibility, ItemType, PermissionLevel, Websocket } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../utils/repositories';
+import { validatePermission } from '../../../../authorization';
 import { WebsocketService } from '../../../../websockets/ws-service';
 import { ItemService } from '../../../service';
 import { AppActionService } from '../appAction/service';
@@ -27,7 +28,9 @@ function registerAppDataTopic(
 ) {
   websockets.register(appDataTopic, async (req) => {
     const { channel: id, member } = req;
-    const item = await itemService.get(member, buildRepositories(), id);
+    const repositories = buildRepositories();
+    const item = await itemService.get(member, repositories, id);
+    await validatePermission(repositories, PermissionLevel.Read, member, item);
     if (item.type !== ItemType.APP) {
       throw new Websocket.AccessDeniedError('item is not app');
     }
@@ -63,7 +66,9 @@ function registerAppActionTopic(
 ) {
   websockets.register(appActionsTopic, async (req) => {
     const { channel: id, member } = req;
-    const item = await itemService.get(member, buildRepositories(), id);
+    const repositories = buildRepositories();
+    const item = await itemService.get(member, repositories, id);
+    await validatePermission(repositories, PermissionLevel.Admin, member, item);
     if (item.type !== ItemType.APP) {
       throw new Websocket.AccessDeniedError('item is not app');
     }
@@ -90,7 +95,9 @@ function registerAppSettingsTopic(
 ) {
   websockets.register(appSettingsTopic, async (req) => {
     const { channel: id, member } = req;
-    const item = await itemService.get(member, buildRepositories(), id);
+    const repositories = buildRepositories();
+    const item = await itemService.get(member, repositories, id);
+    await validatePermission(repositories, PermissionLevel.Read, member, item);
     if (item.type !== ItemType.APP) {
       throw new Websocket.AccessDeniedError('item is not app');
     }

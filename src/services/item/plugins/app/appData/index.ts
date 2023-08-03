@@ -27,7 +27,9 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     // origins from the publishers table an build a rule with that.
 
     fastify.register(appDataFilePlugin, { appDataService });
-    if (WEBSOCKETS_PLUGIN) fastify.register(appDataWsHooks, { appDataService });
+    if (WEBSOCKETS_PLUGIN) {
+      fastify.register(appDataWsHooks, { appDataService });
+    }
 
     // create app data
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppData> }>(
