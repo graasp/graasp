@@ -32,7 +32,6 @@ jobs:
       etherpad-url: ${{ vars.ETHERPAD_URL_DEV }}
       h5p-file-storage-type: ${{ vars.H5P_FILE_STORAGE_TYPE }}
       log-level: debug
-      node-env: production
       node-env-iframely: production
       node-env: production
       roarr-log: false
