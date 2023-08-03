@@ -182,7 +182,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
    */
   async getForManyItems(items: Item[]) {
     const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
-    console.log('getmanyitemtag');
+
     items.forEach(({ path }, idx) => {
       if (idx === 0) {
         query.where(`item.path @> :path_${path}`, { [`path_${path}`]: path });

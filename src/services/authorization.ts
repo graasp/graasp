@@ -104,8 +104,6 @@ export const validatePermissionMany = async (
     }
   }
 
-  console.log(result);
-
   return result;
 };
 

@@ -15,10 +15,10 @@ import {
   ModifyExisting,
 } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
+import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
-import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -111,16 +111,32 @@ describe('Membership routes tests', () => {
         //         |-> D
         //             |-> E (Membership)
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const { item: itemA, itemMembership: im1 } = await saveItemAndMembership({ member: member });
-        const { item: item2, itemMembership: im2 } = await saveItemAndMembership({ member: member });
+        const { item: itemA, itemMembership: im1 } = await saveItemAndMembership({
+          member: member,
+        });
+        const { item: item2, itemMembership: im2 } = await saveItemAndMembership({
+          member: member,
+        });
         const itemB = await saveItem({ item: getDummyItem(), parentItem: itemA, actor: member });
         const itemC = await saveItem({ item: getDummyItem(), parentItem: itemB, actor: member });
         const itemD = await saveItem({ item: getDummyItem(), parentItem: itemC, actor: member });
         const itemE = await saveItem({ item: getDummyItem(), parentItem: itemD, actor: member });
 
-        const membership1 = await saveMembership({ item: itemA, member: actor, permission: PermissionLevel.Read });
-        const membership2 = await saveMembership({ item: itemC, member: actor, permission: PermissionLevel.Write });
-        const membership3 = await saveMembership({ item: itemE, member: actor, permission: PermissionLevel.Admin });
+        const membership1 = await saveMembership({
+          item: itemA,
+          member: actor,
+          permission: PermissionLevel.Read,
+        });
+        const membership2 = await saveMembership({
+          item: itemC,
+          member: actor,
+          permission: PermissionLevel.Write,
+        });
+        const membership3 = await saveMembership({
+          item: itemE,
+          member: actor,
+          permission: PermissionLevel.Admin,
+        });
 
         const memberships1 = [im1, membership1];
         const memberships2 = [membership2];
@@ -131,7 +147,7 @@ describe('Membership routes tests', () => {
           url: `/item-memberships?itemId=${item2.id}&itemId=${itemB.id}&itemId=${itemD.id}&itemId=${itemE.id}`,
         });
         const { data, errors } = response.json();
-        
+
         expect(Object.keys(data)).toHaveLength(3);
         expect(Object.keys(data)).not.toContain(item2.id);
         expect(errors).toHaveLength(1);
@@ -207,7 +223,7 @@ describe('Membership routes tests', () => {
           url: `/item-memberships?itemId=${item.id}`,
         });
         const { data, errors } = response.json();
-        console.log(data);
+
         for (const m of memberships) {
           const im = data[item.id].find(({ id }) => id === m.id);
           expect(im).toBeTruthy();
