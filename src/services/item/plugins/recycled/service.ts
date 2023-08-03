@@ -1,11 +1,18 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
+import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor } from '../../../member/entities/member';
+import { Item } from '../../entities/Item';
 
 export class RecycledBinService {
+  private readonly hooks = new HookManager<{
+    recycle: { pre: { item: Item }; post: { item: Item } };
+    restore: { pre: { item: Item }; post: { item: Item } };
+  }>();
+
   async getAll(actor: Actor, repositories: Repositories) {
     const { recycledItemRepository } = repositories;
     // check member is connected
@@ -29,9 +36,19 @@ export class RecycledBinService {
 
     // remove all descendants
     const descendants = await itemRepository.getDescendants(item);
+    for (const d of descendants) {
+      await this.hooks.runPreHooks('recycle', actor, repositories, { item: d });
+    }
     await itemRepository.softRemove(descendants);
+    for (const d of descendants) {
+      this.hooks.runPostHooks('recycle', actor, repositories, { item: d });
+    }
 
-    return recycledItemRepository.recycleOne(item, actor);
+    await this.hooks.runPreHooks('recycle', actor, repositories, { item });
+    const result = recycledItemRepository.recycleOne(item, actor);
+    await this.hooks.runPostHooks('recycle', actor, repositories, { item });
+
+    return result;
   }
 
   async recycleMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -40,19 +57,34 @@ export class RecycledBinService {
     }
     const { itemRepository, recycledItemRepository } = repositories;
 
-    const { data: items } = await itemRepository.getMany(itemIds, { throwOnError: true });
+    const { data: idsToItems } = await itemRepository.getMany(itemIds, { throwOnError: true });
+    const items = Object.values(idsToItems);
 
     // if item is already deleted, it will throw not found here
-    for (const item of Object.values(items)) {
+    for (const item of items) {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
     // get descendants of all items
-    const descendants = await itemRepository.getManyDescendants(Object.values(items));
+    const descendants = await itemRepository.getManyDescendants(items);
 
-    await itemRepository.softRemove([...descendants, ...Object.values(items)]);
+    for (const d of descendants) {
+      await this.hooks.runPreHooks('recycle', actor, repositories, { item: d });
+    }
+    await itemRepository.softRemove([...descendants, ...items]);
+    for (const d of descendants) {
+      this.hooks.runPostHooks('recycle', actor, repositories, { item: d });
+    }
 
-    return recycledItemRepository.recycleMany(Object.values(items), actor);
+    for (const item of items) {
+      await this.hooks.runPreHooks('recycle', actor, repositories, { item });
+    }
+    const result = await recycledItemRepository.recycleMany(items, actor);
+    for (const item of items) {
+      await this.hooks.runPostHooks('recycle', actor, repositories, { item });
+    }
+
+    return result;
   }
 
   async restoreOne(actor: Actor, repositories: Repositories, itemId: string) {
