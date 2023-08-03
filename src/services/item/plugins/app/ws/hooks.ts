@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemType, Websocket } from '@graasp/sdk';
+import { AppDataVisibility, ItemType, Websocket } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../utils/repositories';
 import { WebsocketService } from '../../../../websockets/ws-service';
@@ -35,19 +35,19 @@ function registerAppDataTopic(
 
   // on post app data, notify apps of new app data
   appDataService.hooks.setPostHook('post', async (member, repositories, { appData, itemId }) => {
-    if (itemId !== undefined) {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
       websockets.publish(appDataTopic, itemId, AppDataEvent('post', appData));
     }
   });
 
   appDataService.hooks.setPostHook('patch', async (member, repositories, { appData, itemId }) => {
-    if (itemId !== undefined) {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
       websockets.publish(appDataTopic, itemId, AppDataEvent('patch', appData));
     }
   });
 
   appDataService.hooks.setPostHook('delete', async (member, repositories, { appData, itemId }) => {
-    if (itemId !== undefined) {
+    if (itemId !== undefined && appData.visibility === AppDataVisibility.Item) {
       websockets.publish(appDataTopic, itemId, AppDataEvent('delete', appData));
     }
   });

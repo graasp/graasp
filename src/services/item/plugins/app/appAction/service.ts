@@ -22,7 +22,7 @@ export class AppActionService {
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
-    // posting an app data is allowed to readers
+    // posting an app action is allowed to readers
     await validatePermission(repositories, PermissionLevel.Read, member, item);
 
     await this.hooks.runPreHooks('post', member, repositories, { appAction: body, itemId });
@@ -81,7 +81,7 @@ export class AppActionService {
     // check item exists
     const item = await itemRepository.get(itemIds[0]);
 
-    // posting an app data is allowed to readers
+    // posting an app action is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
     const permission = membership?.permission;
     let { memberId: fMemberId } = filters;
