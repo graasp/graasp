@@ -1,6 +1,3 @@
-import { Result } from 'ioredis';
-import { resourceLimits } from 'worker_threads';
-
 import { ItemTagType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
 
 import {

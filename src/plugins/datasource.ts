@@ -52,8 +52,10 @@ export const AppDataSource = new DataSource({
     },
     slaves,
   },
-  maxQueryExecutionTime: 1,
-  logging: ['error'],
+
+  // log queries that take more than 2s to execute
+  maxQueryExecutionTime: 2000,
+  logging: ['migration', 'error'],
   migrationsRun: true,
 
   entities: [

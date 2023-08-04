@@ -1,4 +1,3 @@
-import { TagType } from 'eta/dist/types/parse';
 import { Brackets } from 'typeorm';
 
 import { ItemTagType, ResultOf } from '@graasp/sdk';
