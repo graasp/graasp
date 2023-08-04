@@ -11,7 +11,7 @@ export const memberItemsTopic = 'item/member';
 /**
  * All websocket events for items will have this shape
  */
-interface ItemEvent {
+export interface ItemEvent {
   kind: string;
   op: string;
   item: Item;
@@ -72,7 +72,7 @@ interface OwnItemsEvent extends ItemEvent {
  * Factory of OwnItemsEvent
  * @param op operation of the event
  * @param item  value of the item for this event
- * @returns instnace of own items event
+ * @returns instance of own items event
  */
 export const OwnItemsEvent = (op: OwnItemsEvent['op'], item: Item): OwnItemsEvent => ({
   kind: 'own',

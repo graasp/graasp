@@ -8,7 +8,7 @@ import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 
 export class RecycledBinService {
-  private readonly hooks = new HookManager<{
+  readonly hooks = new HookManager<{
     recycle: { pre: { item: Item }; post: { item: Item } };
     restore: { pre: { item: Item }; post: { item: Item } };
   }>();
@@ -97,9 +97,12 @@ export class RecycledBinService {
 
     await validatePermission(repositories, PermissionLevel.Admin, actor, item);
 
+    await this.hooks.runPreHooks('restore', actor, repositories, { item });
     await itemRepository.recover(item);
+    const result = recycledItemRepository.restoreOne(item);
+    await this.hooks.runPostHooks('restore', actor, repositories, { item });
 
-    return recycledItemRepository.restoreOne(item);
+    return result;
   }
 
   async restoreMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -108,18 +111,28 @@ export class RecycledBinService {
     }
     const { itemRepository, recycledItemRepository } = repositories;
 
-    const { data: items } = await itemRepository.getMany(itemIds, {
+    const { data: idsToItems } = await itemRepository.getMany(itemIds, {
       throwOnError: true,
       withDeleted: true,
     });
 
-    for (const item of Object.values(items)) {
+    const items = Object.values(idsToItems);
+
+    for (const item of items) {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-    // TODO: check if item is already deleted?
-    await itemRepository.recover(Object.values(items));
+    for (const item of items) {
+      this.hooks.runPreHooks('restore', actor, repositories, { item });
+    }
 
-    return recycledItemRepository.restoreMany(Object.values(items));
+    // TODO: check if item is already deleted?
+    await itemRepository.recover(items);
+
+    for (const item of items) {
+      this.hooks.runPostHooks('restore', actor, repositories, { item });
+    }
+
+    return recycledItemRepository.restoreMany(items);
   }
 }
