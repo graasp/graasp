@@ -580,6 +580,12 @@ describe('File Item routes tests', () => {
             setTimeout(async () => {
               await expect(copyObjectMock).toHaveBeenCalled();
 
+              const items = await ItemRepository.find({ where: { name: item.name } });
+              expect(items).toHaveLength(2);
+              expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
+                (items[1].extra as S3FileItemExtra).s3File.path,
+              );
+
               done(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });

@@ -227,9 +227,13 @@ class FileItemService {
 
     // update item copy's 'extra'
     if (this.fileService.type === ItemType.S3_FILE) {
-      (copy.extra as S3FileItemExtra).s3File.path = filepath;
+      await repositories.itemRepository.patch(copy.id, {
+        extra: { s3File: { ...extra.s3File, path: filepath } },
+      });
     } else {
-      (copy.extra as LocalFileItemExtra).file.path = filepath;
+      await repositories.itemRepository.patch(copy.id, {
+        extra: { file: { ...extra.s3File, path: filepath } },
+      });
     }
   }
 }

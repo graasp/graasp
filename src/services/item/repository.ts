@@ -398,14 +398,16 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return old2New;
   },
 
-  async getItemSumSize(memberId: string, itemType: FileItemType) {
-    return (
-      await this.createQueryBuilder('item')
-        .select(`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`, 'total')
-        .where('item.creator.id = :memberId', { memberId })
-        .andWhere('item.type = :type', { type: itemType })
-        .getRawOne()
-    ).total;
+  async getItemSumSize(memberId: string, itemType: FileItemType): Promise<number> {
+    return parseInt(
+      (
+        await this.createQueryBuilder('item')
+          .select(`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`, 'total')
+          .where('item.creator.id = :memberId', { memberId })
+          .andWhere('item.type = :type', { type: itemType })
+          .getRawOne()
+      ).total,
+    );
   },
 
   async getAllPublishedItems(): Promise<Item[]> {
