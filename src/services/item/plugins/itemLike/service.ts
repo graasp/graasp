@@ -10,7 +10,7 @@ export class ItemLikeService {
     this.itemService = itemService;
   }
 
-  async getItemsForMember(actor: Actor, repositories: Repositories) {
+  async getForMember(actor: Actor, repositories: Repositories) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
@@ -19,7 +19,7 @@ export class ItemLikeService {
     // only own items
     // TODO: allow to get other's like?
 
-    return itemLikeRepository.getItemsForMember(actor.id);
+    return itemLikeRepository.getForMember(actor.id);
   }
 
   async getForItem(actor: Actor, repositories: Repositories, itemId: string) {

@@ -409,7 +409,6 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   async getAllPublishedItems(): Promise<Item[]> {
-    // we need to pass through item repository because typeorm deduces the entity from its original repository
     const publishedRows = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
@@ -428,7 +427,6 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
    * @returns object { id } of items with given categories
    */
   async getByCategories(categoryIds: string[]): Promise<Item[]> {
-    // we need to pass through item repository because typeorm deduces the entity from its original repository
     const query = this.createQueryBuilder('item')
       .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
       .innerJoin('item_category', 'ic', 'ic.item_path @> item.path')
@@ -454,5 +452,23 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       }
     });
     return query.getMany();
+  },
+
+  /**
+   * Return published items for given member
+   * @param memberId
+   * @returns published items for given member
+   */
+  async getPublishedItemsForMember(memberId: string) {
+    // get for membership write and admin -> createquerybuilder
+    return this.createQueryBuilder('item')
+      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
+      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
+      .innerJoinAndSelect('item.creator', 'member')
+      .where('im.member_id = :memberId', { memberId })
+      .andWhere('im.permission IN (:...permissions)', {
+        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
+      })
+      .getMany();
   },
 });

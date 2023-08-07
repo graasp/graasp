@@ -116,8 +116,8 @@ export class ItemPublishedService {
   }
 
   async getItemsForMember(actor: Actor, repositories, memberId: UUID) {
-    const { itemRepository, itemPublishedRepository } = repositories;
-    return itemPublishedRepository.getItemsForMember(itemRepository, memberId);
+    const { itemRepository } = repositories;
+    return itemRepository.getPublishedItemsForMember(memberId);
   }
 
   async getLikedItems(actor: Actor, repositories: Repositories, limit?: number) {
