@@ -1,4 +1,4 @@
-import { ItemTagType, PermissionLevel } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import {
@@ -19,8 +19,8 @@ const SHARED_MEMBER = { id: 'shared', name: 'shared' } as Member;
 const OTHER_MEMBER = { id: 'other', name: 'other' } as Member;
 const ITEM = { id: 'item' } as Item;
 const ownerMembership = { member: OWNER, permission: PermissionLevel.Admin } as ItemMembership;
-const buildSharedMembership = (permission: PermissionLevel) =>
-  ({ member: SHARED_MEMBER, permission } as ItemMembership);
+const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =>
+  ({ member: SHARED_MEMBER, permission, item } as ItemMembership);
 
 describe('Authorization', () => {
   afterEach(() => {
@@ -2601,6 +2601,59 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+      });
+    });
+    describe('many items', () => {
+      const SHARED_ITEM = { id: 'shared-item' } as Item;
+      const PUBLIC_ITEM = { id: 'public-item' } as Item;
+
+      it('Public item & Shared write item', async () => {
+        const sharedMembership = buildSharedMembership(PermissionLevel.Write, SHARED_ITEM);
+        const repositories = {
+          itemMembershipRepository: {
+            getInheritedMany: jest.fn(() => {
+              return { data: { [SHARED_ITEM.id]: sharedMembership }, errors: [] };
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository: {
+            hasManyForMany: jest.fn(() => ({
+              data: { [PUBLIC_ITEM.id]: [ItemTagType.Public], [SHARED_ITEM.id]: [] },
+              errors: [],
+            })),
+          } as unknown as typeof ItemTagRepository,
+        };
+
+        // shared member can read both items
+        const result = await validatePermissionMany(
+          repositories,
+          PermissionLevel.Read,
+          SHARED_MEMBER,
+          [SHARED_ITEM, PUBLIC_ITEM],
+        );
+        expect(result.data[SHARED_ITEM.id]).toEqual(sharedMembership);
+        expect(result.data[PUBLIC_ITEM.id]).toEqual(null);
+
+        // shared member cannot write public item
+        const result1 = await validatePermissionMany(
+          repositories,
+          PermissionLevel.Write,
+          SHARED_MEMBER,
+          [SHARED_ITEM, PUBLIC_ITEM],
+        );
+        expect(result1.data[SHARED_ITEM.id]).toEqual(sharedMembership);
+        expect(result1.data[PUBLIC_ITEM.id]).toBeUndefined();
+        expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
+
+        // shared member cannot admin
+        const result2 = await validatePermissionMany(
+          repositories,
+          PermissionLevel.Admin,
+          SHARED_MEMBER,
+          [SHARED_ITEM, PUBLIC_ITEM],
+        );
+        expect(result2.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
+        expect(result2.data[PUBLIC_ITEM.id]).toBeUndefined();
+        expect(result2.errors[1]).toBeInstanceOf(MemberCannotAccess);
       });
     });
   });
