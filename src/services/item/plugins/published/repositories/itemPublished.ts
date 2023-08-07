@@ -1,10 +1,7 @@
-import { PermissionLevel } from '@graasp/sdk';
-
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { Actor } from '../../../../member/entities/member';
 import { mapById } from '../../../../utils';
 import { Item } from '../../../entities/Item';
-import { ItemRepository } from '../../../repository';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 
@@ -37,22 +34,6 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
         entries.find((e) => items.find((i) => i.id === id)?.path.startsWith(e.item.path)),
       buildError: (id) => new ItemPublishedNotFound(id),
     });
-  },
-
-  // return public item entry? contains when it was published
-  async getItemsForMember(itemRepository: typeof ItemRepository, memberId: string) {
-    // get for membership write and admin -> createquerybuilder
-    // we need to pass through item repository because typeorm deduces the entity from its original repository
-    return itemRepository
-      .createQueryBuilder('item')
-      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
-      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-      .innerJoinAndSelect('item.creator', 'member')
-      .where('im.member_id = :memberId', { memberId })
-      .andWhere('im.permission IN (:...permissions)', {
-        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
-      })
-      .getMany();
   },
 
   async post(creator: Actor, item: Item) {
