@@ -23,8 +23,6 @@ export interface GraaspPluginFileOptions {
   appSettingService: AppSettingService;
 }
 
-export const DEFAULT_MAX_STORAGE = 1024 * 1024 * 1024 * 1; // 1GB;
-
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE, appSettingService } = options;
 

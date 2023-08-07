@@ -109,7 +109,7 @@ describe('Member routes tests', () => {
           }
           expect(item.type).toEqual(file.type);
           expect(item.description).toContain(file.description);
-          expect(item.creator.id).toEqual(actor.id);
+          expect(item.creator!.id).toEqual(actor.id);
 
           if (item.type === ItemType.S3_FILE) {
             expect((item.extra[ItemType.S3_FILE] as { name: string }).name).toEqual(
