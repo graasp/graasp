@@ -12,11 +12,10 @@ import { MAIL } from '@graasp/translations';
 import {
   AUTH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_TOKEN_JWT_SECRET,
-  EMAIL_LINKS_HOST,
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PROD,
-  PROTOCOL,
+  PUBLIC_URL,
   RECAPTCHA_SECRET_ACCESS_KEY,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
@@ -185,7 +184,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     const redirectionUrl = getRedirectionUrl(url);
 
     const linkPath = challenge ? '/m/deep-link' : '/auth';
-    const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}&url=${redirectionUrl}`;
+    const link = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
 
     const lang = getLangFromMember(member);
 
@@ -218,7 +217,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
     const redirectionUrl = getRedirectionUrl(url);
     const linkPath = challenge ? '/m/deep-link' : '/auth';
-    const link = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}&url=${redirectionUrl}`;
+    const link = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
 
     const memberLang = getLangFromMember(member) ?? lang;
 

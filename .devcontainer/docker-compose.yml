@@ -13,13 +13,36 @@ services:
         USER_UID: 1000
         USER_GID: 1000
     environment:
-      HOSTNAME: localhost
-      PG_CONNECTION_URI: "postgresql://docker:docker@localhost:5432/docker"
-      FILE_STORAGE_ROOT_PATH: "/tmp/graasp-file-item-storage"
+      # sane default to allow the server to bind to any interface in the container
+      HOSTNAME: 0.0.0.0
+      # the generated links should open the browser locally
+      PUBLIC_URL: http://localhost:3000
+      # temporary storage for files inside the container
+      FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
+      # the DB config is set by the "db" service below
       DB_NAME: docker
       DB_USERNAME: docker
       DB_PASSWORD: docker
       DB_HOST: db
+      # the Etherpad config is set by the "etherpad" service below
+      ETHERPAD_URL: http://etherpad:9001
+      ETHERPAD_PUBLIC_URL: http://localhost:9001
+      ETHERPAD_COOKIE_DOMAIN: localhost:9001
+      # Api key is set by ./etherpad/devApiKey.txt
+      ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      # the Redis config is set by the "redis" service below
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # the Mailer config is set by the "mailer" service below
+      MAILER_CONFIG_SMTP_HOST: mailer
+      MAILER_CONFIG_SMTP_PORT: 1025
+      MAILER_CONFIG_SMTP_USE_SSL: false # only for dev purposes
+      MAILER_CONFIG_USERNAME: docker
+      MAILER_CONFIG_PASSWORD: docker
+      # the Localstack config is set by the "localstack" service below
+      S3_FILE_ITEM_HOST: http://localstack:4566
+      # the Iframely config is set by the "iframely" service below
+      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://localhost:8061
 
     volumes:
       - ..:/workspace:cached
@@ -113,6 +136,13 @@ services:
       NODE_ENV: staging
     ports:
       - 8061:8061
+
+  # a mock mailbox on port 1025 (web UI at http://localhost:1080)
+  mailer:
+    image: schickling/mailcatcher
+    ports:
+      - "1025:1025"
+      - "1080:1080"
 
 volumes:
   postgres-data:

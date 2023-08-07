@@ -4,11 +4,13 @@ import fastify from 'fastify';
 import registerAppPlugins from './app';
 import { initSentry } from './sentry';
 // import fastifyCompress from 'fastify-compress';
-import { CORS_ORIGIN_REGEX, DEV, DISABLE_LOGS, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
+import { CORS_ORIGIN_REGEX, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
 
 const start = async () => {
   const instance = fastify({
-    logger: DEV || !DISABLE_LOGS,
+    logger: {
+      level: process.env.LOG_LEVEL,
+    },
     ajv: {
       customOptions: {
         // This allow routes that take array to correctly interpret single values as an array

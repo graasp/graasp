@@ -104,11 +104,9 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
         }
 
         const mimetype = mime.getType(ext) ?? DEFAULT_MIME_TYPE;
-        const size = stats.size;
         await fileService.upload(member, {
           file: fs.createReadStream(childPath),
           filepath: childUploadPath,
-          size,
           mimetype,
         });
 

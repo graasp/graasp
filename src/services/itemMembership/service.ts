@@ -1,4 +1,4 @@
-import { Hostname, PermissionLevel, UUID } from '@graasp/sdk';
+import { PermissionLevel, UUID } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import { MailerDecoration } from '../../plugins/mailer';
@@ -18,7 +18,6 @@ import { ItemMembership } from './entities/ItemMembership';
 
 export class ItemMembershipService {
   itemService: ItemService;
-  hosts: Hostname[];
   mailer: MailerDecoration;
   hooks = new HookManager<{
     create: { pre: Partial<ItemMembership>; post: ItemMembership };
@@ -26,9 +25,8 @@ export class ItemMembershipService {
     delete: { pre: ItemMembership; post: ItemMembership };
   }>();
 
-  constructor(itemService: ItemService, hosts: Hostname[], mailer: MailerDecoration) {
+  constructor(itemService: ItemService, mailer: MailerDecoration) {
     this.itemService = itemService;
-    this.hosts = hosts;
     this.mailer = mailer;
   }
 
@@ -38,7 +36,7 @@ export class ItemMembershipService {
     member: Member,
     item: Item,
   ): Promise<void> {
-    const link = buildItemLink(this.hosts, item);
+    const link = buildItemLink(item);
 
     const lang = member.lang;
     const t = this.mailer.translate(lang);
@@ -137,7 +135,7 @@ export class ItemMembershipService {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const { memberRepository, itemMembershipRepository, itemRepository } = repositories;
+    const { memberRepository, itemMembershipRepository } = repositories;
     // check memberships
     const member = await memberRepository.get(membership.memberId);
     const item = await this.itemService.get(

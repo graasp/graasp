@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.7](https://github.com/graasp/graasp/compare/v1.2.6...v1.2.7) (2023-07-31)
+
+
+### Bug Fixes
+
+* remove check user storage on upload ([#528](https://github.com/graasp/graasp/issues/528)) ([94af996](https://github.com/graasp/graasp/commit/94af9968d5f1697f73e75d4c7176643605b0cbf8))
+
+## [1.2.6](https://github.com/graasp/graasp/compare/v1.2.5...v1.2.6) (2023-07-31)
+
+
+### Bug Fixes
+
+* File upload oom ([#520](https://github.com/graasp/graasp/issues/520)) ([fe3da6e](https://github.com/graasp/graasp/commit/fe3da6e8d341a737536ca05b778723c843ff6157))
+
+## [1.2.5](https://github.com/graasp/graasp/compare/v1.2.4...v1.2.5) (2023-07-31)
+
+
+### Bug Fixes
+
+* add creator in getPublishedItemsByCategories ([#524](https://github.com/graasp/graasp/issues/524)) ([bf48e64](https://github.com/graasp/graasp/commit/bf48e6427c239df0ed4b32ef17ebe03df500ce71))
+* copied item should not inherit public tag from original ([#522](https://github.com/graasp/graasp/issues/522)) ([fabc79d](https://github.com/graasp/graasp/commit/fabc79d51937d85ce8f8396aa7ec1c60af38799d))
+* improve import zip, fix undefined parent ([#496](https://github.com/graasp/graasp/issues/496)) ([4842925](https://github.com/graasp/graasp/commit/4842925fbeed0a3b99c46ce239b943aae1d8f422))
+
 ## [1.2.4](https://github.com/graasp/graasp/compare/v1.2.3...v1.2.4) (2023-07-26)
 
 ### Bug Fixes

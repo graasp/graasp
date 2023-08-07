@@ -17,8 +17,8 @@ import { MentionService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes
-  const { db, mailer, hosts } = fastify;
-  const mentionService = new MentionService(mailer, hosts);
+  const { db, mailer } = fastify;
+  const mentionService = new MentionService(mailer);
 
   fastify.decorate('mentions', { service: mentionService });
 

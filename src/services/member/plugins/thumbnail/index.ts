@@ -8,7 +8,11 @@ import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../../file/utils/errors';
+import {
+  DownloadFileUnexpectedError,
+  UploadEmptyFileError,
+  UploadFileUnexpectedError,
+} from '../../../file/utils/errors';
 import { download, upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
@@ -59,14 +63,16 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
           // const files = request.files();
           // files are saved in temporary folder in disk, they are removed when the response ends
           // necessary to get file size -> can use stream busboy only otherwise
-          const [file] = await request.saveRequestFiles();
-
+          const file = await request.file();
+          if (!file) {
+            throw new UploadEmptyFileError();
+          }
           // check file is an image
           if (!file.mimetype.includes('image')) {
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), file);
+          await thumbnailService.upload(member, buildRepositories(manager), file.file);
 
           reply.status(StatusCodes.NO_CONTENT);
         })

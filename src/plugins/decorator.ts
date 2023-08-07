@@ -30,7 +30,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.decorate('actions', {
-    service: new ActionService(fastify.items.service, fastify.members.service, fastify.hosts),
+    service: new ActionService(fastify.items.service, fastify.members.service),
   });
 };
 export default decoratorPlugin;

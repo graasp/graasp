@@ -75,22 +75,22 @@ Migrations are saved in `src/migrations/*.ts`. They are then transformed into js
 
 Run the generate and run command to create and apply the migration.
 
-```` bash
+```bash
 yarn migration:generate
 yarn migration:run
-````
+```
 
 If you need to revert
 
-```` bash
+```bash
 yarn migration:revert
-````
+```
 
 To test your migrations, you can run
 
-```` bash
+```bash
 yarn migration:fake
-````
+```
 
 Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`.
 
@@ -98,48 +98,72 @@ Up tests start from the previous migration state, insert mock data and apply the
 
 ### Configuration
 
-To configure the application, you'll need to change the values in  `.env.development`. The file should have the following structure :
+To configure the application, you'll need to change the values in `.env.development`. The file should have the following structure :
 
-```` bash
-# Application server
+> We provide sample values for development purposes aligned with the devcontainer configuration. Adjust these values as needed.
+
+```bash
+### Graasp back-end configuration
+
+### Network configuration
+
+# Default protocol is already set
 # PROTOCOL=http
-# HOSTNAME=localhost
+# The hostname is set by ./.devcontainer/docker-compose.yml
+# HOSTNAME=0.0.0.0
 PORT=3000
-# EMAIL_LINKS_HOST=
-# CLIENT_HOST=
-# COOKIE_DOMAIN=
+# The public URL is set by ./.devcontainer/docker-compose.yml
+# PUBLIC_URL=
+COOKIE_DOMAIN=localhost
 CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
 
-# Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
+### Database configuration (set by ./.devcontainer/docker-compose.yml)
+# DB_NAME=docker
+# DB_USERNAME=docker
+# DB_PASSWORD=docker
+# DB_HOST=db
+# If you use read replicas, set the hostnames here (separated by commas)
+# DB_READ_REPLICA_HOSTS=
+DATABASE_LOGS=true
+
+### Sessions
+
+# Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key and https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
+# TLDR: npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
 SECURE_SESSION_SECRET_KEY=<content>
 
-# JWT secrets
-JWT_SECRET=<content>
+
+### Auth
 
 TOKEN_BASED_AUTH=true
+# JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
+JWT_SECRET=<content>
+# Auth JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 AUTH_TOKEN_JWT_SECRET=<content>
 AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
+# Refresh JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 REFRESH_TOKEN_JWT_SECRET=<content>
 REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 
-# PostgreSQL connection string
-# If you are using dev-containers, this value is overwritten in docker-compose.yml
-PG_CONNECTION_URI=postgresql://<user>:<password>@localhost:5432/<dbname>
-# If you want to add read replicas to your DB cluster, provide their connection URIs here separated by commas
-PG_READ_REPLICA_CONNECTION_URIS=
 
-# Slonik database logging (uncomment both)
-# DATABASE_LOGS=true
-# ROARR_LOG=true
+### Mail server configuration
 
-# Mailer config
-# MAILER_CONFIG_SMTP_HOST=
-# MAILER_CONFIG_USERNAME=
-# MAILER_CONFIG_PASSWORD=
+# Mailer config (set by ./.devcontainer/docker-compose.yml)
+# Set to random values if you don't want to use the mock mailbox at http://localhost:1080
+# MAILER_CONFIG_SMTP_HOST=mailer
+# MAILER_CONFIG_USERNAME=graasp
+# MAILER_CONFIG_PASSWORD=graasp
+
+
+### File storages configuration
+
+# If you are using a local installation of localstack replace by http://localhost:4566
+# Otherwise this value is already set by ./.devcontainer/docker-compose.yml
+# S3_FILE_ITEM_HOST=http://graasp-localstack:4566
 
 # Graasp file item file storage path
-# If you are using dev-containers, this value is overwritten in docker-compose.yml
-FILE_STORAGE_ROOT_PATH=
+# File item storage is set by ./.devcontainer/docker-compose.yml
+# FILE_STORAGE_ROOT_PATH=
 
 # Graasp s3 file item
 S3_FILE_ITEM_PLUGIN=false
@@ -148,68 +172,59 @@ S3_FILE_ITEM_BUCKET=graasp
 S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
 S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
 
-FILES_PATH_PREFIX=files/
-AVATARS_PATH_PREFIX=avatars/
-THUMBNAILS_PATH_PREFIX=items/
-
-# If you are using a local installation of localstack replace by http://localhost:4566
-# This value is only used for Dev or Test environments
-S3_FILE_ITEM_HOST=http://graasp-localstack:4566
-
 # Graasp H5P
-H5P_CONTENT_REGION=us-east-1
-H5P_CONTENT_BUCKET=graasp-h5p
-H5P_CONTENT_ACCESS_KEY_ID=graasp-user
-H5P_CONTENT_SECRET_ACCESS_KEY=graasp-pwd
+H5P_FILE_STORAGE_TYPE=file
+H5P_STORAGE_ROOT_PATH=/tmp/graasp-h5p/
 H5P_PATH_PREFIX=h5p-content/
 
-# Graasp Etherpad
-ETHERPAD_URL=http://etherpad:9001
-# Optional, if the etherpad server server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
-ETHERPAD_PUBLIC_URL=http://localhost:9001
+
+### External services configuration
+
+# Graasp Etherpad (set by ./.devcontainer/docker-compose.yml)
+# ETHERPAD_URL=http://etherpad:9001
+# Optional, if the etherpad server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
+# ETHERPAD_PUBLIC_URL=http://localhost:9001
 # Optional, if the etherpad cookie domain is different from the domain of the public URL
-ETHERPAD_COOKIE_DOMAIN=localhost:9001
-ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+# ETHERPAD_COOKIE_DOMAIN=localhost:9001
+# Api key is set by ./.devcontainer/etherpad/devApiKey.txt
+# ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Graasp embedded link item
-EMBEDDED_LINK_ITEM_PLUGIN=false
-# EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=<protocol>://<hostname>:<port>
+# Set by ./.devcontainer/docker-compose.yml
+# EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://localhost:8061
 
 # Graasp apps
-APPS_PLUGIN=true
 APPS_JWT_SECRET=<content>
 APPS_PUBLISHER_ID=<id>
 
 # Graasp websockets
-# If you are using a local installation and don't want to install redis, you can set WEBSOCKETS_PLUGIN to false
-WEBSOCKETS_PLUGIN=true
-REDIS_HOST=graasp-redis
-REDIS_PORT=6379
+# Redis config set by ./.devcontainer/docker-compose.yml
+# REDIS_HOST=redis
+# REDIS_PORT=6379
 # REDIS_USERNAME=
 # REDIS_PASSWORD=
 
-# Graasp chatbox
-CHATBOX_PLUGIN=true
-
-# Graasp public items
-PUBLIC_PLUGIN=true
-HIDDEN_TAG_ID=<tag-id>
-PUBLISHED_TAG_ID=<tag-id>
-PUBLIC_TAG_ID=<tag-id>
-LOGIN_ITEM_TAG_ID=<tag-id>
-
-# Graasp Actions and hosts
+# Graasp Actions
 SAVE_ACTIONS=true
-BUILDER_CLIENT_HOST=<value>
-PLAYER_CLIENT_HOST=<value>
-EXPLORER_CLIENT_HOST=<value>
-AUTH_CLIENT_HOST=<value>
-GRAASP_MOBILE_BUILDER=<value>
+
+# Client hosts
+BUILDER_CLIENT_HOST=http://localhost:3111
+PLAYER_CLIENT_HOST=http://localhost:3112
+EXPLORER_CLIENT_HOST=http://localhost:3005
+AUTH_CLIENT_HOST=http://localhost:3001
+GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
 # validation containers
 IMAGE_CLASSIFIER_API=<url>
-````
+
+# get a recaptcha secret access key for your hostname at http://www.google.com/recaptcha/admin
+RECAPTCHA_SECRET_ACCESS_KEY=<content>
+```
 
 ## Running
 
 To run the application, use `yarn watch`. If any file change, the application will automatically reload.
+
+## Utilities
+
+The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080). If you do not want to use mailcatcher, set the `MAILER_CONFIG_SMTP_HOST` variable in your `.env.development` to some random value (e.g. empty string). This will log the authentication links in the server console instead.

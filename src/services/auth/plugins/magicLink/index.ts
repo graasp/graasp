@@ -109,13 +109,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           }
         } catch (error) {
           session.delete();
-          if (AUTH_CLIENT_HOST) {
-            // todo: provide more detailed message
-            reply.redirect(StatusCodes.SEE_OTHER, `//${AUTH_CLIENT_HOST}?error=true`);
-          } else {
-            log.error(error);
-            throw error;
-          }
+          const target = new URL('/', AUTH_CLIENT_HOST);
+          target.searchParams.set('error', 'true');
+          reply.redirect(StatusCodes.SEE_OTHER, target.toString());
         }
       },
     );

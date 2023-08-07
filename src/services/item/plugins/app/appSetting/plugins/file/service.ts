@@ -1,15 +1,14 @@
-import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { SavedMultipartFile } from '@fastify/multipart';
+import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, UUID } from '@graasp/sdk';
 
 import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
-import { Actor, Member } from '../../../../../../member/entities/member';
+import { Member } from '../../../../../../member/entities/member';
 import ItemService from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
@@ -39,8 +38,7 @@ class AppSettingFileService {
   async upload(
     actorId: string | undefined,
     repositories: Repositories,
-    fileObject: Partial<SavedMultipartFile> &
-      Pick<SavedMultipartFile, 'filename' | 'mimetype' | 'filepath'>,
+    file: MultipartFile,
     itemId?: string,
   ) {
     const { memberRepository } = repositories;
@@ -56,9 +54,7 @@ class AppSettingFileService {
     }
     await this.itemService.get(member, repositories, itemId);
 
-    const { filename, mimetype, fields, filepath: tmpPath } = fileObject;
-    const file = fs.createReadStream(tmpPath);
-    const { size } = fs.statSync(tmpPath);
+    const { filename, mimetype, fields, file: stream } = file;
     const appSettingId = v4();
     const filepath = this.buildFilePath(itemId, appSettingId); // parentId, filename
 
@@ -83,13 +79,12 @@ class AppSettingFileService {
 
     const fileProperties = await this.fileService
       .upload(member, {
-        file,
+        file: stream,
         filepath,
         mimetype,
-        size,
       })
       .then(() => {
-        return { path: filepath, name: filename, size, mimetype };
+        return { path: filepath, name: filename, mimetype };
       })
       .catch((e) => {
         throw e;

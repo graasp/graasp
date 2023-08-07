@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
 
-import { EMAIL_LINKS_HOST, PROTOCOL } from '../../../../utils/config';
+import { PUBLIC_URL } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     const linkPath = '/auth';
     // todo: selectively add the url param if it is present
     // and maybe build the url using the URL constructor ?
-    const resource = `${PROTOCOL}://${EMAIL_LINKS_HOST}${linkPath}?t=${token}&url=${redirectionUrl}`;
+    const resource = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
     reply.status(StatusCodes.SEE_OTHER);
     return { resource };
   });
