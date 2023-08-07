@@ -1473,6 +1473,35 @@ describe('Item routes tests', () => {
           expect(memberships).toHaveLength(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
+      it('Delete successfully one item in parent, with children and memberships', async () => {
+        // root with membership for two members
+        const { item: root } = await saveItemAndMembership({ member: actor });
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        await saveMembership({ member, item: root });
+
+        // parent to delete and its child
+        const { item: parent } = await saveItemAndMembership({ member: actor, parentItem: root });
+        await saveItemAndMembership({ member: actor, parentItem: parent });
+
+        const response = await app.inject({
+          method: HttpMethod.DELETE,
+          url: `/items?${qs.stringify({ id: [parent.id] }, { arrayFormat: 'repeat' })}`,
+        });
+
+        expect(response.json()).toEqual([parent.id]);
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        await waitForExpect(async () => {
+          const remaining = await ItemRepository.find();
+          // should keep root
+          expect(remaining).toHaveLength(1);
+
+          const memberships = await ItemMembershipRepository.find();
+          // should keep root membership for actor and member
+          expect(memberships).toHaveLength(2);
+
+          // ws should not fail
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
       it('Bad request if one id is invalid', async () => {
         const { item: item1 } = await saveItemAndMembership({ member: actor });
         const { item: item2 } = await saveItemAndMembership({ member: actor });

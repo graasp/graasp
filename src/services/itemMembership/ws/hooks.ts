@@ -25,7 +25,7 @@ export function registerItemMembershipWsHooks(
   // - notify member of new shared item IF creator != member
   // - notify item itself of new membership
   itemMembershipService.hooks.setPostHook('create', async (member, repositories, membership) => {
-    if (membership.member.id !== membership.item.creator.id) {
+    if (membership.member.id !== membership.item?.creator?.id) {
       websockets.publish(
         memberItemsTopic,
         membership.member.id,

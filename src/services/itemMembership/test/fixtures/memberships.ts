@@ -34,7 +34,7 @@ export const saveItemAndMembership = async (options: {
 export const expectMembership = (
   newMembership:
     | undefined
-    | (Pick<ItemMembership, 'permission' | 'item' | 'member'> & { creator?: Member }),
+    | (Pick<ItemMembership, 'permission' | 'item' | 'member'> & { creator?: Member | null }),
   correctMembership: undefined | Pick<ItemMembership, 'permission' | 'item' | 'member' | 'creator'>,
   creator?: Member,
 ) => {
@@ -46,7 +46,7 @@ export const expectMembership = (
   expect(newMembership.permission).toEqual(correctMembership.permission);
   expect(newMembership.item.id).toContain(correctMembership.item.id);
   if (newMembership.creator && creator) {
-    expect(newMembership.creator.id).toEqual(correctMembership.creator.id);
+    expect(newMembership.creator.id).toEqual(correctMembership!.creator!.id);
   }
 
   expect(newMembership.member.id).toEqual(correctMembership.member.id);
