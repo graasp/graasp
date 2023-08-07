@@ -8,7 +8,9 @@ import {
 } from '../utils/errors';
 import { Repositories } from '../utils/repositories';
 import { Item } from './item/entities/Item';
+import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
+import { ItemMembershipRepository } from './itemMembership/repository';
 import { Actor } from './member/entities/member';
 
 const permissionMapping = {
@@ -28,7 +30,13 @@ const permissionMapping = {
  */
 
 export const validatePermissionMany = async (
-  { itemMembershipRepository, itemTagRepository }: Repositories,
+  {
+    itemMembershipRepository,
+    itemTagRepository,
+  }: {
+    itemMembershipRepository: typeof ItemMembershipRepository;
+    itemTagRepository: typeof ItemTagRepository;
+  },
   permission: PermissionLevel,
   member: Actor,
   items: Item[],
@@ -50,14 +58,16 @@ export const validatePermissionMany = async (
   for (const item of items) {
     const highest = result.data[item.id]?.permission;
     const isValid = highest && permissionMapping[highest].includes(permission);
+    const isPublic = tags.data[item.id].includes(ItemTagType.Public);
 
     // HIDDEN CHECK - prevent read
     // cannot read if your have read access only
-    if (highest === PermissionLevel.Read) {
+    if (highest === PermissionLevel.Read || isPublic) {
       const isHidden = tags.data[item.id].includes(ItemTagType.Hidden);
       if (isHidden) {
         delete result.data[item.id];
         result.errors.push(new MemberCannotAccess(item.id));
+        continue;
       }
     }
 
@@ -67,14 +77,11 @@ export const validatePermissionMany = async (
     }
 
     // PUBLIC CHECK
-    if (permission === PermissionLevel.Read) {
-      const isPublic = tags.data[item.id].includes(ItemTagType.Public);
-      if (isPublic) {
-        // Old validate permission return null when public, this is a bit odd but this is current behavior
-        // It is used so that the item is not removed from the list when it is public in ItemService.getMany
-        result.data[item.id] = null;
-        continue;
-      }
+    if (permission === PermissionLevel.Read && isPublic) {
+      // Old validate permission return null when public, this is a bit odd but this is current behavior
+      // It is used so that the item is not removed from the list when it is public in ItemService.getMany
+      result.data[item.id] = null;
+      continue;
     }
 
     if (!inheritedMemberships?.data[item.id]) {
@@ -105,7 +112,13 @@ export const validatePermissionMany = async (
 };
 
 export const validatePermission = async (
-  { itemMembershipRepository, itemTagRepository }: Repositories,
+  {
+    itemMembershipRepository,
+    itemTagRepository,
+  }: {
+    itemMembershipRepository: typeof ItemMembershipRepository;
+    itemTagRepository: typeof ItemTagRepository;
+  },
   permission: PermissionLevel,
   member: Actor,
   item: Item,
@@ -119,13 +132,16 @@ export const validatePermission = async (
   const highest = inheritedMembership?.permission;
   const isValid = highest && permissionMapping[highest].includes(permission);
   let tags;
+  let isPublic = false;
   if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
     tags = await itemTagRepository.hasMany(item, [ItemTagType.Public, ItemTagType.Hidden]);
+    isPublic = tags.data[ItemTagType.Public];
   }
 
   // HIDDEN CHECK - prevent read
   // cannot read if your have read access only
-  if (highest === PermissionLevel.Read) {
+  // or if the item is public so you would have normally access without permission
+  if (highest === PermissionLevel.Read || (isPublic && !highest)) {
     const isHidden = tags.data[ItemTagType.Hidden];
     if (isHidden) {
       throw new MemberCannotAccess(item.id);
@@ -138,12 +154,10 @@ export const validatePermission = async (
   }
 
   // PUBLIC CHECK
-  if (permission === PermissionLevel.Read) {
-    const isPublic = tags.data[ItemTagType.Public];
-    if (isPublic) {
-      return inheritedMembership;
-    }
+  if (permission === PermissionLevel.Read && isPublic) {
+    return inheritedMembership;
   }
+
   if (!inheritedMembership) {
     throw new MemberCannotAccess(item.id);
   }
