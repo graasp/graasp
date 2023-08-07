@@ -179,7 +179,8 @@ jobs:
           CI: true
           # random keys
           APPS_JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
-          APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7   # mock UUID
+          APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7 # mock uuid
+          AUTH_CLIENT_HOST: 'localhost:3001'
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           BUILDER_CLIENT_HOST: 'http://localhost:3111'
           COOKIE_DOMAIN: localhost
