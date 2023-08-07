@@ -62,7 +62,7 @@ export const validatePermissionMany = async (
 
     // HIDDEN CHECK - prevent read
     // cannot read if your have read access only
-    if (highest === PermissionLevel.Read || isPublic) {
+    if (highest === PermissionLevel.Read || (isPublic && !highest)) {
       const isHidden = tags.data[item.id].includes(ItemTagType.Hidden);
       if (isHidden) {
         delete result.data[item.id];
