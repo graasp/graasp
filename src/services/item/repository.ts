@@ -2,6 +2,7 @@ import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
+  FileItemType,
   FolderItemType,
   ItemSettings,
   ItemType,
@@ -395,5 +396,81 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
 
     return old2New;
+  },
+
+  async getItemSumSize(memberId: string, itemType: FileItemType): Promise<number> {
+    return parseInt(
+      (
+        await this.createQueryBuilder('item')
+          .select(`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`, 'total')
+          .where('item.creator.id = :memberId', { memberId })
+          .andWhere('item.type = :type', { type: itemType })
+          .getRawOne()
+      ).total,
+    );
+  },
+
+  async getAllPublishedItems(): Promise<Item[]> {
+    const publishedRows = await this.createQueryBuilder('item')
+      .leftJoinAndSelect('item.creator', 'creator')
+      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
+      .getMany();
+
+    return publishedRows;
+  },
+
+  /**
+   * get intersection of category ids and published
+   *
+   * ['A1,A2'] -> the item should have either A1 or A2 as category
+   * ['B1', 'B2'] -> the item should have both categories
+   * Return all if no ids is defined
+   * @param ids category ids - in the form of ['A1,A2', 'B1', 'C1,C2,C3']
+   * @returns object { id } of items with given categories
+   */
+  async getByCategories(categoryIds: string[]): Promise<Item[]> {
+    const query = this.createQueryBuilder('item')
+      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
+      .innerJoin('item_category', 'ic', 'ic.item_path @> item.path')
+      .innerJoinAndSelect('item.creator', 'member')
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      .groupBy(['item.id', 'member.id']);
+
+    categoryIds.forEach((idString, idx) => {
+      // split categories
+      const categoryIdList = idString.split(',');
+      // dynamic key to avoid overlapping
+      const key = `id${idx}`;
+      if (idx === 0) {
+        // item should at least have one category with the category group
+        query.having(`array_agg(DISTINCT ic.category_id) && ARRAY[:...${key}]::uuid[]`, {
+          [key]: categoryIdList,
+        });
+      } else {
+        query.andHaving(`array_agg(DISTINCT ic.category_id) && ARRAY[:...${key}]::uuid[]`, {
+          [key]: categoryIdList,
+        });
+      }
+    });
+    return query.getMany();
+  },
+
+  /**
+   * Return published items for given member
+   * @param memberId
+   * @returns published items for given member
+   */
+  async getPublishedItemsForMember(memberId: string) {
+    // get for membership write and admin -> createquerybuilder
+    return this.createQueryBuilder('item')
+      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
+      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
+      .innerJoinAndSelect('item.creator', 'member')
+      .where('im.member_id = :memberId', { memberId })
+      .andWhere('im.permission IN (:...permissions)', {
+        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
+      })
+      .getMany();
   },
 });

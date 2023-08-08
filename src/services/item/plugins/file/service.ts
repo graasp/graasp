@@ -63,7 +63,7 @@ class FileItemService {
   async checkRemainingStorage(actor: Member, repositories: Repositories, size: number = 0) {
     const { id: memberId } = actor;
 
-    const currentStorage = await repositories.memberRepository.getMemberStorage(
+    const currentStorage = await repositories.itemRepository.getItemSumSize(
       memberId,
       this.fileService.type,
     );
@@ -103,8 +103,7 @@ class FileItemService {
       );
     }
     // check member storage limit
-    // BUG: this creates a big leak!!
-    // await this.checkRemainingStorage(actor, repositories);
+    await this.checkRemainingStorage(actor, repositories);
 
     // duplicate stream to use in thumbnails
     const streamForThumbnails = new PassThrough();
@@ -219,8 +218,7 @@ class FileItemService {
     };
 
     // check member storage limit
-    // BUG: this creates a big leak!!
-    // await this.checkRemainingStorage(actor, repositories, size);
+    await this.checkRemainingStorage(actor, repositories, size);
 
     // DON'T use task runner for copy file task: this would generate a new transaction
     // which is useless since the file copy task should not touch the DB at all
@@ -229,9 +227,13 @@ class FileItemService {
 
     // update item copy's 'extra'
     if (this.fileService.type === ItemType.S3_FILE) {
-      (copy.extra as S3FileItemExtra).s3File.path = filepath;
+      await repositories.itemRepository.patch(copy.id, {
+        extra: { s3File: { ...extra.s3File, path: filepath } },
+      });
     } else {
-      (copy.extra as LocalFileItemExtra).file.path = filepath;
+      await repositories.itemRepository.patch(copy.id, {
+        extra: { file: { ...extra.s3File, path: filepath } },
+      });
     }
   }
 }

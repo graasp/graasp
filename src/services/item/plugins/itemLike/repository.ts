@@ -10,10 +10,10 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
   },
 
   /**
-   * Get items liked by given memberId.
+   * Get item likes by given memberId.
    * @param memberId user's id
    */
-  async getItemsForMember(memberId: string): Promise<ItemLike[]> {
+  async getForMember(memberId: string): Promise<ItemLike[]> {
     const itemLikes = await this.createQueryBuilder('itemLike')
       .innerJoinAndSelect('itemLike.item', 'item')
       .where('itemLike.creator = :memberId', { memberId })
