@@ -15,20 +15,20 @@ export const validateAggregateRequest = (
   countGroupBy: CountGroupBy[],
   aggregateFuction: AggregateFunction,
   aggregateMetric: AggregateMetric,
-  aggregateBy: AggregateBy[],
+  aggregateBy?: AggregateBy[],
 ) => {
   // Aggregate by user is not allowed
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   if (aggregateBy?.includes('user')) {
-    throw new InvalidAggregationError();
+    throw new InvalidAggregationError('aggregate by cannot be "user"');
   }
 
   // Perform aggregation on a grouping expression is not allowed
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   if (aggregateBy?.includes(aggregateMetric)) {
-    throw new InvalidAggregationError();
+    throw new InvalidAggregationError('aggregateBy cannot include aggregateMetric');
   }
 
   // The input of the second stage aggregation should be the output of the first stage aggregation
@@ -39,7 +39,9 @@ export const validateAggregateRequest = (
       (countGroupBy.includes(aggregateMetric) || aggregateMetric === 'actionCount')
     )
   ) {
-    throw new InvalidAggregationError();
+    throw new InvalidAggregationError(
+      'countGroupBy cannot include aggregateMetric or aggregateMetric cannot be actionCount',
+    );
   }
 
   aggregateBy?.forEach((element) => {
@@ -48,7 +50,9 @@ export const validateAggregateRequest = (
       // @ts-ignore
       !(countGroupBy.includes(element) || element === 'actionCount')
     ) {
-      throw new InvalidAggregationError();
+      throw new InvalidAggregationError(
+        'countGroupBy should include aggregateBy, unless it is actionCount',
+      );
     }
   });
 
@@ -57,7 +61,9 @@ export const validateAggregateRequest = (
     [AggregateFunction.Avg, AggregateFunction.Sum].includes(aggregateFuction) &&
     aggregateMetric !== 'actionCount'
   ) {
-    throw new InvalidAggregationError();
+    throw new InvalidAggregationError(
+      'aggregateFuction cannot be applied on aggregateMetric=actionCount',
+    );
   }
 
   return;

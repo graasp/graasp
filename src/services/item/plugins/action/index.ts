@@ -71,13 +71,13 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
   fastify.get<{
     Params: IdParam;
     Querystring: {
-      requestedSampleSize?: number;
-      view?: Context;
+      requestedSampleSize: number;
+      view: Context;
       type?: string[];
       countGroupBy: CountGroupBy[];
       aggregateFunction: AggregateFunction;
       aggregateMetric: AggregateMetric;
-      aggregateBy: AggregateBy[];
+      aggregateBy?: AggregateBy[];
     };
   }>(
     '/:id/actions/aggregation',
@@ -87,18 +87,14 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
     },
     async ({ member, params: { id }, query }) => {
       // validate request
-      try {
-        validateAggregateRequest(
-          query.countGroupBy,
-          query.aggregateFunction,
-          query.aggregateMetric,
-          query.aggregateBy,
-        );
-      } catch (e) {
-        throw new InvalidAggregationError(e);
-      }
+      validateAggregateRequest(
+        query.countGroupBy,
+        query.aggregateFunction,
+        query.aggregateMetric,
+        query.aggregateBy,
+      );
 
-      return actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
+      const d = await actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -108,6 +104,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
         aggregateMetric: query.aggregateMetric,
         aggregateBy: query.aggregateBy,
       });
+      console.log(d);
+      return d;
     },
   );
 

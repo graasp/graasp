@@ -85,6 +85,19 @@ export const getAggregateActions = {
       'aggregateMetric',
     ],
   },
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          aggregateResult: { type: 'number' },
+        },
+        required: ['aggregateResult'],
+      },
+    },
+  },
 };
 
 export const exportAction = {

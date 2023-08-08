@@ -91,7 +91,7 @@ export class ActionItemService {
       countGroupBy: CountGroupBy[];
       aggregateFunction: AggregateFunction;
       aggregateMetric: AggregateMetric;
-      aggregateBy: AggregateBy[];
+      aggregateBy?: AggregateBy[];
     },
   ): Promise<unknown[]> {
     // check rights
@@ -115,8 +115,6 @@ export class ActionItemService {
       payload.aggregateMetric,
       payload.aggregateBy,
     );
-
-    console.log(aggregateActions);
 
     return aggregateActions;
   }
