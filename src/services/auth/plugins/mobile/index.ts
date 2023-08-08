@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { AUTH_CLIENT_HOST } from '../../../../utils/config';
+import { AUTH_CLIENT_HOST, PUBLIC_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { MemberPasswordService } from '../password/service';
 import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from './schemas';
@@ -93,9 +93,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body.challenge,
       );
 
-      const redirectionUrl = new URL('auth', AUTH_CLIENT_HOST);
+      // redirect to the deep link end point
+      // this ensures that the auth front-end transits through another domain, which will open the app when redirecting to the universal link
+      // must use front-end redirection because this will be called AJAX through POST
+      const redirectionUrl = new URL('/m/deep-link', PUBLIC_URL);
       redirectionUrl.searchParams.set('t', token);
       reply.status(StatusCodes.SEE_OTHER);
+
       return { resource: redirectionUrl.toString() };
     },
   );
@@ -118,9 +122,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/deep-link',
     { schema: mdeepLink },
     async ({ query: { t } }, reply) => {
-      reply.type('text/html');
+      // url to the auth universal link (auth domain is different from our PUBLIC_URL)
       const target = new URL('auth', AUTH_CLIENT_HOST);
       target.searchParams.set('t', t);
+      const link = target.toString();
+
+      reply.redirect(link);
+      reply.type('text/html');
       // TODO: this can be improved
       return `
           <!DOCTYPE html>
@@ -131,7 +139,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
                 color: white;
                 padding: 1em 1.5em;
                 text-decoration: none;"
-                href="${target}">Open with Graasp app</>
+                href="${link}">Open with Graasp app</>
             </body>
           </html>
         `;
