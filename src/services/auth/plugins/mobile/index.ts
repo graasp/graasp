@@ -127,7 +127,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       target.searchParams.set('t', t);
       const link = target.toString();
 
-      reply.redirect(link);
+      // redirect manually because we can't mix reply.redirect and an html response (= reply.send) in Fastify
+      reply.code(StatusCodes.MOVED_TEMPORARILY);
+      reply.header('Location', link);
+
       reply.type('text/html');
       // TODO: this can be improved
       return `
