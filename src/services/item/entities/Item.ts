@@ -71,7 +71,7 @@ export class Item extends BaseEntity implements GraaspItem {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member;
+  creator: Member | null;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

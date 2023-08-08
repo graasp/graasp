@@ -104,11 +104,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     query.where(
       new Brackets((qb) => {
         items.forEach(({ path }, idx) => {
-          // if (idx === 0) {
-          //   qb.where(`item.path @> :path_${path}`, { [`path_${path}`]: path });
-          // } else {
-          qb.orWhere(`item.path @> :path_${path}`, { [`path_${path}`]: path });
-          // }
+          qb.orWhere(`item.path @> :path_${idx}`, { [`path_${idx}`]: path });
         });
       }),
     );

@@ -59,20 +59,6 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     });
   },
 
-  async getMemberStorage(memberId: string, itemType: FileItemType) {
-    const fileItems = await this.createQueryBuilder()
-      .select('item')
-      .from(Item, 'item')
-      .leftJoinAndSelect('item.creator', 'member')
-      .where('member.id = :memberId', { memberId })
-      .andWhere('item.type = :type', { type: itemType })
-      // .addSelect(`SUM(item.extra->'${itemType}'->'size')`, 'total')
-      .getMany();
-    return fileItems.reduce((sum, item) => {
-      return sum + Math.max(0, item.extra[itemType].size);
-    }, 0);
-  },
-
   async patch(id: UUID, body: Partial<Pick<Member, 'extra' | 'email' | 'name'>>) {
     const newData: Partial<Member> = {};
 

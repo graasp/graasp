@@ -16,7 +16,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/liked',
     { schema: getLikesForMember, preHandler: fastify.verifyAuthentication },
     async ({ member, log }) => {
-      return itemLikeService.getItemsForMember(member, buildRepositories());
+      return itemLikeService.getForMember(member, buildRepositories());
     },
   );
 

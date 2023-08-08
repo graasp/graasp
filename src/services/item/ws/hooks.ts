@@ -72,9 +72,11 @@ function registerItemTopic(websockets: WebsocketService, itemService: ItemServic
       websockets.publish(itemTopic, sourceParentId, ChildItemEvent('delete', source));
     }
 
-    const destParentId = getParentFromPath(destination.path);
-    if (destParentId !== undefined) {
-      websockets.publish(itemTopic, destParentId, ChildItemEvent('create', destination));
+    if (destination) {
+      const destParentId = getParentFromPath(destination.path);
+      if (destParentId !== undefined) {
+        websockets.publish(itemTopic, destParentId, ChildItemEvent('create', destination));
+      }
     }
   });
 }
@@ -94,7 +96,7 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   // on create, notify own items of creator with new item IF path is root
   itemService.hooks.setPostHook('create', async (actor, repositories, { item }) => {
     const parentId = getParentFromPath(item.path);
-    if (parentId === undefined) {
+    if (parentId === undefined && item.creator) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
     }
@@ -105,7 +107,7 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   // - notify members that have memberships on this item of update
   itemService.hooks.setPostHook('update', async (actor, repositories, { item }) => {
     const parentId = getParentFromPath(item.path);
-    if (parentId === undefined) {
+    if (parentId === undefined && item.creator) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('update', item));
     }
@@ -114,7 +116,7 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
     if (item.id in result) {
       const memberships = result[item.id];
       memberships.forEach(({ member }) => {
-        if (member.id !== item.creator.id) {
+        if (member.id !== item.creator?.id) {
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('update', item));
         }
       });
@@ -125,9 +127,11 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   // - notify own items of creator of deleted item IF path is root
   // - notify members that have memberships on this item of delete
   //   (before with prehook, otherwise memberships lost on cascade from db!)
+  // todo: currently items can be hard deleted without going to the trash
   itemService.hooks.setPostHook('delete', async (actor, repositories, { item }) => {
     const parentId = getParentFromPath(item.path);
-    if (parentId === undefined) {
+
+    if (parentId === undefined && item.creator) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('delete', item));
     }
@@ -136,7 +140,7 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
     if (item.id in result) {
       const memberships = result[item.id];
       memberships.forEach(({ member }) => {
-        if (member.id !== item.creator.id) {
+        if (member.id !== item.creator?.id) {
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('delete', item));
         }
       });
@@ -146,7 +150,7 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   // on copy, notify own items of creator with new item IF destination is root
   itemService.hooks.setPostHook('copy', async (actor, repositories, { copy: item }) => {
     const parentId = getParentFromPath(item.path);
-    if (parentId === undefined) {
+    if (parentId === undefined && item.creator) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
     }
@@ -157,19 +161,22 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   // - notify own items of creator of create IF new location is root
   itemService.hooks.setPostHook('move', async (actor, repositories, { source, destination }) => {
     const sourceParentId = getParentFromPath(source.path);
-    if (sourceParentId === undefined) {
+
+    if (sourceParentId === undefined && source.creator) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, source.creator.id, OwnItemsEvent('delete', source));
     }
 
-    const destParentId = getParentFromPath(destination.path);
-    if (destParentId === undefined) {
-      // root item, notify creator
-      websockets.publish(
-        memberItemsTopic,
-        destination.creator.id,
-        OwnItemsEvent('create', destination),
-      );
+    if (destination) {
+      const destParentId = getParentFromPath(destination.path);
+      if (destParentId === undefined && destination.creator) {
+        // root item, notify creator
+        websockets.publish(
+          memberItemsTopic,
+          destination.creator.id,
+          OwnItemsEvent('create', destination),
+        );
+      }
     }
   });
 }
