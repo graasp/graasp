@@ -4,6 +4,7 @@ import { AppDataSource } from '../../../plugins/datasource';
 import { Item } from '../../item/entities/Item';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
 import {
+  CannotNestItemLoginSchema,
   ItemLoginSchemaNotFound,
   MissingCredentialsForLoginSchema,
   MissingItemLoginTag,
@@ -18,7 +19,7 @@ export const ItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSc
   ): Promise<ItemLoginSchema | null> {
     const result = await this.createQueryBuilder('login')
       .leftJoinAndSelect('login.item', 'item')
-      .where('item.path <@ :path', { path: itemPath })
+      .where('item.path @> :path', { path: itemPath })
       .getOne();
 
     if (shouldExist && !result) {
@@ -44,6 +45,12 @@ export const ItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSc
   },
 
   async put(item: Item, type: ItemLoginSchemaType = ItemLoginSchemaType.Username) {
+    const existingItemLoginSchema = await this.getForItemPath(item.path);
+    // if item login schema is inherited
+    if (existingItemLoginSchema && existingItemLoginSchema?.item.path !== item.path) {
+      throw new CannotNestItemLoginSchema(item.id);
+    }
+
     const entry = this.create({ item, type });
     await this.upsert(entry, {
       conflictPaths: ['item'],

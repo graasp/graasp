@@ -15,7 +15,7 @@ import { Member } from '../../member/entities/member';
 import { BOB, expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
 import { ItemLogin } from '../entities/itemLogin';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
-import { ValidMemberSession } from '../errors';
+import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
 import ItemLoginRepository from '../repositories/itemLogin';
 import { encryptPassword, generateRandomEmail } from '../utils';
 import { USERNAME_LOGIN } from './fixtures';
@@ -84,6 +84,21 @@ describe('Item Login Tests', () => {
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.body).toEqual(itemLoginSchema.type);
     });
+    it('Get item login if signed out for child', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await saveMember(BOB);
+      ({ item } = await saveItemAndMembership({ member }));
+      const { itemLoginSchema } = await saveItemLogin({ item });
+      const child = await saveItem({ item: getDummyItem(), parentItem: item, actor });
+
+      const res = await app.inject({
+        method: HttpMethod.GET,
+        url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema-type`,
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.OK);
+      expect(res.body).toEqual(itemLoginSchema.type);
+    });
   });
 
   describe('GET /:id/login-schema', () => {
@@ -116,6 +131,21 @@ describe('Item Login Tests', () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        const result = res.json();
+        expect(result.id).toEqual(itemLoginSchema.id);
+        expect(result.type).toEqual(itemLoginSchema.type);
+        expect(result.item.id).toEqual(itemLoginSchema.item.id);
+      });
+
+      it('Successfully get item login for child', async () => {
+        await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
+        const child = await saveItem({ item: getDummyItem(), parentItem: item, actor });
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -561,6 +591,19 @@ describe('Item Login Tests', () => {
         });
 
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
+      });
+
+      it('Cannot put item login schema if is inherited', async () => {
+        // save new item with wanted memberships
+        const child = await saveItem({ parentItem: item, item: getDummyItem(), actor });
+
+        const res = await app.inject({
+          method: HttpMethod.PUT,
+          url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema`,
+          payload,
+        });
+
+        expect(res.json()).toMatchObject(new CannotNestItemLoginSchema(expect.anything()));
       });
 
       it('Throws if id is invalid', async () => {
