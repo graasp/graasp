@@ -1,7 +1,9 @@
 import S from 'fluent-json-schema';
 import { StatusCodes } from 'http-status-codes';
 
-import { idParam, uuid } from '../../../../schemas/fluent-schema';
+import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy } from '@graasp/sdk';
+
+import { idParam } from '../../../../schemas/fluent-schema';
 import { item } from '../../fluent-schema';
 import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from './utils';
 
@@ -31,6 +33,70 @@ export const getItemActions = {
       },
     },
     required: ['view', 'requestedSampleSize'],
+  },
+};
+
+// schema for getting aggregation of actions
+export const getAggregateActions = {
+  params: idParam,
+  querystring: {
+    type: 'object',
+    properties: {
+      requestedSampleSize: {
+        type: 'number',
+        minimum: MIN_ACTIONS_SAMPLE_SIZE,
+        maximum: MAX_ACTIONS_SAMPLE_SIZE,
+      },
+      view: {
+        type: 'string',
+      },
+      type: {
+        type: 'array',
+        items: { type: 'string' },
+      },
+      countGroupBy: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: Object.values(CountGroupBy),
+        },
+      },
+      aggregateFuction: {
+        type: 'string',
+        enum: Object.values(AggregateFunction),
+      },
+      aggregateMetric: {
+        type: 'string',
+        enum: Object.values(AggregateMetric),
+      },
+      aggregateBy: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: Object.values(AggregateBy),
+        },
+      },
+    },
+    required: [
+      'view',
+      'requestedSampleSize',
+      'countGroupBy',
+      'aggregateFunction',
+      'aggregateMetric',
+    ],
+  },
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          aggregateResult: { type: 'number' },
+        },
+        required: ['aggregateResult'],
+      },
+    },
   },
 };
 
