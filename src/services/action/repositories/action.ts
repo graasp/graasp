@@ -53,7 +53,6 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
     if (filters?.view) {
       query.andWhere('view = :view', { view: filters.view });
     }
-    console.log('-à--------', filters?.memberId);
 
     if (filters?.memberId) {
       query.andWhere('member_id = :memberId', { memberId: filters.memberId });

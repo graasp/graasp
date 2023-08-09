@@ -94,7 +94,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
         query.aggregateBy,
       );
 
-      const d = await actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
+      return actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -104,8 +104,6 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options
         aggregateMetric: query.aggregateMetric,
         aggregateBy: query.aggregateBy,
       });
-      console.log(d);
-      return d;
     },
   );
 

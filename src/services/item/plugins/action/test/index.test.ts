@@ -209,7 +209,7 @@ describe('Action Plugin Tests', () => {
         ({ app, actor } = await build());
       });
 
-      it.only('Successfully get the average action count aggregated by the createdDay and the actionType', async () => {
+      it('Successfully get the average action count aggregated by the createdDay and the actionType', async () => {
         const members = await saveMembers(MEMBERS);
         const { item } = await saveItemAndMembership({ member: actor });
         await saveActions(item, members);
