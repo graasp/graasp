@@ -4,13 +4,15 @@ import waitForExpect from 'wait-for-expect';
 import { Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { CLIENT_HOSTS, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { ActionRepository } from '../../../../action/repositories/action';
 import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
-import { MEMBERS, saveMembers } from '../../../../member/test/fixtures/members';
-import { getDummyItem } from '../../../test/fixtures/items';
+import { BOB, MEMBERS, saveMember, saveMembers } from '../../../../member/test/fixtures/members';
+import { getDummyItem, savePublicItem } from '../../../test/fixtures/items';
+import { CannotPostAction } from '../errors';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
 import { saveActions } from './fixtures/actions';
@@ -59,6 +61,134 @@ describe('Action Plugin Tests', () => {
     await clearDatabase(app.db);
     actor = null;
     app.close();
+  });
+
+  describe('POST /:id/actions', () => {
+    describe('Sign Out', () => {
+      it('Cannot post action when signed out', async () => {
+        ({ app, actor } = await build({ member: null }));
+        const member = await saveMember(BOB);
+        const { item } = await saveItemAndMembership({
+          item: getDummyItem(),
+          member,
+        });
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
+          body: {
+            type: 'view',
+          },
+          headers: {
+            Origin: CLIENT_HOSTS[0].url,
+          },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
+        expect(await ActionRepository.find()).toHaveLength(0);
+      });
+    });
+    describe('Public', () => {
+      it('Post action for public item', async () => {
+        ({ app, actor } = await build({ member: null }));
+        const member = await saveMember(BOB);
+        const item = await savePublicItem({ item: getDummyItem(), actor: member });
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
+          body: {
+            type: 'view',
+          },
+          headers: {
+            Origin: CLIENT_HOSTS[0].url.origin,
+          },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const [action] = await ActionRepository.find({ relations: { item: true, member: true } });
+        expect(action.type).toEqual('view');
+        expect(action.item!.id).toEqual(item.id);
+        expect(action.member).toBeNull();
+      });
+    });
+    describe('Signed in', () => {
+      let item;
+
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+        ({ item } = await saveItemAndMembership({
+          item: getDummyItem(),
+          member: actor,
+        }));
+      });
+
+      it('Post action with allowed origin', async () => {
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
+          body: {
+            type: 'view',
+          },
+          headers: {
+            Origin: CLIENT_HOSTS[0].url.origin,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const [action] = await ActionRepository.find({ relations: { item: true, member: true } });
+        expect(action.type).toEqual('view');
+        expect(action.item!.id).toEqual(item.id);
+        expect(action.member!.id).toEqual(actor.id);
+      });
+
+      it('Post action with extra', async () => {
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
+          body: {
+            type: 'view',
+            extra: { foo: 'bar' },
+          },
+          headers: {
+            Origin: CLIENT_HOSTS[0].url.origin,
+          },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const [action] = await ActionRepository.find({ relations: { item: true, member: true } });
+        expect(action.type).toEqual('view');
+        expect(action.item!.id).toEqual(item.id);
+        expect(action.member!.id).toEqual(actor.id);
+        expect(action.extra.foo).toEqual('bar');
+      });
+
+      it('Throw for non-allowed origin', async () => {
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
+          body: {
+            type: 'view',
+          },
+          headers: {
+            Origin: 'http://myorigin.com',
+          },
+        });
+        expect(response.json().message).toEqual(new CannotPostAction().message);
+        expect(await ActionRepository.find()).toHaveLength(0);
+      });
+
+      it('Throw for missing type', async () => {
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
+          body: {},
+          headers: {
+            Origin: CLIENT_HOSTS[0].url,
+          },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+        expect(await ActionRepository.find()).toHaveLength(0);
+      });
+    });
   });
 
   describe('POST /:id/actions/export', () => {

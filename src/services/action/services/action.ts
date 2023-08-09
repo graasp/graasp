@@ -1,5 +1,3 @@
-import { LENGTH_REQUIRED } from 'http-status-codes';
-
 import forwarded from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
@@ -29,7 +27,7 @@ export class ActionService {
     member: Actor,
     repositories: Repositories,
     request: FastifyRequest,
-    actions: (Partial<Action> & Pick<Action, 'extra' | 'type'>)[],
+    actions: (Partial<Action> & Pick<Action, 'type'>)[],
   ): Promise<void> {
     const { headers } = request;
 
@@ -51,11 +49,11 @@ export class ActionService {
     const ip = addresses.pop();
 
     const geolocation = ip ? getGeolocationIp(ip) : null;
-
     const completeActions = actions.map((a) => ({
       member,
       geolocation: geolocation ?? undefined,
       view,
+      extra: {},
       ...a,
     }));
 

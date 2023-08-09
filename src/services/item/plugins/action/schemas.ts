@@ -127,3 +127,18 @@ export const memberSchemaForAnalytics = {
   type: 'array',
   items: memberSchema,
 };
+
+export const postAction = {
+  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  body: {
+    type: 'object',
+    properties: {
+      type: { type: 'string' },
+      extra: { type: 'object' },
+    },
+    required: ['type'],
+  },
+  response: {
+    200: {},
+  },
+};

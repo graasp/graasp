@@ -10,14 +10,17 @@ import {
   Context,
   CountGroupBy,
   FileItemType,
+  HttpMethod,
   IdParam,
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '@graasp/sdk';
 
+import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
-import { exportAction, getAggregateActions, getItemActions } from './schemas';
+import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas';
 import { ActionItemService } from './service';
 import { validateAggregateRequest } from './utils';
 
@@ -47,6 +50,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     fileService,
     mailer,
   );
+
+  const allowedOrigins = Object.values(CLIENT_HOSTS).map(({ url }) => url.origin);
 
   // get actions and more data matching the given `id`
   fastify.get<{ Params: IdParam; Querystring: { requestedSampleSize?: number; view?: Context } }>(
@@ -104,7 +109,41 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     },
   );
 
-  // get actions matching the given `id`
+  fastify.route<{ Params: IdParam; Body: { type: string; extra?: { [key: string]: unknown } } }>({
+    method: HttpMethod.POST,
+    url: '/:id/actions',
+    schema: postAction,
+    preHandler: fastify.attemptVerifyAuthentication,
+    handler: async (request) => {
+      const {
+        member,
+        params: { id: itemId },
+        body: { type, extra = {} },
+      } = request;
+
+      // allow only from known hosts
+      if (!request.headers.origin) {
+        throw new CannotPostAction();
+      }
+      if (!allowedOrigins.includes(request.headers.origin)) {
+        throw new CannotPostAction(request.headers.origin);
+      }
+
+      return db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const item = await itemService.get(member, repositories, itemId);
+        await actionService.postMany(member, repositories, request, [
+          {
+            item,
+            type,
+            extra,
+          },
+        ]);
+      });
+    },
+  });
+
+  // export actions matching the given `id`
   fastify.route<{ Params: IdParam }>({
     method: 'POST',
     url: '/:id/actions/export',
