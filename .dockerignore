@@ -1,9 +1,13 @@
+.*
 coverage
 dist
+docs
 node_modules
 test
 types
-.*
-!.yarnrc.yml
+
+# Yarn files
+
 !.yarn
+!.yarnrc.yml
 yarn.lock
