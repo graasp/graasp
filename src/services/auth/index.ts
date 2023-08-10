@@ -14,6 +14,7 @@ import {
   AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
+  MOBILE_AUTH_URL,
   PROD,
   PUBLIC_URL,
   RECAPTCHA_SECRET_ACCESS_KEY,
@@ -182,9 +183,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     });
 
     const redirectionUrl = getRedirectionUrl(url);
-
-    const linkPath = challenge ? '/m/deep-link' : '/auth';
-    const link = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
+    const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
+    const destination = new URL('/auth', domain);
+    destination.searchParams.set('t', token);
+    destination.searchParams.set('url', redirectionUrl);
+    const link = destination.toString();
 
     const lang = getLangFromMember(member);
 
@@ -216,8 +219,11 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     });
 
     const redirectionUrl = getRedirectionUrl(url);
-    const linkPath = challenge ? '/m/deep-link' : '/auth';
-    const link = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
+    const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
+    const destination = new URL('/auth', domain);
+    destination.searchParams.set('t', token);
+    destination.searchParams.set('url', redirectionUrl);
+    const link = destination.toString();
 
     const memberLang = getLangFromMember(member) ?? lang;
 

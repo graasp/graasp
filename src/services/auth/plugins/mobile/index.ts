@@ -4,10 +4,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { AUTH_CLIENT_HOST, PUBLIC_URL } from '../../../../utils/config';
+import { MOBILE_AUTH_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { MemberPasswordService } from '../password/service';
-import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from './schemas';
+import { mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
@@ -93,10 +93,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body.challenge,
       );
 
-      // redirect to the deep link end point
-      // this ensures that the auth front-end transits through another domain, which will open the app when redirecting to the universal link
-      // must use front-end redirection because this will be called AJAX through POST
-      const redirectionUrl = new URL('/m/deep-link', PUBLIC_URL);
+      // redirect to the universal link domain
+      const redirectionUrl = new URL('/auth', MOBILE_AUTH_URL);
       redirectionUrl.searchParams.set('t', token);
       reply.status(StatusCodes.SEE_OTHER);
 
@@ -116,37 +114,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/auth/refresh', // there's a hardcoded reference to this path above: "verifyMemberInAuthToken()"
     { preHandler: fastify.verifyBearerAuth },
     async ({ memberId }) => generateAuthTokensPair(memberId),
-  );
-
-  fastify.get<{ Querystring: { t: string } }>(
-    '/deep-link',
-    { schema: mdeepLink },
-    async ({ query: { t } }, reply) => {
-      // url to the auth universal link (auth domain is different from our PUBLIC_URL)
-      const target = new URL('auth', AUTH_CLIENT_HOST);
-      target.searchParams.set('t', t);
-      const link = target.toString();
-
-      // redirect manually because we can't mix reply.redirect and an html response (= reply.send) in Fastify
-      reply.code(StatusCodes.MOVED_TEMPORARILY);
-      reply.header('Location', link);
-
-      reply.type('text/html');
-      // TODO: this can be improved
-      return `
-          <!DOCTYPE html>
-          <html>
-            <body style="display: flex; justify-content: center; align-items: center; height: 100vh;
-              font-family: sans-serif;">
-              <a style="background-color: #5050d2;
-                color: white;
-                padding: 1em 1.5em;
-                text-decoration: none;"
-                href="${link}">Open with Graasp app</>
-            </body>
-          </html>
-        `;
-    },
   );
 };
 
