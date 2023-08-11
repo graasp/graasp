@@ -203,7 +203,7 @@ describe('Auth routes tests', () => {
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
       const member = await saveMember(BOB);
-      const t = jwt.sign({ id: member.id }, JWT_SECRET);
+      const t = jwt.sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `/auth?t=${t}`,
@@ -213,7 +213,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Fail if token contains undefined memberId', async () => {
-      const t = jwt.sign({ id: undefined }, JWT_SECRET);
+      const t = jwt.sign({ sub: undefined }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `/auth?t=${t}`,
@@ -225,7 +225,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Fail if token contains unknown member id', async () => {
-      const t = jwt.sign({ id: v4() }, JWT_SECRET);
+      const t = jwt.sign({ sub: v4() }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `/auth?t=${t}`,
@@ -238,7 +238,7 @@ describe('Auth routes tests', () => {
 
     it('Fail to authenticate if token is invalid', async () => {
       const member = await saveMember(BOB);
-      const t = jwt.sign({ id: member.id }, 'secret');
+      const t = jwt.sign({ sub: member.id }, 'secret');
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `/auth?t=${t}`,
