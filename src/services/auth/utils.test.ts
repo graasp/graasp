@@ -12,7 +12,7 @@ import { BOB, saveMember } from '../member/test/fixtures/members';
 import { fetchMemberInSession, verifyMemberInAuthToken, verifyMemberInSession } from './utils';
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+jest.mock('../../plugins/datasource');
 
 const buildRequest = (memberId?: string) =>
   ({
