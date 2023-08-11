@@ -16,3 +16,16 @@ export class DuplicateItemCategoryError extends GraaspCategoriesError {
     );
   }
 }
+
+export class CategoryNotFound extends GraaspCategoriesError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPCATERR002',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'Category not found',
+      },
+      data,
+    );
+  }
+}

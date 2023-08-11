@@ -108,10 +108,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get(
-    '/auth/refresh', // there's a hardcoded reference to this path above: "verifyMemberInAuthToken()"
-    { preHandler: fastify.verifyBearerAuth },
-    async ({ memberId }) => generateAuthTokensPair(memberId),
+  fastify.get('/auth/refresh', { preHandler: fastify.verifyBearerAuth }, async ({ memberId }) =>
+    generateAuthTokensPair(memberId),
   );
 
   fastify.get<{ Querystring: { t: string } }>(

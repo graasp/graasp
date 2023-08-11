@@ -1,6 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
+import { v4 } from 'uuid';
 
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
@@ -203,6 +204,22 @@ describe('Auth routes tests', () => {
     it('Authenticate successfully', async () => {
       const member = await saveMember(BOB);
       const t = jwt.sign({ id: member.id }, JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/auth?t=${t}`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+    });
+    it('Fail if token contains undefined memberId', async () => {
+      const t = jwt.sign({ id: undefined }, JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/auth?t=${t}`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+    });
+    it('Fail if token contains unknown member id', async () => {
+      const t = jwt.sign({ id: v4() }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `/auth?t=${t}`,

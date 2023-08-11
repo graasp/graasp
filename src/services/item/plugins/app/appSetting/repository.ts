@@ -47,6 +47,11 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
   },
 
   async get(id: string) {
+    // additional check that id is not null
+    // o/w empty parameter to findOneBy return the first entry
+    if (!id) {
+      throw new AppSettingNotFound(id);
+    }
     return this.findOneBy({ id });
   },
 

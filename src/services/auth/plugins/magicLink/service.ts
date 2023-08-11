@@ -9,6 +9,7 @@ import { DEFAULT_LANG } from '@graasp/sdk';
 import { JWT_SECRET } from '../../../../utils/config';
 import {
   InvalidToken,
+  MemberNotFound,
   MemberNotSignedUp,
   TokenExpired,
   UnexpectedError,
@@ -49,10 +50,17 @@ export class MagicLinkService {
     }
   }
 
-  async auth(actor: Actor, repositories: Repositories, token) {
+  async auth(actor: Actor, repositories: Repositories, token: string) {
     try {
       // verify and extract member info
       const result = await promisifiedJwtVerify(token, JWT_SECRET, {});
+
+      // pre test the user existence to avoid providing a key
+      const member = await repositories.memberRepository.get(result.sub);
+      if (!member) {
+        throw new MemberNotFound(result.sub);
+      }
+
       return result;
     } catch (error) {
       // the token caused the error
