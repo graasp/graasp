@@ -60,6 +60,7 @@ export function initSentry(instance: FastifyInstance): {
       }
       return breadcrumb;
     },
+    ignoreErrors: ['missing authorization header'],
   });
 
   if (SentryConfig.enablePerformance) {
