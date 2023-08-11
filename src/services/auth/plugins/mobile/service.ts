@@ -91,10 +91,7 @@ export class MobileService {
       }
 
       // pre test the user existence to avoid providing a key
-      const member = await repositories.memberRepository.get(memberId);
-      if (!member) {
-        throw new MemberNotFound(memberId);
-      }
+      await repositories.memberRepository.get(memberId);
 
       // TODO: should we fetch/test the member from the DB?
       return this.fastify.generateAuthTokensPair(memberId);

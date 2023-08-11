@@ -5,6 +5,7 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { MAIL } from '@graasp/translations';
 
+import { MailerDecoration } from '../../plugins/mailer';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
@@ -23,7 +24,7 @@ const promisifiedJwtSign = promisify<
 
 export class AuthService {
   log: FastifyBaseLogger;
-  mailer: any; // TODO
+  mailer: MailerDecoration;
 
   constructor(mailer, log) {
     this.mailer = mailer;

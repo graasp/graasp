@@ -339,10 +339,6 @@ describe('Mobile Endpoints', () => {
       const verifier = 'verifier';
       // compute challenge from verifier
       const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
-      // mock verification
-      jest.spyOn(jwt, 'verify').mockImplementation(() => {
-        return { sub: undefined, challenge };
-      });
 
       const t = jwt.sign({ sub: undefined, challenge }, JWT_SECRET);
 
