@@ -1,4 +1,4 @@
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import jwt, { Secret, SignOptions, VerifyOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 
 import { FastifyRequest } from 'fastify';
@@ -15,6 +15,12 @@ import {
 import { InvalidSession, OrphanSession } from '../../utils/errors';
 import MemberRepository from '../member/repository';
 
+const promisifiedJwtVerify = promisify<
+  string,
+  Secret,
+  VerifyOptions,
+  { sub: string; challenge?: string }
+>(jwt.verify);
 const promisifiedJwtSign = promisify<
   { sub: string; challenge?: string },
   Secret,
@@ -77,7 +83,7 @@ export async function verifyMemberInAuthToken(jwtToken: string, request: Fastify
     const { routerPath } = request;
     const refreshing = '/m/auth/refresh' === routerPath;
     const secret = refreshing ? REFRESH_TOKEN_JWT_SECRET : AUTH_TOKEN_JWT_SECRET;
-    const { memberId } = jwt.verify(jwtToken, secret, {}) as jwt.JwtPayload;
+    const { sub: memberId } = await promisifiedJwtVerify(jwtToken, secret, {});
     const member = await MemberRepository.get(memberId);
 
     if (refreshing) {

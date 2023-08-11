@@ -24,7 +24,7 @@ describe('Member routes tests', () => {
   });
 
   describe('GET /members/current', () => {
-    it.only('Returns successfully if signed in', async () => {
+    it('Returns successfully if signed in', async () => {
       ({ app, actor } = await build());
 
       const response = await app.inject({
