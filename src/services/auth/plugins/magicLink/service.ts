@@ -52,8 +52,10 @@ export class MagicLinkService {
   async auth(actor: Actor, repositories: Repositories, token: string) {
     try {
       // verify and extract member info
+      // cast because return value is unknown
       const result = (await promisifiedJwtVerify(token, JWT_SECRET, {})) as jwt.JwtPayload;
       // pre test the user existence to avoid providing a key
+      // throw if no member is found
       await repositories.memberRepository.get(result.id);
 
       return result;

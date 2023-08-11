@@ -91,6 +91,7 @@ export class MobileService {
       }
 
       // pre test the user existence to avoid providing a key
+      // throws if member does not exist
       await repositories.memberRepository.get(memberId);
 
       // TODO: should we fetch/test the member from the DB?
