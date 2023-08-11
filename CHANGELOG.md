@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.1](https://github.com/graasp/graasp/compare/v1.3.0...v1.3.1) (2023-08-11)
+
+
+### Bug Fixes
+
+* fix token sub key ([#545](https://github.com/graasp/graasp/issues/545)) ([ec03f63](https://github.com/graasp/graasp/commit/ec03f6302766135b8ac483dc2c8fc352a0424ca2))
+
 ## [1.3.0](https://github.com/graasp/graasp/compare/v1.2.7...v1.3.0) (2023-08-11)
 
 
