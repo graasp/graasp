@@ -12,6 +12,7 @@ import {
   ChallengeFailed,
   InvalidToken,
   MemberAlreadySignedUp,
+  MemberNotFound,
   MemberNotSignedUp,
   TokenExpired,
 } from '../../../../utils/errors';
@@ -46,14 +47,14 @@ export class MobileService {
     const member = await memberRepository.getByEmail(email);
 
     if (!member) {
-      const newMember = {
+      const data = {
         name,
         email,
         extra: { lang },
       };
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      await memberRepository.post(newMember);
+      const newMember = await memberRepository.post(data);
       await this.fastify.generateRegisterLinkAndEmailIt(newMember, { challenge });
     } else {
       this.log.warn(`Member re-registration attempt for email '${email}'`);
@@ -88,6 +89,10 @@ export class MobileService {
       if (challenge !== verifierHash) {
         throw new ChallengeFailed();
       }
+
+      // pre test the user existence to avoid providing a key
+      // throws if member does not exist
+      await repositories.memberRepository.get(memberId);
 
       // TODO: should we fetch/test the member from the DB?
       return this.fastify.generateAuthTokensPair(memberId);

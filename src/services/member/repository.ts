@@ -1,10 +1,9 @@
 import { In } from 'typeorm';
 
-import { FileItemType, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import { MemberNotFound } from '../../utils/errors';
-import { Item } from '../item/entities/Item';
 import { mapById } from '../utils';
 import { Member } from './entities/member';
 
@@ -18,9 +17,8 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
   async get(id: string): Promise<Member> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
-    // TODO: improve
     if (!id) {
-      throw new Error('id should not be falsy');
+      throw new MemberNotFound(id);
     }
     const m = await this.findOneBy({ id });
     if (!m) {

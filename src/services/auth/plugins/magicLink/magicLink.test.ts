@@ -1,6 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
+import { v4 } from 'uuid';
 
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
@@ -208,6 +209,31 @@ describe('Auth routes tests', () => {
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      expect(response.headers.location).not.toContain('error');
+    });
+
+    it('Fail if token contains undefined memberId', async () => {
+      const t = jwt.sign({ id: undefined }, JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/auth?t=${t}`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      const url = new URL('/', AUTH_CLIENT_HOST);
+      url.searchParams.set('error', 'true');
+      expect(response.headers.location).toEqual(url.toString());
+    });
+
+    it('Fail if token contains unknown member id', async () => {
+      const t = jwt.sign({ id: v4() }, JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/auth?t=${t}`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      const url = new URL('/', AUTH_CLIENT_HOST);
+      url.searchParams.set('error', 'true');
+      expect(response.headers.location).toEqual(url.toString());
     });
 
     it('Fail to authenticate if token is invalid', async () => {

@@ -2,9 +2,15 @@ import { ItemValidationProcess, ItemValidationStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ItemValidation } from '../entities/ItemValidation';
+import { ItemValidationNotFound } from '../errors';
 
 export const ItemValidationRepository = AppDataSource.getRepository(ItemValidation).extend({
   async get(id: string): Promise<ItemValidation | null> {
+    // additional check that id is not null
+    // o/w empty parameter to findOneBy return the first entry
+    if (!id) {
+      throw new ItemValidationNotFound(id);
+    }
     return this.findOneBy({ id });
   },
 
