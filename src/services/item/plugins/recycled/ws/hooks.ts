@@ -28,7 +28,7 @@ export function registerRecycleWsHooks(
     const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('delete', item));
-    } else {
+    } else if (item.creator?.id) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('delete', item));
 
@@ -42,7 +42,7 @@ export function registerRecycleWsHooks(
     if (item.id in itemIdsToMemberships) {
       const memberships = itemIdsToMemberships[item.id];
       memberships.forEach(({ member }) => {
-        if (member.id !== item.creator.id) {
+        if (member.id !== item.creator?.id) {
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('delete', item));
         }
       });
@@ -58,7 +58,7 @@ export function registerRecycleWsHooks(
     const parentId = getParentFromPath(item.path);
     if (parentId !== undefined) {
       websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
-    } else {
+    } else if (item.creator?.id) {
       // root item, notify creator
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
 
@@ -72,7 +72,7 @@ export function registerRecycleWsHooks(
     if (item.id in itemIdsToMemberships) {
       const memberships = itemIdsToMemberships[item.id];
       memberships.forEach(({ member }) => {
-        if (member.id !== item.creator.id) {
+        if (member.id !== item.creator?.id) {
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('create', item));
         }
       });
