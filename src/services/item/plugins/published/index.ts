@@ -26,7 +26,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/collections',
     {
       schema: getCollections,
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ query, member }) => {
       return pIS.getItemsByCategories(member, buildRepositories(), query.categoryId);
@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/collections/members/:memberId',
     {
       schema: getCollectionsForMember,
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { memberId } }) => {
       return pIS.getItemsForMember(member, buildRepositories(), memberId);
@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { itemId: string } }>(
     '/collections/:itemId/informations',
     {
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
       schema: getInformations,
     },
     async ({ params, member }) => {
@@ -58,7 +58,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { itemId: string[] } }>(
     '/collections/informations',
     {
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
       schema: getManyInformations,
     },
     async ({ member, query: { itemId } }) => {
@@ -69,7 +69,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { limit?: number } }>(
     '/collections/liked',
     {
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
       schema: getMostLikedItems,
     },
     async ({ member, query: { limit } }) => {
@@ -106,7 +106,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { limit?: number } }>(
     '/collections/recent',
     {
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
       schema: getRecentCollections,
     },
     async ({ member, query: { limit } }) => {

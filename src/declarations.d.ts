@@ -73,6 +73,7 @@ declare module 'fastify' {
       captcha: string,
       actionType: RecaptchaActionType,
     ) => Promise<void>;
+    attemptVerifyAuthentication: (request: FastifyRequest) => Promise<void>;
     fetchMemberInSession: (request: FastifyRequest) => Promise<void>;
     generateAuthTokensPair: (memberId: string) => Promise<{
       authToken: string;

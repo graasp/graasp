@@ -90,7 +90,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     method: 'GET',
     url: '/zip-export/:itemId',
     schema: zipExport,
-    preHandler: fastify.fetchMemberInSession,
+    preHandler: fastify.attemptVerifyAuthentication,
     handler: async ({ member, params: { itemId } }, reply) => {
       return importExportService.export(member, buildRepositories(), {
         itemId,

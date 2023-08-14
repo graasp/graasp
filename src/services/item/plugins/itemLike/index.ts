@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // TODO: anonymize private members
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/likes',
-    { schema: getLikesForItem, preHandler: fastify.fetchMemberInSession },
+    { schema: getLikesForItem, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { itemId }, log }) => {
       return itemLikeService.getForItem(member, buildRepositories(), itemId);
     },

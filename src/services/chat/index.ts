@@ -58,7 +58,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
 
     fastify.get<{ Params: { itemId: string } }>(
       '/:itemId/chat',
-      { schema: getChat, preHandler: fastify.fetchMemberInSession },
+      { schema: getChat, preHandler: fastify.attemptVerifyAuthentication },
       async ({ member, params: { itemId }, log }) => {
         return chatService.getForItem(member, buildRepositories(), itemId);
       },
