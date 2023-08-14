@@ -49,10 +49,15 @@ export class MagicLinkService {
     }
   }
 
-  async auth(actor: Actor, repositories: Repositories, token) {
+  async auth(actor: Actor, repositories: Repositories, token: string) {
     try {
       // verify and extract member info
       const result = await promisifiedJwtVerify(token, JWT_SECRET, {});
+      const { sub: memberId } = result;
+      // pre test the user existence to avoid providing a key
+      // throw if no member is found
+      await repositories.memberRepository.get(memberId);
+
       return result;
     } catch (error) {
       // the token caused the error

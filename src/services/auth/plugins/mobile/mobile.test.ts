@@ -7,6 +7,7 @@ import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { JWT_SECRET, MOBILE_AUTH_URL, REFRESH_TOKEN_JWT_SECRET } from '../../../../utils/config';
+import { MemberNotFound } from '../../../../utils/errors';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
@@ -288,10 +289,6 @@ describe('Mobile Endpoints', () => {
       const verifier = 'verifier';
       // compute challenge from verifier
       const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
-      // mock verification
-      jest.spyOn(jwt, 'verify').mockImplementation(() => {
-        return { sub: member.id, challenge };
-      });
 
       const t = jwt.sign({ sub: member.id, challenge }, JWT_SECRET);
 
@@ -310,7 +307,7 @@ describe('Mobile Endpoints', () => {
 
     it('Fail to authenticate if verifier and challenge do not match', async () => {
       const member = await saveMember(BOB);
-      const t = jwt.sign({ id: member.id }, JWT_SECRET);
+      const t = jwt.sign({ sub: member.id }, JWT_SECRET);
       const verifier = 'verifier';
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -337,12 +334,32 @@ describe('Mobile Endpoints', () => {
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     });
+
+    it('Fail to authenticate if token contains undefined member id', async () => {
+      const verifier = 'verifier';
+      // compute challenge from verifier
+      const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
+
+      const t = jwt.sign({ sub: undefined, challenge }, JWT_SECRET);
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: '/m/auth',
+        payload: {
+          t,
+          verifier,
+        },
+      });
+
+      expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+      expect(response.json().message).toEqual(new MemberNotFound().message);
+    });
   });
 
   describe('GET /m/auth/refresh', () => {
     it('Refresh tokens successfully', async () => {
       const member = await saveMember(BOB);
-      const t = jwt.sign({ id: member.id }, REFRESH_TOKEN_JWT_SECRET);
+      const t = jwt.sign({ sub: member.id }, REFRESH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
         url: '/m/auth/refresh',
@@ -354,9 +371,20 @@ describe('Mobile Endpoints', () => {
       expect(response.json()).toHaveProperty('refreshToken');
       expect(response.json()).toHaveProperty('authToken');
     });
+    it('Throw if token contains undefined member id', async () => {
+      const t = jwt.sign({ sub: undefined }, REFRESH_TOKEN_JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: '/m/auth/refresh',
+        headers: {
+          authorization: `Bearer ${t}`,
+        },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+    });
     it('Fail if token is invalid', async () => {
       const member = await saveMember(BOB);
-      const t = jwt.sign({ id: member.id }, 'REFRESH_TOKEN_JWT_SECRET');
+      const t = jwt.sign({ sub: member.id }, 'REFRESH_TOKEN_JWT_SECRET');
       const response = await app.inject({
         method: HttpMethod.GET,
         url: '/m/auth/refresh',

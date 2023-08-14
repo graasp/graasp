@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.1](https://github.com/graasp/graasp/compare/v1.3.0...v1.3.1) (2023-08-11)
+
+
+### Bug Fixes
+
+* fix token sub key ([#545](https://github.com/graasp/graasp/issues/545)) ([ec03f63](https://github.com/graasp/graasp/commit/ec03f6302766135b8ac483dc2c8fc352a0424ca2))
+
+## [1.3.0](https://github.com/graasp/graasp/compare/v1.2.7...v1.3.0) (2023-08-11)
+
+
+### Features
+
+* add aggregate action endpoint ([#514](https://github.com/graasp/graasp/issues/514)) ([22c2ef8](https://github.com/graasp/graasp/commit/22c2ef815dd57e525efa2ff92ad06e93be80eda9))
+* release a version for [#471](https://github.com/graasp/graasp/issues/471) ([#532](https://github.com/graasp/graasp/issues/532)) ([582fe21](https://github.com/graasp/graasp/commit/582fe21fe97423ae0a0014dfab190235f072d18a))
+* replace mobile redirect with domain-based deep link ([#499](https://github.com/graasp/graasp/issues/499)) ([3dfdd69](https://github.com/graasp/graasp/commit/3dfdd69228812b53f309442fe4e21a3d494a785c))
+
+
+### Bug Fixes
+
+* fix published queries to prevent cross table queries ([#531](https://github.com/graasp/graasp/issues/531)) ([80ae941](https://github.com/graasp/graasp/commit/80ae941f1a0bddf3cfb2b609e47be45955ba6eb6))
+* null creator in ws hooks ([#527](https://github.com/graasp/graasp/issues/527)) ([47c01ce](https://github.com/graasp/graasp/commit/47c01ce228a70ef4a547f48a35278c7595035d89))
+* return inherit item login schema, prevent put from child ([#513](https://github.com/graasp/graasp/issues/513)) ([5b01536](https://github.com/graasp/graasp/commit/5b0153614356490382bfa4bd5a6215becc26ccba))
+* throw for undefined member id in token ([#544](https://github.com/graasp/graasp/issues/544)) ([5f0c059](https://github.com/graasp/graasp/commit/5f0c059e56eeebc9e58f3368d29a582eddf4f501))
+
 ## [1.2.7](https://github.com/graasp/graasp/compare/v1.2.6...v1.2.7) (2023-07-31)
 
 

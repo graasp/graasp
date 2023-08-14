@@ -1,13 +1,24 @@
 import { UUID, isPasswordStrong } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
-import { EmptyCurrentPassword, IncorrectPassword, InvalidPassword } from '../../../../utils/errors';
+import {
+  EmptyCurrentPassword,
+  IncorrectPassword,
+  InvalidPassword,
+  MemberNotFound,
+} from '../../../../utils/errors';
 import { MemberPassword } from './entities/password';
 import { PasswordNotStrong } from './errors';
 import { encryptPassword, verifyCredentials, verifyCurrentPassword } from './utils';
 
 export const MemberPasswordRepository = AppDataSource.getRepository(MemberPassword).extend({
   async getForMemberId(memberId: string, args: { shouldExist: boolean } = { shouldExist: true }) {
+    // additional check that id is not null
+    // o/w empty parameter to findOneBy return the first entry
+    if (!memberId) {
+      throw new MemberNotFound(memberId);
+    }
+
     const memberPassword = this.findOneBy({ member: { id: memberId } });
 
     if (!memberPassword && args.shouldExist) {

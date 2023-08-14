@@ -6,6 +6,11 @@ import { ItemLike } from './itemLike';
 
 export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
   get(entryId: string) {
+    // additional check that id is not null
+    // o/w empty parameter to findOneBy return the first entry
+    if (!entryId) {
+      throw new ItemLikeNotFound(entryId);
+    }
     return this.findOneBy({ id: entryId });
   },
 
