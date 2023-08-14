@@ -104,7 +104,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const ids = items.map((i) => i.id);
     const query = this.createQueryBuilder('item_membership')
       .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
-      .where('descendant.id in (:...ids)', { ids: ids });
+      .where('descendant.id in (:...ids)', { ids });
     if (memberId) {
       query.andWhere('member.id = :memberId', { memberId });
     }
@@ -159,7 +159,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       .orderBy('descendant.id')
       .addOrderBy('nlevel(item_membership.item_path)', 'DESC');
 
-    // annoyingly, getMany removes dupplicate entities, however in this case two items might be linked to the same effective membership
+    // annoyingly, getMany removes duplicate entities, however in this case two items might be linked to the same effective membership
     const memberships = await query.getRawAndEntities();
 
     // map entities by id to avoid iterating on the result multiple times

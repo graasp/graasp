@@ -66,6 +66,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -87,6 +88,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Shared item with Read permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Read);
       const repositories = {
@@ -126,6 +128,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -141,6 +144,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -157,6 +161,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Shared item with Write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
       const repositories = {
@@ -196,6 +201,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -215,6 +221,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -231,6 +238,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Shared item with Admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
       const repositories = {
@@ -270,6 +278,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -289,6 +298,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -309,6 +319,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public item', () => {
       const repositories = {
         itemMembershipRepository: {
@@ -343,6 +354,7 @@ describe('Authorization', () => {
         );
         expect(result1).toEqual(null);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -353,6 +365,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -364,6 +377,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public item with shared read permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Read);
       const repositories = {
@@ -410,6 +424,7 @@ describe('Authorization', () => {
         );
         expect(result2).toEqual(null);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -425,6 +440,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -441,6 +457,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public item with shared write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
       const repositories = {
@@ -487,6 +504,7 @@ describe('Authorization', () => {
         );
         expect(result2).toEqual(null);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -506,6 +524,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -522,6 +541,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public item with shared admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
       const repositories = {
@@ -568,6 +588,7 @@ describe('Authorization', () => {
         );
         expect(result2).toEqual(null);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -587,6 +608,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -646,6 +668,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -661,6 +684,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -677,6 +701,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Hidden item with shared with write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
       const repositories = {
@@ -719,6 +744,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -738,6 +764,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -754,6 +781,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Hidden item with shared with admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
       const repositories = {
@@ -815,6 +843,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -835,6 +864,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public & Hidden item', () => {
       const repositories = {
         itemMembershipRepository: {
@@ -865,6 +895,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -875,6 +906,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -886,6 +918,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public & Hidden item with shared read permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Read);
       const repositories = {
@@ -924,6 +957,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -939,6 +973,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -955,6 +990,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public & Hidden item with shared write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
       const repositories = {
@@ -997,6 +1033,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -1016,6 +1053,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -1032,6 +1070,7 @@ describe('Authorization', () => {
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
     });
+
     describe('Public & Hidden item with shared admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
       const repositories = {
@@ -1074,6 +1113,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Read, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Write, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
@@ -1093,6 +1133,7 @@ describe('Authorization', () => {
           validatePermission(repositories, PermissionLevel.Write, OTHER_MEMBER, ITEM),
         ).rejects.toBeInstanceOf(MemberCannotAccess);
       });
+
       it(PermissionLevel.Admin, async () => {
         // owner should pass
         const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
@@ -1171,6 +1212,7 @@ describe('Authorization', () => {
           );
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1187,6 +1229,7 @@ describe('Authorization', () => {
           );
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1204,6 +1247,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Shared item with Read permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Read);
         const repositories = {
@@ -1229,6 +1273,7 @@ describe('Authorization', () => {
             hasManyForMany: jest.fn(() => ({ data: { [ITEM.id]: [] }, errors: [] })),
           } as unknown as typeof ItemTagRepository,
         };
+
         it(PermissionLevel.Read, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
@@ -1254,6 +1299,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1279,6 +1325,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1305,6 +1352,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Shared item with Write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
         const repositories = {
@@ -1356,6 +1404,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1381,6 +1430,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1407,6 +1457,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Shared item with Admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
         const repositories = {
@@ -1432,6 +1483,7 @@ describe('Authorization', () => {
             hasManyForMany: jest.fn(() => ({ data: { [ITEM.id]: [] }, errors: [] })),
           } as unknown as typeof ItemTagRepository,
         };
+
         it(PermissionLevel.Read, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
@@ -1457,6 +1509,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1482,6 +1535,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1508,6 +1562,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public item', () => {
         const repositories = {
           itemMembershipRepository: {
@@ -1549,6 +1604,7 @@ describe('Authorization', () => {
           );
           expect(result1.data[ITEM.id]).toEqual(null);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1565,6 +1621,7 @@ describe('Authorization', () => {
           );
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1582,6 +1639,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public item with shared read permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Read);
         const repositories = {
@@ -1636,6 +1694,7 @@ describe('Authorization', () => {
           );
           expect(result2.data[ITEM.id]).toEqual(null);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1661,6 +1720,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1687,6 +1747,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public item with shared write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
         const repositories = {
@@ -1741,6 +1802,7 @@ describe('Authorization', () => {
           );
           expect(result2.data[ITEM.id]).toEqual(null);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1766,6 +1828,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1792,6 +1855,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public item with shared admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
         const repositories = {
@@ -1846,6 +1910,7 @@ describe('Authorization', () => {
           );
           expect(result2.data[ITEM.id]).toEqual(null);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1871,6 +1936,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -1952,6 +2018,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -1977,6 +2044,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -2003,6 +2071,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Hidden item with shared with write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
         const repositories = {
@@ -2057,6 +2126,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -2082,6 +2152,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -2108,6 +2179,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Hidden item with shared with admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
         const repositories = {
@@ -2162,6 +2234,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -2187,6 +2260,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -2213,6 +2287,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public & Hidden item', () => {
         const repositories = {
           itemMembershipRepository: {
@@ -2254,6 +2329,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -2270,6 +2346,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -2287,6 +2364,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public & Hidden item with shared read permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Read);
         const repositories = {
@@ -2341,6 +2419,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -2366,6 +2445,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -2392,6 +2472,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public & Hidden item with shared write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
         const repositories = {
@@ -2446,6 +2527,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Write, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
@@ -2471,6 +2553,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -2497,6 +2580,7 @@ describe('Authorization', () => {
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
       });
+
       describe('Public & Hidden item with shared admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
         const repositories = {
@@ -2576,6 +2660,7 @@ describe('Authorization', () => {
           );
           expect(result2.errors[0]).toBeInstanceOf(MemberCannotAccess);
         });
+
         it(PermissionLevel.Admin, async () => {
           // owner should pass
           const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
@@ -2603,6 +2688,7 @@ describe('Authorization', () => {
         });
       });
     });
+
     describe('many items', () => {
       const SHARED_ITEM = { id: 'shared-item' } as Item;
       const PUBLIC_ITEM = { id: 'public-item' } as Item;

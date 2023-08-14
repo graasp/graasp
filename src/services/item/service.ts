@@ -126,7 +126,7 @@ export class ItemService {
       }
     }
 
-    return { data: result.data, errors: [...(memberships?.errors ?? []), ...result.errors] };
+    return { data: result.data, errors: result.errors.concat(memberships?.errors ?? []) };
   }
 
   async getOwn(actor: Actor, { itemRepository }: Repositories) {
