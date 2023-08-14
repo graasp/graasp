@@ -19,10 +19,14 @@ import {
   UploadFileUnexpectedError,
 } from './utils/errors';
 
+export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
+
 class FileService {
   repository: FileRepository;
   /** file type */
   type: FileItemType;
+
+  config: { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
 
   constructor(
     options: { s3?: S3FileConfiguration; local?: LocalFileConfiguration },
@@ -44,6 +48,7 @@ class FileService {
         this.repository = new LocalFileRepository(options.local);
         break;
     }
+    this.config = options;
   }
 
   async getFileSize(actor: Actor, filepath: string) {

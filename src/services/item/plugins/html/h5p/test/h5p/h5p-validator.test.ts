@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import tmp, { DirectoryResult } from 'tmp-promise';
 
+import { H5PInvalidManifestError } from '../../errors';
 import { H5P } from '../../validation/h5p';
 import { H5PValidator } from '../../validation/h5p-validator';
 import { H5P_PACKAGES } from '../fixtures';
@@ -53,25 +54,20 @@ describe('H5PValidator', () => {
 
     it('accepts valid H5P package', async () => {
       await extract(H5P_PACKAGES.ACCORDION.path, { dir: dir.path });
-      expect(await h5pValidator.validatePackage(dir.path)).toEqual({
-        isValid: true,
-        manifest: H5P_PACKAGES.ACCORDION.manifest,
-      });
+      expect(async () => await h5pValidator.validatePackage(dir.path)).not.toThrow();
     });
 
     it('rejects folder without an h5p.json manifest', async () => {
-      expect(await h5pValidator.validatePackage(dir.path)).toEqual({
-        isValid: false,
-        error: 'Missing h5p.json manifest file',
-      });
+      expect(async () => await h5pValidator.validatePackage(dir.path)).rejects.toMatchObject(
+        new H5PInvalidManifestError('Missing h5p.json manifest file'),
+      );
     });
 
     it('rejects null h5p.json manifest', async () => {
       await createManifest(null);
-      expect(await h5pValidator.validatePackage(dir.path)).toEqual({
-        isValid: false,
-        error: 'Invalid h5p.json manifest file: undefined',
-      });
+      expect(async () => await h5pValidator.validatePackage(dir.path)).rejects.toMatchObject(
+        new H5PInvalidManifestError(undefined),
+      );
     });
 
     it.each([
@@ -96,10 +92,9 @@ describe('H5PValidator', () => {
         ...H5P_PACKAGES.ACCORDION.manifest,
         ...injected,
       });
-      expect(await h5pValidator.validatePackage(dir.path)).toEqual({
-        isValid: false,
-        error: `Invalid h5p.json manifest file: ${error}`,
-      });
+      expect(async () => await h5pValidator.validatePackage(dir.path)).rejects.toMatchObject(
+        new H5PInvalidManifestError(error),
+      );
     });
 
     it('rejects invalid h5p.json manifest: main library missing from preloaded dependencies', async () => {
@@ -110,10 +105,9 @@ describe('H5PValidator', () => {
           ({ machineName }) => machineName !== manifest.mainLibrary,
         ),
       });
-      expect(await h5pValidator.validatePackage(dir.path)).toEqual({
-        isValid: false,
-        error: 'Invalid h5p.json manifest file: main library not found in preloaded dependencies',
-      });
+      expect(async () => await h5pValidator.validatePackage(dir.path)).rejects.toMatchObject(
+        new H5PInvalidManifestError(`main library not found in preloaded dependencies`),
+      );
     });
   });
 });

@@ -10,7 +10,13 @@ export const H5P_FILE_DOT_EXTENSION = `.${H5P.H5P_FILE_EXTENSION}`;
 export const DEFAULT_MIME_TYPE = 'application/octet-stream';
 
 export const DEFAULT_H5P_CONTENT_ROUTE = '/h5p-content/';
+// todo: improve?
+if (!DEFAULT_H5P_CONTENT_ROUTE.startsWith('/') || !DEFAULT_H5P_CONTENT_ROUTE.endsWith('/')) {
+  throw new Error("H5P routes must start and end with a forward slash ('/') !");
+}
 export const DEFAULT_H5P_ASSETS_ROUTE = '/h5p-assets/';
+if (!DEFAULT_H5P_ASSETS_ROUTE.startsWith('/') || !DEFAULT_H5P_ASSETS_ROUTE.endsWith('/')) {
+  throw new Error("H5P routes must start and end with a forward slash ('/') !");
+}
 
 export const PLUGIN_NAME = 'graasp-plugin-h5p';
-export const PUBLIC_PLUGIN_NAME = 'graasp-plugin-h5p-public';
