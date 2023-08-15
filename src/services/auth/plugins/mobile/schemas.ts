@@ -64,14 +64,3 @@ export const mauth = {
     additionalProperties: false,
   },
 };
-
-export const mdeepLink = {
-  querystring: {
-    type: 'object',
-    required: ['t'],
-    properties: {
-      t: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
-};

@@ -4,10 +4,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { AUTH_CLIENT_HOST } from '../../../../utils/config';
+import { MOBILE_AUTH_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { MemberPasswordService } from '../password/service';
-import { mPasswordLogin, mauth, mdeepLink, mlogin, mregister } from './schemas';
+import { mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
@@ -93,9 +93,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body.challenge,
       );
 
-      const redirectionUrl = new URL('auth', AUTH_CLIENT_HOST);
+      // redirect to the universal link domain
+      const redirectionUrl = new URL('/auth', MOBILE_AUTH_URL);
       redirectionUrl.searchParams.set('t', token);
       reply.status(StatusCodes.SEE_OTHER);
+
       return { resource: redirectionUrl.toString() };
     },
   );
@@ -110,30 +112,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get('/auth/refresh', { preHandler: fastify.verifyBearerAuth }, async ({ memberId }) =>
     generateAuthTokensPair(memberId),
-  );
-
-  fastify.get<{ Querystring: { t: string } }>(
-    '/deep-link',
-    { schema: mdeepLink },
-    async ({ query: { t } }, reply) => {
-      reply.type('text/html');
-      const target = new URL('auth', AUTH_CLIENT_HOST);
-      target.searchParams.set('t', t);
-      // TODO: this can be improved
-      return `
-          <!DOCTYPE html>
-          <html>
-            <body style="display: flex; justify-content: center; align-items: center; height: 100vh;
-              font-family: sans-serif;">
-              <a style="background-color: #5050d2;
-                color: white;
-                padding: 1em 1.5em;
-                text-decoration: none;"
-                href="${target}">Open with Graasp app</>
-            </body>
-          </html>
-        `;
-    },
   );
 };
 
