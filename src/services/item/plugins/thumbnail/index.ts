@@ -99,7 +99,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     `/:id${THUMBNAILS_ROUTE_PREFIX}/:size`,
     {
       schema: download,
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { size, id: itemId }, query: { replyUrl }, log }, reply) => {
       return thumbnailService

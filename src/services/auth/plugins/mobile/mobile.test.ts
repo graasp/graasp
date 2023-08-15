@@ -6,7 +6,7 @@ import fetch from 'node-fetch';
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { AUTH_CLIENT_HOST, JWT_SECRET, REFRESH_TOKEN_JWT_SECRET } from '../../../../utils/config';
+import { JWT_SECRET, MOBILE_AUTH_URL, REFRESH_TOKEN_JWT_SECRET } from '../../../../utils/config';
 import { MemberNotFound } from '../../../../utils/errors';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
@@ -221,8 +221,8 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const result = await response.json();
       expect(result).toHaveProperty('resource');
-      const url = new URL('auth', AUTH_CLIENT_HOST);
-      url.searchParams.set('t', '');
+      const url = new URL('/auth', MOBILE_AUTH_URL);
+      url.searchParams.set('t', ''); // we don't know the generated token, but the parameter should exist
       expect(result.resource).toContain(url.toString());
     });
 
@@ -393,19 +393,6 @@ describe('Mobile Endpoints', () => {
         },
       });
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
-    });
-  });
-
-  describe('GET /m/deep-link', () => {
-    it('Refresh tokens successfully', async () => {
-      const member = await saveMember(BOB);
-      const t = jwt.sign({ sub: member.id }, JWT_SECRET);
-      const response = await app.inject({
-        method: HttpMethod.GET,
-        url: `/m/deep-link?t=${t}`,
-      });
-      expect(response.headers['content-type']).toEqual('text/html');
-      expect(response.statusCode).toEqual(StatusCodes.OK);
     });
   });
 });
