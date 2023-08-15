@@ -21,7 +21,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // range: title, tag, all, author
   fastify.get<{ Querystring: SearchFields }>(
     '/collections/search',
-    { schema: search, preHandler: fastify.fetchMemberInSession },
+    { schema: search, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, query, log }) => {
       return searchService.search(member, buildRepositories(), query);
     },

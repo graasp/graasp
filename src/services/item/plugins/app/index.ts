@@ -126,7 +126,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       // generate api access token for member + (app-)item.
       fastify.post<{ Params: { itemId: string }; Body: { origin: string } & AppIdentification }>(
         '/:itemId/api-access-token',
-        { schema: generateToken, preHandler: fastify.fetchMemberInSession },
+        { schema: generateToken, preHandler: fastify.attemptVerifyAuthentication },
         async (request) => {
           const {
             member,
@@ -172,7 +172,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         '/:itemId/context',
         {
           schema: getContext,
-          preHandler: fastify.fetchMemberInSession,
+          preHandler: fastify.attemptVerifyAuthentication,
         },
         async ({ member, authTokenSubject: requestDetails, params: { itemId }, log }) => {
           const memberId = member ? member.id : requestDetails?.memberId;

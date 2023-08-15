@@ -16,7 +16,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get categories
   fastify.get<{ Params: { categoryId: string } }>(
     '/categories',
-    { schema: getCategories, preHandler: fastify.fetchMemberInSession },
+    { schema: getCategories, preHandler: fastify.attemptVerifyAuthentication },
     async ({}) => {
       return categoryService.getAll(undefined, buildRepositories());
     },
@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: getItemCategories,
 
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { itemId }, log }) => {
       return itemCategoryService.getForItem(member, buildRepositories(), itemId);

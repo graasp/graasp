@@ -9,6 +9,7 @@ import { MailerDecoration } from '../../plugins/mailer';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
+  MOBILE_AUTH_URL,
   PUBLIC_URL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
 } from '../../utils/config';
@@ -49,8 +50,11 @@ export class AuthService {
     });
 
     const redirectionUrl = getRedirectionUrl(url);
-    const linkPath = challenge ? '/m/deep-link' : '/auth';
-    const link = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
+    const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
+    const destination = new URL('/auth', domain);
+    destination.searchParams.set('t', token);
+    destination.searchParams.set('url', redirectionUrl);
+    const link = destination.toString();
 
     const lang = member.lang;
 
@@ -80,8 +84,11 @@ export class AuthService {
     });
 
     const redirectionUrl = getRedirectionUrl(url);
-    const linkPath = challenge ? '/m/deep-link' : '/auth';
-    const link = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
+    const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
+    const destination = new URL('/auth', domain);
+    destination.searchParams.set('t', token);
+    destination.searchParams.set('url', redirectionUrl);
+    const link = destination.toString();
 
     const memberLang = member.lang ?? lang;
 

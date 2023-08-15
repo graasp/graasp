@@ -62,7 +62,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // mentions
   fastify.get(
     '/mentions',
-    { schema: getMentions, preHandler: fastify.fetchMemberInSession },
+    { schema: getMentions, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, log }) => {
       if (!member) {
         throw new UnauthorizedMember(member);
