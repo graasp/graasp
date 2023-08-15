@@ -111,8 +111,9 @@ export const AUTH_CLIENT_HOST = new URL(
  */
 export const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? HOST);
 
-export const GRAASP_MOBILE_BUILDER_PROTOCOL =
-  process.env.GRAASP_MOBILE_BUILDER || 'graasp-mobile-builder';
+export const MOBILE_AUTH_URL = new URL(
+  process.env.GRAASP_MOBILE_BUILDER || 'https://mobile.graasp.org',
+);
 
 export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
