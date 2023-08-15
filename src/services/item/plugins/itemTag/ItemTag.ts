@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -16,6 +17,7 @@ import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 
 @Entity()
+@Index('IDX_gist_item_tag_path', { synchronize: false })
 @Unique('item-tag', ['item', 'type'])
 export class ItemTag extends BaseEntity implements GraaspItemTag {
   @PrimaryGeneratedColumn('uuid')

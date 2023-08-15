@@ -20,7 +20,7 @@ import {
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { filterOutItems, validatePermission } from '../authorization';
+import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item } from './entities/Item';
@@ -112,17 +112,21 @@ export class ItemService {
 
     // check memberships
     // remove items if they do not have permissions
+    const memberships = await validatePermissionMany(
+      repositories,
+      PermissionLevel.Read,
+      actor,
+      Object.values(result.data),
+    );
+
     for (const [id, item] of Object.entries(result.data)) {
-      try {
-        await validatePermission(repositories, PermissionLevel.Read, actor, item);
-      } catch (e) {
+      // Do not delete if value exist but is null, because no memberships but can be public
+      if (memberships?.data[id] === undefined) {
         delete result.data[id];
-        if (e instanceof CoreError || e instanceof Error) {
-          result.errors.push(e);
-        }
       }
     }
-    return result;
+
+    return { data: result.data, errors: result.errors.concat(memberships?.errors ?? []) };
   }
 
   async getOwn(actor: Actor, { itemRepository }: Repositories) {

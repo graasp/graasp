@@ -41,6 +41,7 @@ export type ItemExtra =
   | AppItemExtra;
 
 @Entity()
+@Index('IDX_gist_item_path', { synchronize: false })
 export class Item extends BaseEntity implements GraaspItem {
   // we do not generate by default because if need to generate
   // the id to define the path

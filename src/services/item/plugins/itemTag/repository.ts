@@ -48,7 +48,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     });
   },
 
-  async hasManyForMany(items: Item[], tagTypes: ItemTagType[]) {
+  async hasManyForMany(items: Item[], tagTypes: ItemTagType[]): Promise<ResultOf<ItemTagType[]>> {
     const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
 
     query.where(
@@ -60,14 +60,22 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
       }),
     );
 
-    const hasTags = await query
+    const hasTags: ItemTag[] = await query
       .andWhere('itemTag.type IN (:...types)', { types: tagTypes })
-      .getOne();
+      .getMany();
 
-    return mapById({
-      keys: tagTypes,
-      findElement: (type) => Boolean(hasTags.find(({ type: thisType }) => type === thisType)),
+    const mapByPath = mapById({
+      keys: items.map(({ path }) => path),
+      findElement: (path) =>
+        hasTags.filter((itemTag) => path.includes(itemTag.item.path)).map((t) => t.type),
     });
+
+    // use id as key
+    const idToItemTags = Object.fromEntries(
+      Object.entries(mapByPath.data).map(([key, value]) => [pathToId(key), value]),
+    );
+
+    return { data: idToItemTags, errors: mapByPath.errors };
   },
 
   async hasForMany(items: Item[], tagType: ItemTagType): Promise<ResultOf<boolean>> {

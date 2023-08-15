@@ -65,10 +65,10 @@ export class ItemPublishedService {
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
     const { itemPublishedRepository, itemTagRepository } = repositories;
-
     const { data: itemsMap, errors } = await this.itemService.getMany(actor, repositories, itemIds);
 
     const items = Object.values(itemsMap);
+
     // item should be public first
     const { data: areItemsPublic, errors: publicErrors } = await itemTagRepository.hasForMany(
       items,
