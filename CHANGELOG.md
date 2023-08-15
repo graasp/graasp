@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/graasp/graasp/compare/v1.3.1...v1.4.0) (2023-08-15)
+
+
+### Features
+
+* always redirect mobile auth to universal auth link ([#539](https://github.com/graasp/graasp/issues/539)) ([0433e84](https://github.com/graasp/graasp/commit/0433e84c4ed45fb1213245d846389d22ad15ce3c))
+
+
+### Bug Fixes
+
+* allow bearer token by using attemptVerifyAuthentication instead of fetchMemberInSession ([#551](https://github.com/graasp/graasp/issues/551)) ([6fd25fa](https://github.com/graasp/graasp/commit/6fd25fafb280ab9563ee079693ca51fdc5f944b0))
+* optimize db queries ([#534](https://github.com/graasp/graasp/issues/534)) ([6b881f5](https://github.com/graasp/graasp/commit/6b881f528c027b4108511634167a99a67304e96e))
+* remove sentry profiling and bump versions to resolve types ([#559](https://github.com/graasp/graasp/issues/559)) ([5d186d8](https://github.com/graasp/graasp/commit/5d186d84e9b9f04c74d3bf70b9f50245fa56c162))
+
 ## [1.3.1](https://github.com/graasp/graasp/compare/v1.3.0...v1.3.1) (2023-08-11)
 
 
