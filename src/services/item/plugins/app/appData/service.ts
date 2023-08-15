@@ -101,10 +101,9 @@ export class AppDataService {
       },
     );
 
-    return appDataRepository.post(itemId, actorId, completeData).then(async (newAppData) => {
-      await this.hooks.runPostHooks('post', member, repositories, { appData: newAppData, itemId });
-      return newAppData;
-    });
+    const appData = await appDataRepository.post(itemId, actorId, completeData);
+    await this.hooks.runPostHooks('post', member, repositories, { appData, itemId });
+    return appData;
   }
 
   async patch(
@@ -121,11 +120,6 @@ export class AppDataService {
     }
     const member = await memberRepository.get(memberId);
 
-    await this.hooks.runPreHooks('patch', member, repositories, {
-      appData: { ...body, id: appDataId },
-      itemId,
-    });
-
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
@@ -137,13 +131,13 @@ export class AppDataService {
       item,
     );
 
-    const appData = await appDataRepository.get(appDataId);
+    const currentAppData = await appDataRepository.get(appDataId);
 
     // patch own or is admin
     const isValid = await this.validateAppDataPermission(
       repositories,
       member,
-      appData,
+      currentAppData,
       PermissionLevel.Write,
       inheritedMembership,
     );
@@ -151,13 +145,17 @@ export class AppDataService {
       throw new PreventUpdateOtherAppData(appDataId);
     }
 
-    return appDataRepository.patch(itemId, appDataId, body).then(async (patchedAppData) => {
-      await this.hooks.runPostHooks('patch', member, repositories, {
-        appData: patchedAppData,
-        itemId,
-      });
-      return patchedAppData;
+    await this.hooks.runPreHooks('patch', member, repositories, {
+      appData: { ...body, id: appDataId },
+      itemId,
     });
+
+    const appData = await appDataRepository.patch(itemId, appDataId, body);
+    await this.hooks.runPostHooks('patch', member, repositories, {
+      appData,
+      itemId,
+    });
+    return appData;
   }
 
   async deleteOne(

@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { AppDataVisibility, ItemType, PermissionLevel, Websocket } from '@graasp/sdk';
+import { AppDataVisibility, PermissionLevel } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
@@ -17,6 +17,7 @@ import {
   appDataTopic,
   appSettingsTopic,
 } from './events';
+import { checkItemIsApp } from './utils';
 
 /**
  * helper to register app data topic
@@ -31,9 +32,7 @@ function registerAppDataTopic(
     const repositories = buildRepositories();
     const item = await itemService.get(member, repositories, id);
     await validatePermission(repositories, PermissionLevel.Read, member, item);
-    if (item.type !== ItemType.APP) {
-      throw new Websocket.AccessDeniedError('item is not app');
-    }
+    checkItemIsApp(item);
   });
 
   // on post app data, notify apps of new app data
@@ -69,9 +68,7 @@ function registerAppActionTopic(
     const repositories = buildRepositories();
     const item = await itemService.get(member, repositories, id);
     await validatePermission(repositories, PermissionLevel.Admin, member, item);
-    if (item.type !== ItemType.APP) {
-      throw new Websocket.AccessDeniedError('item is not app');
-    }
+    checkItemIsApp(item);
   });
 
   // on post app action, notify apps of new app action
@@ -98,9 +95,7 @@ function registerAppSettingsTopic(
     const repositories = buildRepositories();
     const item = await itemService.get(member, repositories, id);
     await validatePermission(repositories, PermissionLevel.Read, member, item);
-    if (item.type !== ItemType.APP) {
-      throw new Websocket.AccessDeniedError('item is not app');
-    }
+    checkItemIsApp(item);
   });
 
   // on post app data, notify apps of new app data

@@ -52,13 +52,12 @@ export class AppSettingService {
     // posting an app setting is allowed to admin only
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    return appSettingRepository.post(itemId, memberId, body).then(async (newAppSetting) => {
-      await this.hooks.runPostHooks('post', member, repositories, {
-        appSetting: newAppSetting,
-        itemId,
-      });
-      return newAppSetting;
+    const appSetting = await appSettingRepository.post(itemId, memberId, body);
+    await this.hooks.runPostHooks('post', member, repositories, {
+      appSetting,
+      itemId,
     });
+    return appSetting;
   }
 
   async patch(
@@ -78,22 +77,17 @@ export class AppSettingService {
     // patching requires admin rights
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    // const appSetting = await appSettingRepository.get(appSettingId);
-
     await this.hooks.runPreHooks('patch', member, repositories, {
       appSetting: { ...body, id: appSettingId },
       itemId,
     });
 
-    return appSettingRepository
-      .patch(itemId, appSettingId, body)
-      .then(async (patchedAppSetting) => {
-        await this.hooks.runPostHooks('patch', member, repositories, {
-          appSetting: patchedAppSetting,
-          itemId,
-        });
-        return patchedAppSetting;
-      });
+    const appSetting = await appSettingRepository.patch(itemId, appSettingId, body);
+    await this.hooks.runPostHooks('patch', member, repositories, {
+      appSetting,
+      itemId,
+    });
+    return appSetting;
   }
 
   async deleteOne(
@@ -168,6 +162,11 @@ export class AppSettingService {
           itemId: copy.id,
           creator: { id: actor.id },
         };
+        await this.hooks.runPreHooks('copyMany', actor, repositories, {
+          appSettings,
+          originalItemId: original.id,
+          copyItemId: copy.id,
+        });
         const newSetting = await repositories.appSettingRepository.post(
           copy.id,
           appS.creator?.id,

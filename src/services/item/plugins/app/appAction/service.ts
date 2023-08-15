@@ -27,13 +27,12 @@ export class AppActionService {
 
     await this.hooks.runPreHooks('post', member, repositories, { appAction: body, itemId });
 
-    return appActionRepository.post(itemId, actorId, body).then(async (newAppAction) => {
-      await this.hooks.runPostHooks('post', member, repositories, {
-        appAction: newAppAction,
-        itemId,
-      });
-      return newAppAction;
+    const appAction = await appActionRepository.post(itemId, actorId, body);
+    await this.hooks.runPostHooks('post', member, repositories, {
+      appAction,
+      itemId,
     });
+    return appAction;
   }
 
   async getForItem(
