@@ -42,7 +42,7 @@ const build = async ({ member }: { member?: Partial<Member> | null } = { member:
     jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request) => {
       request.member = authenticatedActor;
     });
-    jest.spyOn(app, 'fetchMemberInSession').mockImplementation(async (request) => {
+    jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request) => {
       request.session.set('member', authenticatedActor.id);
       request.member = authenticatedActor;
     });

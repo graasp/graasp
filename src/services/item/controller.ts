@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id',
     {
       schema: getOne,
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { id }, log }) => {
       return itemService.get(member, buildRepositories(), id);
@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get<{ Querystring: IdsParams }>(
     '/',
-    { schema: getMany, preHandler: fastify.fetchMemberInSession },
+    { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, query: { id: ids }, log }) => {
       return itemService.getMany(member, buildRepositories(), ids);
     },
@@ -98,7 +98,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get item's children
   fastify.get<{ Params: IdParam; Querystring: Ordered }>(
     '/:id/children',
-    { schema: getChildren, preHandler: fastify.fetchMemberInSession },
+    { schema: getChildren, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { id }, query: { ordered }, log }) => {
       return itemService.getChildren(member, buildRepositories(), id, ordered);
     },
@@ -107,7 +107,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get item's descendants
   fastify.get<{ Params: IdParam }>(
     '/:id/descendants',
-    { schema: getDescendants, preHandler: fastify.fetchMemberInSession },
+    { schema: getDescendants, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { id }, log }) => {
       return itemService.getDescendants(member, buildRepositories(), id);
     },
@@ -118,7 +118,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/parents',
     {
       schema: getParents,
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { id }, log }) => {
       return itemService.getParents(member, buildRepositories(), id);

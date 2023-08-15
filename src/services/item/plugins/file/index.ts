@@ -175,7 +175,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     {
       schema: download,
 
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async (request, reply) => {
       const {

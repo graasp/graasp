@@ -23,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
   // public endpoint
   fastify.get<{ Params: { id: string } }>(
     '/:id/login-schema-type',
-    { schema: getLoginSchemaType, preHandler: fastify.fetchMemberInSession },
+    { schema: getLoginSchemaType, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, log, params: { id: itemId } }) => {
       const value = (await iLService.getSchemaType(member, buildRepositories(), itemId)) ?? null;
       return value;
@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
     {
       schema: login,
       // set member in request if exists without throwing
-      preHandler: fastify.fetchMemberInSession,
+      preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ body, query, member, session, params }) => {
       return db.transaction(async (manager) => {

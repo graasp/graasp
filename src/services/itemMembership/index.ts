@@ -35,7 +35,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // returns empty for item not found
       fastify.get<{ Querystring: { itemId: string[] } }>(
         '/',
-        { schema: getItems, preHandler: fastify.fetchMemberInSession },
+        { schema: getItems, preHandler: fastify.attemptVerifyAuthentication },
         async ({ member, query: { itemId: ids }, log }) => {
           return itemMembershipService.getForManyItems(member, buildRepositories(), ids);
         },

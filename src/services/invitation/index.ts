@@ -34,7 +34,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
   // do not require authentication
   fastify.get<{ Params: IdParam }>(
     '/invitations/:id',
-    { schema: getById, preHandler: fastify.fetchMemberInSession },
+    { schema: getById, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params }) => {
       const { id } = params;
       const aa = await iS.get(member, buildRepositories(), id);

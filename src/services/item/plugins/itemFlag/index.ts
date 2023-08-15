@@ -17,7 +17,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get flags
   fastify.get(
     '/flags',
-    { schema: getFlags, preHandler: fastify.fetchMemberInSession },
+    { schema: getFlags, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, log }) => {
       return iFS.getAllFlags(member, buildRepositories());
     },

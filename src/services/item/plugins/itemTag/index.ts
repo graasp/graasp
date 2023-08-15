@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get item tags
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/tags',
-    { schema: getItemTags, preHandler: fastify.fetchMemberInSession },
+    { schema: getItemTags, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { itemId }, log }) => {
       return iTS.getForItem(member, buildRepositories(), itemId);
     },
@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get item tags for many items
   fastify.get<{ Querystring: IdsParams }>(
     '/tags',
-    { schema: getMany, preHandler: fastify.fetchMemberInSession },
+    { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, query: { id: ids }, log }) => {
       return iTS.getForManyItems(member, buildRepositories(), ids);
     },
