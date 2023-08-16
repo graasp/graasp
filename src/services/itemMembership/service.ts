@@ -122,8 +122,8 @@ export class ItemMembershipService {
     const { itemMembershipRepository } = repositories;
 
     const items = await this.itemService.getMany(actor, repositories, itemIds);
-
     const result = await itemMembershipRepository.getForManyItems(Object.values(items.data));
+
     return { data: result.data, errors: [...items.errors, ...result.errors] };
   }
 

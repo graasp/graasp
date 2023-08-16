@@ -1,4 +1,4 @@
-import { ItemTagType, PermissionLevel, PermissionLevelCompare } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel, PermissionLevelCompare, ResultOf } from '@graasp/sdk';
 
 import {
   MemberCannotAccess,
@@ -8,7 +8,9 @@ import {
 } from '../utils/errors';
 import { Repositories } from '../utils/repositories';
 import { Item } from './item/entities/Item';
+import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
+import { ItemMembershipRepository } from './itemMembership/repository';
 import { Actor } from './member/entities/member';
 
 const permissionMapping = {
@@ -26,27 +28,120 @@ const permissionMapping = {
  * @param item
  * @throws if the user cannot access the item
  */
+
+export const validatePermissionMany = async (
+  {
+    itemMembershipRepository,
+    itemTagRepository,
+  }: {
+    itemMembershipRepository: typeof ItemMembershipRepository;
+    itemTagRepository: typeof ItemTagRepository;
+  },
+  permission: PermissionLevel,
+  member: Actor,
+  items: Item[],
+): Promise<ResultOf<ItemMembership | null>> => {
+  // batch request for all items
+  const inheritedMemberships = member
+    ? await itemMembershipRepository.getInheritedMany(items, member, true)
+    : null;
+  const tags = await itemTagRepository.hasManyForMany(items, [
+    ItemTagType.Public,
+    ItemTagType.Hidden,
+  ]);
+
+  const result: ResultOf<ItemMembership | null> = {
+    data: inheritedMemberships?.data ?? {},
+    errors: [],
+  };
+
+  for (const item of items) {
+    const highest = result.data[item.id]?.permission;
+    const isValid = highest && permissionMapping[highest].includes(permission);
+    const isPublic = tags.data[item.id].includes(ItemTagType.Public);
+
+    // HIDDEN CHECK - prevent read
+    // cannot read if your have read access only
+    if (highest === PermissionLevel.Read || (isPublic && !highest)) {
+      const isHidden = tags.data[item.id].includes(ItemTagType.Hidden);
+      if (isHidden) {
+        delete result.data[item.id];
+        result.errors.push(new MemberCannotAccess(item.id));
+        continue;
+      }
+    }
+
+    // correct membership level pass successfully
+    if (isValid) {
+      continue;
+    }
+
+    // PUBLIC CHECK
+    if (permission === PermissionLevel.Read && isPublic) {
+      // Old validate permission return null when public, this is a bit odd but this is current behavior
+      // It is used so that the item is not removed from the list when it is public in ItemService.getMany
+      result.data[item.id] = null;
+      continue;
+    }
+
+    if (!inheritedMemberships?.data[item.id]) {
+      delete inheritedMemberships?.data[item.id];
+      result.errors.push(new MemberCannotAccess(item.id));
+      continue;
+    }
+
+    // add corresponding error
+    delete inheritedMemberships?.data[item.id];
+    switch (permission) {
+      case PermissionLevel.Read:
+        result.errors.push(new MemberCannotReadItem(item.id));
+        break;
+      case PermissionLevel.Write:
+        result.errors.push(new MemberCannotWriteItem(item.id));
+        break;
+      case PermissionLevel.Admin:
+        result.errors.push(new MemberCannotAdminItem(item.id));
+        break;
+      default:
+        result.errors.push(new Error(`${permission} is not a valid permission`));
+        break;
+    }
+  }
+
+  return result;
+};
+
 export const validatePermission = async (
-  { itemMembershipRepository, itemTagRepository }: Repositories,
+  {
+    itemMembershipRepository,
+    itemTagRepository,
+  }: {
+    itemMembershipRepository: typeof ItemMembershipRepository;
+    itemTagRepository: typeof ItemTagRepository;
+  },
   permission: PermissionLevel,
   member: Actor,
   item: Item,
 ): Promise<ItemMembership | null> => {
   // get best permission for user
   // but do not fetch membership for signed out member
+
   const inheritedMembership = member
     ? await itemMembershipRepository.getInherited(item, member, true)
     : null;
   const highest = inheritedMembership?.permission;
   const isValid = highest && permissionMapping[highest].includes(permission);
   let tags;
+  let isPublic = false;
   if (highest === PermissionLevel.Read || permission === PermissionLevel.Read) {
     tags = await itemTagRepository.hasMany(item, [ItemTagType.Public, ItemTagType.Hidden]);
+    isPublic = tags.data[ItemTagType.Public];
   }
 
   // HIDDEN CHECK - prevent read
   // cannot read if your have read access only
-  if (highest === PermissionLevel.Read) {
+  // or if the item is public so you would have normally access without permission
+  if (highest === PermissionLevel.Read || (isPublic && !highest)) {
     const isHidden = tags.data[ItemTagType.Hidden];
     if (isHidden) {
       throw new MemberCannotAccess(item.id);
@@ -59,12 +154,10 @@ export const validatePermission = async (
   }
 
   // PUBLIC CHECK
-  if (permission === PermissionLevel.Read) {
-    const isPublic = tags.data[ItemTagType.Public];
-    if (isPublic) {
-      return inheritedMembership;
-    }
+  if (permission === PermissionLevel.Read && isPublic) {
+    return inheritedMembership;
   }
+
   if (!inheritedMembership) {
     throw new MemberCannotAccess(item.id);
   }
