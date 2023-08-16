@@ -1,8 +1,6 @@
-import { ItemTagType } from '@graasp/sdk';
+import { ItemTagType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { UUID_REGEX } from '../../../../schemas/global';
-
-const MAX_ITEMS_FOR_GET = 30;
 
 export default {
   $id: 'http://graasp.org/item-tags/',
@@ -97,7 +95,10 @@ const getMany = {
   querystring: {
     allOf: [
       { $ref: 'http://graasp.org/#/definitions/idsQuery' },
-      { type: 'object', properties: { id: { type: 'array', maxItems: MAX_ITEMS_FOR_GET } } },
+      {
+        type: 'object',
+        properties: { id: { type: 'array', maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
+      },
     ],
   },
   response: {

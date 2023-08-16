@@ -239,7 +239,7 @@ export class S3FileRepository implements FileRepository {
         throw new S3FileNotFound({ filepath, id });
       }
 
-      throw new DownloadFileUnexpectedError({ filepath, id });
+      throw new DownloadFileUnexpectedError({ filepath, id, e });
     }
   }
 

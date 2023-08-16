@@ -138,7 +138,7 @@ export class DownloadFileUnexpectedError extends GraaspFileError {
     super(
       {
         code: 'GPFERR011',
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         // TODO: change message
         message: FAILURE_MESSAGES.DOWNLOAD_FILE_UNEXPECTED_ERROR,
       },
