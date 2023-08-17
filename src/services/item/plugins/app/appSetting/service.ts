@@ -47,10 +47,10 @@ export class AppSettingService {
     }
     const member = await memberRepository.get(memberId);
 
-    await this.hooks.runPreHooks('post', member, repositories, { appSetting: body, itemId });
-
     // posting an app setting is allowed to admin only
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+
+    await this.hooks.runPreHooks('post', member, repositories, { appSetting: body, itemId });
 
     const appSetting = await appSettingRepository.post(itemId, memberId, body);
     await this.hooks.runPostHooks('post', member, repositories, {
@@ -103,10 +103,10 @@ export class AppSettingService {
     }
     const member = await memberRepository.get(memberId);
 
-    await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
-
     // delete an app data is allowed to admins
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+
+    await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
 
     const appSetting = await appSettingRepository.get(appSettingId);
 

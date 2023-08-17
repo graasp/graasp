@@ -16,7 +16,7 @@ type AppOperations = 'post' | 'patch' | 'delete';
  * All websocket events for app will have this shape
  */
 interface AppEvent {
-  kind: string;
+  kind: typeof appDataTopic | typeof appActionsTopic | typeof appSettingsTopic;
   op: AppOperations;
 }
 
@@ -24,7 +24,7 @@ interface AppEvent {
  * Events that affect an app data
  */
 interface AppDataEvent extends AppEvent {
-  kind: 'app-data';
+  kind: typeof appDataTopic;
   appData: AppData;
 }
 
@@ -35,7 +35,7 @@ interface AppDataEvent extends AppEvent {
  * @returns instance of app data event
  */
 export const AppDataEvent = (op: AppDataEvent['op'], appData: AppData): AppDataEvent => ({
-  kind: 'app-data',
+  kind: appDataTopic,
   op,
   appData,
 });
@@ -44,7 +44,7 @@ export const AppDataEvent = (op: AppDataEvent['op'], appData: AppData): AppDataE
  * Events that affect an app action
  */
 interface AppActionEvent extends AppEvent {
-  kind: 'app-actions';
+  kind: typeof appActionsTopic;
   appAction: AppAction;
 }
 
@@ -55,7 +55,7 @@ interface AppActionEvent extends AppEvent {
  * @returns instance of app action event
  */
 export const AppActionEvent = (op: AppActionEvent['op'], appAction: AppAction): AppActionEvent => ({
-  kind: 'app-actions',
+  kind: appActionsTopic,
   op,
   appAction,
 });
@@ -64,7 +64,7 @@ export const AppActionEvent = (op: AppActionEvent['op'], appAction: AppAction): 
  * Events that affect an app setting
  */
 interface AppSettingEvent extends AppEvent {
-  kind: 'app-settings';
+  kind: typeof appSettingsTopic;
   appSetting: AppSetting;
 }
 
@@ -78,7 +78,7 @@ export const AppSettingEvent = (
   op: AppSettingEvent['op'],
   appSetting: AppSetting,
 ): AppSettingEvent => ({
-  kind: 'app-settings',
+  kind: appSettingsTopic,
   op,
   appSetting,
 });

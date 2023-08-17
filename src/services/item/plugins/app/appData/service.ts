@@ -76,8 +76,6 @@ export class AppDataService {
     }
     const member = await memberRepository.get(actorId);
 
-    await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
-
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
@@ -100,6 +98,8 @@ export class AppDataService {
         itemId,
       },
     );
+
+    await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
 
     const appData = await appDataRepository.post(itemId, actorId, completeData);
     await this.hooks.runPostHooks('post', member, repositories, { appData, itemId });
@@ -171,8 +171,6 @@ export class AppDataService {
     }
     const member = await memberRepository.get(memberId);
 
-    await this.hooks.runPreHooks('delete', member, repositories, { appDataId, itemId });
-
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
@@ -194,6 +192,8 @@ export class AppDataService {
       PermissionLevel.Admin,
       inheritedMembership,
     );
+
+    await this.hooks.runPreHooks('delete', member, repositories, { appDataId, itemId });
 
     const result = await appDataRepository.deleteOne(itemId, appDataId);
 

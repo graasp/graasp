@@ -53,7 +53,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (actor: Actor, repositories: Repositories, { appSetting, itemId }) => {
+  const deleteHook = async (
+    actor: Actor,
+    repositories: Repositories,
+    { appSetting, itemId }: { appSetting: AppSetting; itemId: string },
+  ) => {
     await appSettingFileService.deleteOne(actor, repositories, appSetting);
   };
   appSettingService.hooks.setPostHook('delete', deleteHook);
@@ -62,7 +66,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   const hook = async (
     actor: Member,
     repositories: Repositories,
-    { appSettings, originalItemId, copyItemId },
+    {
+      appSettings,
+      originalItemId,
+      copyItemId,
+    }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
   ) => {
     // copy file only if content is a file
     const isFileSetting = (a: AppSetting) => a.data[fileService.type];
