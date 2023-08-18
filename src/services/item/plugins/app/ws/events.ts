@@ -6,6 +6,7 @@ import { AppAction, AppSetting } from '@graasp/sdk';
 import { AppData } from '../appData/appData';
 
 // changes on app entities
+// TODO: Move these topics to graasp/sdk
 export const appDataTopic = 'app-data';
 export const appActionsTopic = 'app-actions';
 export const appSettingsTopic = 'app-settings';
