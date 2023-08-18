@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 
 import 'fastify';
 
-import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
+import { AuthTokenSubject, Hostname, RecaptchaActionType } from '@graasp/sdk';
 
 import type { MailerDecoration } from './plugins/mailer';
 import { ActionService } from './services/action/services/action';
@@ -59,8 +59,7 @@ declare module 'fastify' {
     actions: { service: ActionService };
     chat: { service: ChatMessageService };
 
-    // TODO
-    hosts: any;
+    hosts: Hostname[];
 
     websockets: WebsocketService;
     h5p: H5PService;
