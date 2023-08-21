@@ -47,7 +47,20 @@ const permissionMapping = {
 };
 
 export class AppDataService {
-  hooks = new HookManager();
+  hooks = new HookManager<{
+    post: {
+      pre: { appData: Partial<InputAppData>; itemId: string };
+      post: { appData: AppData; itemId: string };
+    };
+    patch: {
+      pre: { appData: Partial<AppData>; itemId: string };
+      post: { appData: AppData; itemId: string };
+    };
+    delete: {
+      pre: { appDataId: string; itemId: string };
+      post: { appData: AppData; itemId: string };
+    };
+  }>();
 
   async post(
     actorId: string | undefined,
@@ -56,6 +69,7 @@ export class AppDataService {
     body: Partial<InputAppData>,
   ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
+
     // check member exists
     if (!actorId) {
       throw new MemberCannotWriteItem();
@@ -85,7 +99,11 @@ export class AppDataService {
       },
     );
 
-    return appDataRepository.post(itemId, actorId, completeData);
+    await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
+
+    const appData = await appDataRepository.post(itemId, actorId, completeData);
+    await this.hooks.runPostHooks('post', member, repositories, { appData, itemId });
+    return appData;
   }
 
   async patch(
@@ -113,13 +131,13 @@ export class AppDataService {
       item,
     );
 
-    const appData = await appDataRepository.get(appDataId);
+    const currentAppData = await appDataRepository.get(appDataId);
 
     // patch own or is admin
     const isValid = await this.validateAppDataPermission(
       repositories,
       member,
-      appData,
+      currentAppData,
       PermissionLevel.Write,
       inheritedMembership,
     );
@@ -127,9 +145,17 @@ export class AppDataService {
       throw new PreventUpdateOtherAppData(appDataId);
     }
 
-    await this.hooks.runPreHooks('patch', member, repositories, appData);
+    await this.hooks.runPreHooks('patch', member, repositories, {
+      appData: { ...body, id: appDataId },
+      itemId,
+    });
 
-    return appDataRepository.patch(itemId, appDataId, body);
+    const appData = await appDataRepository.patch(itemId, appDataId, body);
+    await this.hooks.runPostHooks('patch', member, repositories, {
+      appData,
+      itemId,
+    });
+    return appData;
   }
 
   async deleteOne(
@@ -167,9 +193,11 @@ export class AppDataService {
       inheritedMembership,
     );
 
+    await this.hooks.runPreHooks('delete', member, repositories, { appDataId, itemId });
+
     const result = await appDataRepository.deleteOne(itemId, appDataId);
 
-    await this.hooks.runPostHooks('delete', member, repositories, appData);
+    await this.hooks.runPostHooks('delete', member, repositories, { appData, itemId });
 
     return result;
   }

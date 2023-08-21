@@ -1,4 +1,4 @@
-import { AppItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
@@ -11,7 +11,24 @@ import { InputAppSetting } from './interfaces/app-setting';
 
 export class AppSettingService {
   itemService: ItemService;
-  hooks = new HookManager();
+  hooks = new HookManager<{
+    post: {
+      pre: { appSetting: Partial<InputAppSetting>; itemId: string };
+      post: { appSetting: AppSetting; itemId: string };
+    };
+    patch: {
+      pre: { appSetting: Partial<AppSetting>; itemId: string };
+      post: { appSetting: AppSetting; itemId: string };
+    };
+    delete: {
+      pre: { appSettingId: string; itemId: string };
+      post: { appSetting: AppSetting; itemId: string };
+    };
+    copyMany: {
+      pre: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string };
+      post: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string };
+    };
+  }>();
 
   constructor(itemService: ItemService) {
     this.itemService = itemService;
@@ -33,7 +50,14 @@ export class AppSettingService {
     // posting an app setting is allowed to admin only
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    return appSettingRepository.post(itemId, memberId, body);
+    await this.hooks.runPreHooks('post', member, repositories, { appSetting: body, itemId });
+
+    const appSetting = await appSettingRepository.post(itemId, memberId, body);
+    await this.hooks.runPostHooks('post', member, repositories, {
+      appSetting,
+      itemId,
+    });
+    return appSetting;
   }
 
   async patch(
@@ -53,11 +77,17 @@ export class AppSettingService {
     // patching requires admin rights
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    const appSetting = await appSettingRepository.get(appSettingId);
+    await this.hooks.runPreHooks('patch', member, repositories, {
+      appSetting: { ...body, id: appSettingId },
+      itemId,
+    });
 
-    await this.hooks.runPreHooks('patch', member, repositories, appSetting);
-
-    return appSettingRepository.patch(itemId, appSettingId, body);
+    const appSetting = await appSettingRepository.patch(itemId, appSettingId, body);
+    await this.hooks.runPostHooks('patch', member, repositories, {
+      appSetting,
+      itemId,
+    });
+    return appSetting;
   }
 
   async deleteOne(
@@ -78,9 +108,11 @@ export class AppSettingService {
 
     const appSetting = await appSettingRepository.get(appSettingId);
 
+    await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
+
     const result = await appSettingRepository.deleteOne(itemId, appSettingId);
 
-    await this.hooks.runPostHooks('delete', member, repositories, appSetting);
+    await this.hooks.runPostHooks('delete', member, repositories, { appSetting, itemId });
 
     return result;
   }
@@ -130,6 +162,11 @@ export class AppSettingService {
           itemId: copy.id,
           creator: { id: actor.id },
         };
+        await this.hooks.runPreHooks('copyMany', actor, repositories, {
+          appSettings,
+          originalItemId: original.id,
+          copyItemId: copy.id,
+        });
         const newSetting = await repositories.appSettingRepository.post(
           copy.id,
           appS.creator?.id,
@@ -137,7 +174,11 @@ export class AppSettingService {
         );
         newAppSettings.push(newSetting);
       }
-      await this.hooks.runPostHooks('copyMany', actor, repositories, newAppSettings);
+      await this.hooks.runPostHooks('copyMany', actor, repositories, {
+        appSettings: newAppSettings,
+        originalItemId: original.id,
+        copyItemId: copy.id,
+      });
     } catch (err) {
       console.error(err);
     }
