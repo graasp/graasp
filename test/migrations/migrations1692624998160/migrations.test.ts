@@ -56,7 +56,10 @@ describe('Migrations1692624998160', () => {
     expect(names).toContain('french');
     expect(names).toContain('italian');
     expect(names).toContain('arabic');
+    expect(names).toContain('app');
+    expect(names).toContain('collection');
+    expect(names).toContain('template');
 
-    expect(names).toHaveLength(17);
+    expect(names).toHaveLength(20);
   });
 });

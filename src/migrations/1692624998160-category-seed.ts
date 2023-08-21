@@ -10,6 +10,7 @@ export class Migrations1692624998160 implements MigrationInterface {
         `);
     };
 
+    // update categories for language
     await update('English', 'english');
     await update('French', 'french');
     await update('German', 'german');
@@ -26,7 +27,7 @@ export class Migrations1692624998160 implements MigrationInterface {
         );
     `);
 
-    // // add categories for discipline
+    // update categories for discipline
     await update('Arts', 'arts');
     await update('Language', 'language');
     await update('Math', 'mathematics');
@@ -34,18 +35,39 @@ export class Migrations1692624998160 implements MigrationInterface {
     await update('Natural Science', 'natural-science');
     await update('Social Science', 'social-science');
 
-    // // add categories for level
+    // update categories for level
     await update('Kindergarden', 'kindergarten');
     await update('Primary School', 'primary-school');
     await update('Lower Secondary School', 'lower-secondary-education');
     await update('Upper Secondary School', 'upper-secondary-education');
     await update('Higher Education', 'higher-education');
     await update('Vocational Training', 'vocation-training');
+
+    // add resource type categories
+    await queryRunner.query(`INSERT INTO category (name, type) VALUES (
+      'app',
+      'resource-type'
+      );
+    `);
+    await queryRunner.query(`INSERT INTO category (name, type) VALUES (
+      'collection',
+      'resource-type'
+      );
+    `);
+    await queryRunner.query(`INSERT INTO category (name, type) VALUES (
+      'template',
+      'resource-type'
+      );
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DELETE FROM category WHERE name = 'arabic'`);
     await queryRunner.query(`DELETE FROM category WHERE name = 'italian'`);
+
+    await queryRunner.query(`DELETE FROM category WHERE name = 'template'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'collection'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'app'`);
 
     await queryRunner.query(`UPDATE FROM category SET name='Arts' WHERE name = 'arts'`);
     await queryRunner.query(`UPDATE FROM category SET name='Language' WHERE name = 'language'`);
@@ -58,7 +80,6 @@ export class Migrations1692624998160 implements MigrationInterface {
       `UPDATE FROM category SET name='Social Science' WHERE name = 'social-science'`,
     );
 
-    // // add categories for level
     await queryRunner.query(
       `UPDATE FROM category SET name='Kindergarten' WHERE name = 'kindergarten'`,
     );
