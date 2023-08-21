@@ -106,9 +106,9 @@ export class AppSettingService {
     // delete an app data is allowed to admins
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
-    await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
-
     const appSetting = await appSettingRepository.get(appSettingId);
+
+    await this.hooks.runPreHooks('delete', member, repositories, { appSettingId, itemId });
 
     const result = await appSettingRepository.deleteOne(itemId, appSettingId);
 

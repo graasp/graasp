@@ -82,9 +82,15 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   appSettingService.hooks.setPostHook('copyMany', hook);
 
   // prevent patch on app setting file
-  const patchPreHook = async (actor: Actor, repositories: Repositories, { appSetting }) => {
-    if (appSetting.data[fileService.type]) {
-      throw new PreventUpdateAppSettingFile(appSetting);
+  const patchPreHook = async (
+    actor: Actor,
+    repositories: Repositories,
+    { appSetting }: { appSetting: Partial<AppSetting> },
+  ) => {
+    if (appSetting?.data) {
+      if (appSetting.data[fileService.type]) {
+        throw new PreventUpdateAppSettingFile(appSetting);
+      }
     }
   };
   appSettingService.hooks.setPreHook('patch', patchPreHook);
