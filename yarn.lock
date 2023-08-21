@@ -4448,6 +4448,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/yazl@npm:2.4.2":
+  version: 2.4.2
+  resolution: "@types/yazl@npm:2.4.2"
+  dependencies:
+    "@types/node": "*"
+  checksum: 3be9676f83f2e48e7a2b2ca204cde23f518e65a90d38ff64813804a7d928921c0e9132bb1619077cf19d0d8d86113fa016faf9352813c648e92fef6bf9c960bd
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/eslint-plugin@npm:5.60.1":
   version: 5.60.1
   resolution: "@typescript-eslint/eslint-plugin@npm:5.60.1"
@@ -7339,6 +7348,7 @@ __metadata:
     "@types/sharp": 0.31.1
     "@types/striptags": 3.1.1
     "@types/uuid": 9.0.2
+    "@types/yazl": 2.4.2
     "@typescript-eslint/eslint-plugin": 5.60.1
     "@typescript-eslint/parser": 5.60.1
     archiver: 5.3.1
@@ -7390,6 +7400,7 @@ __metadata:
     wait-for-expect: 3.0.2
     ws: 8.13.0
     yarn: 1.22.19
+    yazl: 2.5.1
   languageName: unknown
   linkType: soft
 
@@ -12017,6 +12028,15 @@ __metadata:
     buffer-crc32: ~0.2.3
     fd-slicer: ~1.1.0
   checksum: 7f21fe0bbad6e2cb130044a5d1d0d5a0e5bf3d8d4f8c4e6ee12163ce798fee3de7388d22a7a0907f563ac5f9d40f8699a223d3d5c1718da90b0156da6904022b
+  languageName: node
+  linkType: hard
+
+"yazl@npm:2.5.1":
+  version: 2.5.1
+  resolution: "yazl@npm:2.5.1"
+  dependencies:
+    buffer-crc32: ~0.2.3
+  checksum: daec5154b5485d8621bfea359e905ddca0b2f068430a4aa0a802bf5d67391157a383e0c2767acccbf5964264851da643bc740155a9458e2d8dce55b94c1cc2ed
   languageName: node
   linkType: hard
 

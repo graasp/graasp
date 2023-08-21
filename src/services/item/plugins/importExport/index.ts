@@ -91,10 +91,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     url: '/zip-export/:itemId',
     schema: zipExport,
     preHandler: fastify.attemptVerifyAuthentication,
-    handler: async ({ member, params: { itemId } }, reply) => {
+    handler: async ({ member, params: { itemId }, log }, reply) => {
       return importExportService.export(member, buildRepositories(), {
         itemId,
         reply,
+        log,
       });
     },
   });
