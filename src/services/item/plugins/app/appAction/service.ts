@@ -1,5 +1,6 @@
-import { PermissionLevel } from '@graasp/sdk';
+import { AppAction, PermissionLevel } from '@graasp/sdk';
 
+import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
@@ -7,6 +8,12 @@ import { AppActionNotAccessible } from './errors';
 import { InputAppAction } from './interfaces/app-action';
 
 export class AppActionService {
+  hooks = new HookManager<{
+    post: {
+      pre: { appAction: Partial<InputAppAction>; itemId: string };
+      post: { appAction: AppAction; itemId: string };
+    };
+  }>();
   async post(actorId, repositories: Repositories, itemId: string, body: Partial<InputAppAction>) {
     const { appActionRepository, memberRepository, itemRepository } = repositories;
     // TODO: check member exists
@@ -15,10 +22,17 @@ export class AppActionService {
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
-    // posting an app data is allowed to readers
+    // posting an app action is allowed to readers
     await validatePermission(repositories, PermissionLevel.Read, member, item);
 
-    return appActionRepository.post(itemId, actorId, body);
+    await this.hooks.runPreHooks('post', member, repositories, { appAction: body, itemId });
+
+    const appAction = await appActionRepository.post(itemId, actorId, body);
+    await this.hooks.runPostHooks('post', member, repositories, {
+      appAction,
+      itemId,
+    });
+    return appAction;
   }
 
   async getForItem(
@@ -66,7 +80,7 @@ export class AppActionService {
     // check item exists
     const item = await itemRepository.get(itemIds[0]);
 
-    // posting an app data is allowed to readers
+    // posting an app action is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
     const permission = membership?.permission;
     let { memberId: fMemberId } = filters;

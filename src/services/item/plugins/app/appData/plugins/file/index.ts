@@ -54,14 +54,23 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // register post delete handler to remove the file object after item delete
-  const deleteHook = async (actor: Member, repositories: Repositories, appData: AppData) => {
-    await appDataFileService.deleteOne(actor, repositories, appData);
+  const deleteHook = async (
+    actor: Member,
+    repositories: Repositories,
+    args: { appData: AppData },
+  ) => {
+    await appDataFileService.deleteOne(actor, repositories, args.appData);
   };
   appDataService.hooks.setPostHook('delete', deleteHook);
 
   // prevent patch on app data file
-  const patchPreHook = async (actor: Actor, repositories: Repositories, appData: AppData) => {
-    if (appData.data[fileService.type]) {
+  const patchPreHook = async (
+    actor: Actor,
+    repositories: Repositories,
+    args: { appData: Partial<AppData> },
+  ) => {
+    const { appData } = args;
+    if (appData?.data && appData.data[fileService.type]) {
       throw new PreventUpdateAppDataFile(appData);
     }
   };
