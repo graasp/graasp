@@ -15,6 +15,7 @@ import fp from 'fastify-plugin';
 
 import { H5PItemExtra, H5PItemType, ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { CLIENT_HOSTS } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -47,12 +48,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
   } = fastify;
 
   validatePluginOptions(options);
-  const {
-    tempDir = path.resolve(os.tmpdir(), 'graasp', 'h5p'),
-    routes,
-    hosts,
-    fileStorage,
-  } = options;
+  const { tempDir = path.resolve(os.tmpdir(), 'graasp', 'h5p'), routes, fileStorage } = options;
   const { pathPrefix = '' } = fileStorage;
 
   // create temp extraction dir if it does not exist
@@ -178,7 +174,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify, options) =>
       const html = renderHtml(
         routes?.assets ?? DEFAULT_H5P_ASSETS_ROUTE,
         routes?.content ?? DEFAULT_H5P_CONTENT_ROUTE,
-        hosts ?? ['localhost'],
+        CLIENT_HOSTS.map(({ url }) => url.hostname) ?? ['localhost'],
       );
       res.send(html);
     });

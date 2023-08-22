@@ -59,8 +59,6 @@ declare module 'fastify' {
     actions: { service: ActionService };
     chat: { service: ChatMessageService };
 
-    hosts: Hostname[];
-
     websockets: WebsocketService;
     h5p: H5PService;
     etherpad: EtherpadItemService;

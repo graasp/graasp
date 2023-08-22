@@ -10,14 +10,12 @@ import {
   Context,
   CountGroupBy,
   FileItemType,
-  Hostname,
   IdParam,
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { InvalidAggregationError } from '../../../action/utils/errors';
 import { ActionRequestExportService } from './requestExport/service';
 import { exportAction, getAggregateActions, getItemActions } from './schemas';
 import { ActionItemService } from './service';
@@ -25,12 +23,11 @@ import { validateAggregateRequest } from './utils';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
-  hosts: Hostname[];
   fileItemType: FileItemType;
   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
 }
 
-const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const {
     files: { service: fileService },
     actions: { service: actionService },
