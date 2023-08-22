@@ -59,7 +59,9 @@ describe('Migrations1692624998160', () => {
     expect(names).toContain('app');
     expect(names).toContain('collection');
     expect(names).toContain('template');
+    expect(names).toContain('physical-education');
+    expect(names).toContain('informatics');
 
-    expect(names).toHaveLength(20);
+    expect(names).toHaveLength(22);
   });
 });
