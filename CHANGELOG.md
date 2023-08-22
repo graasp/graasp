@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/graasp/graasp/compare/v1.4.0...v1.5.0) (2023-08-22)
+
+
+### chore
+
+* release 1.5.0 ([7db0341](https://github.com/graasp/graasp/commit/7db0341fbfd3832681b33ec1165200614d009d5a))
+
 ## [1.4.0](https://github.com/graasp/graasp/compare/v1.3.1...v1.4.0) (2023-08-15)
 
 
