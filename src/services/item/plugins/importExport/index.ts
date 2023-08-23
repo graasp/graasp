@@ -1,4 +1,8 @@
+import * as fs from 'fs';
+import { mkdir } from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
+import path from 'path';
+import { v4 } from 'uuid';
 
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
@@ -6,7 +10,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
-import { ZIP_FILE_MIME_TYPES } from './constants';
+import { TMP_EXPORT_ZIP_FOLDER_PATH, ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { zipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
@@ -91,12 +95,57 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     url: '/zip-export/:itemId',
     schema: zipExport,
     preHandler: fastify.attemptVerifyAuthentication,
-    handler: async ({ member, params: { itemId }, log }, reply) => {
-      return importExportService.export(member, buildRepositories(), {
-        itemId,
+    handler: async (request, reply) => {
+      const {
+        member,
+        params: { itemId },
+        log,
+      } = request;
+      const repositories = buildRepositories();
+
+      // check item and permission
+      const item = await iS.get(member, repositories, itemId);
+
+      // TODO: The following won't be necessary anymore once h5p stops using the filestorage
+      // path to save files temporarly and save archive
+      // use random id in case many export request happen
+      const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, item.id, v4());
+      await mkdir(fileStorage, { recursive: true });
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      request.fileStorage = fileStorage;
+
+      // generate archive stream
+      const archiveStream = await importExportService.export(member, repositories, {
+        item,
         reply,
         log,
+        fileStorage,
       });
+      try {
+        reply.raw.setHeader(
+          'Content-Disposition',
+          `filename="${encodeURIComponent(item.name)}.zip"`,
+        );
+      } catch (e) {
+        // TODO: send sentry error
+        log?.error(e);
+        reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
+      }
+      reply.type('application/octet-stream');
+      return archiveStream.outputStream;
+    },
+    onResponse: (request) => {
+      // TODO: The following won't be necessary anymore once h5p stops using the filestorage
+      // delete tmp zip folder after endpoint responded
+      // does not delete the full folder since another user could have requested it
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (fs.existsSync(request.fileStorage)) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        fs.rmSync(request.fileStorage, { recursive: true });
+      }
     },
   });
 };

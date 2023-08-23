@@ -1,5 +1,5 @@
 import fs, { existsSync } from 'fs';
-import { mkdir, readFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import mime from 'mime-types';
 import mmm from 'mmmagic';
 import fetch from 'node-fetch';
@@ -9,16 +9,7 @@ import yazl, { ZipFile } from 'yazl';
 
 import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
-import {
-  AppItemExtraProperties,
-  DocumentItemExtraProperties,
-  EmbeddedLinkItemExtraProperties,
-  H5PItemType,
-  ItemType,
-  LocalFileItemExtra,
-  S3FileItemExtra,
-  UUID,
-} from '@graasp/sdk';
+import { DiscriminatedItem, ItemType, LocalFileItemExtra, S3FileItemExtra } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
@@ -32,7 +23,6 @@ import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
   LINK_EXTENSION,
-  TMP_EXPORT_ZIP_FOLDER_PATH,
   URL_PREFIX,
 } from './constants';
 import { UnexpectedExportError } from './errors';
@@ -199,7 +189,7 @@ export class ImportExportService {
     repositories: Repositories,
     args: {
       reply;
-      item: Item;
+      item: DiscriminatedItem;
       archiveRootPath: string;
       archive: ZipFile;
       fileStorage: string;
@@ -243,7 +233,7 @@ export class ImportExportService {
       case ItemType.H5P: {
         // todo: improve, do not save in tmp file
         const fileStream = (await this.h5pService.downloadH5P(
-          item as H5PItemType,
+          item,
           actor,
           fileStorage,
         )) as NodeJS.ReadableStream;
@@ -254,38 +244,31 @@ export class ImportExportService {
       }
       case ItemType.DOCUMENT: {
         archive.addBuffer(
-          Buffer.from((item.extra.document as DocumentItemExtraProperties)?.content, 'utf-8'),
+          Buffer.from(item.extra.document?.content, 'utf-8'),
           path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
         );
         break;
       }
       case ItemType.LINK:
         archive.addBuffer(
-          Buffer.from(
-            buildTextContent(
-              (item.extra.embeddedLink as EmbeddedLinkItemExtraProperties)?.url,
-              ItemType.LINK,
-            ),
-          ),
+          Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
           path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
         );
         break;
       case ItemType.APP:
         archive.addBuffer(
-          Buffer.from(
-            buildTextContent((item.extra.app as AppItemExtraProperties)?.url, ItemType.APP),
-          ),
+          Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
           path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
         );
         break;
       case ItemType.FOLDER: {
         // append description
         const folderPath = path.join(archiveRootPath, item.name);
-        const children = await repositories.itemRepository.getChildren(item);
+        const children = await repositories.itemRepository.getChildren(item as Item);
         const result = await Promise.all(
           children.map((child) =>
             this._addItemToZip(actor, repositories, {
-              item: child,
+              item: child as DiscriminatedItem,
               archiveRootPath: folderPath,
               archive,
               reply,
@@ -305,11 +288,12 @@ export class ImportExportService {
   async export(
     actor: Actor,
     repositories: Repositories,
-    { itemId, reply, log }: { itemId: UUID; reply: FastifyReply; log?: FastifyBaseLogger },
+    {
+      item,
+      reply,
+      fileStorage,
+    }: { fileStorage: string; item: Item; reply: FastifyReply; log?: FastifyBaseLogger },
   ) {
-    // check item and permission
-    const item = await this.itemService.get(actor, repositories, itemId);
-
     // init archive
     const archive = new yazl.ZipFile();
     archive.outputStream.on('warning', function (err) {
@@ -323,21 +307,12 @@ export class ImportExportService {
       throw err;
     });
 
-    // path to save files temporarly and save archive
-    const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, item.id);
-    await mkdir(fileStorage, { recursive: true });
-    const zipPath = path.join(fileStorage, item.id + '.zip');
-    const zipStream = fs.createWriteStream(zipPath);
-    archive.outputStream.pipe(zipStream).on('close', function () {
-      log?.debug('export done');
-    });
-
     // path used to index files in archive
     const rootPath = path.dirname('./');
 
     // import items in zip recursively
     await this._addItemToZip(actor, repositories, {
-      item,
+      item: item as DiscriminatedItem,
       reply,
       archiveRootPath: rootPath,
       archive,
@@ -346,40 +321,8 @@ export class ImportExportService {
       throw new UnexpectedExportError(error);
     });
 
-    // wait for zip to be completely created and send it
-    return new Promise((resolve, reject) => {
-      zipStream.on('error', (e) => {
-        log?.error(e);
-        reject(e);
-      });
-
-      zipStream.on('close', () => {
-        // set reply headers depending zip file and return file
-        const buffer = fs.readFileSync(zipPath);
-        try {
-          reply.raw.setHeader(
-            'Content-Disposition',
-            `filename="${encodeURIComponent(item.name)}.zip"`,
-          );
-        } catch (e) {
-          // TODO: send sentry error
-          log?.error(e);
-          reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
-        }
-        reply.raw.setHeader('Content-Length', Buffer.byteLength(buffer));
-        reply.type('application/zip');
-
-        // delete tmp zip after endpoint responded
-        // does not delete the full folder since another user could have requested it
-        if (fs.existsSync(zipPath)) {
-          fs.rmSync(zipPath, { recursive: true });
-        }
-
-        resolve(buffer);
-      });
-
-      archive.end();
-    });
+    archive.end();
+    return archive;
   }
 
   /**
