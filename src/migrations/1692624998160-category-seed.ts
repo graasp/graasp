@@ -74,16 +74,11 @@ export class Migrations1692624998160 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // lang
-    await queryRunner.query(`DELETE FROM category WHERE name = 'arabic'`);
-    await queryRunner.query(`DELETE FROM category WHERE name = 'italian'`);
     await queryRunner.query(`UPDATE FROM category SET name='English' WHERE name = 'english'`);
     await queryRunner.query(`UPDATE FROM category SET name='French' WHERE name = 'french'`);
     await queryRunner.query(`UPDATE FROM category SET name='German' WHERE name = 'german'`);
-
-    // resource-type
-    await queryRunner.query(`DELETE FROM category WHERE name = 'template'`);
-    await queryRunner.query(`DELETE FROM category WHERE name = 'collection'`);
-    await queryRunner.query(`DELETE FROM category WHERE name = 'app'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'arabic'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'italian'`);
 
     // discipline
     await queryRunner.query(`UPDATE FROM category SET name='Arts' WHERE name = 'arts'`);
@@ -96,10 +91,9 @@ export class Migrations1692624998160 implements MigrationInterface {
     await queryRunner.query(
       `UPDATE FROM category SET name='Social Science' WHERE name = 'social-science'`,
     );
-    await queryRunner.query(`DELETE FROM category WHERE name = 'physical-education'`);
-    await queryRunner.query(`DELETE FROM category WHERE name = 'informatics'`);
 
-    await queryRunner.query(`DELETE FROM category WHERE name = 'template'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'informatics'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'physical-education'`);
 
     // level
     await queryRunner.query(
@@ -120,5 +114,10 @@ export class Migrations1692624998160 implements MigrationInterface {
     await queryRunner.query(
       `UPDATE FROM category SET name='Vocational Training' WHERE name = 'vocation-training'`,
     );
+
+    // resource-type
+    await queryRunner.query(`DELETE FROM category WHERE name = 'template'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'collection'`);
+    await queryRunner.query(`DELETE FROM category WHERE name = 'app'`);
   }
 }
