@@ -8,6 +8,7 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { ItemRepository } from '../../../repository';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 
@@ -163,6 +164,21 @@ describe('Member routes tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+  });
+
+  describe('POST /zip-export', () => {
+    it.only('Export successfully if signed in', async () => {
+      ({ app, actor } = await build());
+      const { item } = await saveItemAndMembership({ member: actor });
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/items/zip-export/${item.id}`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.headers['content-disposition']).toContain(item.name);
     });
   });
 });

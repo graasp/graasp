@@ -139,12 +139,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // TODO: The following won't be necessary anymore once h5p stops using the filestorage
       // delete tmp zip folder after endpoint responded
       // does not delete the full folder since another user could have requested it
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (fs.existsSync(request.fileStorage)) {
+      try {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        fs.rmSync(request.fileStorage, { recursive: true });
+        if (fs.existsSync(request.fileStorage)) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          fs.rmSync(request.fileStorage, { recursive: true });
+        }
+      } catch (e) {
+        request.log.error(e);
       }
     },
   });
