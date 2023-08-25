@@ -16,6 +16,14 @@ import { zipExport, zipImport } from './schema';
 import { ImportExportService } from './service';
 import { prepareZip } from './utils';
 
+// todo: remove this when export does not use the file storage anymore
+declare module 'fastify' {
+  interface FastifyRequest {
+    /** this value only exists for the export endpoint, do not use it! */
+    fileStorage?: string;
+  }
+}
+
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items: {
@@ -109,11 +117,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // TODO: The following won't be necessary anymore once h5p stops using the filestorage
       // path to save files temporarly and save archive
       // use random id in case many export request happen
-      const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, item.id, v4());
+      const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, itemId, v4());
       await mkdir(fileStorage, { recursive: true });
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      request.fileStorage = fileStorage;
+      fastify.decorateRequest('fileStorage', fileStorage);
 
       // generate archive stream
       const archiveStream = await importExportService.export(member, repositories, {
@@ -140,11 +146,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // delete tmp zip folder after endpoint responded
       // does not delete the full folder since another user could have requested it
       try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        if (fs.existsSync(request.fileStorage)) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+        if (request.fileStorage && fs.existsSync(request.fileStorage)) {
           fs.rmSync(request.fileStorage, { recursive: true });
         }
       } catch (e) {

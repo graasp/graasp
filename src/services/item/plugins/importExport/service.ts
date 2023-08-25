@@ -296,15 +296,8 @@ export class ImportExportService {
   ) {
     // init archive
     const archive = new yazl.ZipFile();
-    archive.outputStream.on('warning', function (err) {
-      if (err.code === 'ENOENT') {
-        // log.debug(err);
-      } else {
-        throw err;
-      }
-    });
     archive.outputStream.on('error', function (err) {
-      throw err;
+      throw new UnexpectedExportError(err);
     });
 
     // path used to index files in archive
