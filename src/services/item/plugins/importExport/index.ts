@@ -33,6 +33,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     h5p: h5pService,
   } = fastify;
 
+  // todo: need this line for export storage, remove when we don't use storage anymore
+  fastify.decorateRequest('fileStorage', '');
+
   const importExportService = new ImportExportService(fS, iS, h5pService);
 
   fastify.register(fastifyMultipart, {
@@ -119,7 +122,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // use random id in case many export request happen
       const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, itemId, v4());
       await mkdir(fileStorage, { recursive: true });
-      fastify.decorateRequest('fileStorage', fileStorage);
+      request.fileStorage = fileStorage;
 
       // generate archive stream
       const archiveStream = await importExportService.export(member, repositories, {
