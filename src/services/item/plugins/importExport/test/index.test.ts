@@ -8,7 +8,9 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { ItemRepository } from '../../../repository';
+import { TMP_EXPORT_ZIP_FOLDER_PATH } from '../constants';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 
 // we need a different form data for each test
@@ -163,6 +165,27 @@ describe('Member routes tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+  });
+
+  describe('POST /zip-export', () => {
+    it('Export successfully if signed in', async () => {
+      const removeSpy = jest.spyOn(fs, 'rmSync');
+      ({ app, actor } = await build());
+      const { item } = await saveItemAndMembership({ member: actor });
+
+      const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, item.id);
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/items/zip-export/${item.id}`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.headers['content-disposition']).toContain(item.name);
+
+      expect(fs.readdirSync(fileStorage)).toHaveLength(0);
+      expect(removeSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

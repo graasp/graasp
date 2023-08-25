@@ -104,7 +104,8 @@
     "typeorm": "0.3.17",
     "uuid": "9.0.0",
     "ws": "8.13.0",
-    "yarn": "1.22.19"
+    "yarn": "1.22.19",
+    "yazl": "2.5.1"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.7",
@@ -125,6 +126,7 @@
     "@types/qs": "6.9.7",
     "@types/striptags": "3.1.1",
     "@types/uuid": "9.0.2",
+    "@types/yazl": "2.4.2",
     "@typescript-eslint/eslint-plugin": "5.60.1",
     "@typescript-eslint/parser": "5.60.1",
     "checksum": "1.0.0",
