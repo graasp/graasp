@@ -6,10 +6,8 @@ import {
   ItemValidationProcess,
   ItemValidationReviewStatus,
   ItemValidationStatus,
-  LocalFileItemExtra,
   MimeTypes,
   PermissionLevel,
-  S3FileItemExtra,
   UUID,
 } from '@graasp/sdk';
 
@@ -18,7 +16,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
+import { Item, isLocalFileItem, isS3FileItem } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
@@ -164,39 +162,29 @@ export class ItemValidationService {
           break;
 
         case ItemValidationProcess.ImageChecking:
-          let filepath = '';
-          let mimetype = '';
-          // check for service type and assign filepath, mimetype respectively
-          if (item?.type === ItemType.S3_FILE) {
-            const s3Extra = item?.extra as S3FileItemExtra;
-            filepath = s3Extra?.s3File?.path;
-            mimetype = s3Extra?.s3File?.mimetype;
-          } else {
-            const fileExtra = item.extra as LocalFileItemExtra;
-            filepath = fileExtra?.file?.path;
-            mimetype = fileExtra?.file?.mimetype;
-          }
+          if (isS3FileItem(item) || isLocalFileItem(item)) {
+            const { path: filepath, mimetype } =
+              item.type === ItemType.S3_FILE ? item.extra.s3File : item.extra.file;
 
-          if (!filepath || !mimetype) {
-            throw new InvalidFileItemError(item);
-          }
-
-          // if file is not an image, return success
-          if (!MimeTypes.isImage(mimetype)) {
-            // TODO: update validation entry
-            status = ItemValidationStatus.Success;
-          } else {
-            if (!this.imageClassifierApi) {
-              throw new Error('imageClassifierApi is not defined');
+            // if file is not an image, return success
+            if (!MimeTypes.isImage(mimetype)) {
+              // TODO: update validation entry
+              status = ItemValidationStatus.Success;
+            } else {
+              if (!this.imageClassifierApi) {
+                throw new Error('imageClassifierApi is not defined');
+              }
+              // return url
+              const url = (await this.fileService.download(actor, {
+                id: item?.id,
+                mimetype,
+                path: filepath,
+              })) as string;
+              const isSafe = await classifyImage(this.imageClassifierApi, url);
+              status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
             }
-            // return url
-            const url = (await this.fileService.download(actor, {
-              id: item?.id,
-              mimetype,
-              path: filepath,
-            })) as string;
-            const isSafe = await classifyImage(this.imageClassifierApi, url);
-            status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
+          } else {
+            throw new InvalidFileItemError(item);
           }
           break;
 

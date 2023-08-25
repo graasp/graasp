@@ -8,7 +8,6 @@ import { MultipartFields } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import {
-  FileItemExtra,
   FileItemProperties,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
@@ -23,7 +22,6 @@ import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';
-import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
@@ -56,7 +54,7 @@ class FileItemService {
   }
 
   async upload(
-    actor,
+    actor: Member,
     repositories,
     {
       description,
@@ -114,20 +112,23 @@ class FileItemService {
 
       // create item from file properties
       const name = filename.substring(0, MAX_ITEM_NAME_LENGTH);
-      const item: Partial<Item> = {
+      const fileProperties: FileItemProperties = {
+        name: filename,
+        path: filepath,
+        mimetype,
+        size,
+        content,
+      };
+      const item = {
         name,
         description,
         type: this.fileService.type,
         extra: {
-          [this.fileService.type]: {
-            name: filename,
-            path: filepath,
-            mimetype,
-            size,
-            content,
-          },
-          // todo: fix type
-        } as FileItemExtra,
+          // this is needed because if we directly use `this.fileService.type` then TS widens the type to `string` which we do not want
+          ...(this.fileService.type === ItemType.LOCAL_FILE
+            ? { [ItemType.LOCAL_FILE]: fileProperties }
+            : { [ItemType.S3_FILE]: fileProperties }),
+        },
         creator: actor,
       };
 

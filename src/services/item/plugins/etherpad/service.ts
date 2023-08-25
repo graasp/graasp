@@ -3,18 +3,13 @@ import { DateTime } from 'luxon';
 import { FastifyBaseLogger } from 'fastify';
 
 import Etherpad, { AuthorSession } from '@graasp/etherpad-api';
-import {
-  EtherpadItemExtra,
-  EtherpadItemExtraProperties,
-  ItemType,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { EtherpadItemExtra, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
+import { Item, isEtherpadItem } from '../../entities/Item';
 import ItemService from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
@@ -151,10 +146,10 @@ export class EtherpadItemService {
 
     const checkedMode = await this.checkMode(mode, member, item);
 
-    if (!item.extra?.etherpad) {
+    if (!isEtherpadItem(item) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item);
     }
-    const { padID, groupID } = item.extra.etherpad as EtherpadItemExtraProperties; // todo: proper type-checking between layers
+    const { padID, groupID } = item.extra.etherpad;
 
     let padUrl;
     switch (checkedMode) {
@@ -282,11 +277,11 @@ export class EtherpadItemService {
    * Deletes an Etherpad associated to an item
    */
   public async deleteEtherpadForItem(member: Member, item: Item) {
-    if (item.type !== ItemType.ETHERPAD) {
+    if (!isEtherpadItem(item)) {
       return;
     }
 
-    const extra = item?.extra?.etherpad as EtherpadItemExtraProperties; // todo: proper type-checking between layers
+    const extra = item?.extra?.etherpad;
     if (!extra?.padID) {
       throw new Error(
         `Illegal state: property padID is missing in etherpad extra for item ${item.id}`,
@@ -301,11 +296,11 @@ export class EtherpadItemService {
    * Copies an Etherpad for an associated copied mutable item
    */
   public async copyEtherpadInMutableItem(member: Member, item: Item) {
-    if (item.type !== ItemType.ETHERPAD) {
+    if (!isEtherpadItem(item)) {
       return;
     }
 
-    const extra = item?.extra?.etherpad as EtherpadItemExtraProperties; // todo: proper type-checking between layers
+    const extra = item?.extra?.etherpad;
     if (!extra?.padID) {
       throw new Error(
         `Illegal state: property padID is missing in etherpad extra for item ${item.id}`,

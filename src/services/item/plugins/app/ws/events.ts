@@ -1,9 +1,9 @@
 /**
  * App websocket events are registered under these topics
  */
-import { AppAction, AppSetting } from '@graasp/sdk';
-
+import { AppAction } from '../appAction/appAction';
 import { AppData } from '../appData/appData';
+import { AppSetting } from '../appSetting/appSettings';
 
 // changes on app entities
 // TODO: Move these topics to graasp/sdk

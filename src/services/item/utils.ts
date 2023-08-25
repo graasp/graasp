@@ -1,8 +1,8 @@
 import { readPdfText } from 'pdf-text-reader';
 
-import { FolderItemExtra, ItemType, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
-import { Item } from './entities/Item';
+import { Item, isFolderItem } from './entities/Item';
 
 export const itemDepth = (item: Item): number => {
   return item.path.split('.').length;
@@ -31,13 +31,13 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
   itemsMap.forEach((value) => {
     const { copy, original } = value;
     // set order for all copied folder
-    if (original.type === ItemType.FOLDER) {
+    if (isFolderItem(original) && isFolderItem(copy)) {
       // init extra if necessary
       if (!copy.extra.folder) {
-        copy.extra.folder = {};
+        copy.extra.folder = { childrenOrder: [] };
       }
 
-      const childrenOrder = (original.extra as FolderItemExtra)?.folder?.childrenOrder || [];
+      const childrenOrder = original.extra.folder?.childrenOrder || [];
 
       // change previous ids to copied item ids
       const copyOrder = childrenOrder
@@ -53,7 +53,7 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
       children.sort(sortChildrenWith(copyOrder));
       const completeOrder = children.map(({ id }) => id);
 
-      (copy.extra as FolderItemExtra).folder.childrenOrder = completeOrder;
+      copy.extra.folder.childrenOrder = completeOrder;
     }
 
     return value;

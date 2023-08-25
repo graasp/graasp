@@ -3,13 +3,13 @@ import { v4 } from 'uuid';
 
 import {
   FileItemType,
-  FolderItemType,
   ItemSettings,
   ItemType,
   MAX_TREE_LEVELS,
   PermissionLevel,
   ResultOf,
   UUID,
+  UnionOfConst,
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
@@ -23,7 +23,7 @@ import {
 } from '../../utils/errors';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { Item, ItemExtra } from './entities/Item';
+import { Item, ItemExtraUnion, isFolderItem } from './entities/Item';
 import {
   _fixChildrenOrder,
   dashToUnderscore,
@@ -61,8 +61,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   createOne(args: {
     name: string;
     description?: string;
-    type?: ItemType;
-    extra: ItemExtra;
+    type?: UnionOfConst<typeof ItemType>;
+    extra: ItemExtraUnion;
     settings?: ItemSettings;
     creator: Member;
     parent?: Item;
@@ -78,8 +78,13 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     } = args;
     // TODO: extra
     // folder's extra can be empty
-    const parsedExtra = extra ? JSON.parse(JSON.stringify(extra)) : ({} as ItemExtra);
+    const parsedExtra: ItemExtraUnion = extra ? JSON.parse(JSON.stringify(extra)) : {};
     const id = v4();
+
+    // if item is a folder, seed the childrenOrder
+    if (ItemType.FOLDER in parsedExtra) {
+      parsedExtra.folder.childrenOrder = [];
+    }
 
     const item = this.create({
       id,
@@ -133,7 +138,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   async getChildren(parent: Item, ordered?: boolean): Promise<Item[]> {
-    if (parent.type !== ItemType.FOLDER) {
+    if (!isFolderItem(parent)) {
       throw new ItemNotFolder(parent);
     }
 
@@ -145,7 +150,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
 
     if (ordered) {
-      const { extra: { folder } = {} } = parent as FolderItemType;
+      const { extra: { folder } = {} } = parent;
       const childrenOrder = folder?.childrenOrder ?? [];
       if (childrenOrder.length) {
         const compareFn = sortChildrenWith(childrenOrder);

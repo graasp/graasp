@@ -1,16 +1,19 @@
 import uniqBy from 'lodash.uniqby';
 
-import { ItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import { AuthTokenSubject, ItemType, PermissionLevel, UUID, UnionOfConst } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
+import { Item, isAppItem } from '../../entities/Item';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
 export class AppService {
   jwtExpiration: number;
-  promisifiedJwtSign: any; // TODO
+  promisifiedJwtSign: (
+    arg1: { sub: AuthTokenSubject },
+    arg2: { expiresIn: string },
+  ) => Promise<string>;
 
   constructor(jwtExpiration, promisifiedJwtSign) {
     this.jwtExpiration = jwtExpiration;
@@ -61,8 +64,10 @@ export class AppService {
   async getContext(actorId, repositories: Repositories, itemId: string, requestDetails) {
     const { itemRepository, memberRepository } = repositories;
 
-    // TODO: check item is app
     const item = await itemRepository.get(itemId);
+    if (!isAppItem(item)) {
+      throw new Error('Item is not an app');
+    }
     const member = actorId ? await memberRepository.get(actorId) : undefined;
 
     if (requestDetails) {
@@ -94,7 +99,12 @@ export class AppService {
   }
 
   // used by app : get tree
-  async getItemsByType(actorId: UUID, repositories: Repositories, types: ItemType[], path: string) {
+  async getItemsByType(
+    actorId: UUID,
+    repositories: Repositories,
+    types: UnionOfConst<typeof ItemType>[],
+    path: string,
+  ) {
     if (!path.includes('.')) {
       return [];
     }

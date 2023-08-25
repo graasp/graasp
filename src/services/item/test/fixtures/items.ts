@@ -1,34 +1,22 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { ItemSettings, ItemType, buildPathFromIds } from '@graasp/sdk';
+import { ItemType, buildPathFromIds } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
-import { Item, ItemExtra } from '../../entities/Item';
+import { Item } from '../../entities/Item';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemRepository } from '../../repository';
 
-export const getDummyItem = (
-  options: {
-    name?: string;
-    type?: ItemType;
-    path?: string;
-    description?: string;
-    id?: string;
-    // creator: Member;
-    extra?: ItemExtra;
-    parentPath?: string;
-    settings?: ItemSettings;
-  } = {},
-): Item => {
+export const getDummyItem = (options: Partial<Item> & { parentPath?: string } = {}): Item => {
   const {
-    type,
+    type = ItemType.FOLDER,
     parentPath,
     id,
     description,
     path,
-    // creator ,
-    extra,
+    // creator,
+    extra = { [ItemType.FOLDER]: { childrenOrder: [] } },
     name,
     settings = {},
   } = options;
@@ -40,9 +28,9 @@ export const getDummyItem = (
     id: buildId,
     name: name ?? randomHexOf4(),
     description: description ?? 'some description',
-    type: type ?? ItemType.FOLDER,
+    type,
     path: buildPath,
-    extra: extra ?? ({} as ItemExtra),
+    extra,
     // creator,
     settings,
     updatedAt: new Date(),

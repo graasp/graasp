@@ -1,5 +1,4 @@
 import {
-  ItemType,
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
@@ -23,7 +22,7 @@ import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { Item } from './entities/Item';
+import { Item, isFolderItem } from './entities/Item';
 
 export class ItemService {
   hooks = new HookManager<{
@@ -53,7 +52,7 @@ export class ItemService {
     actor: Actor,
     repositories: Repositories,
     args: { item: Partial<Item>; parentId?: string },
-  ) {
+  ): Promise<Item> {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
@@ -75,12 +74,12 @@ export class ItemService {
       await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
       inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
 
-      if (parentItem.type !== ItemType.FOLDER) {
+      if (!isFolderItem(parentItem)) {
         throw new Error('ITEM NOT FOLDER'); // TODO
       }
 
       itemRepository.checkHierarchyDepth(parentItem);
-      parentItem = parentItem as Item; // TODO: FolderItemType
+
       // check if there's too many children under the same parent
       const descendants = await itemRepository.getChildren(parentItem);
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
@@ -134,7 +133,7 @@ export class ItemService {
       Object.values(result.data),
     );
 
-    for (const [id, item] of Object.entries(result.data)) {
+    for (const [id, _item] of Object.entries(result.data)) {
       // Do not delete if value exist but is null, because no memberships but can be public
       if (memberships?.data[id] === undefined) {
         delete result.data[id];

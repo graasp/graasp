@@ -221,7 +221,7 @@ describe('Apps Plugin Tests', () => {
             Authorization: `Bearer ${MOCK_TOKEN}`,
           },
         });
-        const result = response.json();
+        const result = await response.json();
 
         const { members, children } = result;
         expectItem(result, parentItem);

@@ -1,4 +1,3 @@
-import { WriteStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyMultipart from '@fastify/multipart';
