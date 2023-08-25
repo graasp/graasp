@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import {
-  FolderItemExtraProperties,
   HttpMethod,
   ItemTagType,
   ItemType,
@@ -1369,7 +1368,7 @@ describe('Item routes tests', () => {
           // BUG: folder extra should not contain extra
           extra: {
             folder: {
-              ...(item.extra.folder as FolderItemExtraProperties),
+              ...item.extra[item.type],
               ...payload.extra.folder,
             },
           },

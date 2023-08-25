@@ -158,7 +158,7 @@ describe('Document Item tests', () => {
             [ItemType.DOCUMENT]: {
               content: 'new value',
               // test that flavor can be updated
-              flavor: 'info',
+              flavor: 'info' as const,
             },
           },
           settings: {

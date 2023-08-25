@@ -24,7 +24,7 @@ export type FileServiceConfig = { s3?: S3FileConfiguration; local?: LocalFileCon
 class FileService {
   repository: FileRepository;
   /** file type */
-  type: ItemType.S3_FILE | ItemType.LOCAL_FILE;
+  type: FileItemType;
 
   config: { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
 

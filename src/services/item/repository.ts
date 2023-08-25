@@ -78,12 +78,12 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     } = args;
     // TODO: extra
     // folder's extra can be empty
-    const parsedExtra: ItemExtraUnion = extra ? JSON.parse(JSON.stringify(extra)) : {};
+    let parsedExtra: ItemExtraUnion = extra ? JSON.parse(JSON.stringify(extra)) : {};
     const id = v4();
 
-    // if item is a folder, seed the childrenOrder
-    if (ItemType.FOLDER in parsedExtra) {
-      parsedExtra.folder.childrenOrder = [];
+    // if item is a folder and the sextra is empty, seed the childrenOrder
+    if (type === ItemType.FOLDER && !(ItemType.FOLDER in parsedExtra)) {
+      parsedExtra = { folder: { childrenOrder: [] } };
     }
 
     const item = this.create({

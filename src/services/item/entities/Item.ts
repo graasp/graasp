@@ -29,7 +29,8 @@ import {
 
 import { Member } from '../../member/entities/member';
 
-export type ItemExtra = {
+// Map of the item types to their item extra
+export type ItemExtraMap = {
   [ItemType.APP]: AppItemExtra;
   [ItemType.DOCUMENT]: DocumentItemExtra;
   [ItemType.ETHERPAD]: EtherpadItemExtra;
@@ -41,9 +42,11 @@ export type ItemExtra = {
   [ItemType.SHORTCUT]: ShortcutItemExtra;
 };
 
-export type ItemExtraUnion = ItemExtra[keyof ItemExtra];
+// utility type to describe the union of the potential item extras before the `type` of an item is known or checked using a typeguard
+export type ItemExtraUnion = ItemExtraMap[keyof ItemExtraMap];
 
-type ItemTypeKeys = keyof ItemExtra;
+// local type alias to simplify the notation
+type ItemTypeKeys = keyof ItemExtraMap;
 
 @Entity()
 @Index('IDX_gist_item_path', { synchronize: false })
@@ -85,12 +88,12 @@ export class Item<T extends ItemTypeKeys = ItemTypeKeys> extends BaseEntity {
   @UpdateDateColumn({ name: 'updated_at', nullable: false })
   updatedAt: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at', nullable: false })
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   // type dependent properties
   @Column('simple-json', { nullable: false })
-  extra: ItemExtra[T];
+  extra: ItemExtraMap[T]; // extra is typed using the generic to match the type property of the item
 
   // cosmetic settings
   // do not set default value because it gets serialize as a string in map.values()
@@ -106,6 +109,7 @@ export class Item<T extends ItemTypeKeys = ItemTypeKeys> extends BaseEntity {
   // categories: ItemCategory[];
 }
 
+// all sub-item types defined using a specific variant of the `ItemType` enumeration
 export type AppItem = Item<typeof ItemType.APP>;
 export type DocumentItem = Item<typeof ItemType.DOCUMENT>;
 export type EtherpadItem = Item<typeof ItemType.ETHERPAD>;
@@ -116,6 +120,21 @@ export type LocalFileItem = Item<typeof ItemType.LOCAL_FILE>;
 export type S3FileItem = Item<typeof ItemType.S3_FILE>;
 export type ShortcutItem = Item<typeof ItemType.SHORTCUT>;
 
+// Typeguard definitons that help to narrow the type of an item to one of the specific item types
+// typeguard are used because a class does not support discriminated union
+// (which are the recommented way of achieving what we have with the item type definiton)
+// One benefit of using the typeguards is that it shortens the code when checking for an item type:
+// Before:
+//          if (item.type === ItemType.FOO) {
+//            // item.extra was not correctly typed to the correcponding extra type
+//            // do something, but you will have to cast the item.extra ... not ideal
+//          }
+//
+// Now:
+//          if (isFooItem(item)) {
+//            // now item.extra is of the mapped type, i.e: FooItemExtra
+//            // do some smarter things without needing to cast the extra
+//          }
 export const isAppItem = (item: Item<ItemTypeKeys>): item is AppItem => item.type === ItemType.APP;
 export const isDocumentItem = (item: Item<ItemTypeKeys>): item is DocumentItem =>
   item.type === ItemType.DOCUMENT;
@@ -132,14 +151,3 @@ export const isS3FileItem = (item: Item<ItemTypeKeys>): item is S3FileItem =>
   item.type === ItemType.S3_FILE;
 export const isShortcutItem = (item: Item<ItemTypeKeys>): item is ShortcutItem =>
   item.type === ItemType.SHORTCUT;
-
-// export type Item =
-//   | AppItem
-//   | DocumentItem
-//   | EtherpadItem
-//   | FolderItem
-//   | H5PItem
-//   | EmbeddedLinkItem
-//   | LocalFileItem
-//   | S3FileItem
-//   | ShortcutItem;
