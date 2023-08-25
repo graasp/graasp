@@ -9,8 +9,14 @@ import { Item } from '../../entities/Item';
 
 export class RecycledBinService {
   readonly hooks = new HookManager<{
-    recycle: { pre: { item: Item }; post: { item: Item } };
-    restore: { pre: { item: Item }; post: { item: Item } };
+    recycle: {
+      pre: { item: Item; isRecycledRoot: boolean };
+      post: { item: Item; isRecycledRoot: boolean };
+    };
+    restore: {
+      pre: { item: Item; isRestoredRoot: boolean };
+      post: { item: Item; isRestoredRoot: boolean };
+    };
   }>();
 
   async getAll(actor: Actor, repositories: Repositories) {
@@ -21,34 +27,6 @@ export class RecycledBinService {
     }
 
     return recycledItemRepository.getOwnRecycledItemDatas(actor);
-  }
-
-  async recycle(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-    const { itemRepository, recycledItemRepository } = repositories;
-
-    // if item is already deleted, it will throw not found here
-    const item = await itemRepository.get(itemId);
-
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
-
-    // remove all descendants
-    const descendants = await itemRepository.getDescendants(item);
-    for (const d of descendants) {
-      await this.hooks.runPreHooks('recycle', actor, repositories, { item: d });
-    }
-    await itemRepository.softRemove(descendants);
-    for (const d of descendants) {
-      this.hooks.runPostHooks('recycle', actor, repositories, { item: d });
-    }
-
-    await this.hooks.runPreHooks('recycle', actor, repositories, { item });
-    const result = recycledItemRepository.recycleOne(item, actor);
-    await this.hooks.runPostHooks('recycle', actor, repositories, { item });
-
-    return result;
   }
 
   async recycleMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -65,42 +43,27 @@ export class RecycledBinService {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-    // get descendants of all items
     const descendants = await itemRepository.getManyDescendants(items);
 
-    for (const d of descendants) {
-      await this.hooks.runPreHooks('recycle', actor, repositories, { item: d });
+    for (const item of items) {
+      await this.hooks.runPreHooks('recycle', actor, repositories, { item, isRecycledRoot: true });
     }
+    for (const d of descendants) {
+      await this.hooks.runPreHooks('recycle', actor, repositories, {
+        item: d,
+        isRecycledRoot: false,
+      });
+    }
+
     await itemRepository.softRemove([...descendants, ...items]);
-    for (const d of descendants) {
-      this.hooks.runPostHooks('recycle', actor, repositories, { item: d });
-    }
-
-    for (const item of items) {
-      await this.hooks.runPreHooks('recycle', actor, repositories, { item });
-    }
     const result = await recycledItemRepository.recycleMany(items, actor);
+
+    for (const d of descendants) {
+      this.hooks.runPostHooks('recycle', actor, repositories, { item: d, isRecycledRoot: false });
+    }
     for (const item of items) {
-      await this.hooks.runPostHooks('recycle', actor, repositories, { item });
+      await this.hooks.runPostHooks('recycle', actor, repositories, { item, isRecycledRoot: true });
     }
-
-    return result;
-  }
-
-  async restoreOne(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-    const { itemRepository, recycledItemRepository } = repositories;
-
-    const item = await itemRepository.get(itemId, { withDeleted: true });
-
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
-
-    await this.hooks.runPreHooks('restore', actor, repositories, { item });
-    await itemRepository.recover(item);
-    const result = recycledItemRepository.restoreOne(item);
-    await this.hooks.runPostHooks('restore', actor, repositories, { item });
 
     return result;
   }
@@ -122,17 +85,28 @@ export class RecycledBinService {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-    for (const item of items) {
-      this.hooks.runPreHooks('restore', actor, repositories, { item });
-    }
-
-    // TODO: check if item is already deleted?
-    await itemRepository.recover(items);
+    const descendants = await itemRepository.getManyDescendants(items);
 
     for (const item of items) {
-      this.hooks.runPostHooks('restore', actor, repositories, { item });
+      this.hooks.runPreHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+    }
+    for (const d of descendants) {
+      await this.hooks.runPreHooks('restore', actor, repositories, {
+        item: d,
+        isRestoredRoot: false,
+      });
     }
 
-    return recycledItemRepository.restoreMany(items);
+    await itemRepository.recover([...descendants, ...items]);
+    const result = recycledItemRepository.restoreMany(items);
+
+    for (const item of items) {
+      this.hooks.runPostHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+    }
+    for (const d of descendants) {
+      this.hooks.runPostHooks('restore', actor, repositories, { item: d, isRestoredRoot: false });
+    }
+
+    return result;
   }
 }
