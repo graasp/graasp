@@ -104,7 +104,12 @@ export class ImportExportService {
       const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
 
       return this.itemService.post(actor, repositories, {
-        item: { description, name: filename, type: ItemType.FOLDER },
+        item: {
+          description,
+          name: filename,
+          type: ItemType.FOLDER,
+          extra: { [ItemType.FOLDER]: { childrenOrder: [] } },
+        },
         parentId: parent?.id,
       });
     }
@@ -118,7 +123,6 @@ export class ImportExportService {
 
     // links and apps
     if (filename.endsWith(LINK_EXTENSION)) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_source, link, linkType] = content.split('\n');
 
       // get url from content
