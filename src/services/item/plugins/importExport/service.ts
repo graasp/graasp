@@ -1,23 +1,15 @@
-import archiver, { Archiver } from 'archiver';
 import fs, { existsSync } from 'fs';
-import { mkdir, readFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import mime from 'mime-types';
 import mmm from 'mmmagic';
+import fetch from 'node-fetch';
 import path from 'path';
 import util from 'util';
+import yazl, { ZipFile } from 'yazl';
 
 import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
-import {
-  AppItemExtraProperties,
-  DocumentItemExtraProperties,
-  EmbeddedLinkItemExtraProperties,
-  H5PItemType,
-  ItemType,
-  LocalFileItemExtra,
-  S3FileItemExtra,
-  UUID,
-} from '@graasp/sdk';
+import { DiscriminatedItem, ItemType, LocalFileItemExtra, S3FileItemExtra } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
@@ -31,7 +23,6 @@ import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
   LINK_EXTENSION,
-  TMP_EXPORT_ZIP_FOLDER_PATH,
   URL_PREFIX,
 } from './constants';
 import { UnexpectedExportError } from './errors';
@@ -198,9 +189,9 @@ export class ImportExportService {
     repositories: Repositories,
     args: {
       reply;
-      item: Item;
+      item: DiscriminatedItem;
       archiveRootPath: string;
-      archive: Archiver;
+      archive: ZipFile;
       fileStorage: string;
     },
   ) {
@@ -208,9 +199,10 @@ export class ImportExportService {
 
     // save description in file
     if (item.description) {
-      archive.append(item.description, {
-        name: path.join(archiveRootPath, `${item.name}${DESCRIPTION_EXTENSION}`),
-      });
+      archive.addBuffer(
+        Buffer.from(item.description),
+        path.join(archiveRootPath, `${item.name}${DESCRIPTION_EXTENSION}`),
+      );
     }
 
     switch (item.type) {
@@ -220,10 +212,9 @@ export class ImportExportService {
         const { mimetype } =
           (item.extra[ItemType.S3_FILE] as S3FileItemExtra) ||
           (item.extra[ItemType.LOCAL_FILE] as LocalFileItemExtra);
-        const fileStream = await this.fileItemService.download(actor, repositories, {
-          fileStorage,
+        const url = (await this.fileItemService.download(actor, repositories, {
           itemId: item.id,
-        });
+        })) as string;
 
         // build filename with extension if does not exist
         let ext = path.extname(item.name);
@@ -234,57 +225,50 @@ export class ImportExportService {
         const filename = `${path.basename(item.name, ext)}${ext}`;
 
         // add file in archive
-        archive.append(fileStream, {
-          name: path.join(archiveRootPath, filename),
-        });
+        const res = await fetch(url);
+        archive.addReadStream(res.body, path.join(archiveRootPath, filename));
 
         break;
       }
       case ItemType.H5P: {
-        const fileStream = await this.h5pService.downloadH5P(
-          item as H5PItemType,
+        // todo: improve, do not save in tmp file
+        const fileStream = (await this.h5pService.downloadH5P(
+          item,
           actor,
           fileStorage,
-        );
+        )) as NodeJS.ReadableStream;
 
-        archive.append(fileStream, {
-          name: path.join(archiveRootPath, item.name),
-        });
+        archive.addReadStream(fileStream, path.join(archiveRootPath, item.name));
 
         break;
       }
-      case ItemType.DOCUMENT:
-        archive.append((item.extra.document as DocumentItemExtraProperties)?.content, {
-          name: path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
-        });
+      case ItemType.DOCUMENT: {
+        archive.addBuffer(
+          Buffer.from(item.extra.document?.content, 'utf-8'),
+          path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
+        );
         break;
+      }
       case ItemType.LINK:
-        archive.append(
-          buildTextContent(
-            (item.extra.embeddedLink as EmbeddedLinkItemExtraProperties)?.url,
-            ItemType.LINK,
-          ),
-          {
-            name: path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-          },
+        archive.addBuffer(
+          Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
+          path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
         );
         break;
       case ItemType.APP:
-        archive.append(
-          buildTextContent((item.extra.app as AppItemExtraProperties)?.url, ItemType.APP),
-          {
-            name: path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-          },
+        archive.addBuffer(
+          Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
+          path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
         );
         break;
       case ItemType.FOLDER: {
         // append description
         const folderPath = path.join(archiveRootPath, item.name);
-        const children = await repositories.itemRepository.getChildren(item);
-        await Promise.all(
+        const children = await repositories.itemRepository.getChildren(item as Item);
+        const result = await Promise.all(
           children.map((child) =>
             this._addItemToZip(actor, repositories, {
-              item: child,
+              item: child as DiscriminatedItem,
               archiveRootPath: folderPath,
               archive,
               reply,
@@ -292,6 +276,10 @@ export class ImportExportService {
             }),
           ),
         );
+        // add empty folder
+        if (!result.length) {
+          archive.addEmptyDirectory(folderPath);
+        }
         break;
       }
     }
@@ -300,37 +288,24 @@ export class ImportExportService {
   async export(
     actor: Actor,
     repositories: Repositories,
-    { itemId, reply }: { itemId: UUID; reply: FastifyReply },
+    {
+      item,
+      reply,
+      fileStorage,
+    }: { fileStorage: string; item: Item; reply: FastifyReply; log?: FastifyBaseLogger },
   ) {
-    // check item and permission
-    const item = await this.itemService.get(actor, repositories, itemId);
-
     // init archive
-    const archive = archiver.create('zip', { store: true });
-    archive.on('warning', function (err) {
-      if (err.code === 'ENOENT') {
-        // log.debug(err);
-      } else {
-        throw err;
-      }
+    const archive = new yazl.ZipFile();
+    archive.outputStream.on('error', function (err) {
+      throw new UnexpectedExportError(err);
     });
-    archive.on('error', function (err) {
-      throw err;
-    });
-
-    // path to save files temporarly and save archive
-    const fileStorage = path.join(TMP_EXPORT_ZIP_FOLDER_PATH, item.id);
-    await mkdir(fileStorage, { recursive: true });
-    const zipPath = path.join(fileStorage, item.id + '.zip');
-    const zipStream = fs.createWriteStream(zipPath);
-    archive.pipe(zipStream);
 
     // path used to index files in archive
     const rootPath = path.dirname('./');
 
     // import items in zip recursively
     await this._addItemToZip(actor, repositories, {
-      item,
+      item: item as DiscriminatedItem,
       reply,
       archiveRootPath: rootPath,
       archive,
@@ -339,41 +314,8 @@ export class ImportExportService {
       throw new UnexpectedExportError(error);
     });
 
-    // wait for zip to be completely created and send it
-    return new Promise((resolve, reject) => {
-      zipStream.on('error', (e) => {
-        console.error(e);
-        reject(e);
-      });
-
-      zipStream.on('close', () => {
-        // set reply headers depending zip file and return file
-        const buffer = fs.readFileSync(zipPath);
-        try {
-          reply.raw.setHeader(
-            'Content-Disposition',
-            `filename="${encodeURIComponent(item.name)}.zip"`,
-          );
-        } catch (e) {
-          // TODO: send sentry error
-          console.error(e);
-          reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
-        }
-        reply.raw.setHeader('Content-Length', Buffer.byteLength(buffer));
-        reply.type('application/zip');
-
-        // delete tmp files after endpoint responded
-        if (fs.existsSync(fileStorage)) {
-          fs.rmSync(fileStorage, { recursive: true });
-        } else {
-          //  log?.error(`${fileStorage} was not found, and was not deleted`);
-        }
-
-        resolve(buffer);
-      });
-
-      archive.finalize();
-    });
+    archive.end();
+    return archive;
   }
 
   /**

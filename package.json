@@ -51,9 +51,9 @@
     "migration:check": "npx typeorm-ts-node-commonjs migration:generate src/migrations/migrations --check -d src/plugins/datasource.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.306.0",
-    "@aws-sdk/lib-storage": "3.379.1",
-    "@aws-sdk/s3-request-presigner": "3.306.0",
+    "@aws-sdk/client-s3": "3.395.0",
+    "@aws-sdk/lib-storage": "3.395.0",
+    "@aws-sdk/s3-request-presigner": "3.395.0",
     "@fastify/auth": "4.2.0",
     "@fastify/bearer-auth": "9.0.0",
     "@fastify/cors": "8.2.1",
@@ -104,7 +104,8 @@
     "typeorm": "0.3.17",
     "uuid": "9.0.0",
     "ws": "8.13.0",
-    "yarn": "1.22.19"
+    "yarn": "1.22.19",
+    "yazl": "2.5.1"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.7",
@@ -125,6 +126,7 @@
     "@types/qs": "6.9.7",
     "@types/striptags": "3.1.1",
     "@types/uuid": "9.0.2",
+    "@types/yazl": "2.4.2",
     "@typescript-eslint/eslint-plugin": "5.60.1",
     "@typescript-eslint/parser": "5.60.1",
     "checksum": "1.0.0",

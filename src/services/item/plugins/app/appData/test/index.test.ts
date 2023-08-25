@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { AppDataVisibility, HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
@@ -9,6 +9,7 @@ import { Actor, Member } from '../../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { setUp } from '../../test/fixtures';
+import { PreventUpdateAppDataFile } from '../errors';
 import { AppDataRepository } from '../repository';
 
 // mock datasource
@@ -194,7 +195,7 @@ describe('App Data Tests', () => {
       });
     });
 
-    describe('Sign In as reader', () => {
+    describe('Sign in as reader', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         member = await saveMember(BOB);
@@ -446,6 +447,9 @@ describe('App Data Tests', () => {
         const response = await app.inject({
           method: HttpMethod.PATCH,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           payload: { data: updatedData.data },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
@@ -454,36 +458,40 @@ describe('App Data Tests', () => {
         const response = await app.inject({
           method: HttpMethod.PATCH,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           payload: { data: updatedData.data },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       });
 
-      // it('Throw if app data is a file', async () => {
-      //   const fileAppData = ({
-      //     type: 'type',
-      //     member:actor,
-      //     data: ({
-      //       name: 'name',
-      //       type: ItemType.S3_FILE,
-      //       filename: 'filename',
-      //       filepath: 'filepath',
-      //       size: 120,
-      //       mimetype: 'mimetype',
-      //     }),
-      //     visibility: AppDataVisibility.Item,
-      //     item: appData[0].item
-      //   });
-      //   await AppDataRepository.save(fileAppData);
+      it('Throw if app data is a file', async () => {
+        const fileAppData = await AppDataRepository.save({
+          type: 'type',
+          member: actor,
+          data: {
+            name: 'name',
+            type: ItemType.S3_FILE,
+            filename: 'filename',
+            filepath: 'filepath',
+            size: 120,
+            mimetype: 'mimetype',
+          },
+          visibility: AppDataVisibility.Item,
+          item: chosenAppData.item,
+        });
 
-      //   const response = await app.inject({
-      //     method: HttpMethod.PATCH,
-      //     url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
-      //     payload: { data: updatedData.data },
-      //   });
-      //   expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-
-      // });
+        const response = await app.inject({
+          method: HttpMethod.PATCH,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${fileAppData.id}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { data: updatedData.data },
+        });
+        expect(response.json()).toMatchObject(new PreventUpdateAppDataFile(fileAppData.id));
+      });
     });
 
     describe('Sign In as reader', () => {

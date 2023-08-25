@@ -71,7 +71,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   ) => {
     const { appData } = args;
     if (appData?.data && appData.data[fileService.type]) {
-      throw new PreventUpdateAppDataFile(appData);
+      throw new PreventUpdateAppDataFile(appData.id);
     }
   };
   appDataService.hooks.setPreHook('patch', patchPreHook);
