@@ -154,6 +154,10 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor, parent);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
+        const updatedParent = await ItemRepository.get(parent.id);
+        // check parent has been updated
+        expect(updatedParent.extra).toEqual({ folder: { childrenOrder: [newItem.id] } });
+
         // a membership does not need to be created for item with admin rights
         const nbItemMemberships = await ItemMembershipRepository.count();
         expect(nbItemMemberships).toEqual(1);

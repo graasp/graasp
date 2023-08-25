@@ -102,6 +102,14 @@ export class ItemService {
       });
     }
 
+    if (parentId && parentItem) {
+      // add new item's is in parent extra.folder.childrenOrder
+      const newChildrenOrder = [...parentItem.extra.folder.childrenOrder, createdItem.id];
+      await itemRepository.patch(parentItem.id, {
+        extra: { folder: { ...parentItem.extra.folder, childrenOrder: newChildrenOrder } },
+      });
+    }
+
     await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem });
 
     return createdItem;
