@@ -3,7 +3,7 @@ import path from 'path';
 import { ItemType } from '@graasp/sdk';
 
 import { H5PPluginOptions } from '../types';
-import { buildContentPath, buildH5PPath, buildRootPath, validatePluginOptions } from '../utils';
+import { validatePluginOptions } from '../utils';
 
 const DEFAULT_PLUGIN_OPTIONS: H5PPluginOptions = {
   fileStorage: {
@@ -69,17 +69,5 @@ describe('Utils', () => {
         "H5P routes must start and end with a forward slash ('/') !",
       );
     });
-  });
-
-  it('builds root path', () => {
-    expect(buildRootPath('prefix', 'mockId')).toEqual('prefix/mockId');
-  });
-
-  it('builds .h5p path', () => {
-    expect(buildH5PPath('root', 'mock-file')).toEqual('root/mock-file.h5p');
-  });
-
-  it('builds content path', () => {
-    expect(buildContentPath('root')).toEqual('root/content');
   });
 });

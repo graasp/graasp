@@ -26,8 +26,3 @@ export interface H5PPluginOptions {
   /** optional: temp directory */
   tempDir?: string;
 }
-
-/** Helper type for fastify-static */
-export interface FastifyStaticReply {
-  setHeader: (key: string, value: string) => void;
-}

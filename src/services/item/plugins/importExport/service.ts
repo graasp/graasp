@@ -18,7 +18,7 @@ import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';
-import { H5PService } from '../h5p/service';
+import { H5PService } from '../html/h5p/service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
@@ -231,8 +231,7 @@ export class ImportExportService {
         break;
       }
       case ItemType.H5P: {
-        // todo: improve, do not save in tmp file
-        const fileStream = (await this.h5pService.downloadH5P(
+        const fileStream = (await this.h5pService.download(
           item,
           actor,
           fileStorage,

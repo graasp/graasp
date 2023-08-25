@@ -4,6 +4,8 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import secureJSON from 'secure-json-parse';
 
+import { HtmlValidator } from '../../validator';
+import { H5PInvalidManifestError } from '../errors';
 import { h5pManifestSchema } from '../schemas';
 import { H5P } from './h5p';
 
@@ -13,7 +15,7 @@ const ajv = new Ajv();
  * Utility class containing the logic to validate a .h5p package
  * This object should be implementation-agnostic (could be reused for other H5P projects)
  */
-export class H5PValidator {
+export class H5PValidator implements HtmlValidator {
   private isValidManifest = ajv.compile(h5pManifestSchema);
 
   // Helper to locate the main h5p.json inside an extracted H5P package
@@ -41,13 +43,11 @@ export class H5PValidator {
    * https://h5p.org/creating-your-own-h5p-plugin
    * @param extractedH5PRoot String of the root path where the .h5p package has been extracted
    */
-  async validatePackage(
-    extractedH5PRoot: string,
-  ): Promise<{ isValid: false; error: string } | { isValid: true; manifest: H5P.Manifest }> {
+  async validatePackage(extractedH5PRoot: string) {
     // Check if h5p.json manifest file exists
     const manifestPath = this.buildManifestPath(extractedH5PRoot);
     if (!fs.existsSync(manifestPath)) {
-      return { isValid: false, error: 'Missing h5p.json manifest file' };
+      throw new H5PInvalidManifestError('Missing h5p.json manifest file');
     }
 
     // Check if h5p.json manifest file has expected JSON structure
@@ -58,22 +58,15 @@ export class H5PValidator {
       const errors = this.isValidManifest.errors
         ?.map((e) => `${e.instancePath && `${path.basename(e.instancePath)} `}${e.message}`)
         ?.join('\n\t');
-      return {
-        isValid: false,
-        error: `Invalid h5p.json manifest file: ${errors}`,
-      };
+      throw new H5PInvalidManifestError(errors);
     }
 
     manifest = manifest as { preloadedDependencies: any; mainLibrary: any };
     // The 'preloadedDependencies' field must at least contain the main library of the package
     if (!manifest.preloadedDependencies.find((dep) => dep.machineName === manifest.mainLibrary)) {
-      return {
-        isValid: false,
-        error: 'Invalid h5p.json manifest file: main library not found in preloaded dependencies',
-      };
+      throw new H5PInvalidManifestError('main library not found in preloaded dependencies');
     }
 
     // All checks are performed
-    return { isValid: true, manifest };
   }
 }

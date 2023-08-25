@@ -12,10 +12,6 @@ import {
   ETHERPAD_PUBLIC_URL,
   ETHERPAD_URL,
   FILE_ITEM_PLUGIN_OPTIONS,
-  H5P_FILE_STORAGE_CONFIG,
-  H5P_FILE_STORAGE_TYPE,
-  H5P_PATH_PREFIX,
-  H5P_TEMP_DIR,
   IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
@@ -38,7 +34,7 @@ import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import graaspEtherpadPlugin from './plugins/etherpad';
 import graaspFileItem from './plugins/file';
-import graaspH5PPlugin from './plugins/h5p';
+import graaspH5PPlugin from './plugins/html/h5p';
 import graaspZipPlugin from './plugins/importExport';
 import graaspCategoryPlugin from './plugins/itemCategory';
 import graaspFavoritePlugin from './plugins/itemFavorite';
@@ -105,15 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(itemWsHooks);
 
         // H5P plugin must be registered before ZIP
-        fastify.register(graaspH5PPlugin, {
-          fileStorage: {
-            type: H5P_FILE_STORAGE_TYPE,
-            pathPrefix: H5P_PATH_PREFIX,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            config: H5P_FILE_STORAGE_CONFIG as any,
-          },
-          tempDir: H5P_TEMP_DIR,
-        });
+        fastify.register(graaspH5PPlugin);
 
         fastify.register(graaspEtherpadPlugin, {
           url: ETHERPAD_URL,

@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import path from 'path';
+import os from 'os';
 
 import {
   Context,
@@ -213,8 +213,10 @@ if (S3_FILE_ITEM_PLUGIN) {
   };
 }
 
+if (!process.env.H5P_PATH_PREFIX) {
+  throw new Error('Invalid H5P path prefix');
+}
 export const H5P_PATH_PREFIX = process.env.H5P_PATH_PREFIX;
-export const H5P_TEMP_DIR = process.env.H5P_TEMP_DIR;
 
 // ugly runtime type checking since typescript cannot infer types
 // todo: please use a typed env checker library, this is awful
@@ -308,7 +310,7 @@ export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRIC
 // used for hashing password
 export const SALT_ROUNDS = 10;
 
-export const TMP_FOLDER = path.resolve(__dirname, '../..', 'tmp');
+export const TMP_FOLDER = os.tmpdir();
 
 if (!process.env.RECAPTCHA_SECRET_ACCESS_KEY) {
   console.error('RECAPTCHA_SECRET_ACCESS_KEY environment variable missing.');

@@ -9,26 +9,29 @@ import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../../../test/app';
-import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, H5P_TEMP_DIR } from '../../../../../utils/config';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
-import { ItemRepository } from '../../../repository';
+import build, { clearDatabase } from '../../../../../../../test/app';
+import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
+import { saveItemAndMembership } from '../../../../../itemMembership/test/fixtures/memberships';
+import { Member } from '../../../../../member/entities/member';
+import { Item } from '../../../../entities/Item';
+import { ItemRepository } from '../../../../repository';
+import { HtmlImportError } from '../../errors';
 import { H5P_FILE_DOT_EXTENSION } from '../constants';
-import { H5PImportError, H5PInvalidFileError } from '../errors';
+import { H5PInvalidManifestError } from '../errors';
 import { H5P_PACKAGES } from './fixtures';
 import { expectH5PFiles, injectH5PImport } from './helpers';
 
 const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 
 // mock datasource
-jest.mock('../../../../../plugins/datasource');
+jest.mock('../../../../../../plugins/datasource');
+
+const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX || '');
 
 async function cleanFiles() {
   const storage = path.join(H5P_LOCAL_CONFIG.local.storageRootPath, H5P_PATH_PREFIX || '');
   await fsp.rm(storage, { recursive: true, force: true });
-  if (H5P_TEMP_DIR) await fsp.rm(H5P_TEMP_DIR, { recursive: true, force: true });
+  await fsp.rm(H5P_TMP_FOLDER, { recursive: true, force: true });
 }
 
 describe('Service plugin', () => {
@@ -92,12 +95,7 @@ describe('Service plugin', () => {
     });
 
     it('removes the temporary extraction folder', async () => {
-      if (!H5P_TEMP_DIR) {
-        throw new Error(
-          `Cannot test for temp folder: ${H5P_TEMP_DIR}. Make sure that the H5P_TEMP_DIR env var is set in test mode`,
-        );
-      }
-      const contents = await fsp.readdir(H5P_TEMP_DIR);
+      const contents = await fsp.readdir(H5P_TMP_FOLDER);
       expect(contents.length).toEqual(0);
     });
   });
@@ -150,7 +148,6 @@ describe('Service plugin', () => {
       await waitForExpect(async () => {
         itemsInDb = await ItemRepository.find({
           where: {
-            name: item.name,
             type: item.type,
           },
         });
@@ -207,7 +204,7 @@ describe('Service plugin', () => {
         parentId: parent.id,
       });
       expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-      expect(res.json()).toEqual(new H5PInvalidFileError('Missing h5p.json manifest file'));
+      expect(res.json()).toEqual(new H5PInvalidManifestError('Missing h5p.json manifest file'));
     });
 
     it('returns error and deletes extracted files on item creation failure', async () => {
@@ -218,16 +215,11 @@ describe('Service plugin', () => {
 
       const res = await injectH5PImport(app, { parentId: parent.id });
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
-      expect(res.json()).toEqual(new H5PImportError());
+      expect(res.json()).toEqual(new HtmlImportError());
 
       const { storageRootPath } = H5P_LOCAL_CONFIG.local;
       waitForExpect(async () => {
-        if (!H5P_TEMP_DIR) {
-          throw new Error(
-            `Cannot test for temp folder: ${H5P_TEMP_DIR}. Make sure that the H5P_TEMP_DIR env var is set in test mode`,
-          );
-        }
-        const extractionDirContents = await fsp.readdir(H5P_TEMP_DIR);
+        const extractionDirContents = await fsp.readdir(H5P_TMP_FOLDER);
         const storageDirContents = await fsp.readdir(
           path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),
         );
