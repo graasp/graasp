@@ -5,7 +5,7 @@ import { ErrorFactory } from '@graasp/sdk';
 const PLUGIN_NAME = 'graasp-plugin-item-actions';
 
 /**
- * Errors thrown by the chat tasks
+ * Errors thrown by the action item plugin
  */
 
 export const GraaspItemActionError = ErrorFactory(PLUGIN_NAME);

@@ -5,7 +5,6 @@ import { InvalidAggregationError } from '../../../action/utils/errors';
 export const PLUGIN_NAME = 'graasp-plugin-item-actions';
 
 export enum ItemActionType {
-  View = 'view',
   Update = 'update',
   Create = 'create',
   Delete = 'delete',
