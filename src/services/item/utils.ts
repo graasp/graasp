@@ -41,7 +41,7 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
 
       // change previous ids to copied item ids
       const copyOrder = childrenOrder
-        .map((oldId) => itemsMap.get(oldId)?.copy?.id)
+        .map((oldId) => itemsMap.get(oldId)?.copy.id)
         .filter(Boolean) as UUID[];
 
       // get direct children
