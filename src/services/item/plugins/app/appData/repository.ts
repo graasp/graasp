@@ -25,7 +25,7 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     // TODO: optimize and refactor
     const originalData = await this.get(appDataId);
     if ([ItemType.LOCAL_FILE, ItemType.S3_FILE].includes(originalData?.data?.type)) {
-      throw new PreventUpdateAppDataFile(originalData);
+      throw new PreventUpdateAppDataFile(originalData.id);
     }
 
     await this.update({ id: appDataId, item: { id: itemId } }, body);
