@@ -14,8 +14,8 @@ import { membershipWsHooks } from './ws/hooks';
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items, mailer, hosts } = fastify;
-  const itemMembershipService = new ItemMembershipService(items.service, hosts);
+  const { db, items, mailer } = fastify;
+  const itemMembershipService = new ItemMembershipService(items.service, mailer);
   fastify.decorate('memberships', { service: itemMembershipService });
 
   // schemas

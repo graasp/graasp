@@ -1,12 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import {
-  FileItemType,
-  Hostname,
-  IdParam,
-  LocalFileConfiguration,
-  S3FileConfiguration,
-} from '@graasp/sdk';
+import { FileItemType, IdParam, LocalFileConfiguration, S3FileConfiguration } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { deleteAllById } from './schemas';
@@ -14,7 +8,6 @@ import { ActionMemberService } from './service';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
-  hosts: Hostname[];
   fileItemType: FileItemType;
   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
 }
