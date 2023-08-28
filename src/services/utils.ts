@@ -40,16 +40,16 @@ export function resultOfToList<T>(resultOf: ResultOf<T>): T[] {
 // const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 export const randomHexOf4 = () => crypto.randomBytes(2).toString('hex');
 
-const BASE_ITEM_LINK_HOST = CLIENT_HOSTS.find(({ name }) => name === Context.Builder)?.url
-  ?.hostname;
+const BASE_ITEM_LINK_HOST = CLIENT_HOSTS.find(({ name }) => name === Context.Builder)?.url.origin;
 if (!BASE_ITEM_LINK_HOST) {
   throw new Error('host is not defined');
 }
-export const buildItemLink = (item: Item) => {
+export const buildItemLink = (item: Item, options: { chatOpen?: boolean } = {}) => {
+  const { chatOpen = false } = options;
   const itemLink = buildItemLinkForBuilder({
     origin: BASE_ITEM_LINK_HOST,
     itemId: item.id,
-    chatOpen: true,
+    chatOpen,
   });
 
   return itemLink;

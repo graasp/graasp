@@ -53,39 +53,6 @@ export class ItemMembershipService {
     });
   }
 
-  async create(
-    actor: Actor,
-    repositories: Repositories,
-    membership: { permission: PermissionLevel; itemId: string; memberId: string },
-  ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-    const { memberRepository, itemMembershipRepository } = repositories;
-
-    const item = await this.itemService.get(
-      actor,
-      repositories,
-      membership.itemId,
-      PermissionLevel.Admin,
-    );
-    const member = await memberRepository.findOneByOrFail({ id: membership.memberId });
-
-    await this.hooks.runPreHooks('create', actor, repositories, { item, member });
-
-    const result = await itemMembershipRepository.post({
-      item,
-      member,
-      permission: membership.permission,
-      creator: actor,
-    });
-
-    await this._notifyMember(actor, repositories, member, item);
-    await this.hooks.runPostHooks('create', actor, repositories, result);
-
-    return result;
-  }
-
   async get(actor: Actor, repositories: Repositories, id: string) {
     const { itemMembershipRepository } = repositories;
 
@@ -155,6 +122,8 @@ export class ItemMembershipService {
     });
 
     await this.hooks.runPostHooks('create', actor, repositories, result);
+
+    await this._notifyMember(actor, repositories, member, item);
 
     return result;
   }

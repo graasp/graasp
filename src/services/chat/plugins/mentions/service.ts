@@ -28,7 +28,7 @@ export class MentionService {
     member: Member;
     creator: Member;
   }) {
-    const itemLink = buildItemLink(item);
+    const itemLink = buildItemLink(item, { chatOpen: true });
     const lang = member?.extra?.lang as string;
 
     const translated = this.mailer.translate(lang);
