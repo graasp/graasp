@@ -6,7 +6,7 @@ import { ItemType } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
-import { Item, isEmbeddedLinkItem } from '../../entities/Item';
+import { Item } from '../../entities/Item';
 import { createSchema } from './schemas';
 
 interface GraaspEmbeddedLinkItemOptions {

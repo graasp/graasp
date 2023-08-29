@@ -1,4 +1,5 @@
 import {
+  ItemType,
   MAX_DESCENDANTS_FOR_COPY,
   MAX_DESCENDANTS_FOR_DELETE,
   MAX_DESCENDANTS_FOR_MOVE,
@@ -22,7 +23,7 @@ import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { Item, isFolderItem } from './entities/Item';
+import { Item, isItemType } from './entities/Item';
 
 export class ItemService {
   hooks = new HookManager<{
@@ -74,7 +75,7 @@ export class ItemService {
       await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
       inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
 
-      if (!isFolderItem(parentItem)) {
+      if (!isItemType(parentItem, ItemType.FOLDER)) {
         throw new Error('ITEM NOT FOLDER'); // TODO
       }
 

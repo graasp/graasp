@@ -15,16 +15,7 @@ import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
-import {
-  Item,
-  isAppItem,
-  isDocumentItem,
-  isEmbeddedLinkItem,
-  isFolderItem,
-  isH5PItem,
-  isLocalFileItem,
-  isS3FileItem,
-} from '../../entities/Item';
+import { Item, isItemType } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';
 import { H5PService } from '../html/h5p/service';
@@ -218,10 +209,10 @@ export class ImportExportService {
       );
     }
 
-    if (isLocalFileItem(item) || isS3FileItem(item)) {
+    if (isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE)) {
       // TODO: refactor
-      const s3Extra = isS3FileItem(item) ? item.extra.s3File : undefined;
-      const localFileExtra = isLocalFileItem(item) ? item.extra.file : undefined;
+      const s3Extra = isItemType(item, ItemType.S3_FILE) ? item.extra.s3File : undefined;
+      const localFileExtra = isItemType(item, ItemType.LOCAL_FILE) ? item.extra.file : undefined;
       const { mimetype } = { ...s3Extra, ...localFileExtra };
       const url = (await this.fileItemService.download(actor, repositories, {
         fileStorage,
@@ -240,7 +231,7 @@ export class ImportExportService {
       const res = await fetch(url);
       archive.addReadStream(res.body, path.join(archiveRootPath, filename));
     }
-    if (isH5PItem(item)) {
+    if (isItemType(item, ItemType.H5P)) {
       const fileStream = (await this.h5pService.download(
         item,
         actor,
@@ -249,25 +240,26 @@ export class ImportExportService {
 
       archive.addReadStream(fileStream, path.join(archiveRootPath, item.name));
     }
-    if (isDocumentItem(item)) {
+
+    if (isItemType(item, ItemType.DOCUMENT)) {
       archive.addBuffer(
         Buffer.from(item.extra.document?.content, 'utf-8'),
         path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
       );
     }
-    if (isEmbeddedLinkItem(item)) {
+    if (isItemType(item, ItemType.LINK)) {
       archive.addBuffer(
         Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
         path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
       );
     }
-    if (isAppItem(item)) {
+    if (isItemType(item, ItemType.APP)) {
       archive.addBuffer(
         Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
         path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
       );
     }
-    if (isFolderItem(item)) {
+    if (isItemType(item, ItemType.FOLDER)) {
       // append description
       const folderPath = path.join(archiveRootPath, item.name);
       const children = await repositories.itemRepository.getChildren(item);

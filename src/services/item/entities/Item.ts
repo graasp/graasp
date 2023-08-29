@@ -135,19 +135,10 @@ export type ShortcutItem = Item<typeof ItemType.SHORTCUT>;
 //            // now item.extra is of the mapped type, i.e: FooItemExtra
 //            // do some smarter things without needing to cast the extra
 //          }
-export const isAppItem = (item: Item<ItemTypeKeys>): item is AppItem => item.type === ItemType.APP;
-export const isDocumentItem = (item: Item<ItemTypeKeys>): item is DocumentItem =>
-  item.type === ItemType.DOCUMENT;
-export const isEtherpadItem = (item: Item<ItemTypeKeys>): item is EtherpadItem =>
-  item.type === ItemType.ETHERPAD;
-export const isFolderItem = (item: Item<ItemTypeKeys>): item is FolderItem =>
-  item.type === ItemType.FOLDER;
-export const isH5PItem = (item: Item<ItemTypeKeys>): item is H5PItem => item.type === ItemType.H5P;
-export const isEmbeddedLinkItem = (item: Item<ItemTypeKeys>): item is EmbeddedLinkItem =>
-  item.type === ItemType.LINK;
-export const isLocalFileItem = (item: Item<ItemTypeKeys>): item is LocalFileItem =>
-  item.type === ItemType.LOCAL_FILE;
-export const isS3FileItem = (item: Item<ItemTypeKeys>): item is S3FileItem =>
-  item.type === ItemType.S3_FILE;
-export const isShortcutItem = (item: Item<ItemTypeKeys>): item is ShortcutItem =>
-  item.type === ItemType.SHORTCUT;
+
+export const isItemType = <T extends ItemTypeKeys>(
+  item: Item<ItemTypeKeys>,
+  type: T,
+): item is Item<T> => {
+  return item.type === type;
+};

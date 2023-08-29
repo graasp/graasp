@@ -16,7 +16,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
-import { Item, isLocalFileItem, isS3FileItem } from '../../entities/Item';
+import { Item, isItemType } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
@@ -162,7 +162,7 @@ export class ItemValidationService {
           break;
 
         case ItemValidationProcess.ImageChecking:
-          if (isS3FileItem(item) || isLocalFileItem(item)) {
+          if (isItemType(item, ItemType.S3_FILE) || isItemType(item, ItemType.LOCAL_FILE)) {
             const { path: filepath, mimetype } =
               item.type === ItemType.S3_FILE ? item.extra.s3File : item.extra.file;
 

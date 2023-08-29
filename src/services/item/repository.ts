@@ -23,7 +23,7 @@ import {
 } from '../../utils/errors';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { Item, ItemExtraUnion, isFolderItem } from './entities/Item';
+import { Item, ItemExtraUnion, isItemType } from './entities/Item';
 import {
   _fixChildrenOrder,
   dashToUnderscore,
@@ -138,7 +138,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   async getChildren(parent: Item, ordered?: boolean): Promise<Item[]> {
-    if (!isFolderItem(parent)) {
+    if (!isItemType(parent, ItemType.FOLDER)) {
       throw new ItemNotFolder(parent);
     }
 

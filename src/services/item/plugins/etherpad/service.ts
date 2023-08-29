@@ -9,7 +9,7 @@ import { MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
-import { Item, isEtherpadItem } from '../../entities/Item';
+import { Item, isItemType } from '../../entities/Item';
 import ItemService from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
@@ -146,7 +146,7 @@ export class EtherpadItemService {
 
     const checkedMode = await this.checkMode(mode, member, item);
 
-    if (!isEtherpadItem(item) || !item.extra?.etherpad) {
+    if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
       throw new ItemMissingExtraError(item);
     }
     const { padID, groupID } = item.extra.etherpad;
@@ -277,7 +277,7 @@ export class EtherpadItemService {
    * Deletes an Etherpad associated to an item
    */
   public async deleteEtherpadForItem(member: Member, item: Item) {
-    if (!isEtherpadItem(item)) {
+    if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
     }
 
@@ -296,7 +296,7 @@ export class EtherpadItemService {
    * Copies an Etherpad for an associated copied mutable item
    */
   public async copyEtherpadInMutableItem(member: Member, item: Item) {
-    if (!isEtherpadItem(item)) {
+    if (!isItemType(item, ItemType.ETHERPAD)) {
       return;
     }
 

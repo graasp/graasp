@@ -5,7 +5,7 @@ import { AuthTokenSubject, ItemType, PermissionLevel, UUID, UnionOfConst } from 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
-import { Item, isAppItem } from '../../entities/Item';
+import { Item, isItemType } from '../../entities/Item';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
 export class AppService {
@@ -65,7 +65,7 @@ export class AppService {
     const { itemRepository, memberRepository } = repositories;
 
     const item = await itemRepository.get(itemId);
-    if (!isAppItem(item)) {
+    if (!isItemType(item, ItemType.APP)) {
       throw new Error('Item is not an app');
     }
     const member = actorId ? await memberRepository.get(actorId) : undefined;
