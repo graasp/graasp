@@ -618,7 +618,7 @@ describe('Item Published', () => {
         ({ app } = await build({ member: null }));
 
         // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy
-        const fakePayload = { meilisearchPayload: 'examplePayload' };
+        const fakePayload = { queries: [] } as MultiSearchParams;
         const fakeResponse = { results: [] };
         const searchSpy = jest
           .spyOn(MeiliSearchWrapper.prototype, 'search')
@@ -645,7 +645,7 @@ describe('Item Published', () => {
         ({ app } = await build());
 
         // Meilisearch is mocked so format of API doesn't matter, we just want it to proxy
-        const fakePayload = { meilisearchPayload: 'examplePayload' };
+        const fakePayload = { queries: [] } as MultiSearchParams;
         const fakeResponse = { results: [] };
         const searchSpy = jest
           .spyOn(MeiliSearchWrapper.prototype, 'search')
@@ -676,7 +676,7 @@ describe('Item Published', () => {
           queries: [
             {
               q: 'random query',
-              filter: '(random filter) and isHidden = false',
+              filter: '(random filter) AND isHidden = false',
               indexUid: 'index',
             },
           ],
@@ -766,7 +766,7 @@ describe('Item Published', () => {
         expect(indexSpy.mock.calls[0][0]).toMatchObject(payload);
 
         // Testing move usecase
-        const moveDone = (id, dest) => async () => {
+        const moveDone = (id: string, dest: Item) => async () => {
           const result = await ItemRepository.findOneBy({ id: id });
           if (!result) {
             throw new Error('item does not exist!');
@@ -804,9 +804,8 @@ describe('Item Published', () => {
         //wait for expect moved
         await waitForExpect(moveDone(item.id, publishedFolder), 300);
         expect(indexSpy).toHaveBeenCalledTimes(3);
-        // Topmost published at destination is reindexed
-        expect(indexSpy.mock.calls[2][0].id).toEqual(publishedFolder.id);
-        expect(indexSpy.mock.calls[2][0].path).toEqual(publishedFolder.path);
+        // Closest published at destination is reindexed
+        expect(indexSpy.mock.calls[2][0].id).toEqual(item.id);
 
         // Move unpublished into published folder should be indexed
         const { item: unpublishedItem } = await saveItemAndMembership({

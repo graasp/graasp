@@ -13,7 +13,10 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     const entry = await this.createQueryBuilder('pi')
       .innerJoinAndSelect('pi.item', 'item', 'pi.item @> :itemPath', { itemPath: item.path })
       .innerJoinAndSelect('pi.creator', 'member')
+      // Order isn't guaranteed so we must force it to avoid flaky results
+      .orderBy('nlevel(pi.item_path)', 'DESC')
       .getOne();
+
     if (!entry) {
       throw new ItemPublishedNotFound(item.id);
     }

@@ -100,8 +100,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/children',
     { schema: getChildren, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { id }, query: { ordered }, log }) => {
-      const tmp = await itemService.getChildren(member, buildRepositories(), id, ordered);
-      return tmp;
+      return itemService.getChildren(member, buildRepositories(), id, ordered);
     },
   );
 

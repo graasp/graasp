@@ -17,7 +17,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post(
     '/collections/search',
-    // { schema: search, preHandler: fastify.fetchMemberInSession }, // tmp ignore schema
     { preHandler: fastify.fetchMemberInSession },
     async ({ params, member, body }) => {
       return searchService.search(member, buildRepositories(), body as MultiSearchParams);

@@ -98,7 +98,7 @@ export class MeiliSearchWrapper {
     }
   }
 
-  // Lazily create or get the index at first request
+  // Lazily create or get the index at first request and cache it in the dictionary
   private async getIndex(name: ALLOWED_INDICES = ACTIVE_INDEX): Promise<Index<IndexItem>> {
     if (this.indexDictionary[name]) {
       return this.indexDictionary[name];
@@ -158,6 +158,7 @@ export class MeiliSearchWrapper {
     };
   }
 
+  // Retrieve searchable part inside an item
   private async getContent(item: Item) {
     switch (item.type) {
       case ItemType.DOCUMENT:
@@ -195,6 +196,7 @@ export class MeiliSearchWrapper {
     targetIndex: ALLOWED_INDICES = ACTIVE_INDEX,
   ): Promise<EnqueuedTask> {
     try {
+      // Get all descendants from the input items
       const itemsToIndex: Item[] = [];
       for (const item of items) {
         itemsToIndex.push(item);
@@ -202,6 +204,8 @@ export class MeiliSearchWrapper {
           itemsToIndex.push(...(await repositories.itemRepository.getDescendants(item)));
         }
       }
+
+      // Parse all the item into indexable items (containing published state, tag, content...)
 
       const isHidden = await repositories.itemTagRepository.hasForMany(
         itemsToIndex,
@@ -226,6 +230,8 @@ export class MeiliSearchWrapper {
           );
         }),
       );
+
+      // Index the resulting documents
 
       const index = await this.getIndex(targetIndex);
       const indexingTask = await index.addDocuments(documents);
