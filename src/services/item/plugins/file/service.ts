@@ -1,31 +1,22 @@
 import path from 'path';
 import { PassThrough, Readable } from 'stream';
 
-import { MultipartFields, MultipartFile } from '@fastify/multipart';
+import { MultipartFields } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
-import {
-  FileItemProperties,
-  ItemType,
-  LocalFileItemExtra,
-  MimeTypes,
-  PermissionLevel,
-  S3FileItemExtra,
-} from '@graasp/sdk';
+import { FileItemProperties, ItemType, MimeTypes, PermissionLevel } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
-import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { StorageExceeded } from './utils/errors';
 
-const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
+const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 500;
 
 type Options = {
   maxMemberStorage: number;
