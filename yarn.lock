@@ -2336,9 +2336,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#260-add-maximum-item-name-length-constant":
-  version: 1.3.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=05bec5e217cd2aa09c2180d9b75b059241af3740"
+"@graasp/sdk@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@graasp/sdk@npm:1.4.0"
   dependencies:
     "@aws-sdk/client-s3": 3.370.0
     "@fastify/secure-session": 6.1.0
@@ -2351,7 +2351,7 @@ __metadata:
     typeorm: 0.3.17
     uuid: 9.0.0
     validator: 13.11.0
-  checksum: a23e97f995746e1dcb2dfc176caaf0719c32e28d0765add4232c320fb52c932ed0968ab8be2281ecc90dc57e2837bf07ff432f83a6cd875325dc0b38a26a7df8
+  checksum: 224ed990ed7b68fe4b463d2d1e24fc503c5f5434703cb818a54d22ee9aa8e9997c3a02768ceec082bea604853aa4804ac4d454c746e38089e3e327e0ffcd4c27
   languageName: node
   linkType: hard
 
@@ -7132,7 +7132,7 @@ __metadata:
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
-    "@graasp/sdk": "github:graasp/graasp-sdk#260-add-maximum-item-name-length-constant"
+    "@graasp/sdk": 1.4.0
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.64.0
     "@sentry/tracing": 7.64.0
