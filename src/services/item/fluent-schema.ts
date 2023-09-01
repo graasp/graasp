@@ -3,6 +3,7 @@ import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
   ItemType,
+  MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST,
 } from '@graasp/sdk';
@@ -53,7 +54,7 @@ export const item = S.object()
 // type 'base' (empty extra {})
 export const baseItemCreate = S.object()
   .additionalProperties(false)
-  .prop('name', S.string().minLength(1).pattern('^\\S[ \\S]*$'))
+  .prop('name', S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'))
   .prop('description', S.string())
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
