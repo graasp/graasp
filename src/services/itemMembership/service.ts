@@ -47,43 +47,15 @@ export class ItemMembershipService {
         ${this.mailer.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
       `;
 
-    const title = t(MAIL.SHARE_ITEM_TITLE, { itemName: item.name });
-    await this.mailer.sendEmail(title, member.email, link, html).catch((err) => {
-      console.error(err, `mailer failed. shared link: ${link}`);
-    });
-  }
-
-  async create(
-    actor: Actor,
-    repositories: Repositories,
-    membership: { permission: PermissionLevel; itemId: string; memberId: string },
-  ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-    const { memberRepository, itemMembershipRepository } = repositories;
-
-    const item = await this.itemService.get(
-      actor,
-      repositories,
-      membership.itemId,
-      PermissionLevel.Admin,
-    );
-    const member = await memberRepository.findOneByOrFail({ id: membership.memberId });
-
-    await this.hooks.runPreHooks('create', actor, repositories, { item, member });
-
-    const result = await itemMembershipRepository.post({
-      item,
-      member,
-      permission: membership.permission,
-      creator: actor,
-    });
-
-    await this._notifyMember(actor, repositories, member, item);
-    await this.hooks.runPostHooks('create', actor, repositories, result);
-
-    return result;
+    const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: actor.name, itemName: item.name });
+    await this.mailer
+      .sendEmail(title, member.email, link, html)
+      .then(() => {
+        console.debug('send email on membership creation');
+      })
+      .catch((err) => {
+        console.error(err, `mailer failed. shared link: ${link}`);
+      });
   }
 
   async get(actor: Actor, repositories: Repositories, id: string) {
@@ -127,6 +99,33 @@ export class ItemMembershipService {
     return { data: result.data, errors: [...items.errors, ...result.errors] };
   }
 
+  async _post(
+    actor: Member,
+    repositories: Repositories,
+    item: Item,
+    memberId: Member['id'],
+    permission: PermissionLevel,
+    // membership: { permission: PermissionLevel; itemId: UUID; memberId: UUID },
+  ) {
+    const { memberRepository, itemMembershipRepository } = repositories;
+    const member = await memberRepository.get(memberId);
+
+    await this.hooks.runPreHooks('create', actor, repositories, { item, member });
+
+    const result = await itemMembershipRepository.post({
+      item,
+      member,
+      creator: actor,
+      permission,
+    });
+
+    await this.hooks.runPostHooks('create', actor, repositories, result);
+
+    await this._notifyMember(actor, repositories, member, item);
+
+    return result;
+  }
+
   async post(
     actor: Actor,
     repositories: Repositories,
@@ -135,9 +134,7 @@ export class ItemMembershipService {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const { memberRepository, itemMembershipRepository } = repositories;
     // check memberships
-    const member = await memberRepository.get(membership.memberId);
     const item = await this.itemService.get(
       actor,
       repositories,
@@ -145,18 +142,7 @@ export class ItemMembershipService {
       PermissionLevel.Admin,
     );
 
-    await this.hooks.runPreHooks('create', actor, repositories, { item, member });
-
-    const result = await itemMembershipRepository.post({
-      item,
-      member,
-      creator: actor,
-      permission: membership.permission,
-    });
-
-    await this.hooks.runPostHooks('create', actor, repositories, result);
-
-    return result;
+    return this._post(actor, repositories, item, membership.memberId, membership.permission);
   }
 
   async postMany(
@@ -168,26 +154,12 @@ export class ItemMembershipService {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const { memberRepository, itemMembershipRepository } = repositories;
     // check memberships
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     return Promise.all(
       memberships.map(async ({ memberId, permission }) => {
-        const member = await memberRepository.get(memberId);
-
-        await this.hooks.runPreHooks('create', actor, repositories, { item, member });
-
-        const result = await itemMembershipRepository.post({
-          item,
-          member,
-          creator: actor,
-          permission,
-        });
-
-        await this.hooks.runPostHooks('create', actor, repositories, result);
-
-        return result;
+        return this._post(actor, repositories, item, memberId, permission);
       }),
     );
   }

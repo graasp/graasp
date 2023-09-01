@@ -262,6 +262,8 @@ describe('Membership routes tests', () => {
         ({ app, actor } = await build());
       });
       it('Create new membership successfully', async () => {
+        const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
+
         const { item } = await saveItemAndMembership({ member: actor });
         const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
 
@@ -283,6 +285,8 @@ describe('Membership routes tests', () => {
         const savedMembership = await ItemMembershipRepository.get(m.id);
         expectMembership(savedMembership, correctMembership, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
+
+        expect(notificationMock).toHaveBeenCalled();
       });
 
       it('Delete successfully memberships lower in the tree ', async () => {
@@ -450,6 +454,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Create new memberships successfully', async () => {
+        const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
         const { item } = await saveItemAndMembership({ member: actor });
         const member1 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         const member2 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
@@ -485,6 +490,7 @@ describe('Membership routes tests', () => {
           };
           expectMembership(im, correctMembership);
         });
+        expect(notificationMock).toHaveBeenCalledTimes(newMemberships.length);
       });
 
       it('Bad Request for invalid id', async () => {
