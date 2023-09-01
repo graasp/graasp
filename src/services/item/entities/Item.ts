@@ -22,6 +22,7 @@ import {
   ItemSettings,
   ItemType,
   LocalFileItemExtra,
+  MAX_ITEM_NAME_LENGTH,
   S3FileItemExtra,
   ShortcutItemExtra,
 } from '@graasp/sdk';
@@ -49,7 +50,7 @@ export class Item extends BaseEntity implements GraaspItem {
   id: string = v4();
 
   @Column({
-    length: 500,
+    length: MAX_ITEM_NAME_LENGTH,
     nullable: false,
   })
   name: string;

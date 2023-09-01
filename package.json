@@ -66,7 +66,7 @@
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
-    "@graasp/sdk": "1.2.0",
+    "@graasp/sdk": "1.4.0",
     "@graasp/translations": "1.15.0",
     "@sentry/node": "7.64.0",
     "@sentry/tracing": "7.64.0",

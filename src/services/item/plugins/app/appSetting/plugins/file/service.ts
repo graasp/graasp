@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { FileItemProperties, UUID } from '@graasp/sdk';
+import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
 import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
@@ -13,8 +13,6 @@ import ItemService from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
 import { AppSettingService } from '../../service';
-
-const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
 
 class AppSettingFileService {
   appSettingService: AppSettingService;
@@ -68,7 +66,7 @@ class AppSettingFileService {
           (fields[key] as unknown as { value: string })?.value,
         ]),
       );
-      name = fileBody?.name?.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT) ?? 'file';
+      name = fileBody?.name?.substring(0, MAX_ITEM_NAME_LENGTH) ?? 'file';
     }
     // TODO: REMOVE???
     // remove undefined values
