@@ -1,4 +1,5 @@
 import { In } from 'typeorm';
+import { Query } from 'typeorm/driver/Query';
 import { v4 } from 'uuid';
 
 import {
@@ -154,12 +155,25 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return children;
   },
 
-  async getDescendants(item: Item): Promise<Item[]> {
+  /**
+   * Return tree below item
+   * @param {Item} item item to get descendant tree from
+   * @param {boolean} [options.ordered=false] whether the descendants should be ordered by path, guarantees to iterate on parent before children
+   * @returns {Item[]}
+   */
+  async getDescendants(item: Item, options?: { ordered: boolean }): Promise<Item[]> {
     // TODO: LEVEL depth
-    return this.createQueryBuilder('item')
+    const { ordered = false } = options ?? {};
+
+    const query = this.createQueryBuilder('item')
       .where('item.path <@ :path', { path: item.path })
-      .andWhere('id != :id', { id: item.id })
-      .getMany();
+      .andWhere('id != :id', { id: item.id });
+
+    if (ordered) {
+      query.orderBy('item.path', 'ASC');
+    }
+
+    return query.getMany();
   },
 
   async getManyDescendants(items: Item[]): Promise<Item[]> {
@@ -313,12 +327,10 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     creator: Member,
     parentItem?: Item,
   ): Promise<{ copyRoot: Item; treeCopyMap: Map<string, { original: Item; copy: Item }> }> {
-    const descendants = await this.getDescendants(item);
+    const descendants = await this.getDescendants(item, { ordered: true });
 
     // copy (memberships from origin are not copied/kept)
-    // get the whole tree
-    const treeItems = [item].concat(descendants);
-    const treeItemsCopy = this._copy(treeItems, creator, parentItem);
+    const treeItemsCopy = this._copy(item, descendants, creator, parentItem);
 
     _fixChildrenOrder(treeItemsCopy);
     // return copy item + all descendants
@@ -340,59 +352,61 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   /**
    * Copy whole tree with new paths and same member as creator
+   * @param originalParent original item to be copied
+   * @param descendants all descendants from  originalParent. This array is supposed to be sorted beforehand!
    * @param tree Item and all descendants to copy
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
-  _copy(tree: Item[], creator: Member, parentItem?: Item) {
+  _copy(originalParent: Item, descendants: Item[], creator: Member, parentItem?: Item) {
     const old2New = new Map<string, { copy: Item; original: Item }>();
 
-    for (let i = 0; i < tree.length; i++) {
-      const original = tree[i];
-      const { name, description, type, path, extra, settings, createdAt } = original;
+    // copy target parent
+    const { name, description, type, extra, settings } = originalParent;
+    const copiedItem = this.createOne({
+      name,
+      description,
+      type,
+      extra,
+      settings,
+      creator,
+      parent: parentItem,
+    });
+    old2New.set(originalParent.id, { copy: copiedItem, original: originalParent });
+
+    for (let i = 0; i < descendants.length; i++) {
+      const original = descendants[i];
+      const { id, name, description, type, path, extra, settings } = original;
+
+      // process to get copy of direct parent
       const pathSplit = path.split('.');
       const oldPath = pathSplit.pop();
       // this shouldn't happen
       if (!oldPath) {
         throw new Error('Path is not defined');
       }
-      const oldId_ = pathToId(oldPath);
-      let copiedItem: Item;
-
-      if (i === 0) {
-        copiedItem = this.createOne({
-          name,
-          description,
-          type,
-          extra,
-          settings,
-          creator,
-          parent: parentItem,
-        });
-      } else {
-        const oldParentPath = pathSplit.pop();
-        // this shouldn't happen
-        if (!oldParentPath) {
-          throw new Error('Path is not defined');
-        }
-        const oldParentId_ = pathToId(oldParentPath);
-        const oldParentObject = old2New.get(oldParentId_);
-        // this shouldn't happen
-        if (!oldParentObject) {
-          throw new Error('Old parent is not defined');
-        }
-
-        copiedItem = this.createOne({
-          name,
-          description,
-          type,
-          extra,
-          settings,
-          creator,
-          parent: oldParentObject.copy,
-        });
+      const oldParentPath = pathSplit.pop();
+      // this shouldn't happen
+      if (!oldParentPath) {
+        throw new Error('Path is not defined');
+      }
+      const oldParentId_ = pathToId(oldParentPath);
+      const oldParentObject = old2New.get(oldParentId_);
+      // this shouldn't happen
+      if (!oldParentObject) {
+        throw new Error('Old parent is not defined');
       }
 
-      old2New.set(oldId_, { copy: copiedItem, original });
+      const copiedItem = this.createOne({
+        name,
+        description,
+        type,
+        extra,
+        settings,
+        creator,
+        parent: oldParentObject.copy,
+      });
+
+      old2New.set(id, { copy: copiedItem, original });
     }
 
     return old2New;
