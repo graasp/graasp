@@ -454,6 +454,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Create new memberships successfully', async () => {
+        const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
         const { item } = await saveItemAndMembership({ member: actor });
         const member1 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         const member2 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
@@ -489,6 +490,7 @@ describe('Membership routes tests', () => {
           };
           expectMembership(im, correctMembership);
         });
+        expect(notificationMock).toHaveBeenCalledTimes(newMemberships.length);
       });
 
       it('Bad Request for invalid id', async () => {
