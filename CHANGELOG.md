@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/graasp/graasp/compare/v1.5.0...v1.6.0) (2023-08-25)
+
+
+### Features
+
+* add italian and arabic categories, refactor categories name ([#570](https://github.com/graasp/graasp/issues/570)) ([da44eec](https://github.com/graasp/graasp/commit/da44eeccb4d9cc216e2c6b37ca6a6bff697f5a70))
+* add post action endpoint ([#541](https://github.com/graasp/graasp/issues/541)) ([7b62f98](https://github.com/graasp/graasp/commit/7b62f9893c8706cf850098450d3fbf9fd971d6ea))
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-js-v3 monorepo to v3.395.0 ([#421](https://github.com/graasp/graasp/issues/421)) ([6258099](https://github.com/graasp/graasp/commit/6258099382065c14e78de153ffc93effb0549ae1))
+* export a zip use stream ([#568](https://github.com/graasp/graasp/issues/568)) ([cc71cea](https://github.com/graasp/graasp/commit/cc71cea4ffa5796f5e03694797657e1fdfe23ac4))
+* use mailer in itemMembership service, fix notification ([#565](https://github.com/graasp/graasp/issues/565)) ([3df4f90](https://github.com/graasp/graasp/commit/3df4f903e477f0663f8b73d22ae28fd15d3347e0))
+
+
+### Tests
+
+* fix Patch app data file test ([#566](https://github.com/graasp/graasp/issues/566)) ([1653ab2](https://github.com/graasp/graasp/commit/1653ab2393ed78c2318267d4c71e1506bdf2f8d3))
+
 ## [1.5.0](https://github.com/graasp/graasp/compare/v1.4.0...v1.5.0) (2023-08-22)
 
 
