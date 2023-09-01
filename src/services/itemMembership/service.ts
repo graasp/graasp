@@ -47,10 +47,15 @@ export class ItemMembershipService {
         ${this.mailer.buildButton(link, t(MAIL.SHARE_ITEM_BUTTON))}
       `;
 
-    const title = t(MAIL.SHARE_ITEM_TITLE, { itemName: item.name });
-    await this.mailer.sendEmail(title, member.email, link, html).catch((err) => {
-      console.error(err, `mailer failed. shared link: ${link}`);
-    });
+    const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: actor.name, itemName: item.name });
+    await this.mailer
+      .sendEmail(title, member.email, link, html)
+      .then(() => {
+        console.debug('send email on membership creation');
+      })
+      .catch((err) => {
+        console.error(err, `mailer failed. shared link: ${link}`);
+      });
   }
 
   async get(actor: Actor, repositories: Repositories, id: string) {
