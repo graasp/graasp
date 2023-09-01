@@ -4,7 +4,13 @@ import { PassThrough, Readable } from 'stream';
 import { MultipartFields } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
-import { FileItemProperties, ItemType, MimeTypes, PermissionLevel } from '@graasp/sdk';
+import {
+  FileItemProperties,
+  ItemType,
+  MAX_ITEM_NAME_LENGTH,
+  MimeTypes,
+  PermissionLevel,
+} from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -12,7 +18,6 @@ import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
-import { MAX_ITEM_NAME_LENGTH } from '../../constants';
 import ItemService from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { StorageExceeded } from './utils/errors';

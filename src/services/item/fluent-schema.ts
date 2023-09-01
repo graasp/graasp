@@ -3,12 +3,12 @@ import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
   ItemType,
+  MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST,
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
-import { MAX_ITEM_NAME_LENGTH } from './constants';
 
 /**
  * for serialization

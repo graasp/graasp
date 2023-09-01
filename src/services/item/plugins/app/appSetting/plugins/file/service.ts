@@ -3,13 +3,12 @@ import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
 
-import { FileItemProperties, UUID } from '@graasp/sdk';
+import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
 import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Member } from '../../../../../../member/entities/member';
-import { MAX_ITEM_NAME_LENGTH } from '../../../../../constants';
 import ItemService from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';

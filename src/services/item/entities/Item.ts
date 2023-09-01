@@ -22,12 +22,12 @@ import {
   ItemSettings,
   ItemType,
   LocalFileItemExtra,
+  MAX_ITEM_NAME_LENGTH,
   S3FileItemExtra,
   ShortcutItemExtra,
 } from '@graasp/sdk';
 
 import { Member } from '../../member/entities/member';
-import { MAX_ITEM_NAME_LENGTH } from '../constants';
 import { DocumentExtra } from '../plugins/document';
 
 export type ItemExtra =
