@@ -8,6 +8,7 @@ import {
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
+import { MAX_ITEM_NAME_LENGTH } from './constants';
 
 /**
  * for serialization
@@ -53,7 +54,7 @@ export const item = S.object()
 // type 'base' (empty extra {})
 export const baseItemCreate = S.object()
   .additionalProperties(false)
-  .prop('name', S.string().minLength(1).pattern('^\\S[ \\S]*$'))
+  .prop('name', S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'))
   .prop('description', S.string())
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))

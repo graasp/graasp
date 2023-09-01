@@ -9,12 +9,11 @@ import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/err
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Member } from '../../../../../../member/entities/member';
+import { MAX_ITEM_NAME_LENGTH } from '../../../../../constants';
 import ItemService from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
 import { AppSettingService } from '../../service';
-
-const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
 
 class AppSettingFileService {
   appSettingService: AppSettingService;
@@ -68,7 +67,7 @@ class AppSettingFileService {
           (fields[key] as unknown as { value: string })?.value,
         ]),
       );
-      name = fileBody?.name?.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT) ?? 'file';
+      name = fileBody?.name?.substring(0, MAX_ITEM_NAME_LENGTH) ?? 'file';
     }
     // TODO: REMOVE???
     // remove undefined values

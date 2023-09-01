@@ -12,11 +12,10 @@ import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
+import { MAX_ITEM_NAME_LENGTH } from '../../constants';
 import ItemService from '../../service';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { StorageExceeded } from './utils/errors';
-
-const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 500;
 
 type Options = {
   maxMemberStorage: number;
@@ -120,7 +119,7 @@ class FileItemService {
       }
 
       // create item from file properties
-      const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
+      const name = filename.substring(0, MAX_ITEM_NAME_LENGTH);
       const item = {
         name,
         description,

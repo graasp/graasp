@@ -27,6 +27,7 @@ import {
 } from '@graasp/sdk';
 
 import { Member } from '../../member/entities/member';
+import { MAX_ITEM_NAME_LENGTH } from '../constants';
 import { DocumentExtra } from '../plugins/document';
 
 export type ItemExtra =
@@ -49,7 +50,7 @@ export class Item extends BaseEntity implements GraaspItem {
   id: string = v4();
 
   @Column({
-    length: 500,
+    length: MAX_ITEM_NAME_LENGTH,
     nullable: false,
   })
   name: string;
