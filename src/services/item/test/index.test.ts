@@ -1930,6 +1930,66 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
+      it('Copy successfully root item from shared items to home', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item } = await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Admin,
+        });
+        const { item: youngParent } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'young parent' }),
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Admin,
+          parentItem: item,
+        });
+        // children, saved in weird order (children updated first so it appears first when fetching)
+        await saveItemAndMembership({
+          item: getDummyItem({ name: 'old child' }),
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Admin,
+          parentItem: youngParent,
+        });
+        await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Admin,
+          parentItem: item,
+        });
+
+        await app.inject({
+          method: HttpMethod.PATCH,
+          url: `/items/${youngParent.id}`,
+          payload: {
+            name: 'new name',
+          },
+        });
+
+        const initialCountMembership = await ItemMembershipRepository.count();
+        const initialCount = await ItemRepository.count();
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/copy?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
+          payload: {},
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const newCount = await ItemRepository.count();
+          expect(newCount).toEqual(initialCount * 2);
+
+          // check it created a new membership because user is writer of parent
+          const newCountMembership = await ItemMembershipRepository.count();
+          expect(newCountMembership).toEqual(initialCountMembership + 1);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+
       it('Copy successfully from item to root', async () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
