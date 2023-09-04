@@ -34,7 +34,10 @@ export class ItemPublishedService {
       .map(({ member }) => member);
 
     const link = buildPublishedItemLink(item);
-
+    if (!link) {
+      console.error('cannot send published email with undefined link');
+      return;
+    }
     for (const member of contributors) {
       const lang = member.lang;
       const t = this.mailer.translate(lang);
@@ -44,7 +47,6 @@ export class ItemPublishedService {
         ${this.mailer.buildText(text)}
         ${this.mailer.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
       `;
-
       const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
       await this.mailer.sendEmail(title, member.email, link, html).catch((err) => {
         this.log.warn(err, `mailer failed. published link: ${link}`);
