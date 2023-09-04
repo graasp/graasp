@@ -2336,9 +2336,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:1.6.0":
-  version: 1.6.0
-  resolution: "@graasp/sdk@npm:1.6.0"
+"@graasp/sdk@github:graasp/graasp-sdk#member-storage":
+  version: 1.5.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=38b0da738040696fb740808915de438d0fb7cac5"
   dependencies:
     "@aws-sdk/client-s3": 3.370.0
     "@fastify/secure-session": 6.1.0
@@ -2352,7 +2352,7 @@ __metadata:
     typeorm: 0.3.17
     uuid: 9.0.0
     validator: 13.11.0
-  checksum: 6e115053e1eb3596238fddbe7df9cd453ac042ebbc54051d2dde85a40d31988ce96853b2fdf7e957a18530c788689ab56c4aef08ff2eb5896699022aaf10afcd
+  checksum: b6abfaa4bca0951067dc5e4f092c96f70fb4e30e0d8836e1727b18f50d2a43f9ebc4833d39593e4a748ef9f670c7140308a866535aac3a558e398ff29a2724fe
   languageName: node
   linkType: hard
 
@@ -7216,7 +7216,7 @@ __metadata:
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
-    "@graasp/sdk": 1.6.0
+    "@graasp/sdk": "github:graasp/graasp-sdk#member-storage"
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.64.0
     "@sentry/tracing": 7.64.0

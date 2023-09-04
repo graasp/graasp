@@ -1,4 +1,4 @@
-import { FileItemType } from '@graasp/sdk';
+import { FileItemType, MemberStorage } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
@@ -17,7 +17,11 @@ export class StorageService {
     return DEFAULT_MAX_STORAGE;
   }
 
-  async getStorageLimits(actor: Member, type: FileItemType, { itemRepository }: Repositories) {
+  async getStorageLimits(
+    actor: Member,
+    type: FileItemType,
+    { itemRepository }: Repositories,
+  ): Promise<MemberStorage> {
     return {
       current: await itemRepository.getItemSumSize(actor?.id, type),
       maximum: await this.getMaximumStorageSize(actor),
