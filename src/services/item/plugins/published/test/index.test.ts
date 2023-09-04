@@ -448,7 +448,7 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expectPublishedEntry(res.json(), { item, creator: actor });
 
-        waitForExpect(() => {
+        await waitForExpect(() => {
           expect(sendEmailMock).toHaveBeenCalledTimes(2);
           expect(sendEmailMock).toHaveBeenCalledWith(
             expect.stringContaining(item.name),

@@ -34,10 +34,7 @@ export class ItemPublishedService {
       .map(({ member }) => member);
 
     const link = buildPublishedItemLink(item);
-    if (!link) {
-      console.error('cannot send published email with undefined link');
-      return;
-    }
+
     for (const member of contributors) {
       const lang = member.lang;
       const t = this.mailer.translate(lang);
