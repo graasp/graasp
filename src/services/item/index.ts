@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(graaspFavoritePlugin);
 
-      await fastify.register(fp(graaspItemPublish));
+      fastify.register(graaspItemPublish);
 
       fastify.register(thumbnailsPlugin);
 

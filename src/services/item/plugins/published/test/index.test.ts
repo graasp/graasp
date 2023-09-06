@@ -499,7 +499,7 @@ describe('Item Published', () => {
     });
   });
 
-  describe('POST /collections/:itemId/unpublish', () => {
+  describe('DELETE /collections/:itemId/unpublish', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
         ({ app } = await build({ member: null }));
@@ -507,7 +507,7 @@ describe('Item Published', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -534,7 +534,7 @@ describe('Item Published', () => {
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -553,7 +553,7 @@ describe('Item Published', () => {
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -571,7 +571,7 @@ describe('Item Published', () => {
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -588,7 +588,7 @@ describe('Item Published', () => {
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -596,7 +596,7 @@ describe('Item Published', () => {
 
       it('Throws if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/collections/invalid-id/unpublish`,
         });
         expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
@@ -604,7 +604,7 @@ describe('Item Published', () => {
 
       it('Throws if item is not found', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${v4()}/unpublish`,
         });
         expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));

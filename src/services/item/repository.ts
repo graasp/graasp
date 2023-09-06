@@ -178,6 +178,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   async getManyDescendants(items: Item[]): Promise<Item[]> {
     // TODO: LEVEL depth
+    if (items.length === 0) {
+      return [];
+    }
     const query = this.createQueryBuilder('item').where('id NOT IN(:...ids)', {
       ids: items.map(({ id }) => id),
     });

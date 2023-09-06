@@ -1,6 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { printFilledSQL } from '../../../../../utils/debug';
 import { Actor } from '../../../../member/entities/member';
 import { mapById } from '../../../../utils';
 import { Item } from '../../../entities/Item';
@@ -59,21 +60,6 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       skip: (page - 1) * pageSize,
     });
     return [items, total];
-  },
-
-  // return public item entry? contains when it was published
-  async getItemsForMember(memberId: string) {
-    // get for membership write and admin -> createquerybuilder
-    return this.createQueryBuilder()
-      .select(['item'])
-      .from(Item, 'item')
-      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
-      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-      .where('im.member_id = :memberId', { memberId })
-      .andWhere('im.permission IN (:...permissions)', {
-        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
-      })
-      .getMany();
   },
 
   async post(creator: Actor, item: Item) {

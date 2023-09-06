@@ -17,7 +17,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post(
     '/collections/search',
-    { preHandler: fastify.fetchMemberInSession },
+    { preHandler: fastify.attemptVerifyAuthentication },
     async ({ params, member, body }) => {
       return searchService.search(member, buildRepositories(), body as MultiSearchParams);
     },

@@ -20,7 +20,6 @@ const connection: ConnectionOptions = {
 };
 
 const CRON_3AM_SUNDAY = '0 3 * * 0';
-const CRON_EVERY_2MIN = '*/2 * * * *';
 
 // Currently a single worker will handle all of the scheduled job. If performance problem arises, consider having a queue/worker per job.
 export class JobService {

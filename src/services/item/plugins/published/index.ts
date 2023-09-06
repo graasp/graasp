@@ -20,7 +20,7 @@ import { ItemPublishedService } from './service';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, itemsPublished } = fastify;
 
-  await fastify.register(fp(graaspSearchPlugin));
+  fastify.register(graaspSearchPlugin);
 
   fastify.get<{ Querystring: { categoryId: string[] } }>(
     '/collections',
@@ -94,7 +94,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Params: { itemId: string } }>(
+  fastify.delete<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
       preHandler: fastify.verifyAuthentication,

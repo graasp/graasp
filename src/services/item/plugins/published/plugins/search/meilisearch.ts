@@ -98,33 +98,36 @@ export class MeiliSearchWrapper {
     }
   }
 
-  // Lazily create or get the index at first request and cache it in the dictionary
+  /* Lazily create or get the index at first request and cache it in the dictionary
+   * We need a Index object to do operations on meilisearch indices, but we get the index with an API call
+   * This method wraps getting an Index, and stores it in a local dictionary, so we don't need to call the API again
+   */
   private async getIndex(name: ALLOWED_INDICES = ACTIVE_INDEX): Promise<Index<IndexItem>> {
     if (this.indexDictionary[name]) {
       return this.indexDictionary[name];
-    } else {
-      try {
+    }
+
+    try {
+      const index = await this.meilisearchClient.getIndex(name);
+      this.indexDictionary[name] = index;
+      return index;
+    } catch (err) {
+      if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
+        const task = await this.meilisearchClient.createIndex(name);
+        await this.meilisearchClient.waitForTask(task.taskUid);
+
+        // If main index just got created, rebuild it in the background
+        if (name === ACTIVE_INDEX) {
+          this.logger.info('Search index just created, rebuilding index...');
+          this.rebuildIndex();
+        }
+
         const index = await this.meilisearchClient.getIndex(name);
         this.indexDictionary[name] = index;
         return index;
-      } catch (err) {
-        if (err instanceof MeiliSearchApiError && err.code === 'index_not_found') {
-          const task = await this.meilisearchClient.createIndex(name);
-          await this.meilisearchClient.waitForTask(task.taskUid);
-
-          // If main index just got created, fill it in the background
-          if (name === ACTIVE_INDEX) {
-            this.logger.info('Search index just created, rebuilding index...');
-            this.rebuildIndex();
-          }
-
-          const index = await this.meilisearchClient.getIndex(name);
-          this.indexDictionary[name] = index;
-          return index;
-        } else {
-          throw err;
-        }
       }
+
+      throw err;
     }
   }
 
@@ -197,13 +200,12 @@ export class MeiliSearchWrapper {
   ): Promise<EnqueuedTask> {
     try {
       // Get all descendants from the input items
-      const itemsToIndex: Item[] = [];
-      for (const item of items) {
-        itemsToIndex.push(item);
-        if (item.type === ItemType.FOLDER) {
-          itemsToIndex.push(...(await repositories.itemRepository.getDescendants(item)));
-        }
-      }
+      const itemsToIndex: Item[] = [...items];
+      itemsToIndex.push(
+        ...(await repositories.itemRepository.getManyDescendants(
+          items.filter((i) => i.type === ItemType.FOLDER),
+        )),
+      );
 
       // Parse all the item into indexable items (containing published state, tag, content...)
 

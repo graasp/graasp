@@ -99,6 +99,7 @@ describe('MeilisearchWrapper', () => {
   const meilisearch = new MeiliSearchWrapper(datasource, fakeClient, fileService, logger);
 
   const itemRepositoryMock = {
+    getManyDescendants: jest.fn(),
     getDescendants: jest.fn(),
     find: jest.fn(),
   } as unknown as jest.Mocked<typeof ItemRepository>;
@@ -149,7 +150,7 @@ describe('MeilisearchWrapper', () => {
       const item = getDummyItem();
 
       // Given
-      itemRepositoryMock.getDescendants.mockResolvedValue([]);
+      itemRepositoryMock.getManyDescendants.mockResolvedValue([]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
@@ -177,7 +178,7 @@ describe('MeilisearchWrapper', () => {
       const descendant = getDummyItem();
       const descendant2 = getDummyItem();
       // Given
-      itemRepositoryMock.getDescendants.mockResolvedValue([descendant, descendant2]);
+      itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
@@ -235,9 +236,13 @@ describe('MeilisearchWrapper', () => {
       } satisfies Record<string, Item[]>;
 
       // Given
-      jest
-        .spyOn(itemRepositoryMock, 'getDescendants')
-        .mockImplementation((i) => Promise.resolve(descendants[i.id]));
+      jest.spyOn(itemRepositoryMock, 'getManyDescendants').mockImplementation((items) => {
+        const result: Item[] = [];
+        for (const i of items) {
+          result.push(...descendants[i.id]);
+        }
+        return Promise.resolve(result);
+      });
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
@@ -303,7 +308,7 @@ describe('MeilisearchWrapper', () => {
         [descendant2.id]: mockItemPublished(descendant2.id),
       } satisfies Record<string, ItemPublished>;
 
-      itemRepositoryMock.getDescendants.mockResolvedValue([descendant, descendant2]);
+      itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockImplementation((i) =>
         Promise.resolve(categories[i.id]),
       );
@@ -367,7 +372,7 @@ describe('MeilisearchWrapper', () => {
       const descendant2 = getDummyItem({ type: ItemType.DOCUMENT, extra });
       // Given
 
-      itemRepositoryMock.getDescendants.mockResolvedValue([descendant, descendant2]);
+      itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
