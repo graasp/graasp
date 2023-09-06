@@ -22,11 +22,11 @@ import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
+import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { StorageExceeded } from './utils/errors';
-import { Item } from '../../entities/Item';
 
 type Options = {
   maxMemberStorage: number;

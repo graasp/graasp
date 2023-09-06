@@ -2337,12 +2337,13 @@ __metadata:
   linkType: hard
 
 "@graasp/sdk@https://github.com/graasp/graasp-sdk#351-search":
-  version: 1.2.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=d0ea83fd214795a1e57bf8d1aaa5291a0df38981"
+  version: 1.5.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=05ac71031b710fd183feae61c868c7ae9fa0ad9f"
   dependencies:
     "@aws-sdk/client-s3": 3.370.0
     "@fastify/secure-session": 6.1.0
     "@graasp/etherpad-api": 2.1.1
+    date-fns: 2.30.0
     fastify: 4.18.0
     fluent-json-schema: 4.1.0
     immutable: 4.3.2
@@ -2351,7 +2352,7 @@ __metadata:
     typeorm: 0.3.17
     uuid: 9.0.0
     validator: 13.11.0
-  checksum: 152f40e1ca7a6940cf8a36a022eefbcde9b24c276d7a6fd1500074be2e9e3d37fa1f3ab5091179ce7acd3a97bf7d69532919ca7b29f19fe09ea0687c0ffa2d9d
+  checksum: c9401b052ae98799bfa4462f5e54e370ab1d222f8d187be7d15a60032941a069769521e7e73d492cbbe6a5b4a5d9d24759399cf62faa3c20e9b1f6ffbe42e35f
   languageName: node
   linkType: hard
 
@@ -5837,7 +5838,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.29.1, date-fns@npm:^2.29.3, date-fns@npm:^2.30.0":
+"date-fns@npm:2.30.0, date-fns@npm:^2.29.1, date-fns@npm:^2.29.3, date-fns@npm:^2.30.0":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
   dependencies:
