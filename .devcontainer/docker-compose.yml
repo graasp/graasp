@@ -119,7 +119,7 @@ services:
     environment:
       - MEILI_MASTER_KEY=masterKey
       - MEILI_NO_ANALYTICS=true
-      # - MEILI_ENV=development
+      - MEILI_ENV=development
       - MEILI_LOG_LEVEL
     ports:
       - 7700:7700
