@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.1](https://github.com/graasp/graasp/compare/v1.6.0...v1.6.1) (2023-09-07)
+
+
+### Bug Fixes
+
+* align file name truncation with item name limit ([#590](https://github.com/graasp/graasp/issues/590)) ([aecdb90](https://github.com/graasp/graasp/commit/aecdb905427c1f918b968d3c3dcba45d537852cd))
+* fix library link in email ([#595](https://github.com/graasp/graasp/issues/595)) ([135393c](https://github.com/graasp/graasp/commit/135393ca4a044b831ee7a00d846f0664dae877c3))
+* remove im's create function, notify on post ([#584](https://github.com/graasp/graasp/issues/584)) ([db2f79b](https://github.com/graasp/graasp/commit/db2f79ba411dff9825bb3cfcd257341cdf509521))
+* sort tree for copy process ([#581](https://github.com/graasp/graasp/issues/581)) ([0f982fa](https://github.com/graasp/graasp/commit/0f982fa7f4a4e7d8997fe301fbf83bf8c40ca9a7))
+* use custom deep link protocol for mobile login password response ([#596](https://github.com/graasp/graasp/issues/596)) ([637abf4](https://github.com/graasp/graasp/commit/637abf4f1ed61a536d29d8cc9354e3951abe7f74))
+
 ## [1.6.0](https://github.com/graasp/graasp/compare/v1.5.0...v1.6.0) (2023-08-25)
 
 
