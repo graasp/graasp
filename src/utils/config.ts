@@ -44,6 +44,11 @@ export const TEST = ENVIRONMENT === Environment.test;
 
 const DEFAULT_HOST = 'http://localhost:3000';
 
+export const LIBRARY_HOST = {
+  name: Context.Library,
+  url: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST),
+};
+
 export const CLIENT_HOSTS = [
   {
     name: Context.Builder,
@@ -53,10 +58,7 @@ export const CLIENT_HOSTS = [
     name: Context.Player,
     url: new URL(process.env.PLAYER_CLIENT_HOST ?? DEFAULT_HOST),
   },
-  {
-    name: Context.Library,
-    url: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST),
-  },
+  LIBRARY_HOST,
 ];
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
