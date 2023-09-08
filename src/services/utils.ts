@@ -1,9 +1,8 @@
 import crypto from 'crypto';
-import { ObjectLiteral, QueryBuilder } from 'typeorm';
 
-import { Context, ResultOf, buildItemLinkForBuilder } from '@graasp/sdk';
+import { ResultOf, buildItemLinkForBuilder } from '@graasp/sdk';
 
-import { CLIENT_HOSTS } from '../utils/config';
+import { BUILDER_HOST } from '../utils/config';
 import { Item } from './item/entities/Item';
 
 export function mapById<T>({
@@ -40,14 +39,10 @@ export function resultOfToList<T>(resultOf: ResultOf<T>): T[] {
 // const randomHexOf4 = () => ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
 export const randomHexOf4 = () => crypto.randomBytes(2).toString('hex');
 
-const BASE_ITEM_LINK_HOST = CLIENT_HOSTS.find(({ name }) => name === Context.Builder)?.url.origin;
-if (!BASE_ITEM_LINK_HOST) {
-  throw new Error('host is not defined');
-}
-export const buildItemLink = (item: Item, options: { chatOpen?: boolean } = {}) => {
-  const { chatOpen = false } = options;
+export const buildItemLink = (item: Item, options: { chatOpen?: boolean; host?: URL } = {}) => {
+  const { chatOpen = false, host = BUILDER_HOST.url } = options;
   const itemLink = buildItemLinkForBuilder({
-    origin: BASE_ITEM_LINK_HOST,
+    origin: host.origin,
     itemId: item.id,
     chatOpen,
   });

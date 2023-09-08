@@ -24,14 +24,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(async function (fastify) {
     // register
     fastify.post<{
-      Body: { name: string; email: string; captcha: string };
-      Querystring: { lang?: string; url?: string };
+      Body: { name: string; email: string; captcha: string; url?: string };
+      Querystring: { lang?: string };
     }>('/register', { schema: register }, async (request, reply) => {
       const {
         body,
-        query: { lang = DEFAULT_LANG, url },
+        query: { lang = DEFAULT_LANG },
         log,
       } = request;
+      const { url } = body;
 
       // validate captcha
       await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUp);
@@ -66,13 +67,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     // login
     fastify.post<{
-      Body: { email: string; captcha: string };
-      Querystring: { lang?: string; url?: string };
+      Body: { email: string; captcha: string; url?: string };
+      Querystring: { lang?: string };
     }>('/login', { schema: login }, async (request, reply) => {
       const {
         body,
-        query: { lang, url },
+        query: { lang },
       } = request;
+      const { url } = body;
 
       // validate captcha
       await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignIn);

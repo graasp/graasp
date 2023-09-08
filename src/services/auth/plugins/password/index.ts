@@ -18,25 +18,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // login with password
   fastify.post<{
-    Body: { email: string; password: string; captcha: string };
-    Querystring: { url?: string };
+    Body: { email: string; password: string; captcha: string; url?: string };
   }>('/login-password', { schema: passwordLogin }, async (request, reply) => {
-    const {
-      body,
-      log,
-      query: { url },
-    } = request;
+    const { body, log } = request;
+    const { url } = body;
 
     // validate captcha
     await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword);
 
     const token = await memberPasswordService.login(undefined, buildRepositories(), body);
     const redirectionUrl = getRedirectionUrl(url);
-    // link for graasp web
-    const linkPath = '/auth';
-    // todo: selectively add the url param if it is present
-    // and maybe build the url using the URL constructor ?
-    const resource = new URL(`${linkPath}?t=${token}&url=${redirectionUrl}`, PUBLIC_URL).toString();
+
+    const target = new URL('/auth', PUBLIC_URL);
+    target.searchParams.set('t', token);
+    target.searchParams.set('url', redirectionUrl);
+    const resource = target.toString();
+
     reply.status(StatusCodes.SEE_OTHER);
     return { resource };
   });

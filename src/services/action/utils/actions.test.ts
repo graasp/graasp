@@ -1,9 +1,7 @@
 import { Context } from '@graasp/sdk';
 
-import { CLIENT_HOSTS } from '../../../utils/config';
+import { BUILDER_HOST } from '../../../utils/config';
 import { getGeolocationIp, getView } from './actions';
-
-const BUILDER_CLIENT_HOST = CLIENT_HOSTS[0];
 
 describe('Action Utils', () => {
   it('check geolocation and view properties', async () => {
@@ -16,10 +14,10 @@ describe('Action Utils', () => {
 
   it('should return a valid view', () => {
     const headers = {
-      origin: `https://${BUILDER_CLIENT_HOST.url.hostname}`,
+      origin: `https://${BUILDER_HOST.url.hostname}`,
     };
     const view = getView(headers);
-    expect(view).toEqual(BUILDER_CLIENT_HOST.name);
+    expect(view).toEqual(BUILDER_HOST.name);
   });
 
   it('should return an unknown view', () => {
