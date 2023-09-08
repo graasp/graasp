@@ -14,7 +14,6 @@ import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
-import { buildItemLink } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
 
 export class ItemMembershipService {
@@ -37,7 +36,7 @@ export class ItemMembershipService {
     member: Member,
     item: Item,
   ): Promise<void> {
-    const link = buildItemLink(item, { host: PLAYER_HOST.url });
+    const link = new URL(item.id, PLAYER_HOST.url).toString();
 
     const lang = member.lang;
     const t = this.mailer.translate(lang);

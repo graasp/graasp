@@ -102,9 +102,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
           // add member id to session
           session.set('member', memberId);
-          const redirectionUrl = getRedirectionUrl(url);
 
-          if (redirectionUrl) {
+          if (url) {
+            const redirectionUrl = getRedirectionUrl(decodeURIComponent(url));
             reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
           } else {
             reply.status(StatusCodes.NO_CONTENT);

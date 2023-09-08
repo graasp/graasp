@@ -31,7 +31,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     const target = new URL('/auth', PUBLIC_URL);
     target.searchParams.set('t', token);
-    target.searchParams.set('url', redirectionUrl);
+    target.searchParams.set('url', encodeURIComponent(redirectionUrl));
     const resource = target.toString();
 
     reply.status(StatusCodes.SEE_OTHER);
