@@ -103,12 +103,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           // add member id to session
           session.set('member', memberId);
 
-          if (url) {
-            const redirectionUrl = getRedirectionUrl(decodeURIComponent(url));
-            reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
-          } else {
-            reply.status(StatusCodes.NO_CONTENT);
-          }
+          const redirectionUrl = getRedirectionUrl(url ? decodeURIComponent(url) : undefined);
+          reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
         } catch (error) {
           session.delete();
           const target = new URL('/', AUTH_CLIENT_HOST);
