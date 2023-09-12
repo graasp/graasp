@@ -6,6 +6,10 @@ export const register = {
       name: { type: 'string', pattern: '^\\S+( \\S+)*$' },
       email: { type: 'string', format: 'email' },
       captcha: { type: 'string' },
+      url: {
+        type: 'string',
+        format: 'uri',
+      },
     },
     additionalProperties: false,
   },
@@ -13,9 +17,6 @@ export const register = {
     type: 'object',
     properties: {
       lang: { type: 'string' },
-      url: {
-        type: 'string',
-      },
     },
     additionalProperties: false,
   },
@@ -27,6 +28,10 @@ export const login = {
     properties: {
       email: { type: 'string', format: 'email' },
       captcha: { type: 'string' },
+      url: {
+        type: 'string',
+        format: 'uri',
+      },
     },
     additionalProperties: false,
   },
@@ -34,9 +39,6 @@ export const login = {
     type: 'object',
     properties: {
       lang: { type: 'string' },
-      url: {
-        type: 'string',
-      },
     },
     additionalProperties: false,
   },

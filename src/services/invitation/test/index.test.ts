@@ -225,7 +225,7 @@ describe('Invitation Plugin', () => {
   });
 
   describe('GET /invitations/:id', () => {
-    it('Throws if signed out', async () => {
+    it('get invitation by id successfully if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
 
@@ -235,7 +235,8 @@ describe('Invitation Plugin', () => {
         url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+      expectInvitations([await response.json()], [invitations[0]]);
     });
 
     describe('Signed In', () => {

@@ -4,7 +4,7 @@ import waitForExpect from 'wait-for-expect';
 import { Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { CLIENT_HOSTS, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ActionRepository } from '../../../../action/repositories/action';
 import {
   saveItemAndMembership,
@@ -79,7 +79,7 @@ describe('Action Plugin Tests', () => {
             type: 'view',
           },
           headers: {
-            Origin: CLIENT_HOSTS[0].url,
+            Origin: BUILDER_HOST.url,
           },
         });
 
@@ -99,7 +99,7 @@ describe('Action Plugin Tests', () => {
             type: 'view',
           },
           headers: {
-            Origin: CLIENT_HOSTS[0].url.origin,
+            Origin: BUILDER_HOST.url.origin,
           },
         });
 
@@ -129,7 +129,7 @@ describe('Action Plugin Tests', () => {
             type: 'view',
           },
           headers: {
-            Origin: CLIENT_HOSTS[0].url.origin,
+            Origin: BUILDER_HOST.url.origin,
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -148,7 +148,7 @@ describe('Action Plugin Tests', () => {
             extra: { foo: 'bar' },
           },
           headers: {
-            Origin: CLIENT_HOSTS[0].url.origin,
+            Origin: BUILDER_HOST.url.origin,
           },
         });
 
@@ -181,7 +181,7 @@ describe('Action Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {},
           headers: {
-            Origin: CLIENT_HOSTS[0].url,
+            Origin: BUILDER_HOST.url,
           },
         });
 
