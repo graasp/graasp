@@ -33,11 +33,12 @@ const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
 type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
 // Make index configuration typesafe
-const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'description', 'content'];
+const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'description', 'content', 'creator'];
 const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt'];
 const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'id',
   'name',
+  'creator',
   'description',
   'type',
   'content',
