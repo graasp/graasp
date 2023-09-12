@@ -1,5 +1,4 @@
-import { In } from 'typeorm';
-import { Query } from 'typeorm/driver/Query';
+import { Brackets, In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
@@ -185,10 +184,14 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       ids: items.map(({ id }) => id),
     });
 
-    items.forEach((item) => {
-      const key = `path_${item.path}`;
-      query.andWhere(`item.path <@ :${key}`, { [key]: item.path });
-    });
+    query.andWhere(
+      new Brackets((q) => {
+        items.forEach((item) => {
+          const key = `path_${item.path}`;
+          q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
+        });
+      }),
+    );
 
     return query.getMany();
   },
