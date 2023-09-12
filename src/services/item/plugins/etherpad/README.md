@@ -1,10 +1,12 @@
 # graasp-plugin-etherpad
 
-This Fastify plugin implements the glue between the Etherpad external service and the Graasp platform. It exposes endpoints to manage Etherpad items in the Graasp object model, and provides authentication mapping between the permissions in Graasp to those in Etherpad.
+This Fastify plugin implements the glue between the Etherpad external service and the Graasp platform. It exposes endpoints to manage Etherpad items in the Graasp object model, and provides authorization mapping between the permissions in Graasp to those in Etherpad.
 
 The plugin communicates with the Etherpad server through the [HTTP API](https://etherpad.org/doc/v1.8.18/#index_http-api). You may find the [Etherpad documentation](https://etherpad.org/doc/v1.8.18/) useful as well.
 
-### Prerequisites
+We use our fork of the `etherpad-api` library at https://github.com/graasp/etherpad-api to facilitate the usage of the HTTP API in Typescript.
+
+## Prerequisites
 
 An instance of the Etherpad (lite) server should be available on the network to this plugin. The list of options to connect to it is available [here](types.ts).
 
@@ -20,8 +22,128 @@ In the Graasp devcontainer, the key is bind-mounted from [this file](../../../..
 
 In a production container environment, you should either bind-mount a secret key, or build your own etherpad image using the `etherpad/etherpad` image as base and write your own secret file, see the [Dockerfile](Dockerfile) as an example.
 
-> Note: if you update the version of Etherpad, make sure that all relevant documentation is updated as well (e.g. search for 1.8.18 in the entire codebase).
+> Note: if you update the version of Etherpad, make sure that all relevant documentation is updated as well (e.g. search for `1.8.18` in the entire codebase).
 
-### Sequence diagrams
+## Permissions mapping
+
+We need to map the Graasp permissions to Etherpad constructs. In Graasp, we represent each Etherpad by a corresponding Etherpad item.
+
+### Builder mode
+
+In the Builder view, the permissions should follow the user membership on the item. Note the special case when an item is public and the user is not logged in, it should still be readable.
+
+> Header row: item visibility, first column: user permission
+
+|            | private   |  public   |
+| ---------- | --------- | --------- |
+| logged out | none      | read pad  |
+| read       | read pad  | read pad  |
+| write      | write pad | write pad |
+| admin      | write pad | write pad |
+
+Note that the ability "read pad" should also enforce that a user **cannot** edit the pad, e.g. by manually constructing an URL.
+
+> Depending on user needs, it may be interesting to set that public pads (i.e. which item is public) are always writable in Builder, even for logged out users and users that only have a read permission
+
+### Player mode
+
+In the Player view, the pad is (currently) always shown in read-only mode. This may be subject to change in the future, depending on user needs, in which case the mapping should be carefuly redesigned not to leak editable pads to unauthorized users.
+
+> Header row: item visibility, first column: user permission
+
+|            | private  |  public  |
+| ---------- | -------- | -------- |
+| logged out | read pad | read pad |
+| read       | read pad | read pad |
+| write      | read pad | read pad |
+| admin      | read pad | read pad |
+
+Etherpad exposes the following constructs to manage access to pads:
+
+#### Environment variables
+
+- [`REQUIRE_SESSION`](https://etherpad.org/doc/v1.8.18/#index_advanced):
+
+  > If this option is enabled, a user must have a session to access pads. This effectively allows only group pads to be accessed.
+
+  Note that we **cannot** use this option because we still want some pads to be publicly accessible (public etherpad items should still be at least readable to anyone, including logged out users).
+
+- [`EDIT_ONLY`](https://etherpad.org/doc/v1.8.18/#index_advanced):
+
+  > Users may edit pads but not create new ones. Pad creation is only via the API. This applies both to group pads and regular pads.
+
+  We enable this option since it ensures that only the Graasp server will perform pad management
+
+#### Groups and sessions
+
+> Please read the following sections of the Etherpad documentation:
+>
+> - [Overview](https://etherpad.org/doc/v1.8.18/#index_overview)
+> - [Data types](https://etherpad.org/doc/v1.8.18/#index_data-types)
+> - [Groups](https://etherpad.org/doc/v1.8.18/#index_groups)
+> - [Authors](https://etherpad.org/doc/v1.8.18/#index_author)
+> - [Sessions](https://etherpad.org/doc/v1.8.18/#index_session)
+> - [Pads](https://etherpad.org/doc/v1.8.18/#index_pad)
+> - [Cookies](https://etherpad.org/doc/v1.8.18/#index_cookies)
+
+![](https://i.imgur.com/d0nWp.png)
+
+Since the granularity of permissions in Graasp is at the item level, we map permissions as follows:
+
+- Each Etherpad item in Graasp is mapped to an Etherpad group (the `groupMapper` is assigned a unique random identifier) which will contain a single pad.
+- Each Graasp member which accesses to an Etherpad item is assigned an Etherpad author (the `authorMapper` is assigned the member id)
+- Sessions are hence allocated between authors and groups, effectively mapping Graasp members to Graasp Etherpad items.
+- In Etherpad, permission is represented by a session (which is stored in a single cookie) **as well as the `padID`**. A user may be given the actual ` padID` with the session, which effectively grants him write permissions on the pad, or a special `readOnlyID` for a given `padID` which only grants read permissions. **It is up to the Graasp back-end and front-ends to never expose both to unpriviliged users**, i.e. a user which does not have at least write permission should _never_ see the actual `padID`.
+
+## Sequence diagrams
 
 > Note: if you're reading this file from VSCode, we recommend installing the [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) extension and opening the [Markdown Preview view](https://code.visualstudio.com/docs/languages/markdown#_markdown-preview).
+
+The following operations are implemented on endpoints:
+
+### Create etherpad item
+
+```mermaid
+sequenceDiagram
+    Client browser ->> Graasp back-end: POST /etherpad/create?parentId <br> { name }
+    Note over Graasp back-end: Generate unique <br> { padName }
+    Graasp back-end ->> Etherpad server: createGroupIfNotExistsFor <br> { groupMapper: padName }
+    Etherpad server ->> Graasp back-end:  { groupID }
+    Graasp back-end ->> Etherpad server: createGroupPad <br> { groupID, padName }
+    Etherpad server ->> Graasp back-end: ok
+    Note over Graasp back-end: Create etherpad item with extra <br> { groupID, padName }
+    Graasp back-end ->> Client browser: Etherpad item
+```
+
+### View an etherpad
+
+```mermaid
+sequenceDiagram
+    Client browser ->> Graasp back-end: GET /etherpad/view/:itemId?mode
+    Note over Graasp back-end: Get item from service containing { padID, groupID }
+    Note over Graasp back-end: Validate permission, otherwise <br> fallback to read mode
+    alt mode = read
+        Graasp back-end ->> Etherpad server: getReadonlyID { padID }
+        Etherpad server ->> Graasp back-end: { readOnlyID }
+        note over Graasp back-end: construct padUrl from readOnlyID
+    else mode = write
+        note over Graasp back-end: construct padUrl from padID
+    end
+    Graasp back-end ->> Etherpad server: createAuthorIfNotExistsFor <br> { authorMapper: member.id, name: member.name }
+    Etherpad server ->> Graasp back-end: { authorID }
+    Note over Graasp back-end: Compute a session expiration
+    Graasp back-end ->> Etherpad server: createSession <br> { authorID, groupID, validUntil: expiration }
+    Etherpad server ->> Graasp back-end: { sessionID }
+    Graasp back-end ->> Etherpad server: listSessionsOfAuthor <br> { authorID }
+    Etherpad server ->> Graasp back-end: sessions
+    Note over Graasp back-end: Compute cookie containing all valid sessions
+    par asynchronous cleanup
+        loop for all expired sessions
+            Graasp back-end ->> Etherpad server: deleteSession <br> { sessionID }
+        end
+    and
+        Graasp back-end ->> Client browser: { padUrl } <br> Set cookie header with valid sessions
+    end
+```
+
+> **Note about the session cookie**
