@@ -34,6 +34,7 @@ type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
 // Make index configuration typesafe
 const SEARCHABLE_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'description', 'content'];
+const SORT_ATTRIBUTES: (keyof IndexItem)[] = ['name', 'updatedAt', 'createdAt'];
 const DISPLAY_ATTRIBUTES: (keyof IndexItem)[] = [
   'id',
   'name',
@@ -150,6 +151,10 @@ export class MeiliSearchWrapper {
     return {
       id: item.id,
       name: item.name,
+      creator: {
+        id: item.creator?.id ?? '',
+        name: item.creator?.name ?? '',
+      },
       description: this.removeHTMLTags(item.description),
       type: item.type,
       categories: categories,
@@ -320,6 +325,7 @@ export class MeiliSearchWrapper {
       searchableAttributes: SEARCHABLE_ATTRIBUTES,
       displayedAttributes: DISPLAY_ATTRIBUTES,
       filterableAttributes: FILTERABLE_ATTRIBUTES,
+      sortableAttributes: SORT_ATTRIBUTES,
       typoTolerance: TYPO_TOLERANCE,
     });
     await tmpIndex.waitForTask(updateSettings.taskUid);
@@ -388,6 +394,7 @@ export class MeiliSearchWrapper {
 export type IndexItem = {
   id: string;
   name: string;
+  creator: IndexMember;
   description: string;
   type: `${ItemType}`;
   categories: string[];
@@ -396,4 +403,9 @@ export type IndexItem = {
   isHidden: boolean;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type IndexMember = {
+  id: string;
+  name: string;
 };
