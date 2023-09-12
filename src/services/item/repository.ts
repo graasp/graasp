@@ -180,9 +180,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     if (items.length === 0) {
       return [];
     }
-    const query = this.createQueryBuilder('item').where('id NOT IN(:...ids)', {
-      ids: items.map(({ id }) => id),
-    });
+    const query = this.createQueryBuilder('item')
+      .leftJoinAndSelect('item.creator', 'creator')
+      .where('id NOT IN(:...ids)', {
+        ids: items.map(({ id }) => id),
+      });
 
     query.andWhere(
       new Brackets((q) => {
