@@ -3,6 +3,7 @@ import { MultiSearchParams } from 'meilisearch';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../../../utils/repositories';
+import { search } from './schemas';
 
 export type SearchFields = {
   keywords?: string;
@@ -17,8 +18,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post(
     '/collections/search',
-    { preHandler: fastify.attemptVerifyAuthentication },
-    async ({ params, member, body }) => {
+    { preHandler: fastify.attemptVerifyAuthentication, schema: search },
+    async ({ member, body }) => {
       return searchService.search(member, buildRepositories(), body as MultiSearchParams);
     },
   );

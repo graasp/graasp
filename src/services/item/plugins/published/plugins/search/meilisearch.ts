@@ -12,6 +12,8 @@ import { FastifyBaseLogger } from 'fastify';
 
 import {
   DocumentItemExtra,
+  INDEX_NAME,
+  IndexItem,
   ItemTagType,
   ItemType,
   LocalFileItemExtra,
@@ -27,8 +29,8 @@ import { readPdfContent } from '../../../../utils';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedRepository } from '../../repositories/itemPublished';
 
-const ACTIVE_INDEX = 'itemIndex';
-const ROTATING_INDEX = 'itemIndex_tmp'; // Used when reindexing
+const ACTIVE_INDEX = INDEX_NAME;
+const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
 
 type ALLOWED_INDICES = typeof ACTIVE_INDEX | typeof ROTATING_INDEX;
 
@@ -391,22 +393,3 @@ export class MeiliSearchWrapper {
     // Reindex the modified and unexisting items
   }
 }
-
-export type IndexItem = {
-  id: string;
-  name: string;
-  creator: IndexMember;
-  description: string;
-  type: `${ItemType}`;
-  categories: string[];
-  content: string;
-  isPublishedRoot: boolean;
-  isHidden: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type IndexMember = {
-  id: string;
-  name: string;
-};
