@@ -24,11 +24,11 @@ In a production container environment, you should either bind-mount a secret key
 
 > Note: if you update the version of Etherpad, make sure that all relevant documentation is updated as well (e.g. search for `1.8.18` in the entire codebase).
 
-## Permissions mapping
+## Permissions mapping
 
 We need to map the Graasp permissions to Etherpad constructs. In Graasp, we represent each Etherpad by a corresponding Etherpad item.
 
-### Builder mode
+### Builder mode
 
 In the Builder view, the permissions should follow the user membership on the item. Note the special case when an item is public and the user is not logged in, it should still be readable.
 
@@ -101,7 +101,7 @@ Since the granularity of permissions in Graasp is at the item level, we map perm
 
 The following operations are implemented on endpoints:
 
-### Create etherpad item
+### Create etherpad item
 
 ```mermaid
 sequenceDiagram
