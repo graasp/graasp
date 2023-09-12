@@ -111,7 +111,7 @@ sequenceDiagram
     Etherpad server ->> Graasp back-end:  { groupID }
     Graasp back-end ->> Etherpad server: createGroupPad <br> { groupID, padName }
     Etherpad server ->> Graasp back-end: ok
-    Note over Graasp back-end: Create etherpad item with extra <br> { groupID, padName }
+    Note over Graasp back-end: Create etherpad item <br> { groupID, padName }
     Graasp back-end ->> Client browser: Etherpad item
 ```
 
@@ -147,3 +147,15 @@ sequenceDiagram
 ```
 
 > **Note about the session cookie**
+>
+> The sessions cookie has several constraints:
+>
+> - It must be set to the public URL's domain of the etherpad server
+> - It must be named `sessionID` (this is unfortunately currently [not customizable](https://github.com/ether/etherpad-lite/issues/664))
+> - It cannot be signed or set to `httpOnly` because the Etherpad server does not support these options (authentication will not work)
+> - It is unique for all valid sessions, which implies the following:
+>   - The cookie expiration should be set to the expiration of the session with the longest lifespan (usually the latest on read)
+>   - The cookie value must be set to the concatenation of all valid session strings, separated by commas
+>   - It is up to the Graasp implementation to manage and cleanup expired sessions (fortunately the Etherpad server manages the storage of existing sessions)
+>   - Although there is no specification for the size of cookies, modern browsers will limit the size of the value to 1024 bytes (see [constants.ts](constants.ts)). This means that only the last floor(1024/19) valid sessions can be stored in the cookie and it is hence the max number of concurrent etherpads that can be opened on a given device.
+>   - Since the cookie needs to contain all valid sessions cumulatively, there cannot be concurrent requests from the front-ends: otherwise, a race condition appears where the last response received by the client with a cookie will win, even if it isn't the last generated one containing all the concurrent sessions. Hence, the front-ends must ensure that requests to several etherpad items must be performed sequentially (i.e. a next request can only be sent when the previous response was received)
