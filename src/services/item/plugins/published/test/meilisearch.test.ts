@@ -1,21 +1,18 @@
-import { expect, jest, test } from '@jest/globals';
-import { MockInstance } from 'jest-mock';
+import { expect, jest } from '@jest/globals';
 import {
   EnqueuedTask,
   Index,
   MultiSearchParams,
-  MultiSearchQuery,
   MultiSearchResponse,
   Task,
   TaskStatus,
 } from 'meilisearch';
 import { MeiliSearch } from 'meilisearch';
 import { DataSource, EntityManager } from 'typeorm';
-import { IsolationLevel } from 'typeorm/driver/types/IsolationLevel';
 
-import fastify, { FastifyBaseLogger } from 'fastify';
+import { FastifyBaseLogger } from 'fastify';
 
-import { ItemType, MimeTypes, S3FileItemExtra } from '@graasp/sdk';
+import { IndexItem, ItemType, MimeTypes, S3FileItemExtra } from '@graasp/sdk';
 
 import * as repositoriesModule from '../../../../../utils/repositories';
 import FileService from '../../../../file/service';
@@ -27,7 +24,7 @@ import { ItemCategory } from '../../itemCategory/entities/ItemCategory';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { ItemTagRepository } from '../../itemTag/repository';
 import { ItemPublished } from '../entities/itemPublished';
-import { IndexItem, MeiliSearchWrapper } from '../plugins/search/meilisearch';
+import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 jest.unmock('../plugins/search/meilisearch');
