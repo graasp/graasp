@@ -32,6 +32,8 @@ const search = {
               },
             },
             filter: { type: 'string' },
+            highlightPreTag: { type: 'string' },
+            highlightPostTag: { type: 'string' },
           },
           required: ['indexUid'],
         },
