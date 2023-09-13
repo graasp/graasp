@@ -27,7 +27,7 @@ services:
       # the Etherpad config is set by the "etherpad" service below
       ETHERPAD_URL: http://etherpad:9001
       ETHERPAD_PUBLIC_URL: http://localhost:9001
-      ETHERPAD_COOKIE_DOMAIN: localhost:9001
+      ETHERPAD_COOKIE_DOMAIN: localhost
       # Api key is set by ./etherpad/devApiKey.txt
       ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
       # the Redis config is set by the "redis" service below
