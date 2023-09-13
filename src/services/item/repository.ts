@@ -182,7 +182,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
     const query = this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
-      .where('id NOT IN(:...ids)', {
+      .where('item.id NOT IN(:...ids)', {
         ids: items.map(({ id }) => id),
       });
 
