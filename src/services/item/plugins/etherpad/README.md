@@ -72,7 +72,7 @@ In the Player view, the pad is (currently) always shown in read-only mode. This 
 
 |            | private  |  public  |
 | ---------- | -------- | -------- |
-| logged out | read pad | read pad |
+| logged out | none     | read pad |
 | read       | read pad | read pad |
 | write      | read pad | read pad |
 | admin      | read pad | read pad |
