@@ -1,7 +1,9 @@
+import { StatusCodes } from 'http-status-codes';
 import { MultiSearchParams } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../utils/repositories';
 import { search } from './schemas';
 
@@ -24,9 +26,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // TODO: delete this endpoint (only for testing full rebuild)
-  fastify.get('/collections/search/rebuild', async () => {
-    return searchService.rebuildIndex();
+  fastify.get('/collections/search/rebuild', async ({ headers }, reply) => {
+    // TODO: in the future, lock this behind admin permission and maybe add a button to the frontend admin panel
+    const headerRebuildSecret = headers['meilisearch-rebuild'];
+
+    if (MEILISEARCH_REBUILD_SECRET && MEILISEARCH_REBUILD_SECRET === headerRebuildSecret) {
+      searchService.rebuildIndex();
+      reply.status(StatusCodes.ACCEPTED);
+    } else {
+      reply.status(StatusCodes.UNAUTHORIZED);
+    }
   });
 };
 
