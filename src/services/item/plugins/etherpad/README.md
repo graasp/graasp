@@ -88,6 +88,8 @@ Etherpad exposes the following constructs to manage access to pads:
 
 ![](https://i.imgur.com/d0nWp.png)
 
+> A pad ID is either the the string of the groupID concatenated with the pad name separated by a dollar sign (e.g. `g.0123456789abcdef$foobar`) or a read only pad ID (e.g. `r.0123456789abcdef`).
+
 Since the granularity of permissions in Graasp is at the item level, we map permissions as follows:
 
 - Each Etherpad item in Graasp is mapped to an Etherpad group (the `groupMapper` is assigned a unique random identifier) which will contain a single pad.
@@ -101,7 +103,7 @@ Since the granularity of permissions in Graasp is at the item level, we map perm
 
 The following operations are implemented on endpoints:
 
-### Create etherpad item
+### Create an etherpad item
 
 ```mermaid
 sequenceDiagram
@@ -157,5 +159,66 @@ sequenceDiagram
 >   - The cookie expiration should be set to the expiration of the session with the longest lifespan (usually the latest on read)
 >   - The cookie value must be set to the concatenation of all valid session strings, separated by commas
 >   - It is up to the Graasp implementation to manage and cleanup expired sessions (fortunately the Etherpad server manages the storage of existing sessions)
->   - Although there is no specification for the size of cookies, modern browsers will limit the size of the value to 1024 bytes (see [constants.ts](constants.ts)). This means that only the last floor(1024/19) valid sessions can be stored in the cookie and it is hence the max number of concurrent etherpads that can be opened on a given device.
+>   - Although there is no specification for the size of cookies, modern browsers will limit the size of the value to 1024 bytes (see [constants.ts](constants.ts)). This means that only the last `floor(1024/19)` valid sessions can be stored in the cookie and it is hence the max number of concurrent etherpads that can be opened on a given device.
 >   - Since the cookie needs to contain all valid sessions cumulatively, there cannot be concurrent requests from the front-ends: otherwise, a race condition appears where the last response received by the client with a cookie will win, even if it isn't the last generated one containing all the concurrent sessions. Hence, the front-ends must ensure that requests to several etherpad items must be performed sequentially (i.e. a next request can only be sent when the previous response was received)
+
+---
+
+Pad deletion and copy are implemented on hooks:
+
+> Note: the event hooks may be removed in the future. Make sure to update the code and this documentation.
+
+### Delete an etherpad on deletion of its item
+
+```mermaid
+sequenceDiagram
+    Note over Graasp back-end: Item deletion event <br> check if item type is etherpad
+    Graasp back-end ->> Etherpad server: deletePad <br> { padID }
+```
+
+### Copy an etherpad on copy of its item
+
+```mermaid
+sequenceDiagram
+    Note over Graasp back-end: Item copy event <br> check if item type is etherpad
+    Note over Graasp back-end: Generate unique <br> { padName }
+    Graasp back-end ->> Etherpad server: createGroupIfNotExistsFor <br> { groupMapper: padName }
+    Etherpad server ->> Graasp back-end:  { groupID }
+    Graasp back-end ->> Etherpad server: copyPad <br> { source: padID, destination: { groupID, padName } }
+    Etherpad server ->> Graasp back-end: ok
+    Note over Graasp back-end: Mutate item copy with new <br> { groupID, padName }  <br> before persisting
+```
+
+## Testing
+
+This plugin provides some testing utilities for unit tests. The file [test/api.ts](test/api.ts) provides a [nock](https://github.com/nock/nock) interceptor to emulate HTTP responses from the Etherpad server that is typed against the Etherpad HTTP API library. It also provides the outgoing search parameters that are sent to the Etherpad server.
+
+Example usage:
+
+```ts
+it('example test', () => {
+  // First set up the API responses that your test case expects
+  // The return value is a promise mapping the outbound method name to the associated request search parameters
+  const searchParams = setUpApi({
+    // Keys are Etherpad HTTP API method names and values are [statusCode, etherpadResponse: { code, message, data }]
+    // The response data is automatically typed against the API library
+    createGroupIfNotExistsFor: [StatusCodes.OK, { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } }],
+    createGroupPad: [StatusCodes.OK, { code: 0, message: 'ok', data: null }],
+  });
+
+  // Perform the request
+  const result = await app.inject({
+    method: 'GET',
+    url: '/etherpad/view/id',
+  });
+
+  // Note that you must await the search params after the request, otherwise you will block and timeout
+  // You can destructure the keys corresponding to the method names above, which values are the searchParams object
+  const { createGroupIfNotExistsFor, createGroupPad } = await searchParams;
+
+  // You can then perform assertions on the result and the search parameters
+  expect(result.statusCode).toBe(200);
+  expect(createGroupIfNotExistsFor?.get('groupMapper')).toBe('foo');
+  expect(createGroupPad?.get('groupID')).toBe('bar');
+});
+```
