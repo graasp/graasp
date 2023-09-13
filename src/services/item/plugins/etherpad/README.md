@@ -24,6 +24,23 @@ In a production container environment, you should either bind-mount a secret key
 
 > Note: if you update the version of Etherpad, make sure that all relevant documentation is updated as well (e.g. search for `1.8.18` in the entire codebase).
 
+## Usage
+
+Register the plugin in a fastify instance as follows (make sure that the dependent services are decorated beforehand):
+
+```ts
+import etherpadPlugin from '<path>/<to>/etherpad';
+
+fastify.register(etherpadPlugin, {
+  url: ETHERPAD_URL,
+  apiKey: ETHERPAD_API_KEY,
+  publicUrl: ETHERPAD_PUBLIC_URL,
+  cookieDomain: ETHERPAD_COOKIE_DOMAIN,
+});
+```
+
+The plugin will attach new endpoints under the `/etherpad` prefix (relative to the mount point in the current router). E.g. assuming that the example above registers the plugin under the `/foobar` absolute route, then [service-api.ts](service-api.ts) mounts etherpad-specific routes at absolute paths `/foobar/etherpad/create`, `/foobar/view/:itemid`, etc.
+
 ## Permissions mapping
 
 We need to map the Graasp permissions to Etherpad constructs. In Graasp, we represent each Etherpad by a corresponding Etherpad item.
