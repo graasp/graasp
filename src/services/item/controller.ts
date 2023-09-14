@@ -75,11 +75,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get own
-  fastify.get(
+  fastify.get<{ Querystring: { page?: number } }>(
     '/own',
     { schema: getOwn, preHandler: fastify.verifyAuthentication },
-    async ({ member, log }) => {
-      return itemService.getOwn(member, buildRepositories());
+    async ({ member, query }) => {
+      return itemService.getOwn(member, buildRepositories(), query.page);
     },
   );
 

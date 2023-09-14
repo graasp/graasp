@@ -14,6 +14,7 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { ITEMS_LIST_LIMIT } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -234,7 +235,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getRawOne();
   },
 
-  async getOwn(memberId: string): Promise<Item[]> {
+  async getOwn(memberId: string, page: number): Promise<Item[]> {
+    const skip = (page - 1) * ITEMS_LIST_LIMIT;
+
     return this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
@@ -242,7 +245,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
       .andWhere('nlevel(item.path) = 1')
       .orderBy('item.updatedAt', 'DESC')
-      .getMany();
+      .skip(skip)
+      .take(ITEMS_LIST_LIMIT)
+      .getManyAndCount();
   },
 
   async move(item: Item, parentItem?: Item): Promise<void> {

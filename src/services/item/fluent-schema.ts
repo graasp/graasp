@@ -159,8 +159,9 @@ export const getParents = {
 };
 
 export const getOwn = {
+  querystring: S.object().additionalProperties(false).prop('page', S.number().default(1)),
   response: {
-    200: S.array().items(item),
+    200: S.array(),
     '4xx': error,
   },
 };

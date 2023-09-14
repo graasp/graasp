@@ -323,3 +323,5 @@ export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 // todo: use env var?
 export const GET_MOST_LIKED_ITEMS_MAXIMUM = 50;
 export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
+
+export const ITEMS_LIST_LIMIT = 2;
