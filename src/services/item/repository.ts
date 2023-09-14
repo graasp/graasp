@@ -235,10 +235,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getRawOne();
   },
 
-  async getOwn(memberId: string, page: number): Promise<Item[]> {
+  async getOwn(memberId: string, page: number): Promise<{ data: Item[]; totalCount: number }> {
     const skip = (page - 1) * ITEMS_LIST_LIMIT;
-
-    return this.createQueryBuilder('item')
+    const [data, totalCount] = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .where('creator.id = :id', { id: memberId })
@@ -248,6 +247,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .skip(skip)
       .take(ITEMS_LIST_LIMIT)
       .getManyAndCount();
+    return { data, totalCount };
   },
 
   async move(item: Item, parentItem?: Item): Promise<void> {

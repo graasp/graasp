@@ -161,7 +161,10 @@ export const getParents = {
 export const getOwn = {
   querystring: S.object().additionalProperties(false).prop('page', S.number().default(1)),
   response: {
-    200: S.array(),
+    200: S.object()
+      .additionalProperties(false)
+      .prop('data', S.array().items(item))
+      .prop('totalCount', S.number()),
     '4xx': error,
   },
 };
