@@ -17,7 +17,7 @@ jobs:
     # repository name
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
-    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@search-index-env
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -101,6 +101,6 @@ jobs:
       sentry-dsn: ${{ secrets.SENTRY_DSN }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
       stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
-      meilisearch-url: ${{ secrets.MEILISEARCH_URL_DEV }}
-      meilisearch-master-key: ${{ secrets.MEILISEARCH_MASTER_KEY_DEV }}
-      meilisearch-rebuild-secret: ${{ secrets.MEILISEARCH_REBUILD_SECRET_DEV }}
+      meilisearch-url: ${{ secrets.MEILISEARCH_URL }}
+      meilisearch-master-key: ${{ secrets.MEILISEARCH_MASTER_KEY }}
+      meilisearch-rebuild-secret: ${{ secrets.MEILISEARCH_REBUILD_SECRET }}
