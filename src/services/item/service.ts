@@ -129,11 +129,16 @@ export class ItemService {
     return { data: result.data, errors: result.errors.concat(memberships?.errors ?? []) };
   }
 
-  async getOwn(actor: Actor, { itemRepository }: Repositories, page: number = 1) {
+  async getOwn(
+    actor: Actor,
+    { itemRepository }: Repositories,
+    page: number = 1,
+    name: string = '',
+  ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    return itemRepository.getOwn(actor.id, page);
+    return itemRepository.getOwn(actor.id, page, name);
   }
 
   async getShared(actor: Actor, repositories: Repositories, permission?: PermissionLevel) {

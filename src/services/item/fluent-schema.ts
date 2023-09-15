@@ -159,7 +159,10 @@ export const getParents = {
 };
 
 export const getOwn = {
-  querystring: S.object().additionalProperties(false).prop('page', S.number().default(1)),
+  querystring: S.object()
+    .additionalProperties(false)
+    .prop('page', S.number().default(1))
+    .prop('name', S.string()),
   response: {
     200: S.object()
       .additionalProperties(false)

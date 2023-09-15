@@ -235,7 +235,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getRawOne();
   },
 
-  async getOwn(memberId: string, page: number): Promise<{ data: Item[]; totalCount: number }> {
+  async getOwn(
+    memberId: string,
+    page: number,
+    name: string,
+  ): Promise<{ data: Item[]; totalCount: number }> {
     const skip = (page - 1) * ITEMS_LIST_LIMIT;
     const [data, totalCount] = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
@@ -243,6 +247,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .where('creator.id = :id', { id: memberId })
       .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
       .andWhere('nlevel(item.path) = 1')
+      .andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
+        name: name.toLowerCase().trim(),
+      })
       .orderBy('item.updatedAt', 'DESC')
       .skip(skip)
       .take(ITEMS_LIST_LIMIT)
