@@ -24,6 +24,7 @@ const search = {
             },
             cropLength: { type: 'number' },
             q: { type: 'string' },
+            page: { type: 'number' },
             limit: { type: 'number' },
             sort: {
               type: 'array',
