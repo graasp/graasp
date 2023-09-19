@@ -22,6 +22,7 @@ export class SearchService {
   fileService: FileService;
   meilisearchClient: MeiliSearchWrapper;
   db: DataSource;
+  logger: FastifyBaseLogger;
   constructor(
     itemService: ItemService,
     fileService: FileService,
@@ -34,7 +35,7 @@ export class SearchService {
     this.itemService = itemService;
     this.fileService = fileService;
     this.meilisearchClient = new MeiliSearchWrapper(db, meilisearchConnection, fileService, logger);
-
+    this.logger = logger;
     this.registerSearchHooks(
       buildRepositories(),
       itemService,
@@ -71,6 +72,8 @@ export class SearchService {
     this.meilisearchClient.rebuildIndex();
   }
 
+  // Registers all hooks related to sync between database and meilisearch index
+  // Make sure to not throw if indexation fail, so that the app can continue to work if Meilisearch is down.
   private registerSearchHooks(
     repositories: Repositories,
     itemService: ItemService,
@@ -80,11 +83,19 @@ export class SearchService {
     // Update index when itemPublished changes ------------------------------------------
 
     itemPublishedService.hooks.setPostHook('create', async (member, repositories, { item }) => {
-      await this.meilisearchClient.indexOne(item, repositories);
+      try {
+        await this.meilisearchClient.indexOne(item, repositories);
+      } catch {
+        this.logger.error('Error during indexation, Meilisearch may be down');
+      }
     });
 
     itemPublishedService.hooks.setPostHook('delete', async (member, repositories, { item }) => {
-      await this.meilisearchClient.deleteOne(item, repositories);
+      try {
+        await this.meilisearchClient.deleteOne(item, repositories);
+      } catch {
+        this.logger.error('Error during indexation, Meilisearch may be down');
+      }
     });
 
     //Is the published item deleted automatically when the item is deleted?
@@ -102,13 +113,17 @@ export class SearchService {
         if (e instanceof ItemPublishedNotFound) {
           return;
         } else {
-          throw e;
+          this.logger.error('Error during indexation, Meilisearch may be down');
         }
       }
     });
 
     itemService.hooks.setPostHook('delete', async (member, repositories, { item: item }) => {
-      await this.meilisearchClient.deleteOne(item, repositories);
+      try {
+        await this.meilisearchClient.deleteOne(item, repositories);
+      } catch {
+        this.logger.error('Error during indexation, Meilisearch may be down');
+      }
     });
 
     itemService.hooks.setPostHook('copy', async (member, repositories, { copy: item }) => {
@@ -122,7 +137,7 @@ export class SearchService {
         if (e instanceof ItemPublishedNotFound) {
           return;
         } else {
-          throw e;
+          this.logger.error('Error during indexation, Meilisearch may be down');
         }
       }
     });
@@ -137,7 +152,7 @@ export class SearchService {
         if (e instanceof ItemPublishedNotFound) {
           return;
         } else {
-          throw e;
+          this.logger.error('Error during indexation, Meilisearch may be down');
         }
       }
     });
@@ -156,7 +171,7 @@ export class SearchService {
             // nothing published, we must delete if it exists in index
             await this.meilisearchClient.deleteOne(updated, repositories);
           } else {
-            throw e;
+            this.logger.error('Error during indexation, Meilisearch may be down');
           }
         }
       },
@@ -179,7 +194,7 @@ export class SearchService {
           if (e instanceof ItemPublishedNotFound) {
             return;
           } else {
-            throw e;
+            this.logger.error('Error during indexation, Meilisearch may be down');
           }
         }
       },
@@ -200,7 +215,7 @@ export class SearchService {
           if (e instanceof ItemPublishedNotFound) {
             return;
           } else {
-            throw e;
+            this.logger.error('Error during indexation, Meilisearch may be down');
           }
         }
       },
