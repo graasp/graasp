@@ -1,5 +1,4 @@
 import { In } from 'typeorm';
-import { Query } from 'typeorm/driver/Query';
 import { v4 } from 'uuid';
 
 import {
@@ -26,6 +25,7 @@ import {
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, ItemExtra } from './entities/Item';
+import { Paginated } from './interfaces/response';
 import {
   _fixChildrenOrder,
   dashToUnderscore,
@@ -239,7 +239,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     memberId: string,
     page: number,
     name: string,
-  ): Promise<{ data: Item[]; totalCount: number }> {
+    all: boolean,
+  ): Promise<Paginated<Item>> {
     const skip = (page - 1) * ITEMS_LIST_LIMIT;
     const [data, totalCount] = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
@@ -251,8 +252,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
         name: name.toLowerCase().trim(),
       })
       .orderBy('item.updatedAt', 'DESC')
-      .skip(skip)
-      .take(ITEMS_LIST_LIMIT)
+      .skip(all ? 0 : skip)
+      .take(all ? Number.MAX_SAFE_INTEGER : ITEMS_LIST_LIMIT)
       .getManyAndCount();
     return { data, totalCount };
   },

@@ -162,7 +162,8 @@ export const getOwn = {
   querystring: S.object()
     .additionalProperties(false)
     .prop('page', S.number().default(1))
-    .prop('name', S.string()),
+    .prop('name', S.string())
+    .prop('all', S.boolean().default(false)),
   response: {
     200: S.object()
       .additionalProperties(false)

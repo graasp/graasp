@@ -134,11 +134,12 @@ export class ItemService {
     { itemRepository }: Repositories,
     page: number = 1,
     name: string = '',
+    all: boolean = false,
   ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    return itemRepository.getOwn(actor.id, page, name);
+    return itemRepository.getOwn(actor.id, page, name, all);
   }
 
   async getShared(actor: Actor, repositories: Repositories, permission?: PermissionLevel) {
