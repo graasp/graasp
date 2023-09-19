@@ -3,11 +3,10 @@ import { promisify } from 'util';
 
 import { FastifyRequest } from 'fastify';
 
-import { Context } from '@graasp/sdk';
-
 import {
   AUTH_TOKEN_EXPIRATION_IN_MINUTES,
   AUTH_TOKEN_JWT_SECRET,
+  BUILDER_HOST,
   CLIENT_HOSTS,
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
@@ -28,10 +27,7 @@ const promisifiedJwtSign = promisify<
   string
 >(jwt.sign);
 
-const defaultClientHost = CLIENT_HOSTS.find((c) => c.name === Context.Builder);
-if (!defaultClientHost) {
-  throw new Error('Default Builder client host environment variable not set!');
-}
+const defaultClientHost = BUILDER_HOST;
 
 const validOrigins = CLIENT_HOSTS.map((c) => c.url.origin);
 
@@ -40,8 +36,12 @@ export const getRedirectionUrl = (target?: string) => {
     return defaultClientHost.url.origin;
   }
 
-  const targetUrl = new URL(target);
-  if (!validOrigins.includes(targetUrl.origin)) {
+  try {
+    const targetUrl = new URL(target);
+    if (!validOrigins.includes(targetUrl.origin)) {
+      return defaultClientHost.url.origin;
+    }
+  } catch {
     return defaultClientHost.url.origin;
   }
 

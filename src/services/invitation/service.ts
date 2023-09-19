@@ -1,4 +1,4 @@
-import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
+import { FastifyBaseLogger } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
@@ -43,16 +43,15 @@ export class InvitationService {
       ${this.mailer.buildText(text)}
       ${this.mailer.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
     `;
-    const title = t(MAIL.INVITATION_TITLE);
+    const title = t(MAIL.INVITATION_TITLE, {
+      itemName: item.name,
+    });
     this.mailer.sendEmail(title, email, link, html).catch((err) => {
       this.log.warn(err, `mailer failed. invitation link: ${link}`);
     });
   }
 
   async get(actor: Actor, repositories: Repositories, invitationId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     return repositories.invitationRepository.get(invitationId, actor);
   }
 

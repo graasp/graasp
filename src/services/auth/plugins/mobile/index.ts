@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
 
-import { MOBILE_AUTH_URL } from '../../../../utils/config';
+import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { MemberPasswordService } from '../password/service';
 import { mPasswordLogin, mauth, mlogin, mregister } from './schemas';
@@ -94,7 +94,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       );
 
       // redirect to the universal link domain
-      const redirectionUrl = new URL('/auth', MOBILE_AUTH_URL);
+      const redirectionUrl = new URL(`${MOBILE_DEEP_LINK_PROTOCOL}//auth`);
       redirectionUrl.searchParams.set('t', token);
       reply.status(StatusCodes.SEE_OTHER);
 

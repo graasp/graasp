@@ -16,8 +16,11 @@ import {
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import {
+  saveItemAndMembership,
+  saveMembership,
+} from '../../../../itemMembership/test/fixtures/memberships';
+import { ANNA, BOB, CEDRIC, saveMember } from '../../../../member/test/fixtures/members';
 import { MEMBERS } from '../../../../member/test/fixtures/members';
 import { saveMembers } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
@@ -431,6 +434,53 @@ describe('Item Published', () => {
         // Publishing an item triggers an indexing
         expect(indexSpy).toHaveBeenCalledTimes(1);
         expect(indexSpy.mock.calls[0][0]).toMatchObject(item);
+      });
+
+      it('Publish item with admin rights and send notification', async () => {
+        const sendEmailMock = jest.spyOn(app.mailer, 'sendEmail');
+
+        const member = await saveMember(BOB);
+        const { item } = await saveItemAndMembership({
+          creator: member,
+          member: actor,
+          permission: PermissionLevel.Admin,
+        });
+        const anna = await saveMember(ANNA);
+        await saveMembership({
+          item,
+          member: anna,
+          permission: PermissionLevel.Admin,
+        });
+        const cedric = await saveMember(CEDRIC);
+        await saveMembership({
+          item,
+          member: cedric,
+          permission: PermissionLevel.Admin,
+        });
+        await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
+
+        const res = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expectPublishedEntry(res.json(), { item, creator: actor });
+
+        await waitForExpect(() => {
+          expect(sendEmailMock).toHaveBeenCalledTimes(2);
+          expect(sendEmailMock).toHaveBeenCalledWith(
+            expect.stringContaining(item.name),
+            anna.email,
+            expect.stringContaining(item.id),
+            expect.anything(),
+          );
+          expect(sendEmailMock).toHaveBeenCalledWith(
+            expect.stringContaining(item.name),
+            cedric.email,
+            expect.stringContaining(item.id),
+            expect.anything(),
+          );
+        }, 1000);
       });
 
       it('Cannot publish private item', async () => {

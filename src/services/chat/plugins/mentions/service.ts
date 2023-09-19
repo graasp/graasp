@@ -1,13 +1,13 @@
-import { PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
+import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../../item/entities/Item';
 import { Member } from '../../../member/entities/member';
-import { buildItemLink } from '../../../utils';
 import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';
 
@@ -28,7 +28,11 @@ export class MentionService {
     member: Member;
     creator: Member;
   }) {
-    const itemLink = buildItemLink(item, { chatOpen: true });
+    const itemLink = buildItemLinkForBuilder({
+      origin: BUILDER_HOST.url.origin,
+      itemId: item.id,
+      chatOpen: true,
+    });
     const lang = member?.extra?.lang as string;
 
     const translated = this.mailer.translate(lang);
