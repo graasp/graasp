@@ -556,7 +556,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const data = response.json();
-        expect(data).toHaveLength(items.length);
+        expect(data.data).toHaveLength(items.length);
         items.forEach(({ id }) => {
           expectItem(
             data.find(({ id: thisId }) => thisId === id),
