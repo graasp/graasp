@@ -559,7 +559,7 @@ describe('Item routes tests', () => {
         expect(data.data).toHaveLength(items.length);
         items.forEach(({ id }) => {
           expectItem(
-            data.find(({ id: thisId }) => thisId === id),
+            data?.data?.find(({ id: thisId }) => thisId === id),
             items.find(({ id: thisId }) => thisId === id),
           );
         });
