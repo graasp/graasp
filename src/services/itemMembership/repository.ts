@@ -1,4 +1,4 @@
-import { Brackets, In, Not } from 'typeorm';
+import { In, Not } from 'typeorm';
 
 import { PermissionLevel, PermissionLevelCompare, ResultOf, UUID } from '@graasp/sdk';
 
@@ -96,13 +96,22 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return query.getMany();
   },
 
-  async getForManyItems(items: Item[], memberId?: UUID): Promise<ResultOf<ItemMembership[]>> {
+  async getForManyItems(
+    items: Item[],
+    { memberId = undefined, withDeleted = false }: { memberId?: UUID; withDeleted?: boolean } = {},
+  ): Promise<ResultOf<ItemMembership[]>> {
     if (items.length === 0) {
       return { data: {}, errors: [] };
     }
 
     const ids = items.map((i) => i.id);
-    const query = this.createQueryBuilder('item_membership')
+    const query = this.createQueryBuilder('item_membership');
+
+    if (withDeleted) {
+      query.withDeleted();
+    }
+
+    query
       .innerJoin('item', 'descendant', 'item_membership.item_path @> descendant.path')
       .where('descendant.id in (:...ids)', { ids });
     if (memberId) {

@@ -3,6 +3,9 @@ import WebSocket from 'ws';
 import { Websocket } from '@graasp/sdk';
 import { ServerUpdate } from '@graasp/sdk/dist/services/websockets/api/server';
 
+/**
+ * A helper class to mock a purely WS client for the Graasp protocol
+ */
 export class TestWsClient {
   private readonly ws: WebSocket;
 
@@ -10,6 +13,9 @@ export class TestWsClient {
     this.ws = new WebSocket(address.replace('http', 'ws') + '/ws');
   }
 
+  /**
+   * Sends any {@link Websocket.ClientMessage} and return a promise with the response of the server
+   */
   async send(payload: Websocket.ClientMessage): Promise<Websocket.ServerResponse> {
     return new Promise((resolve, reject) => {
       const handler = (data) => {
@@ -25,6 +31,9 @@ export class TestWsClient {
     });
   }
 
+  /**
+   * Sends a subscription to the given topic / channel pair and returns a mutable array of received updates
+   */
   async subscribe<UpdatesType>({ topic, channel }: { topic: string; channel: string }) {
     const res = await this.send({
       realm: Websocket.Realms.Notif,

@@ -166,6 +166,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     const { ordered = false } = options ?? {};
 
     const query = this.createQueryBuilder('item')
+      .leftJoinAndSelect('item_creator', 'creator')
       .where('item.path <@ :path', { path: item.path })
       .andWhere('id != :id', { id: item.id });
 
@@ -178,9 +179,12 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   async getManyDescendants(items: Item[]): Promise<Item[]> {
     // TODO: LEVEL depth
+<<<<<<< HEAD
     if (items.length === 0) {
       return [];
     }
+=======
+>>>>>>> 532b26e (feat: implement recycle hook)
     const query = this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.id NOT IN(:...ids)', {
