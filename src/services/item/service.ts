@@ -10,6 +10,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { ITEMS_LIST_LIMIT } from '../../utils/config';
 import {
   CoreError,
   InvalidMembership,
@@ -135,11 +136,12 @@ export class ItemService {
     page: number = 1,
     name: string = '',
     all: boolean = false,
+    limit: number = ITEMS_LIST_LIMIT,
   ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    return itemRepository.getOwn(actor.id, page, name, all);
+    return itemRepository.getOwn(actor.id, page, name, all, limit);
   }
 
   async getShared(actor: Actor, repositories: Repositories, permission?: PermissionLevel) {

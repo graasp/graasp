@@ -240,8 +240,10 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     page: number,
     name: string,
     all: boolean,
+    limit: number,
   ): Promise<Paginated<Item>> {
-    const skip = (page - 1) * ITEMS_LIST_LIMIT;
+    const pageLimit = limit || ITEMS_LIST_LIMIT;
+    const skip = (page - 1) * pageLimit;
     const [data, totalCount] = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
@@ -253,7 +255,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       })
       .orderBy('item.updatedAt', 'DESC')
       .skip(all ? 0 : skip)
-      .take(all ? Number.MAX_SAFE_INTEGER : ITEMS_LIST_LIMIT)
+      .take(all ? Number.MAX_SAFE_INTEGER : pageLimit)
       .getManyAndCount();
     return { data, totalCount };
   },

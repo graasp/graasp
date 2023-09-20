@@ -75,11 +75,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get own
-  fastify.get<{ Querystring: { page?: number; name?: string; all?: boolean } }>(
+  fastify.get<{ Querystring: { page?: number; name?: string; all?: boolean; limit?: number } }>(
     '/own',
     { schema: getOwn, preHandler: fastify.verifyAuthentication },
     async ({ member, query }) => {
-      return itemService.getOwn(member, buildRepositories(), query.page, query.name, query.all);
+      return itemService.getOwn(
+        member,
+        buildRepositories(),
+        query.page,
+        query.name,
+        query.all,
+        query.limit,
+      );
     },
   );
 

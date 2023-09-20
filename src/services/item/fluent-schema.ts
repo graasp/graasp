@@ -9,6 +9,7 @@ import {
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
+import { ITEMS_LIST_LIMIT } from '../../utils/config';
 
 /**
  * for serialization
@@ -163,6 +164,7 @@ export const getOwn = {
     .additionalProperties(false)
     .prop('page', S.number().default(1))
     .prop('name', S.string())
+    .prop('limit', S.number().default(ITEMS_LIST_LIMIT))
     .prop('all', S.boolean().default(false)),
   response: {
     200: S.object()
