@@ -99,6 +99,7 @@ describe('MeilisearchWrapper', () => {
     getManyDescendants: jest.fn(),
     getDescendants: jest.fn(),
     find: jest.fn(),
+    findAndCount: jest.fn(),
   } as unknown as jest.Mocked<typeof ItemRepository>;
 
   const itemTagRepositoryMock = {

@@ -51,7 +51,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     page: number = 1,
     pageSize: number = 20,
   ): Promise<[ItemPublished[], number]> {
-    const [items, total] = await ItemPublishedRepository.createQueryBuilder('item_published')
+    const [items, total] = await this.createQueryBuilder('item_published')
       .innerJoinAndSelect('item_published.item', 'item') // will ignore soft deleted item
       .innerJoinAndSelect('item.creator', 'member') // will ignore null creator id (deleted account)
       .take(pageSize)
