@@ -433,7 +433,7 @@ describe('MeilisearchWrapper', () => {
       jest.spyOn(repositoriesModule, 'buildRepositories').mockReturnValue(repositories);
 
       // prevent finding any PDFs to store because this part is temporary
-      itemRepositoryMock.find.mockResolvedValue([]);
+      itemRepositoryMock.findAndCount.mockResolvedValue([[], 0]);
 
       datasourceManager.withRepository.mockReturnValue(repositories.itemPublishedRepository);
 
