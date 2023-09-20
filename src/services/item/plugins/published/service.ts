@@ -44,7 +44,6 @@ export class ItemPublishedService {
         ${this.mailer.buildText(text)}
         ${this.mailer.buildButton(link, t(MAIL.PUBLISH_ITEM_BUTTON_TEXT))}
       `;
-
       const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
       await this.mailer.sendEmail(title, member.email, link, html).catch((err) => {
         this.log.warn(err, `mailer failed. published link: ${link}`);

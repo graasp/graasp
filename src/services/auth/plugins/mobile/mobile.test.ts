@@ -6,7 +6,11 @@ import fetch from 'node-fetch';
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { JWT_SECRET, MOBILE_AUTH_URL, REFRESH_TOKEN_JWT_SECRET } from '../../../../utils/config';
+import {
+  JWT_SECRET,
+  MOBILE_DEEP_LINK_PROTOCOL,
+  REFRESH_TOKEN_JWT_SECRET,
+} from '../../../../utils/config';
 import { MemberNotFound } from '../../../../utils/errors';
 import MemberRepository from '../../../member/repository';
 import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
@@ -221,7 +225,7 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
       const result = await response.json();
       expect(result).toHaveProperty('resource');
-      const url = new URL('/auth', MOBILE_AUTH_URL);
+      const url = new URL(`${MOBILE_DEEP_LINK_PROTOCOL}//auth`);
       url.searchParams.set('t', ''); // we don't know the generated token, but the parameter should exist
       expect(result.resource).toContain(url.toString());
     });

@@ -2,6 +2,7 @@ import { PermissionLevel, UUID } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
 import { MailerDecoration } from '../../plugins/mailer';
+import { PLAYER_HOST } from '../../utils/config';
 import {
   CannotDeleteOnlyAdmin,
   ItemMembershipNotFound,
@@ -13,7 +14,6 @@ import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
 import ItemService from '../item/service';
 import { Actor, Member } from '../member/entities/member';
-import { buildItemLink } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
 
 export class ItemMembershipService {
@@ -36,7 +36,7 @@ export class ItemMembershipService {
     member: Member,
     item: Item,
   ): Promise<void> {
-    const link = buildItemLink(item);
+    const link = new URL(item.id, PLAYER_HOST.url).toString();
 
     const lang = member.lang;
     const t = this.mailer.translate(lang);

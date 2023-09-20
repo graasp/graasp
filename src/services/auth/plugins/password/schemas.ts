@@ -6,6 +6,10 @@ export const passwordLogin = {
       email: { type: 'string', format: 'email' },
       password: { type: 'string' },
       captcha: { type: 'string' },
+      url: {
+        type: 'string',
+        format: 'uri',
+      },
     },
     additionalProperties: false,
   },
@@ -13,9 +17,6 @@ export const passwordLogin = {
     type: 'object',
     properties: {
       lang: { type: 'string' },
-      url: {
-        type: 'string',
-      },
     },
     additionalProperties: false,
   },
