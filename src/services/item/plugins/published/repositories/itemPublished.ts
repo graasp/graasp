@@ -1,7 +1,4 @@
-import { PermissionLevel } from '@graasp/sdk';
-
 import { AppDataSource } from '../../../../../plugins/datasource';
-import { printFilledSQL } from '../../../../../utils/debug';
 import { Actor } from '../../../../member/entities/member';
 import { mapById } from '../../../../utils';
 import { Item } from '../../../entities/Item';
@@ -54,11 +51,12 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
     page: number = 1,
     pageSize: number = 20,
   ): Promise<[ItemPublished[], number]> {
-    const [items, total] = await this.findAndCount({
-      relations: { item: { creator: true } },
-      take: pageSize,
-      skip: (page - 1) * pageSize,
-    });
+    const [items, total] = await ItemPublishedRepository.createQueryBuilder('item_published')
+      .innerJoinAndSelect('item_published.item', 'item') // will ignore soft deleted item
+      .innerJoinAndSelect('item.creator', 'member') // will ignore null creator id (deleted account)
+      .take(pageSize)
+      .skip((page - 1) * pageSize)
+      .getManyAndCount();
     return [items, total];
   },
 

@@ -6,7 +6,7 @@ import MeiliSearch, {
   TaskStatus,
   TypoTolerance,
 } from 'meilisearch';
-import { DataSource, In } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -21,7 +21,6 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
-import { FILE_STORAGE_ROOT_PATH } from '../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
 import { Item } from '../../../../entities/Item';
@@ -271,23 +270,35 @@ export class MeiliSearchWrapper {
 
   // Update the PDF that were stored before the indexing feature to add the content in database
   private async storeMissingPdfContent(repositories: Repositories) {
-    this.logger.info('Start adding content to PDFs added before the search feature');
-    // We could theorically directly request the item where 'content' doesn't exist, but 'content' being inside the JSON in two different extra types makes it a bit of a pain.
-    const fileItems = await repositories.itemRepository.find({
-      where: { type: In([ItemType.LOCAL_FILE, ItemType.S3_FILE]) },
-    });
+    this.logger.info('PDF BACKFILL: Start adding content to PDFs added before the search feature');
 
-    for (const item of fileItems) {
-      if (item.type === ItemType.LOCAL_FILE) {
-        const localExtra = (item.extra as LocalFileItemExtra).file;
-        if (localExtra.mimetype === MimeTypes.PDF && localExtra.content === undefined) {
-          const content =
-            (await readPdfContent(`${FILE_STORAGE_ROOT_PATH}/${localExtra.path}`)) ?? '';
-          await repositories.itemRepository.patch(item.id, {
-            extra: { [ItemType.LOCAL_FILE]: { content } } as LocalFileItemExtra,
-          });
-        }
-      } else if (item.type === ItemType.S3_FILE) {
+    let total = 0;
+    let currentPage = 1;
+    // Paginate with 1000 items per page
+    while (currentPage === 1 || (currentPage - 1) * 1000 < total) {
+      const [fileItems, totalCount] = await repositories.itemRepository.findAndCount({
+        where: { type: ItemType.S3_FILE },
+        take: 1000,
+        skip: (currentPage - 1) * 1000,
+        order: {
+          createdAt: 'ASC',
+        },
+      });
+      total = totalCount;
+      currentPage++;
+
+      this.logger.info(
+        `PDF BACKFILL: Page ${currentPage} - ${fileItems.length} items - total count: ${totalCount}`,
+      );
+
+      const filteredItems = fileItems.filter((i) => {
+        const s3extra = (i.extra as S3FileItemExtra).s3File;
+        return s3extra.mimetype === MimeTypes.PDF && s3extra.content === undefined;
+      });
+
+      this.logger.info(`PDF BACKFILL: Page contains ${filteredItems.length} PDF to process`);
+
+      for (const item of filteredItems) {
         const s3extra = (item.extra as S3FileItemExtra).s3File;
 
         // Probably not needed if we download the file only once
@@ -295,7 +306,7 @@ export class MeiliSearchWrapper {
         // if (!s3extra.size || s3extra.size / 1_000_000 > MAX_ACCEPTED_SIZE_MB) {
         //   return '';
         // }
-        if (s3extra.mimetype === MimeTypes.PDF && s3extra.content === undefined) {
+        try {
           const url = (await this.fileService.download(undefined, {
             id: item.id,
             path: s3extra.path,
@@ -305,10 +316,15 @@ export class MeiliSearchWrapper {
           await repositories.itemRepository.patch(item.id, {
             extra: { [ItemType.S3_FILE]: { content } } as S3FileItemExtra,
           });
+        } catch (e) {
+          this.logger.error(
+            `PDF BACKFILL: error during processing of item ${item.id} : ${item.name} => ${e}`,
+          );
         }
       }
     }
-    this.logger.info('Finished adding content to PDFs');
+
+    this.logger.info('PDF BACKFILL: Finished adding content to PDFs');
   }
 
   // to be executed by async job runner when desired
@@ -356,13 +372,17 @@ export class MeiliSearchWrapper {
 
         // Index items (1 task per page)
         this.logger.info('Pushing indexing tasks...');
-        tasks.push(
-          await this.index(
-            published.map((p) => p.item),
-            buildRepositories(manager),
-            ROTATING_INDEX,
-          ),
-        );
+        try {
+          tasks.push(
+            await this.index(
+              published.map((p) => p.item),
+              buildRepositories(manager),
+              ROTATING_INDEX,
+            ),
+          );
+        } catch (e) {
+          this.logger.error(`Error during one rebuild index task: ${e}`);
+        }
       }
       this.logger.info(`Waiting for ${tasks.length} tasks to terminate...`);
       // Wait to be sure that everything is indexed
