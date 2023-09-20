@@ -19,7 +19,7 @@ const connection: ConnectionOptions = {
   password: REDIS_PASSWORD,
 };
 
-const CRON_3AM_SUNDAY = '0 3 * * 0';
+const CRON_3AM_MONDAY = '0 3 * * 1';
 
 // Currently a single worker will handle all of the scheduled job. If performance problem arises, consider having a queue/worker per job.
 export class JobService {
@@ -27,7 +27,7 @@ export class JobService {
   scheduledTasks: Record<string, { handler: () => void; pattern: string }> = {
     'rebuild-index': {
       handler: () => this.searchService.rebuildIndex(),
-      pattern: CRON_3AM_SUNDAY,
+      pattern: CRON_3AM_MONDAY,
     },
   };
 
