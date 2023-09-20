@@ -57,23 +57,23 @@ export default async function (instance: FastifyInstance): Promise<void> {
     })
     .register(fp(decoratorPlugin))
     // need to be defined before member and item for auth check
-    .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN })
-    .register(fp(websocketsPlugin), {
-      prefix: '/ws',
-      redis: {
-        channelName: 'graasp-realtime-updates',
-        config: {
-          host: REDIS_HOST,
-          port: parseInt(REDIS_PORT ?? '6379'),
-          username: REDIS_USERNAME,
-          password: REDIS_PASSWORD,
-        },
-      },
-    });
+    .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
 
   instance.register(async (instance) => {
     // core API modules
     await instance
+      .register(fp(websocketsPlugin), {
+        prefix: '/ws',
+        redis: {
+          channelName: 'graasp-realtime-updates',
+          config: {
+            host: REDIS_HOST,
+            port: parseInt(REDIS_PORT ?? '6379'),
+            username: REDIS_USERNAME,
+            password: REDIS_PASSWORD,
+          },
+        },
+      })
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
       .register(fp(ItemMembershipServiceApi));

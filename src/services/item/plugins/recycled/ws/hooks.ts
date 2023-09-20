@@ -1,3 +1,5 @@
+import { FastifyPluginAsync } from 'fastify';
+
 import { getParentFromPath } from '@graasp/sdk';
 
 import { WebsocketService } from '../../../../websockets/ws-service';
@@ -12,7 +14,7 @@ import {
 import { RecycledBinService } from '../service';
 import { RecycleBinEvent } from './events';
 
-export function registerRecycleWsHooks(
+function registerRecycleWsHooks(
   websockets: WebsocketService,
   recycleBinService: RecycledBinService,
 ) {
@@ -79,3 +81,12 @@ export function registerRecycleWsHooks(
     }
   });
 }
+
+export const recycleWsHooks: FastifyPluginAsync<{ recycleService: RecycledBinService }> = async (
+  fastify,
+  options,
+) => {
+  const { websockets } = fastify;
+  const { recycleService } = options;
+  registerRecycleWsHooks(websockets, recycleService);
+};

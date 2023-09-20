@@ -8,14 +8,9 @@ import {
 } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import schemas, {
-  getRecycledItemDatas,
-  recycleMany,
-  recycleOne,
-  restoreMany,
-  restoreOne,
-} from './schemas';
+import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
+import { recycleWsHooks } from './ws/hooks';
 
 export interface RecycledItemDataOptions {
   /** Max number of items to recycle in a request.
@@ -37,6 +32,10 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   } = options;
 
   const recycleBinService = new RecycledBinService();
+
+  fastify.register(recycleWsHooks, {
+    recycleService: recycleBinService,
+  });
 
   fastify.addSchema(schemas);
 
