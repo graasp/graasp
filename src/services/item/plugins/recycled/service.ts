@@ -85,7 +85,8 @@ export class RecycledBinService {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-    const descendants = await itemRepository.getManyDescendants(items);
+    // since the subtree is currently soft-deleted before recovery, need withDeleted=true
+    const descendants = await itemRepository.getManyDescendants(items, { withDeleted: true });
 
     for (const item of items) {
       this.hooks.runPreHooks('restore', actor, repositories, { item, isRestoredRoot: true });
@@ -98,7 +99,7 @@ export class RecycledBinService {
     }
 
     await itemRepository.recover([...descendants, ...items]);
-    const result = recycledItemRepository.restoreMany(items);
+    await recycledItemRepository.restoreMany(items);
 
     for (const item of items) {
       this.hooks.runPostHooks('restore', actor, repositories, { item, isRestoredRoot: true });
@@ -106,7 +107,5 @@ export class RecycledBinService {
     for (const d of descendants) {
       this.hooks.runPostHooks('restore', actor, repositories, { item: d, isRestoredRoot: false });
     }
-
-    return result;
   }
 }

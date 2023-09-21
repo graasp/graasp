@@ -177,19 +177,23 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return query.getMany();
   },
 
-  async getManyDescendants(items: Item[]): Promise<Item[]> {
+  async getManyDescendants(
+    items: Item[],
+    { withDeleted = false }: { withDeleted?: boolean } = {},
+  ): Promise<Item[]> {
     // TODO: LEVEL depth
-<<<<<<< HEAD
     if (items.length === 0) {
       return [];
     }
-=======
->>>>>>> 532b26e (feat: implement recycle hook)
-    const query = this.createQueryBuilder('item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .where('item.id NOT IN(:...ids)', {
-        ids: items.map(({ id }) => id),
-      });
+    const query = this.createQueryBuilder('item');
+
+    if (withDeleted) {
+      query.withDeleted();
+    }
+
+    query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
+      ids: items.map(({ id }) => id),
+    });
 
     query.andWhere(
       new Brackets((q) => {

@@ -2,6 +2,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel, getParentFromPath } from '@graasp/sdk';
 
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
+import { Member } from '../../../../member/entities/member';
 import { WebsocketService } from '../../../../websockets/ws-service';
 import {
   ChildItemEvent,
@@ -44,47 +46,83 @@ function registerRecycleWsHooks(
       const memberships = itemIdsToMemberships[item.id];
 
       if (memberships) {
-        memberships.forEach(({ member, permission }) => {
-          // remove from shared items of all members that have a memberships on this node
-          if (member.id !== item.creator?.id) {
-            websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('delete', item));
+        // keep only topmost membership in the tree for each member
+        const memberToTopmost = new Map<Member['id'], ItemMembership>();
+        memberships.forEach((membership) => {
+          const current = memberToTopmost.get(membership.member.id);
+          if (!current || membership.item.path.length < current.item.path.length) {
+            memberToTopmost.set(membership.member.id, membership);
           }
 
           // send recycled root to recycle bin of all admins of item
-          if (isRecycledRoot && permission === PermissionLevel.Admin) {
-            websockets.publish(memberItemsTopic, member.id, RecycleBinEvent('create', item));
+          // note that it is not necessarily the topmost! an ancestor node may have weaker permission
+          // so we have to perform the check over all permissions of the recycled root
+          if (isRecycledRoot && membership.permission === PermissionLevel.Admin) {
+            websockets.publish(
+              memberItemsTopic,
+              membership.member.id,
+              RecycleBinEvent('create', item),
+            );
+          }
+        });
+
+        memberToTopmost.forEach(({ member, item: topmost }) => {
+          // remove from shared items of all members that have a membership on this node, only if this is the topmost shared root for this member
+          if (member.id !== item.creator?.id && item.path === topmost.path) {
+            websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('delete', item));
           }
         });
       }
     },
   );
 
-  // on restore item
-  // - notify parent of (re)created child
-  // - notify own items of creator of (re)created item IF path is root
-  // - notify recycled items of TODO:creator?admins?memberships? of restored item IF path is root
-  // - notify members that have memberships on this item of (re)created item TODO: in an inherited case, only the top-level for the given membership should emit an event. Same for delete operation in item hooks
+  // on restore of an item, this is executed on each node in the recycled tree of this item
+  // on each visited node:
+  // - notify parent node of (re)created child IF recycled path of node is root
+  // - notify own items of creator of (re)created item IF absolute path of node is root
+  // - notify shared items of members that have memberships on this item node of (re)created item
+  // - notify recycle bin of admins of restored (= removed recycled item) IF recycled path of node is root
   recycleBinService.hooks.setPostHook(
     'restore',
     async (member, repositories, { item, isRestoredRoot }) => {
       const parentId = getParentFromPath(item.path);
       if (parentId !== undefined) {
-        websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
+        if (isRestoredRoot) {
+          websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
+        }
       } else if (item.creator?.id) {
         // root item, notify creator
         websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
-
-        // TODO: should send to item.creator.id? members that have memberhsip? admins only?
-        websockets.publish(memberItemsTopic, item.creator.id, RecycleBinEvent('delete', item));
       }
 
-      // TODO: in an inherited case, only the top-level for the given membership should emit an event. Same for update operation in item hooks
       const { data: itemIdsToMemberships } =
         await repositories.itemMembershipRepository.getForManyItems([item]);
-      if (item.id in itemIdsToMemberships) {
-        const memberships = itemIdsToMemberships[item.id];
-        memberships.forEach(({ member }) => {
-          if (member.id !== item.creator?.id) {
+      const memberships = itemIdsToMemberships[item.id];
+
+      if (memberships) {
+        // keep only topmost membership in the tree for each member
+        const memberToTopmost = new Map<Member['id'], ItemMembership>();
+        memberships.forEach((membership) => {
+          const current = memberToTopmost.get(membership.member.id);
+          if (!current || membership.item.path.length < current.item.path.length) {
+            memberToTopmost.set(membership.member.id, membership);
+          }
+
+          // remove recycled root from recycle bin of all admins of item
+          // note that it is not necessarily the topmost! an ancestor node may have weaker permission
+          // so we have to perform the check over all permissions of the recycled root
+          if (isRestoredRoot && membership.permission === PermissionLevel.Admin) {
+            websockets.publish(
+              memberItemsTopic,
+              membership.member.id,
+              RecycleBinEvent('delete', item),
+            );
+          }
+        });
+
+        memberToTopmost.forEach(({ member, item: topmost }) => {
+          // re-add to shared items of all members that have a membership on this node, only if this is the topmost shared root for this member
+          if (member.id !== item.creator?.id && item.path === topmost.path) {
             websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('create', item));
           }
         });
