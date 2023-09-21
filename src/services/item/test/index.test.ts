@@ -1117,6 +1117,7 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
+        const actor = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         ({ app } = await build({ member: null }));
         const parent = await savePublicItem({ item: getDummyItem(), actor });
         const child1 = await savePublicItem({
