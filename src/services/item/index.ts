@@ -74,7 +74,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = initializedCreate;
   items.extendExtrasUpdateSchema = initializedUpdate;
 
-  fastify.register(
+  await fastify.register(
     async function (fastify) {
       // add CORS support
       if (fastify.corsPluginOptions) {

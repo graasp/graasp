@@ -2,15 +2,17 @@ import { QueryFailedError } from 'typeorm';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { Item } from '../../../entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
 
 /**
  * Database's first layer of abstraction for Categorys
  */
+
 export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).extend({
-  async get(id: string): Promise<ItemCategory | null> {
-    return this.findOne({ where: { id }, relations: { category: true } });
+  async get(id: string): Promise<ItemCategory> {
+    return this.findOneOrFail({ where: { id }, relations: { category: true, item: true } });
   },
 
   /**
@@ -18,10 +20,25 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
    * @param id item's id
    */
   async getForItem(itemId: string): Promise<ItemCategory[]> {
-    return this.find({ where: { item: { id: itemId } }, relations: { category: true } });
+    return this.find({
+      where: { item: { id: itemId } },
+      relations: { category: true, item: true },
+    });
   },
 
-  async post(itemPath: string, categoryId: string): Promise<ItemCategory | null> {
+  /**
+   * Get itemCategory list that matches the parents of `itemid` or `null`, if not found.
+   * @param id item's id
+   */
+  async getForItemOrParent(item: Item): Promise<ItemCategory[]> {
+    return await this.createQueryBuilder('ic')
+      .innerJoinAndSelect('ic.category', 'category', 'ic.item_path @> :itemPath', {
+        itemPath: item.path,
+      })
+      .getMany();
+  },
+
+  async post(itemPath: string, categoryId: string): Promise<ItemCategory> {
     try {
       const created = await this.insert({ item: { path: itemPath }, category: { id: categoryId } });
       return this.get(created.identifiers[0].id);

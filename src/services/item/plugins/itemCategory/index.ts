@@ -3,11 +3,10 @@ import { FastifyPluginAsync } from 'fastify';
 import { buildRepositories } from '../../../../utils/repositories';
 import common, { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
-import { ItemCategoryService } from './services/itemCategory';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;
-  const itemCategoryService = new ItemCategoryService(items.service);
+  const itemCategoryService = fastify.itemsCategory.service;
   const categoryService = new CategoryService();
 
   // schemas

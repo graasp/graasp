@@ -101,3 +101,6 @@ jobs:
       sentry-dsn: ${{ secrets.SENTRY_DSN }}
       stripe-default-plan-price-id: ${{ secrets.STRIPE_DEFAULT_PLAN_PRICE_ID }}
       stripe-secret-key: ${{ secrets.STRIPE_SECRET_KEY }}
+      meilisearch-url: ${{ secrets.MEILISEARCH_URL }}
+      meilisearch-master-key: ${{ secrets.MEILISEARCH_MASTER_KEY }}
+      meilisearch-rebuild-secret: ${{ secrets.MEILISEARCH_REBUILD_SECRET }}
