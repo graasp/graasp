@@ -166,9 +166,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     const { ordered = false } = options ?? {};
 
     const query = this.createQueryBuilder('item')
-      .leftJoinAndSelect('item_creator', 'creator')
+      .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path <@ :path', { path: item.path })
-      .andWhere('id != :id', { id: item.id });
+      .andWhere('item.id != :id', { id: item.id });
 
     if (ordered) {
       query.orderBy('item.path', 'ASC');
