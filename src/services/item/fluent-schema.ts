@@ -24,11 +24,14 @@ const settings = S.object()
   .prop('ccLicenseAdaption', S.string())
   .prop('displayCoEditors', S.boolean());
 
-const partialMember = S.object()
-  .additionalProperties(false)
-  .prop('id', S.string())
-  .prop('name', S.string())
-  .prop('email', S.string());
+const partialMember = S.anyOf([
+  S.null(),
+  S.object()
+    .additionalProperties(false)
+    .prop('id', S.string())
+    .prop('name', S.string())
+    .prop('email', S.string()),
+]);
 
 export const item = S.object()
   .additionalProperties(false)
