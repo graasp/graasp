@@ -187,7 +187,9 @@ export const filterOutItems = async (actor: Actor, repositories, items: Item[]) 
 
   // TODO: optimize with on query
   const { data: memberships } = actor
-    ? await itemMembershipRepository.getForManyItems(items, actor.id)
+    ? await itemMembershipRepository.getForManyItems(items, {
+        memberId: actor.id,
+      })
     : { data: [] };
   const isHidden = await repositories.itemTagRepository.hasForMany(items, ItemTagType.Hidden);
   return items
