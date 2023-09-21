@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/graasp/graasp/compare/v1.6.1...v1.7.0) (2023-09-21)
+
+
+### Features
+
+* handle redirection url in auth endpoints ([#600](https://github.com/graasp/graasp/issues/600)) ([522c1b8](https://github.com/graasp/graasp/commit/522c1b8f0844cf8289af1ae02b6e1666a0027bb2))
+* Meilisearch integration ([#588](https://github.com/graasp/graasp/issues/588)) ([3affad3](https://github.com/graasp/graasp/commit/3affad300db9ef9c0e180de70bc12f387309cca6))
+
 ## [1.6.1](https://github.com/graasp/graasp/compare/v1.6.0...v1.6.1) (2023-09-07)
 
 
