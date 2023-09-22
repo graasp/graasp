@@ -262,7 +262,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
-  async move(item: Item, parentItem?: Item): Promise<void> {
+  async move(item: Item, parentItem?: Item): Promise<Item> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -290,11 +290,14 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       ? `'${parentItem.path}' || subpath(path, nlevel('${item.path}') - 1)`
       : `subpath(path, nlevel('${item.path}') - 1)`;
 
-    return this.createQueryBuilder('item')
+    await this.createQueryBuilder('item')
       .update()
       .set({ path: () => pathSql })
       .where('item.path <@ :path', { path: item.path })
       .execute();
+
+    // TODO: is there a better way?
+    return this.get(item.id);
   },
 
   async patch(id: string, data: Partial<Item>): Promise<Item> {

@@ -1,7 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
+import { Not } from 'typeorm';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod, Websocket, parseStringToDate } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
@@ -12,7 +13,15 @@ import {
 import { ANNA, saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
-import { ChildItemEvent, OwnItemsEvent, itemTopic, memberItemsTopic } from '../ws/events';
+import { ItemRepository } from '../repository';
+import {
+  ChildItemEvent,
+  OwnItemsEvent,
+  SelfItemEvent,
+  SharedItemsEvent,
+  itemTopic,
+  memberItemsTopic,
+} from '../ws/events';
 import { expectItem, getDummyItem } from './fixtures/items';
 
 // mock datasource
@@ -133,6 +142,356 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [childCreate] = itemUpdates;
         expect(childCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(res)));
+      });
+    });
+  });
+
+  describe('on update item', () => {
+    it('receives update on item itself', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item.id });
+
+      const payload = { name: 'new name' };
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `/items/${item.id}`,
+        payload: { name: 'new name' },
+      });
+      const res = response.json();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expectItem(res, { ...item, ...payload }, actor);
+
+      await waitForExpect(() => {
+        const [selfUpdate] = itemUpdates;
+        expect(selfUpdate).toMatchObject(SelfItemEvent('update', parseStringToDate(res)));
+      });
+    });
+
+    it('parent receives child item update', async () => {
+      const { item: parentItem } = await saveItemAndMembership({ member: actor });
+      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+
+      const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: parentItem.id });
+
+      const payload = { name: 'new name' };
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `/items/${childItem.id}`,
+        payload: { name: 'new name' },
+      });
+      const res = response.json();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expectItem(res, { ...childItem, ...payload }, actor);
+
+      await waitForExpect(() => {
+        const [childUpdate] = itemUpdates;
+        expect(childUpdate).toMatchObject(ChildItemEvent('update', parseStringToDate(res)));
+      });
+    });
+
+    it('creator receives own items update', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const payload = { name: 'new name' };
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `/items/${item.id}`,
+        payload: { name: 'new name' },
+      });
+      const res = response.json();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expectItem(res, { ...item, ...payload }, actor);
+
+      await waitForExpect(() => {
+        const [ownUpdate] = itemUpdates;
+        expect(ownUpdate).toMatchObject(OwnItemsEvent('update', parseStringToDate(res)));
+      });
+    });
+
+    it('member with membership on item receives shared items update', async () => {
+      const anna = await saveMember(ANNA);
+      const { item } = await saveItemAndMembership({ member: anna });
+      await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+      const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      // send recycle request as admin Anna
+      jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
+        request.member = anna;
+      });
+      const payload = { name: 'new name' };
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `/items/${item.id}`,
+        payload: { name: 'new name' },
+      });
+      const res = response.json();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expectItem(res, { ...item, ...payload }, anna);
+
+      await waitForExpect(() => {
+        const [sharedUpdate] = itemUpdates;
+        expect(sharedUpdate).toMatchObject(SharedItemsEvent('update', parseStringToDate(res)));
+      });
+    });
+  });
+
+  describe('on delete item', () => {
+    it('receives deletion update on item itself', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item.id });
+
+      const response = await app.inject({
+        method: HttpMethod.DELETE,
+        url: `/items?id=${item.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await ItemRepository.findOneBy({ id: item.id })).toEqual(null);
+      });
+
+      await waitForExpect(() => {
+        const [selfDelete] = itemUpdates;
+        expect(selfDelete).toMatchObject(SelfItemEvent('delete', parseStringToDate(item)));
+      });
+    });
+
+    it('parent receives child deletion update', async () => {
+      const { item: parentItem } = await saveItemAndMembership({ member: actor });
+      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+
+      const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: parentItem.id });
+
+      const response = await app.inject({
+        method: HttpMethod.DELETE,
+        url: `/items?id=${childItem.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await ItemRepository.findOneBy({ id: childItem.id })).toEqual(null);
+      });
+
+      await waitForExpect(() => {
+        const [childDelete] = itemUpdates;
+        expect(childDelete).toMatchObject(ChildItemEvent('delete', parseStringToDate(childItem)));
+      });
+    });
+
+    it('creator receives own items delete update', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const response = await app.inject({
+        method: HttpMethod.DELETE,
+        url: `/items?id=${item.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await ItemRepository.findOneBy({ id: item.id })).toEqual(null);
+      });
+
+      await waitForExpect(() => {
+        const [ownDelete] = itemUpdates;
+        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', parseStringToDate(item)));
+      });
+    });
+
+    it('member with membership on item receives shared items delete update', async () => {
+      const anna = await saveMember(ANNA);
+      const { item } = await saveItemAndMembership({ member: anna });
+      await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+      const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      // send recycle request as admin Anna
+      jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
+        request.member = anna;
+      });
+      const response = await app.inject({
+        method: HttpMethod.DELETE,
+        url: `/items?id=${item.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await ItemRepository.findOneBy({ id: item.id })).toEqual(null);
+      });
+
+      await waitForExpect(() => {
+        const [sharedDelete] = itemUpdates;
+        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', parseStringToDate(item)));
+      });
+    });
+  });
+
+  describe('on copy item', () => {
+    it('parent item receives child create update', async () => {
+      const { item: item1 } = await saveItemAndMembership({ member: actor });
+      const { item: item2 } = await saveItemAndMembership({ member: actor });
+
+      const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item1.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/copy?id=${item2.id}`,
+        payload: { parentId: item1.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await ItemRepository.count()).toBeGreaterThan(2);
+      });
+
+      const copy = (await ItemRepository.getDescendants(item1))[0];
+
+      await waitForExpect(() => {
+        const [childCreate] = itemUpdates;
+        expect(childCreate).toMatchObject(ChildItemEvent('create', parseStringToDate(copy)));
+      });
+    });
+
+    it('creator receives own items create update when destination is root', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+
+      const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/copy?id=${item.id}`,
+        payload: {},
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await ItemRepository.count()).toBeGreaterThan(1);
+      });
+
+      const copy = await ItemRepository.findOne({ where: { id: Not(item.id) } });
+
+      await waitForExpect(() => {
+        const [childCreate] = itemUpdates;
+        expect(childCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(copy)));
+      });
+    });
+  });
+
+  describe('on move item', () => {
+    it('parent of old location receives child deletion update', async () => {
+      const { item: oldParentItem } = await saveItemAndMembership({ member: actor });
+      const { item: newParentItem } = await saveItemAndMembership({ member: actor });
+      const { item: childItem } = await saveItemAndMembership({
+        member: actor,
+        parentItem: oldParentItem,
+      });
+
+      const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: oldParentItem.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/move?id=${childItem.id}`,
+        payload: { parentId: newParentItem.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+          newParentItem.path,
+        );
+      });
+
+      await waitForExpect(() => {
+        const [childDelete] = itemUpdates;
+        expect(childDelete).toMatchObject(ChildItemEvent('delete', parseStringToDate(childItem)));
+      });
+    });
+
+    it('parent of new location receives child creation update', async () => {
+      const { item: oldParentItem } = await saveItemAndMembership({ member: actor });
+      const { item: newParentItem } = await saveItemAndMembership({ member: actor });
+      const { item: childItem } = await saveItemAndMembership({
+        member: actor,
+        parentItem: oldParentItem,
+      });
+
+      const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: newParentItem.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/move?id=${childItem.id}`,
+        payload: { parentId: newParentItem.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+          newParentItem.path,
+        );
+      });
+
+      const moved = await ItemRepository.findOneBy({ id: childItem.id });
+
+      await waitForExpect(() => {
+        const [childCreate] = itemUpdates;
+        expect(childCreate).toMatchObject(ChildItemEvent('create', parseStringToDate(moved)));
+      });
+    });
+
+    it('creator receives own items delete update if old location was root of creator', async () => {
+      const { item: newParentItem } = await saveItemAndMembership({ member: actor });
+      const { item } = await saveItemAndMembership({
+        member: actor,
+      });
+
+      const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/move?id=${item.id}`,
+        payload: { parentId: newParentItem.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect((await ItemRepository.findOneBy({ id: item.id }))?.path).toContain(
+          newParentItem.path,
+        );
+      });
+
+      await waitForExpect(() => {
+        const [ownDelete] = itemUpdates;
+        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', parseStringToDate(item)));
+      });
+    });
+
+    it('creator receives own items create update if new location is root of creator', async () => {
+      const { item: oldParentItem } = await saveItemAndMembership({ member: actor });
+      const { item: childItem } = await saveItemAndMembership({
+        member: actor,
+        parentItem: oldParentItem,
+      });
+
+      const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/move?id=${childItem.id}`,
+        payload: {},
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).not.toContain(
+          oldParentItem.path,
+        );
+      });
+
+      const moved = await ItemRepository.findOneBy({ id: childItem.id });
+
+      await waitForExpect(() => {
+        const [ownCreate] = itemUpdates;
+        expect(ownCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(moved)));
       });
     });
   });
