@@ -34,13 +34,20 @@ import {
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
   instance.addSchema(shared);
+  // file
+  await instance.register(fp(filePlugin), {
+    fileItemType: FILE_ITEM_TYPE,
+    fileConfigurations: {
+      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+      local: FILE_ITEM_PLUGIN_OPTIONS,
+    },
+  });
 
-  instance
+  await instance
     .register(fp(metaPlugin))
     .register(fp(databasePlugin), {
       logs: DATABASE_LOGS,
     })
-    .register(fp(decoratorPlugin))
     .register(mailerPlugin, {
       host: MAILER_CONFIG_SMTP_HOST,
       port: MAILER_CONFIG_SMTP_PORT,
@@ -49,6 +56,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       password: MAILER_CONFIG_PASSWORD,
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     })
+    .register(fp(decoratorPlugin))
     // need to be defined before member and item for auth check
     .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN })
     .register(fp(websocketsPlugin), {
@@ -63,15 +71,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
         },
       },
     });
-
-  // file
-  await instance.register(fp(filePlugin), {
-    fileItemType: FILE_ITEM_TYPE,
-    fileConfigurations: {
-      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-      local: FILE_ITEM_PLUGIN_OPTIONS,
-    },
-  });
 
   instance.register(async (instance) => {
     // core API modules

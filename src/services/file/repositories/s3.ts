@@ -174,7 +174,7 @@ export class S3FileRepository implements FileRepository {
     expiration?: number;
     filepath: string;
     fileStorage?: string;
-    id: UUID;
+    id?: UUID;
     reply?: FastifyReply;
     replyUrl?: boolean;
   }) {
@@ -208,7 +208,7 @@ export class S3FileRepository implements FileRepository {
         }
       }
       // return readstream of the file saved at given fileStorage path
-      else if (fileStorage) {
+      else if (fileStorage && id) {
         // fetch and save file in temporary path
         const res = await fetch(url);
         const tmpPath = path.join(fileStorage, id);

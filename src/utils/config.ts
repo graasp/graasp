@@ -329,5 +329,14 @@ export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 export const GET_MOST_LIKED_ITEMS_MAXIMUM = 50;
 export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
 
+// bug reporting
 export const BUGS_REPORTING_PREFIX = '/bug';
 export const BUGS_RECIVER_EMAIL = process.env.BUGS_RECIVER_EMAIL;
+
+// Job scheduling
+export const JOB_SCHEDULING: boolean = process.env.JOB_SCHEDULING === 'true';
+
+// Graasp Search
+export const MEILISEARCH_URL = process.env.MEILISEARCH_URL || '';
+export const MEILISEARCH_MASTER_KEY = process.env.MEILISEARCH_MASTER_KEY;
+export const MEILISEARCH_REBUILD_SECRET = process.env.MEILISEARCH_REBUILD_SECRET;
