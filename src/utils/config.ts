@@ -328,3 +328,6 @@ export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 // todo: use env var?
 export const GET_MOST_LIKED_ITEMS_MAXIMUM = 50;
 export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
+
+export const BUGS_REPORTING_PREFIX = '/bug';
+export const BUGS_RECIVER_EMAIL = process.env.BUGS_RECIVER_EMAIL;

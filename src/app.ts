@@ -7,6 +7,7 @@ import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
+import BugServicApi from './services/bug';
 import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
@@ -77,7 +78,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
     await instance
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
-      .register(fp(ItemMembershipServiceApi));
+      .register(fp(ItemMembershipServiceApi))
+      .register(fp(BugServicApi));
 
     // instance.register(
     //   async (instance) => {
