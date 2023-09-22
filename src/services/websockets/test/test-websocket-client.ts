@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-import { Websocket } from '@graasp/sdk';
+import { Websocket, parseStringToDate } from '@graasp/sdk';
 import { ServerUpdate } from '@graasp/sdk/dist/services/websockets/api/server';
 
 /**
@@ -8,15 +8,22 @@ import { ServerUpdate } from '@graasp/sdk/dist/services/websockets/api/server';
  */
 export class TestWsClient {
   private readonly ws: WebSocket;
+  private readonly ready: Promise<void>;
 
   constructor(address: string) {
     this.ws = new WebSocket(address.replace('http', 'ws') + '/ws');
+    this.ready = new Promise((resolve) => {
+      this.ws.on('open', () => {
+        resolve();
+      });
+    });
   }
 
   /**
    * Sends any {@link Websocket.ClientMessage} and return a promise with the response of the server
    */
   async send(payload: Websocket.ClientMessage): Promise<Websocket.ServerResponse> {
+    await this.ready;
     return new Promise((resolve, reject) => {
       const handler = (data) => {
         const message = JSON.parse(data.toString());
@@ -56,7 +63,7 @@ export class TestWsClient {
         update.channel === channel &&
         update.topic === topic
       ) {
-        updates.push(update.body);
+        updates.push(parseStringToDate(update.body));
       }
     });
 

@@ -11,7 +11,7 @@ import {
 import { ANNA, saveMember } from '../../../../member/test/fixtures/members';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { Item } from '../../../entities/Item';
+import { ItemRepository } from '../../../repository';
 import {
   ChildItemEvent,
   ItemEvent,
@@ -26,19 +26,6 @@ import { RecycleBinEvent } from '../ws/events';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
-
-/**
- * A custom serializier for items that ignores dates that may frequently change
- * To be used with toMatchObject
- */
-function serialize(item: Item): Item {
-  // Dates are not parsed by JSON so ensure that they are all strings
-  const serialized = JSON.parse(JSON.stringify(item));
-  // Ignore dates that may frequently change on the server
-  delete serialized.deletedAt;
-  delete serialized.updatedAt;
-  return serialized;
-}
 
 describe('Recycle websocket hooks', () => {
   let app, actor, address;
@@ -68,9 +55,18 @@ describe('Recycle websocket hooks', () => {
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
       await waitForExpect(() => {
         const [selfDelete] = itemUpdates;
-        expect(selfDelete).toMatchObject(SelfItemEvent('delete', serialize(item)));
+        expect(selfDelete).toMatchObject(SelfItemEvent('delete', updatedItem));
       });
     });
 
@@ -88,9 +84,18 @@ describe('Recycle websocket hooks', () => {
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: childItem.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
       await waitForExpect(() => {
         const [selfDelete] = itemUpdates;
-        expect(selfDelete).toMatchObject(SelfItemEvent('delete', serialize(childItem)));
+        expect(selfDelete).toMatchObject(SelfItemEvent('delete', updatedItem));
       });
     });
 
@@ -108,9 +113,18 @@ describe('Recycle websocket hooks', () => {
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: childItem.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
       await waitForExpect(() => {
         const [childDelete] = itemUpdates;
-        expect(childDelete).toMatchObject(ChildItemEvent('delete', serialize(childItem)));
+        expect(childDelete).toMatchObject(ChildItemEvent('delete', updatedItem));
       });
     });
 
@@ -132,10 +146,24 @@ describe('Recycle websocket hooks', () => {
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedChild = await ItemRepository.findOne({
+        where: { id: childItem.id },
+        withDeleted: true,
+      });
+      if (!updatedChild) throw new Error('item should be found in test');
+      const updatedParent = await ItemRepository.findOne({
+        where: { id: parentItem.id },
+        withDeleted: true,
+      });
+      if (!updatedParent) throw new Error('item should be found in test');
+
       await waitForExpect(() => {
         const [selfDelete, childDelete] = itemUpdates;
-        expect(selfDelete).toMatchObject(SelfItemEvent('delete', serialize(parentItem)));
-        expect(childDelete).toMatchObject(ChildItemEvent('delete', serialize(childItem)));
+        expect(selfDelete).toMatchObject(SelfItemEvent('delete', updatedParent));
+        expect(childDelete).toMatchObject(ChildItemEvent('delete', updatedChild));
       });
     });
 
@@ -152,9 +180,18 @@ describe('Recycle websocket hooks', () => {
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
       await waitForExpect(() => {
         const [ownDelete] = memberItemsUpdates;
-        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', serialize(item)));
+        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', updatedItem));
       });
     });
 
@@ -178,8 +215,17 @@ describe('Recycle websocket hooks', () => {
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [sharedDelete] = memberItemsUpdates;
-        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', serialize(item)));
+        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', updatedItem));
       });
     });
 
@@ -204,8 +250,17 @@ describe('Recycle websocket hooks', () => {
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: childItem.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [sharedDelete] = memberItemsUpdates;
-        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', serialize(childItem)));
+        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', updatedItem));
       });
     });
 
@@ -236,8 +291,17 @@ describe('Recycle websocket hooks', () => {
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: parentItem.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [sharedDelete] = memberItemsUpdates;
-        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', serialize(parentItem)));
+        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', updatedItem));
       });
     });
 
@@ -257,9 +321,18 @@ describe('Recycle websocket hooks', () => {
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [recycleCreate, sharedDelete] = memberItemsUpdates;
-        expect(recycleCreate).toMatchObject(RecycleBinEvent('create', serialize(item)));
-        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', serialize(item)));
+        expect(recycleCreate).toMatchObject(RecycleBinEvent('create', updatedItem));
+        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', updatedItem));
       });
     });
   });
@@ -291,8 +364,16 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: childItem.id },
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [childCreate] = itemUpdates;
-        expect(childCreate).toMatchObject(ChildItemEvent('create', serialize(childItem)));
+        expect(childCreate).toMatchObject(ChildItemEvent('create', updatedItem));
       });
     });
 
@@ -321,8 +402,16 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [ownCreate] = itemUpdates;
-        expect(ownCreate).toMatchObject(OwnItemsEvent('create', serialize(item)));
+        expect(ownCreate).toMatchObject(OwnItemsEvent('create', updatedItem));
       });
     });
 
@@ -365,8 +454,16 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [sharedCreate] = memberItemsUpdates;
-        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', serialize(item)));
+        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
       });
     });
 
@@ -410,8 +507,16 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: childItem.id },
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [sharedCreate] = memberItemsUpdates;
-        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', serialize(childItem)));
+        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
       });
     });
 
@@ -460,8 +565,16 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: parentItem.id },
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [sharedCreate] = memberItemsUpdates;
-        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', serialize(parentItem)));
+        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
       });
     });
 
@@ -500,9 +613,17 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(async () => {
         const [recycleDelete, sharedCreate] = memberItemsUpdates;
-        expect(recycleDelete).toMatchObject(RecycleBinEvent('delete', serialize(item)));
-        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', serialize(item)));
+        expect(recycleDelete).toMatchObject(RecycleBinEvent('delete', updatedItem));
+        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
       });
     });
   });
