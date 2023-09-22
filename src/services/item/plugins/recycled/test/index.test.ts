@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { In } from 'typeorm';
 import { v4 } from 'uuid';
+import waitForExpect from 'wait-for-expect';
 
 import {
   HttpMethod,
@@ -549,6 +550,48 @@ describe('Recycle Bin Tests', () => {
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
         });
+      });
+    });
+  });
+
+  describe('Scenarios', () => {
+    beforeEach(async () => {
+      ({ app, actor } = await build());
+    });
+
+    /**
+     * This is a regression test from a real production bug caused by not restoring the soft-deleted children
+     */
+    it('Restores the subtree successfully if it has children', async () => {
+      const { item: parentItem } = await saveItemAndMembership({ member: actor });
+      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+
+      const recycle = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/recycle?id=${parentItem.id}`,
+      });
+      expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      expect(await ItemRepository.findOneBy({ id: childItem.id })).toBe(null);
+
+      const restore = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/restore?id=${parentItem.id}`,
+      });
+      expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+
+      const restoredChild = await ItemRepository.get(childItem.id);
+      // the recycle/restore operation changed the updatedAt value, but we can't know when from the outside
+      expect({ ...restoredChild, updatedAt: undefined }).toMatchObject({
+        ...childItem,
+        updatedAt: undefined,
       });
     });
   });
