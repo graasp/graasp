@@ -6,9 +6,9 @@ import { Member } from '../../member/entities/member';
 const MAX_PORT = 65535;
 const MIN_PORT = 1025;
 
-function listenOnRandomPort(app: FastifyInstance): Promise<string> {
+async function listenOnRandomPort(app: FastifyInstance): Promise<string> {
   try {
-    return app.listen({
+    return await app.listen({
       port: Math.floor(Math.random() * (MAX_PORT - MIN_PORT)) + MIN_PORT,
       host: '0.0.0.0',
     });
