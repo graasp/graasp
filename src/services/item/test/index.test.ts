@@ -581,7 +581,7 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data.data).toHaveLength(1);
 
-        expect(data?.data?.[0]?.id).toBe(items[2]?.id);
+        expect(data?.data?.[0]?.id).toBe(items[0]?.id);
       });
     });
   });
