@@ -24,14 +24,11 @@ const settings = S.object()
   .prop('ccLicenseAdaption', S.string())
   .prop('displayCoEditors', S.boolean());
 
-const partialMember = S.anyOf([
-  S.null(),
-  S.object()
-    .additionalProperties(false)
-    .prop('id', S.string())
-    .prop('name', S.string())
-    .prop('email', S.string()),
-]);
+const partialMember = S.object()
+  .additionalProperties(false)
+  .prop('id', S.string())
+  .prop('name', S.string())
+  .prop('email', S.string());
 
 export const item = S.object()
   .additionalProperties(false)
@@ -42,7 +39,8 @@ export const item = S.object()
   .prop('path', S.string())
   .prop('extra', S.object().additionalProperties(true))
   .prop('settings', settings)
-  .prop('creator', partialMember)
+  // creator could have been deleted
+  .prop('creator', S.anyOf([S.null(), partialMember]))
   /**
    * for some reason setting these date fields as "type: 'string'"
    * makes the serialization fail using the anyOf.
