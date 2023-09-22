@@ -62,6 +62,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
   instance.register(async (instance) => {
     // core API modules
     await instance
+      // the websockets plugin must be registered before but in the same scope as the apis
+      // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
       .register(fp(websocketsPlugin), {
         prefix: '/ws',
         redis: {
