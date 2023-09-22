@@ -164,8 +164,7 @@ export const getOwn = {
     .additionalProperties(false)
     .prop('page', S.number().default(1))
     .prop('name', S.string())
-    .prop('limit', S.number().default(ITEMS_LIST_LIMIT))
-    .prop('all', S.boolean().default(false)),
+    .prop('limit', S.number().default(ITEMS_LIST_LIMIT)),
   response: {
     200: S.object()
       .additionalProperties(false)

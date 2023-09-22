@@ -25,6 +25,7 @@ import { filterOutItems, validatePermission, validatePermissionMany } from '../a
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item } from './entities/Item';
+import { PaginationArgs } from './interfaces/response';
 
 export class ItemService {
   hooks = new HookManager<{
@@ -133,15 +134,15 @@ export class ItemService {
   async getOwn(
     actor: Actor,
     { itemRepository }: Repositories,
-    page: number = 1,
-    name: string = '',
-    all: boolean = false,
-    limit: number = ITEMS_LIST_LIMIT,
+    searchArgs: {
+      name: string;
+    },
+    args: PaginationArgs,
   ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    return itemRepository.getOwn(actor.id, page, name, all, limit);
+    return itemRepository.getOwn(actor.id, searchArgs, args);
   }
 
   async getShared(actor: Actor, repositories: Repositories, permission?: PermissionLevel) {

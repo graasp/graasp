@@ -25,7 +25,7 @@ import {
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, ItemExtra } from './entities/Item';
-import { Paginated } from './interfaces/response';
+import { Paginated, PaginationArgs } from './interfaces/response';
 import {
   _fixChildrenOrder,
   dashToUnderscore,
@@ -237,13 +237,13 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   async getOwn(
     memberId: string,
-    page: number,
-    name: string,
-    all: boolean,
-    limit: number,
+    searchArgs: {
+      name: string;
+    },
+    args: PaginationArgs,
   ): Promise<Paginated<Item>> {
-    const pageLimit = limit || ITEMS_LIST_LIMIT;
-    const skip = (page - 1) * pageLimit;
+    const pageLimit = args.limit || ITEMS_LIST_LIMIT;
+    const skip = (args.page - 1) * pageLimit;
     const [data, totalCount] = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
@@ -251,11 +251,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .andWhere('im.permission = :permission', { permission: PermissionLevel.Admin })
       .andWhere('nlevel(item.path) = 1')
       .andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
-        name: name.toLowerCase().trim(),
+        name: searchArgs.name.toLowerCase().trim(),
       })
       .orderBy('item.updatedAt', 'DESC')
-      .skip(all ? 0 : skip)
-      .take(all ? Number.MAX_SAFE_INTEGER : pageLimit)
+      .skip(skip)
+      .take(pageLimit)
       .getManyAndCount();
     return { data, totalCount };
   },

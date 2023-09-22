@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
 
+import { ITEMS_LIST_LIMIT } from '../../utils/config';
 import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
@@ -75,18 +76,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get own
-  fastify.get<{ Querystring: { page?: number; name?: string; all?: boolean; limit?: number } }>(
+  fastify.get<{ Querystring: { page?: number; name?: string; limit?: number } }>(
     '/own',
     { schema: getOwn, preHandler: fastify.verifyAuthentication },
     async ({ member, query }) => {
-      return itemService.getOwn(
-        member,
-        buildRepositories(),
-        query.page,
-        query.name,
-        query.all,
-        query.limit,
-      );
+      const { page = 1, name = '', limit = ITEMS_LIST_LIMIT } = query;
+      return itemService.getOwn(member, buildRepositories(), { name }, { page, limit });
     },
   );
 

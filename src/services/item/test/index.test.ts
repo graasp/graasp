@@ -564,6 +564,25 @@ describe('Item routes tests', () => {
           );
         });
       });
+      it('get the items for the second page', async () => {
+        const { item: item1 } = await saveItemAndMembership({ member: actor });
+        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item3 } = await saveItemAndMembership({ member: actor });
+        const items = [item1, item2, item3];
+
+        // get items for the second page when limit = 2, that we will get the last item only
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: '/items/own?page=2&limit=2',
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const data = response.json();
+        expect(data.data).toHaveLength(1);
+
+        expect(data?.data?.[0]?.id).toBe(items[2]?.id);
+      });
     });
   });
   describe('GET /items/shared-with', () => {
