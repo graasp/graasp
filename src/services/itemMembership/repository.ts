@@ -60,10 +60,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   async get(id: string): Promise<ItemMembership> {
     const item = await this.findOne({
       where: { id },
-      relations: {
-        member: true,
-        item: true,
-      },
+      relations: ['member', 'item', 'item.creator'],
     });
 
     if (!item) {
