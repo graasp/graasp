@@ -8,6 +8,7 @@ import {
   PermissionLevelCompare,
   ResultOf,
   UUID,
+  getIdsFromPath,
 } from '@graasp/sdk';
 
 import {
@@ -168,23 +169,28 @@ export class ItemService {
   async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
-
     // TODO optimize?
     const parents = await itemRepository.getAncestors(item);
 
-    let lastIdx = parents.length;
+    // ensure that elements are in order
+    const parentsOrder = getIdsFromPath(item.path);
+    const orderedParents = parentsOrder.map(
+      (parentId) => parents.find(({ id }) => id === parentId) as Item,
+    );
+
+    let lastIdx = orderedParents.length;
     // filter out if does not have membership
-    for (let i = 0; i < parents.length; i++) {
+    for (let i = 0; i < orderedParents.length; i++) {
       try {
         await validatePermission(
           repositories,
           PermissionLevel.Read,
           actor,
-          parents[parents.length - i],
+          orderedParents[orderedParents.length - i],
         );
         lastIdx = i;
       } catch (e) {
-        return parents.slice(parents.length - lastIdx, parents.length);
+        return orderedParents.slice(orderedParents.length - lastIdx, orderedParents.length);
       }
     }
   }
