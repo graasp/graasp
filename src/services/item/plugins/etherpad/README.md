@@ -20,9 +20,9 @@ Note that the master API key must be placed in the root folder of the Etherpad s
 
 The key format must be a hex string of 64 characters (i.e. regex `[a-f\d]{64}`).
 
-In the Graasp devcontainer, the key is bind-mounted from [this file](../../../../../.devcontainer/etherpad/devApiKey.txt) and the container is already available over the virtual network from the [docker-compose definition](../../../../../.devcontainer/docker-compose.yml).
+In the Graasp devcontainer, the key is bind-mounted from [this file](../../../../../.devcontainer/etherpad/devApiKey.txt) into the Etherpad service container and the API is already available over the virtual network from the [docker-compose definition](../../../../../.devcontainer/docker-compose.yml).
 
-In a production container environment, you should either bind-mount a secret key, or build your own etherpad image using the `etherpad/etherpad` image as base and write your own secret file, see the [Dockerfile](Dockerfile) as an example.
+In a production Etherpad container environment, you should either bind-mount a secret key, or build your own etherpad image using the `etherpad/etherpad` image as base and write your own secret file, see the [Dockerfile](Dockerfile) as an example.
 
 > Note: if you update the version of Etherpad, make sure that all relevant documentation is updated as well (e.g. search for `1.8.18` in the entire codebase).
 
@@ -66,7 +66,7 @@ Note that the ability "read pad" should also enforce that a user **cannot** edit
 
 ### Player mode
 
-In the Player view, the pad is (currently) always shown in read-only mode. This may be subject to change in the future, depending on user needs, in which case the mapping should be carefuly redesigned not to leak editable pads to unauthorized users.
+In the Player view, the pad is (currently) always shown in **read-only** mode. This may be subject to change in the future, depending on user needs, in which case the mapping should be carefuly redesigned not to leak editable pads to unauthorized users.
 
 > Header row: item visibility, first column: user permission
 
@@ -114,7 +114,7 @@ Since the granularity of permissions in Graasp is at the item level, we map perm
 - Each Etherpad item in Graasp is mapped to an Etherpad group (the `groupMapper` is assigned a unique random identifier) which will contain a single pad.
 - Each Graasp member which accesses to an Etherpad item is assigned an Etherpad author (the `authorMapper` is assigned the member id)
 - Sessions are hence allocated between authors and groups, effectively mapping Graasp members to Graasp Etherpad items.
-- In Etherpad, permission is represented by a session (which is stored in a single cookie) **as well as the `padID`**. A user may be given the actual ` padID` with the session, which effectively grants him write permissions on the pad, or a special `readOnlyID` for a given `padID` which only grants read permissions. **It is up to the Graasp back-end and front-ends to never expose both to unpriviliged users**, i.e. a user which does not have at least write permission should _never_ see the actual `padID`.
+- In Etherpad, permission is represented by a session (which is stored in a single cookie) **as well as the `padID`**. A user may be given the actual `padID` with the session, which effectively grants him write permissions on the pad, or a special `readOnlyID` for a given `padID` which only grants read permissions. **It is up to the Graasp back-end and front-ends to never expose both to unpriviliged users**, i.e. a user which does not have at least write permission should _never_ see the actual `padID`.
 
 ## Sequence diagrams
 
