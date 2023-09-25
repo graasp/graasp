@@ -81,7 +81,7 @@ export function initSentry(instance: FastifyInstance): {
      */
     instance.decorateRequest('metrics', null);
 
-    instance.addHook('onRequest', async (request, reply) => {
+    instance.addHook('onRequest', async (request) => {
       request.metrics = {
         sentry: {
           transaction: Sentry.startTransaction({
@@ -92,7 +92,7 @@ export function initSentry(instance: FastifyInstance): {
       };
     });
 
-    instance.addHook('onResponse', async (request, reply) => {
+    instance.addHook('onResponse', async (request) => {
       request.metrics?.sentry?.transaction?.finish();
     });
   }

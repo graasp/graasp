@@ -1,5 +1,4 @@
-import { DataSource, Db } from 'typeorm';
-import { v4 } from 'uuid';
+import { DataSource } from 'typeorm';
 
 import { getTableNames } from '../utils';
 

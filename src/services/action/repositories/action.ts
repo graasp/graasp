@@ -1,5 +1,3 @@
-import { Brackets } from 'typeorm';
-
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
