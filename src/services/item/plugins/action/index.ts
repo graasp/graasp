@@ -18,6 +18,7 @@ import {
 
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
 import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas';
@@ -38,6 +39,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     members: { service: memberService },
     mailer,
     db,
+    websockets,
   } = fastify;
 
   const actionItemService = new ActionItemService(actionService, itemService, memberService);
@@ -149,18 +151,32 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     url: '/:id/actions/export',
     schema: exportAction,
     preHandler: fastify.verifyAuthentication,
-    handler: async ({ member, params: { id: itemId }, log }, reply) => {
+    handler: async (request, reply) => {
+      const {
+        member,
+        params: { id: itemId },
+        log,
+      } = request;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        await requestExportService.request(member, repositories, itemId);
-      })
-        .then(() => {
-          // todo: save action
-        })
-        .catch((e) => {
-          // TODO: return feedback in queue
-          console.error(e);
-        });
+        const item = await requestExportService.request(member, repositories, itemId);
+        if (member && item) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('export', [itemId], { data: { [item.id]: item }, errors: [] }),
+          );
+        }
+      }).catch((e: Error) => {
+        log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('export', [itemId], { error: e }),
+          );
+        }
+      });
 
       // reply no content and let the server create the archive and send the mail
       reply.status(StatusCodes.NO_CONTENT);

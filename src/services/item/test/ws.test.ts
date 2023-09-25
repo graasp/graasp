@@ -16,6 +16,7 @@ import { setupWsApp } from '../../websockets/test/ws-app';
 import { ItemRepository } from '../repository';
 import {
   ChildItemEvent,
+  ItemOpFeedbackEvent,
   OwnItemsEvent,
   SelfItemEvent,
   SharedItemsEvent,
@@ -492,6 +493,61 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [ownCreate] = itemUpdates;
         expect(ownCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(moved)));
+      });
+    });
+  });
+
+  describe('asynchronous feedback', () => {
+    it('member that initiated the updateMany operation receives success feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const payload = { name: 'new name' };
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `/items/?id=${item.id}`,
+        payload,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      let updated;
+      await waitForExpect(async () => {
+        updated = await ItemRepository.findOneBy(payload);
+        expect(updated).not.toBe(null);
+      });
+
+      expectItem(updated, { ...item, ...payload }, actor);
+
+      await waitForExpect(() => {
+        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('update', [item.id], { data: { [item.id]: updated }, errors: [] }),
+        );
+      });
+    });
+
+    it('member that initiated the updateMany operation receives failure feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      jest.spyOn(ItemRepository, 'patch').mockImplementation(() => {
+        throw new Error('mock error');
+      });
+
+      const payload = { name: 'new name' };
+      const response = await app.inject({
+        method: HttpMethod.PATCH,
+        url: `/items/?id=${item.id}`,
+        payload,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(() => {
+        const [feedbackUpdate] = memberUpdates;
+        console.log(JSON.stringify(feedbackUpdate));
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('update', [item.id], { error: new Error('mock error') }),
+        );
       });
     });
   });

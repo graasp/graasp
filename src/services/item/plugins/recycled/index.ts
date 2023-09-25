@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsync } from 'fastify';
 
 import {
@@ -8,6 +10,7 @@ import {
 } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
 import { recycleWsHooks } from './ws/hooks';
@@ -25,7 +28,7 @@ export interface RecycledItemDataOptions {
 }
 
 const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, options) => {
-  const { db } = fastify;
+  const { db, websockets } = fastify;
   const {
     maxItemsInRequest = MAX_TARGETS_FOR_READ_REQUEST,
     maxItemsWithResponse = MAX_TARGETS_FOR_MODIFY_REQUEST,
@@ -71,15 +74,34 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
     { schema: recycleMany(maxItemsInRequest), preHandler: fastify.verifyAuthentication },
-    async ({ member, query: { id: ids }, log }, reply) => {
+    async (request, reply) => {
+      const {
+        member,
+        query: { id: ids },
+        log,
+      } = request;
       db.transaction(async (manager) => {
-        return recycleBinService.recycleMany(member, buildRepositories(manager), ids);
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
+        const items = await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('recycle', ids, items),
+          );
+        }
+        return items;
+      }).catch((e: Error) => {
+        log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('recycle', ids, { error: e }),
+          );
+        }
       });
 
-      reply.status(202);
+      reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -101,16 +123,34 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   fastify.post<{ Querystring: IdsParams }>(
     '/restore',
     { schema: restoreMany(maxItemsInRequest), preHandler: fastify.verifyAuthentication },
-    async ({ member, query: { id: ids }, log }, reply) => {
+    async (request, reply) => {
+      const {
+        member,
+        query: { id: ids },
+        log,
+      } = request;
       log.info(`Restoring items ${ids}`);
 
       db.transaction(async (manager) => {
-        return recycleBinService.restoreMany(member, buildRepositories(manager), ids);
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
+        const items = await recycleBinService.restoreMany(member, buildRepositories(manager), ids);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('restore', ids, items),
+          );
+        }
+      }).catch((e: Error) => {
+        log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('restore', ids, { error: e }),
+          );
+        }
       });
-      reply.status(202);
+      reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );

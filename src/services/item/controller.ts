@@ -21,9 +21,10 @@ import {
   updateMany,
 } from './fluent-schema';
 import { Ordered } from './interfaces/requests';
+import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db, items, websockets } = fastify;
   const itemService = items.service;
   const actionItemService = items.actions.service;
 
@@ -162,7 +163,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
       } = request;
       db.transaction(async (manager) => {
-        // TODO: implement queue
         const repositories = buildRepositories(manager);
         const items = await itemService.patchMany(member, repositories, ids, body);
         await actionItemService.postManyPatchAction(
@@ -171,9 +171,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           repositories,
           resultOfToList(items),
         );
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('update', ids, items),
+          );
+        }
+      }).catch((e: Error) => {
+        log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('update', ids, { error: e }),
+          );
+        }
       });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
@@ -193,13 +206,28 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
       } = request;
       db.transaction(async (manager) => {
-        // TODO: implement queue
         const repositories = buildRepositories(manager);
         const items = await itemService.deleteMany(member, repositories, ids);
         await actionItemService.postManyDeleteAction(request, reply, repositories, items);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('delete', ids, {
+              data: Object.fromEntries(items.map((i) => [i.id, i])),
+              errors: [],
+            }),
+          );
+        }
       }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
+        log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('delete', ids, { error: e }),
+          );
+        }
       });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
@@ -216,14 +244,29 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      // TODO: implement queue
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.moveMany(member, repositories, ids, parentId);
         await actionItemService.postManyMoveAction(request, reply, repositories, items);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('move', ids, {
+              data: Object.fromEntries(items.map((i) => [i.id, i])),
+              errors: [],
+            }),
+          );
+        }
       }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
+        log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('move', ids, { error: e }),
+          );
+        }
       });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
@@ -243,16 +286,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      // TODO: implement queue
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.copyMany(member, repositories, ids, {
           parentId,
         });
         await actionItemService.postManyCopyAction(request, reply, repositories, items);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('copy', ids, {
+              data: Object.fromEntries(items.map((i) => [i.id, i])),
+              errors: [],
+            }),
+          );
+        }
       }).catch((e) => {
-        // TODO: return feedback in queue
         log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('copy', ids, { data: {}, errors: [e] }),
+          );
+        }
       });
       reply.status(StatusCodes.ACCEPTED);
       return ids;

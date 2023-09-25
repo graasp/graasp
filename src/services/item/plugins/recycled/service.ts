@@ -35,7 +35,8 @@ export class RecycledBinService {
     }
     const { itemRepository, recycledItemRepository } = repositories;
 
-    const { data: idsToItems } = await itemRepository.getMany(itemIds, { throwOnError: true });
+    const itemsResult = await itemRepository.getMany(itemIds, { throwOnError: true });
+    const { data: idsToItems } = itemsResult;
     const items = Object.values(idsToItems);
 
     // if item is already deleted, it will throw not found here
@@ -65,7 +66,7 @@ export class RecycledBinService {
       await this.hooks.runPostHooks('recycle', actor, repositories, { item, isRecycledRoot: true });
     }
 
-    return result;
+    return itemsResult;
   }
 
   async restoreMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -74,10 +75,11 @@ export class RecycledBinService {
     }
     const { itemRepository, recycledItemRepository } = repositories;
 
-    const { data: idsToItems } = await itemRepository.getMany(itemIds, {
+    const result = await itemRepository.getMany(itemIds, {
       throwOnError: true,
       withDeleted: true,
     });
+    const { data: idsToItems } = result;
 
     const items = Object.values(idsToItems);
 
@@ -107,5 +109,7 @@ export class RecycledBinService {
     for (const d of descendants) {
       this.hooks.runPostHooks('restore', actor, repositories, { item: d, isRestoredRoot: false });
     }
+
+    return result;
   }
 }

@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
 
@@ -16,6 +17,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     items: { service: iS },
     db,
     files: { service: fileService },
+    websockets,
   } = fastify;
 
   const { imageClassifierApi } = options;
@@ -68,18 +70,37 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
       schema: itemValidation,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, params: { itemId }, log }, reply) => {
+    async (request, reply) => {
+      const {
+        member,
+        params: { itemId },
+        log,
+      } = request;
       // we do not wait
       db.transaction(async (manager) => {
         if (!member) {
           throw new UnauthorizedMember();
         }
-        await validationService.post(member, buildRepositories(manager), itemId);
+        const repositories = buildRepositories(manager);
+        const item = await validationService.post(member, repositories, itemId);
 
-        // the process could take long time, so let the process run in the background and kreturn the itemId instead
-      }).catch((e) => {
-        // TODO: return feedback in queue
-        console.error(e);
+        // the process could take long time, so let the process run in the background and return the itemId instead
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('validate', [itemId], { data: { [item.id]: item }, errors: [] }),
+          );
+        }
+      }).catch((e: Error) => {
+        log.error(e);
+        if (member) {
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('validate', [itemId], { error: e }),
+          );
+        }
       });
       reply.status(StatusCodes.ACCEPTED);
       return itemId;
