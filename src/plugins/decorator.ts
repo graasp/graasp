@@ -1,8 +1,15 @@
+import MeiliSearch from 'meilisearch';
+
 import { FastifyPluginAsync } from 'fastify';
 
+import { JobService } from '../jobs';
 import { ActionService } from '../services/action/services/action';
+import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
+import { SearchService } from '../services/item/plugins/published/plugins/search/service';
+import { ItemPublishedService } from '../services/item/plugins/published/service';
 import ItemService from '../services/item/service';
 import { MemberService } from '../services/member/service';
+import { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } from '../utils/config';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   /**
@@ -32,5 +39,31 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('actions', {
     service: new ActionService(fastify.items.service, fastify.members.service),
   });
+
+  fastify.decorate('itemsPublished', {
+    service: new ItemPublishedService(fastify.items.service, fastify.mailer, fastify.log),
+  });
+
+  fastify.decorate('itemsCategory', {
+    service: new ItemCategoryService(fastify.items.service),
+  });
+
+  fastify.decorate('search', {
+    service: new SearchService(
+      fastify.items.service,
+      fastify.files.service,
+      fastify.itemsPublished.service,
+      fastify.itemsCategory.service,
+      fastify.db,
+      new MeiliSearch({
+        host: MEILISEARCH_URL,
+        apiKey: MEILISEARCH_MASTER_KEY,
+      }),
+      fastify.log,
+    ),
+  });
+
+  // Launch Job workers
+  fastify.decorate('jobs', { service: new JobService(fastify.search.service, fastify.log) });
 };
 export default decoratorPlugin;

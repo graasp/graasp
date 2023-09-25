@@ -219,6 +219,13 @@ IMAGE_CLASSIFIER_API=<url>
 
 # get a recaptcha secret access key for your hostname at http://www.google.com/recaptcha/admin
 RECAPTCHA_SECRET_ACCESS_KEY=<content>
+# Graasp search
+MEILISEARCH_URL=http://graasp-meilisearch:7700
+MEILISEARCH_MASTER_KEY=masterKey
+MEILISEARCH_REBUILD_SECRET=secret
+
+# Enable job scheduling (for cron based tasks)
+JOB_SCHEDULING=true
 ```
 
 ## Running

@@ -91,7 +91,7 @@ class FileService {
     data: {
       expiration?: number;
       fileStorage?: string;
-      id: string;
+      id?: string;
       mimetype?: string;
       path?: string;
       reply?: FastifyReply;

@@ -1,3 +1,6 @@
+import { readPdfText } from 'pdf-text-reader';
+import { Readable } from 'stream';
+
 import { FolderItemExtra, ItemType, UUID } from '@graasp/sdk';
 
 import { Item } from './entities/Item';
@@ -71,4 +74,15 @@ export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: I
   }
 
   return stElem.createdAt.getTime() - ndElem.createdAt.getTime();
+};
+
+export const readPdfContent = async (source: string | URL) => {
+  const pages = await readPdfText({ url: source, useSystemFonts: true });
+  //limit indexing to first pages
+  const maxPage = Math.min(pages.length, 10);
+
+  return pages
+    .slice(0, maxPage)
+    .flatMap((p) => p.lines)
+    .join(' ');
 };

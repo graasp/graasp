@@ -1,10 +1,14 @@
+import * as fs from 'fs';
 import path from 'path';
-import { PassThrough, Readable } from 'stream';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
+import { withFile as withTmpFile } from 'tmp-promise';
 
 import { MultipartFields } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import {
+  FileItemExtra,
   FileItemProperties,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
@@ -18,7 +22,9 @@ import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { randomHexOf4 } from '../../../utils';
+import { Item } from '../../entities/Item';
 import ItemService from '../../service';
+import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
 import { StorageExceeded } from './utils/errors';
 
@@ -100,15 +106,19 @@ class FileItemService {
     // check member storage limit
     await this.checkRemainingStorage(actor, repositories);
 
-    // duplicate stream to use in thumbnails
-    const streamForThumbnails = new PassThrough();
-    if (MimeTypes.isImage(mimetype)) {
-      stream.pipe(streamForThumbnails);
-    }
+    return await withTmpFile(async ({ path }) => {
+      // Write uploaded file to a temporary file
+      await pipeline(stream, fs.createWriteStream(path));
 
-    try {
+      // Content to be indexed for search
+      let content = '';
+      if (MimeTypes.isPdf(mimetype)) {
+        content = await readPdfContent(path);
+      }
+
+      // Upload to storage
       await this.fileService.upload(actor, {
-        file: stream,
+        file: fs.createReadStream(path),
         filepath,
         mimetype,
       });
@@ -118,14 +128,12 @@ class FileItemService {
       // throw for empty files
       if (!size) {
         await this.fileService.delete(actor, filepath);
-        // Bug: empty stream does not trigger end event, which leads to hang in the for await
-        streamForThumbnails.emit('close');
         throw new UploadEmptyFileError();
       }
 
       // create item from file properties
       const name = filename.substring(0, MAX_ITEM_NAME_LENGTH);
-      const item = {
+      const item: Partial<Item> = {
         name,
         description,
         type: this.fileService.type,
@@ -135,10 +143,10 @@ class FileItemService {
             path: filepath,
             mimetype,
             size,
+            content,
           },
           // todo: fix type
-        } as any,
-        parentId,
+        } as FileItemExtra,
         creator: actor,
       };
 
@@ -155,7 +163,7 @@ class FileItemService {
             actor,
             repositories,
             newItem.id,
-            streamForThumbnails,
+            fs.createReadStream(path),
           );
         } catch (e) {
           console.error(e);
@@ -163,9 +171,7 @@ class FileItemService {
       }
 
       return newItem;
-    } finally {
-      streamForThumbnails.emit('close');
-    }
+    });
   }
 
   async download(
