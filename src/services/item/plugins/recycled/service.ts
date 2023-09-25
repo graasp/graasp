@@ -91,7 +91,7 @@ export class RecycledBinService {
     const descendants = await itemRepository.getManyDescendants(items, { withDeleted: true });
 
     for (const item of items) {
-      this.hooks.runPreHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+      await this.hooks.runPreHooks('restore', actor, repositories, { item, isRestoredRoot: true });
     }
     for (const d of descendants) {
       await this.hooks.runPreHooks('restore', actor, repositories, {
@@ -104,10 +104,13 @@ export class RecycledBinService {
     await recycledItemRepository.restoreMany(items);
 
     for (const item of items) {
-      this.hooks.runPostHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+      await this.hooks.runPostHooks('restore', actor, repositories, { item, isRestoredRoot: true });
     }
     for (const d of descendants) {
-      this.hooks.runPostHooks('restore', actor, repositories, { item: d, isRestoredRoot: false });
+      await this.hooks.runPostHooks('restore', actor, repositories, {
+        item: d,
+        isRestoredRoot: false,
+      });
     }
 
     return result;
