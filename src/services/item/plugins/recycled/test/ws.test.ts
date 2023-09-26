@@ -15,6 +15,7 @@ import { ItemRepository } from '../../../repository';
 import {
   ChildItemEvent,
   ItemEvent,
+  ItemOpFeedbackEvent,
   OwnItemsEvent,
   SelfItemEvent,
   SharedItemsEvent,
@@ -23,6 +24,7 @@ import {
 } from '../../../ws/events';
 import { RecycledItemDataRepository } from '../repository';
 import { RecycleBinEvent } from '../ws/events';
+import { saveRecycledItem } from './index.test';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -624,6 +626,129 @@ describe('Recycle websocket hooks', () => {
         const [recycleDelete, sharedCreate] = memberItemsUpdates;
         expect(recycleDelete).toMatchObject(RecycleBinEvent('delete', updatedItem));
         expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
+      });
+    });
+  });
+
+  describe('asynchronous feedback', () => {
+    it('member that initated the recycle operation receives success feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe<ItemEvent>({
+        topic: memberItemsTopic,
+        channel: actor.id,
+      });
+
+      const res = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/recycle?id=${item.id}`,
+      });
+      expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(1);
+      });
+      const updatedItem = await ItemRepository.findOne({
+        where: { id: item.id },
+        withDeleted: true,
+      });
+      if (!updatedItem) throw new Error('item should be found in test');
+
+      await waitForExpect(() => {
+        const [ownDelete, recycleCreate, feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('recycle', [item.id], {
+            data: { [item.id]: updatedItem },
+            errors: [],
+          }),
+        );
+      });
+    });
+
+    it('member that initated the recycle operation receives failure feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe<ItemEvent>({
+        topic: memberItemsTopic,
+        channel: actor.id,
+      });
+
+      jest.spyOn(RecycledItemDataRepository, 'recycleMany').mockImplementation(async () => {
+        throw new Error('mock error');
+      });
+
+      const res = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/recycle?id=${item.id}`,
+      });
+      expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(() => {
+        const [feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('recycle', [item.id], {
+            error: new Error('mock error'),
+          }),
+        );
+      });
+    });
+
+    it('member that initated the restore operation receives success feedback', async () => {
+      const item = await saveRecycledItem(actor);
+
+      const memberUpdates = await ws.subscribe<ItemEvent>({
+        topic: memberItemsTopic,
+        channel: actor.id,
+      });
+
+      const restore = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/restore?id=${item.id}`,
+      });
+      expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await RecycledItemDataRepository.count()).toEqual(0);
+      });
+      const restored = await ItemRepository.findOneBy({ id: item.id });
+      if (!restored) {
+        throw new Error('item should be restored in test ');
+      }
+
+      await waitForExpect(() => {
+        const [ownCreate, recycleCreate, feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('restore', [item.id], {
+            data: { [item.id]: restored },
+            errors: [],
+          }),
+        );
+      });
+    });
+
+    it('member that initated the restore operation receives failure feedback', async () => {
+      const item = await saveRecycledItem(actor);
+
+      const memberUpdates = await ws.subscribe<ItemEvent>({
+        topic: memberItemsTopic,
+        channel: actor.id,
+      });
+
+      jest.spyOn(RecycledItemDataRepository, 'restoreMany').mockImplementation(async () => {
+        throw new Error('mock error');
+      });
+
+      const restore = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/restore?id=${item.id}`,
+      });
+      expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(() => {
+        const [feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('restore', [item.id], {
+            error: new Error('mock error'),
+          }),
+        );
       });
     });
   });

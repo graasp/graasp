@@ -26,7 +26,7 @@ import { expectManyRecycledItems } from './fixtures';
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
-const saveRecycledItem = async (member: Member, defaultItem?: Item) => {
+export const saveRecycledItem = async (member: Member, defaultItem?: Item) => {
   let item = defaultItem;
   if (!item) {
     ({ item } = await saveItemAndMembership({ member }));
