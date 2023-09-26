@@ -28,11 +28,6 @@ import ItemService from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
 
-type Options = {
-  maxMemberStorage: number;
-};
-const ORIGINAL_FILENAME_TRUNCATE_LIMIT = 20;
-
 class FileItemService {
   fileService: FileService;
   itemService: ItemService;
