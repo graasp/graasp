@@ -550,5 +550,149 @@ describe('Item websocket hooks', () => {
         );
       });
     });
+
+    it('member that initiated the deleteMany operation receives success feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const response = await app.inject({
+        method: HttpMethod.DELETE,
+        url: `/items/?id=${item.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        expect(await ItemRepository.findOneBy({ id: item.id })).toBe(null);
+      });
+
+      await waitForExpect(() => {
+        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('delete', [item.id], { data: { [item.id]: item }, errors: [] }),
+        );
+      });
+    });
+
+    it('member that initiated the deleteMany operation receives failure feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      jest.spyOn(ItemRepository, 'deleteMany').mockImplementation(() => {
+        throw new Error('mock error');
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.DELETE,
+        url: `/items/?id=${item.id}`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(() => {
+        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('delete', [item.id], { error: new Error('mock error') }),
+        );
+      });
+    });
+
+    it('member that initiated the move operation receives success feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/move?id=${item.id}`,
+        payload: { parentId: newParent.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      let moved;
+      await waitForExpect(async () => {
+        moved = await ItemRepository.findOneBy({ id: item.id });
+        expect(moved?.path).toContain(newParent.path);
+      });
+
+      await waitForExpect(() => {
+        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('move', [item.id], { data: { [item.id]: moved }, errors: [] }),
+        );
+      });
+    });
+
+    it('member that initiated the move operation receives failure feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      jest.spyOn(ItemRepository, 'move').mockImplementation(async () => {
+        throw new Error('mock error');
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/move?id=${item.id}`,
+        payload: { parentId: newParent.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(() => {
+        const [feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('move', [item.id], { error: new Error('mock error') }),
+        );
+      });
+    });
+
+    it('member that initiated the copy operation receives success feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/copy?id=${item.id}`,
+        payload: { parentId: newParent.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      let copied;
+      await waitForExpect(async () => {
+        [copied] = await ItemRepository.getDescendants(newParent);
+        expect(copied).toBeDefined();
+      });
+
+      await waitForExpect(() => {
+        const [feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('copy', [item.id], { data: { [copied.id]: copied }, errors: [] }),
+        );
+      });
+    });
+
+    it('member that initiated the copy operation receives failure feedback', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+
+      jest.spyOn(ItemRepository, 'copy').mockImplementation(async () => {
+        throw new Error('mock error');
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `/items/copy?id=${item.id}`,
+        payload: { parentId: newParent.id },
+      });
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(() => {
+        const [feedbackUpdate] = memberUpdates;
+        expect(feedbackUpdate).toMatchObject(
+          ItemOpFeedbackEvent('copy', [item.id], { error: new Error('mock error') }),
+        );
+      });
+    });
   });
 });

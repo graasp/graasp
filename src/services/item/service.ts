@@ -468,9 +468,7 @@ export class ItemService {
     itemIds: string[],
     args: { parentId?: UUID },
   ) {
-    const items = await Promise.all(
-      itemIds.map(async (id) => this.copy(actor, repositories, id, args)),
-    );
+    const items = await Promise.all(itemIds.map((id) => this.copy(actor, repositories, id, args)));
     return items;
   }
 }

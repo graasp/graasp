@@ -308,7 +308,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('copy', ids, { data: {}, errors: [e] }),
+            ItemOpFeedbackEvent('copy', ids, { error: e }),
           );
         }
       });
