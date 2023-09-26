@@ -21,23 +21,19 @@ import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
+import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
-import { StorageExceeded } from './utils/errors';
-
-type Options = {
-  maxMemberStorage: number;
-};
 
 class FileItemService {
   fileService: FileService;
   itemService: ItemService;
+  storageService: StorageService;
   itemThumbnailService: ItemThumbnailService;
   shouldRedirectOnDownload: boolean;
-  options: Options;
 
   buildFilePath() {
     // TODO: CHANGE ??
@@ -48,30 +44,15 @@ class FileItemService {
   constructor(
     fileService: FileService,
     itemService: ItemService,
+    storageService: StorageService,
     itemThumbnailService: ItemThumbnailService,
     shouldRedirectOnDownload: boolean,
-    options: Options,
   ) {
     this.fileService = fileService;
     this.itemService = itemService;
+    this.storageService = storageService;
     this.itemThumbnailService = itemThumbnailService;
     this.shouldRedirectOnDownload = shouldRedirectOnDownload;
-    this.options = options;
-  }
-
-  // check the user has enough storage to create a new item given its size
-  // get the complete storage
-  async checkRemainingStorage(actor: Member, repositories: Repositories, size: number = 0) {
-    const { id: memberId } = actor;
-
-    const currentStorage = await repositories.itemRepository.getItemSumSize(
-      memberId,
-      this.fileService.type,
-    );
-
-    if (currentStorage + size > this.options.maxMemberStorage) {
-      throw new StorageExceeded(currentStorage + size);
-    }
   }
 
   async upload(
@@ -104,7 +85,7 @@ class FileItemService {
       );
     }
     // check member storage limit
-    await this.checkRemainingStorage(actor, repositories);
+    await this.storageService.checkRemainingStorage(actor, repositories);
 
     return await withTmpFile(async ({ path }) => {
       // Write uploaded file to a temporary file
@@ -218,8 +199,7 @@ class FileItemService {
       mimetype,
     };
 
-    // check member storage limit
-    await this.checkRemainingStorage(actor, repositories, size);
+    // check member storage limit in pre copy because all items are pretested
 
     // DON'T use task runner for copy file task: this would generate a new transaction
     // which is useless since the file copy task should not touch the DB at all
