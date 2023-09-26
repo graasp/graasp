@@ -420,6 +420,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return old2New;
   },
 
+  /**
+   * @param memberId member to get the storage for
+   * @param itemType file item type
+   * @returns total storage used by file items
+   */
   async getItemSumSize(memberId: string, itemType: FileItemType): Promise<number> {
     return parseInt(
       (
@@ -428,7 +433,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
           .where('item.creator.id = :memberId', { memberId })
           .andWhere('item.type = :type', { type: itemType })
           .getRawOne()
-      ).total,
+      ).total ?? 0,
     );
   },
 

@@ -58,14 +58,33 @@ export default {
 };
 
 // schema for getting current member
-const getCurrent = {
+export const getCurrent = {
   response: {
     200: { $ref: 'http://graasp.org/members/#/definitions/currentMember' },
   },
 };
 
+// schema for getting current member's storage limits
+export const getStorage = {
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        current: {
+          type: 'number',
+        },
+        maximum: {
+          type: 'number',
+        },
+      },
+      additionalProperties: false,
+      require: ['current', 'maximum'],
+    },
+  },
+};
+
 // schema for getting a member
-const getOne = {
+export const getOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   response: {
     200: { $ref: 'http://graasp.org/members/#/definitions/member' },
@@ -73,7 +92,7 @@ const getOne = {
 };
 
 // schema for getting >1 members
-const getMany = {
+export const getMany = {
   querystring: {
     allOf: [
       { $ref: 'http://graasp.org/#/definitions/idsQuery' },
@@ -112,7 +131,7 @@ const getMany = {
 };
 
 // schema for getting members by
-const getManyBy = {
+export const getManyBy = {
   querystring: {
     type: 'object',
     properties: {
@@ -153,7 +172,7 @@ const getManyBy = {
 };
 
 // schema for updating own member
-const updateOne = {
+export const updateOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   body: { $ref: 'http://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
@@ -162,11 +181,9 @@ const updateOne = {
 };
 
 // schema for getting a member
-const deleteOne = {
+export const deleteOne = {
   params: { $ref: 'http://graasp.org/#/definitions/idParam' },
   response: {
     200: { $ref: 'http://graasp.org/members/#/definitions/member' },
   },
 };
-
-export { getCurrent, getOne, getMany, updateOne, getManyBy, deleteOne };
