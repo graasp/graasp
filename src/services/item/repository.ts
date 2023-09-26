@@ -1,4 +1,4 @@
-import { In } from 'typeorm';
+import { Brackets, In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
@@ -179,14 +179,23 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
   async getManyDescendants(items: Item[]): Promise<Item[]> {
     // TODO: LEVEL depth
-    const query = this.createQueryBuilder('item').where('id NOT IN(:...ids)', {
-      ids: items.map(({ id }) => id),
-    });
+    if (items.length === 0) {
+      return [];
+    }
+    const query = this.createQueryBuilder('item')
+      .leftJoinAndSelect('item.creator', 'creator')
+      .where('item.id NOT IN(:...ids)', {
+        ids: items.map(({ id }) => id),
+      });
 
-    items.forEach((item) => {
-      const key = `path_${item.path}`;
-      query.andWhere(`item.path <@ :${key}`, { [key]: item.path });
-    });
+    query.andWhere(
+      new Brackets((q) => {
+        items.forEach((item) => {
+          const key = `path_${item.path}`;
+          q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
+        });
+      }),
+    );
 
     return query.getMany();
   },

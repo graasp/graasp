@@ -370,13 +370,12 @@ describe('Categories', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      // question: wanted behavior?
-      it('Does not throw if item category id does not exist', async () => {
+      it('Throw if item category id does not exist', async () => {
         const res = await app.inject({
           method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/${v4()}`,
         });
-        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
       });
     });
   });

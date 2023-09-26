@@ -33,7 +33,10 @@ export class ItemService {
     update: { pre: { item: Item }; post: { item: Item } };
     delete: { pre: { item: Item }; post: { item: Item } };
     copy: { pre: { original: Item }; post: { original: Item; copy: Item } };
-    move: { pre: { source: Item; destination: Item }; post: { source: Item; destination: Item } };
+    move: {
+      pre: { source: Item; destination: Item };
+      post: { source: Item; destination: Item; updated: Item };
+    };
   }>();
 
   async post(
@@ -205,7 +208,13 @@ export class ItemService {
     // check memberships
     const item = await itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Write, actor, item);
-    return itemRepository.patch(itemId, body);
+
+    await this.hooks.runPreHooks('update', actor, repositories, { item: item });
+
+    const updated = await itemRepository.patch(itemId, body);
+    await this.hooks.runPostHooks('update', actor, repositories, { item: updated });
+
+    return updated;
   }
 
   async patchMany(
@@ -343,15 +352,16 @@ export class ItemService {
 
     await this._move(actor, repositories, item, parentItem);
 
-    // post hook
-    // question: invoque on all items?
+    const afterMove = await itemRepository.get(itemId);
+
     await this.hooks.runPostHooks('move', actor, repositories, {
       source: item,
       destination: parentItem,
+      updated: afterMove,
     });
 
     // TODO: optimize
-    return itemRepository.get(itemId);
+    return afterMove;
   }
 
   // TODO: optimize

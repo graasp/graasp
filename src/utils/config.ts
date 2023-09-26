@@ -330,3 +330,11 @@ export const GET_MOST_LIKED_ITEMS_MAXIMUM = 50;
 export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
 
 export const ITEMS_LIST_LIMIT = 10;
+// Job scheduling
+export const JOB_SCHEDULING: boolean = process.env.JOB_SCHEDULING === 'true';
+
+// Graasp Search
+
+export const MEILISEARCH_URL = process.env.MEILISEARCH_URL || '';
+export const MEILISEARCH_MASTER_KEY = process.env.MEILISEARCH_MASTER_KEY;
+export const MEILISEARCH_REBUILD_SECRET = process.env.MEILISEARCH_REBUILD_SECRET;
