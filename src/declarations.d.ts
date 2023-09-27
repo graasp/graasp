@@ -21,6 +21,7 @@ import { ItemThumbnailService } from './services/item/plugins/thumbnail/service'
 import ItemService from './services/item/service';
 import ItemMembershipService from './services/itemMembership/service';
 import { Actor, Member } from './services/member/entities/member';
+import { StorageService } from './services/member/plugins/storage/service';
 import { MemberService } from './services/member/service';
 import { WebsocketService } from './services/websockets/ws-service';
 
@@ -75,6 +76,7 @@ declare module 'fastify' {
     members: { service: MemberService };
     actions: { service: ActionService };
     chat: { service: ChatMessageService };
+    storage: { service: StorageService };
 
     websockets: WebsocketService;
     h5p: H5PService;

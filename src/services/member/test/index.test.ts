@@ -1,10 +1,14 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 
-import { HttpMethod } from '@graasp/sdk';
+import { FileItemExtra, FileItemProperties, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
+import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
+import { getDummyItem } from '../../item/test/fixtures/items';
+import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import MemberRepository from '../repository';
 import * as MEMBERS_FIXTURES from './fixtures/members';
 
@@ -46,6 +50,90 @@ describe('Member routes tests', () => {
       const response = await app.inject({
         method: HttpMethod.GET,
         url: '/members/current',
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+  });
+
+  describe('GET /members/current/storage', () => {
+    it('Returns successfully if signed in', async () => {
+      ({ app, actor } = await build());
+
+      const fileServiceType = FILE_ITEM_TYPE;
+
+      // fill db with files
+      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const { item: item1 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: fileServiceType,
+          extra: { [fileServiceType]: { size: 1234 } } as FileItemExtra,
+        }),
+        member: actor,
+      });
+      const { item: item2 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: fileServiceType,
+          extra: { [fileServiceType]: { size: 534 } } as FileItemExtra,
+        }),
+        member: actor,
+      });
+      const { item: item3 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: fileServiceType,
+          extra: { [fileServiceType]: { size: 8765 } } as FileItemExtra,
+        }),
+        member: actor,
+      });
+      // noise data
+      await saveItemAndMembership({ member });
+
+      const totalStorage =
+        (item1.extra[fileServiceType] as FileItemProperties).size +
+        (item2.extra[fileServiceType] as FileItemProperties).size +
+        (item3.extra[fileServiceType] as FileItemProperties).size;
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: '/members/current/storage',
+      });
+      const { current, maximum } = response.json();
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(current).toEqual(totalStorage);
+      expect(maximum).toEqual(DEFAULT_MAX_STORAGE);
+    });
+    it('Returns successfully if empty items', async () => {
+      ({ app, actor } = await build());
+
+      const fileServiceType = FILE_ITEM_TYPE;
+
+      // fill db with noise data
+      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      await saveItemAndMembership({
+        item: getDummyItem({
+          type: fileServiceType,
+          extra: { [fileServiceType]: { size: 8765 } } as FileItemExtra,
+        }),
+        member,
+      });
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: '/members/current/storage',
+      });
+      const { current, maximum } = response.json();
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(current).toEqual(0);
+      expect(maximum).toEqual(DEFAULT_MAX_STORAGE);
+    });
+    it('Throws if signed out', async () => {
+      ({ app } = await build({ member: null }));
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: '/members/current/storage',
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
