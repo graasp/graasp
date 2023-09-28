@@ -128,6 +128,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path @> :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id })
+      .orderBy('path', 'ASC')
       .getMany();
   },
 
