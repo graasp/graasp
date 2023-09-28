@@ -2,6 +2,7 @@ import MeiliSearch, {
   EnqueuedTask,
   Index,
   MeiliSearchApiError,
+  MeiliSearchTimeOutError,
   MultiSearchParams,
   TaskStatus,
   TypoTolerance,
@@ -21,6 +22,7 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
+import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
 import { Item } from '../../../../entities/Item';
@@ -89,15 +91,15 @@ export class MeiliSearchWrapper {
   }
 
   private async logTaskCompletion(task: EnqueuedTask, itemName: string) {
-    const finishedTask = await (await this.getIndex()).waitForTask(task.taskUid);
-    if (task.status === TaskStatus.TASK_SUCCEEDED) {
+    try {
+      const finishedTask = await (await this.getIndex()).waitForTask(task.taskUid);
       this.logger.info(
-        `Meilisearch task completed: item name => ${itemName}, task type => ${task.type}, result: Successful task`,
+        `Meilisearch ${task.type} task completed (${task.status}): item name => ${itemName}. ${
+          finishedTask.error ? `Error: ${finishedTask.error}` : ''
+        }`,
       );
-    } else {
-      this.logger.info(
-        `Meilisearch task completed: item name => ${itemName}, task type => ${task.type}, result: ${finishedTask.error}`,
-      );
+    } catch (e) {
+      // catch timeout while waiting
     }
   }
 
@@ -244,7 +246,13 @@ export class MeiliSearchWrapper {
 
       const index = await this.getIndex(targetIndex);
       const indexingTask = await index.addDocuments(documents);
-      this.logTaskCompletion(indexingTask, items.map((i) => i.name).join(';'));
+      this.logTaskCompletion(
+        indexingTask,
+        items
+          .slice(0, 30) // Avoid logging too many items
+          .map((i) => i.name)
+          .join(';'),
+      );
 
       return indexingTask;
     } catch (err) {
@@ -328,15 +336,17 @@ export class MeiliSearchWrapper {
   }
 
   // to be executed by async job runner when desired
-  async rebuildIndex(pageSize: number = 20) {
-    // Backfill needed pdf data - Probably remove this when everything work well after deployment
-    await this.storeMissingPdfContent(buildRepositories());
+  async rebuildIndex(pageSize: number = 10) {
+    if (MEILISEARCH_STORE_LEGACY_PDF_CONTENT) {
+      // Backfill needed pdf data - Probably remove this when everything work well after deployment
+      await this.storeMissingPdfContent(buildRepositories());
+    }
 
-    this.logger.info('Starting index rebuild...');
+    this.logger.info('REBUILD INDEX: Starting index rebuild...');
     const tmpIndex = await this.getIndex(ROTATING_INDEX);
 
     // Delete existing document if any
-    this.logger.info('Cleaning temporary index...');
+    this.logger.info('REBUILD INDEX: Cleaning temporary index...');
     await tmpIndex.waitForTask((await tmpIndex.deleteAllDocuments()).taskUid);
 
     // Update index config
@@ -349,7 +359,7 @@ export class MeiliSearchWrapper {
     });
     await tmpIndex.waitForTask(updateSettings.taskUid);
 
-    this.logger.info('Starting indexation...');
+    this.logger.info('REBUILD INDEX: Starting indexation...');
 
     // Paginate with cursor through DB items (serializable transaction)
     // This is not executed in a HTTP request context so we can't rely on fastify to create a transaction at the controller level
@@ -365,38 +375,54 @@ export class MeiliSearchWrapper {
           .withRepository(ItemPublishedRepository)
           .getPaginatedItems(currentPage, pageSize);
         this.logger.info(
-          `Page ${currentPage} - ${published.length} items - total count: ${totalCount}`,
+          `REBUILD INDEX: Page ${currentPage} - ${published.length} items - total count: ${totalCount}`,
         );
         total = totalCount;
-        currentPage++;
 
         // Index items (1 task per page)
-        this.logger.info('Pushing indexing tasks...');
         try {
-          tasks.push(
-            await this.index(
-              published.map((p) => p.item),
-              buildRepositories(manager),
-              ROTATING_INDEX,
-            ),
+          const task = await this.index(
+            published.map((p) => p.item),
+            buildRepositories(manager),
+            ROTATING_INDEX,
           );
+          this.logger.info(
+            `REBUILD INDEX: Pushing indexing task ${task.taskUid} (page ${currentPage})`,
+          );
+          tasks.push(task);
         } catch (e) {
-          this.logger.error(`Error during one rebuild index task: ${e}`);
+          this.logger.error(`REBUILD INDEX: Error during one rebuild index task: ${e}`);
+        }
+
+        currentPage++;
+      }
+      this.logger.info(`REBUILD INDEX: Waiting for ${tasks.length} tasks to terminate...`);
+      // Wait to be sure that everything is indexed
+      // We don't use `waitForTasks` directly because we want to be able to handle error
+      // for one task and still be able to await other tasks
+      for (const taskUid of tasks.map((t) => t.taskUid)) {
+        try {
+          await tmpIndex.waitForTask(taskUid, { timeOutMs: 60_000, intervalMs: 1000 });
+        } catch (e) {
+          if (e instanceof MeiliSearchTimeOutError) {
+            this.logger.info(
+              `REBUILD INDEX: timeout from MeiliSearch while waiting for task ${taskUid}`,
+            );
+          } else {
+            this.logger.warn(e);
+          }
         }
       }
-      this.logger.info(`Waiting for ${tasks.length} tasks to terminate...`);
-      // Wait to be sure that everything is indexed
-      await tmpIndex.waitForTasks(tasks.map((t) => t.taskUid));
     });
 
     // Swap tmp index with actual index
-    this.logger.info(`Swapping indexes...`);
+    this.logger.info(`REBUILD INDEX: Swapping indexes...`);
     const swapTask = await this.meilisearchClient.swapIndexes([
       { indexes: [ACTIVE_INDEX, ROTATING_INDEX] },
     ]);
     await this.meilisearchClient.waitForTask(swapTask.taskUid);
 
-    this.logger.info(`Index rebuild successful!`);
+    this.logger.info(`REBUILD INDEX: Index rebuild successful!`);
 
     // Retry if the rebuild fail? Or let retry by a Bull task
   }

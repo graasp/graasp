@@ -1,4 +1,5 @@
 import { readPdfText } from 'pdf-text-reader';
+import { stringify } from 'querystring';
 import { Readable } from 'stream';
 
 import { FolderItemExtra, ItemType, UUID } from '@graasp/sdk';
@@ -77,12 +78,16 @@ export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: I
 };
 
 export const readPdfContent = async (source: string | URL) => {
-  const pages = await readPdfText({ url: source, useSystemFonts: true });
-  //limit indexing to first pages
-  const maxPage = Math.min(pages.length, 10);
-
-  return pages
-    .slice(0, maxPage)
-    .flatMap((p) => p.lines)
-    .join(' ');
+  try {
+    const pages = await readPdfText({ url: source, useSystemFonts: true });
+    //limit indexing to first pages
+    const maxPage = Math.min(pages.length, 10);
+    return pages
+      .slice(0, maxPage)
+      .flatMap((p) => p.lines)
+      .join(' ')
+      .replace(/\0/g, ' '); // Replace the null unicode character because Postgres can't parse it as JSON
+  } catch {
+    return '';
+  }
 };
