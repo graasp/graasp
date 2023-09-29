@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/graasp/graasp/compare/v1.7.0...v1.8.0) (2023-09-28)
+
+
+### Features
+
+* implement get current member storage ([#576](https://github.com/graasp/graasp/issues/576)) ([3289c71](https://github.com/graasp/graasp/commit/3289c71ae72ca0621332ad849921c55bd91f9b98))
+* improve meilisearch integration resiliency ([#625](https://github.com/graasp/graasp/issues/625)) ([11a3064](https://github.com/graasp/graasp/commit/11a3064008ae6cbe8705792c45f3b2eb362d4a5d))
+
+
+### Bug Fixes
+
+* order parents ([#614](https://github.com/graasp/graasp/issues/614)) ([a575231](https://github.com/graasp/graasp/commit/a57523142e5fc3f2b82b15ecd95e5c265da8770f))
+
+
+### Documentation
+
+* add etherpad plugin documentation ([#601](https://github.com/graasp/graasp/issues/601)) ([d2dfa65](https://github.com/graasp/graasp/commit/d2dfa65948cada2f1d2c01f32460fb66d96293c9))
+* copy app docs ([#620](https://github.com/graasp/graasp/issues/620)) ([e02cb21](https://github.com/graasp/graasp/commit/e02cb2186b513673d74dca70c3159037e3a0ddb1))
+
 ## [1.7.0](https://github.com/graasp/graasp/compare/v1.6.1...v1.7.0) (2023-09-21)
 
 
