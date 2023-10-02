@@ -20,9 +20,14 @@ export interface MailerOptions {
   fromEmail: string;
 }
 
+export interface Item {
+  title: string;
+  value: string;
+}
 export interface MailerDecoration {
   buildButton: (link: string, text: string) => string;
   buildText: (str: string) => string;
+  buildBoldText: (str: string) => string;
   sendEmail: (
     subject: string,
     to: string,
@@ -31,6 +36,7 @@ export interface MailerDecoration {
     from?: string,
   ) => Promise<void>;
   translate: (lang: string) => i18n['t'];
+  buildUnorderList: (list: Item[]) => string;
 }
 
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
@@ -84,6 +90,17 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   };
 
   const buildText = (text: string) => `<p>${text}</p>`;
+  const buildBoldText = (text: string) => `<strong>${text}</strong>`;
+  const buildUnorderList = (list: Item[]) => `<ul>
+  ${list.reduce(
+    (acc, { title, value }: Item) =>
+      acc +
+      `
+    <li><strong>${title}:</strong> ${value}</li>
+    `,
+    '',
+  )}
+  </ul>`;
 
   const translate = (lang: string = DEFAULT_LANG) => {
     i18n.changeLanguage(lang);
@@ -95,6 +112,8 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     buildText,
     sendEmail,
     translate,
+    buildBoldText,
+    buildUnorderList,
   };
   fastify.decorate('mailer', decorations);
 };

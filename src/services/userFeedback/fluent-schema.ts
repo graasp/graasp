@@ -4,7 +4,7 @@ import { error } from '../../schemas/fluent-schema';
 
 const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-export const bugSchema = {
+export const userFeedbackSchema = {
   body: S.object()
     .prop('name', S.string().minLength(1))
     .prop('email', S.string().pattern(emailPattern))

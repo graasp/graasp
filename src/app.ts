@@ -7,11 +7,11 @@ import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
-import BugServicApi from './services/bug';
 import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
+import BugServicApi from './services/userFeedback';
 import websocketsPlugin from './services/websockets';
 import {
   COOKIE_DOMAIN,

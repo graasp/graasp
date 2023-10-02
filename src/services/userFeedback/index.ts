@@ -1,8 +1,8 @@
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
-import { BUGS_REPORTING_PREFIX } from '../../utils/config';
-import bugController from './controller';
+import { USER_FEEDBACK_PREFIX } from '../../utils/config';
+import userFeedbackController from './controller';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(
@@ -13,11 +13,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }
 
       // core routes - require authentication
-      fastify.register(async function (fastify) {
-        fastify.register(bugController);
-      });
+      fastify.register(userFeedbackController);
     },
-    { prefix: BUGS_REPORTING_PREFIX },
+    { prefix: USER_FEEDBACK_PREFIX },
   );
 };
 

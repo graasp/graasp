@@ -226,6 +226,9 @@ MEILISEARCH_REBUILD_SECRET=secret
 
 # Enable job scheduling (for cron based tasks)
 JOB_SCHEDULING=true
+
+# User Feedback Service
+USER_FEEDBACK_RECEIVER_EMAIL=
 ```
 
 ## Running

@@ -329,9 +329,9 @@ export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 export const GET_MOST_LIKED_ITEMS_MAXIMUM = 50;
 export const GET_MOST_RECENT_ITEMS_MAXIMUM = 50;
 
-// bug reporting
-export const BUGS_REPORTING_PREFIX = '/bug';
-export const BUGS_RECIVER_EMAIL = process.env.BUGS_RECIVER_EMAIL;
+// user feedback reporting
+export const USER_FEEDBACK_PREFIX = '/user-feedback';
+export const USER_FEEDBACK_RECEIVER_EMAIL = process.env.USER_FEEDBACK_RECEIVER_EMAIL;
 
 // Job scheduling
 export const JOB_SCHEDULING: boolean = process.env.JOB_SCHEDULING === 'true';
