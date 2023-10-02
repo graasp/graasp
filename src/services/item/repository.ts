@@ -263,8 +263,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
         name: searchArgs.name.toLowerCase().trim(),
       })
       .orderBy('item.updatedAt', 'DESC')
-      .skip(skip)
-      .take(pageLimit)
+      .offset(skip)
+      .limit(pageLimit)
       .getManyAndCount();
     return { data, totalCount };
   },
