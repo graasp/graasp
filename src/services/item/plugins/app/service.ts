@@ -61,7 +61,12 @@ export class AppService {
     return { token };
   }
 
-  async getContext(actorId, repositories: Repositories, itemId: string, requestDetails) {
+  async getContext(
+    actorId,
+    repositories: Repositories,
+    itemId: string,
+    requestDetails?: AuthTokenSubject,
+  ) {
     const { itemRepository, memberRepository } = repositories;
 
     const item = await itemRepository.get(itemId);
@@ -71,7 +76,7 @@ export class AppService {
     const member = actorId ? await memberRepository.get(actorId) : undefined;
 
     if (requestDetails) {
-      const { item: tokenItemId } = requestDetails;
+      const { itemId: tokenItemId } = requestDetails;
       checkTargetItemAndTokenItemMatch(itemId, tokenItemId);
     }
 

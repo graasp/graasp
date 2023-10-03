@@ -1,6 +1,5 @@
 import { promisify } from 'util';
 
-import fastifyAuth from '@fastify/auth';
 import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
@@ -166,25 +165,21 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
     });
 
     fastify.register(async function (fastify) {
-      await fastify.register(fastifyAuth);
+      // all app endpoints need the bearer token
+      fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
       // get app item context
       fastify.get<{ Params: { itemId: string } }>(
         '/:itemId/context',
         {
           schema: getContext,
-          preHandler: fastify.attemptVerifyAuthentication,
+          preHandler: fastify.verifyBearerAuth,
         },
         async ({ member, authTokenSubject: requestDetails, params: { itemId }, log }) => {
           const memberId = member ? member.id : requestDetails?.memberId;
           return aS.getContext(memberId, buildRepositories(), itemId, requestDetails);
         },
       );
-    });
-
-    fastify.register(async function (fastify) {
-      // all app endpoints need the bearer token
-      fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
       // register app data plugin
       fastify.register(appDataPlugin);
