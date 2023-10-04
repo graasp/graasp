@@ -78,7 +78,7 @@ export const ItemPublishedRepository = AppDataSource.getRepository(ItemPublished
       .innerJoinAndSelect('item_published.item', 'item')
       .innerJoinAndSelect('item.creator', 'member')
       .orderBy('item.createdAt', 'DESC')
-      .take(limit)
+      .limit(limit)
       .getMany();
 
     return publishedInfos.map(({ item }) => item);
