@@ -1,22 +1,36 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
+import { Member } from '../../../../member/entities/member';
 import { BOB, expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
+import { Item } from '../../../entities/Item';
 import { expectItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
-import { MOCK_APP_ORIGIN, MOCK_TOKEN, saveApp, saveAppList } from './fixtures';
+import { MOCK_APP_ORIGIN, MOCK_TOKEN, saveApp, saveAppList, setUp } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
+const setUpForAppContext = async (
+  app,
+  actor: Member | null,
+  creator: Member,
+  permission?: PermissionLevel,
+  setPublic?: boolean,
+) => {
+  const values = await setUp(app, actor, creator, permission, setPublic);
+  const appList = await saveAppList();
+  return { ...values, appList };
+};
+
 describe('Apps Plugin Tests', () => {
   let app;
-  let actor;
+  let actor: Member | null;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -91,6 +105,9 @@ describe('Apps Plugin Tests', () => {
       });
 
       it('Request api access', async () => {
+        if (!actor) {
+          throw new Error('actor is not defined');
+        }
         const { item } = await saveApp({ url: chosenApp.url, member: actor });
 
         const response = await app.inject({
@@ -144,24 +161,20 @@ describe('Apps Plugin Tests', () => {
   });
 
   describe('GET /:itemId/context', () => {
-    let apps;
-    let chosenApp;
+    // let apps;
+    // let chosenApp;
 
     describe('Public', () => {
       it('Get app context successfully for one item without members', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember(BOB);
-        apps = await saveAppList();
-        chosenApp = apps[0];
-
-        const { item } = await saveApp({ url: chosenApp.url, member });
-        await setItemPublic(item, member);
+        const { item, token } = await setUpForAppContext(app, member, member, undefined, true);
 
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
           headers: {
-            Authorization: `Bearer ${MOCK_TOKEN}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -176,7 +189,6 @@ describe('Apps Plugin Tests', () => {
         const item = { id: v4() };
 
         ({ app, actor } = await build({ member: null }));
-        apps = await saveAppList();
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -187,19 +199,24 @@ describe('Apps Plugin Tests', () => {
     });
 
     describe('Signed In', () => {
+      let token: string;
+      let item: Item;
+      let actor: Member | null;
+      let appList;
       beforeEach(async () => {
         ({ app, actor } = await build());
-        apps = await saveAppList();
-        chosenApp = apps[0];
+        const member = await saveMember(BOB);
+        ({ item, token, appList } = await setUpForAppContext(app, member, member));
       });
       it('Get app context successfully for one item', async () => {
-        const { item } = await saveApp({ url: chosenApp.url, member: actor });
-
+        if (!actor) {
+          throw new Error('actor is undefined');
+        }
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
           headers: {
-            Authorization: `Bearer ${MOCK_TOKEN}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -210,9 +227,12 @@ describe('Apps Plugin Tests', () => {
       });
 
       it('Get app context successfully for one item and its parents', async () => {
+        if (!actor) {
+          throw new Error('actor is undefined');
+        }
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({ member: actor, parentItem });
-        const { item } = await saveApp({ url: chosenApp.url, member: actor, parentItem });
+        const { item } = await saveApp({ url: appList[0].url, member: actor, parentItem });
 
         const response = await app.inject({
           method: HttpMethod.GET,

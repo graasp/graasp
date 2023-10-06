@@ -171,10 +171,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       // get app item context
       fastify.get<{ Params: { itemId: string } }>(
         '/:itemId/context',
-        {
-          schema: getContext,
-          preHandler: fastify.verifyBearerAuth,
-        },
+        { schema: getContext },
         async ({ member, authTokenSubject: requestDetails, params: { itemId }, log }) => {
           const memberId = member ? member.id : requestDetails?.memberId;
           return aS.getContext(memberId, buildRepositories(), itemId, requestDetails);

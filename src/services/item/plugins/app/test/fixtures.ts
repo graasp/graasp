@@ -104,7 +104,7 @@ export const saveAppList = async () => {
 // save apps, app settings, and get token
 export const setUp = async (
   app,
-  actor: Actor,
+  actor: Actor | null,
   creator: Member,
   permission?: PermissionLevel,
   setPublic?: boolean,
