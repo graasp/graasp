@@ -40,7 +40,7 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
    */
   async getForItem(
     itemPath: UUID,
-    filters?: { sampleSize?: number; view?: string; memberId?: UUID },
+    filters?: { sampleSize?: number; view?: string; memberId?: UUID; type?: string },
   ): Promise<Action[]> {
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
 
@@ -56,6 +56,10 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
 
     if (filters?.memberId) {
       query.andWhere('member_id = :memberId', { memberId: filters.memberId });
+    }
+
+    if (filters?.type) {
+      query.andWhere('action.type = :type', { type: filters.type });
     }
 
     return query.getMany();
