@@ -6,6 +6,7 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
+import Readable from 'stream';
 
 import { FastifyReply } from 'fastify';
 
@@ -255,7 +256,7 @@ export class S3FileRepository implements FileRepository {
     filepath,
     mimetype,
   }: {
-    fileStream: ReadableStream;
+    fileStream: Readable;
     memberId: string;
     filepath: string;
     mimetype?: string;
