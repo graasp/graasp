@@ -6,7 +6,7 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
-import Readable from 'stream';
+import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
