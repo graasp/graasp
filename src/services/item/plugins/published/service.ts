@@ -58,12 +58,12 @@ export class ItemPublishedService {
 
     // item should be public first
     await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
-    const itemViews = await actionRepository.getForItem(item.path, {
+    const totalViews = await actionRepository.getForItem(item.path, {
       view: 'library',
       type: 'collection-view',
     });
     const publishedItem = await itemPublishedRepository.getForItem(item);
-    return { itemViews, ...publishedItem };
+    return { totalViews: totalViews.length, ...publishedItem };
   }
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {

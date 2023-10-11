@@ -32,8 +32,8 @@ const publishEntryWithViews = {
       $ref: 'http://graasp.org/members/#/definitions/member',
     },
     createdAt: { type: 'string' },
-    itemViews: {
-      type: 'array',
+    totalViews: {
+      type: 'number',
     },
   },
   additionalProperties: false,
