@@ -5,7 +5,7 @@ import { ItemEvent } from '../../../ws/events';
  * Events that affect the recycle bin
  */
 interface RecycleBinEvent extends ItemEvent {
-  kind: 'recyclebin';
+  kind: 'recycle_bin';
   op: 'create' | 'delete';
   item: Item;
 }
@@ -17,7 +17,7 @@ interface RecycleBinEvent extends ItemEvent {
  * @returns instance of recycle bin event
  */
 export const RecycleBinEvent = (op: RecycleBinEvent['op'], item: Item): RecycleBinEvent => ({
-  kind: 'recyclebin',
+  kind: 'recycle_bin',
   op,
   item,
 });
