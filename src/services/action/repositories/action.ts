@@ -58,10 +58,6 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
       query.andWhere('member_id = :memberId', { memberId: filters.memberId });
     }
 
-    if (filters?.type) {
-      query.andWhere('action.type = :type', { type: filters.type });
-    }
-
     return query.getMany();
   },
 
@@ -98,15 +94,17 @@ export const ActionRepository = AppDataSource.getRepository(Action).extend({
 
     // Second stage aggregation.
     const query = AppDataSource.createQueryBuilder()
-      .addSelect(
-        buildAggregateExpression('subquery', aggregateFunction, aggregateMetric),
-        'aggregateResult',
-      )
       .from(`(${subquery.getQuery()})`, 'subquery')
       .setParameter('path', itemPath)
       .setParameter('view', view)
       .setParameter('types', types);
 
+    if (aggregateFunction && aggregateMetric) {
+      query.addSelect(
+        buildAggregateExpression('subquery', aggregateFunction, aggregateMetric),
+        'aggregateResult',
+      );
+    }
     aggregateBy?.forEach((attribute) => {
       const expression = `subquery."${attribute}"`;
       query.addSelect(expression).addGroupBy(expression);

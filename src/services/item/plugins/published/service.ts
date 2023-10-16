@@ -13,6 +13,9 @@ import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { buildPublishedItemLink } from './constants';
 
+interface ActionCount {
+  actionCount: number;
+}
 export class ItemPublishedService {
   private log: FastifyBaseLogger;
   private itemService: ItemService;
@@ -58,12 +61,12 @@ export class ItemPublishedService {
 
     // item should be public first
     await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
-    const totalViews = await actionRepository.getForItem(item.path, {
+    const totalViews = await actionRepository.getAggregationForItem(item.path, {
       view: 'library',
-      type: 'collection-view',
+      types: ['collection-view'],
     });
     const publishedItem = await itemPublishedRepository.getForItem(item);
-    return { totalViews: totalViews.length, ...publishedItem };
+    return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
   }
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
