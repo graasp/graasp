@@ -4,6 +4,7 @@ import { Websocket, getParentFromPath } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../utils/repositories';
 import { WebsocketService } from '../../websockets/ws-service';
+import { recycleWsHooks } from '../plugins/recycled/ws/hooks';
 import ItemService from '../service';
 import {
   ChildItemEvent,
@@ -66,19 +67,19 @@ function registerItemTopic(websockets: WebsocketService, itemService: ItemServic
   // on move item, notify:
   // - parent of old location of deleted child
   // - parent of new location of new child
-  itemService.hooks.setPostHook('move', async (actor, repositories, { source, destination }) => {
-    const sourceParentId = getParentFromPath(source.path);
-    if (sourceParentId !== undefined) {
-      websockets.publish(itemTopic, sourceParentId, ChildItemEvent('delete', source));
-    }
+  itemService.hooks.setPostHook(
+    'move',
+    async (actor, repositories, { sourceParentId, source, destination }) => {
+      if (sourceParentId !== undefined) {
+        websockets.publish(itemTopic, sourceParentId, ChildItemEvent('delete', source));
+      }
 
-    if (destination) {
       const destParentId = getParentFromPath(destination.path);
-      if (destParentId !== undefined) {
+      if (destParentId) {
         websockets.publish(itemTopic, destParentId, ChildItemEvent('create', destination));
       }
-    }
-  });
+    },
+  );
 }
 
 /**
@@ -117,6 +118,12 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
       const memberships = result[item.id];
       memberships.forEach(({ member }) => {
         if (member.id !== item.creator?.id) {
+          /**
+           * TODO: should this be only if item.path === topmost shared root for this member? There could
+           * be an item higher in the tree which already has a (maybe lower) permission for this member
+           * This is similar to {@link recycleWsHooks}
+           * For now we can send anyway and ignore in the front-end if not already in shared root
+           */
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('update', item));
         }
       });
@@ -127,8 +134,7 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   // - notify own items of creator of deleted item IF path is root
   // - notify members that have memberships on this item of delete
   //   (before with prehook, otherwise memberships lost on cascade from db!)
-  // todo: currently items can be hard deleted without going to the trash
-  itemService.hooks.setPostHook('delete', async (actor, repositories, { item }) => {
+  itemService.hooks.setPreHook('delete', async (actor, repositories, { item }) => {
     const parentId = getParentFromPath(item.path);
 
     if (parentId === undefined && item.creator) {
@@ -141,6 +147,12 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
       const memberships = result[item.id];
       memberships.forEach(({ member }) => {
         if (member.id !== item.creator?.id) {
+          /**
+           * TODO: should this be only if item.path === topmost shared root for this member? There could
+           * be an item higher in the tree which already has a (maybe lower) permission for this member
+           * This is similar to {@link recycleWsHooks}
+           * For now we can send anyway and ignore in the front-end if not already in shared root
+           */
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('delete', item));
         }
       });
@@ -159,15 +171,14 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   // on move item:
   // - notify own items of creator of delete IF old location was root
   // - notify own items of creator of create IF new location is root
-  itemService.hooks.setPostHook('move', async (actor, repositories, { source, destination }) => {
-    const sourceParentId = getParentFromPath(source.path);
+  itemService.hooks.setPostHook(
+    'move',
+    async (actor, repositories, { source, destination, sourceParentId }) => {
+      if (sourceParentId === undefined && source.creator) {
+        // root item, notify creator
+        websockets.publish(memberItemsTopic, source.creator.id, OwnItemsEvent('delete', source));
+      }
 
-    if (sourceParentId === undefined && source.creator) {
-      // root item, notify creator
-      websockets.publish(memberItemsTopic, source.creator.id, OwnItemsEvent('delete', source));
-    }
-
-    if (destination) {
       const destParentId = getParentFromPath(destination.path);
       if (destParentId === undefined && destination.creator) {
         // root item, notify creator
@@ -177,8 +188,8 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
           OwnItemsEvent('create', destination),
         );
       }
-    }
-  });
+    },
+  );
 }
 
 /**

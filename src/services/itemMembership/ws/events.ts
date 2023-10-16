@@ -9,7 +9,7 @@ export const itemMembershipsTopic = 'memberships/item';
 /**
  * All websocket events for memberships will have this shape
  */
-interface MembershipEvent {
+export interface MembershipEvent {
   kind: string;
   op: string;
   membership: ItemMembership;

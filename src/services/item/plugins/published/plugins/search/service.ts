@@ -157,25 +157,22 @@ export class SearchService {
       }
     });
 
-    itemService.hooks.setPostHook(
-      'move',
-      async (member, repositories, { source, destination, updated }) => {
-        try {
-          // Check if published from moved item up to tree root
-          const published = await repositories.itemPublishedRepository.getForItem(updated);
-          // destination or moved item is published, we must update the index
-          // update index from published
-          await this.meilisearchClient.indexOne(published.item, repositories);
-        } catch (e) {
-          if (e instanceof ItemPublishedNotFound) {
-            // nothing published, we must delete if it exists in index
-            await this.meilisearchClient.deleteOne(updated, repositories);
-          } else {
-            this.logger.error('Error during indexation, Meilisearch may be down');
-          }
+    itemService.hooks.setPostHook('move', async (member, repositories, { source, destination }) => {
+      try {
+        // Check if published from moved item up to tree root
+        const published = await repositories.itemPublishedRepository.getForItem(destination);
+        // destination or moved item is published, we must update the index
+        // update index from published
+        await this.meilisearchClient.indexOne(published.item, repositories);
+      } catch (e) {
+        if (e instanceof ItemPublishedNotFound) {
+          // nothing published, we must delete if it exists in index
+          await this.meilisearchClient.deleteOne(destination, repositories);
+        } else {
+          this.logger.error('Error during indexation, Meilisearch may be down');
         }
-      },
-    );
+      }
+    });
 
     // Update index when categories changes ------------------------------------------
 

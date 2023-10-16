@@ -96,6 +96,8 @@ export class ActionRequestExportService {
     }
 
     await this._sendExportLinkInMail(member, item, requestExport.createdAt);
+
+    return item;
   }
 
   async _sendExportLinkInMail(actor: Member, item: Item, archiveDate: Date) {

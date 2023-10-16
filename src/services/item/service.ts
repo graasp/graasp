@@ -8,6 +8,7 @@ import {
   PermissionLevelCompare,
   ResultOf,
   UUID,
+  getParentFromPath,
 } from '@graasp/sdk';
 
 import {
@@ -31,8 +32,20 @@ export class ItemService {
     delete: { pre: { item: Item }; post: { item: Item } };
     copy: { pre: { original: Item }; post: { original: Item; copy: Item } };
     move: {
-      pre: { source: Item; destination: Item };
-      post: { source: Item; destination: Item; updated: Item };
+      pre: {
+        /** the item to be moved itself */
+        source: Item;
+        /** the parent item where the item will be moved */
+        destinationParent?: Item;
+      };
+      post: {
+        /** the item before it was moved */
+        source: Item;
+        /** id of the previous parent */
+        sourceParentId?: UUID;
+        /** the item itself once moved */
+        destination: Item;
+      };
     };
   }>();
 
@@ -329,21 +342,18 @@ export class ItemService {
     // question: invoque on all items?
     await this.hooks.runPreHooks('move', actor, repositories, {
       source: item,
-      destination: parentItem,
+      destinationParent: parentItem,
     });
 
-    await this._move(actor, repositories, item, parentItem);
-
-    const afterMove = await itemRepository.get(itemId);
+    const result = await this._move(actor, repositories, item, parentItem);
 
     await this.hooks.runPostHooks('move', actor, repositories, {
       source: item,
-      destination: parentItem,
-      updated: afterMove,
+      sourceParentId: getParentFromPath(item.path),
+      destination: result,
     });
 
-    // TODO: optimize
-    return afterMove;
+    return result;
   }
 
   // TODO: optimize
@@ -379,7 +389,7 @@ export class ItemService {
       parentItem,
     );
 
-    await itemRepository.move(item, parentItem);
+    const result = await itemRepository.move(item, parentItem);
 
     // adjust memberships to keep the constraints
     if (inserts.length) {
@@ -388,6 +398,8 @@ export class ItemService {
     if (deletes.length) {
       await itemMembershipRepository.deleteMany(deletes);
     }
+
+    return result;
   }
 
   /////// -------- COPY
@@ -456,9 +468,7 @@ export class ItemService {
     itemIds: string[],
     args: { parentId?: UUID },
   ) {
-    const items = await Promise.all(
-      itemIds.map(async (id) => this.copy(actor, repositories, id, args)),
-    );
+    const items = await Promise.all(itemIds.map((id) => this.copy(actor, repositories, id, args)));
     return items;
   }
 }
