@@ -1,4 +1,10 @@
-import { CopyObjectCommandInput, GetObjectCommand, HeadObjectOutput, S3 } from '@aws-sdk/client-s3';
+import {
+  CopyObjectCommandInput,
+  GetObjectCommand,
+  HeadObjectOutput,
+  NotFound,
+  S3,
+} from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import contentDisposition from 'content-disposition';
@@ -254,12 +260,13 @@ export class S3FileRepository implements FileRepository {
 
       return url;
     } catch (e) {
-      // todo: usign console.log polutes the logs
-      log.error(e);
-      // todo: handle the "Not Found" error
+      if (e instanceof NotFound) {
+        throw new S3FileNotFound({ filepath });
+      }
       if (!(e instanceof DownloadFileUnexpectedError)) {
         throw new DownloadFileUnexpectedError({ filepath });
       }
+      log.error(e);
       throw e;
     }
   }
