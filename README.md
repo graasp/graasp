@@ -45,7 +45,7 @@ This will create 3 containers :
 - `redis` : Redis instance to enable websockets
 - `localstack` : Localstack instance use to locally test S3 storage
 
-To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 graasp-localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://graasp-localstack` hostname.
+To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://localstack` hostname.
 
 Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
 
