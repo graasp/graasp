@@ -12,7 +12,7 @@ import {
 } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
-import { GPTVersion } from './types/gptVersion';
+import { GPTVersion } from './interfaces/gptVersion';
 
 export class ChatBotService {
   async post(

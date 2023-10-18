@@ -9,7 +9,7 @@ import {
   S3FileConfiguration,
 } from '@graasp/sdk';
 
-import { GPTVersion } from '../services/item/plugins/app/chatBot/types/gptVersion';
+import { GPTVersion } from '../services/item/plugins/app/chatBot/interfaces/gptVersion';
 
 enum Environment {
   production = 'production',

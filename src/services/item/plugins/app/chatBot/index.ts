@@ -3,9 +3,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { ChatBotMessage } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../../utils/repositories';
+import { GPTVersion } from './interfaces/gptVersion';
 import { create } from './schemas';
 import { ChatBotService } from './service';
-import { GPTVersion } from './types/gptVersion';
 
 type QueryParameters = {
   'gpt-version': GPTVersion;
