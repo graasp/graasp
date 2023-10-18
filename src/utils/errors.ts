@@ -397,3 +397,41 @@ export class UnexpectedError extends CoreError {
     this.origin = 'unknown';
   }
 }
+
+interface OpenAIParamsError {
+  message?: string;
+  code?: string;
+  statusCode?: number;
+}
+
+export class OpenAIBaseError extends CoreError {
+  constructor({
+    message = 'An unknown error occured',
+    code = 'GERR1000',
+    statusCode = 500,
+  }: OpenAIParamsError = {}) {
+    super({ code: code, statusCode: statusCode, message: message });
+    this.origin = 'OpenAI';
+  }
+}
+
+export class OpenAILengthError extends OpenAIBaseError {
+  constructor() {
+    const message = 'Incomplete model output due to token limitation';
+    super({ code: 'GERR1001', message: message });
+  }
+}
+
+export class OpenAITimeOutError extends OpenAIBaseError {
+  constructor() {
+    const message = 'The response takes too long to respond';
+    super({ code: 'GERR1002', message: message });
+  }
+}
+
+export class OpenAIQuotaError extends OpenAIBaseError {
+  constructor() {
+    const message = 'This token exceeded current quota, please check plan and billing details.';
+    super({ code: 'GERR1003', message: message, statusCode: 429 });
+  }
+}
