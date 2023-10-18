@@ -33,6 +33,17 @@ const download = {
     },
     additionalProperties: false,
   },
+  response: {
+    200: {
+      type: 'string',
+    },
+    '4xx': {
+      $ref: 'http://graasp.org/#/definitions/error',
+    },
+    500: {
+      $ref: 'http://graasp.org/#/definitions/error',
+    },
+  },
 };
 
 export { upload, download };
