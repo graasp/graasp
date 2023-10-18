@@ -24,6 +24,7 @@ const build = async ({ member }: { member?: Partial<Member> | null } = { member:
   // });
 
   const app = fastify({
+    disableRequestLogging: true,
     logger: { level: 'info' },
     ajv: {
       customOptions: {

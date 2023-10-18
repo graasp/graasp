@@ -120,7 +120,6 @@ export const MOBILE_DEEP_LINK_PROTOCOL = new URL(
   `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile-builder'}://graasp.org`,
 ).protocol; // we only use the protocol anyway
 
-export const DISABLE_LOGS = process.env.DISABLE_LOGS === 'true';
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 
 // Graasp constants
@@ -292,6 +291,9 @@ export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT = process.env.REDIS_PORT;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
+
+// Database
+export const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432;
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
