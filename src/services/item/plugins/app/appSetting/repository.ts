@@ -22,7 +22,11 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
     return this.get(appSetting.identifiers[0].id);
   },
 
-  async patch(itemId: string, appSettingId: string, body: Partial<AppSetting>) {
+  async patch(
+    itemId: string,
+    appSettingId: string,
+    body: Partial<AppSetting>,
+  ): Promise<AppSetting> {
     // shouldn't update file data
     // TODO: optimize and refactor
     const originalData = await this.get(appSettingId);
@@ -36,7 +40,7 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
     return this.get(appSettingId);
   },
 
-  async deleteOne(itemId: string, appSettingId: string) {
+  async deleteOne(itemId: string, appSettingId: string): Promise<string> {
     const deleteResult = await this.delete(appSettingId);
 
     if (!deleteResult.affected) {
@@ -46,16 +50,21 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
     return appSettingId;
   },
 
-  async get(id: string) {
+  async get(id: string): Promise<AppSetting> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     if (!id) {
       throw new AppSettingNotFound(id);
     }
-    return this.findOneBy({ id });
+    return this.findOne({ where: { id }, relations: { creator: true, item: true } });
   },
 
-  getForItem(itemId: string) {
-    return this.findBy({ item: { id: itemId } });
+  getForItem(itemId: string): Promise<AppSetting[]> {
+    return this.find({
+      where: {
+        item: { id: itemId },
+      },
+      relations: { creator: true, item: true },
+    });
   },
 });
