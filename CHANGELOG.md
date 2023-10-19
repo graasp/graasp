@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.1](https://github.com/graasp/graasp/compare/v1.9.0...v1.9.1) (2023-10-19)
+
+
+### Bug Fixes
+
+* update staging aws deployment file ([#656](https://github.com/graasp/graasp/issues/656)) ([915c698](https://github.com/graasp/graasp/commit/915c6982568fa48bb6d368bf14831124a9d135e9))
+
 ## [1.9.0](https://github.com/graasp/graasp/compare/v1.8.0...v1.9.0) (2023-10-16)
 
 
