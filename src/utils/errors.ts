@@ -435,3 +435,10 @@ export class OpenAIQuotaError extends OpenAIBaseError {
     super({ code: 'GERR1003', message: message, statusCode: 429 });
   }
 }
+
+export class OpenAIBadVersion extends OpenAIBaseError {
+  constructor(gptVersion: string, validVersions: string) {
+    const message = `The gpt-version '${gptVersion}' is not a valid version. Try one of these instead: "${validVersions}".`;
+    super({ code: 'GERR1004', message: message, statusCode: 400 });
+  }
+}

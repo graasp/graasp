@@ -8,8 +8,6 @@ import fetch from 'node-fetch';
 import path from 'path';
 import { Readable } from 'stream';
 
-import { FastifyReply } from 'fastify';
-
 import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';

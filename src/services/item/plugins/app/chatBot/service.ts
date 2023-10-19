@@ -5,6 +5,7 @@ import { ChatBotMessage, PermissionLevel } from '@graasp/sdk';
 import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import {
   MemberCannotWriteItem,
+  OpenAIBadVersion,
   OpenAIBaseError,
   OpenAILengthError,
   OpenAIQuotaError,
@@ -20,7 +21,7 @@ export class ChatBotService {
     repositories: Repositories,
     itemId: string,
     body: Array<ChatBotMessage>,
-    query?: GPTVersion,
+    gptVersion?: GPTVersion,
   ) {
     const { memberRepository, itemRepository } = repositories;
 
@@ -36,9 +37,14 @@ export class ChatBotService {
     // check that the member can read the item to be allowed to interact with the chat
     await validatePermission(repositories, PermissionLevel.Read, member, item);
 
-    try {
-      const gptVersion = query ?? OPENAI_GPT_VERSION;
+    const validVersions = Object.values(GPTVersion);
+    const validVersionsString = validVersions.join(', ');
 
+    if (gptVersion && !validVersions.includes(gptVersion as GPTVersion)) {
+      throw new OpenAIBadVersion(gptVersion, validVersionsString);
+    }
+
+    try {
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
         organization: process.env.OPENAI_ORG_ID,
@@ -47,7 +53,7 @@ export class ChatBotService {
       const completion = await openai.chat.completions.create({
         messages: body,
         // maybe pass this as an env variable
-        model: gptVersion,
+        model: gptVersion ?? OPENAI_GPT_VERSION,
       });
 
       const choice = completion.choices[0];

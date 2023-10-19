@@ -29,17 +29,6 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
         reply,
       ) => {
         const gptVersion = (query as QueryParameters)['gpt-version'];
-        const validVersions = Object.values(GPTVersion);
-        const validVersionsString = validVersions.join(', ');
-
-        if (gptVersion && !validVersions.includes(gptVersion as GPTVersion)) {
-          reply
-            .code(400)
-            .send(
-              `The gpt-version '${gptVersion}' is not a valid version. Try one of these instead: "${validVersionsString}".`,
-            );
-        }
-
         const member = requestDetails?.memberId;
         const message = await chatBotService.post(
           member,
