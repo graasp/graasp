@@ -21,6 +21,24 @@ const publishEntry = {
   additionalProperties: false,
 };
 
+const publishEntryWithViews = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    item: {
+      $ref: 'http://graasp.org/items/#/definitions/item',
+    },
+    creator: {
+      $ref: 'http://graasp.org/members/#/definitions/member',
+    },
+    createdAt: { type: 'string' },
+    totalViews: {
+      type: 'number',
+    },
+  },
+  additionalProperties: false,
+};
+
 // the query string from frontend is in the form of ['A1,A2', 'B1', 'C1,C2,C3']
 // where A, B, C denote different category types, and 1, 2 denote different categories within same type
 // intersection between index
@@ -163,7 +181,7 @@ export const getInformations = {
   },
 
   response: {
-    200: publishEntry,
+    200: publishEntryWithViews,
   },
 };
 
