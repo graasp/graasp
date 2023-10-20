@@ -2,6 +2,55 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.1](https://github.com/graasp/graasp/compare/v1.9.0...v1.9.1) (2023-10-19)
+
+
+### Bug Fixes
+
+* update staging aws deployment file ([#656](https://github.com/graasp/graasp/issues/656)) ([915c698](https://github.com/graasp/graasp/commit/915c6982568fa48bb6d368bf14831124a9d135e9))
+
+## [1.9.0](https://github.com/graasp/graasp/compare/v1.8.0...v1.9.0) (2023-10-16)
+
+
+### Features
+
+* add indices on action entity ([#623](https://github.com/graasp/graasp/issues/623)) ([83d5cb0](https://github.com/graasp/graasp/commit/83d5cb06bc5daa1ec5c397d30dca7d11063d1ae9))
+* add websockets feedbacks ([#552](https://github.com/graasp/graasp/issues/552)) ([c253fb7](https://github.com/graasp/graasp/commit/c253fb7b258280e7ff94964a66705be518ed0e28))
+
+
+### Bug Fixes
+
+* **types:** fileStream argument has incompatible typing ([#640](https://github.com/graasp/graasp/issues/640)) ([07269bf](https://github.com/graasp/graasp/commit/07269bf95f293c3197cec2faf8f34677b8bcd504))
+* **typo:** import Readable as named ([#645](https://github.com/graasp/graasp/issues/645)) ([e4d44c4](https://github.com/graasp/graasp/commit/e4d44c411be82355d5e12ea24422111301ca086b))
+* use limit and offset for meilisearch pagination ([#630](https://github.com/graasp/graasp/issues/630)) ([20d5979](https://github.com/graasp/graasp/commit/20d59793c97ccf3beb83fb8be6cb7af94d0bdd98))
+
+## [1.8.0](https://github.com/graasp/graasp/compare/v1.7.0...v1.8.0) (2023-09-28)
+
+
+### Features
+
+* implement get current member storage ([#576](https://github.com/graasp/graasp/issues/576)) ([3289c71](https://github.com/graasp/graasp/commit/3289c71ae72ca0621332ad849921c55bd91f9b98))
+* improve meilisearch integration resiliency ([#625](https://github.com/graasp/graasp/issues/625)) ([11a3064](https://github.com/graasp/graasp/commit/11a3064008ae6cbe8705792c45f3b2eb362d4a5d))
+
+
+### Bug Fixes
+
+* order parents ([#614](https://github.com/graasp/graasp/issues/614)) ([a575231](https://github.com/graasp/graasp/commit/a57523142e5fc3f2b82b15ecd95e5c265da8770f))
+
+
+### Documentation
+
+* add etherpad plugin documentation ([#601](https://github.com/graasp/graasp/issues/601)) ([d2dfa65](https://github.com/graasp/graasp/commit/d2dfa65948cada2f1d2c01f32460fb66d96293c9))
+* copy app docs ([#620](https://github.com/graasp/graasp/issues/620)) ([e02cb21](https://github.com/graasp/graasp/commit/e02cb2186b513673d74dca70c3159037e3a0ddb1))
+
+## [1.7.0](https://github.com/graasp/graasp/compare/v1.6.1...v1.7.0) (2023-09-21)
+
+
+### Features
+
+* handle redirection url in auth endpoints ([#600](https://github.com/graasp/graasp/issues/600)) ([522c1b8](https://github.com/graasp/graasp/commit/522c1b8f0844cf8289af1ae02b6e1666a0027bb2))
+* Meilisearch integration ([#588](https://github.com/graasp/graasp/issues/588)) ([3affad3](https://github.com/graasp/graasp/commit/3affad300db9ef9c0e180de70bc12f387309cca6))
+
 ## [1.6.1](https://github.com/graasp/graasp/compare/v1.6.0...v1.6.1) (2023-09-07)
 
 

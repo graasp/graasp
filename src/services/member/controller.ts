@@ -4,14 +4,25 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { Member } from './entities/member';
-import { deleteOne, getCurrent, getMany, getManyBy, getOne, updateOne } from './schemas';
+import {
+  deleteOne,
+  getCurrent,
+  getMany,
+  getManyBy,
+  getOne,
+  getStorage,
+  updateOne,
+} from './schemas';
 
 const controller: FastifyPluginAsync = async (fastify) => {
   const {
     db,
     members: { service: memberService },
+    storage: { service: storageService },
+    files: { service: fileService },
   } = fastify;
 
   // get current
@@ -19,6 +30,18 @@ const controller: FastifyPluginAsync = async (fastify) => {
     '/current',
     { schema: getCurrent, preHandler: fastify.verifyAuthentication },
     async ({ member }) => member,
+  );
+
+  // get current member storage and its limits
+  fastify.get(
+    '/current/storage',
+    { schema: getStorage, preHandler: fastify.verifyAuthentication },
+    async ({ member }) => {
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
+      return storageService.getStorageLimits(member, fileService.type, buildRepositories());
+    },
   );
 
   // get member

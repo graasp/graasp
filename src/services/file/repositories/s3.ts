@@ -6,6 +6,7 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
+import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
@@ -174,7 +175,7 @@ export class S3FileRepository implements FileRepository {
     expiration?: number;
     filepath: string;
     fileStorage?: string;
-    id: UUID;
+    id?: UUID;
     reply?: FastifyReply;
     replyUrl?: boolean;
   }) {
@@ -208,7 +209,7 @@ export class S3FileRepository implements FileRepository {
         }
       }
       // return readstream of the file saved at given fileStorage path
-      else if (fileStorage) {
+      else if (fileStorage && id) {
         // fetch and save file in temporary path
         const res = await fetch(url);
         const tmpPath = path.join(fileStorage, id);
@@ -255,7 +256,7 @@ export class S3FileRepository implements FileRepository {
     filepath,
     mimetype,
   }: {
-    fileStream: ReadableStream;
+    fileStream: Readable;
     memberId: string;
     filepath: string;
     mimetype?: string;

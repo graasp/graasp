@@ -33,36 +33,6 @@ import {
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
   instance.addSchema(shared);
-
-  instance
-    .register(fp(metaPlugin))
-    .register(fp(databasePlugin), {
-      logs: DATABASE_LOGS,
-    })
-    .register(fp(decoratorPlugin))
-    .register(mailerPlugin, {
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
-    })
-    // need to be defined before member and item for auth check
-    .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN })
-    .register(fp(websocketsPlugin), {
-      prefix: '/ws',
-      redis: {
-        channelName: 'graasp-realtime-updates',
-        config: {
-          host: REDIS_HOST,
-          port: parseInt(REDIS_PORT ?? '6379'),
-          username: REDIS_USERNAME,
-          password: REDIS_PASSWORD,
-        },
-      },
-    });
-
   // file
   await instance.register(fp(filePlugin), {
     fileItemType: FILE_ITEM_TYPE,
@@ -72,9 +42,40 @@ export default async function (instance: FastifyInstance): Promise<void> {
     },
   });
 
+  await instance
+    .register(fp(metaPlugin))
+    .register(fp(databasePlugin), {
+      logs: DATABASE_LOGS,
+    })
+    .register(mailerPlugin, {
+      host: MAILER_CONFIG_SMTP_HOST,
+      port: MAILER_CONFIG_SMTP_PORT,
+      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+      username: MAILER_CONFIG_USERNAME,
+      password: MAILER_CONFIG_PASSWORD,
+      fromEmail: MAILER_CONFIG_FROM_EMAIL,
+    })
+    .register(fp(decoratorPlugin))
+    // need to be defined before member and item for auth check
+    .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
+
   instance.register(async (instance) => {
     // core API modules
     await instance
+      // the websockets plugin must be registered before but in the same scope as the apis
+      // otherwise tests somehow bypass mocking the authentication through jest.spyOn(app, 'verifyAuthentication')
+      .register(fp(websocketsPlugin), {
+        prefix: '/ws',
+        redis: {
+          channelName: 'graasp-realtime-updates',
+          config: {
+            host: REDIS_HOST,
+            port: parseInt(REDIS_PORT ?? '6379'),
+            username: REDIS_USERNAME,
+            password: REDIS_PASSWORD,
+          },
+        },
+      })
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
       .register(fp(ItemMembershipServiceApi));

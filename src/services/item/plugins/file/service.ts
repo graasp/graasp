@@ -1,10 +1,14 @@
+import * as fs from 'fs';
 import path from 'path';
-import { PassThrough, Readable } from 'stream';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
+import { withFile as withTmpFile } from 'tmp-promise';
 
 import { MultipartFields } from '@fastify/multipart';
 import { FastifyReply } from 'fastify';
 
 import {
+  FileItemExtra,
   FileItemProperties,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
@@ -17,21 +21,19 @@ import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
+import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';
+import { Item } from '../../entities/Item';
 import ItemService from '../../service';
+import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
-import { StorageExceeded } from './utils/errors';
-
-type Options = {
-  maxMemberStorage: number;
-};
 
 class FileItemService {
   fileService: FileService;
   itemService: ItemService;
+  storageService: StorageService;
   itemThumbnailService: ItemThumbnailService;
   shouldRedirectOnDownload: boolean;
-  options: Options;
 
   buildFilePath() {
     // TODO: CHANGE ??
@@ -42,30 +44,15 @@ class FileItemService {
   constructor(
     fileService: FileService,
     itemService: ItemService,
+    storageService: StorageService,
     itemThumbnailService: ItemThumbnailService,
     shouldRedirectOnDownload: boolean,
-    options: Options,
   ) {
     this.fileService = fileService;
     this.itemService = itemService;
+    this.storageService = storageService;
     this.itemThumbnailService = itemThumbnailService;
     this.shouldRedirectOnDownload = shouldRedirectOnDownload;
-    this.options = options;
-  }
-
-  // check the user has enough storage to create a new item given its size
-  // get the complete storage
-  async checkRemainingStorage(actor: Member, repositories: Repositories, size: number = 0) {
-    const { id: memberId } = actor;
-
-    const currentStorage = await repositories.itemRepository.getItemSumSize(
-      memberId,
-      this.fileService.type,
-    );
-
-    if (currentStorage + size > this.options.maxMemberStorage) {
-      throw new StorageExceeded(currentStorage + size);
-    }
   }
 
   async upload(
@@ -98,17 +85,21 @@ class FileItemService {
       );
     }
     // check member storage limit
-    await this.checkRemainingStorage(actor, repositories);
+    await this.storageService.checkRemainingStorage(actor, repositories);
 
-    // duplicate stream to use in thumbnails
-    const streamForThumbnails = new PassThrough();
-    if (MimeTypes.isImage(mimetype)) {
-      stream.pipe(streamForThumbnails);
-    }
+    return await withTmpFile(async ({ path }) => {
+      // Write uploaded file to a temporary file
+      await pipeline(stream, fs.createWriteStream(path));
 
-    try {
+      // Content to be indexed for search
+      let content = '';
+      if (MimeTypes.isPdf(mimetype)) {
+        content = await readPdfContent(path);
+      }
+
+      // Upload to storage
       await this.fileService.upload(actor, {
-        file: stream,
+        file: fs.createReadStream(path),
         filepath,
         mimetype,
       });
@@ -118,14 +109,12 @@ class FileItemService {
       // throw for empty files
       if (!size) {
         await this.fileService.delete(actor, filepath);
-        // Bug: empty stream does not trigger end event, which leads to hang in the for await
-        streamForThumbnails.emit('close');
         throw new UploadEmptyFileError();
       }
 
       // create item from file properties
       const name = filename.substring(0, MAX_ITEM_NAME_LENGTH);
-      const item = {
+      const item: Partial<Item> = {
         name,
         description,
         type: this.fileService.type,
@@ -135,10 +124,10 @@ class FileItemService {
             path: filepath,
             mimetype,
             size,
+            content,
           },
           // todo: fix type
-        } as any,
-        parentId,
+        } as FileItemExtra,
         creator: actor,
       };
 
@@ -155,7 +144,7 @@ class FileItemService {
             actor,
             repositories,
             newItem.id,
-            streamForThumbnails,
+            fs.createReadStream(path),
           );
         } catch (e) {
           console.error(e);
@@ -163,9 +152,7 @@ class FileItemService {
       }
 
       return newItem;
-    } finally {
-      streamForThumbnails.emit('close');
-    }
+    });
   }
 
   async download(
@@ -212,8 +199,7 @@ class FileItemService {
       mimetype,
     };
 
-    // check member storage limit
-    await this.checkRemainingStorage(actor, repositories, size);
+    // check member storage limit in pre copy because all items are pretested
 
     // DON'T use task runner for copy file task: this would generate a new transaction
     // which is useless since the file copy task should not touch the DB at all

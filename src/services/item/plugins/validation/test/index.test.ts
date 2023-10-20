@@ -1,12 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import {
-  HttpMethod,
-  ItemValidationProcess,
-  ItemValidationStatus,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
@@ -15,30 +10,12 @@ import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { ItemValidationGroupNotFound } from '../errors';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
-import { ItemValidationRepository } from '../repositories/itemValidation';
+import { saveItemValidation } from './utils';
 
 const VALIDATION_LOADING_TIME = 2000;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
-
-const saveItemValidation = async ({ item }) => {
-  const group = await ItemValidationGroupRepository.save({ item });
-  const itemValidation = await ItemValidationRepository.save({
-    item,
-    process: ItemValidationProcess.BadWordsDetection,
-    status: ItemValidationStatus.Success,
-    result: '',
-    itemValidationGroup: group,
-  });
-
-  // get full item validation group, since save does not include itemvalidation
-  const fullItemValidationGroup = await ItemValidationGroupRepository.findOne({
-    where: { id: group.id },
-    relations: { itemValidations: true, item: true },
-  });
-  return { itemValidationGroup: fullItemValidationGroup, itemValidation };
-};
 
 const expectItemValidation = (iv, correctIV) => {
   expect(iv.id).toEqual(correctIV.id);

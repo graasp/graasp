@@ -16,6 +16,7 @@ import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
+@Index('IDX_gist_action_path', { synchronize: false })
 export class Action extends BaseEntity implements GraaspAction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -25,12 +26,12 @@ export class Action extends BaseEntity implements GraaspAction {
     nullable: true,
   })
   @JoinColumn({ name: 'member_id' })
+  @Index()
   member?: Member | null;
 
   /**
    * action can be related to a behavior not related to an item
    */
-  @Index()
   @ManyToOne(() => Item, (item) => item.path, {
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',

@@ -32,6 +32,7 @@ describe('migrations1679669193721', () => {
     const { expected, values: migrationData } = up;
     // insert mock data and check return value
     for (const [tableName, data] of Object.entries(migrationData)) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const [idx, d] of data.entries()) {
         await app.db.query(buildInsertIntoQuery(tableName, d));
       }
@@ -67,6 +68,7 @@ describe('migrations1679669193721', () => {
     const { expected, values: migrationData } = down;
     // insert mock data
     for (const [tableName, data] of Object.entries(migrationData)) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const [idx, d] of data.entries()) {
         await app.db.query(buildInsertIntoQuery(tableName, d));
       }

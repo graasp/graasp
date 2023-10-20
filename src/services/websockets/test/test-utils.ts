@@ -6,6 +6,7 @@
 import WebSocket from 'ws';
 
 import fastify from 'fastify';
+import fp from 'fastify-plugin';
 import { FastifyInstance } from 'fastify/types/instance';
 
 import { Websocket } from '@graasp/sdk';
@@ -150,7 +151,7 @@ export async function createWsFastifyInstance(
     // plugin must be registered inside this function parameter as it cannot be
     // added after the instance has already booted
     await setupFn(instance);
-    await instance.register(graaspWebSockets, config);
+    await instance.register(fp(graaspWebSockets), config);
   });
 }
 

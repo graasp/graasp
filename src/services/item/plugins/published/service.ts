@@ -6,6 +6,7 @@ import { MAIL } from '@graasp/translations';
 import type { MailerDecoration } from '../../../../plugins/mailer';
 import { resultOfToList } from '../../../../services/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
+import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { filterOutHiddenItems } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
@@ -20,6 +21,11 @@ export class ItemPublishedService {
   private log: FastifyBaseLogger;
   private itemService: ItemService;
   private mailer: MailerDecoration;
+
+  hooks = new HookManager<{
+    create: { pre: { item: Item }; post: { item: Item } };
+    delete: { pre: { item: Item }; post: { item: Item } };
+  }>();
 
   constructor(itemService: ItemService, mailer: MailerDecoration, log) {
     this.log = log;
@@ -103,7 +109,12 @@ export class ItemPublishedService {
 
     // TODO: check validation is alright
 
+    await this.hooks.runPreHooks('create', actor, repositories, { item });
+
     const published = await itemPublishedRepository.post(actor, item);
+
+    await this.hooks.runPostHooks('create', actor, repositories, { item });
+    //TODO: should we sent a publish hooks for all descendants? If yes take inspiration from delete method in ItemService
 
     this._notifyContributors(actor, repositories, item);
 
@@ -118,7 +129,13 @@ export class ItemPublishedService {
 
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
-    return itemPublishedRepository.deleteForItem(item);
+    await this.hooks.runPreHooks('delete', actor, repositories, { item });
+
+    const result = itemPublishedRepository.deleteForItem(item);
+
+    await this.hooks.runPostHooks('delete', actor, repositories, { item });
+
+    return result;
   }
 
   async getItemsForMember(actor: Actor, repositories, memberId: UUID) {

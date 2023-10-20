@@ -1,15 +1,9 @@
-import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import {
-  MemberCannotAccess,
-  MemberCannotAdminItem,
-  MemberCannotReadItem,
-  MemberCannotWriteItem,
-} from '../utils/errors';
+import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { validatePermission, validatePermissionMany } from './authorization';
 import { Item } from './item/entities/Item';
-import { ItemTag } from './item/plugins/itemTag/ItemTag';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { Member } from './member/entities/member';

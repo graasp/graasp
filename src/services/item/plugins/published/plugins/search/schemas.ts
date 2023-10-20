@@ -1,37 +1,47 @@
 import { Ranges } from './types';
 
 const search = {
-  params: {
-    keyword: {
-      type: 'string',
-    },
-    range: {
-      type: 'string',
-      enum: Object.values(Ranges),
-    },
-  },
   query: {
     type: 'object',
     properties: {
-      keywords: { type: 'string' },
-      tags: {
+      queries: {
         type: 'array',
-        items: { type: 'string' },
+        items: {
+          type: 'object',
+          properties: {
+            indexUid: { type: 'string' },
+            attributesToHighlight: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+            },
+            attributesToCrop: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+            },
+            cropLength: { type: 'number' },
+            q: { type: 'string' },
+            page: { type: 'number' },
+            limit: { type: 'number' },
+            sort: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+            },
+            filter: { type: 'string' },
+            highlightPreTag: { type: 'string' },
+            highlightPostTag: { type: 'string' },
+          },
+          required: ['indexUid'],
+        },
       },
-      parentId: { type: 'string' },
-      name: { type: 'string' },
-      creator: { type: 'string' },
     },
   },
-  required: ['range', 'keyword'],
-  response: {
-    200: {
-      type: 'array',
-      items: {
-        $ref: 'http://graasp.org/items/#/definitions/item',
-      },
-    },
-  },
+  response: {},
 };
 
 export { search };

@@ -1117,6 +1117,7 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
+        const actor = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         ({ app } = await build({ member: null }));
         const parent = await savePublicItem({ item: getDummyItem(), actor });
         const child1 = await savePublicItem({
@@ -1154,6 +1155,164 @@ describe('Item routes tests', () => {
       });
     });
   });
+
+  describe('GET /items/:id/parents', () => {
+    it('Throws if signed out and item is private', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const { item } = await saveItemAndMembership({ member });
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/items/${item.id}/parents`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+    });
+
+    describe('Signed In', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+      });
+
+      it('Returns successfully in order', async () => {
+        const { item: parent } = await saveItemAndMembership({ member: actor });
+        const { item: child1 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1' }),
+          member: actor,
+          parentItem: parent,
+        });
+        // noise
+        await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2' }),
+          member: actor,
+          parentItem: parent,
+        });
+
+        const { item: childOfChild } = await saveItemAndMembership({
+          member: actor,
+          parentItem: child1,
+        });
+        const parents = [parent, child1];
+
+        // patch item to force reorder
+        await ItemRepository.patch(parent.id, { name: 'newname' });
+        parent.name = 'newname';
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${childOfChild.id}/parents`,
+        });
+
+        const data = response.json();
+        expect(data).toHaveLength(parents.length);
+        data.forEach((p, idx) => {
+          expectItem(p, parents[idx]);
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Returns successfully empty parents', async () => {
+        const { item: parent } = await saveItemAndMembership({ member: actor });
+
+        // another item with child
+        const { item: parent1 } = await saveItemAndMembership({ member: actor });
+        await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1' }),
+          member: actor,
+          parentItem: parent1,
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/parents`,
+        });
+
+        expect(response.json()).toEqual([]);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Bad Request for invalid id', async () => {
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: '/items/invalid-id/parents',
+        });
+
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+      it('Cannot get parents from unexisting item', async () => {
+        const id = uuidv4();
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${id}/parents`,
+        });
+
+        expect(response.json()).toEqual(new ItemNotFound(id));
+        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      });
+      it('Cannot get parents if does not have membership on parent', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: parent } = await saveItemAndMembership({ member });
+        await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1' }),
+          member,
+          parentItem: parent,
+        });
+        await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2' }),
+          member,
+          parentItem: parent,
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/parents`,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+    });
+
+    describe('Public', () => {
+      it('Returns successfully', async () => {
+        ({ app } = await build({ member: null }));
+        const parent = await savePublicItem({ item: getDummyItem(), actor });
+        const child1 = await savePublicItem({
+          item: getDummyItem({ name: 'child1' }),
+          actor,
+          parentItem: parent,
+        });
+
+        const childOfChild = await savePublicItem({
+          item: getDummyItem({ name: 'child3' }),
+          actor,
+          parentItem: child1,
+        });
+
+        // noise
+        await savePublicItem({
+          item: getDummyItem({ name: 'child2' }),
+          actor,
+          parentItem: parent,
+        });
+
+        const parents = [parent, child1];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${childOfChild.id}/parents`,
+        });
+
+        const data = response.json();
+        expect(data).toHaveLength(parents.length);
+        data.forEach((p, idx) => {
+          expectItem(p, parents[idx]);
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+    });
+  });
+
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));

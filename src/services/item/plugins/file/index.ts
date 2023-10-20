@@ -5,7 +5,6 @@ import { FileItemProperties, HttpMethod, IdParam, PermissionLevel } from '@graas
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
-import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';
 import { download, updateSchema, upload } from './schema';
 import FileItemService from './service';
@@ -18,20 +17,18 @@ export interface GraaspPluginFileOptions {
   maxMemberStorage?: number; // max storage space for a user
 }
 
-export const DEFAULT_MAX_STORAGE = 1024 * 1024 * 1024 * 5; // 5GB;
-
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
   const {
     uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
     maxFileSize = DEFAULT_MAX_FILE_SIZE,
     shouldRedirectOnDownload = true,
-    maxMemberStorage = DEFAULT_MAX_STORAGE,
   } = options;
 
   const {
     db,
     files: { service: fileService },
     items,
+    storage: { service: storageService },
   } = fastify;
 
   const { service: itemService, extendExtrasUpdateSchema } = items;
@@ -54,11 +51,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   const fileItemService = new FileItemService(
     fileService,
     items.service,
+    storageService,
     items.thumbnails.service,
     shouldRedirectOnDownload,
-    {
-      maxMemberStorage,
-    },
   );
   items.files = { service: fileItemService };
 
@@ -94,7 +89,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     if (!id || type !== fileService.type) return;
     const size = (item.extra[fileService.type] as FileItemProperties & { size?: number })?.size;
 
-    await fileItemService.checkRemainingStorage(actor, repositories, size);
+    await storageService.checkRemainingStorage(actor, repositories, size);
   });
 
   // register post copy handler to copy the file object after item copy

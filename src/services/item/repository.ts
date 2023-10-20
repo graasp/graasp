@@ -1,5 +1,4 @@
-import { In } from 'typeorm';
-import { Query } from 'typeorm/driver/Query';
+import { Brackets, In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
@@ -129,6 +128,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path @> :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id })
+      .orderBy('path', 'ASC')
       .getMany();
   },
 
@@ -166,8 +166,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     const { ordered = false } = options ?? {};
 
     const query = this.createQueryBuilder('item')
+      .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path <@ :path', { path: item.path })
-      .andWhere('id != :id', { id: item.id });
+      .andWhere('item.id != :id', { id: item.id });
 
     if (ordered) {
       query.orderBy('item.path', 'ASC');
@@ -176,16 +177,32 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return query.getMany();
   },
 
-  async getManyDescendants(items: Item[]): Promise<Item[]> {
+  async getManyDescendants(
+    items: Item[],
+    { withDeleted = false }: { withDeleted?: boolean } = {},
+  ): Promise<Item[]> {
     // TODO: LEVEL depth
-    const query = this.createQueryBuilder('item').where('id NOT IN(:...ids)', {
+    if (items.length === 0) {
+      return [];
+    }
+    const query = this.createQueryBuilder('item');
+
+    if (withDeleted) {
+      query.withDeleted();
+    }
+
+    query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
       ids: items.map(({ id }) => id),
     });
 
-    items.forEach((item) => {
-      const key = `path_${item.path}`;
-      query.andWhere(`item.path <@ :${key}`, { [key]: item.path });
-    });
+    query.andWhere(
+      new Brackets((q) => {
+        items.forEach((item) => {
+          const key = `path_${item.path}`;
+          q.orWhere(`item.path <@ :${key}`, { [key]: item.path });
+        });
+      }),
+    );
 
     return query.getMany();
   },
@@ -245,7 +262,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
-  async move(item: Item, parentItem?: Item): Promise<void> {
+  async move(item: Item, parentItem?: Item): Promise<Item> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -273,11 +290,14 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       ? `'${parentItem.path}' || subpath(path, nlevel('${item.path}') - 1)`
       : `subpath(path, nlevel('${item.path}') - 1)`;
 
-    return this.createQueryBuilder('item')
+    await this.createQueryBuilder('item')
       .update()
       .set({ path: () => pathSql })
       .where('item.path <@ :path', { path: item.path })
       .execute();
+
+    // TODO: is there a better way?
+    return this.get(item.id);
   },
 
   async patch(id: string, data: Partial<Item>): Promise<Item> {
@@ -412,6 +432,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return old2New;
   },
 
+  /**
+   * @param memberId member to get the storage for
+   * @param itemType file item type
+   * @returns total storage used by file items
+   */
   async getItemSumSize(memberId: string, itemType: FileItemType): Promise<number> {
     return parseInt(
       (
@@ -420,7 +445,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
           .where('item.creator.id = :memberId', { memberId })
           .andWhere('item.type = :type', { type: itemType })
           .getRawOne()
-      ).total,
+      ).total ?? 0,
     );
   },
 

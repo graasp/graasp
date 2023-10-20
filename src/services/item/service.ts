@@ -8,10 +8,10 @@ import {
   PermissionLevelCompare,
   ResultOf,
   UUID,
+  getParentFromPath,
 } from '@graasp/sdk';
 
 import {
-  CoreError,
   InvalidMembership,
   MemberCannotWriteItem,
   TooManyChildren,
@@ -31,7 +31,22 @@ export class ItemService {
     update: { pre: { item: Item }; post: { item: Item } };
     delete: { pre: { item: Item }; post: { item: Item } };
     copy: { pre: { original: Item }; post: { original: Item; copy: Item } };
-    move: { pre: { source: Item; destination: Item }; post: { source: Item; destination: Item } };
+    move: {
+      pre: {
+        /** the item to be moved itself */
+        source: Item;
+        /** the parent item where the item will be moved */
+        destinationParent?: Item;
+      };
+      post: {
+        /** the item before it was moved */
+        source: Item;
+        /** id of the previous parent */
+        sourceParentId?: UUID;
+        /** the item itself once moved */
+        destination: Item;
+      };
+    };
   }>();
 
   async post(
@@ -166,24 +181,16 @@ export class ItemService {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
-    // TODO optimize?
     const parents = await itemRepository.getAncestors(item);
-
-    let lastIdx = parents.length;
-    // filter out if does not have membership
-    for (let i = 0; i < parents.length; i++) {
-      try {
-        await validatePermission(
-          repositories,
-          PermissionLevel.Read,
-          actor,
-          parents[parents.length - i],
-        );
-        lastIdx = i;
-      } catch (e) {
-        return parents.slice(parents.length - lastIdx, parents.length);
-      }
-    }
+    const { data: memberships } = await validatePermissionMany(
+      repositories,
+      PermissionLevel.Read,
+      actor,
+      parents,
+    );
+    // remove parents not in data
+    const parentsIds = Object.keys(memberships);
+    return parents.filter((p) => parentsIds.includes(p.id));
   }
 
   async patch(actor: Actor, repositories: Repositories, itemId: UUID, body: Partial<Item>) {
@@ -196,7 +203,13 @@ export class ItemService {
     // check memberships
     const item = await itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Write, actor, item);
-    return itemRepository.patch(itemId, body);
+
+    await this.hooks.runPreHooks('update', actor, repositories, { item: item });
+
+    const updated = await itemRepository.patch(itemId, body);
+    await this.hooks.runPostHooks('update', actor, repositories, { item: updated });
+
+    return updated;
   }
 
   async patchMany(
@@ -329,20 +342,18 @@ export class ItemService {
     // question: invoque on all items?
     await this.hooks.runPreHooks('move', actor, repositories, {
       source: item,
-      destination: parentItem,
+      destinationParent: parentItem,
     });
 
-    await this._move(actor, repositories, item, parentItem);
+    const result = await this._move(actor, repositories, item, parentItem);
 
-    // post hook
-    // question: invoque on all items?
     await this.hooks.runPostHooks('move', actor, repositories, {
       source: item,
-      destination: parentItem,
+      sourceParentId: getParentFromPath(item.path),
+      destination: result,
     });
 
-    // TODO: optimize
-    return itemRepository.get(itemId);
+    return result;
   }
 
   // TODO: optimize
@@ -378,7 +389,7 @@ export class ItemService {
       parentItem,
     );
 
-    await itemRepository.move(item, parentItem);
+    const result = await itemRepository.move(item, parentItem);
 
     // adjust memberships to keep the constraints
     if (inserts.length) {
@@ -387,6 +398,8 @@ export class ItemService {
     if (deletes.length) {
       await itemMembershipRepository.deleteMany(deletes);
     }
+
+    return result;
   }
 
   /////// -------- COPY
@@ -455,9 +468,7 @@ export class ItemService {
     itemIds: string[],
     args: { parentId?: UUID },
   ) {
-    const items = await Promise.all(
-      itemIds.map(async (id) => this.copy(actor, repositories, id, args)),
-    );
+    const items = await Promise.all(itemIds.map((id) => this.copy(actor, repositories, id, args)));
     return items;
   }
 }

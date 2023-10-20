@@ -74,7 +74,7 @@ export class ActionRequestExportService {
 
     // get actions data and create archive in background
     // create tmp folder to temporaly save files
-    const tmpFolder = path.join(TMP_FOLDER, 'export', itemId);
+    const tmpFolder = buildItemTmpFolder(itemId);
     fs.mkdirSync(tmpFolder, { recursive: true });
 
     const requestExport = await this._createAndUploadArchive(
@@ -85,14 +85,19 @@ export class ActionRequestExportService {
     );
 
     // delete tmp folder
-    const fileStorage = buildItemTmpFolder(itemId);
-    if (fs.existsSync(fileStorage)) {
-      fs.rmSync(fileStorage, { recursive: true });
+    if (fs.existsSync(tmpFolder)) {
+      try {
+        fs.rmSync(tmpFolder, { recursive: true });
+      } catch (e) {
+        console.error(e);
+      }
     } else {
-      console?.error(`${fileStorage} was not found, and was not deleted`);
+      console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
     await this._sendExportLinkInMail(member, item, requestExport.createdAt);
+
+    return item;
   }
 
   async _sendExportLinkInMail(actor: Member, item: Item, archiveDate: Date) {
