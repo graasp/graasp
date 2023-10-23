@@ -1,7 +1,7 @@
 /**
  * Item websocket events are registered under these topics
  */
-import { Item } from '../entities/Item';
+import { Item, ResultOf } from '@graasp/sdk';
 
 // changes on item entities
 export const itemTopic = 'item';
@@ -11,7 +11,7 @@ export const memberItemsTopic = 'item/member';
 /**
  * All websocket events for items will have this shape
  */
-interface ItemEvent {
+export interface ItemEvent {
   kind: string;
   op: string;
   item: Item;
@@ -72,7 +72,7 @@ interface OwnItemsEvent extends ItemEvent {
  * Factory of OwnItemsEvent
  * @param op operation of the event
  * @param item  value of the item for this event
- * @returns instnace of own items event
+ * @returns instance of own items event
  */
 export const OwnItemsEvent = (op: OwnItemsEvent['op'], item: Item): OwnItemsEvent => ({
   kind: 'own',
@@ -90,13 +90,48 @@ interface SharedItemsEvent extends ItemEvent {
 }
 
 /**
- * Facctory of SharedItemsEvent
+ * Factory of SharedItemsEvent
  * @param op operation of the event
  * @param item  value of the item for this event
- * @returns instnace of shared items event
+ * @returns instance of shared items event
  */
 export const SharedItemsEvent = (op: SharedItemsEvent['op'], item: Item): SharedItemsEvent => ({
   kind: 'shared',
   op,
   item,
+});
+
+/**
+ * Events from asynchronous background operations on given items
+ */
+interface ItemOpFeedbackEvent {
+  kind: 'feedback';
+  op: 'update' | 'delete' | 'move' | 'copy' | 'export' | 'recycle' | 'restore' | 'validate';
+  resource: Item['id'][];
+  result:
+    | {
+        error: Error;
+      }
+    | ResultOf<Item>;
+}
+
+/**
+ * Factory of ItemOpFeedbackEvent
+ * @param op operation of the event
+ * @param resource original item ids on which the operation was performed
+ * @param result result of the asynchronous operation
+ * @returns
+ */
+export const ItemOpFeedbackEvent = (
+  op: ItemOpFeedbackEvent['op'],
+  resource: ItemOpFeedbackEvent['resource'],
+  result: ItemOpFeedbackEvent['result'],
+): ItemOpFeedbackEvent => ({
+  kind: 'feedback',
+  op,
+  resource,
+  result: result['error']
+    ? // monkey patch because somehow JSON.stringify(e: Error) will always result in {}
+      { error: { name: result['error'].name, message: result['error'].message } }
+    : result,
 });

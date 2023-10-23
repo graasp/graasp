@@ -166,8 +166,9 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     const { ordered = false } = options ?? {};
 
     const query = this.createQueryBuilder('item')
+      .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path <@ :path', { path: item.path })
-      .andWhere('id != :id', { id: item.id });
+      .andWhere('item.id != :id', { id: item.id });
 
     if (ordered) {
       query.orderBy('item.path', 'ASC');
@@ -176,16 +177,23 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     return query.getMany();
   },
 
-  async getManyDescendants(items: Item[]): Promise<Item[]> {
+  async getManyDescendants(
+    items: Item[],
+    { withDeleted = false }: { withDeleted?: boolean } = {},
+  ): Promise<Item[]> {
     // TODO: LEVEL depth
     if (items.length === 0) {
       return [];
     }
-    const query = this.createQueryBuilder('item')
-      .leftJoinAndSelect('item.creator', 'creator')
-      .where('item.id NOT IN(:...ids)', {
-        ids: items.map(({ id }) => id),
-      });
+    const query = this.createQueryBuilder('item');
+
+    if (withDeleted) {
+      query.withDeleted();
+    }
+
+    query.leftJoinAndSelect('item.creator', 'creator').where('item.id NOT IN(:...ids)', {
+      ids: items.map(({ id }) => id),
+    });
 
     query.andWhere(
       new Brackets((q) => {
@@ -254,7 +262,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
-  async move(item: Item, parentItem?: Item): Promise<void> {
+  async move(item: Item, parentItem?: Item): Promise<Item> {
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
@@ -282,11 +290,14 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       ? `'${parentItem.path}' || subpath(path, nlevel('${item.path}') - 1)`
       : `subpath(path, nlevel('${item.path}') - 1)`;
 
-    return this.createQueryBuilder('item')
+    await this.createQueryBuilder('item')
       .update()
       .set({ path: () => pathSql })
       .where('item.path <@ :path', { path: item.path })
       .execute();
+
+    // TODO: is there a better way?
+    return this.get(item.id);
   },
 
   async patch(id: string, data: Partial<Item>): Promise<Item> {

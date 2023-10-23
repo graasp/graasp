@@ -92,6 +92,8 @@ export class ItemValidationService {
 
     // create validation and execute for each node recursively
     await this._post(member, repositories, item, iVG);
+
+    return item;
   }
 
   async _post(

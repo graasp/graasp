@@ -4,7 +4,6 @@ import MeiliSearch, {
   MeiliSearchApiError,
   MeiliSearchTimeOutError,
   MultiSearchParams,
-  TaskStatus,
   TypoTolerance,
 } from 'meilisearch';
 import { DataSource } from 'typeorm';
@@ -139,7 +138,6 @@ export class MeiliSearchWrapper {
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(queries: MultiSearchParams) {
     const searchResult = await this.meilisearchClient.multiSearch(queries, {
-      hitsPerPage: 5,
       attributesToHighlight: ['*'],
     });
 

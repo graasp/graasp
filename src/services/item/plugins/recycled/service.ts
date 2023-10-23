@@ -1,11 +1,24 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
+import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor } from '../../../member/entities/member';
+import { Item } from '../../entities/Item';
 
 export class RecycledBinService {
+  readonly hooks = new HookManager<{
+    recycle: {
+      pre: { item: Item; isRecycledRoot: boolean };
+      post: { item: Item; isRecycledRoot: boolean };
+    };
+    restore: {
+      pre: { item: Item; isRestoredRoot: boolean };
+      post: { item: Item; isRestoredRoot: boolean };
+    };
+  }>();
+
   async getAll(actor: Actor, repositories: Repositories) {
     const { recycledItemRepository } = repositories;
     // check member is connected
@@ -16,58 +29,44 @@ export class RecycledBinService {
     return recycledItemRepository.getOwnRecycledItemDatas(actor);
   }
 
-  async recycle(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-    const { itemRepository, recycledItemRepository } = repositories;
-
-    // if item is already deleted, it will throw not found here
-    const item = await itemRepository.get(itemId);
-
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
-
-    // remove all descendants
-    const descendants = await itemRepository.getDescendants(item);
-    await itemRepository.softRemove(descendants);
-
-    return recycledItemRepository.recycleOne(item, actor);
-  }
-
   async recycleMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
     const { itemRepository, recycledItemRepository } = repositories;
 
-    const { data: items } = await itemRepository.getMany(itemIds, { throwOnError: true });
+    const itemsResult = await itemRepository.getMany(itemIds, { throwOnError: true });
+    const { data: idsToItems } = itemsResult;
+    const items = Object.values(idsToItems);
 
     // if item is already deleted, it will throw not found here
-    for (const item of Object.values(items)) {
+    for (const item of items) {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-    // get descendants of all items
-    const descendants = await itemRepository.getManyDescendants(Object.values(items));
+    const descendants = await itemRepository.getManyDescendants(items);
 
-    await itemRepository.softRemove([...descendants, ...Object.values(items)]);
-
-    return recycledItemRepository.recycleMany(Object.values(items), actor);
-  }
-
-  async restoreOne(actor: Actor, repositories: Repositories, itemId: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
+    for (const item of items) {
+      await this.hooks.runPreHooks('recycle', actor, repositories, { item, isRecycledRoot: true });
     }
-    const { itemRepository, recycledItemRepository } = repositories;
+    for (const d of descendants) {
+      await this.hooks.runPreHooks('recycle', actor, repositories, {
+        item: d,
+        isRecycledRoot: false,
+      });
+    }
 
-    const item = await itemRepository.get(itemId, { withDeleted: true });
+    await itemRepository.softRemove([...descendants, ...items]);
+    const result = await recycledItemRepository.recycleMany(items, actor);
 
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    for (const d of descendants) {
+      this.hooks.runPostHooks('recycle', actor, repositories, { item: d, isRecycledRoot: false });
+    }
+    for (const item of items) {
+      await this.hooks.runPostHooks('recycle', actor, repositories, { item, isRecycledRoot: true });
+    }
 
-    await itemRepository.recover(item);
-
-    return recycledItemRepository.restoreOne(item);
+    return itemsResult;
   }
 
   async restoreMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
@@ -76,18 +75,44 @@ export class RecycledBinService {
     }
     const { itemRepository, recycledItemRepository } = repositories;
 
-    const { data: items } = await itemRepository.getMany(itemIds, {
+    const result = await itemRepository.getMany(itemIds, {
       throwOnError: true,
       withDeleted: true,
     });
+    const { data: idsToItems } = result;
 
-    for (const item of Object.values(items)) {
+    const items = Object.values(idsToItems);
+
+    for (const item of items) {
       await validatePermission(repositories, PermissionLevel.Admin, actor, item);
     }
 
-    // TODO: check if item is already deleted?
-    await itemRepository.recover(Object.values(items));
+    // since the subtree is currently soft-deleted before recovery, need withDeleted=true
+    const descendants = await itemRepository.getManyDescendants(items, { withDeleted: true });
 
-    return recycledItemRepository.restoreMany(Object.values(items));
+    for (const item of items) {
+      await this.hooks.runPreHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+    }
+    for (const d of descendants) {
+      await this.hooks.runPreHooks('restore', actor, repositories, {
+        item: d,
+        isRestoredRoot: false,
+      });
+    }
+
+    await itemRepository.recover([...descendants, ...items]);
+    await recycledItemRepository.restoreMany(items);
+
+    for (const item of items) {
+      await this.hooks.runPostHooks('restore', actor, repositories, { item, isRestoredRoot: true });
+    }
+    for (const d of descendants) {
+      await this.hooks.runPostHooks('restore', actor, repositories, {
+        item: d,
+        isRestoredRoot: false,
+      });
+    }
+
+    return result;
   }
 }

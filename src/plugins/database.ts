@@ -10,6 +10,7 @@ export interface DatabasePluginOptions {
 
 const plugin: FastifyPluginAsync<DatabasePluginOptions> = async (
   fastify,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { readReplicaUris, logs },
 ) => {
   const db = AppDataSource;

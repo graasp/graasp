@@ -10,7 +10,6 @@ import { RedisOptions } from 'ioredis';
 
 import fws from '@fastify/websocket';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
-import fp from 'fastify-plugin';
 
 import { InvalidSession } from '../../utils/errors';
 import { AjvMessageSerializer } from './message-serializer';
@@ -52,7 +51,7 @@ function logBootMessage(log: FastifyBaseLogger, options: WebsocketsPluginOptions
 
 const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, options) => {
   // destructure passed fastify instance
-  const { log, verifyAuthentication } = fastify;
+  const { log } = fastify;
 
   // must await this register call: otherwise decorated properties on `fastify` are not available
   await fastify.register(fws, {
@@ -86,12 +85,11 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
     fastify.decorate('_debug_websocketsChannels', wsChannels);
   }
 
-  fastify.register(async (fastify) => {
-    // user must have valid session
-    fastify.addHook('preHandler', verifyAuthentication);
-
-    // handle incoming requests
-    fastify.get(options.prefix, { websocket: true }, (conn, req) => {
+  // handle incoming requests
+  fastify.get(
+    options.prefix,
+    { websocket: true, preHandler: fastify.verifyAuthentication },
+    (conn, req) => {
       // raw websocket client
       const client = conn.socket;
       // member from valid session
@@ -110,8 +108,8 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
       client.on('close', (code, reason) => {
         wsChannels.clientRemove(client);
       });
-    });
-  });
+    },
+  );
 
   // cleanup on server close
   fastify.addHook('onClose', (instance, done) => {
@@ -123,6 +121,4 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
   logBootMessage(log, options);
 };
 
-export default fp(plugin, {
-  name: 'graasp-plugin-websockets',
-});
+export default plugin;
