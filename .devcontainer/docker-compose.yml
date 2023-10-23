@@ -173,5 +173,4 @@ services:
 
 volumes:
   postgres-data:
-  postgres-test-data:
   postgres-data-etherpad:
