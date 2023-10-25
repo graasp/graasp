@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.2](https://github.com/graasp/graasp/compare/v1.9.1...v1.9.2) (2023-10-25)
+
+
+### Bug Fixes
+
+* add item.creator in getItemLike for member response ([#644](https://github.com/graasp/graasp/issues/644)) ([4e06957](https://github.com/graasp/graasp/commit/4e06957943c236cdb625bcfa14d4bd92cac4c1d5))
+* add local test db ([#655](https://github.com/graasp/graasp/issues/655)) ([6cf61cc](https://github.com/graasp/graasp/commit/6cf61cc1a0e39814e3282da9f7d0444d0acfee76))
+
+
+### Documentation
+
+* update readme instructions for localstack ([#652](https://github.com/graasp/graasp/issues/652)) ([a455f14](https://github.com/graasp/graasp/commit/a455f14432a5d31daddc033f328d0bc223a34958)), closes [#650](https://github.com/graasp/graasp/issues/650)
+
 ## [1.9.1](https://github.com/graasp/graasp/compare/v1.9.0...v1.9.1) (2023-10-19)
 
 
