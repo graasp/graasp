@@ -74,13 +74,13 @@ export class AppDataService {
     if (!actorId) {
       throw new MemberCannotWriteItem();
     }
-    const member = await memberRepository.get(actorId);
+    const actor = await memberRepository.get(actorId);
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
     // posting an app data is allowed to readers
-    const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
+    const membership = await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
     let attachedToMemberId = actorId;
     // only admin can write app data for others
@@ -94,15 +94,13 @@ export class AppDataService {
       body,
       {
         memberId: attachedToMemberId,
-        creator: actorId,
-        itemId,
       },
     );
 
-    await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
+    await this.hooks.runPreHooks('post', actor, repositories, { appData: body, itemId });
 
     const appData = await appDataRepository.post(itemId, actorId, completeData);
-    await this.hooks.runPostHooks('post', member, repositories, { appData, itemId });
+    await this.hooks.runPostHooks('post', actor, repositories, { appData, itemId });
     return appData;
   }
 
