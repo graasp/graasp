@@ -121,6 +121,9 @@ describe('Member routes tests', () => {
             expect((item.extra[ItemType.LINK] as { url: string }).url).toEqual(
               (file.extra[ItemType.LINK] as { url: string }).url,
             );
+          } else if (item.type === ItemType.FOLDER) {
+            // loosely check the
+            expect(item.extra).toEqual({ [ItemType.FOLDER]: { childrenOrder: expect.anything() } });
           } else {
             expect(item.extra).toEqual(file.extra);
           }
