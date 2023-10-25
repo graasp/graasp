@@ -8,6 +8,9 @@ import { CORS_ORIGIN_REGEX, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
 
 const start = async () => {
   const instance = fastify({
+    // allows to remove logging of incomming requests
+    // can not be set using an environnement variable
+    disableRequestLogging: false,
     logger: {
       level: process.env.LOG_LEVEL,
     },

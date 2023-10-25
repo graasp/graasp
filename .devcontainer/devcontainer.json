@@ -13,18 +13,28 @@
             "name": "Graasp database",
             "driver": "PostgreSQL",
             "previewLimit": 50,
-            "server": "db",
+            "server": "graasp-postgres",
             "port": 5432,
             "database": "docker",
             "username": "docker",
             "password": "docker"
           },
           {
+            "name": "Graasp Test database",
+            "driver": "PostgreSQL",
+            "previewLimit": 50,
+            "server": "graasp-postgres-test",
+            "port": 5432,
+            "database": "docker-test",
+            "username": "docker-test",
+            "password": "docker-test"
+          },
+          {
             "name": "Etherpad database",
             "driver": "PostgreSQL",
             "previewLimit": 50,
-            "server": "db",
-            "port": 5433,
+            "server": "graasp-postgres-etherpad",
+            "port": 5432,
             "database": "etherpad",
             "username": "etherpad",
             "password": "etherpad"

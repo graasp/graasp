@@ -67,6 +67,18 @@ services:
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward MongoDB locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
+  test-db:
+    container_name: graasp-postgres-test
+    image: postgres:15
+    restart: on-failure
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_DB: docker-test
+      POSTGRES_USER: docker-test
+      POSTGRES_PASSWORD: docker-test
+    # no volumes since we don't care about perssissting the data
+
   redis:
     container_name: graasp-redis
     image: redis
@@ -97,7 +109,7 @@ services:
     # restart the container until db has created tables
     restart: on-failure
     depends_on:
-      - db
+      - etherpad-db
 
   etherpad-db:
     container_name: graasp-postgres-etherpad
@@ -111,7 +123,7 @@ services:
       POSTGRES_DB: etherpad
       POSTGRES_USER: etherpad
       POSTGRES_PASSWORD: etherpad
-  
+
   meilisearch:
     container_name: graasp-meilisearch
     image: getmeili/meilisearch:v1.2

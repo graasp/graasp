@@ -1,6 +1,4 @@
 import { readPdfText } from 'pdf-text-reader';
-import { stringify } from 'querystring';
-import { Readable } from 'stream';
 
 import { FolderItemExtra, ItemType, UUID } from '@graasp/sdk';
 
