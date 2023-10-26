@@ -2256,9 +2256,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:1.10.0":
+"@graasp/sdk@github:graasp/graasp-sdk#308-change-itemtype-to-a-const-object":
   version: 1.10.0
-  resolution: "@graasp/sdk@npm:1.10.0"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=db2181c5ddbc502ba04f45d7d831d4be093a9c69"
   dependencies:
     "@aws-sdk/client-s3": 3.427.0
     "@fastify/secure-session": 6.1.0
@@ -2271,7 +2271,7 @@ __metadata:
     typeorm: 0.3.17
     uuid: 9.0.1
     validator: 13.11.0
-  checksum: 0786fdde14ae9a928d8c29f25b2d2d156bf6bf1c22233fe50b13b08e74abf8969f83a6d2ce009d4bdbb03a336871c0376269db00f46c332f75df74f3811852b8
+  checksum: 2886b2b570a737e6b16058b01873cdfed589501f5be65bedf34bbeadffc1e266a3bcc295a80bb2f642408c2c835b30f06da1b50a07b048991ea8af4bd7d10d5f
   languageName: node
   linkType: hard
 
@@ -7117,7 +7117,7 @@ __metadata:
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
-    "@graasp/sdk": 1.10.0
+    "@graasp/sdk": "github:graasp/graasp-sdk#308-change-itemtype-to-a-const-object"
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.64.0
     "@sentry/tracing": 7.64.0

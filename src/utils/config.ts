@@ -270,9 +270,7 @@ export const ETHERPAD_PUBLIC_URL = process.env.ETHERPAD_PUBLIC_URL;
 export const ETHERPAD_API_KEY = process.env.ETHERPAD_API_KEY;
 export const ETHERPAD_COOKIE_DOMAIN = process.env.ETHERPAD_COOKIE_DOMAIN;
 
-export const FILE_ITEM_TYPE: FileItemType = S3_FILE_ITEM_PLUGIN
-  ? ItemType.S3_FILE
-  : ItemType.LOCAL_FILE;
+export const FILE_ITEM_TYPE = S3_FILE_ITEM_PLUGIN ? ItemType.S3_FILE : ItemType.LOCAL_FILE;
 
 if (!process.env.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN) {
   throw new Error('EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN is not defined');
