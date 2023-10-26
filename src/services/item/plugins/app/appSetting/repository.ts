@@ -1,6 +1,7 @@
 import { ItemType } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { ItemNotFound } from '../../../../../utils/errors';
 import { AppSetting } from './appSettings';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { InputAppSetting } from './interfaces/app-setting';
@@ -60,6 +61,9 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
   },
 
   getForItem(itemId: string): Promise<AppSetting[]> {
+    if (!itemId) {
+      throw new ItemNotFound(itemId);
+    }
     return this.find({
       where: {
         item: { id: itemId },
