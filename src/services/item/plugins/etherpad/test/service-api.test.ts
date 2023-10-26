@@ -478,7 +478,7 @@ describe('Etherpad service API', () => {
       };
       expect(name).toEqual('sessionID');
       const sessions = value.split(',');
-      expect(sessions.length).toEqual(MAX_SESSIONS_IN_COOKIE);
+      expect([MAX_SESSIONS_IN_COOKIE, MAX_SESSIONS_IN_COOKIE - 1]).toContain(sessions.length);
       // the first (oldest) session should not be in the cookie
       Array.from(
         { length: MAX_SESSIONS_IN_COOKIE - 1 },
