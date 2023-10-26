@@ -46,11 +46,14 @@ export type ItemExtraMap = {
 export type ItemExtraUnion = ItemExtraMap[keyof ItemExtraMap];
 
 // local type alias to simplify the notation
-type ItemTypeKeys = keyof ItemExtraMap;
+export type ItemTypeEnumKeys = keyof ItemExtraMap;
+// since we use an enum for ItemType, the keyof opperator in nominaly typed. To use a union type with litteral values we should convert ItemType to a const object
+// this is how you would get the litteral union from the nominal types but this does not work to index into ItemExtraMap in Item Entity...
+// type ItemTypeRawKeys = `${ItemTypeEnumKeys}`;
 
 @Entity()
 @Index('IDX_gist_item_path', { synchronize: false })
-export class Item<T extends ItemTypeKeys = ItemTypeKeys> extends BaseEntity {
+export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEntity {
   // we do not generate by default because if need to generate
   // the id to define the path
   @PrimaryColumn('uuid', { nullable: false })
@@ -136,8 +139,8 @@ export type ShortcutItem = Item<typeof ItemType.SHORTCUT>;
 //            // do some smarter things without needing to cast the extra
 //          }
 
-export const isItemType = <T extends ItemTypeKeys>(
-  item: Item<ItemTypeKeys>,
+export const isItemType = <T extends ItemTypeEnumKeys>(
+  item: Item<ItemTypeEnumKeys>,
   type: T,
 ): item is Item<T> => {
   return item.type === type;
