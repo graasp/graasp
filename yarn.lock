@@ -2256,9 +2256,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#308-change-itemtype-to-a-const-object":
-  version: 1.10.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=db2181c5ddbc502ba04f45d7d831d4be093a9c69"
+"@graasp/sdk@npm:1.10.1":
+  version: 1.10.1
+  resolution: "@graasp/sdk@npm:1.10.1"
   dependencies:
     "@aws-sdk/client-s3": 3.427.0
     "@fastify/secure-session": 6.1.0
@@ -2267,11 +2267,9 @@ __metadata:
     fastify: 4.18.0
     immutable: 4.3.4
     js-cookie: 3.0.5
-    qs: 6.11.2
-    typeorm: 0.3.17
     uuid: 9.0.1
     validator: 13.11.0
-  checksum: 2886b2b570a737e6b16058b01873cdfed589501f5be65bedf34bbeadffc1e266a3bcc295a80bb2f642408c2c835b30f06da1b50a07b048991ea8af4bd7d10d5f
+  checksum: 6e4fa76eee59dd51c726182a2fe03e52627ec87098e4d335abe11f47c819ca3ad4f7f43667ede63c16e4ac83e3e716de46e6579881edcf4428039d92e29dea10
   languageName: node
   linkType: hard
 
@@ -7117,7 +7115,7 @@ __metadata:
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
-    "@graasp/sdk": "github:graasp/graasp-sdk#308-change-itemtype-to-a-const-object"
+    "@graasp/sdk": 1.10.1
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.64.0
     "@sentry/tracing": 7.64.0
