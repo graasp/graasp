@@ -17,12 +17,22 @@ export type SearchFields = {
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const searchService = fastify.search.service;
+  const actionService = fastify.actions.service;
 
   fastify.post(
     '/collections/search',
     { preHandler: fastify.attemptVerifyAuthentication, schema: search },
-    async ({ member, body }) => {
-      return searchService.search(member, buildRepositories(), body as MultiSearchParams);
+    async (request) => {
+      const { member, body } = request;
+      const repositories = buildRepositories();
+
+      // TODO: chnage type from graasp/sdk
+      const action = {
+        type: 'item-search',
+        extra: { ...(body as any) },
+      };
+      await actionService.postMany(member, repositories, request, [action]);
+      return searchService.search(member, repositories, body as MultiSearchParams);
     },
   );
 

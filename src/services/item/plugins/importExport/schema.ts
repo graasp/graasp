@@ -14,6 +14,15 @@ export const zipExport = {
       $ref: 'http://graasp.org/#/definitions/uuid',
     },
   },
+  querystring: {
+    type: 'object',
+
+    properties: {
+      type: {
+        type: 'string',
+      },
+    },
+  },
   required: ['itemId'],
   additionalProperties: false,
 };

@@ -30,6 +30,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       service: iS,
       files: { service: fS },
     },
+    actions: { service: aS },
     h5p: h5pService,
   } = fastify;
 
@@ -101,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // download item as zip
-  fastify.route<{ Params: { itemId: string } }>({
+  fastify.route<{ Params: { itemId: string }; Querystring: { type?: string } }>({
     method: 'GET',
     url: '/zip-export/:itemId',
     schema: zipExport,
@@ -111,11 +112,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         member,
         params: { itemId },
         log,
+        query: { type },
       } = request;
       const repositories = buildRepositories();
-
-      // check item and permission
       const item = await iS.get(member, repositories, itemId);
+
+      if (type) {
+        const action = {
+          item,
+          type,
+          extra: {},
+        };
+        // trigger download action for a collection
+        await aS.postMany(member, repositories, request, [action]);
+      }
 
       // TODO: The following won't be necessary anymore once h5p stops using the filestorage
       // path to save files temporarly and save archive

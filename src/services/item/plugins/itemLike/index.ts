@@ -8,6 +8,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;
 
   const itemLikeService = new ItemLikeService(items.service);
+  const actionService = fastify.actions.service;
+  const itemService = fastify.items.service;
 
   fastify.addSchema(common);
   //get liked entry for member
@@ -34,8 +36,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string } }>(
     '/:itemId/like',
     { schema: create, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId }, log }) => {
+    async (request) => {
+      const {
+        member,
+        params: { itemId },
+      } = request;
       return db.transaction(async (manager) => {
+        // action like item
+        const item = await itemService.get(member, buildRepositories(manager), itemId);
+        // TODO: chnage type from graasp/sdk
+        const action = {
+          item,
+          type: 'item-like',
+          extra: {},
+        };
+
+        await actionService.postMany(member, buildRepositories(manager), request, [action]);
         return itemLikeService.post(member, buildRepositories(manager), itemId);
       });
     },
@@ -45,8 +61,23 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/:itemId/like',
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId }, log }) => {
+    async (request) => {
+      const {
+        member,
+        params: { itemId },
+      } = request;
       return db.transaction(async (manager) => {
+        // action unlike item
+        const item = await itemService.get(member, buildRepositories(manager), itemId);
+
+        // TODO: chnage type from graasp/sdk
+        const action = {
+          item,
+          type: 'item-unlike',
+          extra: {},
+        };
+
+        await actionService.postMany(member, buildRepositories(manager), request, [action]);
         return itemLikeService.removeOne(member, buildRepositories(manager), itemId);
       });
     },
