@@ -2256,23 +2256,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#251-fix-use-discriminateditem-instead-of-item-in-types":
-  version: 1.8.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=80da5403d76aac75f4fe45bdf29cf7c1f72f1169"
+"@graasp/sdk@npm:1.10.0":
+  version: 1.10.0
+  resolution: "@graasp/sdk@npm:1.10.0"
   dependencies:
     "@aws-sdk/client-s3": 3.427.0
     "@fastify/secure-session": 6.1.0
     "@graasp/etherpad-api": 2.1.1
     date-fns: 2.30.0
     fastify: 4.18.0
-    fluent-json-schema: 4.1.0
     immutable: 4.3.4
     js-cookie: 3.0.5
     qs: 6.11.2
     typeorm: 0.3.17
     uuid: 9.0.1
     validator: 13.11.0
-  checksum: 96d6a89d6ad6fb72e278ff532a37112847761e13c7db69f21b3f615703b5bfaa1c3cd087464ed8915c381c5edfeba6b04839845e56bc69deed59234a90c2f807
+  checksum: 0786fdde14ae9a928d8c29f25b2d2d156bf6bf1c22233fe50b13b08e74abf8969f83a6d2ce009d4bdbb03a336871c0376269db00f46c332f75df74f3811852b8
   languageName: node
   linkType: hard
 
@@ -7118,7 +7117,7 @@ __metadata:
     "@fastify/view": 7.4.1
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
-    "@graasp/sdk": "github:graasp/graasp-sdk#251-fix-use-discriminateditem-instead-of-item-in-types"
+    "@graasp/sdk": 1.10.0
     "@graasp/translations": 1.15.0
     "@sentry/node": 7.64.0
     "@sentry/tracing": 7.64.0
