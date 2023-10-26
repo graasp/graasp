@@ -6,7 +6,13 @@ import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graas
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Actor, Member } from '../../../../../member/entities/member';
-import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
+import {
+  BOB,
+  MEMBERS,
+  expectMember,
+  expectMinimalMember,
+  saveMember,
+} from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { setUp } from '../../test/fixtures';
 import { PreventUpdateAppDataFile } from '../errors';
@@ -376,6 +382,29 @@ describe('App Data Tests', () => {
         // we don't use the util function because it does not contain an id for iteration
         expect(newAppData.type).toEqual(payload.type);
         expect(newAppData.data).toEqual(payload.data);
+
+        const savedAppData = await AppDataRepository.get(newAppData.id);
+        expectAppData([newAppData], [savedAppData]);
+      });
+
+      it('Post app data to some member', async () => {
+        const bob = await saveMember(BOB);
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { ...payload, memberId: bob.id },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const newAppData = response.json();
+
+        // we don't use the util function because it does not contain an id for iteration
+        expect(newAppData.type).toEqual(payload.type);
+        expect(newAppData.data).toEqual(payload.data);
+        expectMinimalMember(newAppData.member, bob);
+        expectMinimalMember(newAppData.creator, actor);
 
         const savedAppData = await AppDataRepository.get(newAppData.id);
         expectAppData([newAppData], [savedAppData]);

@@ -1,6 +1,6 @@
 import { Brackets } from 'typeorm';
 
-import { AppDataVisibility, ItemType, PermissionLevel, UUID } from '@graasp/sdk';
+import { AppDataVisibility, ItemType, Member, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { AppData, Filters } from './appData';
@@ -8,11 +8,12 @@ import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';
 
 export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
-  async post(itemId: string, memberId: string, body: Partial<InputAppData>): Promise<AppData> {
+  async post(itemId: string, actorId: Member['id'], body: Partial<InputAppData>): Promise<AppData> {
     const created = await this.insert({
       ...body,
       item: { id: itemId },
-      member: { id: memberId },
+      creator: { id: actorId },
+      member: { id: body.memberId ?? actorId },
     });
 
     // TODO: better solution?

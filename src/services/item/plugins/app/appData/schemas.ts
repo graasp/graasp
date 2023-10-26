@@ -1,5 +1,3 @@
-import { AppDataVisibility } from '@graasp/sdk';
-
 import { UUID_REGEX } from '../../../../../schemas/global';
 
 export default {
