@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { ItemMembership as GraaspItemMembership, PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 
 import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
@@ -19,7 +19,7 @@ import { Member } from '../../member/entities/member';
 @Entity()
 @Index('IDX_gist_item_membership_path', { synchronize: false })
 @Unique('item_membership-item-member', ['item', 'member'])
-export class ItemMembership extends BaseEntity implements GraaspItemMembership {
+export class ItemMembership extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

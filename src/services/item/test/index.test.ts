@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import {
-  FolderItemExtraProperties,
   HttpMethod,
   ItemTagType,
   ItemType,
@@ -154,6 +153,10 @@ describe('Item routes tests', () => {
 
         expectItem(newItem, payload, actor, parent);
         expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const updatedParent = await ItemRepository.get(parent.id);
+        // check parent has been updated
+        expect(updatedParent.extra).toEqual({ folder: { childrenOrder: [newItem.id] } });
 
         // a membership does not need to be created for item with admin rights
         const nbItemMemberships = await ItemMembershipRepository.count();
@@ -1369,7 +1372,7 @@ describe('Item routes tests', () => {
           // BUG: folder extra should not contain extra
           extra: {
             folder: {
-              ...(item.extra.folder as FolderItemExtraProperties),
+              ...item.extra[item.type],
               ...payload.extra.folder,
             },
           },

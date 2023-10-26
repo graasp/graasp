@@ -9,13 +9,13 @@ import yazl, { ZipFile } from 'yazl';
 
 import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
-import { DiscriminatedItem, ItemType, LocalFileItemExtra, S3FileItemExtra } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
-import { Item } from '../../entities/Item';
+import { Item, isItemType } from '../../entities/Item';
 import ItemService from '../../service';
 import FileItemService from '../file/service';
 import { H5PService } from '../html/h5p/service';
@@ -95,7 +95,12 @@ export class ImportExportService {
       const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
 
       return this.itemService.post(actor, repositories, {
-        item: { description, name: filename, type: ItemType.FOLDER },
+        item: {
+          description,
+          name: filename,
+          type: ItemType.FOLDER,
+          extra: { [ItemType.FOLDER]: { childrenOrder: [] } },
+        },
         parentId: parent?.id,
       });
     }
@@ -109,7 +114,6 @@ export class ImportExportService {
 
     // links and apps
     if (filename.endsWith(LINK_EXTENSION)) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_source, link, linkType] = content.split('\n');
 
       // get url from content
@@ -189,7 +193,7 @@ export class ImportExportService {
     repositories: Repositories,
     args: {
       reply;
-      item: DiscriminatedItem;
+      item: Item;
       archiveRootPath: string;
       archive: ZipFile;
       fileStorage: string;
@@ -205,81 +209,74 @@ export class ImportExportService {
       );
     }
 
-    switch (item.type) {
-      case ItemType.S3_FILE:
-      case ItemType.LOCAL_FILE: {
-        // TODO: refactor
-        const { mimetype } =
-          (item.extra[ItemType.S3_FILE] as S3FileItemExtra) ||
-          (item.extra[ItemType.LOCAL_FILE] as LocalFileItemExtra);
-        const url = (await this.fileItemService.download(actor, repositories, {
-          itemId: item.id,
-        })) as string;
+    if (isItemType(item, ItemType.LOCAL_FILE) || isItemType(item, ItemType.S3_FILE)) {
+      // TODO: refactor
+      const s3Extra = isItemType(item, ItemType.S3_FILE) ? item.extra.s3File : undefined;
+      const localFileExtra = isItemType(item, ItemType.LOCAL_FILE) ? item.extra.file : undefined;
+      const { mimetype } = { ...s3Extra, ...localFileExtra };
+      const url = (await this.fileItemService.download(actor, repositories, {
+        fileStorage,
+        itemId: item.id,
+      })) as string;
 
-        // build filename with extension if does not exist
-        let ext = path.extname(item.name);
-        if (!ext) {
-          // only add a dot in case of building file name with mimetype, otherwise there will be two dots in file name
-          ext = `.${mime.extension(mimetype)}`;
-        }
-        const filename = `${path.basename(item.name, ext)}${ext}`;
-
-        // add file in archive
-        const res = await fetch(url);
-        archive.addReadStream(res.body, path.join(archiveRootPath, filename));
-
-        break;
+      // build filename with extension if does not exist
+      let ext = path.extname(item.name);
+      if (!ext) {
+        // only add a dot in case of building file name with mimetype, otherwise there will be two dots in file name
+        ext = `.${mime.extension(mimetype)}`;
       }
-      case ItemType.H5P: {
-        const fileStream = (await this.h5pService.download(
-          item,
-          actor,
-          fileStorage,
-        )) as NodeJS.ReadableStream;
+      const filename = `${path.basename(item.name, ext)}${ext}`;
 
-        archive.addReadStream(fileStream, path.join(archiveRootPath, item.name));
+      // add file in archive
+      const res = await fetch(url);
+      archive.addReadStream(res.body, path.join(archiveRootPath, filename));
+    }
+    if (isItemType(item, ItemType.H5P)) {
+      const fileStream = (await this.h5pService.download(
+        item,
+        actor,
+        fileStorage,
+      )) as NodeJS.ReadableStream;
 
-        break;
-      }
-      case ItemType.DOCUMENT: {
-        archive.addBuffer(
-          Buffer.from(item.extra.document?.content, 'utf-8'),
-          path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
-        );
-        break;
-      }
-      case ItemType.LINK:
-        archive.addBuffer(
-          Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
-          path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-        );
-        break;
-      case ItemType.APP:
-        archive.addBuffer(
-          Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
-          path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
-        );
-        break;
-      case ItemType.FOLDER: {
-        // append description
-        const folderPath = path.join(archiveRootPath, item.name);
-        const children = await repositories.itemRepository.getChildren(item as Item);
-        const result = await Promise.all(
-          children.map((child) =>
-            this._addItemToZip(actor, repositories, {
-              item: child as DiscriminatedItem,
-              archiveRootPath: folderPath,
-              archive,
-              reply,
-              fileStorage,
-            }),
-          ),
-        );
-        // add empty folder
-        if (!result.length) {
-          archive.addEmptyDirectory(folderPath);
-        }
-        break;
+      archive.addReadStream(fileStream, path.join(archiveRootPath, item.name));
+    }
+
+    if (isItemType(item, ItemType.DOCUMENT)) {
+      archive.addBuffer(
+        Buffer.from(item.extra.document?.content, 'utf-8'),
+        path.join(archiveRootPath, `${item.name}${GRAASP_DOCUMENT_EXTENSION}`),
+      );
+    }
+    if (isItemType(item, ItemType.LINK)) {
+      archive.addBuffer(
+        Buffer.from(buildTextContent(item.extra.embeddedLink?.url, ItemType.LINK)),
+        path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
+      );
+    }
+    if (isItemType(item, ItemType.APP)) {
+      archive.addBuffer(
+        Buffer.from(buildTextContent(item.extra.app?.url, ItemType.APP)),
+        path.join(archiveRootPath, `${item.name}${LINK_EXTENSION}`),
+      );
+    }
+    if (isItemType(item, ItemType.FOLDER)) {
+      // append description
+      const folderPath = path.join(archiveRootPath, item.name);
+      const children = await repositories.itemRepository.getChildren(item);
+      const result = await Promise.all(
+        children.map((child) =>
+          this._addItemToZip(actor, repositories, {
+            item: child,
+            archiveRootPath: folderPath,
+            archive,
+            reply,
+            fileStorage,
+          }),
+        ),
+      );
+      // add empty folder
+      if (!result.length) {
+        archive.addEmptyDirectory(folderPath);
       }
     }
   }
@@ -304,7 +301,7 @@ export class ImportExportService {
 
     // import items in zip recursively
     await this._addItemToZip(actor, repositories, {
-      item: item as DiscriminatedItem,
+      item,
       reply,
       archiveRootPath: rootPath,
       archive,

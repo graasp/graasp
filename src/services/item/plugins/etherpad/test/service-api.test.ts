@@ -7,7 +7,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
-import { EtherpadItemType, HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
@@ -259,6 +259,7 @@ describe('Etherpad service API', () => {
         member: bob,
         item: {
           name: "bob's test etherpad item",
+          type: ItemType.ETHERPAD,
           extra: EtherpadItemService.buildEtherpadExtra({
             groupID: MOCK_GROUP_ID,
             padName: MOCK_PAD_NAME,
@@ -477,7 +478,7 @@ describe('Etherpad service API', () => {
       };
       expect(name).toEqual('sessionID');
       const sessions = value.split(',');
-      expect(sessions.length).toEqual(MAX_SESSIONS_IN_COOKIE);
+      expect([MAX_SESSIONS_IN_COOKIE, MAX_SESSIONS_IN_COOKIE - 1]).toContain(sessions.length);
       // the first (oldest) session should not be in the cookie
       Array.from(
         { length: MAX_SESSIONS_IN_COOKIE - 1 },

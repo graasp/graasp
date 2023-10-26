@@ -1,14 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { ItemType, UnknownExtra } from '@graasp/sdk';
-
 import { createSchema, updateSchema } from './schemas';
-
-export interface DocumentExtra extends UnknownExtra {
-  [ItemType.DOCUMENT]: {
-    content: string;
-  };
-}
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {

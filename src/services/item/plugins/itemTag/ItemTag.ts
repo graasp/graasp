@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { ItemTag as GraaspItemTag, ItemTagType } from '@graasp/sdk';
+import { ItemTagType } from '@graasp/sdk';
 
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
@@ -19,7 +19,7 @@ import { Item } from '../../entities/Item';
 @Entity()
 @Index('IDX_gist_item_tag_path', { synchronize: false })
 @Unique('item-tag', ['item', 'type'])
-export class ItemTag extends BaseEntity implements GraaspItemTag {
+export class ItemTag extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

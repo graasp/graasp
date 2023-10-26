@@ -14,10 +14,10 @@ import { v4 } from 'uuid';
 
 import {
   AppItemExtra,
+  DocumentItemExtra,
   EmbeddedLinkItemExtra,
   EtherpadItemExtra,
   FolderItemExtra,
-  Item as GraaspItem,
   H5PItemExtra,
   ItemSettings,
   ItemType,
@@ -28,22 +28,32 @@ import {
 } from '@graasp/sdk';
 
 import { Member } from '../../member/entities/member';
-import { DocumentExtra } from '../plugins/document';
 
-export type ItemExtra =
-  | DocumentExtra
-  | FolderItemExtra
-  | EmbeddedLinkItemExtra
-  | H5PItemExtra
-  | LocalFileItemExtra
-  | ShortcutItemExtra
-  | EtherpadItemExtra
-  | S3FileItemExtra
-  | AppItemExtra;
+// Map of the item types to their item extra
+export type ItemExtraMap = {
+  [ItemType.APP]: AppItemExtra;
+  [ItemType.DOCUMENT]: DocumentItemExtra;
+  [ItemType.ETHERPAD]: EtherpadItemExtra;
+  [ItemType.FOLDER]: FolderItemExtra;
+  [ItemType.H5P]: H5PItemExtra;
+  [ItemType.LINK]: EmbeddedLinkItemExtra;
+  [ItemType.LOCAL_FILE]: LocalFileItemExtra;
+  [ItemType.S3_FILE]: S3FileItemExtra;
+  [ItemType.SHORTCUT]: ShortcutItemExtra;
+};
+
+// utility type to describe the union of the potential item extras before the `type` of an item is known or checked using a typeguard
+export type ItemExtraUnion = ItemExtraMap[keyof ItemExtraMap];
+
+// local type alias to simplify the notation
+export type ItemTypeEnumKeys = keyof ItemExtraMap;
+// since we use an enum for ItemType, the keyof opperator in nominaly typed. To use a union type with litteral values we should convert ItemType to a const object
+// this is how you would get the litteral union from the nominal types but this does not work to index into ItemExtraMap in Item Entity...
+// type ItemTypeRawKeys = `${ItemTypeEnumKeys}`;
 
 @Entity()
 @Index('IDX_gist_item_path', { synchronize: false })
-export class Item extends BaseEntity implements GraaspItem {
+export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEntity {
   // we do not generate by default because if need to generate
   // the id to define the path
   @PrimaryColumn('uuid', { nullable: false })
@@ -66,7 +76,7 @@ export class Item extends BaseEntity implements GraaspItem {
     nullable: false,
     enum: Object.values(ItemType),
   })
-  type: `${ItemType}`;
+  type: T;
 
   @Index()
   @ManyToOne(() => Member, (member) => member.id, {
@@ -81,12 +91,12 @@ export class Item extends BaseEntity implements GraaspItem {
   @UpdateDateColumn({ name: 'updated_at', nullable: false })
   updatedAt: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at', nullable: false })
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date;
 
   // type dependent properties
   @Column('simple-json', { nullable: false })
-  extra: ItemExtra;
+  extra: ItemExtraMap[T]; // extra is typed using the generic to match the type property of the item
 
   // cosmetic settings
   // do not set default value because it gets serialize as a string in map.values()
@@ -101,3 +111,37 @@ export class Item extends BaseEntity implements GraaspItem {
   // @ManyToMany(() => ItemCategory, (iC) => iC.item)
   // categories: ItemCategory[];
 }
+
+// all sub-item types defined using a specific variant of the `ItemType` enumeration
+export type AppItem = Item<typeof ItemType.APP>;
+export type DocumentItem = Item<typeof ItemType.DOCUMENT>;
+export type EtherpadItem = Item<typeof ItemType.ETHERPAD>;
+export type FolderItem = Item<typeof ItemType.FOLDER>;
+export type H5PItem = Item<typeof ItemType.H5P>;
+export type EmbeddedLinkItem = Item<typeof ItemType.LINK>;
+export type LocalFileItem = Item<typeof ItemType.LOCAL_FILE>;
+export type S3FileItem = Item<typeof ItemType.S3_FILE>;
+export type ShortcutItem = Item<typeof ItemType.SHORTCUT>;
+
+// Typeguard definitons that help to narrow the type of an item to one of the specific item types
+// typeguard are used because a class does not support discriminated union
+// (which are the recommented way of achieving what we have with the item type definiton)
+// One benefit of using the typeguards is that it shortens the code when checking for an item type:
+// Before:
+//          if (item.type === ItemType.FOO) {
+//            // item.extra was not correctly typed to the correcponding extra type
+//            // do something, but you will have to cast the item.extra ... not ideal
+//          }
+//
+// Now:
+//          if (isFooItem(item)) {
+//            // now item.extra is of the mapped type, i.e: FooItemExtra
+//            // do some smarter things without needing to cast the extra
+//          }
+
+export const isItemType = <T extends ItemTypeEnumKeys>(
+  item: Item<ItemTypeEnumKeys>,
+  type: T,
+): item is Item<T> => {
+  return item.type === type;
+};

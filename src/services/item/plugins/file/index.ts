@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemProperties, HttpMethod, IdParam, PermissionLevel } from '@graasp/sdk';
 
+import { MemberNotSignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../entities/Item';
@@ -116,6 +117,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         query: { id: parentId },
         log,
       } = request;
+
+      // todo: check that it is ok to throw if member is not present
+      if (!member) {
+        throw new Error('member is undefined');
+      }
 
       // check rights
       if (parentId) {

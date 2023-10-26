@@ -7,11 +7,11 @@ export interface H5PPluginOptions {
   /** storage type */
   fileStorage: (
     | {
-        type: ItemType.S3_FILE;
+        type: typeof ItemType.S3_FILE;
         config: { s3: S3FileConfiguration };
       }
     | {
-        type: ItemType.LOCAL_FILE;
+        type: typeof ItemType.LOCAL_FILE;
         config: { local: LocalFileConfiguration };
       }
   ) & {

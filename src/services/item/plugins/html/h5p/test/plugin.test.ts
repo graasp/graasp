@@ -13,7 +13,7 @@ import build, { clearDatabase } from '../../../../../../../test/app';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../../member/entities/member';
-import { Item } from '../../../../entities/Item';
+import { Item, ItemTypeEnumKeys } from '../../../../entities/Item';
 import { ItemRepository } from '../../../../repository';
 import { HtmlImportError } from '../../errors';
 import { H5P_FILE_DOT_EXTENSION } from '../constants';
@@ -148,7 +148,7 @@ describe('Service plugin', () => {
       await waitForExpect(async () => {
         itemsInDb = await ItemRepository.find({
           where: {
-            type: item.type,
+            type: item.type as ItemTypeEnumKeys,
           },
         });
         expect(itemsInDb.length).toEqual(2);
