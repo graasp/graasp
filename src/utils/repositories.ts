@@ -26,6 +26,7 @@ import { ItemRepository } from '../services/item/repository';
 import ItemLoginRepository from '../services/itemLogin/repositories/itemLogin';
 import ItemLoginSchemaRepository from '../services/itemLogin/repositories/itemLoginSchema';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
+import MemberProfileRepository from '../services/libraryProfile/repository';
 import MemberRepository from '../services/member/repository';
 
 export type Repositories = {
@@ -56,6 +57,7 @@ export type Repositories = {
   mentionRepository: typeof ChatMentionRepository;
   publisherRepository: typeof PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
+  memberProfileRepository: typeof MemberProfileRepository;
 };
 // public: exists in item tag
 
@@ -117,4 +119,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   actionRequestExportRepository: manager
     ? manager.withRepository(ActionRequestExportRepository)
     : ActionRequestExportRepository,
+  memberProfileRepository: manager
+    ? manager.withRepository(MemberProfileRepository)
+    : MemberProfileRepository,
 });

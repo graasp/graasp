@@ -10,6 +10,7 @@ import authPlugin from './services/auth';
 import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
+import MemberProfileServiceApi from './services/libraryProfile';
 import MemberServiceApi from './services/member';
 import websocketsPlugin from './services/websockets';
 import {
@@ -78,7 +79,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
       })
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
-      .register(fp(ItemMembershipServiceApi));
+      .register(fp(ItemMembershipServiceApi))
+      .register(fp(MemberProfileServiceApi));
 
     // instance.register(
     //   async (instance) => {
