@@ -1,5 +1,6 @@
 import { FastifyBaseLogger } from 'fastify';
 
+import { ItemNotFound, UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { Member } from '../member/entities/member';
 
@@ -17,7 +18,21 @@ export class MemberProfileService {
   }
   async get(memberId, repositories: Repositories) {
     const { memberProfileRepository } = repositories;
-    const d = await memberProfileRepository.get(memberId);
-    return d;
+    const memberProfile = await memberProfileRepository.getByMemberId(memberId);
+    return memberProfile;
+  }
+  async patch(data, profileId, repositories: Repositories, member: Member | undefined) {
+    const { memberProfileRepository } = repositories;
+
+    const profile = await memberProfileRepository.get(profileId);
+
+    if (!profile) {
+      throw new ItemNotFound();
+    }
+    if (profile?.member?.id !== member?.id) {
+      throw new UnauthorizedMember();
+    }
+
+    return await memberProfileRepository.patch(profileId, data);
   }
 }

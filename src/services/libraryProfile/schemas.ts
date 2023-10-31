@@ -20,7 +20,6 @@ export const profileMember = S.object()
   .prop('createdAt', S.raw({}))
   .prop('updatedAt', S.raw({}));
 
-// schema for getting current member's storage limits
 export const createProfile = {
   response: {
     201: profileMember,
@@ -56,4 +55,24 @@ export const getProfileForMember = {
       .prop('updatedAt', S.raw({})),
     '4xx': error,
   },
+};
+
+export const updateMemberProfile = {
+  response: {
+    200: profileMember,
+    '4xx': error,
+  },
+  params: {
+    type: 'object',
+    properties: {
+      profileId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    },
+    additionalProperties: false,
+  },
+  body: S.object()
+    .prop('bio', S.string())
+    .prop('facebookLink', S.string())
+    .prop('linkedinLink', S.string())
+    .prop('twitterLink', S.string())
+    .prop('visibility', S.boolean()),
 };

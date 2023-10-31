@@ -3,9 +3,16 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../utils/repositories';
-import { createProfile, getProfileForMember } from './schemas';
+import { createProfile, getProfileForMember, updateMemberProfile } from './schemas';
 import { MemberProfileService } from './service';
 
+export interface IMemberProfile {
+  bio: string;
+  visibility?: boolean;
+  facebookLink?: string;
+  linkedinLink?: string;
+  twitterLink?: string;
+}
 export interface IMemberProfile {
   bio: string;
   visibility?: boolean;
@@ -43,6 +50,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const repositories = buildRepositories(manager);
 
         return memberProfileService.get(memberId, repositories);
+      });
+    },
+  );
+  fastify.patch<{ Params: { profileId: string }; Body: Partial<IMemberProfile> }>(
+    '/:profileId',
+    { schema: updateMemberProfile, preHandler: fastify.verifyAuthentication },
+    async ({ member, params: { profileId }, body }) => {
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        return memberProfileService.patch(body, profileId, repositories, member);
       });
     },
   );

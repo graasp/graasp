@@ -30,7 +30,7 @@ const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).exten
     return memberProfile;
   },
 
-  async get(memberId: string) {
+  async getByMemberId(memberId: string) {
     const memberProfile = await this.findOne({
       where: { member: { id: memberId }, visibility: true },
       relations: ['member'],
@@ -40,6 +40,17 @@ const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).exten
       throw new ItemNotFound(memberId);
     }
     return memberProfile;
+  },
+  async get(id: string) {
+    const memberProfile = await this.findOne({
+      where: { id },
+      relations: ['member'],
+    });
+
+    return memberProfile;
+  },
+  async patch(id: string, data: Partial<IMemberProfile>) {
+    await this.update(id, data);
   },
 });
 
