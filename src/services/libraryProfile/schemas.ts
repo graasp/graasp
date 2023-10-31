@@ -34,3 +34,26 @@ export const createProfile = {
     .prop('visibility', S.boolean())
     .required(['bio']),
 };
+
+export const getProfileForMember = {
+  params: {
+    type: 'object',
+    properties: {
+      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: S.object()
+      .additionalProperties(false)
+      .prop('id', uuid)
+      .prop('bio', S.string())
+      .prop('facebookLink', S.string())
+      .prop('linkedinLink', S.string())
+      .prop('twitterLink', S.string())
+      .prop('member', S.ifThenElse(S.null(), S.null(), partialMember))
+      .prop('createdAt', S.raw({}))
+      .prop('updatedAt', S.raw({})),
+    '4xx': error,
+  },
+};

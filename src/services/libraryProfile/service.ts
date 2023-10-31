@@ -15,4 +15,9 @@ export class MemberProfileService {
     const d = await memberProfileRepository.createOne({ ...data, member });
     return d;
   }
+  async get(memberId, repositories: Repositories) {
+    const { memberProfileRepository } = repositories;
+    const d = await memberProfileRepository.get(memberId);
+    return d;
+  }
 }
