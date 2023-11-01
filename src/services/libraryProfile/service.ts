@@ -29,18 +29,13 @@ export class MemberProfileService {
     const memberProfile = await memberProfileRepository.getMember(memberId);
     return memberProfile;
   }
-  async patch(data, profileId, repositories: Repositories, member: Member | undefined) {
+  async patch(data, repositories: Repositories, member: Member | undefined) {
     const { memberProfileRepository } = repositories;
 
-    const profile = await memberProfileRepository.get(profileId);
-
-    if (!profile) {
-      throw new ItemNotFound();
-    }
-    if (profile?.member?.id !== member?.id) {
+    if (!member?.id) {
       throw new UnauthorizedMember();
     }
 
-    return await memberProfileRepository.patch(profileId, data);
+    return await memberProfileRepository.patch(member.id, data);
   }
 }

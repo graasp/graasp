@@ -64,14 +64,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
-  fastify.patch<{ Params: { profileId: string }; Body: Partial<IMemberProfile> }>(
-    '/:profileId',
+  fastify.patch<{ Body: Partial<IMemberProfile> }>(
+    '/',
     { schema: updateMemberProfile, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { profileId }, body }) => {
+    async ({ member, body }) => {
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        return memberProfileService.patch(body, profileId, repositories, member);
+        return memberProfileService.patch(body, repositories, member);
       });
     },
   );

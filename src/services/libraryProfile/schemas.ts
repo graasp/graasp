@@ -74,13 +74,6 @@ export const updateMemberProfile = {
     200: profileMember,
     '4xx': error,
   },
-  params: {
-    type: 'object',
-    properties: {
-      profileId: { $ref: 'http://graasp.org/#/definitions/uuid' },
-    },
-    additionalProperties: false,
-  },
   body: S.object()
     .additionalProperties(false)
     .prop('visibility', S.boolean())

@@ -57,8 +57,8 @@ const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).exten
 
     return memberProfile;
   },
-  async patch(id: string, data: Partial<IMemberProfile>) {
-    await this.update(id, data);
+  async patch(memberId: string, data: Partial<IMemberProfile>) {
+    await this.update({ member: { id: memberId } }, data);
   },
 });
 
