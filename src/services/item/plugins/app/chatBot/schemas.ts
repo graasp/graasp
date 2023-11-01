@@ -1,5 +1,7 @@
 import { ChatbotRole } from '@graasp/sdk';
 
+import { GPTVersion } from './interfaces/gptVersion';
+
 const chatBotDefinition = {
   type: 'object',
   required: ['role', 'content'],
@@ -14,6 +16,13 @@ const create = {
     type: 'array',
     items: chatBotDefinition,
     minItems: 1, // do not allow empty array
+  },
+  querystring: {
+    type: 'object',
+    properties: {
+      gptVersion: { type: 'string', enum: Object.values(GPTVersion) },
+    },
+    additionalProperties: false,
   },
   response: {
     200: {

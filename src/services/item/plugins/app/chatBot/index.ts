@@ -8,7 +8,7 @@ import { create } from './schemas';
 import { ChatBotService } from './service';
 
 type QueryParameters = {
-  'gpt-version': GPTVersion;
+  gptVersion: GPTVersion;
 };
 
 const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
@@ -18,7 +18,7 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
     fastify.post<{
       Params: { itemId: string };
       Body: Array<ChatBotMessage>;
-      QueryString: QueryParameters;
+      Querystring: QueryParameters;
     }>(
       '/:itemId/chat-bot',
       {
@@ -28,15 +28,14 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
         { authTokenSubject: requestDetails, params: { itemId }, body: prompt, query },
         reply,
       ) => {
-        const gptVersion = (query as QueryParameters)['gpt-version'];
+        const gptVersion = query.gptVersion;
         const member = requestDetails?.memberId;
-        const message = await chatBotService.post(
-          member,
-          buildRepositories(),
-          itemId,
-          prompt,
-          gptVersion,
-        );
+        const jwtItemId = requestDetails?.itemId;
+        const repositories = buildRepositories();
+
+        await chatBotService.checkJWTItem(jwtItemId, itemId, repositories);
+
+        const message = await chatBotService.post(member, repositories, itemId, prompt, gptVersion);
         reply.code(200).send({ completion: message.completion, model: message.model });
       },
     );
