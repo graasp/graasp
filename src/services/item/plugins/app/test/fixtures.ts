@@ -20,6 +20,12 @@ export const GRAASP_PUBLISHER = {
   origins: ['http://origin.org'],
 };
 
+export const BOB_PUBLISHER = {
+  id: '13844630-eaef-4286-b12b-6fd537d33d45',
+  name: 'bob',
+  origins: ['http://bob.org'],
+};
+
 export const MOCK_APP_ORIGIN = 'http://app.localhost:3000';
 
 export const buildMockAuthTokenSubject = ({ app = v4(), member = v4(), item = v4() } = {}) => ({
@@ -58,6 +64,14 @@ export const MOCK_APPS = [
     description: 'description',
     extra: {},
     publisher: GRAASP_PUBLISHER,
+  },
+  {
+    id: v4(),
+    name: 'some-name-2',
+    url: BOB_PUBLISHER.origins[0],
+    description: 'description',
+    extra: {},
+    publisher: BOB_PUBLISHER,
   },
 ];
 
@@ -113,6 +127,42 @@ export const setUp = async (
     url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
     payload: appDetails,
   });
+  const token = response.json().token;
+  return { token, item };
+};
+
+// Check that a user can't access to the app of another user using its JWT token
+export const setUpForbidden = async (app, actor: Member, unauthorized: Member) => {
+  const apps = await saveAppList();
+  const graaspApp = apps[0];
+  const unauthorizedApp = apps[1];
+  const { item } = await saveApp({ url: graaspApp.url, member: actor });
+  // set a read permission for the unauthorized member to check that
+  // this user can't use a token generated for its app in the graaspApp
+  await saveMembership({ item, member: unauthorized, permission: PermissionLevel.Read });
+
+  await app.inject({
+    method: HttpMethod.GET,
+    url: '/logout',
+  });
+
+  jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
+    request.member = unauthorized;
+  });
+  jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
+    request.session.set('member', unauthorized.id);
+    request.member = unauthorized;
+  });
+
+  const { item: item2 } = await saveApp({ url: unauthorizedApp.url, member: unauthorized });
+  const appDetails = { origin: unauthorizedApp.publisher.origins[0], key: unauthorizedApp.key };
+
+  const response = await app.inject({
+    method: HttpMethod.POST,
+    url: `${APP_ITEMS_PREFIX}/${item2.id}/api-access-token`,
+    payload: appDetails,
+  });
+
   const token = response.json().token;
   return { token, item };
 };
