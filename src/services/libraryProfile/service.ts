@@ -21,6 +21,14 @@ export class MemberProfileService {
     const memberProfile = await memberProfileRepository.getByMemberId(memberId);
     return memberProfile;
   }
+  async getOwn(memberId, repositories: Repositories) {
+    const { memberProfileRepository } = repositories;
+    if (!memberId) {
+      throw new UnauthorizedMember();
+    }
+    const memberProfile = await memberProfileRepository.getMember(memberId);
+    return memberProfile;
+  }
   async patch(data, profileId, repositories: Repositories, member: Member | undefined) {
     const { memberProfileRepository } = repositories;
 

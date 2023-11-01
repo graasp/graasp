@@ -8,17 +8,20 @@ const partialMember = S.object()
   .prop('name', S.string())
   .prop('email', S.string());
 
-export const profileMember = S.object()
-  // .additionalProperties(false)
-  .prop('id', uuid)
+const memberSharedSchema = S.object()
   .prop('bio', S.string())
-  .prop('facebookLink', S.string())
-  .prop('linkedinLink', S.string())
-  .prop('twitterLink', S.string())
+  .prop('facebookLink', S.string().format('url'))
+  .prop('linkedinLink', S.string().format('url'))
+  .prop('twitterLink', S.string().format('url'));
+
+export const profileMember = S.object()
+  .additionalProperties(false)
+  .prop('id', uuid)
   .prop('visibility', S.boolean())
   .prop('member', S.ifThenElse(S.null(), S.null(), partialMember))
   .prop('createdAt', S.raw({}))
-  .prop('updatedAt', S.raw({}));
+  .prop('updatedAt', S.raw({}))
+  .extend(memberSharedSchema);
 
 export const createProfile = {
   response: {
@@ -26,12 +29,10 @@ export const createProfile = {
     '4xx': error,
   },
   body: S.object()
-    .prop('bio', S.string())
-    .prop('facebookLink', S.string())
-    .prop('linkedinLink', S.string())
-    .prop('twitterLink', S.string())
     .prop('visibility', S.boolean())
-    .required(['bio']),
+    .additionalProperties(false)
+    .required(['bio'])
+    .extend(memberSharedSchema),
 };
 
 export const getProfileForMember = {
@@ -46,13 +47,24 @@ export const getProfileForMember = {
     200: S.object()
       .additionalProperties(false)
       .prop('id', uuid)
-      .prop('bio', S.string())
-      .prop('facebookLink', S.string())
-      .prop('linkedinLink', S.string())
-      .prop('twitterLink', S.string())
       .prop('member', S.ifThenElse(S.null(), S.null(), partialMember))
       .prop('createdAt', S.raw({}))
-      .prop('updatedAt', S.raw({})),
+      .prop('updatedAt', S.raw({}))
+      .extend(memberSharedSchema),
+    '4xx': error,
+  },
+};
+
+export const getOwnProfile = {
+  response: {
+    200: S.object()
+      .additionalProperties(false)
+      .prop('id', uuid)
+      .prop('visibility', S.boolean())
+      .prop('member', S.ifThenElse(S.null(), S.null(), partialMember))
+      .prop('createdAt', S.raw({}))
+      .prop('updatedAt', S.raw({}))
+      .extend(memberSharedSchema),
     '4xx': error,
   },
 };
@@ -70,9 +82,7 @@ export const updateMemberProfile = {
     additionalProperties: false,
   },
   body: S.object()
-    .prop('bio', S.string())
-    .prop('facebookLink', S.string())
-    .prop('linkedinLink', S.string())
-    .prop('twitterLink', S.string())
-    .prop('visibility', S.boolean()),
+    .additionalProperties(false)
+    .prop('visibility', S.boolean())
+    .extend(memberSharedSchema),
 };

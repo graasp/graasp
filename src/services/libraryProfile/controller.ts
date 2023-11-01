@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../utils/repositories';
-import { createProfile, getProfileForMember, updateMemberProfile } from './schemas';
+import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
 import { MemberProfileService } from './service';
 
 export interface IMemberProfile {
@@ -50,6 +50,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const repositories = buildRepositories(manager);
 
         return memberProfileService.get(memberId, repositories);
+      });
+    },
+  );
+  fastify.get<{ Params: { memberId: string } }>(
+    '/own',
+    { schema: getOwnProfile, preHandler: fastify.verifyAuthentication },
+    async ({ member }) => {
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+
+        return memberProfileService.getOwn(member?.id, repositories);
       });
     },
   );

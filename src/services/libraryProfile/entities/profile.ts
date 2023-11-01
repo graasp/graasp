@@ -38,7 +38,7 @@ export class MemberProfile extends BaseEntity {
   @Column({
     nullable: true,
   })
-  facbookLink: string;
+  facebookLink: string;
 
   @Column({
     nullable: true,

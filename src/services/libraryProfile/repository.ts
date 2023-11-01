@@ -49,6 +49,14 @@ const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).exten
 
     return memberProfile;
   },
+  async getMember(id: string) {
+    const memberProfile = await this.findOne({
+      where: { member: { id } },
+      relations: ['member'],
+    });
+
+    return memberProfile;
+  },
   async patch(id: string, data: Partial<IMemberProfile>) {
     await this.update(id, data);
   },
