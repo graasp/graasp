@@ -27,6 +27,7 @@ import { ItemValidationReview } from '../../services/item/plugins/validation/ent
 import { ItemLogin } from '../../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership';
+import { MemberProfile } from '../../services/libraryProfile/entities/profile';
 import { Member } from '../../services/member/entities/member';
 import { DB_PORT } from '../../utils/config';
 
@@ -75,6 +76,7 @@ export const AppDataSource = new DataSource({
     ItemValidationReview,
     Action,
     ActionRequestExport,
+    MemberProfile,
   ],
   // refer to built files in js because it cannot run ts files
   migrations: ['dist/migrations/*.js'],

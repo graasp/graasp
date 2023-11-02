@@ -1,6 +1,6 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { ItemNotFound, UnauthorizedMember } from '../../utils/errors';
+import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { Member } from '../member/entities/member';
 
