@@ -13,13 +13,7 @@ export interface IMemberProfile {
   linkedinLink?: string;
   twitterLink?: string;
 }
-export interface IMemberProfile {
-  bio: string;
-  visibility?: boolean;
-  facebookLink?: string;
-  linkedinLink?: string;
-  twitterLink?: string;
-}
+
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, log } = fastify;
 
