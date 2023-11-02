@@ -1,7 +1,15 @@
 import dotenv from 'dotenv';
 import os from 'os';
 
-import { Context, FileItemType, ItemType } from '@graasp/sdk';
+import {
+  BUILDER_ITEMS_PREFIX,
+  ClientHostManager,
+  Context,
+  FileItemType,
+  ItemType,
+  LIBRARY_ITEMS_PREFIX,
+  PLAYER_ITEMS_PREFIX,
+} from '@graasp/sdk';
 
 import {
   LocalFileConfiguration,
@@ -70,6 +78,15 @@ export const ANALYTICS_HOST = {
 };
 
 export const CLIENT_HOSTS = [BUILDER_HOST, PLAYER_HOST, LIBRARY_HOST, ACCOUNT_HOST, ANALYTICS_HOST];
+
+// Add the hosts of the different clients
+ClientHostManager.getInstance()
+  .addPrefix(Context.Builder, BUILDER_ITEMS_PREFIX)
+  .addPrefix(Context.Library, LIBRARY_ITEMS_PREFIX)
+  .addPrefix(Context.Player, PLAYER_ITEMS_PREFIX)
+  .addHost(Context.Builder, BUILDER_HOST.url)
+  .addHost(Context.Library, LIBRARY_HOST.url)
+  .addHost(Context.Player, PLAYER_HOST.url);
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';

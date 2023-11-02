@@ -456,3 +456,48 @@ export class InvalidJWTItem extends CoreError {
     super({ code: 'GERR1007', statusCode: StatusCodes.FORBIDDEN, message: message });
   }
 }
+
+export class ShortLinkNotFound extends CoreError {
+  constructor(shortLink: string) {
+    super(
+      {
+        code: 'GERR1009',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: FAILURE_MESSAGES.SHORT_LINK_NOT_FOUND,
+      },
+      shortLink,
+    );
+    this.origin = 'shortLink';
+  }
+}
+
+export class ShortLinkDuplication extends CoreError {
+  constructor(shortLink: string) {
+    super(
+      {
+        code: 'GERR1010',
+        statusCode: StatusCodes.CONFLICT,
+        message: FAILURE_MESSAGES.SHORT_LINK_ALREADY_EXISTS,
+      },
+      shortLink,
+    );
+    this.origin = 'shortLink';
+  }
+}
+
+export class ShortLinkLimitExceed extends CoreError {
+  constructor(itemId: string, platform: string) {
+    super(
+      {
+        code: 'GERR1011',
+        statusCode: StatusCodes.CONFLICT,
+        message: FAILURE_MESSAGES.SHORT_LINK_LIMIT_EXCEED,
+      },
+      {
+        itemId,
+        platform,
+      },
+    );
+    this.origin = 'shortLink';
+  }
+}

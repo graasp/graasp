@@ -19,6 +19,7 @@ import { ItemLikeRepository } from '../services/item/plugins/itemLike/repository
 import { ItemTagRepository } from '../services/item/plugins/itemTag/repository';
 import { ItemPublishedRepository } from '../services/item/plugins/published/repositories/itemPublished';
 import { RecycledItemDataRepository } from '../services/item/plugins/recycled/repository';
+import { ShortLinkRepository } from '../services/item/plugins/shortLink/repository';
 import { ItemValidationGroupRepository } from '../services/item/plugins/validation/repositories/ItemValidationGroup';
 import { ItemValidationRepository } from '../services/item/plugins/validation/repositories/itemValidation';
 import { ItemValidationReviewRepository } from '../services/item/plugins/validation/repositories/itemValidationReview';
@@ -58,6 +59,7 @@ export type Repositories = {
   publisherRepository: typeof PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
   memberProfileRepository: typeof MemberProfileRepository;
+  shortLinkRepository: typeof ShortLinkRepository;
 };
 // public: exists in item tag
 
@@ -122,4 +124,5 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   memberProfileRepository: manager
     ? manager.withRepository(MemberProfileRepository)
     : MemberProfileRepository,
+  shortLinkRepository: manager ? manager.withRepository(ShortLinkRepository) : ShortLinkRepository,
 });

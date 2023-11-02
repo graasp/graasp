@@ -43,6 +43,8 @@ import graaspItemLikes from './plugins/itemLike';
 import graaspItemTags from './plugins/itemTag';
 import graaspItemPublish from './plugins/published';
 import graaspRecycledItemData from './plugins/recycled';
+import ShortLinkService from './plugins/shortLink';
+import { SHORT_LINKS_ROUTE_PREFIX } from './plugins/shortLink/service';
 import thumbnailsPlugin from './plugins/thumbnail';
 import graaspValidationPlugin from './plugins/validation';
 import { itemWsHooks } from './ws/hooks';
@@ -95,6 +97,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.register(graaspFileItem, {});
 
       fastify.register(graaspItemTags);
+
+      fastify.register(ShortLinkService, {
+        prefix: SHORT_LINKS_ROUTE_PREFIX,
+      });
 
       // core routes - require authentication
       fastify.register(async function (fastify) {
