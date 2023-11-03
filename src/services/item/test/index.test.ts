@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import {
+  FolderItemExtra,
   HttpMethod,
   ItemTagType,
   ItemType,
@@ -142,6 +143,32 @@ describe('Item routes tests', () => {
         const { item: parent } = await saveItemAndMembership({
           member: actor,
           item: getDummyItem(),
+        });
+        const payload = getDummyItem();
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items?parentId=${parent.id}`,
+          payload,
+        });
+        const newItem = response.json();
+
+        expectItem(newItem, payload, actor, parent);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const updatedParent = await ItemRepository.get(parent.id);
+        // check parent has been updated
+        expect(updatedParent.extra).toEqual({ folder: { childrenOrder: [newItem.id] } });
+
+        // a membership does not need to be created for item with admin rights
+        const nbItemMemberships = await ItemMembershipRepository.count();
+        expect(nbItemMemberships).toEqual(1);
+      });
+
+      it('Create successfully in legacy parent item', async () => {
+        const { item: parent } = await saveItemAndMembership({
+          member: actor,
+          // hack to simulate a legacy folder item that had an empty extra (no folder.childrenOrder)
+          item: { ...getDummyItem(), extra: {} as FolderItemExtra },
         });
         const payload = getDummyItem();
         const response = await app.inject({
