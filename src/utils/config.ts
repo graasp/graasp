@@ -59,7 +59,17 @@ export const LIBRARY_HOST = {
   url: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST),
 };
 
-export const CLIENT_HOSTS = [BUILDER_HOST, PLAYER_HOST, LIBRARY_HOST];
+export const ACCOUNT_HOST = {
+  name: 'Account',
+  url: new URL(process.env.ACCOUNT_CLIENT_HOST ?? DEFAULT_HOST),
+};
+
+export const ANALYTICS_HOST = {
+  name: 'Account',
+  url: new URL(process.env.ANALYZER_CLIENT_HOST ?? DEFAULT_HOST),
+};
+
+export const CLIENT_HOSTS = [BUILDER_HOST, PLAYER_HOST, LIBRARY_HOST, ACCOUNT_HOST, ANALYTICS_HOST];
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';

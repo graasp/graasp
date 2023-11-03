@@ -12,7 +12,7 @@ jobs:
     # Replace with repository name
     name: Graasp
     # Replace 'main' with the hash of a commit, so it points to an specific version of the reusable workflow that is used
-    uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@v1.22.2
+    uses: graasp/graasp-deploy/.github/workflows/backend-deploy-prod.yml@v1
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -35,13 +35,14 @@ jobs:
       tag: ${{ github.event.client_payload.tag }}
       token-based-auth: true
       websockets-plugin: true
+      account-client-host: ${{ vars.ACCOUNT_CLIENT_HOST }}
+      analyzer-client-host: ${{ vars.ANALYZER_CLIENT_HOST }}
+      auth-client-host: ${{ vars.AUTH_CLIENT_HOST }}
 
     # Insert required secrets based on repository with the following format: ${{ secrets.SECRET_NAME }}
     secrets:
-      analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_PROD }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_PROD }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
-      auth-client-host: ${{ secrets.AUTH_CLIENT_HOST_PROD }}
       auth-token-expiration-in-minutes: ${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
       auth-token-jwt-secret: ${{ secrets.AUTH_TOKEN_JWT_SECRET_PROD }}
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}

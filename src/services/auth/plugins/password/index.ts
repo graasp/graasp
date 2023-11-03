@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword);
 
     const token = await memberPasswordService.login(undefined, buildRepositories(), body);
-    const redirectionUrl = getRedirectionUrl(url);
+    const redirectionUrl = getRedirectionUrl(log, url);
 
     const target = new URL('/auth', PUBLIC_URL);
     target.searchParams.set('t', token);

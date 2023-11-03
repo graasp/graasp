@@ -183,6 +183,8 @@ jobs:
           AUTH_CLIENT_HOST: 'localhost:3001'
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           BUILDER_CLIENT_HOST: 'http://localhost:3111'
+          ACCOUNT_CLIENT_HOST: 'http://localhost:3114'
+          ANALYZER_CLIENT_HOST: 'http://localhost:3005'
           COOKIE_DOMAIN: localhost
           DB_NAME: ${{ env.TEST_DB_NAME }}
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}

@@ -16,7 +16,7 @@ jobs:
     # repository name
     name: Graasp
     # Reference reusable workflow file. Using the commit SHA is the safest for stability and security
-    uses: graasp/graasp-deploy/.github/workflows/cintegration-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/backend-deploy-dev.yml@v1
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -41,6 +41,7 @@ jobs:
 
     # required secrets
     secrets:
+      account-client-host: ${{ secrets.ACCOUNT_CLIENT_HOST }}
       analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_DEV }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_DEV }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}

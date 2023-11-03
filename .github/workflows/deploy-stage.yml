@@ -11,7 +11,7 @@ jobs:
   graasp-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@v1.22.2
+    uses: graasp/graasp-deploy/.github/workflows/backend-deploy-stage.yml@v1
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -37,6 +37,7 @@ jobs:
 
     # required secrets
     secrets:
+      account-client-host: ${{ secrets.ACCOUNT_CLIENT_HOST }}
       analyzer-client-host: ${{ secrets.ANALYZER_CLIENT_HOST_STAGE }}
       apps-jwt-secret: ${{ secrets.APPS_JWT_SECRET_STAGE }}
       apps-publisher-id: ${{ secrets.APPS_PUBLISHER_ID }}
