@@ -104,8 +104,9 @@ export class ItemService {
     }
 
     if (parentId && parentItem) {
-      // add new item's is in parent extra.folder.childrenOrder
-      const newChildrenOrder = [...parentItem.extra.folder.childrenOrder, createdItem.id];
+      // add new item id in parent extra.folder.childrenOrder
+      // the optional on "folder" is present to support legacy data where the extra might be an empty object
+      const newChildrenOrder = [...(parentItem.extra.folder?.childrenOrder ?? []), createdItem.id];
       await itemRepository.patch(parentItem.id, {
         extra: { folder: { ...parentItem.extra.folder, childrenOrder: newChildrenOrder } },
       });

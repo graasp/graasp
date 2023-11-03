@@ -6,14 +6,14 @@ import fastifyStatic from '@fastify/static';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { H5PItemType, ItemType, PermissionLevel } from '@graasp/sdk';
+import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
+import { Item, isItemType } from '../../../entities/Item';
 import { FastifyStaticReply } from '../types';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
@@ -165,14 +165,13 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
    * Delete H5P assets on item delete
    */
   itemService.hooks.setPostHook('delete', async (actor, repositories, { item }) => {
-    if (item.type !== ItemType.H5P) {
+    if (!isItemType(item, ItemType.H5P)) {
       return;
     }
     if (!actor) {
       return;
     }
-    // TODO: fix types
-    const { extra } = item as H5PItemType;
+    const { extra } = item;
     await h5pService.deletePackage(actor, extra.h5p.contentId);
   });
 
@@ -181,7 +180,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
    */
   itemService.hooks.setPostHook('copy', async (actor, repositories, { original: item, copy }) => {
     // only execute this handler for H5P item types
-    if (item.type !== ItemType.H5P) {
+    if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {
       return;
     }
     if (!actor) {
@@ -189,8 +188,8 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     }
 
     await h5pService.copy(actor, repositories, {
-      original: item as H5PItemType,
-      copy: copy as H5PItemType,
+      original: item,
+      copy: copy,
     });
   });
 };

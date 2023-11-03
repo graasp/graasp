@@ -4,14 +4,7 @@ import qs from 'qs';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
-import {
-  CategoryType,
-  HttpMethod,
-  ItemPublished,
-  ItemTagType,
-  ItemType,
-  PermissionLevel,
-} from '@graasp/sdk';
+import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
@@ -33,6 +26,7 @@ import { ItemLike } from '../../itemLike/itemLike';
 import { saveItemLikes } from '../../itemLike/test/utils';
 import { ItemTagNotFound } from '../../itemTag/errors';
 import { ItemTagRepository } from '../../itemTag/repository';
+import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';

@@ -163,8 +163,9 @@ export class MeiliSearchWrapper {
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      // todo: fix these types
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
     };
   }
 
