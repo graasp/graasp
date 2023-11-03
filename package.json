@@ -71,7 +71,7 @@
     "@sentry/node": "7.64.0",
     "@sentry/tracing": "7.64.0",
     "@types/sharp": "0.31.1",
-    "archiver": "5.3.1",
+    "archiver": "5.3.2",
     "bad-words": "3.0.4",
     "bcrypt": "5.1.0",
     "bullmq": "4.4.0",
