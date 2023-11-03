@@ -2265,12 +2265,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/translations@npm:1.15.0":
-  version: 1.15.0
-  resolution: "@graasp/translations@npm:1.15.0"
+"@graasp/translations@npm:1.15.1":
+  version: 1.15.1
+  resolution: "@graasp/translations@npm:1.15.1"
   dependencies:
     i18next: 22.4.15
-  checksum: e073b83374462f2d108f1d697b7aa14460d05f4ec2e10757db0e0a0a72574bff4721f997851d8e88e871f3704c8bcf887533590dd7acdcbf9d607109bae25c8a
+  checksum: 7bb22e24b88ea1a2aed01beb8ecb9cb487ee4c0f0160e2f4159054200a402f387f016b52afce5b7034a3b50431bad9a8ebb20335c6e79af3dce1341bfe3b593f
   languageName: node
   linkType: hard
 
@@ -7141,7 +7141,7 @@ __metadata:
     "@fastify/websocket": 7.2.0
     "@graasp/etherpad-api": 2.1.1
     "@graasp/sdk": 2.0.0
-    "@graasp/translations": 1.15.0
+    "@graasp/translations": 1.15.1
     "@sentry/node": 7.64.0
     "@sentry/tracing": 7.64.0
     "@trivago/prettier-plugin-sort-imports": 4.1.1
