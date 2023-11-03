@@ -18,6 +18,7 @@ import {
 } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
 import { EtherpadItemService } from '../service';
@@ -733,7 +734,7 @@ describe('Etherpad service API', () => {
 
       const copy = (await ItemRepository.findOneBy({
         id: And(Not(item.id), Not(parent.item.id)),
-      })) as EtherpadItemType;
+      })) as Item<typeof ItemType.ETHERPAD>;
       expect(copy).not.toBeNull();
 
       const { createGroupIfNotExistsFor, copyPad } = await reqsParams;
