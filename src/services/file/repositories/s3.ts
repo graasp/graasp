@@ -12,7 +12,7 @@ import { FastifyReply } from 'fastify';
 
 import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
-import { S3_FILE_ITEM_HOST } from '../../../utils/config';
+import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import {
@@ -165,7 +165,7 @@ export class S3FileRepository implements FileRepository {
 
   private async _downloadS3File({ url, filepath, id }) {
     try {
-      // return readstream of the file saved at given fileStorage path
+      // return readstream of the file saved at given filepath
       // fetch and save file in temporary path
       const res = await fetch(url);
       const fileStream = fs.createWriteStream(filepath);
@@ -196,13 +196,18 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  async getFile({ expiration, filepath, fileStorage, id }) {
+  /**
+   *
+   * @param
+   * @returns temporary file content
+   */
+  async getFile({ filepath, id }) {
     const { s3Bucket: bucket } = this.options;
     // check whether file exists
     await this.getMetadata(filepath);
 
     const param = {
-      expiresIn: expiration ?? S3_PRESIGNED_EXPIRATION,
+      expiresIn: S3_PRESIGNED_EXPIRATION,
     };
 
     const command = new GetObjectCommand({
@@ -211,15 +216,14 @@ export class S3FileRepository implements FileRepository {
     });
     const url = await getSignedUrl(this.s3Instance, command, param);
 
-    // return readstream of the file saved at given fileStorage path
+    // return readstream of the file saved in tmp folder
     // fetch and save file in temporary path
-    const tmpPath = path.join(fileStorage, id);
+    const tmpPath = path.join(TMP_FOLDER, 'files', id);
     const file = await this._downloadS3File({ url, filepath: tmpPath, id });
 
     return file;
   }
 
-  // TODO: split in many functions for simplicity
   async getUrl({ expiration, filepath }: { filepath: string; expiration?: number }) {
     const { s3Bucket: bucket } = this.options;
     // check whether file exists

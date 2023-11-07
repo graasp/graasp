@@ -159,10 +159,8 @@ class FileItemService {
     actor: Actor,
     repositories: Repositories,
     {
-      fileStorage,
       itemId,
     }: {
-      fileStorage?: string;
       itemId: string;
     },
   ) {
@@ -172,7 +170,6 @@ class FileItemService {
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.type] as FileItemProperties;
     const result = await this.fileService.getFile(actor, {
-      fileStorage,
       id: itemId,
       ...extraData,
     });

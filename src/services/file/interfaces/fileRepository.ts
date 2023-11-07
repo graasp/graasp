@@ -1,7 +1,5 @@
 import { ReadStream } from 'fs';
 
-import { FastifyReply } from 'fastify';
-
 export interface FileRepository {
   getFileSize(filepath: string): Promise<number | undefined>;
 
@@ -18,17 +16,14 @@ export interface FileRepository {
   deleteFile(args: { filepath: string }): Promise<void>;
   deleteFolder(args: { folderPath: string }): Promise<void>;
 
-  getFile(args: {
-    filepath: string;
-    id: string;
-    fileStorage?: string; // s3 only
-    expiration?: number; // s3 only
-  }): Promise<ReadStream>;
+  getFile(args: { filepath: string; id: string }): Promise<ReadStream>;
 
   getUrl(args: {
     filepath: string;
-    expiration?: number; // s3 only - for export
-    id: string; // local only
+    // used by s3 to set an expiry link on signed url
+    expiration?: number;
+    // used by local to log
+    id?: string;
   }): Promise<string>;
 
   uploadFile(args: {

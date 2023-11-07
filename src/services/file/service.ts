@@ -90,16 +90,8 @@ class FileService {
     return data;
   }
 
-  async getFile(
-    member: Actor,
-    data: {
-      expiration?: number;
-      fileStorage?: string;
-      id?: string;
-      path?: string;
-    },
-  ): Promise<ReadStream> {
-    const { expiration, fileStorage, id, path: filepath } = data;
+  async getFile(member: Actor, data): Promise<ReadStream> {
+    const { id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
         filepath,
@@ -108,9 +100,7 @@ class FileService {
     }
 
     return this.repository.getFile({
-      expiration,
       filepath,
-      fileStorage,
       id,
     });
   }

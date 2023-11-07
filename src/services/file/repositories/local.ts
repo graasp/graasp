@@ -56,7 +56,7 @@ export class LocalFileRepository implements FileRepository {
     await rm(this.buildFullPath(folderPath), { recursive: true });
   }
 
-  private async _validateFile({ id, filepath }) {
+  private async _validateFile({ id, filepath }: { id?: string; filepath: string }) {
     // ensure the file exists, if not throw error
     try {
       await access(this.buildFullPath(filepath));
