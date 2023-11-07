@@ -80,26 +80,50 @@ describe('FileService', () => {
     });
   });
 
-  describe('download', () => {
+  describe('getFile', () => {
     const downloadPayload = { path: 'filepath', id: 'id' };
 
-    it('download successfully', async () => {
+    it('get file successfully', async () => {
       const fS = S3FS;
-      const returnValue = 'value';
+      const returnValue = 'readstream' as unknown as ReadStream;
       const downloadMock = jest
-        .spyOn(fS.repository, 'downloadFile')
+        .spyOn(fS.repository, 'getFile')
         .mockImplementation(async () => returnValue);
-      expect(await fS.download(member, downloadPayload)).toBeTruthy();
+      expect(await fS.getFile(member, downloadPayload)).toBeTruthy();
       expect(downloadMock).toHaveBeenCalled();
     });
 
-    it('signed out member can download', async () => {
+    it('signed out member can get file', async () => {
       const fS = S3FS;
-      const returnValue = 'value';
+      const returnValue = 'readstream' as unknown as ReadStream;
       const downloadMock = jest
-        .spyOn(fS.repository, 'downloadFile')
+        .spyOn(fS.repository, 'getFile')
         .mockImplementation(async () => returnValue);
-      expect(await fS.download(undefined, downloadPayload)).toBeTruthy();
+      expect(await fS.getFile(undefined, downloadPayload)).toBeTruthy();
+      expect(downloadMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('getUrl', () => {
+    const downloadPayload = { path: 'filepath', id: 'id' };
+
+    it('get url successfully', async () => {
+      const fS = S3FS;
+      const returnValue = 'url';
+      const downloadMock = jest
+        .spyOn(fS.repository, 'getUrl')
+        .mockImplementation(async () => returnValue);
+      expect(await fS.getUrl(member, downloadPayload)).toBeTruthy();
+      expect(downloadMock).toHaveBeenCalled();
+    });
+
+    it('signed out member can get url', async () => {
+      const fS = S3FS;
+      const returnValue = 'url';
+      const downloadMock = jest
+        .spyOn(fS.repository, 'getUrl')
+        .mockImplementation(async () => returnValue);
+      expect(await fS.getUrl(undefined, downloadPayload)).toBeTruthy();
       expect(downloadMock).toHaveBeenCalled();
     });
   });

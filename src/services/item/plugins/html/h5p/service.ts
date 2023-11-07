@@ -54,9 +54,9 @@ export class H5PService extends HtmlService {
   /**
    * Download the H5P file referenced by a given Item
    */
-  download(item: Item<typeof ItemType.H5P>, member: Actor, destinationPath: string) {
+  download(item: Item<typeof ItemType.H5P>, member: Actor) {
     const h5pPath = item.extra.h5p.h5pFilePath;
-    return super._download(member, item.id, h5pPath, destinationPath);
+    return super._download(member, item.id, h5pPath);
   }
 
   async copy(

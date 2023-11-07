@@ -18,16 +18,18 @@ export interface FileRepository {
   deleteFile(args: { filepath: string }): Promise<void>;
   deleteFolder(args: { folderPath: string }): Promise<void>;
 
-  downloadFile(args: {
-    reply?: FastifyReply;
+  getFile(args: {
     filepath: string;
-    mimetype?: string;
-    fileStorage?: string;
-    expiration?: number;
-    replyUrl?: boolean;
     id: string;
-    encoding?: BufferEncoding;
-  }): Promise<ReadStream | string | void>;
+    fileStorage?: string; // s3 only
+    expiration?: number; // s3 only
+  }): Promise<ReadStream>;
+
+  getUrl(args: {
+    filepath: string;
+    expiration?: number; // s3 only - for export
+    id: string; // local only
+  }): Promise<string>;
 
   uploadFile(args: {
     fileStream: ReadableStream;

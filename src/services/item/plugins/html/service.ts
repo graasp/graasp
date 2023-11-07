@@ -49,7 +49,7 @@ export abstract class HtmlService {
     validator: HtmlValidator,
   ) {
     if (pathPrefix && pathPrefix.startsWith('/')) {
-      throw new Error('H5P path prefix should not start with a "/"!');
+      throw new Error('path prefix should not start with a "/"!');
     }
 
     this.extension = extension;
@@ -93,17 +93,10 @@ export abstract class HtmlService {
    * Util function to download the package file given an item
    * This function should not be used outside html services
    */
-  protected async _download(
-    member: Actor,
-    id: Item['id'],
-    packagePath: string,
-    fileStorage: string,
-  ) {
-    return this.fileService.download(member, {
+  protected async _download(member: Actor, id: Item['id'], packagePath: string) {
+    return this.fileService.getUrl(member, {
       id,
       path: path.join(this.pathPrefix, packagePath),
-      mimetype: this.mimetype,
-      fileStorage,
     });
   }
 
