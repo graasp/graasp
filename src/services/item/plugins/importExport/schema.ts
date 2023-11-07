@@ -18,7 +18,7 @@ export const zipExport = {
     type: 'object',
 
     properties: {
-      type: {
+      actionType: {
         type: 'string',
       },
     },

@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // download item as zip
-  fastify.route<{ Params: { itemId: string }; Querystring: { type?: string } }>({
+  fastify.route<{ Params: { itemId: string }; Querystring: { actionType?: string } }>({
     method: 'GET',
     url: '/zip-export/:itemId',
     schema: zipExport,
@@ -112,15 +112,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         member,
         params: { itemId },
         log,
-        query: { type },
+        query: { actionType },
       } = request;
       const repositories = buildRepositories();
       const item = await iS.get(member, repositories, itemId);
 
-      if (type) {
+      if (actionType) {
         const action = {
           item,
-          type,
+          type: actionType,
           extra: {},
         };
         // trigger download action for a collection
