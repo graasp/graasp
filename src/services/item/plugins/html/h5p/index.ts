@@ -26,17 +26,15 @@ import {
 import { H5PInvalidFileError } from './errors';
 import { renderHtml } from './integration';
 import { h5pImport } from './schemas';
-import { H5PService } from './service';
 import { H5PPluginOptions } from './types';
 
 const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
   // get services from server instance
   const {
     items: { service: itemService },
+    h5p: { service: h5pService },
     db,
   } = fastify;
-
-  const h5pService = new H5PService();
 
   // question: this is difficult to move this in the service because of the transaction
   /**

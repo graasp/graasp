@@ -203,43 +203,59 @@ export class S3FileRepository implements FileRepository {
    */
   async getFile({ filepath, id }) {
     const { s3Bucket: bucket } = this.options;
-    // check whether file exists
-    await this.getMetadata(filepath);
+    try {
+      // check whether file exists
+      await this.getMetadata(filepath);
 
-    const param = {
-      expiresIn: S3_PRESIGNED_EXPIRATION,
-    };
+      const param = {
+        expiresIn: S3_PRESIGNED_EXPIRATION,
+      };
 
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: filepath,
-    });
-    const url = await getSignedUrl(this.s3Instance, command, param);
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: filepath,
+      });
+      const url = await getSignedUrl(this.s3Instance, command, param);
 
-    // return readstream of the file saved in tmp folder
-    // fetch and save file in temporary path
-    const tmpPath = path.join(TMP_FOLDER, 'files', id);
-    const file = await this._downloadS3File({ url, filepath: tmpPath, id });
+      // return readstream of the file saved in tmp folder
+      // fetch and save file in temporary path
+      const tmpPath = path.join(TMP_FOLDER, 'files', id);
+      const file = await this._downloadS3File({ url, filepath: tmpPath, id });
 
-    return file;
+      return file;
+    } catch (e) {
+      console.error(e);
+      if (!(e instanceof DownloadFileUnexpectedError)) {
+        throw new DownloadFileUnexpectedError({ filepath, id });
+      }
+      throw e;
+    }
   }
 
   async getUrl({ expiration, filepath }: { filepath: string; expiration?: number }) {
     const { s3Bucket: bucket } = this.options;
-    // check whether file exists
-    await this.getMetadata(filepath);
+    try {
+      // check whether file exists
+      await this.getMetadata(filepath);
 
-    const param = {
-      expiresIn: expiration ?? S3_PRESIGNED_EXPIRATION,
-    };
+      const param = {
+        expiresIn: expiration ?? S3_PRESIGNED_EXPIRATION,
+      };
 
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: filepath,
-    });
-    const url = await getSignedUrl(this.s3Instance, command, param);
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: filepath,
+      });
+      const url = await getSignedUrl(this.s3Instance, command, param);
 
-    return url;
+      return url;
+    } catch (e) {
+      console.error(e);
+      if (!(e instanceof DownloadFileUnexpectedError)) {
+        throw new DownloadFileUnexpectedError({ filepath });
+      }
+      throw e;
+    }
   }
 
   async getMetadata(key: string): Promise<HeadObjectOutput> {
