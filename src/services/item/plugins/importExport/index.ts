@@ -112,20 +112,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         member,
         params: { itemId },
         log,
-        query: { actionType },
+        query: { actionType = 'item-download' },
       } = request;
       const repositories = buildRepositories();
       const item = await iS.get(member, repositories, itemId);
-
-      if (actionType) {
-        const action = {
-          item,
-          type: actionType,
-          extra: {},
-        };
-        // trigger download action for a collection
-        await aS.postMany(member, repositories, request, [action]);
-      }
 
       // TODO: The following won't be necessary anymore once h5p stops using the filestorage
       // path to save files temporarly and save archive
@@ -141,6 +131,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
         fileStorage,
       });
+
+      // trigger download action for a collection
+      const action = {
+        item,
+        type: actionType,
+        extra: { itemId: item?.id },
+      };
+      await aS.postMany(member, repositories, request, [action]);
+
       try {
         reply.raw.setHeader(
           'Content-Disposition',

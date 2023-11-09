@@ -21,7 +21,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const searchService = fastify.search.service;
   const actionService = fastify.actions.service;
 
-  fastify.post(
+  fastify.post<{ Body: MultiSearchParams }>(
     '/collections/search',
     { preHandler: fastify.attemptVerifyAuthentication, schema: search },
     async (request) => {
@@ -31,10 +31,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // TODO: chnage type from graasp/sdk
       const action = {
         type: 'item-search',
-        extra: body as Partial<Action> & Pick<Action, 'type'>,
+        extra: body,
       };
       await actionService.postMany(member, repositories, request, [action]);
-      return searchService.search(member, repositories, body as MultiSearchParams);
+      return searchService.search(member, repositories, body);
     },
   );
 
