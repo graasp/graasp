@@ -1,8 +1,6 @@
-import contentDisposition from 'content-disposition';
 import fs from 'fs';
 import fse from 'fs-extra';
 import { access, copyFile, mkdir, rm } from 'fs/promises';
-import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
@@ -58,7 +56,7 @@ export class LocalFileRepository implements FileRepository {
     await rm(this.buildFullPath(folderPath), { recursive: true });
   }
 
-  async downloadFile({ reply, filepath, id, mimetype, replyUrl }) {
+  private async _validateFile({ id, filepath }: { id?: string; filepath: string }) {
     // ensure the file exists, if not throw error
     try {
       await access(this.buildFullPath(filepath));
@@ -68,20 +66,18 @@ export class LocalFileRepository implements FileRepository {
       }
       throw e;
     }
+  }
 
-    if (reply) {
-      if (replyUrl) {
-        const localUrl = new URL(filepath, this.options.localFilesHost);
-        reply.status(StatusCodes.OK).send({ url: localUrl });
-        return;
-      }
-      // Get thumbnail path
-      reply.type(mimetype);
-      // this header will make the browser download the file with 'name'
-      // instead of simply opening it and showing it
-      reply.header('Content-Disposition', contentDisposition(id));
-    }
+  async getFile({ filepath, id }) {
+    await this._validateFile({ filepath, id });
     return fs.createReadStream(this.buildFullPath(filepath));
+  }
+
+  async getUrl({ filepath, id }) {
+    await this._validateFile({ filepath, id });
+
+    const localUrl = new URL(filepath, this.options.localFilesHost);
+    return localUrl.toString();
   }
 
   // upload

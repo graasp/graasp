@@ -12,7 +12,7 @@ import { FastifyReply } from 'fastify';
 
 import { S3FileConfiguration, UUID } from '@graasp/sdk';
 
-import { S3_FILE_ITEM_HOST } from '../../../utils/config';
+import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import {
@@ -163,22 +163,76 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  // TODO: split in many functions for simplicity
-  async downloadFile({
-    expiration,
-    filepath,
-    fileStorage,
-    id,
-    reply,
-    replyUrl,
-  }: {
-    expiration?: number;
-    filepath: string;
-    fileStorage?: string;
-    id?: UUID;
-    reply?: FastifyReply;
-    replyUrl?: boolean;
-  }) {
+  private async _downloadS3File({ url, filepath, id }) {
+    try {
+      // return readstream of the file saved at given filepath
+      // fetch and save file in temporary path
+      const res = await fetch(url);
+      const fileStream = fs.createWriteStream(filepath);
+      await new Promise((resolve, reject) => {
+        res.body.pipe(fileStream);
+        res.body.on('error', reject);
+        fileStream.on('finish', resolve);
+      });
+      fileStream.end();
+
+      // create and return read stream (similar to local file service)
+      const file = fs.createReadStream(filepath);
+
+      file.on('close', function (err: Error) {
+        if (err) {
+          console.error(err);
+        }
+        fs.unlinkSync(filepath);
+      });
+
+      return file;
+    } catch (e) {
+      if (e.statusCode === StatusCodes.NOT_FOUND) {
+        throw new S3FileNotFound({ filepath, id });
+      }
+
+      throw new DownloadFileUnexpectedError({ filepath, id, e });
+    }
+  }
+
+  /**
+   *
+   * @param
+   * @returns temporary file content
+   */
+  async getFile({ filepath, id }) {
+    const { s3Bucket: bucket } = this.options;
+    try {
+      // check whether file exists
+      await this.getMetadata(filepath);
+
+      const param = {
+        expiresIn: S3_PRESIGNED_EXPIRATION,
+      };
+
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: filepath,
+      });
+      const url = await getSignedUrl(this.s3Instance, command, param);
+
+      // return readstream of the file saved in tmp folder
+      // fetch and save file in temporary path
+      const tmpPath = path.join(TMP_FOLDER, 'files', id);
+      const file = await this._downloadS3File({ url, filepath: tmpPath, id });
+
+      return file;
+    } catch (e) {
+      console.error(e);
+      if (!(e instanceof DownloadFileUnexpectedError)) {
+        throw new DownloadFileUnexpectedError({ filepath, id });
+      }
+      throw e;
+    }
+  }
+
+  async getUrl({ expiration, filepath }: { filepath: string; expiration?: number }) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -194,53 +248,13 @@ export class S3FileRepository implements FileRepository {
       });
       const url = await getSignedUrl(this.s3Instance, command, param);
 
-      // Redirect to the object presigned url
-      if (reply) {
-        if (replyUrl) {
-          const replyUrlExpiration = (expiration ?? S3_PRESIGNED_EXPIRATION) - 60;
-          reply.header('Cache-Control', `max-age=${replyUrlExpiration}`);
-          reply.status(StatusCodes.OK).send(url);
-        } else {
-          // It is necessary to add the header manually, because the redirect sends the request and
-          // when the fastify-cors plugin try to add the header it's already sent and can't add it.
-          // So we add it because otherwise the browser won't send the cookie
-          reply.header('Access-Control-Allow-Credentials', 'true');
-          reply.redirect(url);
-        }
-      }
-      // return readstream of the file saved at given fileStorage path
-      else if (fileStorage && id) {
-        // fetch and save file in temporary path
-        const res = await fetch(url);
-        const tmpPath = path.join(fileStorage, id);
-        const fileStream = fs.createWriteStream(tmpPath);
-        await new Promise((resolve, reject) => {
-          res.body.pipe(fileStream);
-          res.body.on('error', reject);
-          fileStream.on('finish', resolve);
-        });
-        fileStream.end();
-
-        // create and return read stream (similar to local file service)
-        const file = fs.createReadStream(tmpPath);
-
-        file.on('close', function (err: Error) {
-          if (err) {
-            console.error(err);
-          }
-          fs.unlinkSync(tmpPath);
-        });
-
-        return file;
-      } else {
-        return url;
-      }
+      return url;
     } catch (e) {
-      if (e.statusCode === StatusCodes.NOT_FOUND) {
-        throw new S3FileNotFound({ filepath, id });
+      console.error(e);
+      if (!(e instanceof DownloadFileUnexpectedError)) {
+        throw new DownloadFileUnexpectedError({ filepath });
       }
-
-      throw new DownloadFileUnexpectedError({ filepath, id, e });
+      throw e;
     }
   }
 

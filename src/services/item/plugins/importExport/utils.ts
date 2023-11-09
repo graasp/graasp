@@ -9,7 +9,7 @@ import { v4 } from 'uuid';
 import { BusboyFileStream } from '@fastify/busboy';
 import { FastifyBaseLogger } from 'fastify';
 
-import { ItemType } from '@graasp/sdk';
+import { ItemType, UnionOfConst } from '@graasp/sdk';
 
 import { APP_URL_PREFIX, TMP_IMPORT_ZIP_FOLDER_PATH, URL_PREFIX } from './constants';
 
@@ -44,7 +44,7 @@ export const prepareZip = async (file: BusboyFileStream, log?: FastifyBaseLogger
 };
 
 // build the file content in case of Link/App
-export const buildTextContent = (url: string, type: ItemType): string => {
+export const buildTextContent = (url: string, type: UnionOfConst<typeof ItemType>): string => {
   if (type === ItemType.LINK) {
     return `[InternetShortcut]\n${URL_PREFIX}${url}\n`;
   }

@@ -24,6 +24,11 @@ declare module 'fastify' {
   }
 }
 
+const IGNORED_TRANSACTIONS = {
+  // retry from websocket generates failed requests when builder is not authenticated (public item)
+  'GET /ws': 'missing authorization header',
+};
+
 export const SentryConfig = {
   enable: Boolean(process.env.SENTRY_DSN),
   dsn: process.env.SENTRY_DSN,
@@ -59,6 +64,19 @@ export function initSentry(instance: FastifyInstance): {
         return null;
       }
       return breadcrumb;
+    },
+    beforeSend: (event) => {
+      // filter events
+      const transaction = event.transaction;
+      if (
+        transaction &&
+        transaction in IGNORED_TRANSACTIONS &&
+        event.exception?.values?.some(({ value }) => value === IGNORED_TRANSACTIONS[transaction])
+      ) {
+        return null;
+      }
+      // send all other event
+      return event;
     },
   });
 

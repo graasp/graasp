@@ -38,7 +38,7 @@ describe('Migrations1689777747530', () => {
     const { values: migrationData } = up;
     // insert mock data and check return value
     for (const [tableName, data] of Object.entries(migrationData)) {
-      for (const [idx, d] of data.entries()) {
+      for (const [_idx, d] of data.entries()) {
         await app.db.query(buildInsertIntoQuery(tableName, d));
       }
     }

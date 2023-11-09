@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.3](https://github.com/graasp/graasp/compare/v1.9.2...v1.9.3) (2023-10-26)
+
+
+### Bug Fixes
+
+* add childrenOrder extra on folder in import-zip ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* add missing relations in appSettings ([#653](https://github.com/graasp/graasp/issues/653)) ([7c96923](https://github.com/graasp/graasp/commit/7c9692366045c845f15527b89037d481cbf80459))
+* add test about childrenorder updated in parent ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* **internal:** better type safety ([#580](https://github.com/graasp/graasp/issues/580)) ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* relax test on etherpad cookie length ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* set member id on post app data ([#662](https://github.com/graasp/graasp/issues/662)) ([ba04a22](https://github.com/graasp/graasp/commit/ba04a220cdea08d7fa61e69eb7d82f2d81989fa0))
+* use node18 and const ItemType ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* use typequards and better typing for Item to improve type-safety ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+
 ## [1.9.2](https://github.com/graasp/graasp/compare/v1.9.1...v1.9.2) (2023-10-25)
 
 

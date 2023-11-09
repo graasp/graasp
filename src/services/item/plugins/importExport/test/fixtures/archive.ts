@@ -1,7 +1,12 @@
 import { ItemType } from '@graasp/sdk';
 
 // content in archive.zip
-export const folder = { name: 'folder', type: ItemType.FOLDER, description: 'folder', extra: {} };
+export const folder = {
+  name: 'folder',
+  type: ItemType.FOLDER,
+  description: 'folder',
+  extra: { folder: { childrenOrder: [] } },
+};
 export const childContent = {
   name: 'img2.png',
   description: '',

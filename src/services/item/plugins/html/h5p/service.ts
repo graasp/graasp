@@ -1,7 +1,7 @@
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { H5PItemExtra, H5PItemType } from '@graasp/sdk';
+import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
 import {
   H5P_FILE_STORAGE_CONFIG,
@@ -10,6 +10,7 @@ import {
 } from '../../../../../utils/config';
 import { Repositories } from '../../../../../utils/repositories';
 import { Actor, Member } from '../../../../member/entities/member';
+import { Item } from '../../../entities/Item';
 import { HtmlService } from '../service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
 import { H5P } from './validation/h5p';
@@ -53,15 +54,18 @@ export class H5PService extends HtmlService {
   /**
    * Download the H5P file referenced by a given Item
    */
-  download(item: H5PItemType, member: Actor, destinationPath: string) {
+  download(item: Item<typeof ItemType.H5P>, member: Actor) {
     const h5pPath = item.extra.h5p.h5pFilePath;
-    return super._download(member, item.id, h5pPath, destinationPath);
+    return super._download(member, item.id, h5pPath);
   }
 
   async copy(
     actor: Member,
     repositories: Repositories,
-    { original: item, copy }: { original: H5PItemType; copy: H5PItemType },
+    {
+      original: item,
+      copy,
+    }: { original: Item<typeof ItemType.H5P>; copy: Item<typeof ItemType.H5P> },
   ): Promise<void> {
     const { extra } = item;
 

@@ -8,17 +8,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import {
-  DEFAULT_LANG,
-  Member as GraaspMember,
-  MemberExtra,
-  MemberType,
-  isPseudonymizedMember,
-} from '@graasp/sdk';
+import { DEFAULT_LANG, MemberExtra, MemberType } from '@graasp/sdk';
 
 @Entity()
 @Unique('email', ['email'])
-export class Member extends BaseEntity implements GraaspMember {
+export class Member extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -58,11 +52,6 @@ export class Member extends BaseEntity implements GraaspMember {
     nullable: false,
   })
   updatedAt: Date;
-
-  // TODO: USED?
-  get isPseudonymized(): boolean {
-    return isPseudonymizedMember(this.email);
-  }
 
   get lang(): string {
     return (this.extra.lang as string) ?? DEFAULT_LANG;

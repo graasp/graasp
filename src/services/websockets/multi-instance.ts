@@ -106,7 +106,7 @@ class MultiInstanceChannelsBroker {
     this.sub = createRedisClientInstance(redisParams.config, log);
     this.pub = createRedisClientInstance(redisParams.config, log);
 
-    this.sub.subscribe(this.notifChannel, (err, count) => {
+    this.sub.subscribe(this.notifChannel, (err, _result) => {
       if (err) {
         log?.error(
           `graasp-plugin-websockets: MultiInstanceChannelsBroker failed to subscribe to ${this.notifChannel}, reason: ${err.message}`,

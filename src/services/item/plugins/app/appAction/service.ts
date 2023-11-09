@@ -1,9 +1,10 @@
-import { AppAction, PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
+import { AppAction } from './appAction';
 import { AppActionNotAccessible } from './errors';
 import { InputAppAction } from './interfaces/app-action';
 

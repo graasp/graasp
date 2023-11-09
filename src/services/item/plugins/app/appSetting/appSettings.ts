@@ -10,13 +10,11 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { AppSetting as GraaspAppSetting } from '@graasp/sdk';
-
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 
 @Entity()
-export class AppSetting extends BaseEntity implements GraaspAppSetting {
+export class AppSetting extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

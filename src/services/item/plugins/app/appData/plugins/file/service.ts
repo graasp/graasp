@@ -118,11 +118,10 @@ class AppDataFileService {
       throw new NotAppDataFile(appData);
     }
 
-    const result = await this.fileService.download(member, {
+    // always return the url because redirection uses bearer token automatically
+    // and s3 prevent multiple auth methods
+    const result = await this.fileService.getUrl(member, {
       id: appData.id,
-      // always return the url because redirection uses bearer token automatically
-      // and s3 prevent multiple auth methods
-      replyUrl: true,
       ...fileProp,
     });
 
