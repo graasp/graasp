@@ -175,11 +175,10 @@ export class ItemValidationService {
                 throw new Error('imageClassifierApi is not defined');
               }
               // return url
-              const url = (await this.fileService.download(actor, {
+              const url = await this.fileService.getUrl(actor, {
                 id: item?.id,
-                mimetype,
                 path: filepath,
-              })) as string;
+              });
               const isSafe = await classifyImage(this.imageClassifierApi, url);
               status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;
             }

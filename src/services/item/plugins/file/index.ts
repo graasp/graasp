@@ -3,7 +3,6 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemProperties, HttpMethod, IdParam, PermissionLevel } from '@graasp/sdk';
 
-import { MemberNotSignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../entities/Item';
@@ -171,7 +170,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     },
   });
 
-  fastify.get<{ Params: IdParam; Querystring: { size?: string; replyUrl?: boolean } }>(
+  fastify.get<{ Params: IdParam; Querystring: { replyUrl?: boolean } }>(
     '/:id/download',
     {
       schema: download,
@@ -182,17 +181,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const {
         member,
         params: { id: itemId },
-        query: { size, replyUrl },
-        log,
+        query: { replyUrl },
       } = request;
 
-      return fileItemService.download(member, buildRepositories(), { reply, itemId, replyUrl });
-      // .catch((e) => {
-      //   if (e.code) {
-      //     throw e;
-      //   }
-      //   throw new DownloadFileUnexpectedError(e);
-      // });
+      const url = await fileItemService.getUrl(member, buildRepositories(), {
+        itemId,
+      });
+      fileService.setHeaders({ url, reply, replyUrl, id: itemId });
     },
   );
 };

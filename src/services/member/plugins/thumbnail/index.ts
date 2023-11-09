@@ -97,14 +97,15 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { size, id: memberId }, query: { replyUrl }, log }, reply) => {
-      return thumbnailService
-        .download(member, buildRepositories(), { reply, memberId, replyUrl, size })
+      const url = await thumbnailService
+        .getUrl(member, buildRepositories(), { memberId, size })
         .catch((e) => {
           if (e.code) {
             throw e;
           }
           throw new DownloadFileUnexpectedError(e);
         });
+      fileService.setHeaders({ reply, replyUrl, url, id: memberId });
     },
   );
 };

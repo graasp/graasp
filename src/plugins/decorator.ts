@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { JobService } from '../jobs';
 import { ActionService } from '../services/action/services/action';
+import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { ItemPublishedService } from '../services/item/plugins/published/service';
@@ -48,6 +49,10 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('itemsCategory', {
     service: new ItemCategoryService(fastify.items.service),
+  });
+
+  fastify.decorate('h5p', {
+    service: new H5PService(),
   });
 
   fastify.decorate('search', {

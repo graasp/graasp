@@ -473,6 +473,7 @@ describe('File Item routes tests', () => {
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
+          // we want the download file to wrap the error
           expect(response.json()).toMatchObject(new DownloadFileUnexpectedError(expect.anything()));
         });
       });
