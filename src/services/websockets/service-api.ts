@@ -86,18 +86,16 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
   }
 
   // handle incoming requests
+  // allow public
+  // TODO: remove allow public
   fastify.get(
     options.prefix,
-    { websocket: true, preHandler: fastify.verifyAuthentication },
+    { websocket: true, preHandler: fastify.attemptVerifyAuthentication },
     (conn, req) => {
       // raw websocket client
       const client = conn.socket;
       // member from valid session
       const { member } = req;
-
-      if (!member) {
-        throw new InvalidSession();
-      }
 
       wsChannels.clientRegister(client);
 
