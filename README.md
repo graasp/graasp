@@ -1,26 +1,27 @@
-# Graasp
+# Graasp Backend
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/graasp/graasp?color=deepskyblue)
+
+This repository contains the source code and confgurations for the Graasp Backend. Visit the Graasp Platform at [graasp.org](https://graasp.org)
+
+❓Looking for our client applications/frontends ?
+Head over to: [Builder](https://github.com/graasp/graasp-builder), [Player](https://github.com/graasp/graasp-player), [Library](https://github.com/graasp/graasp-library), [Analytics](https://github.com/graasp/graasp-analytics) or [Account](https://github.com/graasp/graasp-account)
 
 ## Requirements
 
 In order to run the Graasp backend, it requires:
 
-- Node v.16
-- NPM v.7 or v.8
-- Yarn
+- Node v20
+- NPM v9
+- Yarn (can be installed through [`nvm`](https://github.com/nvm-sh/nvm))
 - [Docker](https://docs.docker.com/get-docker/) : Docker is not necessary, it is possible to install everything locally. However it is strongly recommanded to use the Docker installation guide.
 
 ## Recommended Tools
 
 - [NVM](https://github.com/nvm-sh/nvm) : CLI to manage multiple versions of Node.js and NPM.
-
-- [SourceTree](https://www.sourcetreeapp.com) : A free visual Git client for Windows and Mac.
-
 - [Postman](https://www.postman.com) : Application to explore and test your APIs.
-
+- [Starship](https://starship.rs/): A shell prompt enhancer that shows you the current git branch nvm version and package version, very usefull for quick look at your environment (works on all shells and is super fast), requires you to use a [NerdFont](https://www.nerdfonts.com/)
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
-
   - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environnement.
 
   - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
@@ -29,29 +30,36 @@ In order to run the Graasp backend, it requires:
 
 Graasp offers two ways to install the Graasp backend :
 
-    - Docker : this allows you to run a preconfigured environnement (Recommended)
-    - Local : you'll need to install and configure all the required services
+- [Docker](#docker-installation) (recommended) : this allows you to run a preconfigured environnement
+- [Local](#local-installation) : you'll need to install and configure all the required services
 
-### Docker installation (Recommended)
+### Docker installation
 
 We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
 
 First open the folder in the dev-container by using the command palette <kbd>cmd</kbd> + <kbd>shift</kbd> + <kbd>P</kbd> (or <kbd>ctrl</kbd> instead of <kbd>cmd</kbd>), and typing `Open Folder in Container`.
 
-This will create 3 containers :
+This will create 10 containers :
 
-- `app` : Node.js backend of Graasp
-- `db` : PostgreSQL database used by the backend
-- `redis` : Redis instance to enable websockets
-- `localstack` : Localstack instance use to locally test S3 storage
+- `graasp-core` : Node.js backend of Graasp
+- `graasp-postgres` : PostgreSQL database used by the backend
+- `graasp-postgres-test` : PostgreSQL database used when running tests
+- `graasp-etherpad` : Container for the etherpad service
+- `graasp-postgres-etherpad` : PostgreSQL database used by the etherpad service
+- `graasp-meilisearch` : Container for the meilisearch service
+- `graasp-redis` : Redis instance to enable websockets
+- `graasp-localstack` : Localstack instance use to fake S3 storage locally
+- `graasp-iframely` : Iframely instance used to get embeds for links
+- `mailer-1` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
 
-To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://localstack` hostname.
+> **Important**
+> To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://localstack` hostname.
 
 Then install the required npm packages with `yarn install`. You should run this command in the docker's terminal, because some packages are built depending on the operating system (eg. `bcrypt`).
 
-If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.
-
-To increase the memory limit, go to `Docker > Preferences > Resources` and change the memory from default (2 GB) to 8GB.
+> **Info**
+> If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.  
+> To increase the memory limit, go to `Docker > Preferences > Resources` and change the memory from default (2 GB) to 8GB.
 
 ### Local Installation
 
@@ -63,40 +71,11 @@ To use the backend with S3, it is required to have a running instance of [locals
 
 Then open the folder locally and run the following command to install the required npm packages.
 
-`yarn install`
-
-### Database and Migrations
-
-The application will run migrations on start.
-
-#### Create a migration
-
-Migrations are saved in `src/migrations/*.ts`. They are then transformed into js files so typeorm can run them.
-
-Run the generate and run command to create and apply the migration.
-
-```bash
-yarn migration:generate
-yarn migration:run
+```sh
+yarn install
 ```
 
-If you need to revert
-
-```bash
-yarn migration:revert
-```
-
-To test your migrations, you can run
-
-```bash
-yarn migration:fake
-```
-
-Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`.
-
-Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
-
-### Configuration
+## Configuration
 
 To configure the application, you'll need to change the values in `.env.development`. The file should have the following structure :
 
@@ -241,3 +220,35 @@ To run the application, use `yarn watch`. If any file change, the application wi
 ## Utilities
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080). If you do not want to use mailcatcher, set the `MAILER_CONFIG_SMTP_HOST` variable in your `.env.development` to some random value (e.g. empty string). This will log the authentication links in the server console instead.
+
+
+## Database and Migrations
+
+The application will run migrations on start.
+
+### Create a migration
+
+Migrations are saved in `src/migrations/*.ts`. They are then transformed into js files so typeorm can run them.
+
+Run the generate and run command to create and apply the migration.
+
+```sh
+yarn migration:generate
+yarn migration:run
+```
+
+If you need to revert
+
+```sh
+yarn migration:revert
+```
+
+To test your migrations, you can run
+
+```sh
+yarn migration:fake
+```
+
+Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`.
+
+Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.

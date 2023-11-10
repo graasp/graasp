@@ -60,12 +60,12 @@ export const LIBRARY_HOST = {
 };
 
 export const ACCOUNT_HOST = {
-  name: 'Account',
+  name: Context.Account,
   url: new URL(process.env.ACCOUNT_CLIENT_HOST ?? DEFAULT_HOST),
 };
 
 export const ANALYTICS_HOST = {
-  name: 'Account',
+  name: Context.Analytics,
   url: new URL(process.env.ANALYZER_CLIENT_HOST ?? DEFAULT_HOST),
 };
 
