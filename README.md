@@ -189,10 +189,10 @@ SAVE_ACTIONS=true
 # Client hosts
 BUILDER_CLIENT_HOST=http://localhost:3111
 PLAYER_CLIENT_HOST=http://localhost:3112
-EXPLORER_CLIENT_HOST=http://localhost:3005
+LIBRARY_CLIENT_HOST=http://localhost:3005
 AUTH_CLIENT_HOST=http://localhost:3001
 ACCOUNT_CLIENT_HOST=http://localhost:3114
-ANALYZER_CLIENT_HOST=http://localhost:3005
+ANALYTICS_CLIENT_HOST=http://localhost:3005
 GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
 # validation containers

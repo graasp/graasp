@@ -56,7 +56,7 @@ export const PLAYER_HOST = {
 
 export const LIBRARY_HOST = {
   name: Context.Library,
-  url: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST),
+  url: new URL(process.env.LIBRARY_CLIENT_HOST ?? DEFAULT_HOST),
 };
 
 export const ACCOUNT_HOST = {
@@ -66,7 +66,7 @@ export const ACCOUNT_HOST = {
 
 export const ANALYTICS_HOST = {
   name: Context.Analytics,
-  url: new URL(process.env.ANALYZER_CLIENT_HOST ?? DEFAULT_HOST),
+  url: new URL(process.env.ANALYTICS_CLIENT_HOST ?? DEFAULT_HOST),
 };
 
 export const CLIENT_HOSTS = [BUILDER_HOST, PLAYER_HOST, LIBRARY_HOST, ACCOUNT_HOST, ANALYTICS_HOST];
