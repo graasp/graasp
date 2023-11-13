@@ -163,8 +163,9 @@ export class MeiliSearchWrapper {
       content: await this.getContent(item),
       isPublishedRoot: isPublishedRoot,
       isHidden: isHidden,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      // todo: fix these types
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
     };
   }
 
@@ -313,11 +314,10 @@ export class MeiliSearchWrapper {
         //   return '';
         // }
         try {
-          const url = (await this.fileService.download(undefined, {
+          const url = await this.fileService.getUrl(undefined, {
             id: item.id,
             path: s3extra.path,
-            replyUrl: true,
-          })) as string;
+          });
           const content = await readPdfContent(url);
           await repositories.itemRepository.patch(item.id, {
             extra: { [ItemType.S3_FILE]: { content } } as S3FileItemExtra,

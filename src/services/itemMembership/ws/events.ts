@@ -30,6 +30,7 @@ interface ItemMembershipEvent extends MembershipEvent {
  * @param membership value of the membership for this event
  * @returns instance of item membership event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ItemMembershipEvent = (
   op: ItemMembershipEvent['op'],
   membership: ItemMembership,

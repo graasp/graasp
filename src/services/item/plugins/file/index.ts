@@ -117,6 +117,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         log,
       } = request;
 
+      // todo: check that it is ok to throw if member is not present
+      if (!member) {
+        throw new Error('member is undefined');
+      }
+
       // check rights
       if (parentId) {
         const repositories = buildRepositories();
@@ -165,7 +170,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     },
   });
 
-  fastify.get<{ Params: IdParam; Querystring: { size?: string; replyUrl?: boolean } }>(
+  fastify.get<{ Params: IdParam; Querystring: { replyUrl?: boolean } }>(
     '/:id/download',
     {
       schema: download,
@@ -176,17 +181,13 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const {
         member,
         params: { id: itemId },
-        query: { size, replyUrl },
-        log,
+        query: { replyUrl },
       } = request;
 
-      return fileItemService.download(member, buildRepositories(), { reply, itemId, replyUrl });
-      // .catch((e) => {
-      //   if (e.code) {
-      //     throw e;
-      //   }
-      //   throw new DownloadFileUnexpectedError(e);
-      // });
+      const url = await fileItemService.getUrl(member, buildRepositories(), {
+        itemId,
+      });
+      fileService.setHeaders({ url, reply, replyUrl, id: itemId });
     },
   );
 };

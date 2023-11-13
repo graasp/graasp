@@ -10,14 +10,14 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import { Context, Action as GraaspAction } from '@graasp/sdk';
+import { Context } from '@graasp/sdk';
 
 import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
 @Index('IDX_gist_action_path', { synchronize: false })
-export class Action extends BaseEntity implements GraaspAction {
+export class Action extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

@@ -28,19 +28,25 @@ export class MemberThumbnailService {
   }
 
   // get member's avatar
-  async download(
+  async getFile(
     actor: Actor,
     repositories: Repositories,
-    {
-      reply,
-      size,
-      memberId,
-      replyUrl,
-    }: { reply: FastifyReply; memberId: string; size: string; replyUrl?: boolean },
+    { size, memberId }: { memberId: string; size: string },
   ) {
-    const result = await this.thumbnailService.download(actor, {
-      reply,
-      replyUrl,
+    const result = await this.thumbnailService.getFile(actor, {
+      size,
+      id: memberId,
+    });
+
+    return result;
+  }
+  // get member's avatar
+  async getUrl(
+    actor: Actor,
+    repositories: Repositories,
+    { size, memberId }: { memberId: string; size: string },
+  ) {
+    const result = await this.thumbnailService.getUrl(actor, {
       size,
       id: memberId,
     });

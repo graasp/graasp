@@ -9,14 +9,12 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { RecycledItemData as GraaspRecycledItemData } from '@graasp/sdk';
-
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 
 @Entity()
 @Unique('recycled-item-data', ['item'])
-export class RecycledItemData extends BaseEntity implements GraaspRecycledItemData {
+export class RecycledItemData extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
 

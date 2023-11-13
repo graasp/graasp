@@ -1,4 +1,3 @@
-import { WriteStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyMultipart from '@fastify/multipart';
@@ -23,7 +22,6 @@ type GraaspThumbnailsOptions = {
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
   const {
-    log: defaultLogger,
     files: { service: fileService },
     items,
     db,
@@ -101,15 +99,18 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       schema: download,
       preHandler: fastify.attemptVerifyAuthentication,
     },
-    async ({ member, params: { size, id: itemId }, query: { replyUrl }, log }, reply) => {
-      return thumbnailService
-        .download(member, buildRepositories(), { reply, itemId, replyUrl, size })
+    async ({ member, params: { size, id: itemId }, query: { replyUrl } }, reply) => {
+      const url = await thumbnailService
+        .getUrl(member, buildRepositories(), { itemId, size })
         .catch((e) => {
           if (e.code) {
+            console.error(e);
             throw e;
           }
           throw new DownloadFileUnexpectedError(e);
         });
+
+      fileService.setHeaders({ reply, replyUrl, url, id: itemId });
     },
   );
 };

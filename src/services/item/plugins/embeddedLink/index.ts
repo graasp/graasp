@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { EmbeddedLinkItemExtra, ItemType } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
@@ -46,11 +46,11 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
     repositories: Repositories,
     { item }: { item: Partial<Item> },
   ) => {
-    const { embeddedLink } = (item?.extra as EmbeddedLinkItemExtra) ?? {};
-
-    if (item.type !== ItemType.LINK || !embeddedLink) {
+    // if the extra is undefined or it does not contain the embedded link extra key, exit
+    if (!item.extra || !(ItemType.LINK in item.extra)) {
       return;
     }
+    const { embeddedLink } = item.extra;
 
     const { url } = embeddedLink;
 

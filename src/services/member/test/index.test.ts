@@ -1,7 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 
-import { FileItemExtra, FileItemProperties, HttpMethod } from '@graasp/sdk';
+import { FileItemProperties, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
@@ -64,24 +64,42 @@ describe('Member routes tests', () => {
 
       // fill db with files
       const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const item1Properties = {
+        size: 1234,
+      } as FileItemProperties;
       const { item: item1 } = await saveItemAndMembership({
         item: getDummyItem({
           type: fileServiceType,
-          extra: { [fileServiceType]: { size: 1234 } } as FileItemExtra,
+          extra:
+            fileServiceType === ItemType.S3_FILE
+              ? { [ItemType.S3_FILE]: item1Properties }
+              : { [ItemType.LOCAL_FILE]: item1Properties },
         }),
         member: actor,
       });
+      const item2Properties = {
+        size: 534,
+      } as FileItemProperties;
       const { item: item2 } = await saveItemAndMembership({
         item: getDummyItem({
           type: fileServiceType,
-          extra: { [fileServiceType]: { size: 534 } } as FileItemExtra,
+          extra:
+            fileServiceType === ItemType.S3_FILE
+              ? { [ItemType.S3_FILE]: item2Properties }
+              : { [ItemType.LOCAL_FILE]: item2Properties },
         }),
         member: actor,
       });
+      const item3Properties = {
+        size: 8765,
+      } as FileItemProperties;
       const { item: item3 } = await saveItemAndMembership({
         item: getDummyItem({
           type: fileServiceType,
-          extra: { [fileServiceType]: { size: 8765 } } as FileItemExtra,
+          extra:
+            fileServiceType === ItemType.S3_FILE
+              ? { [ItemType.S3_FILE]: item3Properties }
+              : { [ItemType.LOCAL_FILE]: item3Properties },
         }),
         member: actor,
       });
@@ -110,10 +128,16 @@ describe('Member routes tests', () => {
 
       // fill db with noise data
       const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const dummyItemProperties = {
+        size: 8765,
+      } as FileItemProperties;
       await saveItemAndMembership({
         item: getDummyItem({
           type: fileServiceType,
-          extra: { [fileServiceType]: { size: 8765 } } as FileItemExtra,
+          extra:
+            fileServiceType === ItemType.S3_FILE
+              ? { [ItemType.S3_FILE]: dummyItemProperties }
+              : { [ItemType.LOCAL_FILE]: dummyItemProperties },
         }),
         member,
       });

@@ -102,12 +102,10 @@ export class ActionRequestExportService {
 
   async _sendExportLinkInMail(actor: Member, item: Item, archiveDate: Date) {
     const filepath = buildActionFilePath(item.id, archiveDate);
-    const link = await this.fileService.download(actor, {
+    const link = await this.fileService.getUrl(actor, {
       id: item.id,
       path: filepath,
-      mimetype: ZIP_MIMETYPE,
       expiration: EXPORT_FILE_EXPIRATION,
-      replyUrl: true,
     });
 
     // factor out

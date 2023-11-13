@@ -32,24 +32,34 @@ export class ItemThumbnailService {
     return item;
   }
 
-  async download(
+  async getFile(
     actor: Actor,
     repositories: Repositories,
-    {
-      reply,
-      size,
-      itemId,
-      replyUrl,
-    }: { reply: FastifyReply; size: string; itemId: string; replyUrl?: boolean },
+    { size, itemId }: { size: string; itemId: string },
   ) {
     // prehook: get item and input in download call ?
     // check rights
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
-    const result = await this.thumbnailService.download(actor, {
-      reply,
-      replyUrl,
+    const result = await this.thumbnailService.getFile(actor, {
+      size,
+      id: itemId,
+    });
+
+    return result;
+  }
+  async getUrl(
+    actor: Actor,
+    repositories: Repositories,
+    { size, itemId }: { size: string; itemId: string },
+  ) {
+    // prehook: get item and input in download call ?
+    // check rights
+    const item = await repositories.itemRepository.get(itemId);
+    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+
+    const result = await this.thumbnailService.getUrl(actor, {
       size,
       id: itemId,
     });

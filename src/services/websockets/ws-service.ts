@@ -4,7 +4,7 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
-import { Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import {
   createServerErrorResponse,
   createServerSuccessResponse,
@@ -73,11 +73,20 @@ export class WebsocketService {
    */
   private async handleSubscribe(
     request: Websocket.ClientSubscribe | Websocket.ClientSubscribeOnly,
-    member: Member,
+    member: Actor,
     client: WebSocket,
     subscribeFn: (client: WebSocket, channelName: string) => boolean,
   ) {
     let res: Websocket.ServerMessage;
+
+    // prevent public subscribe
+    if (!member) {
+      res = createServerErrorResponse(
+        { message: 'not authorized', name: 'websockets signed out' },
+        request,
+      );
+      return this.wsChannels.clientSend(client, res);
+    }
 
     const validate = this.validators.get(request.topic);
     if (validate === undefined) {
@@ -130,13 +139,13 @@ export class WebsocketService {
    * @param member member performing the request
    * @param socket client socket
    */
-  handleRequest(data: WebSocket.Data, member: Member, client: WebSocket): void {
+  handleRequest(data: WebSocket.Data, member: Actor, client: WebSocket): void {
     const request = this.parse(typeof data === 'string' ? data : data?.toString());
 
     // validation error, send bad request
     if (request === undefined) {
       this.logger.info(
-        `graasp-plugin-websockets: Bad client request (memberID: ${member.id} with message`,
+        `graasp-plugin-websockets: Bad client request (memberID: ${member?.id} with message`,
         data?.toString(),
       );
       const err = new Websocket.BadRequestError();
