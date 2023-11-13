@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Member } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { IMemberProfile } from '../../controller';
 import { MemberProfile } from '../../entities/profile';
+import { IMemberProfile } from '../../types';
 
 export const getDummyProfile = (options: Partial<MemberProfile>): MemberProfile => {
   const {
@@ -36,28 +36,15 @@ export const saveMemberProfile = async (m: Partial<Member>, profile: IMemberProf
   return savedMember;
 };
 
-export const ANNA = {
-  name: 'anna',
-  email: 'anna@email.org',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
 export const ANNA_PROFILE = {
-  bio: 'Hi, ITs Anna, an english teacher',
+  bio: "Hi, I'm Anna, an english teacher",
   facebookLink: 'https://facebook.com/anna',
   twitterLink: '',
   linkedinLink: 'https://linkedin.com/anna',
 };
-export const BOB = {
-  name: 'bob',
-  email: 'bob@email.org',
-  extra: { lang: 'fr' },
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
+
 export const BOB_PROFILE = {
-  bio: 'Hi, ITs Bob, a science teacher',
+  bio: "Hi, I'm Bob, a science teacher",
   facebookLink: 'https://facebook.com/bob',
   twitterLink: '',
   linkedinLink: 'https://linkedin.com/bob',

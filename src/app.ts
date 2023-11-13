@@ -10,8 +10,8 @@ import authPlugin from './services/auth';
 import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
-import MemberProfileServiceApi from './services/libraryProfile';
 import MemberServiceApi from './services/member';
+import MemberProfileServiceApi from './services/memberProfile';
 import websocketsPlugin from './services/websockets';
 import {
   COOKIE_DOMAIN,
@@ -80,7 +80,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
       .register(fp(ItemMembershipServiceApi))
-      .register(fp(MemberProfileServiceApi));
+      .register(MemberProfileServiceApi);
 
     // instance.register(
     //   async (instance) => {

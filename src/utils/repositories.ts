@@ -26,8 +26,8 @@ import { ItemRepository } from '../services/item/repository';
 import ItemLoginRepository from '../services/itemLogin/repositories/itemLogin';
 import ItemLoginSchemaRepository from '../services/itemLogin/repositories/itemLoginSchema';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
-import MemberProfileRepository from '../services/libraryProfile/repository';
 import MemberRepository from '../services/member/repository';
+import MemberProfileRepository from '../services/memberProfile/repository';
 
 export type Repositories = {
   actionRepository: typeof ActionRepository;

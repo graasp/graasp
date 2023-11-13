@@ -27,8 +27,8 @@ import { ItemValidationReview } from '../../services/item/plugins/validation/ent
 import { ItemLogin } from '../../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership';
-import { MemberProfile } from '../../services/libraryProfile/entities/profile';
 import { Member } from '../../services/member/entities/member';
+import { MemberProfile } from '../../services/memberProfile/entities/profile';
 import { DB_PORT } from '../../utils/config';
 
 // mock data source

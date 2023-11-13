@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Migrations1698831862439 implements MigrationInterface {
-  name = 'library-profile-1698831862439';
+  name = 'member-profile-1698831862439';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(

@@ -3,14 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import {
-  ANNA,
-  ANNA_PROFILE,
-  BOB,
-  BOB_PROFILE,
-  getDummyProfile,
-  saveMemberProfile,
-} from './fixtures/profile';
+import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../utils/config';
+import { ANNA, BOB } from '../../member/test/fixtures/members';
+import { ANNA_PROFILE, BOB_PROFILE, getDummyProfile, saveMemberProfile } from './fixtures/profile';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -31,7 +26,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.GET,
-        url: '/member-profile/own',
+        url: `${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
@@ -40,7 +35,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.GET,
-        url: '/member-profile/own',
+        url: `${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -54,7 +49,7 @@ describe('Profile Member routes tests', () => {
       const payload = getDummyProfile({ bio: 'Rnadom Bio' });
       const response = await app.inject({
         method: HttpMethod.POST,
-        url: '/member-profile',
+        url: MEMBER_PROFILE_ROUTE_PREFIX,
         payload,
       });
 
@@ -71,7 +66,7 @@ describe('Profile Member routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.POST,
-          url: '/member-profile',
+          url: MEMBER_PROFILE_ROUTE_PREFIX,
           payload,
         });
 
@@ -91,7 +86,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.GET,
-        url: `/member-profile/${memberId}`,
+        url: `${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -104,7 +99,7 @@ describe('Profile Member routes tests', () => {
 
       const response = await app.inject({
         method: HttpMethod.GET,
-        url: `/member-profile/${memberId}`,
+        url: `${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
       const bobProfile = response.json();
       expect(bobProfile.bio).toBe(BOB_PROFILE.bio);
@@ -116,10 +111,10 @@ describe('Profile Member routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = getDummyProfile({ bio: 'Rnadom Bio' });
+      const payload = getDummyProfile({ bio: 'Random Bio' });
       const response = await app.inject({
         method: HttpMethod.PATCH,
-        url: '/member-profile',
+        url: MEMBER_PROFILE_ROUTE_PREFIX,
         payload,
       });
 
@@ -132,12 +127,12 @@ describe('Profile Member routes tests', () => {
       });
 
       it('updated successfully', async () => {
-        const payload = getDummyProfile({ bio: 'Rnadom Bio' });
+        const payload = getDummyProfile({ bio: 'Random Bio' });
         await saveMemberProfile(actor, ANNA_PROFILE);
 
         const response = await app.inject({
           method: HttpMethod.PATCH,
-          url: '/member-profile',
+          url: MEMBER_PROFILE_ROUTE_PREFIX,
           payload,
         });
 

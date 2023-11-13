@@ -11,7 +11,7 @@ export class MemberProfileService {
     this.log = log;
   }
 
-  async post(data, repositories: Repositories, member: Member | undefined) {
+  async post(member: Member | undefined, repositories: Repositories, data) {
     const { memberProfileRepository } = repositories;
     const d = await memberProfileRepository.createOne({ ...data, member });
     return d;
@@ -21,15 +21,15 @@ export class MemberProfileService {
     const memberProfile = await memberProfileRepository.getByMemberId(memberId);
     return memberProfile;
   }
-  async getOwn(memberId, repositories: Repositories) {
+  async getOwn(member, repositories: Repositories) {
     const { memberProfileRepository } = repositories;
-    if (!memberId) {
+    if (!member || !member?.id) {
       throw new UnauthorizedMember();
     }
-    const memberProfile = await memberProfileRepository.getMember(memberId);
+    const memberProfile = await memberProfileRepository.getMember(member?.id);
     return memberProfile;
   }
-  async patch(data, repositories: Repositories, member: Member | undefined) {
+  async patch(member: Member | undefined, repositories: Repositories, data) {
     const { memberProfileRepository } = repositories;
 
     if (!member?.id) {
