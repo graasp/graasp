@@ -1,11 +1,15 @@
 import { StatusCodes } from 'http-status-codes';
 
+import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
+
+import { HttpMethod } from '@graasp/sdk';
 
 import { IdParam } from '../../types';
 import { Repositories, buildRepositories } from '../../utils/repositories';
 import { Actor, Member } from '../member/entities/member';
+import { MAX_FILES, MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
 import { Invitation } from './invitation';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
 import { InvitationService } from './service';
@@ -19,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.addSchema(definitions);
 
-  const iS = new InvitationService(log, mailer, items.service);
+  const iS = new InvitationService(log, mailer, items.service, members.service);
 
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
@@ -53,6 +57,36 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
+
+  fastify.register(fastifyMultipart, {
+    limits: {
+      fields: MAX_NON_FILE_FIELDS, // Max number of non-file fields (Default: Infinity).
+      fileSize: MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+      files: MAX_FILES, // Max number of file fields (Default: Infinity).
+    },
+  });
+
+  fastify.route<{ Querystring: IdParam & { template_id: string } }>({
+    method: HttpMethod.POST,
+    url: '/:id/invitations/upload_csv',
+    preHandler: fastify.verifyAuthentication,
+    handler: async (request) => {
+      // Help: is this a good way to obtain the itemMembershipService?
+      // TO-DO: declare before the memberships
+      const { memberships } = fastify;
+      const { member, query } = request;
+      const file = await request.file();
+      return await db.transaction(async (manager) => {
+        return await iS.handleCSVInvitations(
+          member,
+          buildRepositories(manager),
+          query,
+          file,
+          memberships.service,
+        );
+      });
+    },
+  });
 
   // get all invitations for an item
   fastify.get<{ Params: IdParam }>(

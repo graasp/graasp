@@ -44,3 +44,49 @@ export class InvitationNotFound extends GraaspInvitationsError {
     );
   }
 }
+
+export class NoDataFoundForInvitations extends GraaspInvitationsError {
+  constructor() {
+    super({
+      code: 'GPINVERR004',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'No data or no column email detected',
+    });
+  }
+}
+
+export class NoEmailFoundForInvitations extends GraaspInvitationsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPINVERR005',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Email was not detected for rows',
+      },
+      data,
+    );
+  }
+}
+
+export class NoGroupNamesFoundForInvitations extends GraaspInvitationsError {
+  constructor() {
+    super({
+      code: 'GPINVERR006',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'Group column has been defined in CSV, but no group names were detected',
+    });
+  }
+}
+
+export class NoGroupFoundForInvitations extends GraaspInvitationsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPINVERR007',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Group column has been defined in CSV, but rows with missing groups exist',
+      },
+      data,
+    );
+  }
+}
