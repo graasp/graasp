@@ -344,3 +344,5 @@ export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
 
 // OpenAI
 export const OPENAI_GPT_VERSION = process.env.OPENAI_GPT_VERSION || GPTVersion.GPT_4;
+export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;

@@ -99,3 +99,5 @@ jobs:
       meilisearch-url: ${{ secrets.MEILISEARCH_URL }}
       meilisearch-master-key: ${{ secrets.MEILISEARCH_MASTER_KEY }}
       meilisearch-rebuild-secret: ${{ secrets.MEILISEARCH_REBUILD_SECRET}}
+      openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+      openai-org-id: ${{ secrets.OPENAI_ORG_ID }}
