@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
+import { Triggers } from '@graasp/sdk';
+
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
@@ -87,7 +89,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // download item as zip
-  fastify.route<{ Params: { itemId: string }; Querystring: { actionType?: string } }>({
+  fastify.route<{ Params: { itemId: string } }>({
     method: 'GET',
     url: '/zip-export/:itemId',
     schema: zipExport,
@@ -97,7 +99,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         member,
         params: { itemId },
         log,
-        query: { actionType = 'item-download' },
       } = request;
       const repositories = buildRepositories();
       const item = await iS.get(member, repositories, itemId);
@@ -112,7 +113,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // trigger download action for a collection
       const action = {
         item,
-        type: actionType,
+        type: Triggers.ItemDownload,
         extra: { itemId: item?.id },
       };
       await aS.postMany(member, repositories, request, [action]);

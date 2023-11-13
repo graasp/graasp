@@ -1,5 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { Triggers } from '@graasp/sdk';
+
 import { buildRepositories } from '../../../../utils/repositories';
 import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
@@ -44,10 +46,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return db.transaction(async (manager) => {
         // action like item
         const item = await itemService.get(member, buildRepositories(manager), itemId);
-        // TODO: chnage type from graasp/sdk
         const action = {
           item,
-          type: 'item-like',
+          type: Triggers.ItemLike,
           extra: {
             itemId: item?.id,
           },
@@ -73,10 +74,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // action unlike item
         const item = await itemService.get(member, buildRepositories(manager), itemId);
 
-        // TODO: chnage type from graasp/sdk
         const action = {
           item,
-          type: 'item-unlike',
+          type: Triggers.ItemUnlike,
           extra: {
             itemId: item?.id,
           },
