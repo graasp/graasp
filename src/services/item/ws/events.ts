@@ -1,7 +1,9 @@
 /**
  * Item websocket events are registered under these topics
  */
-import { Item, ResultOf } from '@graasp/sdk';
+import { ResultOf } from '@graasp/sdk';
+
+import { Item } from '../entities/Item';
 
 // changes on item entities
 export const itemTopic = 'item';

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.4](https://github.com/graasp/graasp/compare/v1.9.3...v1.9.4) (2023-11-09)
+
+
+### Bug Fixes
+
+* add regression test for legacy folder extra ([7615319](https://github.com/graasp/graasp/commit/7615319014c54915982603e53ba6ae1bf0f1cabb))
+* allow public access to ws ([#683](https://github.com/graasp/graasp/issues/683)) ([d7c3a48](https://github.com/graasp/graasp/commit/d7c3a48a207a2a523da8cf085e0235c0ad95015e))
+* create getUrl and getFile in file repository ([#684](https://github.com/graasp/graasp/issues/684)) ([839189d](https://github.com/graasp/graasp/commit/839189d58dcd7aa5828b6c8f950381a99b5b7b65))
+* **deps:** update dependency @graasp/translations to v1.15.1 ([#511](https://github.com/graasp/graasp/issues/511)) ([2110dbc](https://github.com/graasp/graasp/commit/2110dbc44511aba376a591b9216f379e62228d3d))
+* **deps:** update dependency archiver to v5.3.2 ([#593](https://github.com/graasp/graasp/issues/593)) ([ac346f7](https://github.com/graasp/graasp/commit/ac346f70a8a498077f2edd682ba9842108a68a64))
+* filter sentry events at the source ([#673](https://github.com/graasp/graasp/issues/673)) ([27e290e](https://github.com/graasp/graasp/commit/27e290ededcf123e55deff3f775a0338823a4ebd))
+* update to sdk 2.0.0 ([#680](https://github.com/graasp/graasp/issues/680)) ([7615319](https://github.com/graasp/graasp/commit/7615319014c54915982603e53ba6ae1bf0f1cabb))
+* use optional on folder extra that might be empty ([#679](https://github.com/graasp/graasp/issues/679)) ([7615319](https://github.com/graasp/graasp/commit/7615319014c54915982603e53ba6ae1bf0f1cabb))
+
+## [1.9.3](https://github.com/graasp/graasp/compare/v1.9.2...v1.9.3) (2023-10-26)
+
+
+### Bug Fixes
+
+* add childrenOrder extra on folder in import-zip ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* add missing relations in appSettings ([#653](https://github.com/graasp/graasp/issues/653)) ([7c96923](https://github.com/graasp/graasp/commit/7c9692366045c845f15527b89037d481cbf80459))
+* add test about childrenorder updated in parent ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* **internal:** better type safety ([#580](https://github.com/graasp/graasp/issues/580)) ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* relax test on etherpad cookie length ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* set member id on post app data ([#662](https://github.com/graasp/graasp/issues/662)) ([ba04a22](https://github.com/graasp/graasp/commit/ba04a220cdea08d7fa61e69eb7d82f2d81989fa0))
+* use node18 and const ItemType ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+* use typequards and better typing for Item to improve type-safety ([682d9d7](https://github.com/graasp/graasp/commit/682d9d70fe7c42b6978efb440d60914786bdb7f3))
+
 ## [1.9.2](https://github.com/graasp/graasp/compare/v1.9.1...v1.9.2) (2023-10-25)
 
 

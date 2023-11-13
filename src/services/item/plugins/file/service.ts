@@ -5,7 +5,6 @@ import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
 
 import { MultipartFields } from '@fastify/multipart';
-import { FastifyReply } from 'fastify';
 
 import {
   FileItemProperties,
@@ -156,19 +155,13 @@ class FileItemService {
     });
   }
 
-  async download(
+  async getFile(
     actor: Actor,
     repositories: Repositories,
     {
-      fileStorage,
       itemId,
-      reply,
-      replyUrl,
     }: {
-      fileStorage?: string;
       itemId: string;
-      reply?: FastifyReply;
-      replyUrl?: boolean;
     },
   ) {
     // prehook: get item and input in download call ?
@@ -176,11 +169,30 @@ class FileItemService {
     const item = await repositories.itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
     const extraData = item.extra[this.fileService.type] as FileItemProperties;
-    const result = await this.fileService.download(actor, {
-      fileStorage,
+    const result = await this.fileService.getFile(actor, {
       id: itemId,
-      reply: this.shouldRedirectOnDownload || !replyUrl ? reply : undefined,
-      replyUrl,
+      ...extraData,
+    });
+
+    return result;
+  }
+
+  async getUrl(
+    actor: Actor,
+    repositories: Repositories,
+    {
+      itemId,
+    }: {
+      itemId: string;
+    },
+  ) {
+    // prehook: get item and input in download call ?
+    // check rights
+    const item = await repositories.itemRepository.get(itemId);
+    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    const extraData = item.extra[this.fileService.type] as FileItemProperties;
+    const result = await this.fileService.getUrl(actor, {
+      id: itemId,
       ...extraData,
     });
 

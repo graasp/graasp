@@ -49,20 +49,17 @@ export class ThumbnailService {
     );
   }
 
-  async download(
-    actor: Actor,
-    {
-      reply,
-      id,
-      size,
-      replyUrl,
-    }: { reply: FastifyReply; size: string; id: string; replyUrl?: boolean },
-  ) {
-    const result = await this.fileService.download(actor, {
-      reply: this.shouldRedirectOnDownload ? reply : undefined,
-      replyUrl,
+  async getUrl(actor: Actor, { id, size }: { size: string; id: string }) {
+    const result = await this.fileService.getUrl(actor, {
       path: this.buildFilePath(id, size),
-      mimetype: THUMBNAIL_MIMETYPE,
+      id,
+    });
+
+    return result;
+  }
+  async getFile(actor: Actor, { id, size }: { size: string; id: string }) {
+    const result = await this.fileService.getFile(actor, {
+      path: this.buildFilePath(id, size),
       id,
     });
 

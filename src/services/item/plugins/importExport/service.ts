@@ -35,14 +35,11 @@ export class ImportExportService {
   fileItemService: FileItemService;
   h5pService: H5PService;
   itemService: ItemService;
-  fileStorage: string;
 
   constructor(fileItemService: FileItemService, itemService: ItemService, h5pService: H5PService) {
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
-    // save temp files
-    this.fileStorage = path.join(TMP_FOLDER, 'export-zip');
   }
 
   private async _getDescriptionForFilepath(filepath: string): Promise<string> {
@@ -196,10 +193,9 @@ export class ImportExportService {
       item: Item;
       archiveRootPath: string;
       archive: ZipFile;
-      fileStorage: string;
     },
   ) {
-    const { item, archiveRootPath, archive, reply, fileStorage } = args;
+    const { item, archiveRootPath, archive, reply } = args;
 
     // save description in file
     if (item.description) {
@@ -214,10 +210,9 @@ export class ImportExportService {
       const s3Extra = isItemType(item, ItemType.S3_FILE) ? item.extra.s3File : undefined;
       const localFileExtra = isItemType(item, ItemType.LOCAL_FILE) ? item.extra.file : undefined;
       const { mimetype } = { ...s3Extra, ...localFileExtra };
-      const url = (await this.fileItemService.download(actor, repositories, {
-        fileStorage,
+      const url = await this.fileItemService.getUrl(actor, repositories, {
         itemId: item.id,
-      })) as string;
+      });
 
       // build filename with extension if does not exist
       let ext = path.extname(item.name);
@@ -232,13 +227,10 @@ export class ImportExportService {
       archive.addReadStream(res.body, path.join(archiveRootPath, filename));
     }
     if (isItemType(item, ItemType.H5P)) {
-      const fileStream = (await this.h5pService.download(
-        item,
-        actor,
-        fileStorage,
-      )) as NodeJS.ReadableStream;
+      const h5pUrl = await this.h5pService.download(item, actor);
+      const res = await fetch(h5pUrl);
 
-      archive.addReadStream(fileStream, path.join(archiveRootPath, item.name));
+      archive.addReadStream(res.body, path.join(archiveRootPath, item.name));
     }
 
     if (isItemType(item, ItemType.DOCUMENT)) {
@@ -270,7 +262,6 @@ export class ImportExportService {
             archiveRootPath: folderPath,
             archive,
             reply,
-            fileStorage,
           }),
         ),
       );
@@ -284,11 +275,7 @@ export class ImportExportService {
   async export(
     actor: Actor,
     repositories: Repositories,
-    {
-      item,
-      reply,
-      fileStorage,
-    }: { fileStorage: string; item: Item; reply: FastifyReply; log?: FastifyBaseLogger },
+    { item, reply }: { item: Item; reply: FastifyReply; log?: FastifyBaseLogger },
   ) {
     // init archive
     const archive = new yazl.ZipFile();
@@ -305,7 +292,6 @@ export class ImportExportService {
       reply,
       archiveRootPath: rootPath,
       archive,
-      fileStorage,
     }).catch((error) => {
       throw new UnexpectedExportError(error);
     });

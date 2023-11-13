@@ -4,7 +4,6 @@ import { TMP_FOLDER } from '../../../../utils/config';
 
 export const PLUGIN_NAME = 'graasp-plugin-item-zip';
 
-export const TMP_EXPORT_ZIP_FOLDER_PATH = path.join(TMP_FOLDER, 'zip-export');
 export const TMP_IMPORT_ZIP_FOLDER_PATH = path.join(TMP_FOLDER, 'zip-import');
 
 export const ROOT_PATH = './';

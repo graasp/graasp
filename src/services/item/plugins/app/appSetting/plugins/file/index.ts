@@ -146,8 +146,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const {
         authTokenSubject: requestDetails,
         params: { id: appSettingId },
-        query: { size },
-        log,
       } = request;
 
       const memberId = requestDetails?.memberId;

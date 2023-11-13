@@ -1,3 +1,6 @@
+import contentDisposition from 'content-disposition';
+import { ReadStream } from 'fs';
+import { StatusCodes } from 'http-status-codes';
 import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
@@ -9,6 +12,7 @@ import { Actor, Member } from '../member/entities/member';
 import { FileRepository } from './interfaces/fileRepository';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
+import { S3_PRESIGNED_EXPIRATION } from './utils/constants';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -86,38 +90,42 @@ class FileService {
     return data;
   }
 
-  async download(
-    member: Actor,
-    data: {
-      expiration?: number;
-      fileStorage?: string;
-      id?: string;
-      mimetype?: string;
-      path?: string;
-      reply?: FastifyReply;
-      replyUrl?: boolean;
-    },
-  ) {
-    const { expiration, fileStorage, id, mimetype, path: filepath, reply, replyUrl } = data;
+  async getFile(member: Actor, data): Promise<ReadStream> {
+    const { id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
         filepath,
-        mimetype,
         id,
       });
     }
 
-    return (
-      this.repository.downloadFile({
-        expiration,
+    return this.repository.getFile({
+      filepath,
+      id,
+    });
+  }
+
+  async getUrl(
+    member: Actor,
+    data: {
+      expiration?: number;
+      id?: string;
+      path?: string;
+    },
+  ): Promise<string> {
+    const { expiration, id, path: filepath } = data;
+    if (!filepath || !id) {
+      throw new DownloadFileInvalidParameterError({
         filepath,
-        fileStorage,
         id,
-        mimetype,
-        reply,
-        replyUrl,
-      }) || null
-    );
+      });
+    }
+
+    return this.repository.getUrl({
+      expiration,
+      filepath,
+      id,
+    });
   }
 
   async delete(member: Member, filepath: string) {
@@ -182,6 +190,35 @@ class FileService {
       originalFolderPath,
       newFolderPath,
     });
+  }
+  // should this be here?
+  setHeaders({
+    reply,
+    id,
+    replyUrl,
+    url,
+  }: {
+    id: string;
+    url: string;
+    reply: FastifyReply;
+    replyUrl?: boolean;
+  }) {
+    if (replyUrl) {
+      const replyUrlExpiration = S3_PRESIGNED_EXPIRATION;
+      reply.header('Cache-Control', `max-age=${replyUrlExpiration}`);
+      reply.status(StatusCodes.OK).send(url);
+    } else {
+      // this header will make the browser download the file with 'name'
+      // instead of simply opening it and showing it
+      reply.header('Content-Disposition', contentDisposition(id));
+      // TODO: necessary for localfiles ?
+      // reply.type(mimetype);
+      // It is necessary to add the header manually, because the redirect sends the request and
+      // when the fastify-cors plugin try to add the header it's already sent and can't add it.
+      // So we add it because otherwise the browser won't send the cookie
+      reply.header('Access-Control-Allow-Credentials', 'true');
+      reply.redirect(StatusCodes.MOVED_TEMPORARILY, url);
+    }
   }
 }
 
