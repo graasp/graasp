@@ -16,9 +16,9 @@ const sharedProporities = {
 };
 const memberSharedSchema = S.object()
   .prop('bio', S.string())
-  .prop('facebookLink', S.anyOf([S.string().format('url'), S.string().maxLength(0), S.null()]))
-  .prop('linkedinLink', S.anyOf([S.string().format('url'), S.string().maxLength(0), S.null()]))
-  .prop('twitterLink', S.anyOf([S.string().format('url'), S.string().maxLength(0), S.null()]));
+  .prop('facebookLink', S.anyOf([S.string(), S.string().maxLength(0), S.null()]))
+  .prop('linkedinLink', S.anyOf([S.string(), S.string().maxLength(0), S.null()]))
+  .prop('twitterLink', S.anyOf([S.string(), S.string().maxLength(0), S.null()]));
 
 export const profileMember = S.object()
   .additionalProperties(false)
