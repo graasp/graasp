@@ -1,3 +1,5 @@
+import { ChatCompletion } from 'openai/resources/chat';
+
 import { ChatBotMessage } from '@graasp/sdk';
 
 import * as OpenAICompletion from '../openAICompletion';
@@ -35,5 +37,5 @@ async function responseFactory(finish_reason: string | null, content?: string) {
 export async function mockResponse(finish_reason: string | null, content?: string) {
   jest
     .spyOn(OpenAICompletion, 'openAICompletion')
-    .mockImplementation(() => responseFactory(finish_reason, content));
+    .mockImplementation(() => responseFactory(finish_reason, content) as Promise<ChatCompletion>);
 }

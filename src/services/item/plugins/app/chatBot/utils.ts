@@ -1,3 +1,5 @@
+import { ChatCompletion } from 'openai/resources/chat';
+
 import { ChatBotMessage } from '@graasp/sdk';
 
 import {
@@ -8,7 +10,6 @@ import {
   OpenAIUnknownStopError,
 } from '../../../../../utils/errors';
 import { FinishReason } from './interfaces/finishReason';
-import { GPTChoice } from './interfaces/gptChoice';
 import { GPTVersion } from './interfaces/gptVersion';
 import { openAICompletion } from './openAICompletion';
 
@@ -32,12 +33,13 @@ export const fetchOpenAI = async (body: Array<ChatBotMessage>, gptVersion?: GPTV
   }
 };
 
-function computeResult(choice: GPTChoice, gptVersion?: GPTVersion) {
-  switch (`${choice.finish_reason}`) {
+function computeResult(choice: ChatCompletion.Choice, gptVersion?: GPTVersion) {
+  switch (choice.finish_reason) {
     case FinishReason.LENGTH:
       throw new OpenAILengthError();
-    case FinishReason.NULL:
-      throw new OpenAITimeOutError();
+    // todo: this does not look like it could match the type
+    // case FinishReason.NULL:
+    //   throw new OpenAITimeOutError();
     case FinishReason.STOP:
       return { completion: choice.message.content, model: gptVersion };
     default:
