@@ -317,11 +317,6 @@ if (!process.env.APPS_PUBLISHER_ID) {
 }
 export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
 
-// Stripe
-export const SUBSCRIPTION_PLUGIN = process.env.SUBSCRIPTION_PLUGIN === 'true';
-export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
-
 // used for hashing password
 export const SALT_ROUNDS = 10;
 
