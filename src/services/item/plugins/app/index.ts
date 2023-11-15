@@ -12,6 +12,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
+import chatBotPlugin from './chatBot';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
 import { createSchema, getMany, updateSchema } from './fluent-schema';
 import common, { generateToken, getContext } from './schemas';
@@ -193,6 +194,9 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
       // register app settings plugin
       fastify.register(appSettingPlugin);
+
+      // register app chatbot plugin
+      fastify.register(chatBotPlugin);
     });
   });
 };
