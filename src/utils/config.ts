@@ -1,14 +1,12 @@
 import dotenv from 'dotenv';
 import os from 'os';
 
+import { Context, FileItemType, ItemType } from '@graasp/sdk';
+
 import {
-  Context,
-  FileItemType,
-  ItemType,
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '@graasp/sdk';
-
+} from '../services/file/interfaces/configuration';
 import { GPTVersion } from '../services/item/plugins/app/chatBot/interfaces/gptVersion';
 
 enum Environment {
