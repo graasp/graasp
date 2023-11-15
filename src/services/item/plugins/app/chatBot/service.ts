@@ -24,7 +24,7 @@ export class ChatBotService {
     // check that the member can read the item to be allowed to interact with the chat
     await validatePermission(repositories, PermissionLevel.Read, member, item);
 
-    return await fetchOpenAI(body, gptVersion);
+    return fetchOpenAI(body, gptVersion);
   }
 
   /**

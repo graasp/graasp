@@ -127,7 +127,7 @@ export const setUp = async (
     url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
     payload: appDetails,
   });
-  const token = response.json().token;
+  const { token } = response.json();
   return { token, item };
 };
 

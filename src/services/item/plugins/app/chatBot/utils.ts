@@ -6,14 +6,13 @@ import {
   OpenAIBaseError,
   OpenAILengthError,
   OpenAIQuotaError,
-  OpenAITimeOutError,
   OpenAIUnknownStopError,
 } from '../../../../../utils/errors';
 import { FinishReason } from './interfaces/finishReason';
 import { GPTVersion } from './interfaces/gptVersion';
 import { openAICompletion } from './openAICompletion';
 
-export const fetchOpenAI = async (body: Array<ChatBotMessage>, gptVersion?: GPTVersion) => {
+export const fetchOpenAI = async (body: ChatBotMessage[], gptVersion?: GPTVersion) => {
   try {
     const completion = await openAICompletion(body, gptVersion);
     const choice = completion.choices[0];
@@ -22,9 +21,9 @@ export const fetchOpenAI = async (body: Array<ChatBotMessage>, gptVersion?: GPTV
   } catch (e) {
     if (e instanceof OpenAIBaseError) {
       throw e;
+    } else if (e.status === 429) {
       // if the catched error is OpenAI insufficient quota
       // throw a new OpenAIQuota error
-    } else if (e.status === 429) {
       throw new OpenAIQuotaError();
     }
 
@@ -34,7 +33,8 @@ export const fetchOpenAI = async (body: Array<ChatBotMessage>, gptVersion?: GPTV
 };
 
 function computeResult(choice: ChatCompletion.Choice, gptVersion?: GPTVersion) {
-  switch (choice.finish_reason) {
+  const finishReason = choice.finish_reason;
+  switch (finishReason) {
     case FinishReason.LENGTH:
       throw new OpenAILengthError();
     // todo: this does not look like it could match the type
@@ -43,6 +43,6 @@ function computeResult(choice: ChatCompletion.Choice, gptVersion?: GPTVersion) {
     case FinishReason.STOP:
       return { completion: choice.message.content, model: gptVersion };
     default:
-      throw new OpenAIUnknownStopError(`${choice.finish_reason}`);
+      throw new OpenAIUnknownStopError(finishReason);
   }
 }

@@ -21,21 +21,21 @@ export const DOCKER_MOCKED_BODY: ChatBotMessage[] = [
   },
 ];
 
-export const copyArray = (arr: Array<unknown>) => JSON.parse(JSON.stringify(arr));
+export const copyArray = (arr: unknown[]) => JSON.parse(JSON.stringify(arr));
 
-async function responseFactory(finish_reason: string | null, content?: string) {
+async function responseFactory(finishReason: string | null, content?: string) {
   return {
     choices: [
       {
-        finish_reason: finish_reason,
-        message: { content: content },
+        finish_reason: finishReason,
+        message: { content },
       },
     ],
   };
 }
 
-export async function mockResponse(finish_reason: string | null, content?: string) {
+export async function mockResponse(finishReason: string | null, content?: string) {
   jest
     .spyOn(OpenAICompletion, 'openAICompletion')
-    .mockImplementation(() => responseFactory(finish_reason, content) as Promise<ChatCompletion>);
+    .mockImplementation(() => responseFactory(finishReason, content) as Promise<ChatCompletion>);
 }

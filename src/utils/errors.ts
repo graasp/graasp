@@ -416,8 +416,8 @@ export class OpenAIBaseError extends CoreError {
 }
 
 export class OpenAIUnknownStopError extends OpenAIBaseError {
-  constructor(stop_reason: string) {
-    const message = `The stop reason "${stop_reason}" is not a known OpenAI reason`;
+  constructor(stopReason: string) {
+    const message = `The stop reason "${stopReason}" is not a known OpenAI reason`;
     super({ code: 'GERR1001', message: message });
   }
 }
