@@ -4,8 +4,14 @@ import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../utils/config';
-import { ANNA, BOB } from '../../member/test/fixtures/members';
-import { ANNA_PROFILE, BOB_PROFILE, getDummyProfile, saveMemberProfile } from './fixtures/profile';
+import { ANNA, BOB, saveMember } from '../../member/test/fixtures/members';
+import {
+  ANNA_PROFILE,
+  BOB_PROFILE,
+  getDummyProfile,
+  getMemberProfile,
+  saveMemberProfile,
+} from './fixtures/profile';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -20,14 +26,28 @@ describe('Profile Member routes tests', () => {
     app.close();
   });
 
-  describe('GET /member-profile/own', () => {
-    it('Returns successfully if signed in', async () => {
+  describe('GET /profile/own', () => {
+    it('Returns successfully if signed in and profile not posted', async () => {
       ({ app, actor } = await build());
 
       const response = await app.inject({
         method: HttpMethod.GET,
         url: `${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
+      const ownProfile = response.json();
+      expect(ownProfile).toBeNull();
+      expect(response.statusCode).toBe(StatusCodes.OK);
+    });
+    it('Returns successfully if signed in and profile posted', async () => {
+      ({ app, actor } = await build());
+      await saveMemberProfile(actor, ANNA_PROFILE);
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
+      });
+      const ownProfile = response.json();
+      expect(ownProfile.bio).toBe(ANNA_PROFILE.bio);
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
     it('Throws if signed out', async () => {
@@ -42,11 +62,11 @@ describe('Profile Member routes tests', () => {
     });
   });
 
-  describe('POST /member-profile', () => {
+  describe('POST /profile', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = getDummyProfile({ bio: 'Rnadom Bio' });
+      const payload = getDummyProfile({ bio: 'Random Bio' });
       const response = await app.inject({
         method: HttpMethod.POST,
         url: MEMBER_PROFILE_ROUTE_PREFIX,
@@ -78,10 +98,22 @@ describe('Profile Member routes tests', () => {
     });
   });
 
-  describe('GET /member-profile/:id', () => {
+  describe('GET /profile/:id', () => {
     it('Returns Not Found if visibilty set to false', async () => {
       ({ app, actor } = await build());
       const member = await saveMemberProfile(ANNA, ANNA_PROFILE);
+      const memberId = member.id;
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+    });
+    it('Returns Not Found if no profile for this member', async () => {
+      ({ app, actor } = await build());
+      const member = await saveMember(ANNA);
       const memberId = member.id;
 
       const response = await app.inject({
@@ -103,11 +135,14 @@ describe('Profile Member routes tests', () => {
       });
       const bobProfile = response.json();
       expect(bobProfile.bio).toBe(BOB_PROFILE.bio);
+      expect(bobProfile.linkedinLink).toBe(BOB_PROFILE.linkedinLink);
+      expect(bobProfile.twitterLink).toBe(BOB_PROFILE.twitterLink);
+      expect(bobProfile.facebookLink).toBe(BOB_PROFILE.facebookLink);
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
   });
 
-  describe('PATCH /member-profile', () => {
+  describe('PATCH /profile', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
@@ -128,14 +163,16 @@ describe('Profile Member routes tests', () => {
 
       it('updated successfully', async () => {
         const payload = getDummyProfile({ bio: 'Random Bio' });
-        await saveMemberProfile(actor, ANNA_PROFILE);
+        const member = await saveMemberProfile(actor, ANNA_PROFILE);
 
         const response = await app.inject({
           method: HttpMethod.PATCH,
           url: MEMBER_PROFILE_ROUTE_PREFIX,
           payload,
         });
+        const profile = await getMemberProfile(member?.id);
 
+        expect(profile?.bio).toBe(payload.bio);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });

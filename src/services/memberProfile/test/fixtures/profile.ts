@@ -5,9 +5,9 @@ import { saveMember } from '../../../member/test/fixtures/members';
 import { MemberProfile } from '../../entities/profile';
 import { IMemberProfile } from '../../types';
 
-export const getDummyProfile = (options: Partial<MemberProfile>): MemberProfile => {
+export const getDummyProfile = (options: Partial<MemberProfile>): Partial<MemberProfile> => {
   const {
-    bio,
+    bio = '',
     facebookLink = '',
     twitterLink = '',
     linkedinLink = '',
@@ -25,7 +25,7 @@ export const getDummyProfile = (options: Partial<MemberProfile>): MemberProfile 
     linkedinLink,
     updatedAt: new Date(),
     createdAt: new Date(),
-  } as MemberProfile;
+  };
 };
 
 export const saveMemberProfile = async (m: Partial<Member>, profile: IMemberProfile) => {
@@ -34,6 +34,12 @@ export const saveMemberProfile = async (m: Partial<Member>, profile: IMemberProf
   const savedMember = await MemberProfile.save(memberProfile);
 
   return savedMember;
+};
+
+export const getMemberProfile = async (id: string) => {
+  const profile = MemberProfile.findOneBy({ id });
+
+  return profile;
 };
 
 export const ANNA_PROFILE = {

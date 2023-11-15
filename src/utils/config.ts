@@ -302,7 +302,7 @@ export const ITEMS_ROUTE_PREFIX = '/items';
 export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
 
-export const MEMBER_PROFILE_ROUTE_PREFIX = '/member-profile';
+export const MEMBER_PROFILE_ROUTE_PREFIX = '/profile';
 
 if (!process.env.APPS_PUBLISHER_ID) {
   throw new Error('APPS_PUBLISHER_ID is not defined');

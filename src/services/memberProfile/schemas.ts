@@ -1,12 +1,7 @@
 import S from 'fluent-json-schema';
 
 import { error, uuid } from '../../schemas/fluent-schema';
-
-const partialMember = S.object()
-  .additionalProperties(false)
-  .prop('id', S.string())
-  .prop('name', S.string())
-  .prop('email', S.string());
+import { partialMember } from '../item/fluent-schema';
 
 const sharedProporities = {
   bio: { type: 'string' },
@@ -16,15 +11,15 @@ const sharedProporities = {
 };
 const memberSharedSchema = S.object()
   .prop('bio', S.string())
-  .prop('facebookLink', S.anyOf([S.string(), S.string().maxLength(0), S.null()]))
-  .prop('linkedinLink', S.anyOf([S.string(), S.string().maxLength(0), S.null()]))
-  .prop('twitterLink', S.anyOf([S.string(), S.string().maxLength(0), S.null()]));
+  .prop('facebookLink', S.anyOf([S.string(), S.null()]))
+  .prop('linkedinLink', S.anyOf([S.string(), S.null()]))
+  .prop('twitterLink', S.anyOf([S.string(), S.null()]));
 
 export const profileMember = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
   .prop('visibility', S.boolean())
-  .prop('member', S.ifThenElse(S.null(), S.null(), partialMember))
+  .prop('member', partialMember)
   .prop('createdAt', S.raw({}))
   .prop('updatedAt', S.raw({}))
   .extend(memberSharedSchema);

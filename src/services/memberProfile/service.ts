@@ -1,8 +1,8 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { UnauthorizedMember } from '../../utils/errors';
+import { MemberNotFound, UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
-import { Member } from '../member/entities/member';
+import { Actor } from '../member/entities/member';
 
 export class MemberProfileService {
   log: FastifyBaseLogger;
@@ -11,25 +11,34 @@ export class MemberProfileService {
     this.log = log;
   }
 
-  async post(member: Member | undefined, repositories: Repositories, data) {
+  async post(member: Actor, repositories: Repositories, data) {
     const { memberProfileRepository } = repositories;
+    if (!member?.id) {
+      throw new UnauthorizedMember();
+    }
     const d = await memberProfileRepository.createOne({ ...data, member });
     return d;
   }
-  async get(memberId, repositories: Repositories) {
+  async get(memberId: string, repositories: Repositories) {
     const { memberProfileRepository } = repositories;
-    const memberProfile = await memberProfileRepository.getByMemberId(memberId);
+    const memberProfile = await memberProfileRepository.getByMemberId(memberId, {
+      visibility: true,
+    });
+    // to throw error only if member is invisible
+    if (!memberProfile) {
+      throw new MemberNotFound(memberId);
+    }
     return memberProfile;
   }
-  async getOwn(member, repositories: Repositories) {
+  async getOwn(member: Actor, repositories: Repositories) {
     const { memberProfileRepository } = repositories;
-    if (!member || !member?.id) {
+    if (!member?.id) {
       throw new UnauthorizedMember();
     }
-    const memberProfile = await memberProfileRepository.getMember(member?.id);
+    const memberProfile = await memberProfileRepository.getByMemberId(member?.id);
     return memberProfile;
   }
-  async patch(member: Member | undefined, repositories: Repositories, data) {
+  async patch(member: Actor, repositories: Repositories, data) {
     const { memberProfileRepository } = repositories;
 
     if (!member?.id) {

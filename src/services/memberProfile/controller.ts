@@ -31,7 +31,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
   fastify.get<{ Params: { memberId: string } }>(
     '/:memberId',
-    { schema: getProfileForMember },
+    { schema: getProfileForMember, preHandler: fastify.attemptVerifyAuthentication },
     async ({ params: { memberId } }) => {
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
