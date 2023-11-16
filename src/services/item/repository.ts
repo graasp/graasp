@@ -126,9 +126,14 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   /**
-   * options.bypass {boolean} if true, return parents even if the user does not have membership
+   * options.includeCreator {boolean} if true, return full creator
+   * options.types {boolean} if defined, filter out the items
    * */
   async getAncestors(item: Item): Promise<Item[]> {
+    if (!item.path.includes('.')) {
+      return [];
+    }
+
     return this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path @> :path', { path: item.path })

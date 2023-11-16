@@ -1,21 +1,24 @@
 import uniqBy from 'lodash.uniqby';
 
-import { AuthTokenSubject, ItemType, PermissionLevel, UUID, UnionOfConst } from '@graasp/sdk';
+import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
+import ItemService from '../../service';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
 export class AppService {
+  itemService: ItemService;
   jwtExpiration: number;
   promisifiedJwtSign: (
     arg1: { sub: AuthTokenSubject },
     arg2: { expiresIn: string },
   ) => Promise<string>;
 
-  constructor(jwtExpiration, promisifiedJwtSign) {
+  constructor(itemService, jwtExpiration, promisifiedJwtSign) {
+    this.itemService = itemService;
     this.jwtExpiration = jwtExpiration;
     // this.promisifiedJwtVerify = promisifiedJwtVerify;
     this.promisifiedJwtSign = promisifiedJwtSign;
@@ -80,100 +83,22 @@ export class AppService {
       checkTargetItemAndTokenItemMatch(itemId, tokenItemId);
     }
 
-    await validatePermission(repositories, PermissionLevel.Read, member, item);
-
-    const foldersAndAppItems = await this.getItemsByType(
-      actorId,
-      repositories,
-      [ItemType.FOLDER, ItemType.APP],
-      item.path,
-    );
-
-    const parent: { children?: Partial<Item>[]; members?: Partial<Member>[] } =
-      foldersAndAppItems.length
-        ? this.sortedListToTree(foldersAndAppItems[0], foldersAndAppItems, 1)
-        : {};
-
     // return member data only if authenticated
+    let members: Member[] = [];
     if (member) {
-      const members = await this.getItemAndParentMembers(actorId, repositories, item);
-      parent.members = members;
+      members = await this.getTreeMembers(member, repositories, item);
     }
 
-    return { ...item, ...parent };
-  }
-
-  // used by app : get tree
-  async getItemsByType(
-    actorId: UUID,
-    repositories: Repositories,
-    types: UnionOfConst<typeof ItemType>[],
-    path: string,
-  ) {
-    if (!path.includes('.')) {
-      return [];
-    }
-
-    return repositories.itemRepository
-      .createQueryBuilder('item')
-      .where('subpath(:path, 0, -1) @> path', { path })
-      .andWhere('type IN (:...types)', { types })
-      .orderBy('path', 'ASC')
-      .getMany();
+    return { item, members };
   }
 
   // used in apps: get members from tree
-  async getItemAndParentMembers(
-    actorId: UUID,
-    repositories: Repositories,
-    item: Item,
-  ): Promise<Member[]> {
-    const { path } = item;
-
-    const query = repositories.itemMembershipRepository
-      .createQueryBuilder('itemMembership')
-      .leftJoinAndSelect('itemMembership.member', 'member')
-      .leftJoinAndSelect('itemMembership.item', 'item')
-      .where('item.path = :path', { path });
-
-    if (path.includes('.')) {
-      query.orWhere('item.path @> subpath(:path, 0, -1)', { path });
-    }
-
-    const memberships = await query.getMany();
-
+  async getTreeMembers(actor: Actor, repositories: Repositories, item: Item): Promise<Member[]> {
+    const memberships = await repositories.itemMembershipRepository.getForManyItems([item]);
     // get members only without duplicate
     return uniqBy(
-      memberships.map(({ member }) => member),
+      memberships.data[item.id].map(({ member }) => member),
       ({ id }) => id,
     );
-  }
-
-  // TODO: doesn't seem the most performant solution
-  private sortedListToTree(
-    item: Partial<Item> & { children?: Partial<Item>[] } & Pick<Item, 'type' | 'path'>,
-    items: (Partial<Item> & Pick<Item, 'type' | 'path'>)[],
-    startAt: number,
-  ) {
-    const { path, type } = item;
-    const level = path.split('.').length;
-
-    if (type !== ItemType.FOLDER) {
-      return item;
-    }
-
-    item.children = [];
-
-    for (let i = startAt; i < items.length; i++) {
-      const nextItem = items[i];
-      const nextItemLevel = nextItem.path.split('.').length;
-
-      if (nextItemLevel <= level) break;
-      if (nextItemLevel > level + 1) continue;
-
-      item.children.push(this.sortedListToTree(nextItem, items, i + 1));
-    }
-
-    return item;
   }
 }

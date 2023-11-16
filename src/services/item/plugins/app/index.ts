@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
   const {
     verifyBearerAuth,
-    items: { extendCreateSchema, extendExtrasUpdateSchema },
+    items: { service: itemService, extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
 
   if (!verifyBearerAuth) {
@@ -49,7 +49,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
     fastify.jwt.sign,
   );
 
-  const aS = new AppService(jwtExpiration, promisifiedJwtSign);
+  const aS = new AppService(itemService, jwtExpiration, promisifiedJwtSign);
 
   const promisifiedJwtVerify = promisify<string, { sub: AuthTokenSubject }>(fastify.jwt.verify);
 
@@ -111,12 +111,6 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       );
     }
 
-    const getBearerToken = (request) => {
-      const auth = request.headers.authorization;
-      const token = auth.split(' ')[1];
-      return token;
-    };
-
     fastify.register(async function (fastify) {
       // get all apps
       fastify.get('/list', { schema: getMany }, async ({ member }) => {
@@ -135,7 +129,6 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
             log,
           } = request;
 
-          // const token = getBearerToken(request);
           return aS.getApiAccessToken(member, buildRepositories(), itemId, body);
         },
       );
