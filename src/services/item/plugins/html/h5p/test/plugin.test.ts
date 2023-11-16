@@ -5,14 +5,14 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance, LightMyRequestResponse } from 'fastify';
+import { LightMyRequestResponse } from 'fastify';
 
 import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../../member/entities/member';
+import { Actor } from '../../../../../member/entities/member';
 import { Item, ItemTypeEnumKeys } from '../../../../entities/Item';
 import { ItemRepository } from '../../../../repository';
 import { HtmlImportError } from '../../errors';
@@ -35,8 +35,8 @@ async function cleanFiles() {
 }
 
 describe('Service plugin', () => {
-  let app: FastifyInstance;
-  let member: Member | null;
+  let app;
+  let member: Actor;
   let parent: Item;
 
   let res: LightMyRequestResponse,
