@@ -1,5 +1,6 @@
-import { ItemType, S3FileConfiguration } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
+import { S3FileConfiguration } from '../../../file/interfaces/configuration';
 import FileService from '../../../file/service';
 import { HtmlService } from './service';
 import { HtmlValidator } from './validator';
