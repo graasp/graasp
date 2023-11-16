@@ -4,8 +4,7 @@ import { access, copyFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 
-import { LocalFileConfiguration } from '@graasp/sdk';
-
+import { LocalFileConfiguration } from '../interfaces/configuration';
 import { FileRepository } from '../interfaces/fileRepository';
 import { LocalFileNotFound } from '../utils/errors';
 

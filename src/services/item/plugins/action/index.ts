@@ -12,12 +12,14 @@ import {
   FileItemType,
   HttpMethod,
   IdParam,
-  LocalFileConfiguration,
-  S3FileConfiguration,
 } from '@graasp/sdk';
 
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import {
+  LocalFileConfiguration,
+  S3FileConfiguration,
+} from '../../../file/interfaces/configuration';
 import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';

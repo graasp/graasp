@@ -8,9 +8,10 @@ import fetch from 'node-fetch';
 import path from 'path';
 import { Readable } from 'stream';
 
-import { S3FileConfiguration, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
 
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
+import { S3FileConfiguration } from '../interfaces/configuration';
 import { FileRepository } from '../interfaces/fileRepository';
 import { S3_PRESIGNED_EXPIRATION } from '../utils/constants';
 import {
