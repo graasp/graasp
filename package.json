@@ -102,7 +102,7 @@
     "pdf-text-reader": "3.0.2",
     "pg": "8.10.0",
     "qs": "6.11.2",
-    "sharp": "0.31.3",
+    "sharp": "0.32.6",
     "striptags": "3.2.0",
     "tmp-promise": "3.0.3",
     "typeorm": "0.3.17",
