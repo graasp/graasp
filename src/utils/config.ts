@@ -9,6 +9,8 @@ import {
   S3FileConfiguration,
 } from '@graasp/sdk';
 
+import { GPTVersion } from '../services/item/plugins/app/chatBot/interfaces/gptVersion';
+
 enum Environment {
   production = 'production',
   staging = 'staging',
@@ -339,3 +341,8 @@ export const MEILISEARCH_MASTER_KEY = process.env.MEILISEARCH_MASTER_KEY;
 export const MEILISEARCH_REBUILD_SECRET = process.env.MEILISEARCH_REBUILD_SECRET;
 export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
   process.env.MEILISEARCH_STORE_LEGACY_PDF_CONTENT === 'true';
+
+// OpenAI
+export const OPENAI_GPT_VERSION = process.env.OPENAI_GPT_VERSION || GPTVersion.GPT_4;
+export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;
