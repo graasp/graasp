@@ -1,7 +1,7 @@
 import fastify from 'fastify';
 
 import registerAppPlugins from '../src/app';
-import { Member } from '../src/services/member/entities/member';
+import { Actor, Member } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
@@ -35,7 +35,7 @@ const build = async ({ member }: { member?: Partial<Member> | null } = { member:
 
   await registerAppPlugins(app);
 
-  let actor: Member | null = null;
+  let actor: Actor = undefined;
   if (member) {
     actor = await saveMember(member);
     const authenticatedActor = actor as Member;

@@ -6,7 +6,7 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
 import { BOB, expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { expectItem } from '../../../test/fixtures/items';
@@ -30,12 +30,12 @@ const setUpForAppContext = async (
 
 describe('Apps Plugin Tests', () => {
   let app;
-  let actor: Member | null;
+  let actor: Actor;
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
+    actor;
     app.close();
   });
 
@@ -201,7 +201,7 @@ describe('Apps Plugin Tests', () => {
     describe('Signed In', () => {
       let token: string;
       let item: Item;
-      let actor: Member | null;
+      let actor: Actor;
       let appList;
       beforeEach(async () => {
         ({ app, actor } = await build());
