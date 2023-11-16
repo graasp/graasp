@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "1.9.4",
+  "version": "1.9.5",
   "engines": {
     "node": ">=14.0.0"
   },
@@ -66,7 +66,7 @@
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
-    "@graasp/sdk": "2.0.1",
+    "@graasp/sdk": "3.0.0",
     "@graasp/translations": "1.15.1",
     "@sentry/node": "7.64.0",
     "@sentry/tracing": "7.64.0",
@@ -98,6 +98,7 @@
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
+    "openai": "4.11.1",
     "pdf-text-reader": "3.0.2",
     "pg": "8.10.0",
     "qs": "6.11.2",

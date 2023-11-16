@@ -12,7 +12,7 @@ jobs:
     # Replace with repository name
     name: Graasp
     # Replace 'main' with the hash of a commit, so it points to an specific version of the reusable workflow that is used
-    uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/cdeployment-ecs-backend.yml@v1.22.1
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -100,3 +100,5 @@ jobs:
       meilisearch-url: ${{ secrets.MEILISEARCH_URL }}
       meilisearch-master-key: ${{ secrets.MEILISEARCH_MASTER_KEY }}
       meilisearch-rebuild-secret: ${{ secrets.MEILISEARCH_REBUILD_SECRET }}
+      openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+      openai-org-id: ${{ secrets.OPENAI_ORG_ID }}

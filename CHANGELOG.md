@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.5](https://github.com/graasp/graasp/compare/v1.9.4...v1.9.5) (2023-11-14)
+
+
+### Bug Fixes
+
+* use version 1.22.1 of deploy callee ([18f9d44](https://github.com/graasp/graasp/commit/18f9d44427839c289d0190a08a447946693b0389))
+
 ## [1.9.4](https://github.com/graasp/graasp/compare/v1.9.3...v1.9.4) (2023-11-09)
 
 

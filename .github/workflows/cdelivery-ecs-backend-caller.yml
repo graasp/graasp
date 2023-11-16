@@ -11,7 +11,7 @@ jobs:
   graasp-deploy-ecs-backend-workflow:
     # repository name
     name: Graasp
-    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@v1
+    uses: graasp/graasp-deploy/.github/workflows/cdelivery-ecs-backend.yml@v1.22.1
 
     # abort previous deployment if a newer one is in progress
     concurrency:
@@ -99,3 +99,5 @@ jobs:
       meilisearch-url: ${{ secrets.MEILISEARCH_URL }}
       meilisearch-master-key: ${{ secrets.MEILISEARCH_MASTER_KEY }}
       meilisearch-rebuild-secret: ${{ secrets.MEILISEARCH_REBUILD_SECRET}}
+      openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+      openai-org-id: ${{ secrets.OPENAI_ORG_ID }}

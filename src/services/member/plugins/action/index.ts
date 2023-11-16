@@ -1,8 +1,12 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { FileItemType, IdParam, LocalFileConfiguration, S3FileConfiguration } from '@graasp/sdk';
+import { FileItemType, IdParam } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import {
+  LocalFileConfiguration,
+  S3FileConfiguration,
+} from '../../../file/interfaces/configuration';
 import { deleteAllById } from './schemas';
 import { ActionMemberService } from './service';
 
