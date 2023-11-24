@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.10.0](https://github.com/graasp/graasp/compare/v1.9.5...v1.10.0) (2023-11-24)
+
+
+### Features
+
+* add a chatbot endpoint for apps ([#641](https://github.com/graasp/graasp/issues/641)) ([#657](https://github.com/graasp/graasp/issues/657)) ([775c721](https://github.com/graasp/graasp/commit/775c721d49e16786082bbe543b136f36d38dfff6))
+
+
+### Bug Fixes
+
+* **deps:** update dependency sharp to v0.32.6 [security] ([#698](https://github.com/graasp/graasp/issues/698)) ([0dfe469](https://github.com/graasp/graasp/commit/0dfe469edeb37fceba963147972e628decc1e84d))
+* move back files from sdk ([#697](https://github.com/graasp/graasp/issues/697)) ([2bb7d46](https://github.com/graasp/graasp/commit/2bb7d462b41d931687e678457cfd87ee40f571bc))
+* update aws file for prod deploy ([#702](https://github.com/graasp/graasp/issues/702)) ([6034a9e](https://github.com/graasp/graasp/commit/6034a9e3754e61ef5336baade577238cdcd363dd))
+
 ## [1.9.5](https://github.com/graasp/graasp/compare/v1.9.4...v1.9.5) (2023-11-14)
 
 
