@@ -14,21 +14,8 @@ env:
   NODE_OPTIONS: '--max_old_space_size=8192' # Allows to increase Node's max heap size
 
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    environment: development
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Dummy test
-        run: |
-          echo "This is the test job"
-
   # Build image and push to ECR
   build:
-    needs: test
     name: Build & Push Image
     runs-on: ubuntu-latest
     # Define job output that is available to all downstream jobs that depend on this job
@@ -156,9 +143,9 @@ jobs:
             REFRESH_TOKEN_EXPIRATION_IN_MINUTES=${{ vars.REFRESH_TOKEN_EXPIRATION_IN_MINUTES }}
             REFRESH_TOKEN_JWT_SECRET=${{ secrets.REFRESH_TOKEN_JWT_SECRET }}
             S3_FILE_ITEM_ACCESS_KEY_ID=${{ secrets.S3_FILE_ITEM_ACCESS_KEY_ID }}
-            S3_FILE_ITEM_BUCKET=${{ secrets.S3_FILE_ITEM_BUCKET }}
+            S3_FILE_ITEM_BUCKET=${{ vars.S3_FILE_ITEM_BUCKET }}
             S3_FILE_ITEM_PLUGIN=${{ vars.S3_FILE_ITEM_PLUGIN }}
-            S3_FILE_ITEM_REGION=${{ secrets.S3_FILE_ITEM_REGION }}
+            S3_FILE_ITEM_REGION=${{ vars.S3_FILE_ITEM_REGION }}
             S3_FILE_ITEM_SECRET_ACCESS_KEY=${{ secrets.S3_FILE_ITEM_SECRET_ACCESS_KEY }}
             SECURE_SESSION_SECRET_KEY=${{ secrets.SECURE_SESSION_SECRET_KEY }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
