@@ -10,10 +10,8 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-
 env:
   NODE_OPTIONS: '--max_old_space_size=8192' # Allows to increase Node's max heap size
-
 
 jobs:
   test:
@@ -88,8 +86,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }} # todo: add in envs
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }} # todo: add in envs
           aws-region: ${{ vars.AWS_REGION }}
 
       # Log in the local Docker client
@@ -108,35 +106,35 @@ jobs:
           environment-variables: |
             DATABASE_LOGS=${{ vars.DATABASE_LOGS }}
             ANALYTICS_CLIENT_HOST=${{ vars.ANALYTICS_CLIENT_HOST }}
-            APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET_DEV }}
+            APPS_JWT_SECRET=${{ secrets.APPS_JWT_SECRET }}
             APPS_PUBLISHER_ID=${{ secrets.APPS_PUBLISHER_ID }}
             AUTH_CLIENT_HOST=${{ vars.AUTH_CLIENT_HOST }}
             AUTH_TOKEN_EXPIRATION_IN_MINUTES=${{ secrets.AUTH_TOKEN_EXPIRATION_IN_MINUTES }}
-            AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET_DEV }}
+            AUTH_TOKEN_JWT_SECRET=${{ secrets.AUTH_TOKEN_JWT_SECRET }}
             BUILDER_CLIENT_HOST=${{ vars.BUILDER_CLIENT_HOST }}
             COOKIE_DOMAIN=${{ vars.COOKIE_DOMAIN }}
-            CORS_ORIGIN_REGEX=${{ secrets.CORS_ORIGIN_REGEX_DEV }}
+            CORS_ORIGIN_REGEX=${{ secrets.CORS_ORIGIN_REGEX }}
             DB_HOST=${{ secrets.DB_HOST }}
             DB_NAME=${{ secrets.DB_NAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_READ_REPLICA_HOSTS=${{ secrets.DB_READ_REPLICA_HOSTS }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             SENTRY_ENV=${{ vars.SENTRY_ENV }}
-            EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=${{ secrets.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
-            ETHERPAD_API_KEY=${{ secrets.ETHERPAD_API_KEY_DEV }}
-            ETHERPAD_COOKIE_DOMAIN=${{ vars.ETHERPAD_COOKIE_DOMAIN_DEV }}
-            ETHERPAD_URL=${{ vars.ETHERPAD_URL_DEV }}
+            EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=${{ vars.EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN }}
+            ETHERPAD_API_KEY=${{ secrets.ETHERPAD_API_KEY }}
+            ETHERPAD_COOKIE_DOMAIN=${{ vars.ETHERPAD_COOKIE_DOMAIN }}
+            ETHERPAD_URL=${{ vars.ETHERPAD_URL }}
             FILE_STORAGE_ROOT_PATH=${{ secrets.FILE_STORAGE_ROOT_PATH }}
-            H5P_CONTENT_ACCESS_KEY_ID=${{ secrets.H5P_CONTENT_ACCESS_KEY_ID_DEV }}
-            H5P_CONTENT_BUCKET=${{ secrets.H5P_CONTENT_BUCKET_DEV }}
-            H5P_CONTENT_REGION=${{ secrets.H5P_CONTENT_REGION_DEV }}
-            H5P_CONTENT_SECRET_ACCESS_KEY_ID=${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY_DEV }}
+            H5P_CONTENT_ACCESS_KEY_ID=${{ secrets.H5P_CONTENT_ACCESS_KEY_ID }}
+            H5P_CONTENT_BUCKET=${{ vars.H5P_CONTENT_BUCKET }}
+            H5P_CONTENT_REGION=${{ vars.H5P_CONTENT_REGION }}
+            H5P_CONTENT_SECRET_ACCESS_KEY_ID=${{ secrets.H5P_CONTENT_SECRET_ACCESS_KEY }}
             H5P_FILE_STORAGE_TYPE=${{ vars.H5P_FILE_STORAGE_TYPE }}
-            H5P_PATH_PREFIX=${{ secrets.H5P_PATH_PREFIX_DEV }}
+            H5P_PATH_PREFIX=${{ vars.H5P_PATH_PREFIX }}
             HOSTNAME=${{ vars.HOSTNAME }}
             IMAGE_CLASSIFIER_API=${{ vars.IMAGE_CLASSIFIER_API }}
             JOB_SCHEDULING=${{ vars.JOB_SCHEDULING || false }}
-            JWT_SECRET=${{ secrets.JWT_SECRET_DEV }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
             LIBRARY_CLIENT_HOST=${{ vars.LIBRARY_CLIENT_HOST }}
             LOG_LEVEL=${{ vars.LOG_LEVEL }}
             MAILER_CONFIG_FROM_EMAIL=${{ secrets.MAILER_CONFIG_FROM_EMAIL }}
@@ -170,24 +168,24 @@ jobs:
             OPENAI_ORG_ID=${{ secrets.OPENAI_ORG_ID }}
 
       # Modify Amazon ECS task definition with second container
-      - name: Modify Amazon ECS task definition
-        id: task-def-2
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def-1.outputs.task-definition }}
-          container-name: ${{ vars.CONTAINER_NAME_IFRAMELY }}
-          image: ${{ vars.CONTAINER_IMAGE_IFRAMELY }}
-          environment-variables: |
-            NODE_ENV=${{ vars.NODE_ENV_IFRAMELY }}
+      # - name: Modify Amazon ECS task definition
+      #   id: task-def-2
+      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+      #   with:
+      #     task-definition: ${{ steps.task-def-1.outputs.task-definition }}
+      #     container-name: ${{ vars.CONTAINER_NAME_IFRAMELY }}
+      #     image: ${{ vars.CONTAINER_IMAGE_IFRAMELY }}
+      #     environment-variables: |
+      #       NODE_ENV=${{ vars.NODE_ENV_IFRAMELY }}
 
       # Modify Amazon ECS task definition with third container
-      - name: Modify Amazon ECS task definition
-        id: task-def-3
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def-2.outputs.task-definition }}
-          container-name: ${{ vars.CONTAINER_NAME_CLASSIFIER }}
-          image: ${{ vars.CONTAINER_IMAGE_CLASSIFIER }}
+      # - name: Modify Amazon ECS task definition
+      #   id: task-def-3
+      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+      #   with:
+      #     task-definition: ${{ steps.task-def-2.outputs.task-definition }}
+      #     container-name: ${{ vars.CONTAINER_NAME_CLASSIFIER }}
+      #     image: ${{ vars.CONTAINER_IMAGE_CLASSIFIER }}
 
       # Use latest revision of the task-definition to deploy the application to ECS
       - name: Deploy Amazon ECS task definition
