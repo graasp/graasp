@@ -6,10 +6,6 @@ on:
   repository_dispatch:
     types: [staging-deployment]
 
-  # Allows you to run this workflow manually from the Actions tab
-  # todo: disable ?
-  workflow_dispatch:
-
 env:
   NODE_OPTIONS: '--max_old_space_size=8192' # Allows to increase Node's max heap size
 
