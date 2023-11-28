@@ -44,17 +44,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         params: { itemId },
       } = request;
       return db.transaction(async (manager) => {
+        const newItemLike = await itemLikeService.post(member, buildRepositories(manager), itemId);
         // action like item
         const item = await itemService.get(member, buildRepositories(manager), itemId);
         const action = {
           item,
           type: Triggers.ItemLike,
           extra: {
-            itemId: item?.id,
+            itemId: item.id,
           },
         };
-
-        const newItemLike = await itemLikeService.post(member, buildRepositories(manager), itemId);
         await actionService.postMany(member, buildRepositories(manager), request, [action]);
         return newItemLike;
       });
@@ -71,6 +70,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         params: { itemId },
       } = request;
       return db.transaction(async (manager) => {
+        const newItemLike = await itemLikeService.removeOne(
+          member,
+          buildRepositories(manager),
+          itemId,
+        );
         // action unlike item
         const item = await itemService.get(member, buildRepositories(manager), itemId);
 
@@ -78,15 +82,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           item,
           type: Triggers.ItemUnlike,
           extra: {
-            itemId: item?.id,
+            itemId: item.id,
           },
         };
-
-        const newItemLike = await itemLikeService.removeOne(
-          member,
-          buildRepositories(manager),
-          itemId,
-        );
         await actionService.postMany(member, buildRepositories(manager), request, [action]);
         return newItemLike;
       });

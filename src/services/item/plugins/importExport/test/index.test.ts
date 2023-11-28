@@ -149,6 +149,11 @@ describe('Member routes tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        const items = await ItemRepository.find();
+        expect(items).toHaveLength(1);
+      }, 1000);
     });
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
@@ -160,7 +165,6 @@ describe('Member routes tests', () => {
         payload: form,
         headers: form.getHeaders(),
       });
-
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
   });
