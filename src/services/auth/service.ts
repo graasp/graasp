@@ -49,7 +49,7 @@ export class AuthService {
       expiresIn: `${REGISTER_TOKEN_EXPIRATION_IN_MINUTES}m`,
     });
 
-    const redirectionUrl = getRedirectionUrl(url);
+    const redirectionUrl = getRedirectionUrl(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set('t', token);
@@ -83,7 +83,7 @@ export class AuthService {
       expiresIn: `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
     });
 
-    const redirectionUrl = getRedirectionUrl(url);
+    const redirectionUrl = getRedirectionUrl(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
     destination.searchParams.set('t', token);

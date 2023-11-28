@@ -1,7 +1,7 @@
 import jwt, { Secret, SignOptions, VerifyOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 
-import { FastifyRequest } from 'fastify';
+import { FastifyBaseLogger, FastifyRequest } from 'fastify';
 
 import {
   AUTH_TOKEN_EXPIRATION_IN_MINUTES,
@@ -31,7 +31,7 @@ const defaultClientHost = BUILDER_HOST;
 
 const validOrigins = CLIENT_HOSTS.map((c) => c.url.origin);
 
-export const getRedirectionUrl = (target?: string) => {
+export const getRedirectionUrl = (log: FastifyBaseLogger, target?: string) => {
   if (!target) {
     return defaultClientHost.url.origin;
   }
@@ -39,6 +39,9 @@ export const getRedirectionUrl = (target?: string) => {
   try {
     const targetUrl = new URL(target);
     if (!validOrigins.includes(targetUrl.origin)) {
+      log.error(
+        `redirection-url-util: Attempted to use a non valid origin  (url: ${targetUrl.toString()})`,
+      );
       return defaultClientHost.url.origin;
     }
   } catch {
