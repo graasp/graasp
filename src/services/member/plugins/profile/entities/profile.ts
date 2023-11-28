@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { Member } from '../../member/entities/member';
+import { Member } from '../../../entities/member';
 
 @Entity()
 @Unique('member-profile', ['member'])

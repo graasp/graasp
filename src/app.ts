@@ -11,7 +11,6 @@ import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
-import MemberProfileServiceApi from './services/memberProfile';
 import websocketsPlugin from './services/websockets';
 import {
   COOKIE_DOMAIN,
@@ -79,8 +78,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
       })
       .register(fp(MemberServiceApi))
       .register(fp(ItemServiceApi))
-      .register(fp(ItemMembershipServiceApi))
-      .register(MemberProfileServiceApi);
+      .register(fp(ItemMembershipServiceApi));
 
     // instance.register(
     //   async (instance) => {

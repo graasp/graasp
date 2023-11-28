@@ -2,9 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { HttpMethod } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../utils/config';
-import { ANNA, BOB, saveMember } from '../../member/test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../../utils/config';
+import { ANNA, BOB, saveMember } from '../../../test/fixtures/members';
 import {
   ANNA_PROFILE,
   BOB_PROFILE,

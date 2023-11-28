@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 
 import { Member } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
+import { AppDataSource } from '../../../../plugins/datasource';
 import { MemberProfile } from './entities/profile';
 import { IMemberProfile } from './types';
 

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { buildRepositories } from '../../utils/repositories';
+import { buildRepositories } from '../../../../utils/repositories';
 import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
 import { MemberProfileService } from './service';
 import { IMemberProfile } from './types';

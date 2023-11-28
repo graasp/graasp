@@ -27,7 +27,7 @@ import { ItemLogin } from '../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../services/itemMembership/entities/ItemMembership';
 import { Member } from '../services/member/entities/member';
-import { MemberProfile } from '../services/memberProfile/entities/profile';
+import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
 
 const DB_READ_REPLICA_HOSTS = process.env.DB_READ_REPLICA_HOSTS // also takes care of empty string
   ? process.env.DB_READ_REPLICA_HOSTS.split(',')

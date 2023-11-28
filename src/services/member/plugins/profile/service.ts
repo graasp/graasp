@@ -1,8 +1,8 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { MemberNotFound, UnauthorizedMember } from '../../utils/errors';
-import { Repositories } from '../../utils/repositories';
-import { Actor } from '../member/entities/member';
+import { MemberNotFound, UnauthorizedMember } from '../../../../utils/errors';
+import { Repositories } from '../../../../utils/repositories';
+import { Actor } from '../../../member/entities/member';
 
 export class MemberProfileService {
   log: FastifyBaseLogger;

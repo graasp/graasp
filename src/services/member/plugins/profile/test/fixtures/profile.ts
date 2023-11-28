@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { Member } from '../../../member/entities/member';
-import { saveMember } from '../../../member/test/fixtures/members';
+import { Member } from '../../../../entities/member';
+import { saveMember } from '../../../../test/fixtures/members';
 import { MemberProfile } from '../../entities/profile';
 import { IMemberProfile } from '../../types';
 
