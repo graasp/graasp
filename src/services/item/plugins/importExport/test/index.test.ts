@@ -165,7 +165,6 @@ describe('Member routes tests', () => {
         payload: form,
         headers: form.getHeaders(),
       });
-
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
   });
