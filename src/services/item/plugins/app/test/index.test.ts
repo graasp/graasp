@@ -162,9 +162,6 @@ describe('Apps Plugin Tests', () => {
   });
 
   describe('GET /:itemId/context', () => {
-    // let apps;
-    // let chosenApp;
-
     describe('Public', () => {
       it('Get app context successfully for one item without members', async () => {
         ({ app } = await build({ member: null }));
