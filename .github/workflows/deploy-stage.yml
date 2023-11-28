@@ -154,26 +154,6 @@ jobs:
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             OPENAI_ORG_ID=${{ secrets.OPENAI_ORG_ID }}
 
-      # Modify Amazon ECS task definition with second container
-      # - name: Modify Amazon ECS task definition
-      #   id: task-def-2
-      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.task-def-1.outputs.task-definition }}
-      #     container-name: ${{ vars.CONTAINER_NAME_IFRAMELY }}
-      #     image: ${{ vars.CONTAINER_IMAGE_IFRAMELY }}
-      #     environment-variables: |
-      #       NODE_ENV=${{ vars.NODE_ENV_IFRAMELY }}
-
-      # Modify Amazon ECS task definition with third container
-      # - name: Modify Amazon ECS task definition
-      #   id: task-def-3
-      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.task-def-2.outputs.task-definition }}
-      #     container-name: ${{ vars.CONTAINER_NAME_CLASSIFIER }}
-      #     image: ${{ vars.CONTAINER_IMAGE_CLASSIFIER }}
-
       # Use latest revision of the task-definition to deploy the application to ECS
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
