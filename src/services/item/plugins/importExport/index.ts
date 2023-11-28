@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
+import { Triggers } from '@graasp/sdk';
+
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
@@ -18,6 +20,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       service: iS,
       files: { service: fS },
     },
+    actions: { service: aS },
     h5p: h5pService,
   } = fastify;
 
@@ -98,8 +101,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
       } = request;
       const repositories = buildRepositories();
-
-      // check item and permission
       const item = await iS.get(member, repositories, itemId);
 
       // generate archive stream
@@ -108,6 +109,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         reply,
         log,
       });
+
+      // trigger download action for a collection
+      const action = {
+        item,
+        type: Triggers.ItemDownload,
+        extra: { itemId: item?.id },
+      };
+      await aS.postMany(member, repositories, request, [action]);
+
       try {
         reply.raw.setHeader(
           'Content-Disposition',

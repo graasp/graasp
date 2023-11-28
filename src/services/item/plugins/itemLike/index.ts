@@ -1,5 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { Triggers } from '@graasp/sdk';
+
 import { buildRepositories } from '../../../../utils/repositories';
 import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
@@ -8,6 +10,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;
 
   const itemLikeService = new ItemLikeService(items.service);
+  const actionService = fastify.actions.service;
+  const itemService = fastify.items.service;
 
   fastify.addSchema(common);
   //get liked entry for member
@@ -34,9 +38,24 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string } }>(
     '/:itemId/like',
     { schema: create, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId }, log }) => {
+    async (request) => {
+      const {
+        member,
+        params: { itemId },
+      } = request;
       return db.transaction(async (manager) => {
-        return itemLikeService.post(member, buildRepositories(manager), itemId);
+        const newItemLike = await itemLikeService.post(member, buildRepositories(manager), itemId);
+        // action like item
+        const item = await itemService.get(member, buildRepositories(manager), itemId);
+        const action = {
+          item,
+          type: Triggers.ItemLike,
+          extra: {
+            itemId: item.id,
+          },
+        };
+        await actionService.postMany(member, buildRepositories(manager), request, [action]);
+        return newItemLike;
       });
     },
   );
@@ -45,9 +64,29 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/:itemId/like',
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId }, log }) => {
+    async (request) => {
+      const {
+        member,
+        params: { itemId },
+      } = request;
       return db.transaction(async (manager) => {
-        return itemLikeService.removeOne(member, buildRepositories(manager), itemId);
+        const newItemLike = await itemLikeService.removeOne(
+          member,
+          buildRepositories(manager),
+          itemId,
+        );
+        // action unlike item
+        const item = await itemService.get(member, buildRepositories(manager), itemId);
+
+        const action = {
+          item,
+          type: Triggers.ItemUnlike,
+          extra: {
+            itemId: item.id,
+          },
+        };
+        await actionService.postMany(member, buildRepositories(manager), request, [action]);
+        return newItemLike;
       });
     },
   );

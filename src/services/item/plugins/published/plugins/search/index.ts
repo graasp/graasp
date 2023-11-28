@@ -3,6 +3,8 @@ import { MultiSearchParams } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { Triggers } from '@graasp/sdk';
+
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../utils/repositories';
 import { search } from './schemas';
@@ -17,12 +19,22 @@ export type SearchFields = {
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const searchService = fastify.search.service;
+  const actionService = fastify.actions.service;
 
-  fastify.post(
+  fastify.post<{ Body: MultiSearchParams }>(
     '/collections/search',
     { preHandler: fastify.attemptVerifyAuthentication, schema: search },
-    async ({ member, body }) => {
-      return searchService.search(member, buildRepositories(), body as MultiSearchParams);
+    async (request) => {
+      const { member, body } = request;
+      const repositories = buildRepositories();
+
+      const searchResults = await searchService.search(member, repositories, body);
+      const action = {
+        type: Triggers.ItemSearch,
+        extra: body,
+      };
+      await actionService.postMany(member, repositories, request, [action]);
+      return searchResults;
     },
   );
 
