@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 import { Member } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
+import { MemberNotFound } from '../../../../utils/errors';
 import { MemberProfile } from './entities/profile';
 import { IMemberProfile } from './types';
 
@@ -15,7 +16,7 @@ const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).exten
       member: Member;
     },
   ): Promise<MemberProfile> {
-    const { bio, visibility = false, facebookLink, linkedinLink, twitterLink, member } = args;
+    const { bio, visibility = false, facebookID, linkedinID, twitterID, member } = args;
 
     const id = v4();
 
@@ -23,16 +24,19 @@ const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).exten
       id,
       bio,
       visibility,
-      facebookLink,
-      linkedinLink,
-      twitterLink,
+      facebookID,
+      linkedinID,
+      twitterID,
       member,
     });
     await this.insert(memberProfile);
     return memberProfile;
   },
 
-  async getByMemberId(memberId: string, filter?: ProfileFilter): Promise<MemberProfile> {
+  async getByMemberId(memberId: string, filter?: ProfileFilter): Promise<MemberProfile | null> {
+    if (!memberId) {
+      throw new MemberNotFound();
+    }
     const memberProfile = await this.findOne({
       where: { member: { id: memberId }, ...filter },
       relations: ['member'],

@@ -33,22 +33,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:memberId',
     { schema: getProfileForMember, preHandler: fastify.attemptVerifyAuthentication },
     async ({ params: { memberId } }) => {
-      return db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-
-        return memberProfileService.get(memberId, repositories);
-      });
+      return memberProfileService.get(memberId, buildRepositories());
     },
   );
   fastify.get<{ Params: { memberId: string } }>(
     '/own',
     { schema: getOwnProfile, preHandler: fastify.verifyAuthentication },
     async ({ member }) => {
-      return db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-
-        return memberProfileService.getOwn(member, repositories);
-      });
+      return memberProfileService.getOwn(member, buildRepositories());
     },
   );
   fastify.patch<{ Body: Partial<IMemberProfile> }>(

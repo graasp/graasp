@@ -16,8 +16,8 @@ export class MemberProfileService {
     if (!member?.id) {
       throw new UnauthorizedMember();
     }
-    const d = await memberProfileRepository.createOne({ ...data, member });
-    return d;
+    const profile = await memberProfileRepository.createOne({ ...data, member });
+    return profile;
   }
   async get(memberId: string, repositories: Repositories) {
     const { memberProfileRepository } = repositories;
@@ -35,7 +35,7 @@ export class MemberProfileService {
     if (!member?.id) {
       throw new UnauthorizedMember();
     }
-    const memberProfile = await memberProfileRepository.getByMemberId(member?.id);
+    const memberProfile = await memberProfileRepository.getByMemberId(member.id);
     return memberProfile;
   }
   async patch(member: Actor, repositories: Repositories, data) {
@@ -45,6 +45,6 @@ export class MemberProfileService {
       throw new UnauthorizedMember();
     }
 
-    return await memberProfileRepository.patch(member.id, data);
+    return memberProfileRepository.patch(member.id, data);
   }
 }

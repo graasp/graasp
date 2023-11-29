@@ -8,9 +8,9 @@ import { IMemberProfile } from '../../types';
 export const getDummyProfile = (options: Partial<MemberProfile>): Partial<MemberProfile> => {
   const {
     bio = '',
-    facebookLink = '',
-    twitterLink = '',
-    linkedinLink = '',
+    facebookID = '',
+    twitterID = '',
+    linkedinID = '',
     id,
     visibility = false,
   } = options;
@@ -19,10 +19,10 @@ export const getDummyProfile = (options: Partial<MemberProfile>): Partial<Member
   return {
     id: buildId,
     bio,
-    facebookLink,
-    twitterLink,
+    facebookID,
+    twitterID,
     visibility,
-    linkedinLink,
+    linkedinID,
     updatedAt: new Date(),
     createdAt: new Date(),
   };
@@ -37,22 +37,20 @@ export const saveMemberProfile = async (m: Partial<Member>, profile: IMemberProf
 };
 
 export const getMemberProfile = async (id: string) => {
-  const profile = MemberProfile.findOneBy({ id });
-
-  return profile;
+  return MemberProfile.findOneBy({ id });
 };
 
 export const ANNA_PROFILE = {
   bio: "Hi, I'm Anna, an english teacher",
-  facebookLink: 'https://facebook.com/anna',
-  twitterLink: '',
-  linkedinLink: 'https://linkedin.com/anna',
+  facebookID: 'anna',
+  twitterID: '',
+  linkedinID: 'anna',
 };
 
 export const BOB_PROFILE = {
   bio: "Hi, I'm Bob, a science teacher",
-  facebookLink: 'https://facebook.com/bob',
-  twitterLink: '',
-  linkedinLink: 'https://linkedin.com/bob',
+  facebookID: 'bob',
+  twitterID: '',
+  linkedinID: 'bob',
   visibility: true,
 };

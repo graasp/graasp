@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -19,6 +20,7 @@ export class MemberProfile extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index()
   @OneToOne(() => Member, (member) => member.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'member_id' })
   member: Member;
@@ -37,18 +39,21 @@ export class MemberProfile extends BaseEntity {
 
   @Column({
     nullable: true,
+    length: 100,
   })
-  facebookLink: string;
+  facebookID: string;
 
   @Column({
     nullable: true,
+    length: 100,
   })
-  linkedinLink: string;
+  linkedinID: string;
 
   @Column({
     nullable: true,
+    length: 100,
   })
-  twitterLink: string;
+  twitterID: string;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

@@ -5,15 +5,15 @@ import { partialMember } from '../../../item/fluent-schema';
 
 const sharedProporities = {
   bio: { type: 'string' },
-  facebookLink: { type: 'string' },
-  linkedinLink: { type: 'string' },
-  twitterLink: { type: 'string' },
+  facebookID: { type: 'string' },
+  linkedinID: { type: 'string' },
+  twitterID: { type: 'string' },
 };
 const memberSharedSchema = S.object()
   .prop('bio', S.string())
-  .prop('facebookLink', S.anyOf([S.string(), S.null()]))
-  .prop('linkedinLink', S.anyOf([S.string(), S.null()]))
-  .prop('twitterLink', S.anyOf([S.string(), S.null()]));
+  .prop('facebookID', S.anyOf([S.string(), S.null()]))
+  .prop('linkedinID', S.anyOf([S.string(), S.null()]))
+  .prop('twitterID', S.anyOf([S.string(), S.null()]));
 
 export const profileMember = S.object()
   .additionalProperties(false)
