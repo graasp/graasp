@@ -2,7 +2,7 @@
 # Used in CI for creating images to push on registry
 
 # Update the VARIANT arg in docker-compose.yml to pick a Node version: 10, 12, 14
-ARG VARIANT=16
+ARG VARIANT=18
 FROM node:${VARIANT}
 
 # Update args in docker-compose.yaml to set the UID/GID of the "node" user.
@@ -37,7 +37,7 @@ COPY --chown=$USER_UID:$USER_GID . /home/node/app
 
 WORKDIR /home/node/app
 
-RUN yarn install 
+RUN yarn install
 
 RUN yarn build-ts
 

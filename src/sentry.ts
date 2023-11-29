@@ -48,7 +48,7 @@ export function initSentry(instance: FastifyInstance): {
 
   Sentry.init({
     dsn: SentryConfig.dsn,
-    environment: process.env.DEPLOY_ENV ?? process.env.NODE_ENV,
+    environment: process.env.SENTRY_ENV ?? process.env.NODE_ENV,
     integrations: [
       // TODO: re-enable when @sentry/profiling-node is more stable
       // (currently does not report profiles and also causes compilation issues)
