@@ -28,7 +28,7 @@ import { ItemLogin } from '../../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership';
 import { Member } from '../../services/member/entities/member';
-import { MemberProfile } from '../../services/memberProfile/entities/profile';
+import { MemberProfile } from '../../services/member/plugins/profile/entities/profile';
 import { DB_PORT } from '../../utils/config';
 
 // mock data source
