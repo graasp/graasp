@@ -183,6 +183,8 @@ jobs:
           AUTH_CLIENT_HOST: 'localhost:3001'
           AUTH_TOKEN_JWT_SECRET: ${{ secrets.MOCK_AUTH_TOKEN_JWT_SECRET }}
           BUILDER_CLIENT_HOST: 'http://localhost:3111'
+          ACCOUNT_CLIENT_HOST: 'http://localhost:3114'
+          ANALYTICS_CLIENT_HOST: 'http://localhost:3005'
           COOKIE_DOMAIN: localhost
           DB_NAME: ${{ env.TEST_DB_NAME }}
           DB_PASSWORD: ${{ env.TEST_DB_PASSWORD }}
@@ -192,7 +194,7 @@ jobs:
           ETHERPAD_API_KEY: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
           ETHERPAD_PUBLIC_URL: 'http://localhost:9001'
           ETHERPAD_URL: 'http://etherpad:9001'
-          EXPLORER_CLIENT_HOST: 'http://localhost:3113'
+          LIBRARY_CLIENT_HOST: 'http://localhost:3113'
           FILE_STORAGE_ROOT_PATH: /
           H5P_FILE_STORAGE_TYPE: file
           H5P_PATH_PREFIX: h5p-content/

@@ -397,3 +397,62 @@ export class UnexpectedError extends CoreError {
     this.origin = 'unknown';
   }
 }
+
+interface OpenAIParamsError {
+  message?: string;
+  code?: string;
+  statusCode?: number;
+}
+
+export class OpenAIBaseError extends CoreError {
+  constructor({
+    message = 'An unknown error occured',
+    code = 'GERR1000',
+    statusCode = 500,
+  }: OpenAIParamsError = {}) {
+    super({ code: code, statusCode: statusCode, message: message });
+    this.origin = 'OpenAI';
+  }
+}
+
+export class OpenAIUnknownStopError extends OpenAIBaseError {
+  constructor(stopReason: string) {
+    const message = `The stop reason "${stopReason}" is not a known OpenAI reason`;
+    super({ code: 'GERR1001', message: message });
+  }
+}
+
+export class OpenAILengthError extends OpenAIBaseError {
+  constructor() {
+    const message = 'Incomplete model output due to token limitation';
+    super({ code: 'GERR1002', message: message });
+  }
+}
+
+export class OpenAITimeOutError extends OpenAIBaseError {
+  constructor() {
+    const message = 'The response takes too long to respond';
+    super({ code: 'GERR1003', message: message });
+  }
+}
+
+export class OpenAIQuotaError extends OpenAIBaseError {
+  constructor() {
+    const message = 'This token exceeded current quota, please check plan and billing details.';
+    super({ code: 'GERR1004', message: message, statusCode: 429 });
+  }
+}
+
+export class OpenAIBadVersion extends OpenAIBaseError {
+  constructor(gptVersion: string, validVersions: string) {
+    const message = `The gpt-version '${gptVersion}' is not a valid version. Try one of these instead: "${validVersions}".`;
+    super({ code: 'GERR1005', message: message, statusCode: 400 });
+  }
+}
+
+export class InvalidJWTItem extends CoreError {
+  constructor(jwtItemId: string, itemId: string) {
+    const message = `The JWT item id '${jwtItemId}' does not correspond with the accessed item ${itemId}.`;
+    super({ code: 'GERR1007', statusCode: StatusCodes.FORBIDDEN, message: message });
+  }
+}

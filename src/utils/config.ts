@@ -1,13 +1,13 @@
 import dotenv from 'dotenv';
 import os from 'os';
 
+import { Context, FileItemType, ItemType } from '@graasp/sdk';
+
 import {
-  Context,
-  FileItemType,
-  ItemType,
   LocalFileConfiguration,
   S3FileConfiguration,
-} from '@graasp/sdk';
+} from '../services/file/interfaces/configuration';
+import { GPTVersion } from '../services/item/plugins/app/chatBot/interfaces/gptVersion';
 
 enum Environment {
   production = 'production',
@@ -56,10 +56,20 @@ export const PLAYER_HOST = {
 
 export const LIBRARY_HOST = {
   name: Context.Library,
-  url: new URL(process.env.EXPLORER_CLIENT_HOST ?? DEFAULT_HOST),
+  url: new URL(process.env.LIBRARY_CLIENT_HOST ?? DEFAULT_HOST),
 };
 
-export const CLIENT_HOSTS = [BUILDER_HOST, PLAYER_HOST, LIBRARY_HOST];
+export const ACCOUNT_HOST = {
+  name: Context.Account,
+  url: new URL(process.env.ACCOUNT_CLIENT_HOST ?? DEFAULT_HOST),
+};
+
+export const ANALYTICS_HOST = {
+  name: Context.Analytics,
+  url: new URL(process.env.ANALYTICS_CLIENT_HOST ?? DEFAULT_HOST),
+};
+
+export const CLIENT_HOSTS = [BUILDER_HOST, PLAYER_HOST, LIBRARY_HOST, ACCOUNT_HOST, ANALYTICS_HOST];
 
 export const PROTOCOL = process.env.PROTOCOL || 'http';
 export const HOSTNAME = process.env.HOSTNAME || 'localhost';
@@ -309,11 +319,6 @@ if (!process.env.APPS_PUBLISHER_ID) {
 }
 export const APPS_PUBLISHER_ID = process.env.APPS_PUBLISHER_ID;
 
-// Stripe
-export const SUBSCRIPTION_PLUGIN = process.env.SUBSCRIPTION_PLUGIN === 'true';
-export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-export const STRIPE_DEFAULT_PLAN_PRICE_ID = process.env.STRIPE_DEFAULT_PLAN_PRICE_ID;
-
 // used for hashing password
 export const SALT_ROUNDS = 10;
 
@@ -341,3 +346,8 @@ export const MEILISEARCH_MASTER_KEY = process.env.MEILISEARCH_MASTER_KEY;
 export const MEILISEARCH_REBUILD_SECRET = process.env.MEILISEARCH_REBUILD_SECRET;
 export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
   process.env.MEILISEARCH_STORE_LEGACY_PDF_CONTENT === 'true';
+
+// OpenAI
+export const OPENAI_GPT_VERSION = process.env.OPENAI_GPT_VERSION || GPTVersion.GPT_4;
+export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;

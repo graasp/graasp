@@ -91,6 +91,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const {
           query: { t: token, url },
           session,
+          log,
         } = request;
 
         try {
@@ -103,7 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           // add member id to session
           session.set('member', memberId);
 
-          const redirectionUrl = getRedirectionUrl(url ? decodeURIComponent(url) : undefined);
+          const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
           reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
         } catch (error) {
           session.delete();

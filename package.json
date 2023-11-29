@@ -1,8 +1,8 @@
 {
   "name": "graasp",
-  "version": "1.9.4",
+  "version": "1.10.1",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
   "description": "Graasp next level",
   "repository": {
@@ -66,7 +66,7 @@
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
-    "@graasp/sdk": "2.0.1",
+    "@graasp/sdk": "3.0.0",
     "@graasp/translations": "1.15.1",
     "@sentry/node": "7.64.0",
     "@sentry/tracing": "7.64.0",
@@ -98,10 +98,11 @@
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
+    "openai": "4.11.1",
     "pdf-text-reader": "3.0.2",
     "pg": "8.10.0",
     "qs": "6.11.2",
-    "sharp": "0.31.3",
+    "sharp": "0.32.6",
     "striptags": "3.2.0",
     "tmp-promise": "3.0.3",
     "typeorm": "0.3.17",
@@ -148,5 +149,5 @@
     "typescript": "5.0.4",
     "wait-for-expect": "3.0.2"
   },
-  "packageManager": "yarn@3.6.3"
+  "packageManager": "yarn@4.0.1"
 }

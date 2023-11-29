@@ -5,10 +5,11 @@ import { Readable } from 'stream';
 
 import { FastifyReply } from 'fastify';
 
-import { FileItemType, ItemType, LocalFileConfiguration, S3FileConfiguration } from '@graasp/sdk';
+import { FileItemType, ItemType } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../utils/errors';
 import { Actor, Member } from '../member/entities/member';
+import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';
 import { FileRepository } from './interfaces/fileRepository';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
