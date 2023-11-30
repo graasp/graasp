@@ -28,6 +28,7 @@ import { ItemLogin } from '../../services/itemLogin/entities/itemLogin';
 import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership';
 import { Member } from '../../services/member/entities/member';
+import { MemberProfile } from '../../services/member/plugins/profile/entities/profile';
 import { DB_PORT } from '../../utils/config';
 
 // mock data source
@@ -75,6 +76,7 @@ export const AppDataSource = new DataSource({
     ItemValidationReview,
     Action,
     ActionRequestExport,
+    MemberProfile,
   ],
   // refer to built files in js because it cannot run ts files
   migrations: ['dist/migrations/*.js'],

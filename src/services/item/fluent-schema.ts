@@ -24,7 +24,7 @@ const settings = S.object()
   .prop('ccLicenseAdaption', S.string())
   .prop('displayCoEditors', S.boolean());
 
-const partialMember = S.object()
+export const partialMember = S.object()
   .additionalProperties(false)
   .prop('id', S.string())
   .prop('name', S.string())
