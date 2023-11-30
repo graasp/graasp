@@ -17,7 +17,6 @@ export const MOCK_LOCAL_OPTIONS = {
 };
 export const MOCK_APP_ORIGIN = 'http://app.localhost:3000';
 
-export const MOCK_TOKEN = 'mock-token';
 export const MOCK_CONTEXT = {
   id: v4(),
   name: 'some-name',
