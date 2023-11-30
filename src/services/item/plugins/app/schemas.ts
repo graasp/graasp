@@ -12,22 +12,11 @@ export default {
     appContext: {
       type: 'object',
       properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        path: { type: 'string' },
-        description: { type: 'string' },
-        type: { type: 'string' },
-        extra: {},
+        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
         members: {
           type: 'array',
           items: {
             $ref: 'http://graasp.org/members/#/definitions/member',
-          },
-        },
-        children: {
-          type: 'array',
-          items: {
-            $ref: 'http://graasp.org/items/#/definitions/item',
           },
         },
       },

@@ -34,7 +34,6 @@ export const buildMockAuthTokenSubject = ({ app = v4(), member = v4(), item = v4
   app,
   origin: MOCK_APP_ORIGIN,
 });
-export const MOCK_TOKEN = 'mock-token';
 export const MOCK_CONTEXT = {
   id: v4(),
   name: 'some-name',
@@ -104,14 +103,15 @@ export const saveAppList = async () => {
 // save apps, app settings, and get token
 export const setUp = async (
   app,
-  actor: Actor,
+  actor: Actor | null,
   creator: Member,
   permission?: PermissionLevel,
   setPublic?: boolean,
+  parentItem?: Item,
 ) => {
   const apps = await saveAppList();
   const chosenApp = apps[0];
-  const { item } = await saveApp({ url: chosenApp.url, member: creator });
+  const { item } = await saveApp({ url: chosenApp.url, member: creator, parentItem });
   if (setPublic) {
     await setItemPublic(item, creator);
   }

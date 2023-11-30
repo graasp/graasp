@@ -16,7 +16,7 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
@@ -36,7 +36,7 @@ const MOCK_SESSION_ID = 's.s8oes9dhwrvt0zif';
 const MODES: Array<'read' | 'write'> = ['read', 'write'];
 
 describe('Etherpad service API', () => {
-  let app: FastifyInstance;
+  let app;
   let member: Member;
 
   const payloadCreate = {
@@ -48,7 +48,7 @@ describe('Etherpad service API', () => {
   };
 
   beforeEach(async () => {
-    let actor: Member | null;
+    let actor: Actor;
     ({ app, actor } = await build());
     if (!actor) {
       throw new Error('Test error: member should be defined');

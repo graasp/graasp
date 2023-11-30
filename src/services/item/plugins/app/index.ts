@@ -1,6 +1,5 @@
 import { promisify } from 'util';
 
-import fastifyAuth from '@fastify/auth';
 import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
@@ -28,7 +27,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
   const {
     verifyBearerAuth,
-    items: { extendCreateSchema, extendExtrasUpdateSchema },
+    items: { service: itemService, extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
 
   if (!verifyBearerAuth) {
@@ -50,7 +49,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
     fastify.jwt.sign,
   );
 
-  const aS = new AppService(jwtExpiration, promisifiedJwtSign);
+  const aS = new AppService(itemService, jwtExpiration, promisifiedJwtSign);
 
   const promisifiedJwtVerify = promisify<string, { sub: AuthTokenSubject }>(fastify.jwt.verify);
 
@@ -112,12 +111,6 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       );
     }
 
-    const getBearerToken = (request) => {
-      const auth = request.headers.authorization;
-      const token = auth.split(' ')[1];
-      return token;
-    };
-
     fastify.register(async function (fastify) {
       // get all apps
       fastify.get('/list', { schema: getMany }, async ({ member }) => {
@@ -136,7 +129,6 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
             log,
           } = request;
 
-          // const token = getBearerToken(request);
           return aS.getApiAccessToken(member, buildRepositories(), itemId, body);
         },
       );
@@ -166,25 +158,18 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
     });
 
     fastify.register(async function (fastify) {
-      await fastify.register(fastifyAuth);
+      // all app endpoints need the bearer token
+      fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
       // get app item context
       fastify.get<{ Params: { itemId: string } }>(
         '/:itemId/context',
-        {
-          schema: getContext,
-          preHandler: fastify.attemptVerifyAuthentication,
-        },
+        { schema: getContext },
         async ({ member, authTokenSubject: requestDetails, params: { itemId }, log }) => {
           const memberId = member ? member.id : requestDetails?.memberId;
           return aS.getContext(memberId, buildRepositories(), itemId, requestDetails);
         },
       );
-    });
-
-    fastify.register(async function (fastify) {
-      // all app endpoints need the bearer token
-      fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
       // register app data plugin
       fastify.register(appDataPlugin);

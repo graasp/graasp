@@ -1,5 +1,4 @@
 import { FastifyPluginAsync } from 'fastify';
-import fp from 'fastify-plugin';
 
 import { UUID } from '@graasp/sdk';
 
@@ -15,7 +14,6 @@ import {
   publishItem,
   unpublishItem,
 } from './schemas';
-import { ItemPublishedService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, itemsPublished } = fastify;
