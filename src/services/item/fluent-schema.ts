@@ -121,6 +121,16 @@ export const getOne = {
   response: { 200: item, '4xx': error },
 };
 
+export const getAccessible = {
+  querystring: S.object(),
+  // .prop('id', S.array().maxItems(MAX_TARGETS_FOR_READ_REQUEST))
+  // .extend(idsQuery)
+  response: {
+    200: S.array().items(item),
+    '4xx': error,
+  },
+};
+
 export const getMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_READ_REQUEST))

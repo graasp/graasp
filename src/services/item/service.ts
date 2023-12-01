@@ -160,6 +160,14 @@ export class ItemService {
     return { data: result.data, errors: result.errors.concat(memberships?.errors ?? []) };
   }
 
+  async getAccessible(
+    actor: Member,
+    repositories: Repositories,
+    params: { creatorId?: Member['id'] },
+  ) {
+    return repositories.itemMembershipRepository.getAccessibleItems(actor, params);
+  }
+
   async getOwn(actor: Actor, { itemRepository }: Repositories) {
     if (!actor) {
       throw new UnauthorizedMember(actor);

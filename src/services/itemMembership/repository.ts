@@ -93,6 +93,39 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return query.getMany();
   },
 
+  /**
+   *  get accessible items for actor and given params
+   *  */
+  async getAccessibleItems(
+    actor: Member,
+    { creatorId }: { creatorId?: Member['id'] },
+  ): Promise<Item[]> {
+    const query = this.createQueryBuilder('im')
+      .leftJoinAndSelect('im.item', 'item')
+      .leftJoinAndSelect('item.creator', 'member')
+      .where('im.member_id = :actorId', { actorId: actor.id })
+      // returns only top most item
+      // 'NLEVEL(item.path) = (SELECT MIN(NLEVEL(item.path)) FROM item_membership as im1 WHERE im.item_path <@ im1.item_path)',
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .from(ItemMembership, 'im1')
+          .select('MIN(NLEVEL(im1.item.path))')
+          .where('im.item_path <@ im1.item_path')
+          .getQuery();
+        return 'NLEVEL(item.path) =' + subQuery;
+      })
+      .orderBy('item.updated_at', 'DESC');
+
+    if (creatorId) {
+      query.andWhere('item.creator = :creatorId', { creatorId });
+    }
+
+    const items = (await query.getMany()).map(({ item }) => item);
+
+    return items;
+  },
+
   async getForManyItems(
     items: Item[],
     { memberId = undefined, withDeleted = false }: { memberId?: UUID; withDeleted?: boolean } = {},

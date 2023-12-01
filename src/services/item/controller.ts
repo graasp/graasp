@@ -4,12 +4,14 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
 import {
   copyMany,
   deleteMany,
+  getAccessible,
   getChildren,
   getDescendants,
   getMany,
@@ -71,6 +73,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, query: { id: ids } }) => {
       return itemService.getMany(member, buildRepositories(), ids);
+    },
+  );
+
+  // returns items you have access to given the parameters
+  fastify.get<{ Querystring: { creatorId?: string } }>(
+    '/accessible',
+    { schema: getAccessible, preHandler: fastify.verifyAuthentication },
+    async ({ member, log, query }) => {
+      if (!member) {
+        throw new UnauthorizedMember();
+      }
+      return itemService.getAccessible(member, buildRepositories(), query);
     },
   );
 
