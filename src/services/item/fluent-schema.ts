@@ -126,10 +126,11 @@ export const getAccessible = {
   querystring: S.object()
     .prop('page', S.number().default(1))
     .prop('name', S.string())
+    // todo: more precise
+    .prop('sortBy', S.string())
+    .prop('ordering', S.string())
     .prop('creatorId', S.string())
     .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE)),
-  // .prop('id', S.array().maxItems(MAX_TARGETS_FOR_READ_REQUEST))
-  // .extend(idsQuery)
   response: {
     200: S.object()
       .additionalProperties(false)

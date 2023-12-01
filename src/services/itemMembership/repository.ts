@@ -101,7 +101,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *  */
   async getAccessibleItems(
     actor: Member,
-    { creatorId, name }: ItemSearchParams,
+    { creatorId, name, sortBy = 'updated_at', ordering = 'desc' }: ItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
   ): Promise<Paginated<Item>> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
@@ -121,8 +121,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
           .where('im.item_path <@ im1.item_path')
           .getQuery();
         return 'NLEVEL(item.path) =' + subQuery;
-      })
-      .orderBy('item.updated_at', 'DESC');
+      });
+
+    // TODO: validate
+    if (sortBy) {
+      query.orderBy(`item.${sortBy}`, ordering.toUpperCase());
+    }
 
     if (name) {
       query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
