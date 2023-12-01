@@ -20,6 +20,7 @@ import { ItemLike } from '../services/item/plugins/itemLike/itemLike';
 import { ItemTag } from '../services/item/plugins/itemTag/ItemTag';
 import { ItemPublished } from '../services/item/plugins/published/entities/itemPublished';
 import { RecycledItemData } from '../services/item/plugins/recycled/RecycledItemData';
+import { ShortLink } from '../services/item/plugins/shortLink/entities/ShortLink';
 import { ItemValidation } from '../services/item/plugins/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../services/item/plugins/validation/entities/ItemValidationGroup';
 import { ItemValidationReview } from '../services/item/plugins/validation/entities/itemValidationReview';
@@ -88,6 +89,7 @@ export const AppDataSource = new DataSource({
     Action,
     ActionRequestExport,
     MemberProfile,
+    ShortLink,
   ],
   // refer to built files in js because it cannot run ts files
   migrations: ['dist/migrations/*.js'],
