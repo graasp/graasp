@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](https://github.com/graasp/graasp/compare/v1.10.1...v1.11.0) (2023-12-01)
+
+
+### Features
+
+* add action triggers to download item, like, unlike, search item ([#667](https://github.com/graasp/graasp/issues/667)) ([05e9f58](https://github.com/graasp/graasp/commit/05e9f58e0ab5886f85052a24e2cbeaff6f4458d3))
+* add short links routes ([#664](https://github.com/graasp/graasp/issues/664)) ([#672](https://github.com/graasp/graasp/issues/672)) ([d084c8e](https://github.com/graasp/graasp/commit/d084c8edec130983b72ee6c7032d145c84c57e61))
+
+
+### Bug Fixes
+
+* add missing client hosts and move workflows back here ([#687](https://github.com/graasp/graasp/issues/687)) ([c3baa3b](https://github.com/graasp/graasp/commit/c3baa3b403f86c2a206de87c458b33211e91f66f))
+* **app:** use correct authentication method to deliver context ([#632](https://github.com/graasp/graasp/issues/632)) ([0ff069c](https://github.com/graasp/graasp/commit/0ff069ca14823b579a8a989170bbf7d8077426e0))
+* rename workflows ([#705](https://github.com/graasp/graasp/issues/705)) ([e48b54b](https://github.com/graasp/graasp/commit/e48b54b9d434c75223adc2175700315c812fafea))
+
 ## [1.10.1](https://github.com/graasp/graasp/compare/v1.10.0...v1.10.1) (2023-11-24)
 
 
