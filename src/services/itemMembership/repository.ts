@@ -3,13 +3,16 @@ import { In, Not } from 'typeorm';
 import { PermissionLevel, PermissionLevelCompare, ResultOf, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { Paginated, PaginationParams } from '../../types';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
   ModifyExisting,
 } from '../../utils/errors';
+import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
+import { ItemSearchParams } from '../item/types';
 import { pathToId } from '../item/utils';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
@@ -98,8 +101,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *  */
   async getAccessibleItems(
     actor: Member,
-    { creatorId }: { creatorId?: Member['id'] },
-  ): Promise<Item[]> {
+    { creatorId, name }: ItemSearchParams,
+    { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
+  ): Promise<Paginated<Item>> {
+    const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
+    const skip = (page - 1) * limit;
+
     const query = this.createQueryBuilder('im')
       .leftJoinAndSelect('im.item', 'item')
       .leftJoinAndSelect('item.creator', 'member')
@@ -117,13 +124,20 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       })
       .orderBy('item.updated_at', 'DESC');
 
+    if (name) {
+      query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
+        name: name.toLowerCase().trim(),
+      });
+    }
+
     if (creatorId) {
       query.andWhere('item.creator = :creatorId', { creatorId });
     }
 
-    const items = (await query.getMany()).map(({ item }) => item);
+    const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
+    const items = im.map(({ item }) => item);
 
-    return items;
+    return { data: items, totalCount };
   },
 
   async getForManyItems(

@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
 
+import { PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
@@ -23,6 +24,7 @@ import {
   updateMany,
 } from './fluent-schema';
 import { Ordered } from './interfaces/requests';
+import { ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -77,14 +79,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // returns items you have access to given the parameters
-  fastify.get<{ Querystring: { creatorId?: string } }>(
+  fastify.get<{
+    Querystring: ItemSearchParams & PaginationParams;
+  }>(
     '/accessible',
     { schema: getAccessible, preHandler: fastify.verifyAuthentication },
     async ({ member, log, query }) => {
       if (!member) {
         throw new UnauthorizedMember();
       }
-      return itemService.getAccessible(member, buildRepositories(), query);
+      const { page, pageSize, creatorId, name } = query;
+      return itemService.getAccessible(
+        member,
+        buildRepositories(),
+        { creatorId, name },
+        { page, pageSize },
+      );
     },
   );
 

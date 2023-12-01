@@ -9,6 +9,7 @@ import {
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
+import { ITEMS_PAGE_SIZE } from './constants';
 
 /**
  * for serialization
@@ -122,11 +123,18 @@ export const getOne = {
 };
 
 export const getAccessible = {
-  querystring: S.object(),
+  querystring: S.object()
+    .prop('page', S.number().default(1))
+    .prop('name', S.string())
+    .prop('creatorId', S.string())
+    .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE)),
   // .prop('id', S.array().maxItems(MAX_TARGETS_FOR_READ_REQUEST))
   // .extend(idsQuery)
   response: {
-    200: S.array().items(item),
+    200: S.object()
+      .additionalProperties(false)
+      .prop('data', S.array().items(item))
+      .prop('totalCount', S.number()),
     '4xx': error,
   },
 };
