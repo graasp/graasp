@@ -60,7 +60,7 @@
     "@fastify/forwarded": "2.2.0",
     "@fastify/helmet": "10.1.1",
     "@fastify/jwt": "6.7.1",
-    "@fastify/multipart": "7.5.0",
+    "@fastify/multipart": "7.7.3",
     "@fastify/secure-session": "6.0.0",
     "@fastify/static": "6.10.2",
     "@fastify/view": "7.4.1",
