@@ -3139,19 +3139,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bad-words@npm:3.0.2":
-  version: 3.0.2
-  resolution: "@types/bad-words@npm:3.0.2"
-  checksum: aa40d10364b73deb5617c0b53d5a782841ddd173e6cc68bc41d48c2c95c63ac81d23e2cabeb3d686cb7d655512353ac1866135203305b820d4c60859635ba9d3
+"@types/bad-words@npm:3.0.3":
+  version: 3.0.3
+  resolution: "@types/bad-words@npm:3.0.3"
+  checksum: 220729e6888b523477e3b1ca431b2fd01d816e9dbdd309c8a68b7a1a64ce02ed13ec44fe83bf83872f559d19b9180d4103b5f4179b7d4b1dd497306a46cb3c1d
   languageName: node
   linkType: hard
 
-"@types/bcrypt@npm:5.0.1":
-  version: 5.0.1
-  resolution: "@types/bcrypt@npm:5.0.1"
+"@types/bcrypt@npm:5.0.2":
+  version: 5.0.2
+  resolution: "@types/bcrypt@npm:5.0.2"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 2419ad2e7601b2c306ce2bd8bd8d911770f1abdea780efd4e61e9329b757e47c80fbd73fc52a925a371de47247ce92f04d11bdf24b8b44754ea0ba18d06d2202
+  checksum: b1f97532ffe6079cb57a464f28b5b37a30bc9620f43469e1f27ab9c979c8a114be5b667e7b115a5556fd5be463b65968da9bb32573c6faf74fecf6e565d8974b
   languageName: node
   linkType: hard
 
@@ -3164,10 +3164,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/content-disposition@npm:0.5.7":
-  version: 0.5.7
-  resolution: "@types/content-disposition@npm:0.5.7"
-  checksum: 3691d07a44626501cd0e8585861f2ff542f458e04a69757702b4fe29056c6a4191103d1e2bcbc0dc74b6bcf8656fe345fe728af70e9df56c80c4372dbfb5376e
+"@types/content-disposition@npm:0.5.8":
+  version: 0.5.8
+  resolution: "@types/content-disposition@npm:0.5.8"
+  checksum: eeea868fb510ae7a32aa2d7de680fba79d59001f3e758a334621e10bc0a6496d3a42bb79243a5e53b9c63cb524522853ccc144fe1ab160c4247d37cdb81146c4
   languageName: node
   linkType: hard
 
@@ -3188,10 +3188,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/geoip-lite@npm:1.4.3":
-  version: 1.4.3
-  resolution: "@types/geoip-lite@npm:1.4.3"
-  checksum: 4fe3ce811f0f3a4c4a2bde4498fed58338598934557f8302028255cdd243aa072bdbaa61e00ac4e5e096812678b7c228819bdb981468ed82105d934801be796d
+"@types/geoip-lite@npm:1.4.4":
+  version: 1.4.4
+  resolution: "@types/geoip-lite@npm:1.4.4"
+  checksum: 1310e4d7e6f45a9cb7576356f359e409e4f5c919049f647dc073bceee93a6989bc791e130a9ee610b6048c8ff1d0c112c15c8f194fd7b8474e5daeac613a420c
   languageName: node
   linkType: hard
 
@@ -3229,13 +3229,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:29.5.7":
-  version: 29.5.7
-  resolution: "@types/jest@npm:29.5.7"
+"@types/jest@npm:29.5.10":
+  version: 29.5.10
+  resolution: "@types/jest@npm:29.5.10"
   dependencies:
     expect: "npm:^29.0.0"
     pretty-format: "npm:^29.0.0"
-  checksum: 64a31afa2c8bd003c7e637c36933170f731341957150274e518564e513d6dd7cb8dae61afea29ff703c2c8d3bdbbc8fb97095029a4fc91f55707f26753557583
+  checksum: f31cdc9cf840a3bc2230148bb5cba1e0369e3180ae75d85804038905300dd8cfa1d989a4dbbd909633c04568d0c1a9251b2ee5c4197309ec033403dd2a08ea42
   languageName: node
   linkType: hard
 
@@ -3246,19 +3246,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:9.0.4":
-  version: 9.0.4
-  resolution: "@types/jsonwebtoken@npm:9.0.4"
+"@types/jsonwebtoken@npm:9.0.5":
+  version: 9.0.5
+  resolution: "@types/jsonwebtoken@npm:9.0.5"
   dependencies:
     "@types/node": "npm:*"
-  checksum: dde68947db4faa62e300b355e24152267a5551fd7fa14e0541038e1ffb7fcf05e1026d689a0c93949821bc7cdb9ab48e9eaf67b9499fd8debe4bcf83d9769eac
+  checksum: 48493129464b88b8ab3c3be7931d41da3ffba6efe97fc138b2b5aa42141725dd9086b0494cc069abd5c41ed7ca86d3cfd8efb256cec063853313c75f6179d066
   languageName: node
   linkType: hard
 
-"@types/mime@npm:3.0.3":
-  version: 3.0.3
-  resolution: "@types/mime@npm:3.0.3"
-  checksum: d905a6b4736cc60fb56b39776b77ba0e10983d39f0aefc0034dc895b6ef90780e2f2e0a8c576539adb2963741a5aa67a6924d8940b0f7250f69e3e68a57f93b5
+"@types/mime@npm:3.0.4":
+  version: 3.0.4
+  resolution: "@types/mime@npm:3.0.4"
+  checksum: a6139c8e1f705ef2b064d072f6edc01f3c099023ad7c4fce2afc6c2bf0231888202adadbdb48643e8e20da0ce409481a49922e737eca52871b3dc08017455843
   languageName: node
   linkType: hard
 
@@ -3269,12 +3269,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mmmagic@npm:0.4.32":
-  version: 0.4.32
-  resolution: "@types/mmmagic@npm:0.4.32"
+"@types/mmmagic@npm:0.4.33":
+  version: 0.4.33
+  resolution: "@types/mmmagic@npm:0.4.33"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 2f12937e557f64237fd28a23b7b3e93fe9972ff0d7f933e7c400ddb71bfed64988900f908267ad4f9537f9afe53e0a3729ab24be16d49cdd0847df280ea13840
+  checksum: 851b1dea19d24989be9af3c1329ebc4f92d0a74ebd3490b17c94f8589d75aac3f67c53c93088d368b4b3c0508882c26cc259955161c67ae2a93a8a0a40c99766
   languageName: node
   linkType: hard
 
@@ -3337,10 +3337,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qs@npm:6.9.9":
-  version: 6.9.9
-  resolution: "@types/qs@npm:6.9.9"
-  checksum: 03ddbd032bcaa8f07429efe9de6d0fc027ccdd1e24eac1656bd931c2210c204bbc25be0937a9d46702fb6262fb6ffcc2980e040b399b62a3f91ec6e387c2edae
+"@types/qs@npm:6.9.10":
+  version: 6.9.10
+  resolution: "@types/qs@npm:6.9.10"
+  checksum: 3e479ee056bd2b60894baa119d12ecd33f20a25231b836af04654e784c886f28a356477630430152a86fba253da65d7ecd18acffbc2a8877a336e75aa0272c67
   languageName: node
   linkType: hard
 
@@ -3385,10 +3385,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:9.0.6":
-  version: 9.0.6
-  resolution: "@types/uuid@npm:9.0.6"
-  checksum: 739dcb2e620ff097fa916edeab455eb75640c4883a850784fdb15b32f67b719e05275c6d6419bb6da11350d26bd14ed05ba5e992ff228411cdd98cbc772d71ef
+"@types/uuid@npm:9.0.7":
+  version: 9.0.7
+  resolution: "@types/uuid@npm:9.0.7"
+  checksum: c7321194aeba9ea173efd1e721403bdf4e7ae6945f8f8cdbc87c791f4b505ccf3dbc4a8883d90b394ef13b7c2dc778045792b05dbb23b3c746f8ea347804d448
   languageName: node
   linkType: hard
 
@@ -3417,12 +3417,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yazl@npm:2.4.4":
-  version: 2.4.4
-  resolution: "@types/yazl@npm:2.4.4"
+"@types/yazl@npm:2.4.5":
+  version: 2.4.5
+  resolution: "@types/yazl@npm:2.4.5"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 6828bd2aa04fadf57710d656be222e1d5b5ea992017b07861eadf08adf83d90ddfbcf85d3e3b85cd34ffcf842e4ed0b991767023e051d434f67b287137f74fcc
+  checksum: 5c7cde48bb0dd15a25762d68428ba2f0220503a64456817ebfaf6d8f9ad92ec0a24ef019ddcc688e92cac6b045e42277f32a0d76188ffa44ee8e75107d2665af
   languageName: node
   linkType: hard
 
@@ -6436,23 +6436,23 @@ __metadata:
     "@sentry/node": "npm:7.64.0"
     "@sentry/tracing": "npm:7.64.0"
     "@trivago/prettier-plugin-sort-imports": "npm:4.1.1"
-    "@types/bad-words": "npm:3.0.2"
-    "@types/bcrypt": "npm:5.0.1"
+    "@types/bad-words": "npm:3.0.3"
+    "@types/bcrypt": "npm:5.0.2"
     "@types/concurrently": "npm:7.0.0"
-    "@types/content-disposition": "npm:0.5.7"
+    "@types/content-disposition": "npm:0.5.8"
     "@types/eslint": "npm:8.40.2"
-    "@types/geoip-lite": "npm:1.4.3"
-    "@types/jest": "npm:29.5.7"
-    "@types/jsonwebtoken": "npm:9.0.4"
-    "@types/mime": "npm:3.0.3"
-    "@types/mmmagic": "npm:0.4.32"
+    "@types/geoip-lite": "npm:1.4.4"
+    "@types/jest": "npm:29.5.10"
+    "@types/jsonwebtoken": "npm:9.0.5"
+    "@types/mime": "npm:3.0.4"
+    "@types/mmmagic": "npm:0.4.33"
     "@types/node": "npm:18.15.13"
     "@types/node-fetch": "npm:2"
-    "@types/qs": "npm:6.9.9"
+    "@types/qs": "npm:6.9.10"
     "@types/sharp": "npm:0.31.1"
     "@types/striptags": "npm:3.1.1"
-    "@types/uuid": "npm:9.0.6"
-    "@types/yazl": "npm:2.4.4"
+    "@types/uuid": "npm:9.0.7"
+    "@types/yazl": "npm:2.4.5"
     "@typescript-eslint/eslint-plugin": "npm:5.60.1"
     "@typescript-eslint/parser": "npm:5.60.1"
     archiver: "npm:5.3.2"
