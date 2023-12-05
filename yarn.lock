@@ -6055,12 +6055,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fluent-json-schema@npm:4.1.0":
-  version: 4.1.0
-  resolution: "fluent-json-schema@npm:4.1.0"
+"fluent-json-schema@npm:4.1.2":
+  version: 4.1.2
+  resolution: "fluent-json-schema@npm:4.1.2"
   dependencies:
     "@fastify/deepmerge": "npm:^1.1.0"
-  checksum: c79e68dba8f82605ff9637849b7c9fe2eff72f5cb018d7adbb2641c0e4f22a53d18fdfcef9e29210a80def8726c3351b91de87b6654aa3916a97f526f34d4922
+  checksum: 34c35664ca2ba9a696f2ac7c8e34d0a2019212a27bf88e0cef920201505a862574dcf218fd667f5dbc9a0e05993726eb13b847fcdfc7f2631a54e552db341118
   languageName: node
   linkType: hard
 
@@ -6512,7 +6512,7 @@ __metadata:
     fastify: "npm:4.15.0"
     fastify-nodemailer: "npm:5.0.0"
     fastify-plugin: "npm:4.5.0"
-    fluent-json-schema: "npm:4.1.0"
+    fluent-json-schema: "npm:4.1.2"
     form-data: "npm:4.0.0"
     french-badwords-list: "npm:1.0.7"
     geoip-lite: "npm:1.4.7"
