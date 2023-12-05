@@ -82,7 +82,7 @@
     "fastify": "4.15.0",
     "fastify-nodemailer": "5.0.0",
     "fastify-plugin": "4.5.0",
-    "fluent-json-schema": "4.1.0",
+    "fluent-json-schema": "4.1.2",
     "form-data": "4.0.0",
     "french-badwords-list": "1.0.7",
     "geoip-lite": "1.4.7",
