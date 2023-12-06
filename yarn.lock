@@ -6548,7 +6548,7 @@ __metadata:
     uuid: "npm:9.0.0"
     wait-for-expect: "npm:3.0.2"
     ws: "npm:8.13.0"
-    yarn: "npm:1.22.19"
+    yarn: "npm:1.22.21"
     yazl: "npm:2.5.1"
   languageName: unknown
   linkType: soft
@@ -11535,13 +11535,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yarn@npm:1.22.19":
-  version: 1.22.19
-  resolution: "yarn@npm:1.22.19"
+"yarn@npm:1.22.21":
+  version: 1.22.21
+  resolution: "yarn@npm:1.22.21"
   bin:
     yarn: bin/yarn.js
     yarnpkg: bin/yarn.js
-  checksum: b3929d0a482291a87f6eb1459a9caf9cf6e2fe6d5267f83e44a150337a8c241bd69a62694d99eca14fb878a864c518247fc1522c4fa6d40a97db449af70d1760
+  checksum: aeb5f2bc47983ba55e7a23e588f3cf63a40153477e4f469e35f14e89b28711cba45761efffc58403139d2470fc35324eb6b0626dbfae3bdca99d7dde9debadd0
   languageName: node
   linkType: hard
 
