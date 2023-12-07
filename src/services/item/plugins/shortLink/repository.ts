@@ -54,11 +54,20 @@ export const ShortLinkRepository = AppDataSource.getRepository(ShortLink).extend
     return shortLinks;
   },
 
-  async get(alias: string): Promise<ShortLink> {
+  async get(alias: string, returnItemIdOnly: boolean = false): Promise<ShortLink> {
     if (!alias) throw new ShortLinkNotFound(alias);
+
+    const selectItemIdOnly = {
+      select: {
+        item: {
+          id: true,
+        },
+      },
+    };
 
     const shortLink = await this.findOne({
       where: { alias },
+      ...(returnItemIdOnly ? selectItemIdOnly : {}),
       relations: {
         item: true,
       },

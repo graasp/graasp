@@ -37,12 +37,7 @@ const restricted_get = {
     200: {
       type: 'object',
       properties: {
-        item: {
-          type: 'object',
-          properties: {
-            id: { type: 'string' },
-          },
-        },
+        itemId: { type: 'string' },
         alias: { type: 'string' },
         platform: { type: 'string' },
         createdAt: { type: 'string' },
