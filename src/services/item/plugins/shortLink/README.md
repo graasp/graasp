@@ -31,6 +31,9 @@ The API listens on the following routes:
 - **GET:**
   - `/items/short-links/:alias` (unprotected)
     - Retrieve the redirection route based on the short link alias. Returns 404 if the alias does not exist; otherwise, returns 302 with the url to redirect to.
+  - `/items/short-links/short-link/:alias` (unprotected)
+    - Get the short link by alias. Returns 404 if the alias does not exist; otherwise, returns 200 with the short link object.
+    - Because this route is unprotected, only the id field is returned from the item.
   - `/items/short-links/available/:alias` (unprotected)
     - Check if the given alias already exists. Returns 200 with the availability encapsulated like `{ available: boolean }`.
   - `/items/short-links/list/:itemId` (item's members only)

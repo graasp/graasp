@@ -17,6 +17,7 @@ import {
   injectGet,
   injectGetAll,
   injectGetAvailable,
+  injectGetShortLink,
   injectPatch,
   injectPost,
   logInAs,
@@ -92,6 +93,21 @@ describe('Short links routes tests', () => {
         expect(response.headers.location).toEqual(
           getRedirection(shortLinkPayload.itemId, shortLinkPayload.platform),
         );
+      });
+    });
+
+    describe('GET /short-links/short-link/:alias without connected member', () => {
+      it('Success even if not connected', async () => {
+        const response = await injectGetShortLink(app, MOCK_ALIAS);
+        const receive = response.json();
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(receive.item.id).toBe(shortLinkPayload.itemId);
+        expect(receive.alias).toBe(shortLinkPayload.alias);
+        expect(receive.platform).toBe(shortLinkPayload.platform);
+        // Ensure that the received item contain the
+        // id only because this route is not protected.
+        expect(Object.keys(receive.item).length).toEqual(1);
+        expect(Object.keys(receive.item)[0]).toBe('id');
       });
     });
 
