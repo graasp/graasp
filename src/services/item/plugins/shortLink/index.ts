@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       reply.code(StatusCodes.MOVED_TEMPORARILY).redirect(path);
     });
 
-    // WARNING: Do not return the entire item, because this route is no protected !
+    // WARNING: Do not return the entire item, because this route is not protected !
     // the restricted_get schema filter all item's fields except the id.
     fastify.get<{ Params: { alias: string } }>(
       '/alias/:alias',
@@ -32,11 +32,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         schema: restricted_get,
       },
       async ({ params: { alias } }) => {
-        const shortLink = await shortLinkService.getOne(buildRepositories(), alias, true);
-        return {
-          ...shortLink,
-          itemId: shortLink.item.id,
-        };
+        return await shortLinkService.getOneWithoutJoin(buildRepositories(), alias);
       },
     );
 
