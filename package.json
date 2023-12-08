@@ -108,7 +108,6 @@
     "typeorm": "0.3.17",
     "uuid": "9.0.0",
     "ws": "8.13.0",
-    "yarn": "1.22.19",
     "yazl": "2.5.1"
   },
   "devDependencies": {

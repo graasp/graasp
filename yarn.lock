@@ -6548,7 +6548,6 @@ __metadata:
     uuid: "npm:9.0.0"
     wait-for-expect: "npm:3.0.2"
     ws: "npm:8.13.0"
-    yarn: "npm:1.22.19"
     yazl: "npm:2.5.1"
   languageName: unknown
   linkType: soft
@@ -11532,16 +11531,6 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.1.1"
   checksum: abb3e37678d6e38ea85485ed86ebe0d1e3464c640d7d9069805ea0da12f69d5a32df8e5625e370f9c96dd1c2dc088ab2d0a4dd32af18222ef3c4224a19471576
-  languageName: node
-  linkType: hard
-
-"yarn@npm:1.22.19":
-  version: 1.22.19
-  resolution: "yarn@npm:1.22.19"
-  bin:
-    yarn: bin/yarn.js
-    yarnpkg: bin/yarn.js
-  checksum: b3929d0a482291a87f6eb1459a9caf9cf6e2fe6d5267f83e44a150337a8c241bd69a62694d99eca14fb878a864c518247fc1522c4fa6d40a97db449af70d1760
   languageName: node
   linkType: hard
 
