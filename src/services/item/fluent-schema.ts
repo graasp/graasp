@@ -10,6 +10,7 @@ import {
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { ITEMS_PAGE_SIZE } from './constants';
+import { Ordering, SortBy } from './types';
 
 /**
  * for serialization
@@ -126,9 +127,8 @@ export const getAccessible = {
   querystring: S.object()
     .prop('page', S.number().default(1))
     .prop('name', S.string())
-    // todo: more precise
-    .prop('sortBy', S.string())
-    .prop('ordering', S.string())
+    .prop('sortBy', S.enum(Object.values(SortBy)))
+    .prop('ordering', S.enum(Object.values(Ordering)))
     .prop('creatorId', S.string())
     .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE)),
   response: {

@@ -25,8 +25,12 @@ export const saveItemAndMembership = async (options: {
   creator?: Member;
   parentItem?: Item;
 }) => {
-  const { item = getDummyItem(), member, permission, creator, parentItem } = options;
-  const newItem = await saveItem({ item, actor: creator ?? member, parentItem });
+  const { item, member, permission, creator, parentItem } = options;
+  const newItem = await saveItem({
+    item: { ...getDummyItem(), ...(item ?? {}) },
+    actor: creator ?? member,
+    parentItem,
+  });
   const im = await saveMembership({ item: newItem, member, permission });
   return { item: newItem, itemMembership: im };
 };

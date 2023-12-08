@@ -750,6 +750,206 @@ describe('Item routes tests', () => {
       });
     });
   });
+  describe('GET /items/accessible', () => {
+    it('Throws if signed out', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      await saveItemAndMembership({ member });
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: '/items/accessible',
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
+    describe('Signed In', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+      });
+
+      it('Returns successfully owned and shared items', async () => {
+        // owned items
+        const { item: item1 } = await saveItemAndMembership({ member: actor });
+        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item3 } = await saveItemAndMembership({ member: actor });
+
+        // shared
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: item4 } = await saveItemAndMembership({ member: actor, creator: bob });
+
+        // should not return these items
+        await saveItemAndMembership({ member: bob });
+        await saveItemAndMembership({ member: actor, parentItem: item1 });
+        await saveItemAndMembership({ member: actor, parentItem: item4 });
+
+        const items = [item1, item2, item3, item4];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: '/items/accessible',
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            items.find(({ id: thisId }) => thisId === id),
+          );
+        });
+      });
+
+      it('Returns successfully items for member id', async () => {
+        await saveItemAndMembership({ member: actor });
+        await saveItemAndMembership({ member: actor });
+        await saveItemAndMembership({ member: actor });
+
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: item1 } = await saveItemAndMembership({ member: actor, creator: bob });
+        const { item: item2 } = await saveItemAndMembership({ member: actor, creator: bob });
+
+        const items = [item1, item2];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible?creatorId=${bob.id}`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            items.find(({ id: thisId }) => thisId === id),
+          );
+        });
+      });
+
+      it('Returns successfully sorted items by name asc', async () => {
+        const { item: item1 } = await saveItemAndMembership({ member: actor, item: { name: '2' } });
+        const { item: item2 } = await saveItemAndMembership({ member: actor, item: { name: '3' } });
+        const { item: item3 } = await saveItemAndMembership({ member: actor, item: { name: '1' } });
+
+        const items = [item3, item1, item2];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible?sortBy=name&ordering=asc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach((_, idx) => {
+          expectItem(data[idx], items[idx]);
+        });
+      });
+
+      it('Returns successfully sorted items by type desc', async () => {
+        const { item: item1 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+        });
+        const { item: item2 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+        });
+        const { item: item3 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+        });
+
+        const items = [item2, item1, item3];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible?sortBy=type&ordering=desc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach((_, idx) => {
+          expectItem(data[idx], items[idx]);
+        });
+      });
+
+      it('Throws for wrong sort by', async () => {
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible?sortBy=dontexist&ordering=desc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Throws for wrong ordering', async () => {
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible?sortBy=name&ordering=nimp`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Returns successfully paginated items', async () => {
+        await saveItemAndMembership({ member: actor, item: { name: '2' } });
+        await saveItemAndMembership({ member: actor, item: { name: '1' } });
+        const { item } = await saveItemAndMembership({ member: actor, item: { name: '3' } });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          // add sorting for result to be less flacky
+          url: `/items/accessible?ordering=asc&sortBy=name&pageSize=1&page=3`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(3);
+        expect(data).toHaveLength(1);
+        expectItem(data[0], item);
+      });
+    });
+  });
   describe('GET /items/:id/children', () => {
     // warning: this will change if the endpoint becomes public
     it('Throws if signed out', async () => {

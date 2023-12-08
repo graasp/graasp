@@ -12,7 +12,7 @@ import {
 } from '../../utils/errors';
 import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
-import { ItemSearchParams } from '../item/types';
+import { ItemSearchParams, Ordering, SortBy } from '../item/types';
 import { pathToId } from '../item/utils';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
@@ -101,12 +101,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *  */
   async getAccessibleItems(
     actor: Member,
-    { creatorId, name, sortBy = 'updated_at', ordering = 'desc' }: ItemSearchParams,
+    { creatorId, name, sortBy = SortBy.UpdatedAt, ordering = Ordering.desc }: ItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
   ): Promise<Paginated<Item>> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
-
+    console.log('SKIP', skip);
     const query = this.createQueryBuilder('im')
       .leftJoinAndSelect('im.item', 'item')
       .leftJoinAndSelect('item.creator', 'member')
@@ -123,11 +123,6 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         return 'NLEVEL(item.path) =' + subQuery;
       });
 
-    // TODO: validate
-    if (sortBy) {
-      query.orderBy(`item.${sortBy}`, ordering.toUpperCase());
-    }
-
     if (name) {
       query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
         name: name.toLowerCase().trim(),
@@ -136,6 +131,11 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     if (creatorId) {
       query.andWhere('item.creator = :creatorId', { creatorId });
+    }
+
+    if (sortBy) {
+      console.log('------order');
+      query.orderBy(`item.${sortBy}`, ordering.toUpperCase());
     }
 
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
