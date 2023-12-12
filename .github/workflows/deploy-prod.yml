@@ -63,7 +63,7 @@ jobs:
     needs: build
     name: Deploy
     runs-on: ubuntu-latest
-    environment: staging
+    environment: production
 
     steps:
       - name: Check out code
