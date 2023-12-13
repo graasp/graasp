@@ -29,7 +29,13 @@ const saveAppSettings = async ({ item, creator }) => {
   const s1 = await AppSettingRepository.save({ item, creator, ...defaultData });
   const s2 = await AppSettingRepository.save({ item, creator, ...defaultData });
   const s3 = await AppSettingRepository.save({ item, creator, ...defaultData });
-  return [s1, s2, s3];
+  const s4 = await AppSettingRepository.save({
+    item,
+    creator,
+    ...defaultData,
+    name: 'new-setting',
+  });
+  return [s1, s2, s3, s4];
 };
 
 const setUpForAppSettings = async (
@@ -123,6 +129,20 @@ describe('Apps Settings Tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expectAppSettings(response.json(), appSettings);
+      });
+
+      it('Get named app setting successfully', async () => {
+        const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings?name=new-setting`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectAppSettings(response.json(), [appSettings.find((s) => s.name === 'new-setting')]);
       });
 
       it('Get app setting with invalid item id throws', async () => {
