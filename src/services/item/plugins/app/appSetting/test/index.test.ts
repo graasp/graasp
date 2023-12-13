@@ -13,6 +13,12 @@ import { setItemPublic } from '../../../itemTag/test/fixtures';
 import { setUp } from '../../test/fixtures';
 import { AppSettingRepository } from '../repository';
 
+/**
+ * Check that `expected` is contained in `values`
+ * Does not check that they match exactly !
+ * @param values values returned by the API
+ * @param expected expected values
+ */
 const expectAppSettings = (values, expected) => {
   for (const expectValue of expected) {
     const value = values.find(({ id }) => id === expectValue.id);
