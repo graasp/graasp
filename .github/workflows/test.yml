@@ -5,7 +5,6 @@ on: [push]
 # abort running jobs if newer version is detected on same branch
 concurrency:
   group: ${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build-node:
@@ -61,8 +60,7 @@ jobs:
           yarn build
 
       - name: yarn check
-        run:
-          yarn check
+        run: yarn check
 
       - name: apply migrations on empty database
         env:
@@ -167,14 +165,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-jest-
 
-
       - name: yarn install
         run: |
           yarn
 
       - name: yarn test
-        run:
-          yarn test:ci --shard=${{ matrix.shard }}
+        run: yarn test:ci --shard=${{ matrix.shard }}
         env:
           CI: true
           # random keys
