@@ -135,7 +135,12 @@ export class AppSettingService {
     return appSettingRepository.get(appSettingId);
   }
 
-  async getForItem(memberId: string | undefined, repositories: Repositories, itemId: string) {
+  async getForItem(
+    memberId: string | undefined,
+    repositories: Repositories,
+    itemId: string,
+    name?: string,
+  ) {
     const { appSettingRepository, memberRepository } = repositories;
 
     // get member if exists
@@ -145,7 +150,7 @@ export class AppSettingService {
     // get app setting is allowed to readers
     await this.itemService.get(member, repositories, itemId);
 
-    return appSettingRepository.getForItem(itemId);
+    return appSettingRepository.getForItem(itemId, name);
   }
 
   async copyForItem(actor: Actor, repositories: Repositories, original: Item, copy: Item) {

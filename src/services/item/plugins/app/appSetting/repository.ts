@@ -60,13 +60,14 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
     return this.findOne({ where: { id }, relations: { creator: true, item: true } });
   },
 
-  getForItem(itemId: string): Promise<AppSetting[]> {
+  getForItem(itemId: string, name?: string): Promise<AppSetting[]> {
     if (!itemId) {
       throw new ItemNotFound(itemId);
     }
     return this.find({
       where: {
         item: { id: itemId },
+        ...(name ? { name } : undefined),
       },
       relations: { creator: true, item: true },
     });
