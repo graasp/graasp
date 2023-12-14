@@ -80,7 +80,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       { schema: getForOne },
       async ({ authTokenSubject: requestDetails, params: { itemId }, query }) => {
         const memberId = requestDetails?.memberId;
-        return appDataService.getForItem(memberId, buildRepositories(), itemId);
+        return appDataService.getForItem(memberId, buildRepositories(), itemId, query.type);
       },
     );
 
