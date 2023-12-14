@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -18,6 +19,7 @@ import { Item } from '../../../entities/Item';
 export type Filters = {
   visibility?: AppDataVisibility;
   memberId?: Member['id'];
+  type?: string;
 };
 
 @Entity()
@@ -45,6 +47,7 @@ export class AppData extends BaseEntity {
   @JoinColumn({ name: 'member_id' })
   member: Member;
 
+  @Index()
   @Column({
     nullable: false,
     length: 25,

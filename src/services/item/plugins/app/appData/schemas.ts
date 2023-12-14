@@ -73,6 +73,13 @@ const deleteOne = {
 
 const getForOne = {
   params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  querystring: {
+    type: 'object',
+    properties: {
+      type: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
   response: {
     200: {
       type: 'array',
