@@ -366,7 +366,7 @@ describe('Item Published', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        collections = await saveCollections(actor);
+        await saveCollections(actor);
       });
 
       it('Get published collections for member', async () => {
