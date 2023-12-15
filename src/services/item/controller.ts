@@ -84,7 +84,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }>(
     '/accessible',
     { schema: getAccessible, preHandler: fastify.verifyAuthentication },
-    async ({ member, log, query }) => {
+    async ({ member, query }) => {
       if (!member) {
         throw new UnauthorizedMember();
       }
