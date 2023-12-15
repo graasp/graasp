@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.1](https://github.com/graasp/graasp/compare/v1.11.0...v1.11.1) (2023-12-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/multipart to v7.7.3 ([#474](https://github.com/graasp/graasp/issues/474)) ([b41679b](https://github.com/graasp/graasp/commit/b41679b221a77f17718217d37c63d0f074377a1d))
+* **deps:** update dependency fluent-json-schema to v4.1.2 ([27c1bdc](https://github.com/graasp/graasp/commit/27c1bdcfbdd26c9c6305444d2fd9614905b7aa16))
+* **deps:** update dependency jsonwebtoken to v9.0.2 ([5b9a6cf](https://github.com/graasp/graasp/commit/5b9a6cfac78e67e2491c22fd67c8e953803eef22))
+* remove yarn dependency ([#715](https://github.com/graasp/graasp/issues/715)) ([f5cbfc6](https://github.com/graasp/graasp/commit/f5cbfc6447ae131ac97a839e45b0e5c76b9e2b92))
+* wrong env used in deploy job ([#721](https://github.com/graasp/graasp/issues/721)) ([70bdf02](https://github.com/graasp/graasp/commit/70bdf027d3b6fa25b7feef76a39219b8d945b3a8))
+
 ## [1.11.0](https://github.com/graasp/graasp/compare/v1.10.1...v1.11.0) (2023-12-01)
 
 
