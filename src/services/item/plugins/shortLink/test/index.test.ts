@@ -17,6 +17,7 @@ import {
   injectGet,
   injectGetAll,
   injectGetAvailable,
+  injectGetShortLink,
   injectPatch,
   injectPost,
   logInAs,
@@ -92,6 +93,21 @@ describe('Short links routes tests', () => {
         expect(response.headers.location).toEqual(
           getRedirection(shortLinkPayload.itemId, shortLinkPayload.platform),
         );
+      });
+    });
+
+    describe('GET /short-links/alias/:alias without connected member', () => {
+      it('Success even if not connected', async () => {
+        const response = await injectGetShortLink(app, MOCK_ALIAS);
+        const receive = response.json();
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(receive.itemId).toBe(shortLinkPayload.itemId);
+        expect(receive.alias).toBe(shortLinkPayload.alias);
+        expect(receive.platform).toBe(shortLinkPayload.platform);
+
+        // Ensure that the received item contain the
+        // id only because this route is not protected.
+        expect(Object.keys(receive)).not.toEqual(expect.arrayContaining(['item']));
       });
     });
 
@@ -341,6 +357,57 @@ describe('Short links routes tests', () => {
         const response = await injectGet(app, MOCK_ALIAS);
         expect(response.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
         expect(response.headers.location).toEqual(getRedirection(payload.itemId, payload.platform));
+      });
+    });
+
+    describe('GET /short-links/alias/:alias with connected member', () => {
+      it('Not found if get short links with item id that does not exist', async () => {
+        const response = await injectGetShortLink(app, 'bubu');
+        expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+      });
+
+      it('Success even if no permission', async () => {
+        const { item } = await mockItemAndMemberships({ itemCreator: actor });
+        const payload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
+        const post = await injectPost(app, payload);
+        expect(post.statusCode).toEqual(StatusCodes.OK);
+        expect(post.json().alias).toEqual(MOCK_ALIAS);
+
+        const response = await injectGetShortLink(app, MOCK_ALIAS);
+        const receive = response.json();
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(receive.itemId).toBe(payload.itemId);
+        expect(receive.alias).toBe(payload.alias);
+        expect(receive.platform).toBe(payload.platform);
+
+        // Ensure that the received item contain the
+        // id only because this route is not protected.
+        expect(Object.keys(receive)).not.toEqual(expect.arrayContaining(['item']));
+      });
+
+      it('Success when admin', async () => {
+        const { item } = await mockItemAndMemberships({
+          itemCreator: bob,
+          memberWithPermission: {
+            member: actor,
+            permission: PermissionLevel.Admin,
+          },
+        });
+        const payload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
+        const post = await injectPost(app, payload);
+        expect(post.statusCode).toEqual(StatusCodes.OK);
+        expect(post.json().alias).toEqual(MOCK_ALIAS);
+
+        const response = await injectGetShortLink(app, MOCK_ALIAS);
+        const receive = response.json();
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(receive.itemId).toBe(payload.itemId);
+        expect(receive.alias).toBe(payload.alias);
+        expect(receive.platform).toBe(payload.platform);
+
+        // Ensure that the received item contain the
+        // id only because this route is not protected.
+        expect(Object.keys(receive)).not.toEqual(expect.arrayContaining(['item']));
       });
     });
 

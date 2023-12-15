@@ -32,4 +32,18 @@ const update = {
   },
 };
 
-export { create, update };
+const restricted_get = {
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        itemId: { type: 'string' },
+        alias: { type: 'string' },
+        platform: { type: 'string' },
+        createdAt: { type: 'string' },
+      },
+    },
+  },
+};
+
+export { restricted_get, create, update };
