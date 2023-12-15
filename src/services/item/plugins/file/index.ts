@@ -135,7 +135,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const items: Item[] = [];
       const errors: Error[] = [];
       for await (const fileObject of files) {
-        const { filename, mimetype, fields, file: stream } = fileObject;
+        const { filename, mimetype, file: stream } = fileObject;
 
         // if one file fails, keep other files
         // transaction to ensure item is saved with memberships
@@ -147,7 +147,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
               parentId,
               filename,
               mimetype,
-              fields,
               stream,
             });
             items.push(i);

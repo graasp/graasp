@@ -467,7 +467,7 @@ describe('Invitation Plugin', () => {
 
     beforeEach(async () => {
       ({ app, actor } = await build());
-      ({ item, invitations } = await saveInvitations({ member: actor }));
+      ({ invitations } = await saveInvitations({ member: actor }));
     });
 
     it('Remove invitation on member registration and create memberships successfully', async () => {

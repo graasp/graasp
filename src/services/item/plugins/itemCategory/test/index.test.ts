@@ -93,7 +93,7 @@ describe('Categories', () => {
         ({ app } = await build({ member: null }));
         member = await saveMember(BOB);
         ({ item } = await saveItemAndMembership({ member }));
-        ({ itemCategories, categories } = await setUp({ actor: member, item }));
+        ({ itemCategories, categories } = await setUp({ item }));
       });
 
       it('Get categories', async () => {
@@ -171,7 +171,7 @@ describe('Categories', () => {
         ({ app } = await build({ member: null }));
         member = await saveMember(BOB);
         ({ item } = await saveItemAndMembership({ member }));
-        ({ itemCategories, categories } = await setUp({ actor: member, item }));
+        ({ itemCategories, categories } = await setUp({ item }));
       });
 
       it('Throws for private item', async () => {
@@ -189,7 +189,7 @@ describe('Categories', () => {
         member = await saveMember(BOB);
         ({ item } = await saveItemAndMembership({ member }));
         await setItemPublic(item, member);
-        ({ itemCategories, categories } = await setUp({ actor: member, item }));
+        ({ itemCategories, categories } = await setUp({ item }));
       });
 
       it('Get categories of an item', async () => {
@@ -208,7 +208,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         ({ item } = await saveItemAndMembership({ member: actor }));
-        ({ itemCategories, categories } = await setUp({ actor, item }));
+        ({ itemCategories, categories } = await setUp({ item }));
       });
 
       it('Get categories of an item', async () => {
@@ -237,7 +237,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember(BOB);
-        ({ categories } = await setUp({ actor: member }));
+        ({ categories } = await setUp({}));
       });
 
       it('Throws if does not have membership', async () => {
@@ -255,7 +255,7 @@ describe('Categories', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ categories } = await setUp({ actor }));
+        ({ categories } = await setUp({}));
       });
 
       it('Post category for an item', async () => {
@@ -322,7 +322,7 @@ describe('Categories', () => {
         ({ app } = await build({ member: null }));
         member = await saveMember(BOB);
         ({ item } = await saveItemAndMembership({ member }));
-        ({ itemCategories, categories } = await setUp({ actor: member, item }));
+        ({ itemCategories, categories } = await setUp({ item }));
       });
 
       it('Throws if does not have membership', async () => {
@@ -339,7 +339,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         ({ item } = await saveItemAndMembership({ member: actor }));
-        ({ itemCategories, categories } = await setUp({ actor, item }));
+        ({ itemCategories, categories } = await setUp({ item }));
       });
 
       it('Delete item category', async () => {

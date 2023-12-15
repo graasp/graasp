@@ -4,8 +4,6 @@ import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
 
-import { MultipartFields } from '@fastify/multipart';
-
 import {
   FileItemProperties,
   ItemType,
@@ -60,27 +58,25 @@ class FileItemService {
       parentId,
       filename,
       mimetype,
-      fields,
       stream,
     }: {
       description?: string;
       parentId?: string;
       filename;
       mimetype;
-      fields?: MultipartFields;
       stream: Readable;
     },
   ) {
     const filepath = this.buildFilePath(); // parentId, filename
     // compute body data from file's fields
-    if (fields) {
-      Object.fromEntries(
-        Object.keys(fields).map((key) => [
-          key,
-          (fields[key] as unknown as { value: string })?.value,
-        ]),
-      );
-    }
+    // if (fields) {
+    //   Object.fromEntries(
+    //     Object.keys(fields).map((key) => [
+    //       key,
+    //       (fields[key] as unknown as { value: string })?.value,
+    //     ]),
+    //   );
+    // }
     // check member storage limit
     await this.storageService.checkRemainingStorage(actor, repositories);
 
