@@ -29,11 +29,11 @@ export function setUpApi(replies: Api): Promise<{ [Endpoint in keyof Api]: URLSe
 
   const endpointAndParams = Object.entries(replies).map(
     ([endpoint, response]) =>
-      new Promise<[endpoint: string, params: URLSearchParams]>((resolve, reject) => {
+      new Promise<[endpoint: string, params: URLSearchParams]>((resolve) => {
         api
           .get(`/${endpoint}`)
           .query(true)
-          .reply((uri, body) => {
+          .reply((uri) => {
             const url = new URL(uri, ETHERPAD_URL);
             // check that API key is always sent
             expect(url.searchParams.get('apikey')).toEqual(ETHERPAD_API_KEY);

@@ -26,7 +26,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppAction> }>(
       '/:itemId/app-action',
       { schema: create },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, body, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId }, body }) => {
         const id = requestDetails && requestDetails.memberId;
 
         return db.transaction(async (manager) => {
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Params: { itemId: string }; Querystring: SingleItemGetFilter }>(
       '/:itemId/app-action',
       { schema: getForOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, query: filters, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId }, query: filters }) => {
         const id = requestDetails && requestDetails.memberId;
 
         return appActionService.getForItem(id, buildRepositories(), itemId, filters);
@@ -50,7 +50,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Querystring: ManyItemsGetFilter }>(
       '/app-action',
       { schema: getForMany },
-      async ({ authTokenSubject: requestDetails, query: filters, log }) => {
+      async ({ authTokenSubject: requestDetails, query: filters }) => {
         const id = requestDetails && requestDetails.memberId;
 
         return appActionService.getForManyItems(id, buildRepositories(), filters.itemId, filters);

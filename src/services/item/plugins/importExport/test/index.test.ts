@@ -75,6 +75,7 @@ describe('Member routes tests', () => {
 
   beforeEach(() => {
     (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return { json: async () => iframelyResult } as any;
     });
   });
@@ -110,6 +111,7 @@ describe('Member routes tests', () => {
           }
           expect(item.type).toEqual(file.type);
           expect(item.description).toContain(file.description);
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           expect(item.creator!.id).toEqual(actor.id);
 
           if (item.type === ItemType.S3_FILE) {
@@ -134,6 +136,7 @@ describe('Member routes tests', () => {
         const folderItem = await ItemRepository.findOne({
           where: { name: ARCHIVE_CONTENT.folder.name },
         });
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect(child!.path).toContain(folderItem!.path);
       }, 5000);
     });

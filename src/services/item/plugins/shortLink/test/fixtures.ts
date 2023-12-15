@@ -91,9 +91,11 @@ export const injectDelete = async (app, shortLinkId) => {
 };
 
 export const logOut = (app) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
     delete request.member;
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
     delete request.session.member;
     delete request.member;
@@ -101,9 +103,11 @@ export const logOut = (app) => {
 };
 
 export const logInAs = async (app, member) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
     request.member = member;
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
     request.session.set('member', member.id);
     request.member = member;

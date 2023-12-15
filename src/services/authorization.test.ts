@@ -1155,7 +1155,7 @@ describe('Authorization', () => {
       it('Invalid saved membership', async () => {
         const repositories = {
           itemMembershipRepository: {
-            getInheritedMany: jest.fn((item, member) => ({ permission: 'anything' })),
+            getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
           } as unknown as typeof ItemMembershipRepository,
           itemTagRepository: {
             hasManyForMany: jest.fn(() => ({ data: {}, errors: [] })),

@@ -2,12 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import {
-  IdParam,
-  IdsParams,
-  MAX_TARGETS_FOR_MODIFY_REQUEST,
-  MAX_TARGETS_FOR_READ_REQUEST,
-} from '@graasp/sdk';
+import { IdParam, IdsParams, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
@@ -29,10 +24,7 @@ export interface RecycledItemDataOptions {
 
 const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, options) => {
   const { db, websockets } = fastify;
-  const {
-    maxItemsInRequest = MAX_TARGETS_FOR_READ_REQUEST,
-    maxItemsWithResponse = MAX_TARGETS_FOR_MODIFY_REQUEST,
-  } = options;
+  const { maxItemsInRequest = MAX_TARGETS_FOR_READ_REQUEST } = options;
 
   const recycleBinService = new RecycledBinService();
 
@@ -52,7 +44,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   fastify.get<{ Params: IdParam }>(
     '/recycled',
     { schema: getRecycledItemDatas, preHandler: fastify.verifyAuthentication },
-    async ({ member, log }) => {
+    async ({ member }) => {
       const result = await recycleBinService.getAll(member, buildRepositories());
       return result;
     },

@@ -8,7 +8,6 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Item } from '../../../../item/entities/Item';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../member/entities/member';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { Category } from '../entities/Category';
@@ -57,7 +56,7 @@ export const saveItemCategories = async ({ item, categories }) => {
   return itemCategories;
 };
 
-export const setUp = async ({ actor, item }: { actor: Member; item?: Item }) => {
+export const setUp = async ({ item }: { item?: Item }) => {
   const categories = await saveCategories();
   const returnValues: { itemCategories?: ItemCategory[]; categories: Category[] } = {
     categories,

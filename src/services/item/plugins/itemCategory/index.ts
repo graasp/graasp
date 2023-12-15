@@ -5,7 +5,7 @@ import common, { create, deleteOne, getCategories, getItemCategories } from './s
 import { CategoryService } from './services/category';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
   const itemCategoryService = fastify.itemsCategory.service;
   const categoryService = new CategoryService();
 
@@ -29,7 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       preHandler: fastify.attemptVerifyAuthentication,
     },
-    async ({ member, params: { itemId }, log }) => {
+    async ({ member, params: { itemId } }) => {
       return itemCategoryService.getForItem(member, buildRepositories(), itemId);
     },
   );
@@ -38,7 +38,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string }; Body: { categoryId: string } }>(
     '/:itemId/categories',
     { schema: create, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId }, body: { categoryId }, log }) => {
+    async ({ member, params: { itemId }, body: { categoryId } }) => {
       return db.transaction(async (manager) => {
         return itemCategoryService.post(member, buildRepositories(manager), itemId, categoryId);
       });
@@ -49,7 +49,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemCategoryId: string; itemId: string } }>(
     '/:itemId/categories/:itemCategoryId',
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemCategoryId, itemId }, log }) => {
+    async ({ member, params: { itemCategoryId, itemId } }) => {
       return db.transaction(async (manager) => {
         return itemCategoryService.delete(
           member,

@@ -76,12 +76,12 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   };
   appDataService.hooks.setPreHook('patch', patchPreHook);
 
-  fastify.route<{ Querystring: IdParam; Body: any }>({
+  fastify.route<{ Querystring: IdParam; Body: unknown }>({
     method: HttpMethod.POST,
     url: '/app-data/upload',
     schema: upload,
     handler: async (request) => {
-      const { authTokenSubject: requestDetails, log } = request;
+      const { authTokenSubject: requestDetails } = request;
       const memberId = requestDetails?.memberId;
       const itemId = requestDetails?.itemId;
 

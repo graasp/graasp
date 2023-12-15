@@ -74,7 +74,7 @@ class FileItemService {
     const filepath = this.buildFilePath(); // parentId, filename
     // compute body data from file's fields
     if (fields) {
-      const fileBody = Object.fromEntries(
+      Object.fromEntries(
         Object.keys(fields).map((key) => [
           key,
           (fields[key] as unknown as { value: string })?.value,
@@ -199,9 +199,9 @@ class FileItemService {
     return result;
   }
 
-  async copy(actor: Member, repositories: Repositories, { original, copy }: { original; copy }) {
+  async copy(actor: Member, repositories: Repositories, { copy }: { original; copy }) {
     const { id, extra } = copy; // full copy with new `id`
-    const { size, path: originalPath, mimetype } = extra[this.fileService.type];
+    const { path: originalPath, mimetype } = extra[this.fileService.type];
     // filenames are not used
     const newFilePath = this.buildFilePath();
 

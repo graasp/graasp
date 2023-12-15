@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import { In } from 'typeorm';
@@ -24,6 +25,7 @@ jest.mock('../../../plugins/datasource');
 // bug: cannot reuse mockCaptchaValidation
 jest.mock('node-fetch');
 (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { json: async () => ({ success: true, action: RecaptchaAction.SignUp, score: 1 }) } as any;
 });
 
@@ -461,7 +463,7 @@ describe('Invitation Plugin', () => {
   });
 
   describe('Hook', () => {
-    let item, invitations;
+    let invitations;
 
     beforeEach(async () => {
       ({ app, actor } = await build());

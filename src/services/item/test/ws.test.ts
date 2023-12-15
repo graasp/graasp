@@ -217,6 +217,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -307,6 +308,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -519,7 +521,7 @@ describe('Item websocket hooks', () => {
       expectItem(updated, { ...item, ...payload }, actor);
 
       await waitForExpect(() => {
-        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        const [_ownUpdate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('update', [item.id], { data: { [item.id]: updated }, errors: [] }),
         );
@@ -566,7 +568,7 @@ describe('Item websocket hooks', () => {
       });
 
       await waitForExpect(() => {
-        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        const [_ownUpdate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('delete', [item.id], { data: { [item.id]: item }, errors: [] }),
         );
@@ -588,7 +590,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(() => {
-        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        const [_ownUpdate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('delete', [item.id], { error: new Error('mock error') }),
         );
@@ -614,7 +616,7 @@ describe('Item websocket hooks', () => {
       });
 
       await waitForExpect(() => {
-        const [ownUpdate, feedbackUpdate] = memberUpdates;
+        const [_ownUpdate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('move', [item.id], { data: { [item.id]: moved }, errors: [] }),
         );

@@ -357,6 +357,7 @@ describe('Tags', () => {
         expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
         const itemTag = await ItemTagRepository.findOneBy({ id: toDelete.id });
         expect(itemTag).toBeNull();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const childItemTag = await ItemTagRepository.findOneBy({ id: descendantToDelete!.id });
         expect(childItemTag).toBeNull();
       });

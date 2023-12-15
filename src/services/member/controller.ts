@@ -49,7 +49,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: IdParam }>(
     '/:id',
     { schema: getOne },
-    async ({ member, params: { id }, log }) => {
+    async ({ member, params: { id } }) => {
       return memberService.get(member, buildRepositories(), id);
     },
   );
@@ -61,7 +61,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     {
       schema: getMany,
     },
-    async ({ member, query: { id: ids }, log }) => {
+    async ({ member, query: { id: ids } }) => {
       return memberService.getMany(member, buildRepositories(), ids);
     },
   );
@@ -82,7 +82,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
   fastify.patch<{ Params: IdParam; Body: Partial<Member> }>(
     '/:id',
     { schema: updateOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { id }, body, log }) => {
+    async ({ member, params: { id }, body }) => {
       // handle partial change
       // question: you can never remove a key?
 

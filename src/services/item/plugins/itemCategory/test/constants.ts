@@ -1,7 +1,5 @@
 import { v4 } from 'uuid';
 
-import { CategoryRepository } from '../repositories/category';
-
 export const CATEGORY_TYPES = [
   {
     id: v4(),

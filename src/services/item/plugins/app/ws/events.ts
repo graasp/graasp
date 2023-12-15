@@ -35,6 +35,7 @@ interface AppDataEvent extends AppEvent {
  * @param appData value of the appData for this event
  * @returns instance of app data event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const AppDataEvent = (op: AppDataEvent['op'], appData: AppData): AppDataEvent => ({
   kind: appDataTopic,
   op,
@@ -55,6 +56,7 @@ interface AppActionEvent extends AppEvent {
  * @param appAction value of the app action for this event
  * @returns instance of app action event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const AppActionEvent = (op: AppActionEvent['op'], appAction: AppAction): AppActionEvent => ({
   kind: appActionsTopic,
   op,
@@ -75,6 +77,7 @@ interface AppSettingEvent extends AppEvent {
  * @param appAction value of the app setting for this event
  * @returns instance of app setting event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const AppSettingEvent = (
   op: AppSettingEvent['op'],
   appSetting: AppSetting,

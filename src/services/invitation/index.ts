@@ -11,7 +11,7 @@ import { Invitation } from './invitation';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
 import { InvitationService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify, options) => {
+const plugin: FastifyPluginAsync = async (fastify) => {
   const { mailer, db, log, members, items } = fastify;
 
   if (!mailer) {
@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
       schema: invite,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, body, params, log }) => {
+    async ({ member, body, params }) => {
       return db.transaction(async (manager) => {
         return iS.postManyForItem(member, buildRepositories(manager), params.id, body.invitations);
       });
@@ -70,7 +70,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
     '/:id/invitations/:invitationId',
     { schema: updateOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params, body }) => {
-      const { id: itemId, invitationId } = params;
+      const { invitationId } = params;
 
       return db.transaction(async (manager) => {
         return iS.patch(member, buildRepositories(manager), invitationId, body);
@@ -83,7 +83,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
     '/:id/invitations/:invitationId',
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params }) => {
-      const { id: itemId, invitationId } = params;
+      const { invitationId } = params;
 
       return db.transaction(async (manager) => {
         return iS.delete(member, buildRepositories(manager), invitationId);
@@ -95,8 +95,8 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
   fastify.post<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId/send',
     { schema: sendOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params, log }, reply) => {
-      const { id: itemId, invitationId } = params;
+    async ({ member, params }, reply) => {
+      const { invitationId } = params;
 
       await iS.resend(member, buildRepositories(), invitationId);
       reply.status(StatusCodes.NO_CONTENT);

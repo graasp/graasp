@@ -126,7 +126,7 @@ export async function createFastifyInstance(
     server.addHook('preHandler', mockSessionPreHandler);
 
     setupFn(server).then(() => {
-      server.listen(config.port, config.host, (err, addr) => {
+      server.listen(config.port, config.host, (err, _addr) => {
         if (err) {
           reject(err.message);
         }
@@ -170,7 +170,7 @@ export function createConnUrl(config: TestConfig): string {
  * @returns Promise of websocket client
  */
 export async function createWsClient(config: TestConfig): Promise<WebSocket> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     const client = new WebSocket(createConnUrl(config));
     client.on('open', () => resolve(client));
   });

@@ -86,7 +86,7 @@ describe('internal state', () => {
   describe('with channels', () => {
     beforeEach(async () => {
       // register a topic with validation
-      t.server!.websockets!.register('foo', async (req) => {
+      t.server!.websockets!.register('foo', async (_req) => {
         /* don't reject */
       });
 
@@ -166,7 +166,7 @@ describe('client requests', () => {
     t.server = await createWsFastifyInstance(t.config);
     t.client = await createWsClient(t.config);
     // register a topic with validation
-    t.server!.websockets!.register('foo', async (req) => {
+    t.server!.websockets!.register('foo', async (_req) => {
       /* don't reject */
     });
   });
@@ -332,7 +332,7 @@ describe('channel send', () => {
     t.server = await createWsFastifyInstance(config);
 
     // register a topic with validation
-    t.server!.websockets!.register('foo', async (req) => {
+    t.server!.websockets!.register('foo', async (_req) => {
       /* don't reject */
     });
 
@@ -440,7 +440,7 @@ describe('error cases', () => {
   });
 
   test('rejected validation', async () => {
-    t.server!.websockets!.register('foo', async (req) => {
+    t.server!.websockets!.register('foo', async (_req) => {
       // always reject
       throw new Websocket.AccessDeniedError();
     });

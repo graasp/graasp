@@ -28,10 +28,10 @@ test('multi-instance broker', async () => {
   const instance2 = await createWsFastifyInstance(config2);
 
   // register same topic on both instances
-  instance1.websockets.register('foo', async (req) => {
+  instance1.websockets.register('foo', async (_req) => {
     /* don't reject */
   });
-  instance2.websockets.register('foo', async (req) => {
+  instance2.websockets.register('foo', async (_req) => {
     /* don't reject */
   });
 

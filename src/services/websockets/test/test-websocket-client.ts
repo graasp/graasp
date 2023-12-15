@@ -24,7 +24,7 @@ export class TestWsClient {
    */
   async send(payload: Websocket.ClientMessage): Promise<Websocket.ServerResponse> {
     await this.ready;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const handler = (data) => {
         const message = JSON.parse(data.toString());
         if (message.type === Websocket.ServerMessageTypes.Response) {

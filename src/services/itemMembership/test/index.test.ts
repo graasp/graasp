@@ -114,7 +114,7 @@ describe('Membership routes tests', () => {
         const { item: itemA, itemMembership: im1 } = await saveItemAndMembership({
           member: member,
         });
-        const { item: item2, itemMembership: im2 } = await saveItemAndMembership({
+        const { item: item2 } = await saveItemAndMembership({
           member: member,
         });
         const itemB = await saveItem({ item: getDummyItem(), parentItem: itemA, actor: member });
@@ -480,12 +480,13 @@ describe('Membership routes tests', () => {
         ]);
         const savedMemberships = savedMembershispForItem[item.id];
 
-        newMemberships.forEach((m, idx) => {
+        newMemberships.forEach((m) => {
           const im = savedMemberships.find(({ member }) => member.id === m.memberId);
           const correctMembership = {
             ...m,
             item,
             creator: actor,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             member: members.find(({ id: thisId }) => thisId === m.memberId)!,
           };
           expectMembership(im, correctMembership);
@@ -854,7 +855,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot delete last admin membership', async () => {
-        const { item, itemMembership } = await saveItemAndMembership({ member: actor });
+        const { itemMembership } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.DELETE,

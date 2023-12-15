@@ -30,6 +30,7 @@ export class ActionChatService {
     const action = {
       item: message.item,
       type: ChatActionType.Create,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { ...(request.body as any) },
     };
     await this.actionService.postMany(member, repositories, request, [action]);
@@ -45,6 +46,7 @@ export class ActionChatService {
     const action = {
       item: message.item,
       type: ChatActionType.Update,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { ...(request.body as any), messageId: message.id },
     };
     await this.actionService.postMany(member, repositories, request, [action]);
@@ -60,6 +62,7 @@ export class ActionChatService {
     const action = {
       item: message.item,
       type: ChatActionType.Delete,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { ...(request.body as any), messageId: message.id },
     };
     await this.actionService.postMany(member, repositories, request, [action]);

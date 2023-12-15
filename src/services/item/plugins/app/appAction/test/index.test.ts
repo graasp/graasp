@@ -197,11 +197,11 @@ describe('App Actions Tests', () => {
         ({ app, actor } = await build());
 
         // unefficient way of registering two apps and their app actions
-        const {
-          item: item1,
-          token: unusedToken,
-          appActions: appActions1,
-        } = await setUpForAppActions(app, actor, actor);
+        const { item: item1, appActions: appActions1 } = await setUpForAppActions(
+          app,
+          actor,
+          actor,
+        );
         const {
           item: item2,
           token: validToken,

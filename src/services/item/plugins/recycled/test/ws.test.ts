@@ -207,6 +207,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -242,6 +243,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -283,6 +285,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -423,6 +426,7 @@ describe('Recycle websocket hooks', () => {
       await saveMembership({ member: actor, item, permission: PermissionLevel.Read });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -437,6 +441,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send subscription as user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = actor;
       });
@@ -446,6 +451,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send restore request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -476,6 +482,7 @@ describe('Recycle websocket hooks', () => {
       await saveMembership({ member: actor, item: childItem, permission: PermissionLevel.Read });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -490,6 +497,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send subscription as user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = actor;
       });
@@ -499,6 +507,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send restore request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -534,6 +543,7 @@ describe('Recycle websocket hooks', () => {
       await saveMembership({ member: actor, item: childItem, permission: PermissionLevel.Admin });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -548,6 +558,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send subscription as user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = actor;
       });
@@ -557,6 +568,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send restore request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -586,6 +598,7 @@ describe('Recycle websocket hooks', () => {
       await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
 
       // send recycle request as admin Anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -600,6 +613,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       // send subscription as user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = actor;
       });
@@ -654,7 +668,7 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(() => {
-        const [ownDelete, recycleCreate, feedbackUpdate] = memberUpdates;
+        const [_ownDelete, _recycleCreate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('recycle', [item.id], {
             data: { [item.id]: updatedItem },
@@ -714,7 +728,7 @@ describe('Recycle websocket hooks', () => {
       }
 
       await waitForExpect(() => {
-        const [ownCreate, recycleCreate, feedbackUpdate] = memberUpdates;
+        const [_ownCreate, _recycleCreate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('restore', [item.id], {
             data: { [item.id]: restored },

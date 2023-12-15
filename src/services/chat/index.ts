@@ -30,7 +30,7 @@ export interface GraaspChatPluginOptions {
   prefix?: string;
 }
 
-const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
   await fastify.addSchema(commonChat);
 
   await fastify.register(fp(mentionPlugin));
@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
     fastify.get<{ Params: { itemId: string } }>(
       '/:itemId/chat',
       { schema: getChat, preHandler: fastify.attemptVerifyAuthentication },
-      async ({ member, params: { itemId }, log }) => {
+      async ({ member, params: { itemId } }) => {
         return chatService.getForItem(member, buildRepositories(), itemId);
       },
     );
@@ -78,7 +78,6 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
           member,
           params: { itemId },
           body,
-          log,
         } = request;
         if (!member) {
           throw new UnauthorizedMember();
@@ -110,7 +109,6 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
           member,
           params: { itemId, messageId },
           body,
-          log,
         } = request;
         if (!member) {
           throw new UnauthorizedMember();
@@ -135,7 +133,6 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
         const {
           member,
           params: { itemId, messageId },
-          log,
         } = request;
         if (!member) {
           throw new UnauthorizedMember();
@@ -160,7 +157,6 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify, opti
         const {
           member,
           params: { itemId },
-          log,
         } = request;
         if (!member) {
           throw new UnauthorizedMember();

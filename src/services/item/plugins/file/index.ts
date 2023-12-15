@@ -105,7 +105,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     await fileItemService.copy(actor, repositories, { original, copy });
   });
 
-  fastify.route<{ Querystring: IdParam; Body: any }>({
+  fastify.route<{ Querystring: IdParam; Body: unknown }>({
     method: HttpMethod.POST,
     url: '/upload',
     schema: upload,

@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel, Websocket } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
@@ -84,6 +84,7 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -117,6 +118,7 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -130,9 +132,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [membershipCreate] = membershipUpdates;
-        expect(membershipCreate).toMatchObject(
-          ItemMembershipEvent('create', parseStringToDate(membership)),
-        );
+        expect(membershipCreate).toMatchObject(ItemMembershipEvent('create', membership));
       });
     });
   });
@@ -153,6 +153,7 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -166,9 +167,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;
-        expect(membershipUpdate).toMatchObject(
-          ItemMembershipEvent('update', parseStringToDate(result)),
-        );
+        expect(membershipUpdate).toMatchObject(ItemMembershipEvent('update', result));
       });
     });
   });
@@ -189,6 +188,9 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+
+      // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -219,6 +221,9 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+
+      // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });

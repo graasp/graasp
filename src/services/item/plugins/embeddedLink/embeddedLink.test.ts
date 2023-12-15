@@ -43,6 +43,7 @@ describe('Link Item tests', () => {
 
   beforeEach(() => {
     (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return { json: async () => iframelyResult } as any;
     });
   });
@@ -236,6 +237,7 @@ describe('Link Item tests', () => {
               [ItemType.LINK]: {
                 url: 'http://myurl.com',
               },
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any,
             name: 'mylink',
           },

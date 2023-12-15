@@ -13,9 +13,8 @@ class MockValidator implements HtmlValidator {
   /**
    * Validates an extracted html package content
    */
-  validatePackage() {
-    // TODO: type
-    return { isValid: true } as any;
+  async validatePackage() {
+    // do nothing
   }
 }
 
