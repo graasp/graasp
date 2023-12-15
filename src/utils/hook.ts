@@ -1,7 +1,14 @@
+import { FastifyBaseLogger } from 'fastify';
+
 import { Actor } from '../services/member/entities/member';
 import { Repositories } from './repositories';
 
-export type Handler<Data> = (actor: Actor, repositories: Repositories, data: Data) => Promise<void>;
+export type Handler<Data> = (
+  actor: Actor,
+  repositories: Repositories,
+  data: Data,
+  log?: FastifyBaseLogger,
+) => Promise<void>;
 
 class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unknown } }> {
   private readonly postHooks = new Map<keyof EventMap, Handler<unknown>[]>();
@@ -24,11 +31,12 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
     actor: Actor,
     repositories: Repositories,
     data: EventMap[Event]['post'],
+    log?: FastifyBaseLogger,
   ) {
     // TODO: allsettled?
     const hooks = this.postHooks.get(event);
     if (hooks) {
-      await Promise.all(hooks.map((f) => f(actor, repositories, data)));
+      await Promise.all(hooks.map((f) => f(actor, repositories, data, log)));
     }
   }
 
@@ -46,11 +54,12 @@ class HookManager<EventMap extends { [event: string]: { pre: unknown; post: unkn
     actor: Actor,
     repositories: Repositories,
     data: EventMap[Event]['pre'],
+    log?: FastifyBaseLogger,
   ) {
     // TODO: allsettled?
     const hooks = this.preHooks.get(event);
     if (hooks) {
-      await Promise.all(hooks.map((f) => f(actor, repositories, data)));
+      await Promise.all(hooks.map((f) => f(actor, repositories, data, log)));
     }
   }
 }

@@ -4,7 +4,6 @@ import { Websocket, getParentFromPath } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../utils/repositories';
 import { WebsocketService } from '../../websockets/ws-service';
-import { recycleWsHooks } from '../plugins/recycled/ws/hooks';
 import ItemService from '../service';
 import {
   ChildItemEvent,
@@ -25,22 +24,29 @@ function registerItemTopic(websockets: WebsocketService, itemService: ItemServic
   });
 
   // on create item, notify parent of new child
-  itemService.hooks.setPostHook('create', async (member, repositories, { item }) => {
-    const parentId = getParentFromPath(item.path);
-    if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
+  itemService.hooks.setPostHook('create', async (member, repositories, { item }, log) => {
+    try {
+      const parentId = getParentFromPath(item.path);
+      if (parentId !== undefined) {
+        websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
+      }
+    } catch (e) {
+      log?.error(e);
     }
   });
 
   // on update item
   // - notify item itself of update
   // - notify parent of updated child
-  itemService.hooks.setPostHook('update', async (member, repositories, { item }) => {
+  itemService.hooks.setPostHook('update', async (member, repositories, { item }, log) => {
     websockets.publish(itemTopic, item.id, SelfItemEvent('update', item));
-
-    const parentId = getParentFromPath(item.path);
-    if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent('update', item));
+    try {
+      const parentId = getParentFromPath(item.path);
+      if (parentId !== undefined) {
+        websockets.publish(itemTopic, parentId, ChildItemEvent('update', item));
+      }
+    } catch (e) {
+      log?.error(e);
     }
   });
 
@@ -95,11 +101,15 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
   });
 
   // on create, notify own items of creator with new item IF path is root
-  itemService.hooks.setPostHook('create', async (actor, repositories, { item }) => {
+  itemService.hooks.setPostHook('create', async (actor, repositories, { item }, log) => {
     const parentId = getParentFromPath(item.path);
-    if (parentId === undefined && item.creator) {
-      // root item, notify creator
-      websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
+    try {
+      if (parentId === undefined && item.creator) {
+        // root item, notify creator
+        websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
+      }
+    } catch (e) {
+      log?.error(e);
     }
   });
 

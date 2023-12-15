@@ -78,10 +78,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             targetFolder,
             parentId,
           },
-          fastify.log,
+          log,
         )
         .catch((e) => {
-          fastify.log.error(e);
+          log.error(e);
         });
 
       reply.status(StatusCodes.ACCEPTED);

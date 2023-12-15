@@ -23,7 +23,7 @@ const start = async () => {
     },
   });
 
-  const { SentryConfig, Sentry } = initSentry(instance);
+  const { Sentry } = initSentry(instance);
 
   instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);
@@ -50,7 +50,7 @@ const start = async () => {
     instance.log.info('App is running %s mode', ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);
-    Sentry?.withScope((scope) => {
+    Sentry?.withScope((_scope) => {
       // scope.setSpan(mainMetric);
       // scope.setTransactionName(mainMetric.name);
       Sentry?.captureException(err);
