@@ -6,7 +6,7 @@ import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from 
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
-import { create, update } from './schemas';
+import { create, restricted_get, update } from './schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -23,6 +23,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const path = await shortLinkService.getRedirection(buildRepositories(), alias);
       reply.code(StatusCodes.MOVED_TEMPORARILY).redirect(path);
     });
+
+    // WARNING: Do not return the entire item, because this route is not protected !
+    // the restricted_get schema filter all item's fields except the id.
+    fastify.get<{ Params: { alias: string } }>(
+      '/alias/:alias',
+      {
+        schema: restricted_get,
+      },
+      async ({ params: { alias } }) => {
+        return await shortLinkService.getOneWithoutJoin(buildRepositories(), alias);
+      },
+    );
 
     fastify.get<{ Params: { alias: string } }>(
       '/available/:alias',

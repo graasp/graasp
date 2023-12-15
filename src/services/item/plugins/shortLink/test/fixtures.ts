@@ -53,14 +53,21 @@ export const mockItemAndMemberships = async ({
   return { item };
 };
 
-const shortLinkUrl = (shortLinkId) => {
-  return `${SHORT_LINKS_FULL_PREFIX}/${shortLinkId}`;
+const shortLinkUrl = (alias) => {
+  return `${SHORT_LINKS_FULL_PREFIX}/${alias}`;
 };
 
-export const injectGet = async (app, shortLinkId) => {
+export const injectGet = async (app, alias) => {
   return app.inject({
     method: HttpMethod.GET,
-    url: shortLinkUrl(shortLinkId),
+    url: shortLinkUrl(alias),
+  });
+};
+
+export const injectGetShortLink = async (app, alias) => {
+  return app.inject({
+    method: HttpMethod.GET,
+    url: `${SHORT_LINKS_FULL_PREFIX}/alias/${alias}`,
   });
 };
 
@@ -82,12 +89,12 @@ export const injectPost = async (app, payload?) => {
   return app.inject({ method: HttpMethod.POST, url: SHORT_LINKS_FULL_PREFIX, payload });
 };
 
-export const injectPatch = async (app, shortLinkId, payload?) => {
-  return app.inject({ method: HttpMethod.PATCH, url: shortLinkUrl(shortLinkId), payload });
+export const injectPatch = async (app, alias, payload?) => {
+  return app.inject({ method: HttpMethod.PATCH, url: shortLinkUrl(alias), payload });
 };
 
-export const injectDelete = async (app, shortLinkId) => {
-  return app.inject({ method: HttpMethod.DELETE, url: shortLinkUrl(shortLinkId) });
+export const injectDelete = async (app, alias) => {
+  return app.inject({ method: HttpMethod.DELETE, url: shortLinkUrl(alias) });
 };
 
 export const logOut = (app) => {

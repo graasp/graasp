@@ -56,6 +56,11 @@ export class ShortLinkService {
     return shortLinkRepository.get(alias);
   }
 
+  async getOneWithoutJoin(repositories: Repositories, alias: string) {
+    const { shortLinkRepository } = repositories;
+    return shortLinkRepository.getWithoutJoin(alias);
+  }
+
   async getAllForItem(member: Member, repositories: Repositories, itemId: string) {
     const { shortLinkRepository } = repositories;
 

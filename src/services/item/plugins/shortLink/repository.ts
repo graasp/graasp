@@ -69,6 +69,19 @@ export const ShortLinkRepository = AppDataSource.getRepository(ShortLink).extend
     return shortLink;
   },
 
+  async getWithoutJoin(alias: string): Promise<ShortLink> {
+    if (!alias) throw new ShortLinkNotFound(alias);
+
+    const shortLink = await this.findOne({
+      where: { alias },
+      select: ShortLink.getAllColumns(AppDataSource.manager),
+    });
+
+    if (!shortLink) throw new ShortLinkNotFound(alias);
+
+    return shortLink;
+  },
+
   async deleteOne(alias: string): Promise<ShortLink> {
     const shortLink = await this.get(alias);
     await this.delete(alias);
