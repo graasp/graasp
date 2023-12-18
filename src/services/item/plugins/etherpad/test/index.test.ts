@@ -593,6 +593,7 @@ describe('Etherpad service API', () => {
         code: 'GPEPERR003',
         message: 'Item missing etherpad extra',
         origin: 'graasp-plugin-etherpad',
+        data: bogusItem.id,
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       });
     });
