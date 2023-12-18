@@ -56,7 +56,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       const {
         member,
         params: { id: itemId },
-        log,
       } = request;
 
       if (!member) {

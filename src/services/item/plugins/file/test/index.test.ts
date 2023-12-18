@@ -34,7 +34,7 @@ jest.mock('../../../../../plugins/datasource');
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
-const headObjectMock = jest.fn(async (e) => ({ ContentLength: 10 }));
+const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 
 const MOCK_SIGNED_URL = 'signed-url';
@@ -76,6 +76,7 @@ const MOCK_FILE_ITEM = getDummyItem({
       size: 10,
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any);
 
 const MOCK_HUGE_FILE_ITEM = getDummyItem({
@@ -88,6 +89,7 @@ const MOCK_HUGE_FILE_ITEM = getDummyItem({
       size: DEFAULT_MAX_STORAGE,
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any);
 
 // we need a different form data for each test
@@ -343,6 +345,7 @@ describe('File Item routes tests', () => {
 
           // check item exists in db
           const item = await ItemRepository.findOneBy({ type: FILE_ITEM_TYPE });
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           expect(item!.type).toEqual(ItemType.S3_FILE);
         });
         it('Gracefully fails if s3 upload throws', async () => {
@@ -514,7 +517,7 @@ describe('File Item routes tests', () => {
     describe('Delete Post Hook', () => {
       it('Do not trigger file delete if item is not a file item', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
-        const response = await app.inject({
+        await app.inject({
           method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
@@ -530,7 +533,7 @@ describe('File Item routes tests', () => {
       it('Delete corresponding file for file item', async () => {
         const { item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor });
 
-        const response = await app.inject({
+        await app.inject({
           method: HttpMethod.DELETE,
           url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
@@ -548,7 +551,7 @@ describe('File Item routes tests', () => {
         it('Stop if item is not a file item', async () => {
           const { item: parentItem } = await saveItemAndMembership({ member: actor });
           const { item } = await saveItemAndMembership({ member: actor });
-          const response = await app.inject({
+          await app.inject({
             method: HttpMethod.POST,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/copy`,
             payload: {
@@ -569,7 +572,7 @@ describe('File Item routes tests', () => {
 
           const { item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor });
 
-          const response = await app.inject({
+          await app.inject({
             method: HttpMethod.POST,
             url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
             payload: {
@@ -601,7 +604,7 @@ describe('File Item routes tests', () => {
           });
           const itemCount = await ItemRepository.find();
 
-          const response = await app.inject({
+          await app.inject({
             method: HttpMethod.POST,
             url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
             payload: {

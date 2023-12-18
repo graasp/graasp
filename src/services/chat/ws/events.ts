@@ -30,6 +30,7 @@ interface ItemChatEvent extends ChatEvent {
  * @param message message value
  * @returns instance of item chat event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ItemChatEvent = (
   op: ItemChatEvent['op'],
   message?: ChatMessage,

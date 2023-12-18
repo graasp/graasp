@@ -1,7 +1,5 @@
 import { Readable } from 'stream';
 
-import { FastifyReply } from 'fastify';
-
 import { Repositories } from '../../../../utils/repositories';
 import FileService from '../../../file/service';
 import { ThumbnailService } from '../../../thumbnail/service';

@@ -34,6 +34,7 @@ interface SelfItemEvent extends ItemEvent {
  * @param item value of the item for this event
  * @returns instance of self item event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const SelfItemEvent = (op: SelfItemEvent['op'], item: Item): SelfItemEvent => ({
   kind: 'self',
   op,
@@ -55,6 +56,7 @@ interface ChildItemEvent extends ItemEvent {
  * @param item value of the item for this event
  * @returns instance of child item event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ChildItemEvent = (op: ChildItemEvent['op'], item: Item): ChildItemEvent => ({
   kind: 'child',
   op,
@@ -76,6 +78,7 @@ interface OwnItemsEvent extends ItemEvent {
  * @param item  value of the item for this event
  * @returns instance of own items event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const OwnItemsEvent = (op: OwnItemsEvent['op'], item: Item): OwnItemsEvent => ({
   kind: 'own',
   op,
@@ -97,6 +100,7 @@ interface SharedItemsEvent extends ItemEvent {
  * @param item  value of the item for this event
  * @returns instance of shared items event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const SharedItemsEvent = (op: SharedItemsEvent['op'], item: Item): SharedItemsEvent => ({
   kind: 'shared',
   op,
@@ -124,6 +128,7 @@ interface ItemOpFeedbackEvent {
  * @param result result of the asynchronous operation
  * @returns
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ItemOpFeedbackEvent = (
   op: ItemOpFeedbackEvent['op'],
   resource: ItemOpFeedbackEvent['resource'],

@@ -13,7 +13,7 @@ import {
 } from './schemas';
 import { ItemLoginService } from './service';
 
-const plugin: FastifyPluginAsync = async (fastify, options) => {
+const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items } = fastify;
 
   const iLService = new ItemLoginService(fastify, items.service);
@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
   fastify.get<{ Params: { id: string } }>(
     '/:id/login-schema-type',
     { schema: getLoginSchemaType, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, log, params: { id: itemId } }) => {
+    async ({ member, params: { id: itemId } }) => {
       const value = (await iLService.getSchemaType(member, buildRepositories(), itemId)) ?? null;
       return value;
     },
@@ -56,7 +56,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
       // set member in request if exists without throwing
       preHandler: fastify.attemptVerifyAuthentication,
     },
-    async ({ body, query, member, session, params }) => {
+    async ({ body, member, session, params }) => {
       return db.transaction(async (manager) => {
         const bondMember = await iLService.login(
           member,
@@ -79,7 +79,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
       // set member in request - throws if does not exist
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ log, member, params: { id: itemId }, body: { type } }) => {
+    async ({ member, params: { id: itemId }, body: { type } }) => {
       return db.transaction(async (manager) => {
         return iLService.put(member, buildRepositories(manager), itemId, type);
       });
@@ -94,7 +94,7 @@ const plugin: FastifyPluginAsync = async (fastify, options) => {
       // set member in request - throws if does not exist
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ log, member, params: { id: itemId } }) => {
+    async ({ member, params: { id: itemId } }) => {
       return db.transaction(async (manager) => {
         return iLService.delete(member, buildRepositories(manager), itemId);
       });

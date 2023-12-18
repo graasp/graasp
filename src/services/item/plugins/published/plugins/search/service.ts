@@ -50,9 +50,7 @@ export class SearchService {
   }
 
   // WORKS ONLY FOR PUBLISHED ITEMS
-  async search(actor: Actor, repositories: Repositories, queries: MultiSearchParams) {
-    const { itemRepository, itemPublishedRepository } = repositories;
-
+  async search(_actor: Actor, _repositories: Repositories, queries: MultiSearchParams) {
     const forcedFilter = 'isHidden = false';
     // User input needs escaping? Or safe to send to meilisearch? WARNING: search currently done with master key, but search is only exposed endpoint
     const updatedQueries = {
@@ -157,7 +155,7 @@ export class SearchService {
       }
     });
 
-    itemService.hooks.setPostHook('move', async (member, repositories, { source, destination }) => {
+    itemService.hooks.setPostHook('move', async (member, repositories, { destination }) => {
       try {
         // Check if published from moved item up to tree root
         const published = await repositories.itemPublishedRepository.getForItem(destination);

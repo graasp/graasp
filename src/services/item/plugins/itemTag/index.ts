@@ -40,7 +40,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/tags',
     { schema: getItemTags, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { itemId }, log }) => {
+    async ({ member, params: { itemId } }) => {
       return iTS.getForItem(member, buildRepositories(), itemId);
     },
   );
@@ -49,7 +49,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: IdsParams }>(
     '/tags',
     { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, query: { id: ids }, log }) => {
+    async ({ member, query: { id: ids } }) => {
       return iTS.getForManyItems(member, buildRepositories(), ids);
     },
   );
@@ -68,7 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string; type: ItemTagType } & IdParam }>(
     '/:itemId/tags/:type',
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId, type }, log }, reply) => {
+    async ({ member, params: { itemId, type } }, reply) => {
       await db.transaction(async (manager) => {
         await iTS.deleteOne(member, buildRepositories(manager), itemId, type);
         reply.status(StatusCodes.NO_CONTENT);

@@ -49,7 +49,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       {
         schema: create,
       },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, body, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId }, body }) => {
         const memberId = requestDetails?.memberId;
         return db.transaction(async (manager) => {
           return appSettingService.post(memberId, buildRepositories(manager), itemId, body);
@@ -61,12 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.patch<{ Params: { itemId: string } & IdParam; Body: Partial<AppSetting> }>(
       '/:itemId/app-settings/:id',
       { schema: updateOne },
-      async ({
-        authTokenSubject: requestDetails,
-        params: { itemId, id: appSettingId },
-        body,
-        log,
-      }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId, id: appSettingId }, body }) => {
         const memberId = requestDetails?.memberId;
         return db.transaction(async (manager) => {
           return appSettingService.patch(
@@ -84,7 +79,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.delete<{ Params: { itemId: string } & IdParam }>(
       '/:itemId/app-settings/:id',
       { schema: deleteOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId, id: appSettingId }, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId, id: appSettingId } }) => {
         const memberId = requestDetails?.memberId;
 
         return db.transaction(async (manager) => {
@@ -102,7 +97,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Params: { itemId: string } }>(
       '/:itemId/app-settings',
       { schema: getForOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId } }) => {
         const memberId = requestDetails?.memberId;
         return appSettingService.getForItem(memberId, buildRepositories(), itemId);
       },

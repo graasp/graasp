@@ -12,7 +12,6 @@ import {
   ChallengeFailed,
   InvalidToken,
   MemberAlreadySignedUp,
-  MemberNotFound,
   MemberNotSignedUp,
   TokenExpired,
 } from '../../../../utils/errors';

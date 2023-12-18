@@ -46,6 +46,7 @@ export const expectMembership = (
   expect(newMembership.permission).toEqual(correctMembership.permission);
   expect(newMembership.item.id).toContain(correctMembership.item.id);
   if (newMembership.creator && creator) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(newMembership.creator.id).toEqual(correctMembership!.creator!.id);
   }
 

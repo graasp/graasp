@@ -53,7 +53,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           item,
           member: (mention as ChatMention).member,
           creator,
-          // log,
         });
       });
     },
@@ -63,7 +62,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/mentions',
     { schema: getMentions, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, log }) => {
+    async ({ member }) => {
       if (!member) {
         throw new UnauthorizedMember(member);
       }
@@ -77,7 +76,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   }>(
     '/mentions/:mentionId',
     { schema: patchMention, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { mentionId }, body: { status }, log }) => {
+    async ({ member, params: { mentionId }, body: { status } }) => {
       if (!member) {
         throw new UnauthorizedMember(member);
       }
@@ -91,7 +90,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { mentionId: string } }>(
     '/mentions/:mentionId',
     { schema: deleteMention, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { mentionId }, log }) => {
+    async ({ member, params: { mentionId } }) => {
       if (!member) {
         throw new UnauthorizedMember(member);
       }
@@ -105,7 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete(
     '/mentions',
     { schema: clearAllMentions, preHandler: fastify.verifyAuthentication },
-    async ({ member, log }, reply) => {
+    async ({ member }, reply) => {
       if (!member) {
         throw new UnauthorizedMember(member);
       }

@@ -11,7 +11,6 @@ import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
@@ -69,8 +68,11 @@ export class ImportExportService {
       folderPath: string;
       parent?: Item;
     },
+    log: FastifyBaseLogger,
   ): Promise<Item | null> {
     const { filename, folderPath, parent } = options;
+
+    log.debug(`handling '${filename}'`);
 
     // ignore hidden files such as .DS_STORE
     if (filename.startsWith('.')) {
@@ -91,15 +93,21 @@ export class ImportExportService {
 
       const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
 
-      return this.itemService.post(actor, repositories, {
-        item: {
-          description,
-          name: filename,
-          type: ItemType.FOLDER,
-          extra: { [ItemType.FOLDER]: { childrenOrder: [] } },
+      log.debug(`create folder from '${filename}'`);
+      return this.itemService.post(
+        actor,
+        repositories,
+        {
+          item: {
+            description,
+            name: filename,
+            type: ItemType.FOLDER,
+            extra: { [ItemType.FOLDER]: { childrenOrder: [] } },
+          },
+          parentId: parent?.id,
         },
-        parentId: parent?.id,
-      });
+        log,
+      );
     }
     // string content
     // todo: optimize to avoid reading the file twice in case of upload
@@ -129,7 +137,12 @@ export class ImportExportService {
             },
           },
         } as Partial<Item>;
-        return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
+        return this.itemService.post(
+          actor,
+          repositories,
+          { item: newItem, parentId: parent?.id },
+          log,
+        );
       } else if (type === ItemType.LINK) {
         const newItem = {
           name: filename.slice(0, -LINK_EXTENSION.length),
@@ -141,7 +154,12 @@ export class ImportExportService {
             },
           },
         } as Partial<Item>;
-        return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
+        return this.itemService.post(
+          actor,
+          repositories,
+          { item: newItem, parentId: parent?.id },
+          log,
+        );
       } else {
         throw new Error(`${type} is not handled`);
       }
@@ -160,7 +178,12 @@ export class ImportExportService {
           },
         },
       } as Partial<Item>;
-      return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
+      return this.itemService.post(
+        actor,
+        repositories,
+        { item: newItem, parentId: parent?.id },
+        log,
+      );
     }
     // normal files
     else {
@@ -322,11 +345,16 @@ export class ImportExportService {
       // descriptions are handled alongside the corresponding file
       if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
         try {
-          const item = await this._saveItemFromFilename(actor, repositories, {
-            filename,
-            folderPath,
-            parent,
-          });
+          const item = await this._saveItemFromFilename(
+            actor,
+            repositories,
+            {
+              filename,
+              folderPath,
+              parent,
+            },
+            log,
+          );
           if (item) {
             items.push(item);
           }

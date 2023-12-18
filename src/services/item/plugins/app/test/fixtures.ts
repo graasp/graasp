@@ -146,9 +146,11 @@ export const setUpForbidden = async (app, actor: Member, unauthorized: Member) =
     url: '/logout',
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
     request.member = unauthorized;
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
     request.session.set('member', unauthorized.id);
     request.member = unauthorized;

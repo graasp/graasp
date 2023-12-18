@@ -19,7 +19,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { memberId: string } }>(
     '/liked',
     { schema: getLikesForMember, preHandler: fastify.verifyAuthentication },
-    async ({ member, log }) => {
+    async ({ member }) => {
       return itemLikeService.getForMember(member, buildRepositories());
     },
   );
@@ -29,7 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/likes',
     { schema: getLikesForItem, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { itemId }, log }) => {
+    async ({ member, params: { itemId } }) => {
       return itemLikeService.getForItem(member, buildRepositories(), itemId);
     },
   );

@@ -84,6 +84,7 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -117,6 +118,7 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -153,6 +155,7 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -189,6 +192,9 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+
+      // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });
@@ -219,6 +225,9 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+
+      // perform request as anna
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
         request.member = anna;
       });

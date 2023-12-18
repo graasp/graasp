@@ -363,11 +363,10 @@ describe('Item Published', () => {
 
     describe('Signed In', () => {
       let actor;
-      let collections;
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        collections = await saveCollections(actor);
+        await saveCollections(actor);
       });
 
       it('Get published collections for member', async () => {

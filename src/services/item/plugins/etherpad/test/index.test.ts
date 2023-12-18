@@ -5,8 +5,6 @@ import { And, Not } from 'typeorm';
 import * as uuid from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
-import { FastifyInstance } from 'fastify';
-
 import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -595,6 +593,7 @@ describe('Etherpad service API', () => {
         code: 'GPEPERR003',
         message: 'Item missing etherpad extra',
         origin: 'graasp-plugin-etherpad',
+        data: bogusItem.id,
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       });
     });

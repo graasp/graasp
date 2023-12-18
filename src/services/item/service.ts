@@ -1,3 +1,5 @@
+import { FastifyBaseLogger } from 'fastify';
+
 import {
   ItemType,
   MAX_DESCENDANTS_FOR_COPY,
@@ -8,7 +10,6 @@ import {
   PermissionLevelCompare,
   ResultOf,
   UUID,
-  UnionOfConst,
   getParentFromPath,
 } from '@graasp/sdk';
 
@@ -54,6 +55,7 @@ export class ItemService {
     actor: Actor,
     repositories: Repositories,
     args: { item: Partial<Item>; parentId?: string },
+    log?: FastifyBaseLogger,
   ): Promise<Item> {
     if (!actor) {
       throw new UnauthorizedMember(actor);
@@ -63,17 +65,16 @@ export class ItemService {
 
     const { item, parentId } = args;
 
-    await this.hooks.runPreHooks('create', actor, repositories, { item });
-
-    let createdItem = itemRepository.create({ ...item, creator: actor });
+    log?.debug(`run prehook for ${item.name}`);
+    await this.hooks.runPreHooks('create', actor, repositories, { item }, log);
 
     let inheritedMembership;
     let parentItem: Item | undefined = undefined;
     // TODO: HOOK?
     // check permission over parent
     if (parentId) {
-      parentItem = await itemRepository.get(parentId);
-      await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
+      log?.debug(`verify parent ${parentId} exists and has permission over it`);
+      parentItem = await this.get(actor, repositories, parentId, PermissionLevel.Write);
       inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
 
       if (!isItemType(parentItem, ItemType.FOLDER)) {
@@ -89,13 +90,16 @@ export class ItemService {
       }
     }
 
-    createdItem = await itemRepository.post(item, actor, parentItem);
+    log?.debug(`create item ${item.name}`);
+    const completedItem = itemRepository.create({ ...item, creator: actor });
+    const createdItem = await itemRepository.post(completedItem, actor, parentItem);
 
     // create membership if inherited is less than admin
     if (
       !inheritedMembership ||
       PermissionLevelCompare.lt(inheritedMembership?.permission, PermissionLevel.Admin)
     ) {
+      log?.debug(`create membership for ${createdItem.id}`);
       await itemMembershipRepository.post({
         item: createdItem,
         member: actor,
@@ -105,6 +109,7 @@ export class ItemService {
     }
 
     if (parentId && parentItem) {
+      log?.debug(`update parent ${parentId} children order with new child`);
       // add new item id in parent extra.folder.childrenOrder
       // the optional on "folder" is present to support legacy data where the extra might be an empty object
       const newChildrenOrder = [...(parentItem.extra.folder?.childrenOrder ?? []), createdItem.id];
@@ -113,7 +118,8 @@ export class ItemService {
       });
     }
 
-    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem });
+    log?.debug(`run posthook for ${createdItem.id}`);
+    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem }, log);
 
     return createdItem;
   }

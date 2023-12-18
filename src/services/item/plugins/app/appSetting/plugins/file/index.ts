@@ -56,7 +56,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   const deleteHook = async (
     actor: Actor,
     repositories: Repositories,
-    { appSetting, itemId }: { appSetting: AppSetting; itemId: string },
+    { appSetting }: { appSetting: AppSetting; itemId: string },
   ) => {
     await appSettingFileService.deleteOne(actor, repositories, appSetting);
   };
@@ -66,11 +66,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   const hook = async (
     actor: Member,
     repositories: Repositories,
-    {
-      appSettings,
-      originalItemId,
-      copyItemId,
-    }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
+    { appSettings }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
   ) => {
     // copy file only if content is a file
     const isFileSetting = (a: AppSetting) => a.data[fileService.type];
@@ -95,12 +91,12 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   };
   appSettingService.hooks.setPreHook('patch', patchPreHook);
 
-  fastify.route<{ Body: any }>({
+  fastify.route<{ Body: unknown }>({
     method: HttpMethod.POST,
     url: '/app-settings/upload',
     schema: upload,
     handler: async (request) => {
-      const { authTokenSubject: requestDetails, log } = request;
+      const { authTokenSubject: requestDetails } = request;
       const memberId = requestDetails?.memberId;
       const itemId = requestDetails?.itemId;
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK

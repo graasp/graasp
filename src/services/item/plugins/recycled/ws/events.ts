@@ -16,6 +16,7 @@ interface RecycleBinEvent extends ItemEvent {
  * @param item value of the item for this event
  * @returns instance of recycle bin event
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const RecycleBinEvent = (op: RecycleBinEvent['op'], item: Item): RecycleBinEvent => ({
   kind: 'recycle_bin',
   op,

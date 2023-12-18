@@ -11,7 +11,6 @@ import { RedisOptions } from 'ioredis';
 import fws from '@fastify/websocket';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 
-import { InvalidSession } from '../../utils/errors';
 import { AjvMessageSerializer } from './message-serializer';
 import { MultiInstanceChannelsBroker } from './multi-instance';
 import { WebSocketChannels } from './ws-channels';
@@ -55,7 +54,7 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
 
   // must await this register call: otherwise decorated properties on `fastify` are not available
   await fastify.register(fws, {
-    errorHandler: (error, conn, req, reply) => {
+    errorHandler: (error, conn, _req, _reply) => {
       // remove client if needed
       if (wsChannels) {
         wsChannels.clientRemove(conn.socket);
@@ -103,7 +102,7 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
 
       client.on('error', log.error);
 
-      client.on('close', (code, reason) => {
+      client.on('close', (_code, _reason) => {
         wsChannels.clientRemove(client);
       });
     },

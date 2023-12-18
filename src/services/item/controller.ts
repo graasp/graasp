@@ -41,7 +41,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         member,
         query: { parentId },
         body: data,
-        log,
       } = request;
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
@@ -62,7 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getOne,
       preHandler: fastify.attemptVerifyAuthentication,
     },
-    async ({ member, params: { id }, log }) => {
+    async ({ member, params: { id } }) => {
       return itemService.get(member, buildRepositories(), id);
     },
   );
@@ -70,7 +69,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: IdsParams }>(
     '/',
     { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, query: { id: ids }, log }) => {
+    async ({ member, query: { id: ids } }) => {
       return itemService.getMany(member, buildRepositories(), ids);
     },
   );
@@ -79,7 +78,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/own',
     { schema: getOwn, preHandler: fastify.verifyAuthentication },
-    async ({ member, log }) => {
+    async ({ member }) => {
       return itemService.getOwn(member, buildRepositories());
     },
   );
@@ -91,7 +90,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getShared,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, log, query }) => {
+    async ({ member, query }) => {
       return itemService.getShared(member, buildRepositories(), query.permission);
     },
   );
@@ -100,7 +99,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: IdParam; Querystring: Ordered }>(
     '/:id/children',
     { schema: getChildren, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { id }, query: { ordered }, log }) => {
+    async ({ member, params: { id }, query: { ordered } }) => {
       return itemService.getChildren(member, buildRepositories(), id, ordered);
     },
   );
@@ -109,7 +108,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: IdParam }>(
     '/:id/descendants',
     { schema: getDescendants, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { id }, log }) => {
+    async ({ member, params: { id } }) => {
       return itemService.getDescendants(member, buildRepositories(), id);
     },
   );
@@ -121,7 +120,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: getParents,
       preHandler: fastify.attemptVerifyAuthentication,
     },
-    async ({ member, params: { id }, log }) => {
+    async ({ member, params: { id } }) => {
       return itemService.getParents(member, buildRepositories(), id);
     },
   );
@@ -138,7 +137,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         member,
         params: { id },
         body,
-        log,
       } = request;
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);

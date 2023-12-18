@@ -91,6 +91,7 @@ describe('Document Item tests', () => {
       it('Fail to create if payload is invalid', async () => {
         const payload = getDummyItem({
           type: ItemType.DOCUMENT,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           extra: { [ItemType.FOLDER]: { content: 'content' } } as any,
         });
 
@@ -106,6 +107,7 @@ describe('Document Item tests', () => {
       it('Fail to create if content of document is not defined', async () => {
         const payload1 = getDummyItem({
           type: ItemType.DOCUMENT,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           extra: { [ItemType.DOCUMENT]: {} } as any,
         });
 

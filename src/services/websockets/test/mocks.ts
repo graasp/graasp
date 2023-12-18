@@ -15,7 +15,7 @@ export const createMockMember = (extra?) => ({
 });
 
 // mock preHandler to be injected in test fastify instance to simulate authentication
-export const mockSessionPreHandler = async (request, reply) => {
+export const mockSessionPreHandler = async (request, _reply) => {
   request.member = createMockMember();
 };
 

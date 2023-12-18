@@ -126,7 +126,6 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
             member,
             params: { itemId },
             body,
-            log,
           } = request;
 
           return aS.getApiAccessToken(member, buildRepositories(), itemId, body);
@@ -165,7 +164,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       fastify.get<{ Params: { itemId: string } }>(
         '/:itemId/context',
         { schema: getContext },
-        async ({ member, authTokenSubject: requestDetails, params: { itemId }, log }) => {
+        async ({ member, authTokenSubject: requestDetails, params: { itemId } }) => {
           const memberId = member ? member.id : requestDetails?.memberId;
           return aS.getContext(memberId, buildRepositories(), itemId, requestDetails);
         },

@@ -147,7 +147,7 @@ export class EtherpadItemService {
     const checkedMode = await this.checkMode(mode, member, item);
 
     if (!isItemType(item, ItemType.ETHERPAD) || !item.extra?.etherpad) {
-      throw new ItemMissingExtraError(item);
+      throw new ItemMissingExtraError(item?.id);
     }
     const { padID, groupID } = item.extra.etherpad;
 

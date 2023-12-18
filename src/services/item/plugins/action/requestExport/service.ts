@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 
 import {
   Context,
@@ -9,7 +8,7 @@ import {
 } from '@graasp/sdk';
 import { MAIL } from '@graasp/translations';
 
-import { TMP_FOLDER } from '../../../../../utils/config';
+import { MailerDecoration } from '../../../../../plugins/mailer';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
@@ -32,8 +31,7 @@ export class ActionRequestExportService {
   actionItemService: ActionItemService;
   itemService: ItemService;
   actionService: ActionService;
-  // TODO
-  mailer: any;
+  mailer: MailerDecoration;
 
   constructor(
     actionService: ActionService,

@@ -44,7 +44,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     const {
       body,
       query: { lang = DEFAULT_LANG },
-      log,
     } = request;
 
     // validate captcha

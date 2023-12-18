@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.get<{ Querystring: { itemId: string[] } }>(
         '/',
         { schema: getItems, preHandler: fastify.attemptVerifyAuthentication },
-        async ({ member, query: { itemId: ids }, log }) => {
+        async ({ member, query: { itemId: ids } }) => {
           return itemMembershipService.getForManyItems(member, buildRepositories(), ids);
         },
       );
@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }>(
         '/',
         { schema: create, preHandler: fastify.verifyAuthentication },
-        async ({ member, query: { itemId }, body, log }) => {
+        async ({ member, query: { itemId }, body }) => {
           return db.transaction((manager) => {
             return itemMembershipService.post(member, buildRepositories(manager), {
               permission: body.permission,
@@ -66,7 +66,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       }>(
         '/:itemId',
         { schema: createMany, preHandler: fastify.verifyAuthentication },
-        async ({ member, params: { itemId }, body, log }, reply) => {
+        async ({ member, params: { itemId }, body }) => {
           // BUG: because we use this call to save csv member
           // we have to return immediately
           // solution: it's probably simpler to upload a csv and handle it in the back
@@ -91,7 +91,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           schema: updateOne,
           preHandler: fastify.verifyAuthentication,
         },
-        async ({ member, params: { id }, body, log }) => {
+        async ({ member, params: { id }, body }) => {
           return db.transaction((manager) => {
             return itemMembershipService.patch(member, buildRepositories(manager), id, body);
           });
@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
         '/:id',
         { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-        async ({ member, params: { id }, query: { purgeBelow }, log }) => {
+        async ({ member, params: { id }, query: { purgeBelow } }) => {
           return db.transaction((manager) => {
             return itemMembershipService.deleteOne(member, buildRepositories(manager), id, {
               purgeBelow,

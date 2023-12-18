@@ -50,7 +50,7 @@ class AppDataFileService {
     // posting an app data is allowed to readers
     await this.itemService.get(member, repositories, itemId);
 
-    const { filename, mimetype, fields, file: stream } = file;
+    const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
     const filepath = this.buildFilePath(itemId, appDataId); // parentId, filename
 

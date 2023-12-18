@@ -25,7 +25,6 @@ type GraaspThumbnailsOptions = {
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
   const {
-    log: defaultLogger,
     files: { service: fileService },
     members: { service: memberService },
     db,
@@ -52,7 +51,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: fastify.verifyAuthentication,
     },
     async (request, reply) => {
-      const { member, log } = request;
+      const { member } = request;
 
       if (!member) {
         throw new UnauthorizedMember(member);
@@ -96,7 +95,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       schema: download,
       preHandler: fastify.attemptVerifyAuthentication,
     },
-    async ({ member, params: { size, id: memberId }, query: { replyUrl }, log }, reply) => {
+    async ({ member, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
       const url = await thumbnailService
         .getUrl(member, buildRepositories(), { memberId, size })
         .catch((e) => {

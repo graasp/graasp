@@ -1,7 +1,5 @@
 import { Readable } from 'stream';
 
-import { FastifyReply } from 'fastify';
-
 import { PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';

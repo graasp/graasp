@@ -1,4 +1,3 @@
-import fastifyView from '@fastify/view';
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam } from '@graasp/sdk';
@@ -66,7 +65,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     fastify.delete<{ Params: { itemId: string } & IdParam }>(
       '/:itemId/app-data/:id',
       { schema: deleteOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId, id: appDataId }, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId, id: appDataId } }) => {
         const memberId = requestDetails?.memberId;
 
         return db.transaction(async (manager) => {
@@ -79,7 +78,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Params: { itemId: string } }>(
       '/:itemId/app-data',
       { schema: getForOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, log }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId } }) => {
         const memberId = requestDetails?.memberId;
         return appDataService.getForItem(memberId, buildRepositories(), itemId);
       },
@@ -89,7 +88,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Querystring: ManyItemsGetFilter }>(
       '/app-data',
       { schema: getForMany },
-      async ({ authTokenSubject: requestDetails, query, log }) => {
+      async ({ authTokenSubject: requestDetails, query }) => {
         const memberId = requestDetails?.memberId;
 
         return appDataService.getForManyItems(memberId, buildRepositories(), query.itemId);

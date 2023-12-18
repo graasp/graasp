@@ -409,11 +409,11 @@ describe('Chat Message tests', () => {
     });
 
     describe('Signed In', () => {
-      let item, chatMessages, members;
+      let item, members;
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item, chatMessages, members } = await saveItemWithChatMessages(actor));
+        ({ item, members } = await saveItemWithChatMessages(actor));
       });
 
       it('Delete successfully', async () => {

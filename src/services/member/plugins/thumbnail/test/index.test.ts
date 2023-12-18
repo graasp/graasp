@@ -75,8 +75,6 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     describe('Public', () => {
-      let item;
-
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
       });
@@ -95,8 +93,6 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
     describe('Signed In', () => {
-      let item;
-
       beforeEach(async () => {
         ({ app, actor } = await build());
       });

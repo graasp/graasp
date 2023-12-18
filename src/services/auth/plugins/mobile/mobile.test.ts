@@ -23,6 +23,7 @@ jest.mock('node-fetch');
 // bug: cannot use exported mockCaptchaValidation
 export const mockCaptchaValidation = (action: RecaptchaActionType) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return { json: async () => ({ success: true, action, score: 1 }) } as any;
   });
 };

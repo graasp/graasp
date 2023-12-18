@@ -57,7 +57,7 @@ export class RecycledBinService {
     }
 
     await itemRepository.softRemove([...descendants, ...items]);
-    const result = await recycledItemRepository.recycleMany(items, actor);
+    await recycledItemRepository.recycleMany(items, actor);
 
     for (const d of descendants) {
       this.hooks.runPostHooks('recycle', actor, repositories, { item: d, isRecycledRoot: false });

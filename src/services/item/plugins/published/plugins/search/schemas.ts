@@ -1,5 +1,3 @@
-import { Ranges } from './types';
-
 const search = {
   query: {
     type: 'object',

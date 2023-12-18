@@ -6,13 +6,7 @@ import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graas
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Actor, Member } from '../../../../../member/entities/member';
-import {
-  BOB,
-  MEMBERS,
-  expectMember,
-  expectMinimalMember,
-  saveMember,
-} from '../../../../../member/test/fixtures/members';
+import { BOB, expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { setUp } from '../../test/fixtures';
 import { PreventUpdateAppDataFile } from '../errors';
@@ -276,11 +270,7 @@ describe('App Data Tests', () => {
         ({ app, actor } = await build());
 
         // unefficient way of registering two apps and their app data
-        const {
-          item: item1,
-          token: unusedToken,
-          appData: appData1,
-        } = await setUpForAppData(app, actor, actor);
+        const { item: item1, appData: appData1 } = await setUpForAppData(app, actor, actor);
         const {
           item: item2,
           token: validToken,

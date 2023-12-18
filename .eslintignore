@@ -10,3 +10,4 @@ coverage/*
 /src/types/
 # temp files mount
 /tmp
+test/migrations/*

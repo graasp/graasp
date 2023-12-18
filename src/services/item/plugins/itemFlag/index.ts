@@ -18,7 +18,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/flags',
     { schema: getFlags, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, log }) => {
+    async ({ member }) => {
       return iFS.getAllFlags(member, buildRepositories());
     },
   );
@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string }; Body: Partial<ItemFlag> }>(
     '/:itemId/flags',
     { schema: create, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId }, body, log }) => {
+    async ({ member, params: { itemId }, body }) => {
       return db.transaction(async (manager) => {
         if (!member) {
           throw new UnauthorizedMember(member);

@@ -16,7 +16,7 @@ export interface GraaspActionsOptions {
   fileConfigurations: { s3: S3FileConfiguration; local: LocalFileConfiguration };
 }
 
-const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify, options) => {
+const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const {
     actions: { service: actionService },
     db,

@@ -1,7 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { Repositories, buildRepositories } from '../../../utils/repositories';
-import { recycleWsHooks } from '../../item/plugins/recycled/ws/hooks';
 import ItemService from '../../item/service';
 import { SharedItemsEvent, memberItemsTopic } from '../../item/ws/events';
 import { WebsocketService } from '../../websockets/ws-service';

@@ -32,7 +32,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
 
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, params: { itemId }, log }) => {
+    async ({ member, params: { itemId } }) => {
       if (!member) {
         throw new UnauthorizedMember();
       }
@@ -51,7 +51,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
       schema: itemValidationGroup,
       preHandler: fastify.verifyAuthentication,
     },
-    async ({ member, params: { itemValidationGroupId }, log }) => {
+    async ({ member, params: { itemValidationGroupId } }) => {
       if (!member) {
         throw new UnauthorizedMember();
       }

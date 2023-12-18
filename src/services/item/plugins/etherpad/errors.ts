@@ -21,10 +21,13 @@ export class EtherpadServerError extends GraaspEtherpadError {
 
 export class ItemMissingExtraError extends GraaspEtherpadError {
   constructor(data?: unknown) {
-    super({
-      code: 'GPEPERR003',
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      message: 'Item missing etherpad extra',
-    });
+    super(
+      {
+        code: 'GPEPERR003',
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        message: 'Item missing etherpad extra',
+      },
+      data,
+    );
   }
 }

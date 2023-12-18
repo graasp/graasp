@@ -139,6 +139,7 @@ describe('Item Validation Tests', () => {
         await saveItemValidation({ item });
         const res = await app.inject({
           method: HttpMethod.GET,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -156,6 +157,7 @@ describe('Item Validation Tests', () => {
 
         const res = await app.inject({
           method: HttpMethod.GET,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -172,6 +174,7 @@ describe('Item Validation Tests', () => {
 
         const res = await app.inject({
           method: HttpMethod.GET,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));

@@ -72,7 +72,7 @@ export class S3FileRepository implements FileRepository {
     // We ensure that only defined keys are assigned to the metadata object
     // Otherwise S3 cannot deal with 'undefined' values property
     const metadata = Object.fromEntries(
-      Object.entries({ item: newId, member: memberId }).filter(([k, v]) => v),
+      Object.entries({ item: newId, member: memberId }).filter(([_k, v]) => v),
     ) as Record<string, string>;
 
     const params: CopyObjectCommandInput = {

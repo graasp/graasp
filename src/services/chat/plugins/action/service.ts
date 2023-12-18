@@ -30,7 +30,7 @@ export class ActionChatService {
     const action = {
       item: message.item,
       type: ChatActionType.Create,
-      extra: { ...(request.body as any) },
+      extra: { ...(request.body as { body: string; mentions: string[] }) },
     };
     await this.actionService.postMany(member, repositories, request, [action]);
   }
@@ -45,7 +45,7 @@ export class ActionChatService {
     const action = {
       item: message.item,
       type: ChatActionType.Update,
-      extra: { ...(request.body as any), messageId: message.id },
+      extra: { ...(request.body as { body: string }), messageId: message.id },
     };
     await this.actionService.postMany(member, repositories, request, [action]);
   }
@@ -60,7 +60,7 @@ export class ActionChatService {
     const action = {
       item: message.item,
       type: ChatActionType.Delete,
-      extra: { ...(request.body as any), messageId: message.id },
+      extra: { messageId: message.id },
     };
     await this.actionService.postMany(member, repositories, request, [action]);
   }

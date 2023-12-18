@@ -247,6 +247,7 @@ describe('Member routes tests', () => {
         });
         const result = response.json();
         expect(result.data).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Object.values(result.data).forEach((m: any, idx) => {
           expect(m.email).toEqual(members[idx].email);
           expect(m.name).toEqual(members[idx].name);
@@ -274,6 +275,7 @@ describe('Member routes tests', () => {
         });
         const result = response.json();
         expect(result.data).toBeTruthy();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Object.values(result.data).forEach((m: any, idx) => {
           expect(m.email).toEqual(members[idx].email);
           expect(m.name).toEqual(members[idx].name);

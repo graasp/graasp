@@ -117,7 +117,7 @@ describe('MeilisearchWrapper', () => {
 
   const repositories = {
     itemMembershipRepository: {
-      getInherited: jest.fn((item, member) => ({ permission: 'anything' })),
+      getInherited: jest.fn(() => ({ permission: 'anything' })),
     } as unknown as jest.Mocked<typeof ItemMembershipRepository>,
     itemTagRepository: itemTagRepositoryMock,
     itemRepository: itemRepositoryMock,
