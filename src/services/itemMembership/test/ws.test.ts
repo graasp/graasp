@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod, PermissionLevel, Websocket } from '@graasp/sdk';
+import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
@@ -132,7 +132,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [membershipCreate] = membershipUpdates;
-        expect(membershipCreate).toMatchObject(ItemMembershipEvent('create', membership));
+        expect(membershipCreate).toMatchObject(
+          ItemMembershipEvent('create', parseStringToDate(membership)),
+        );
       });
     });
   });
@@ -167,7 +169,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;
-        expect(membershipUpdate).toMatchObject(ItemMembershipEvent('update', result));
+        expect(membershipUpdate).toMatchObject(
+          ItemMembershipEvent('update', parseStringToDate(result)),
+        );
       });
     });
   });
