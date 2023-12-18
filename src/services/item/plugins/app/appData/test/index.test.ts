@@ -207,6 +207,22 @@ describe('App Data Tests', () => {
         expect(receivedAppData.length).toEqual(appDataOfType.length);
       });
 
+      it('Get empty data for type that does not exist', async () => {
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data?type=impossible-type`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const appDataOfType = appData.filter((d) => d.type === 'impossible-type');
+        const receivedAppData = await response.json();
+        expect(appDataOfType.length).toEqual(0);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectAppData(appDataOfType, receivedAppData);
+        expect(receivedAppData.length).toEqual(appDataOfType.length);
+      });
+
       it('Get app data with invalid item id throws', async () => {
         const response = await app.inject({
           method: HttpMethod.GET,

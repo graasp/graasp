@@ -151,6 +151,24 @@ describe('Apps Settings Tests', () => {
         expectAppSettings(response.json(), [appSettings.find((s) => s.name === 'new-setting')]);
       });
 
+      it('Get unexisting named app setting successfully', async () => {
+        const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings?name=no-setting`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const res = await response.json();
+        const expectedData = appSettings.filter((s) => s.name === 'no-setting');
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(res.length).toEqual(expectedData.length);
+        expectAppSettings(res, expectedData);
+      });
+
       it('Get app setting with invalid item id throws', async () => {
         const { token } = await setUpForAppSettings(app, actor, actor);
 
