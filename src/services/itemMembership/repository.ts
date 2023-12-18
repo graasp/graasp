@@ -106,7 +106,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
   ): Promise<Paginated<Item>> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
-    console.log('SKIP', skip);
+
     const query = this.createQueryBuilder('im')
       .leftJoinAndSelect('im.item', 'item')
       .leftJoinAndSelect('item.creator', 'member')
@@ -134,7 +134,6 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     if (sortBy) {
-      console.log('------order');
       query.orderBy(`item.${sortBy}`, ordering.toUpperCase());
     }
 
