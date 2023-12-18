@@ -4,6 +4,7 @@ import { PermissionLevel, PermissionLevelCompare, ResultOf, UUID } from '@graasp
 
 import { AppDataSource } from '../../plugins/datasource';
 import { Paginated, PaginationParams } from '../../types';
+import { printFilledSQL } from '../../utils/debug';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -139,6 +140,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
     const items = im.map(({ item }) => item);
+
+    printFilledSQL(query);
 
     return { data: items, totalCount };
   },
