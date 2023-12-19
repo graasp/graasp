@@ -113,15 +113,16 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       .leftJoinAndSelect('item.creator', 'member')
       .where('im.member_id = :actorId', { actorId: actor.id })
       // returns only top most item
-      // 'NLEVEL(item.path) = (SELECT MIN(NLEVEL(item.path)) FROM item_membership as im1 WHERE im.item_path <@ im1.item_path)',
       .andWhere((qb) => {
         const subQuery = qb
           .subQuery()
           .from(ItemMembership, 'im1')
-          .select('MIN(NLEVEL(im1.item.path))')
+          .select('im1.item.path')
           .where('im.item_path <@ im1.item_path')
+          .orderBy('im1.item_path', 'ASC')
+          .limit(1)
           .getQuery();
-        return 'NLEVEL(item.path) =' + subQuery;
+        return 'item.path =' + subQuery;
       });
 
     if (name) {
