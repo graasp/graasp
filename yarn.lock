@@ -6545,7 +6545,7 @@ __metadata:
     ts-node: "npm:10.9.1"
     typeorm: "npm:0.3.17"
     typescript: "npm:5.0.4"
-    uuid: "npm:9.0.0"
+    uuid: "npm:9.0.1"
     wait-for-expect: "npm:3.0.2"
     ws: "npm:8.13.0"
     yazl: "npm:2.5.1"
@@ -11229,15 +11229,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
-  languageName: node
-  linkType: hard
-
-"uuid@npm:9.0.0":
-  version: 9.0.0
-  resolution: "uuid@npm:9.0.0"
-  bin:
-    uuid: dist/bin/uuid
-  checksum: 23857699a616d1b48224bc2b8440eae6e57d25463c3a0200e514ba8279dfa3bde7e92ea056122237839cfa32045e57d8f8f4a30e581d720fd72935572853ae2e
   languageName: node
   linkType: hard
 
