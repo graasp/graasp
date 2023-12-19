@@ -4,7 +4,6 @@ import { PermissionLevel, PermissionLevelCompare, ResultOf, UUID } from '@graasp
 
 import { AppDataSource } from '../../plugins/datasource';
 import { Paginated, PaginationParams } from '../../types';
-import { printFilledSQL } from '../../utils/debug';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -102,7 +101,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *  */
   async getAccessibleItems(
     actor: Member,
-    { creatorId, name, sortBy = SortBy.UpdatedAt, ordering = Ordering.desc }: ItemSearchParams,
+    { creatorId, name, sortBy = SortBy.ItemUpdatedAt, ordering = Ordering.desc }: ItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
   ): Promise<Paginated<Item>> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
@@ -110,7 +109,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     const query = this.createQueryBuilder('im')
       .leftJoinAndSelect('im.item', 'item')
-      .leftJoinAndSelect('item.creator', 'member')
+      .leftJoinAndSelect('item.creator', 'creator')
       .where('im.member_id = :actorId', { actorId: actor.id })
       // returns only top most item
       .andWhere((qb) => {
@@ -136,13 +135,32 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     if (sortBy) {
-      query.orderBy(`item.${sortBy}`, ordering.toUpperCase());
+      // map strings to correct sort by column
+      let mappedSortBy;
+      switch (sortBy) {
+        case SortBy.ItemType:
+          mappedSortBy = 'item.type';
+          break;
+        case SortBy.ItemUpdatedAt:
+          mappedSortBy = 'item.updated_at';
+          break;
+        case SortBy.ItemCreatedAt:
+          mappedSortBy = 'item.created_at';
+          break;
+        case SortBy.ItemCreatorName:
+          mappedSortBy = 'creator.name';
+          break;
+        case SortBy.ItemName:
+          mappedSortBy = 'item.name';
+          break;
+      }
+      if (mappedSortBy) {
+        query.orderBy(mappedSortBy, ordering.toUpperCase());
+      }
     }
 
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
     const items = im.map(({ item }) => item);
-
-    printFilledSQL(query);
 
     return { data: items, totalCount };
   },

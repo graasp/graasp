@@ -1,11 +1,11 @@
 import { Member } from '../member/entities/member';
 
 export enum SortBy {
-  Type = 'type',
-  UpdatedAt = 'updated_at',
-  CreatedAt = 'created_at',
-  CreatorName = 'creator.name',
-  Name = 'name',
+  ItemType = 'item.type',
+  ItemUpdatedAt = 'item.updated_at',
+  ItemCreatedAt = 'item.created_at',
+  ItemCreatorName = 'item.creator.name',
+  ItemName = 'item.name',
 }
 
 export enum Ordering {
