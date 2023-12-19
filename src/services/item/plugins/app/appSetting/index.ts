@@ -94,12 +94,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     );
 
     // get app settings
-    fastify.get<{ Params: { itemId: string } }>(
+    fastify.get<{ Params: { itemId: string }; Querystring: { name?: string } }>(
       '/:itemId/app-settings',
       { schema: getForOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId } }) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId }, query: { name } }) => {
         const memberId = requestDetails?.memberId;
-        return appSettingService.getForItem(memberId, buildRepositories(), itemId);
+        return appSettingService.getForItem(memberId, buildRepositories(), itemId, name);
       },
     );
   });

@@ -63,13 +63,18 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     filters: Filters = {},
     permission?: PermissionLevel,
   ): Promise<AppData[]> {
-    const { memberId } = filters;
+    const { memberId, type } = filters;
 
     const query = this.createQueryBuilder('appData')
       .leftJoinAndSelect('appData.member', 'member')
       .leftJoinAndSelect('appData.creator', 'creator')
       .leftJoinAndSelect('appData.item', 'item')
       .where('item.id = :itemId', { itemId });
+
+    // filter app data to only include requested type
+    if (type) {
+      query.andWhere('appData.type = :type', { type });
+    }
 
     // restrict app data access if user is not an admin
     if (permission !== PermissionLevel.Admin) {

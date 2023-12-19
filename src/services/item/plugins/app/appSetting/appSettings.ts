@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -14,6 +15,7 @@ import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 
 @Entity()
+@Index(['item', 'name'])
 export class AppSetting extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string = v4();
