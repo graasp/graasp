@@ -13,6 +13,12 @@ import { setItemPublic } from '../../../itemTag/test/fixtures';
 import { setUp } from '../../test/fixtures';
 import { AppSettingRepository } from '../repository';
 
+/**
+ * Check that `expected` is contained in `values`
+ * Does not check that they match exactly !
+ * @param values values returned by the API
+ * @param expected expected values
+ */
 const expectAppSettings = (values, expected) => {
   for (const expectValue of expected) {
     const value = values.find(({ id }) => id === expectValue.id);
@@ -29,7 +35,13 @@ const saveAppSettings = async ({ item, creator }) => {
   const s1 = await AppSettingRepository.save({ item, creator, ...defaultData });
   const s2 = await AppSettingRepository.save({ item, creator, ...defaultData });
   const s3 = await AppSettingRepository.save({ item, creator, ...defaultData });
-  return [s1, s2, s3];
+  const s4 = await AppSettingRepository.save({
+    item,
+    creator,
+    ...defaultData,
+    name: 'new-setting',
+  });
+  return [s1, s2, s3, s4];
 };
 
 const setUpForAppSettings = async (
@@ -123,6 +135,38 @@ describe('Apps Settings Tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expectAppSettings(response.json(), appSettings);
+      });
+
+      it('Get named app setting successfully', async () => {
+        const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings?name=new-setting`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectAppSettings(response.json(), [appSettings.find((s) => s.name === 'new-setting')]);
+      });
+
+      it('Get unexisting named app setting successfully', async () => {
+        const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings?name=no-setting`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const res = await response.json();
+        const expectedData = appSettings.filter((s) => s.name === 'no-setting');
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expect(res.length).toEqual(expectedData.length);
+        expectAppSettings(res, expectedData);
       });
 
       it('Get app setting with invalid item id throws', async () => {

@@ -234,7 +234,12 @@ export class AppDataService {
     return appData;
   }
 
-  async getForItem(memberId: string | undefined, repositories: Repositories, itemId: string) {
+  async getForItem(
+    memberId: string | undefined,
+    repositories: Repositories,
+    itemId: string,
+    type?: string,
+  ) {
     const { appDataRepository, memberRepository, itemRepository } = repositories;
 
     // get member
@@ -249,7 +254,7 @@ export class AppDataService {
     // posting an app data is allowed to readers
     const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
 
-    return appDataRepository.getForItem(itemId, { memberId }, membership?.permission);
+    return appDataRepository.getForItem(itemId, { memberId, type }, membership?.permission);
   }
 
   // TODO: check for many items

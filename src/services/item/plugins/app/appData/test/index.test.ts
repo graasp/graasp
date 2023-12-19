@@ -56,7 +56,15 @@ const saveAppData = async ({
     ...defaultData,
     visibility: visibility ?? AppDataVisibility.Member,
   });
-  return [s1, s2, s3];
+  const s4 = await AppDataRepository.save({
+    item,
+    creator,
+    member: member ?? creator,
+    ...defaultData,
+    visibility: visibility ?? AppDataVisibility.Member,
+    type: 'other-type',
+  });
+  return [s1, s2, s3, s4];
 };
 
 // save apps, app data, and get token
@@ -181,6 +189,38 @@ describe('App Data Tests', () => {
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
         expectAppData(response.json(), appData);
+      });
+
+      it('Get app data by type successfully', async () => {
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data?type=other-type`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const appDataOfType = appData.filter((d) => d.type === 'other-type');
+        const receivedAppData = await response.json();
+        expect(appDataOfType.length).toBeGreaterThanOrEqual(1);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectAppData(appDataOfType, receivedAppData);
+        expect(receivedAppData.length).toEqual(appDataOfType.length);
+      });
+
+      it('Get empty data for type that does not exist', async () => {
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data?type=impossible-type`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const appDataOfType = appData.filter((d) => d.type === 'impossible-type');
+        const receivedAppData = await response.json();
+        expect(appDataOfType.length).toEqual(0);
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        expectAppData(appDataOfType, receivedAppData);
+        expect(receivedAppData.length).toEqual(appDataOfType.length);
       });
 
       it('Get app data with invalid item id throws', async () => {
