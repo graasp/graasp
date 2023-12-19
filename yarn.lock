@@ -1220,27 +1220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:17.6.7":
-  version: 17.6.7
-  resolution: "@commitlint/cli@npm:17.6.7"
-  dependencies:
-    "@commitlint/format": "npm:^17.4.4"
-    "@commitlint/lint": "npm:^17.6.7"
-    "@commitlint/load": "npm:^17.6.7"
-    "@commitlint/read": "npm:^17.5.1"
-    "@commitlint/types": "npm:^17.4.4"
-    execa: "npm:^5.0.0"
-    lodash.isfunction: "npm:^3.0.9"
-    resolve-from: "npm:5.0.0"
-    resolve-global: "npm:1.0.0"
-    yargs: "npm:^17.0.0"
-  bin:
-    commitlint: cli.js
-  checksum: fa1f7195b1e8f754d8bbd067b16559cb983cb7f9fa8db03e0e6827899885ed3355647e52babd04bc55a871a2a8c51038d0705984b18390971dd4bf0e05bc6968
-  languageName: node
-  linkType: hard
-
-"@commitlint/cli@npm:^17.6.3":
+"@commitlint/cli@npm:17.8.1, @commitlint/cli@npm:^17.6.3":
   version: 17.8.1
   resolution: "@commitlint/cli@npm:17.8.1"
   dependencies:
@@ -1260,12 +1240,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/config-conventional@npm:17.6.7":
-  version: 17.6.7
-  resolution: "@commitlint/config-conventional@npm:17.6.7"
+"@commitlint/config-conventional@npm:17.8.1":
+  version: 17.8.1
+  resolution: "@commitlint/config-conventional@npm:17.8.1"
   dependencies:
-    conventional-changelog-conventionalcommits: "npm:^5.0.0"
-  checksum: e8574db1a98ff5f3da80b47277e953a072170976920baa4b468bbcc28b83348d3d2bfa13f85c66ca00d51a7184befe1ef3588c8ae4247f0d8488c6a33ebc2a56
+    conventional-changelog-conventionalcommits: "npm:^6.1.0"
+  checksum: ce8ace1a13f3a797ed699ffa13dc46273a27e1dc3ae8a9d01492c0637a8592e4ed24bb32d9a43f8745a8690a52d77ea4a950d039977b0dbcbf834f8cbacf5def
   languageName: node
   linkType: hard
 
@@ -1300,7 +1280,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/format@npm:^17.4.4, @commitlint/format@npm:^17.8.1":
+"@commitlint/format@npm:^17.8.1":
   version: 17.8.1
   resolution: "@commitlint/format@npm:17.8.1"
   dependencies:
@@ -1320,7 +1300,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/lint@npm:^17.6.7, @commitlint/lint@npm:^17.8.1":
+"@commitlint/lint@npm:^17.8.1":
   version: 17.8.1
   resolution: "@commitlint/lint@npm:17.8.1"
   dependencies:
@@ -1332,7 +1312,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/load@npm:^17.6.7, @commitlint/load@npm:^17.8.1":
+"@commitlint/load@npm:^17.8.1":
   version: 17.8.1
   resolution: "@commitlint/load@npm:17.8.1"
   dependencies:
@@ -1372,7 +1352,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/read@npm:^17.5.1, @commitlint/read@npm:^17.8.1":
+"@commitlint/read@npm:^17.8.1":
   version: 17.8.1
   resolution: "@commitlint/read@npm:17.8.1"
   dependencies:
@@ -1428,7 +1408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/types@npm:^17.4.4, @commitlint/types@npm:^17.8.1":
+"@commitlint/types@npm:^17.8.1":
   version: 17.8.1
   resolution: "@commitlint/types@npm:17.8.1"
   dependencies:
@@ -4753,14 +4733,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"conventional-changelog-conventionalcommits@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "conventional-changelog-conventionalcommits@npm:5.0.0"
+"conventional-changelog-conventionalcommits@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "conventional-changelog-conventionalcommits@npm:6.1.0"
   dependencies:
     compare-func: "npm:^2.0.0"
-    lodash: "npm:^4.17.15"
-    q: "npm:^1.5.1"
-  checksum: cf67329999ed5798fcca243a5d66479f6f8f2122e61a3144186ae3fd15481e9d6647ed7ca74d59d5cfdc568f8c4298ae4cd90b389aecd285cc6a1ba823d85a96
+  checksum: 7e5caef7d65b381a0b302534058acff83adc7a907094c85379ef138c35f2aa043cf8e7a3bef30f42078dcc4bff0e8bc763b179c007dd732d92856fae0607a4bc
   languageName: node
   linkType: hard
 
@@ -6458,8 +6436,8 @@ __metadata:
     "@aws-sdk/client-s3": "npm:3.395.0"
     "@aws-sdk/lib-storage": "npm:3.395.0"
     "@aws-sdk/s3-request-presigner": "npm:3.395.0"
-    "@commitlint/cli": "npm:17.6.7"
-    "@commitlint/config-conventional": "npm:17.6.7"
+    "@commitlint/cli": "npm:17.8.1"
+    "@commitlint/config-conventional": "npm:17.8.1"
     "@fastify/auth": "npm:4.2.0"
     "@fastify/bearer-auth": "npm:9.0.0"
     "@fastify/cors": "npm:8.2.1"
