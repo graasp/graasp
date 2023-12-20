@@ -34,6 +34,7 @@ import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
+import { SortBy } from '../types';
 import {
   expectItem,
   expectManyItems,
@@ -842,7 +843,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=name&ordering=asc`,
+          url: `/items/accessible?sortBy=${SortBy.ItemName}&ordering=asc`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -873,7 +874,41 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=type&ordering=desc`,
+          url: `/items/accessible?sortBy=${SortBy.ItemType}&ordering=desc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach((_, idx) => {
+          expectItem(data[idx], items[idx]);
+        });
+      });
+
+      it('Returns successfully sorted items by creator name asc', async () => {
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: item1 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          item: { type: ItemType.DOCUMENT },
+        });
+        const { item: item2 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+        });
+        const { item: item3 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          item: { type: ItemType.APP },
+        });
+
+        const items = [item2, item1, item3];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible?sortBy=${SortBy.ItemCreatorName}&ordering=asc`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -924,7 +959,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=name&ordering=nimp`,
+          url: `/items/accessible?sortBy=${SortBy.ItemName}&ordering=nimp`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -938,7 +973,7 @@ describe('Item routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.GET,
           // add sorting for result to be less flacky
-          url: `/items/accessible?ordering=asc&sortBy=name&pageSize=1&page=3`,
+          url: `/items/accessible?ordering=asc&sortBy=${SortBy.ItemName}&pageSize=1&page=3`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.OK);

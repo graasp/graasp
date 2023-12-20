@@ -64,7 +64,7 @@ export const ChildItemEvent = (op: ChildItemEvent['op'], item: Item): ChildItemE
 });
 
 /**
- * Events that affect own items of given user
+ * Events that affect root items the user has access to
  */
 interface AccessibleItemsEvent extends ItemEvent {
   kind: 'accessible';
