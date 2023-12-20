@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.12.0](https://github.com/graasp/graasp/compare/v1.11.1...v1.12.0) (2023-12-19)
+
+
+### Features
+
+* allow to query app settings by name ([#725](https://github.com/graasp/graasp/issues/725)) ([961a8fa](https://github.com/graasp/graasp/commit/961a8fa5e72c47f414c9f9851f3cdd00fe445d5b))
+* implement the get short link route ([#717](https://github.com/graasp/graasp/issues/717)) ([3cb7d9f](https://github.com/graasp/graasp/commit/3cb7d9f422dc1df23e25130ed3850dd9447db840))
+
+
+### Bug Fixes
+
+* **deps:** update dependency uuid to v9.0.1 ([#713](https://github.com/graasp/graasp/issues/713)) ([9c5700c](https://github.com/graasp/graasp/commit/9c5700cd0a7db477bf977d58cef021c341582d5a))
+* fix lint errors, add logging for import zip ([#727](https://github.com/graasp/graasp/issues/727)) ([f85d93d](https://github.com/graasp/graasp/commit/f85d93d2cdb868b41dcd0ca82927f42045e5537c))
+
 ## [1.11.1](https://github.com/graasp/graasp/compare/v1.11.0...v1.11.1) (2023-12-12)
 
 
