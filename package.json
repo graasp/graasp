@@ -120,7 +120,7 @@
     "@types/content-disposition": "0.5.8",
     "@types/eslint": "8.40.2",
     "@types/geoip-lite": "1.4.4",
-    "@types/jest": "29.5.10",
+    "@types/jest": "29.5.11",
     "@types/jsonwebtoken": "9.0.5",
     "@types/mime": "3.0.4",
     "@types/mmmagic": "0.4.33",
@@ -144,7 +144,7 @@
     "prettier": "2.8.8",
     "standard-version": "9.5.0",
     "ts-jest": "29.0.5",
-    "ts-node": "10.9.1",
+    "ts-node": "10.9.2",
     "typescript": "5.0.4",
     "wait-for-expect": "3.0.2"
   },
