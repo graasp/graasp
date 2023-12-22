@@ -779,13 +779,19 @@ describe('Item routes tests', () => {
         // shared
         const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
         const { item: item4 } = await saveItemAndMembership({ member: actor, creator: bob });
+        const { item: item5 } = await saveItemAndMembership({ member: bob });
+        const { item: item6 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          parentItem: item5,
+        });
 
         // should not return these items
         await saveItemAndMembership({ member: bob });
         await saveItemAndMembership({ member: actor, parentItem: item1 });
         await saveItemAndMembership({ member: actor, parentItem: item4 });
 
-        const items = [item1, item2, item3, item4];
+        const items = [item1, item2, item3, item4, item6];
 
         const response = await app.inject({
           method: HttpMethod.GET,

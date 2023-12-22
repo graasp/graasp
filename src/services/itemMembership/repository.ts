@@ -118,6 +118,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
           .from(ItemMembership, 'im1')
           .select('im1.item.path')
           .where('im.item_path <@ im1.item_path')
+          .andWhere('im1.member_id = :actorId', { actorId: actor.id })
           .orderBy('im1.item_path', 'ASC')
           .limit(1)
           .getQuery();
