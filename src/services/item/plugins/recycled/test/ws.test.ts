@@ -13,6 +13,7 @@ import { TestWsClient } from '../../../../websockets/test/test-websocket-client'
 import { setupWsApp } from '../../../../websockets/test/ws-app';
 import { ItemRepository } from '../../../repository';
 import {
+  AccessibleItemsEvent,
   ChildItemEvent,
   ItemEvent,
   ItemOpFeedbackEvent,
@@ -192,8 +193,9 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(() => {
-        const [ownDelete] = memberItemsUpdates;
+        const [ownDelete, accessibleDelete] = memberItemsUpdates;
         expect(ownDelete).toMatchObject(OwnItemsEvent('delete', updatedItem));
+        expect(accessibleDelete).toMatchObject(AccessibleItemsEvent('delete', updatedItem));
       });
     });
 
@@ -415,8 +417,9 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(async () => {
-        const [ownCreate] = itemUpdates;
+        const [ownCreate, accessibleCreate] = itemUpdates;
         expect(ownCreate).toMatchObject(OwnItemsEvent('create', updatedItem));
+        expect(accessibleCreate).toMatchObject(AccessibleItemsEvent('create', updatedItem));
       });
     });
 
@@ -470,8 +473,9 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(async () => {
-        const [sharedCreate] = memberItemsUpdates;
+        const [sharedCreate, accessibleCreate] = memberItemsUpdates;
         expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
+        expect(accessibleCreate).toMatchObject(AccessibleItemsEvent('create', updatedItem));
       });
     });
 
@@ -526,8 +530,9 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(async () => {
-        const [sharedCreate] = memberItemsUpdates;
+        const [sharedCreate, accessibleCreate] = memberItemsUpdates;
         expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
+        expect(accessibleCreate).toMatchObject(AccessibleItemsEvent('create', updatedItem));
       });
     });
 
@@ -587,8 +592,9 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(async () => {
-        const [sharedCreate] = memberItemsUpdates;
+        const [sharedCreate, accessibleCreate] = memberItemsUpdates;
         expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
+        expect(accessibleCreate).toMatchObject(AccessibleItemsEvent('create', updatedItem));
       });
     });
 
@@ -637,9 +643,10 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(async () => {
-        const [recycleDelete, sharedCreate] = memberItemsUpdates;
+        const [recycleDelete, sharedCreate, accessibleCreate] = memberItemsUpdates;
         expect(recycleDelete).toMatchObject(RecycleBinEvent('delete', updatedItem));
         expect(sharedCreate).toMatchObject(SharedItemsEvent('create', updatedItem));
+        expect(accessibleCreate).toMatchObject(AccessibleItemsEvent('create', updatedItem));
       });
     });
   });
@@ -668,7 +675,7 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(() => {
-        const [_ownDelete, _recycleCreate, feedbackUpdate] = memberUpdates;
+        const [_ownDelete, _recycleCreate, _accessibleCreate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('recycle', [item.id], {
             data: { [item.id]: updatedItem },
@@ -728,7 +735,7 @@ describe('Recycle websocket hooks', () => {
       }
 
       await waitForExpect(() => {
-        const [_ownCreate, _recycleCreate, feedbackUpdate] = memberUpdates;
+        const [_ownCreate, _recycleCreate, _accessibleCreate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('restore', [item.id], {
             data: { [item.id]: restored },

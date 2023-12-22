@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { Repositories, buildRepositories } from '../../../utils/repositories';
 import ItemService from '../../item/service';
-import { SharedItemsEvent, memberItemsTopic } from '../../item/ws/events';
+import { AccessibleItemsEvent, SharedItemsEvent, memberItemsTopic } from '../../item/ws/events';
 import { WebsocketService } from '../../websockets/ws-service';
 import ItemMembershipService from '../service';
 import { ItemMembershipEvent, itemMembershipsTopic } from './events';
@@ -27,10 +27,16 @@ export function registerItemMembershipWsHooks(
     // example: if an ancestor already has a membership, then this item should not appear at the top of the member's shared items
     /** see similar to {@link recycleWsHooks} */
     if (membership.member.id !== membership.item?.creator?.id) {
+      // todo: remove when we don't use shared anymore
       websockets.publish(
         memberItemsTopic,
         membership.member.id,
         SharedItemsEvent('create', membership.item),
+      );
+      websockets.publish(
+        memberItemsTopic,
+        membership.member.id,
+        AccessibleItemsEvent('create', membership.item),
       );
     }
 
@@ -70,10 +76,16 @@ export function registerItemMembershipWsHooks(
     // example: if an ancestor already has a membership, then this item was not displayed at the shared root of this member anyway
     // Deletion is idempotent so we can just ignore in front-end for now
     /** see similar to {@link recycleWsHooks} */
+    // todo: remove when we don't use shared anymore
     websockets.publish(
       memberItemsTopic,
       membership.member.id,
       SharedItemsEvent('delete', membership.item),
+    );
+    websockets.publish(
+      memberItemsTopic,
+      membership.member.id,
+      AccessibleItemsEvent('delete', membership.item),
     );
 
     // TODO: should it also check that there is no stronger or equal permission for this member on the item ancestors and thus "replace" it with the stronger ancestor one?

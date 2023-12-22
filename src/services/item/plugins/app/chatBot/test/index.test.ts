@@ -170,7 +170,6 @@ describe('Chat Bot Tests', () => {
           },
           payload: DOCKER_MOCKED_BODY,
         });
-        console.log(response);
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       });
 

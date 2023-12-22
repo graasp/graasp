@@ -3,13 +3,16 @@ import { In, Not } from 'typeorm';
 import { PermissionLevel, PermissionLevelCompare, ResultOf, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { Paginated, PaginationParams } from '../../types';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
   ItemMembershipNotFound,
   ModifyExisting,
 } from '../../utils/errors';
+import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
+import { ItemSearchParams, Ordering, SortBy } from '../item/types';
 import { pathToId } from '../item/utils';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
@@ -91,6 +94,75 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     return query.getMany();
+  },
+
+  /**
+   *  get accessible items for actor and given params
+   *  */
+  async getAccessibleItems(
+    actor: Member,
+    { creatorId, name, sortBy = SortBy.ItemUpdatedAt, ordering = Ordering.desc }: ItemSearchParams,
+    { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
+  ): Promise<Paginated<Item>> {
+    const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
+    const skip = (page - 1) * limit;
+
+    const query = this.createQueryBuilder('im')
+      .leftJoinAndSelect('im.item', 'item')
+      .leftJoinAndSelect('item.creator', 'creator')
+      .where('im.member_id = :actorId', { actorId: actor.id })
+      // returns only top most item
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .from(ItemMembership, 'im1')
+          .select('im1.item.path')
+          .where('im.item_path <@ im1.item_path')
+          .orderBy('im1.item_path', 'ASC')
+          .limit(1)
+          .getQuery();
+        return 'item.path =' + subQuery;
+      });
+
+    if (name) {
+      query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
+        name: name.toLowerCase().trim(),
+      });
+    }
+
+    if (creatorId) {
+      query.andWhere('item.creator = :creatorId', { creatorId });
+    }
+
+    if (sortBy) {
+      // map strings to correct sort by column
+      let mappedSortBy;
+      switch (sortBy) {
+        case SortBy.ItemType:
+          mappedSortBy = 'item.type';
+          break;
+        case SortBy.ItemUpdatedAt:
+          mappedSortBy = 'item.updated_at';
+          break;
+        case SortBy.ItemCreatedAt:
+          mappedSortBy = 'item.created_at';
+          break;
+        case SortBy.ItemCreatorName:
+          mappedSortBy = 'creator.name';
+          break;
+        case SortBy.ItemName:
+          mappedSortBy = 'item.name';
+          break;
+      }
+      if (mappedSortBy) {
+        query.orderBy(mappedSortBy, ordering.toUpperCase());
+      }
+    }
+
+    const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
+    const items = im.map(({ item }) => item);
+
+    return { data: items, totalCount };
   },
 
   async getForManyItems(

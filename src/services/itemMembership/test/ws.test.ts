@@ -5,7 +5,12 @@ import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graa
 
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
-import { ItemEvent, SharedItemsEvent, memberItemsTopic } from '../../item/ws/events';
+import {
+  AccessibleItemsEvent,
+  ItemEvent,
+  SharedItemsEvent,
+  memberItemsTopic,
+} from '../../item/ws/events';
 import { ANNA, BOB, saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
@@ -97,8 +102,9 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
 
       await waitForExpect(() => {
-        const [sharedCreate] = memberUpdates;
+        const [sharedCreate, accessibleCreate] = memberUpdates;
         expect(sharedCreate).toMatchObject(SharedItemsEvent('create', item));
+        expect(accessibleCreate).toMatchObject(AccessibleItemsEvent('create', item));
       });
     });
 
@@ -205,8 +211,9 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
 
       await waitForExpect(() => {
-        const [membershipDelete] = memberUpdates;
+        const [membershipDelete, accessibleToDelete] = memberUpdates;
         expect(membershipDelete).toMatchObject(SharedItemsEvent('delete', item));
+        expect(accessibleToDelete).toMatchObject(AccessibleItemsEvent('delete', item));
       });
     });
 
