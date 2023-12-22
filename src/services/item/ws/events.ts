@@ -64,6 +64,30 @@ export const ChildItemEvent = (op: ChildItemEvent['op'], item: Item): ChildItemE
 });
 
 /**
+ * Events that affect root items the user has access to
+ */
+interface AccessibleItemsEvent extends ItemEvent {
+  kind: 'accessible';
+  op: 'create' | 'delete' | 'update';
+  item: Item;
+}
+/**
+ * Factory of AccessibleItemsEvent
+ * @param op operation of the event
+ * @param item  value of the item for this event
+ * @returns instance of accessible items event
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const AccessibleItemsEvent = (
+  op: OwnItemsEvent['op'],
+  item: Item,
+): AccessibleItemsEvent => ({
+  kind: 'accessible',
+  op,
+  item,
+});
+
+/**
  * Events that affect own items of given user
  */
 interface OwnItemsEvent extends ItemEvent {
@@ -71,7 +95,6 @@ interface OwnItemsEvent extends ItemEvent {
   op: 'create' | 'delete' | 'update';
   item: Item;
 }
-
 /**
  * Factory of OwnItemsEvent
  * @param op operation of the event

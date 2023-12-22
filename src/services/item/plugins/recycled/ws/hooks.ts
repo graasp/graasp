@@ -6,6 +6,7 @@ import { ItemMembership } from '../../../../itemMembership/entities/ItemMembersh
 import { Member } from '../../../../member/entities/member';
 import { WebsocketService } from '../../../../websockets/ws-service';
 import {
+  AccessibleItemsEvent,
   ChildItemEvent,
   OwnItemsEvent,
   SelfItemEvent,
@@ -37,7 +38,9 @@ function registerRecycleWsHooks(
         websockets.publish(itemTopic, parentId, ChildItemEvent('delete', item));
       } else if (item.creator?.id) {
         // root item, notify creator
+        // todo: remove when we don't use own anymore
         websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('delete', item));
+        websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('delete', item));
       }
 
       // item is already soft-deleted so we need withDeleted=true
@@ -69,7 +72,9 @@ function registerRecycleWsHooks(
         memberToTopmost.forEach(({ member, item: topmost }) => {
           // remove from shared items of all members that have a membership on this node, only if this is the topmost shared root for this member
           if (member.id !== item.creator?.id && item.path === topmost.path) {
+            // todo: remove when we don't use own anymore
             websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('delete', item));
+            websockets.publish(memberItemsTopic, member.id, AccessibleItemsEvent('delete', item));
           }
         });
       }
@@ -92,7 +97,9 @@ function registerRecycleWsHooks(
         }
       } else if (item.creator?.id) {
         // root item, notify creator
+        // todo: remove when we don't use own anymore
         websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
+        websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('create', item));
       }
 
       const { data: itemIdsToMemberships } =
@@ -123,7 +130,9 @@ function registerRecycleWsHooks(
         memberToTopmost.forEach(({ member, item: topmost }) => {
           // re-add to shared items of all members that have a membership on this node, only if this is the topmost shared root for this member
           if (member.id !== item.creator?.id && item.path === topmost.path) {
+            // todo: remove when we don't use shared anymore
             websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('create', item));
+            websockets.publish(memberItemsTopic, member.id, AccessibleItemsEvent('create', item));
           }
         });
       }

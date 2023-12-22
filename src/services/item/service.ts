@@ -13,6 +13,7 @@ import {
   getParentFromPath,
 } from '@graasp/sdk';
 
+import { Paginated, PaginationParams } from '../../types';
 import {
   InvalidMembership,
   MemberCannotWriteItem,
@@ -26,6 +27,7 @@ import { filterOutItems, validatePermission, validatePermissionMany } from '../a
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, isItemType } from './entities/Item';
+import { ItemSearchParams } from './types';
 
 export class ItemService {
   hooks = new HookManager<{
@@ -158,6 +160,15 @@ export class ItemService {
     }
 
     return { data: result.data, errors: result.errors.concat(memberships?.errors ?? []) };
+  }
+
+  async getAccessible(
+    actor: Member,
+    repositories: Repositories,
+    params: ItemSearchParams,
+    pagination: PaginationParams,
+  ): Promise<Paginated<Item>> {
+    return repositories.itemMembershipRepository.getAccessibleItems(actor, params, pagination);
   }
 
   async getOwn(actor: Actor, { itemRepository }: Repositories) {

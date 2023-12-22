@@ -9,6 +9,8 @@ import {
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
+import { ITEMS_PAGE_SIZE } from './constants';
+import { Ordering, SortBy } from './types';
 
 /**
  * for serialization
@@ -119,6 +121,23 @@ export const create =
 export const getOne = {
   params: idParam,
   response: { 200: item, '4xx': error },
+};
+
+export const getAccessible = {
+  querystring: S.object()
+    .prop('page', S.number().default(1))
+    .prop('name', S.string())
+    .prop('sortBy', S.enum(Object.values(SortBy)))
+    .prop('ordering', S.enum(Object.values(Ordering)))
+    .prop('creatorId', S.string())
+    .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE)),
+  response: {
+    200: S.object()
+      .additionalProperties(false)
+      .prop('data', S.array().items(item))
+      .prop('totalCount', S.number()),
+    '4xx': error,
+  },
 };
 
 export const getMany = {

@@ -6,6 +6,7 @@ import { buildRepositories } from '../../../utils/repositories';
 import { WebsocketService } from '../../websockets/ws-service';
 import ItemService from '../service';
 import {
+  AccessibleItemsEvent,
   ChildItemEvent,
   OwnItemsEvent,
   SelfItemEvent,
@@ -107,6 +108,7 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
       if (parentId === undefined && item.creator) {
         // root item, notify creator
         websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
+        websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('create', item));
       }
     } catch (e) {
       log?.error(e);
@@ -120,7 +122,9 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
     const parentId = getParentFromPath(item.path);
     if (parentId === undefined && item.creator) {
       // root item, notify creator
+      // todo: remove when we don't use own anymore
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('update', item));
+      websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('update', item));
     }
 
     const { data: result } = await repositories.itemMembershipRepository.getForManyItems([item]);
@@ -134,7 +138,9 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
            * This is similar to {@link recycleWsHooks}
            * For now we can send anyway and ignore in the front-end if not already in shared root
            */
+          // todo: remove when we don't use share anymore
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('update', item));
+          websockets.publish(memberItemsTopic, member.id, AccessibleItemsEvent('update', item));
         }
       });
     }
@@ -149,7 +155,9 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
 
     if (parentId === undefined && item.creator) {
       // root item, notify creator
+      // todo: remove own when we don't use own anymore
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('delete', item));
+      websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('delete', item));
     }
 
     const { data: result } = await repositories.itemMembershipRepository.getForManyItems([item]);
@@ -163,7 +171,9 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
            * This is similar to {@link recycleWsHooks}
            * For now we can send anyway and ignore in the front-end if not already in shared root
            */
+          // todo: remove when we don't use share anymore
           websockets.publish(memberItemsTopic, member.id, SharedItemsEvent('delete', item));
+          websockets.publish(memberItemsTopic, member.id, AccessibleItemsEvent('delete', item));
         }
       });
     }
@@ -174,7 +184,9 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
     const parentId = getParentFromPath(item.path);
     if (parentId === undefined && item.creator) {
       // root item, notify creator
+      // todo: remove own when we don't use own anymore
       websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
+      websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('create', item));
     }
   });
 
@@ -186,16 +198,30 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
     async (actor, repositories, { source, destination, sourceParentId }) => {
       if (sourceParentId === undefined && source.creator) {
         // root item, notify creator
+
+        // todo: remove own when we don't use own anymore
         websockets.publish(memberItemsTopic, source.creator.id, OwnItemsEvent('delete', source));
+
+        websockets.publish(
+          memberItemsTopic,
+          source.creator.id,
+          AccessibleItemsEvent('delete', source),
+        );
       }
 
       const destParentId = getParentFromPath(destination.path);
       if (destParentId === undefined && destination.creator) {
         // root item, notify creator
+        // todo: remove own when we don't use own anymore
         websockets.publish(
           memberItemsTopic,
           destination.creator.id,
           OwnItemsEvent('create', destination),
+        );
+        websockets.publish(
+          memberItemsTopic,
+          destination.creator.id,
+          AccessibleItemsEvent('create', destination),
         );
       }
     },
