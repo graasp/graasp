@@ -93,8 +93,8 @@ export class ItemService {
     }
 
     log?.debug(`create item ${item.name}`);
-    const completedItem = itemRepository.create({ ...item, creator: actor });
-    const createdItem = await itemRepository.post(completedItem, actor, parentItem);
+    const createdItem = await itemRepository.post(item, actor, parentItem);
+    log?.debug(`item ${item.name} is created: ${createdItem}`);
 
     // create membership if inherited is less than admin
     if (
