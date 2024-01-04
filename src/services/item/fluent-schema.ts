@@ -269,7 +269,7 @@ export const copyMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
-  body: S.object().additionalProperties(false).prop('parentId', uuid),
+  body: S.object().additionalProperties(false).prop('parentId', uuid).prop('itemsName', S.object()),
 };
 
 // ajv for other schemas to import

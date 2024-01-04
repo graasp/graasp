@@ -27,6 +27,9 @@ import { Ordered } from './interfaces/requests';
 import { ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
+export interface ItemName {
+  [key: string]: string;
+}
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
   const itemService = items.service;
@@ -297,7 +300,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{
     Querystring: IdsParams;
-    Body: { parentId: string };
+    Body: { parentId: string; itemsName?: ItemName };
   }>(
     '/copy',
     { schema: copyMany, preHandler: fastify.verifyAuthentication },
@@ -305,13 +308,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const {
         member,
         query: { id: ids },
-        body: { parentId },
+        body: { parentId, itemsName },
         log,
       } = request;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.copyMany(member, repositories, ids, {
           parentId,
+          itemsName,
         });
         await actionItemService.postManyCopyAction(request, reply, repositories, items);
         if (member) {

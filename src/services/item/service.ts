@@ -26,6 +26,7 @@ import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
+import { ItemName } from './controller';
 import { Item, isItemType } from './entities/Item';
 import { ItemSearchParams } from './types';
 
@@ -430,7 +431,13 @@ export class ItemService {
   }
 
   /////// -------- COPY
-  async copy(actor: Actor, repositories: Repositories, itemId: UUID, args: { parentId?: UUID }) {
+  async copy(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: UUID,
+    args: { parentId?: UUID },
+    name?: string,
+  ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
@@ -454,6 +461,7 @@ export class ItemService {
     }
 
     const descendants = await itemRepository.getDescendants(item);
+    item.name = name || item.name;
     const items = [...descendants, item];
 
     // pre hook
@@ -493,9 +501,12 @@ export class ItemService {
     actor: Actor,
     repositories: Repositories,
     itemIds: string[],
-    args: { parentId?: UUID },
+    args: { parentId?: UUID; itemsName?: ItemName },
   ) {
-    const items = await Promise.all(itemIds.map((id) => this.copy(actor, repositories, id, args)));
+    const { parentId, itemsName } = args;
+    const items = await Promise.all(
+      itemIds.map((id) => this.copy(actor, repositories, id, { parentId }, itemsName?.[id])),
+    );
     return items;
   }
 }
