@@ -21,3 +21,7 @@ export type ItemSearchParams = {
   sortBy?: SortBy;
   ordering?: Ordering;
 };
+
+export type ItemIdToNameMap = {
+  [key: string]: string;
+};

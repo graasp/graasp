@@ -26,9 +26,8 @@ import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { ItemName } from './controller';
 import { Item, isItemType } from './entities/Item';
-import { ItemSearchParams } from './types';
+import { ItemIdToNameMap, ItemSearchParams } from './types';
 
 export class ItemService {
   hooks = new HookManager<{
@@ -435,8 +434,7 @@ export class ItemService {
     actor: Actor,
     repositories: Repositories,
     itemId: UUID,
-    args: { parentId?: UUID },
-    name?: string,
+    args: { parentId?: UUID; newName?: string },
   ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
@@ -461,7 +459,9 @@ export class ItemService {
     }
 
     const descendants = await itemRepository.getDescendants(item);
-    item.name = name || item.name;
+    if (args.newName) {
+      item.name = args.newName;
+    }
     const items = [...descendants, item];
 
     // pre hook
@@ -501,11 +501,13 @@ export class ItemService {
     actor: Actor,
     repositories: Repositories,
     itemIds: string[],
-    args: { parentId?: UUID; itemsName?: ItemName },
+    args: { parentId?: UUID; newNames?: ItemIdToNameMap },
   ) {
-    const { parentId, itemsName } = args;
+    const { parentId, newNames } = args;
     const items = await Promise.all(
-      itemIds.map((id) => this.copy(actor, repositories, id, { parentId }, itemsName?.[id])),
+      itemIds.map((id) =>
+        this.copy(actor, repositories, id, { parentId, newName: newNames?.[id] }),
+      ),
     );
     return items;
   }
