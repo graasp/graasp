@@ -353,6 +353,8 @@ export class ImportExportService {
       // descriptions are handled alongside the corresponding file
       if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
         try {
+          // transaction is necessary since we are adding data
+          // we don't add it at the very top to allow partial zip to be updated
           await this.db.transaction(async (manager) => {
             const item = await this._saveItemFromFilename(
               actor,
