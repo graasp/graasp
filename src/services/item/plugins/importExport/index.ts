@@ -22,9 +22,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     actions: { service: aS },
     h5p: h5pService,
+    db,
   } = fastify;
 
-  const importExportService = new ImportExportService(fS, iS, h5pService);
+  const importExportService = new ImportExportService(db, fS, iS, h5pService);
 
   fastify.register(fastifyMultipart, {
     limits: {

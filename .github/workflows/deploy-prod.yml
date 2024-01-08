@@ -50,7 +50,7 @@ jobs:
       - name: Set Image Url
         id: image-url
         env:
-          TARGET_IMAGE_URL: ${{ steps.login-ecr-build.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.event.client_payload.tag }}
+          TARGET_IMAGE_URL: ${{ steps.login-ecr-build.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:debug-zip
         run: echo "image_url=${TARGET_IMAGE_URL}" >> $GITHUB_OUTPUT
 
       # Build and tag the docker image
