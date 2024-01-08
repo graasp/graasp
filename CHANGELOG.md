@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.1](https://github.com/graasp/graasp/compare/v1.13.0...v1.13.1) (2024-01-08)
+
+
+### Bug Fixes
+
+* return shared child in accessible items ([#737](https://github.com/graasp/graasp/issues/737)) ([b68a443](https://github.com/graasp/graasp/commit/b68a443ce18c2ad7e8511399eac1a98d6f8a7b1a))
+
 ## [1.13.0](https://github.com/graasp/graasp/compare/v1.12.0...v1.13.0) (2023-12-22)
 
 
