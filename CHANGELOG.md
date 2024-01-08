@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.2](https://github.com/graasp/graasp/compare/v1.13.1...v1.13.2) (2024-01-08)
+
+
+### Bug Fixes
+
+* add transaction in import post ([#746](https://github.com/graasp/graasp/issues/746)) ([8bf0ca1](https://github.com/graasp/graasp/commit/8bf0ca1a1cf0f3e3b617b91ac4e6a3bc4e2cbcd1))
+
 ## [1.13.1](https://github.com/graasp/graasp/compare/v1.13.0...v1.13.1) (2024-01-08)
 
 
