@@ -4,6 +4,7 @@ import mime from 'mime-types';
 import mmm from 'mmmagic';
 import fetch from 'node-fetch';
 import path from 'path';
+import { DataSource } from 'typeorm';
 import util from 'util';
 import yazl, { ZipFile } from 'yazl';
 
@@ -11,7 +12,7 @@ import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { Repositories } from '../../../../utils/repositories';
+import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
@@ -34,8 +35,15 @@ export class ImportExportService {
   fileItemService: FileItemService;
   h5pService: H5PService;
   itemService: ItemService;
+  db: DataSource;
 
-  constructor(fileItemService: FileItemService, itemService: ItemService, h5pService: H5PService) {
+  constructor(
+    db: DataSource,
+    fileItemService: FileItemService,
+    itemService: ItemService,
+    h5pService: H5PService,
+  ) {
+    this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
@@ -345,19 +353,23 @@ export class ImportExportService {
       // descriptions are handled alongside the corresponding file
       if (!filename.endsWith(DESCRIPTION_EXTENSION)) {
         try {
-          const item = await this._saveItemFromFilename(
-            actor,
-            repositories,
-            {
-              filename,
-              folderPath,
-              parent,
-            },
-            log,
-          );
-          if (item) {
-            items.push(item);
-          }
+          // transaction is necessary since we are adding data
+          // we don't add it at the very top to allow partial zip to be updated
+          await this.db.transaction(async (manager) => {
+            const item = await this._saveItemFromFilename(
+              actor,
+              buildRepositories(manager),
+              {
+                filename,
+                folderPath,
+                parent,
+              },
+              log,
+            );
+            if (item) {
+              items.push(item);
+            }
+          });
         } catch (e) {
           if (e instanceof UploadEmptyFileError) {
             // ignore empty files
