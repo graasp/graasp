@@ -6,10 +6,6 @@ on:
   repository_dispatch:
     types: [production-deployment]
 
-  # !! TO REMOVE WHEN DEBUG DONE
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
 env:
   NODE_OPTIONS: '--max_old_space_size=8192' # Allows to increase Node's max heap size
 
@@ -50,7 +46,7 @@ jobs:
       - name: Set Image Url
         id: image-url
         env:
-          TARGET_IMAGE_URL: ${{ steps.login-ecr-build.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:debug-zip
+          TARGET_IMAGE_URL: ${{ steps.login-ecr-build.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.event.client_payload.tag }}
         run: echo "image_url=${TARGET_IMAGE_URL}" >> $GITHUB_OUTPUT
 
       # Build and tag the docker image
