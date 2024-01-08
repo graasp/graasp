@@ -1,6 +1,8 @@
 import path from 'path';
 import { v4 } from 'uuid';
 
+import { FastifyBaseLogger } from 'fastify';
+
 import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
 import {
@@ -20,7 +22,7 @@ import { H5PValidator } from './validation/h5p-validator';
  * Implementation for the H5P service
  */
 export class H5PService extends HtmlService {
-  constructor() {
+  constructor(log: FastifyBaseLogger) {
     const h5pValidator = new H5PValidator();
 
     super(
@@ -29,6 +31,7 @@ export class H5PService extends HtmlService {
       H5P_FILE_MIME_TYPE,
       'h5p',
       h5pValidator,
+      log,
     );
   }
 

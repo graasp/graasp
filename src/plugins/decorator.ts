@@ -52,7 +52,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.decorate('h5p', {
-    service: new H5PService(),
+    service: new H5PService(fastify.log),
   });
 
   fastify.decorate('search', {
