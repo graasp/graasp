@@ -22,7 +22,7 @@
     "test:watch": "yarn test --watchAll",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit -p tsconfig.test.json",
     "lint": "eslint '**/*.{js,ts}'",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
