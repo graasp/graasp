@@ -1,5 +1,7 @@
 import { ReadStream } from 'fs';
 
+import { FastifyBaseLogger } from 'fastify';
+
 import { ItemType } from '@graasp/sdk';
 
 import { Member } from '../member/entities/member';
@@ -27,7 +29,11 @@ const MOCK_S3_CONFIG = {
 
 const member = new Member();
 
-const S3FS = new FileService({ s3: MOCK_S3_CONFIG }, ItemType.S3_FILE);
+const S3FS = new FileService(
+  { s3: MOCK_S3_CONFIG },
+  ItemType.S3_FILE,
+  console as unknown as FastifyBaseLogger,
+);
 
 describe('FileService', () => {
   describe('constructor', () => {
@@ -36,16 +42,28 @@ describe('FileService', () => {
       expect(fS.repository).toBeInstanceOf(S3FileRepository);
     });
     it('use local repository', () => {
-      const fS = new FileService({ local: MOCK_LOCAL_CONFIG }, ItemType.LOCAL_FILE);
+      const fS = new FileService(
+        { local: MOCK_LOCAL_CONFIG },
+        ItemType.LOCAL_FILE,
+        console as unknown as FastifyBaseLogger,
+      );
       expect(fS.repository).toBeInstanceOf(LocalFileRepository);
     });
     it('throws for conflicting settings', () => {
       expect(() => {
-        new FileService({ s3: MOCK_S3_CONFIG }, ItemType.LOCAL_FILE);
+        new FileService(
+          { s3: MOCK_S3_CONFIG },
+          ItemType.LOCAL_FILE,
+          console as unknown as FastifyBaseLogger,
+        );
       }).toThrowError();
 
       expect(() => {
-        new FileService({ local: MOCK_LOCAL_CONFIG }, ItemType.S3_FILE);
+        new FileService(
+          { local: MOCK_LOCAL_CONFIG },
+          ItemType.S3_FILE,
+          console as unknown as FastifyBaseLogger,
+        );
       }).toThrowError();
     });
   });

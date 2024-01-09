@@ -3,7 +3,7 @@ import { ReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import { Readable } from 'stream';
 
-import { FastifyReply } from 'fastify';
+import { FastifyBaseLogger, FastifyReply } from 'fastify';
 
 import { FileItemType, ItemType } from '@graasp/sdk';
 
@@ -32,10 +32,12 @@ class FileService {
   type: FileItemType;
 
   config: { s3?: S3FileConfiguration; local?: LocalFileConfiguration };
+  logger: FastifyBaseLogger;
 
   constructor(
     options: { s3?: S3FileConfiguration; local?: LocalFileConfiguration },
     fileItemType: FileItemType,
+    log: FastifyBaseLogger,
   ) {
     this.type = fileItemType;
     switch (fileItemType) {
@@ -54,6 +56,7 @@ class FileService {
         break;
     }
     this.config = options;
+    this.logger = log;
   }
 
   async getFileSize(actor: Actor, filepath: string) {
@@ -100,10 +103,13 @@ class FileService {
       });
     }
 
-    return this.repository.getFile({
-      filepath,
-      id,
-    });
+    return this.repository.getFile(
+      {
+        filepath,
+        id,
+      },
+      this.logger,
+    );
   }
 
   async getUrl(
@@ -122,11 +128,14 @@ class FileService {
       });
     }
 
-    return this.repository.getUrl({
-      expiration,
-      filepath,
-      id,
-    });
+    return this.repository.getUrl(
+      {
+        expiration,
+        filepath,
+        id,
+      },
+      this.logger,
+    );
   }
 
   async delete(member: Member, filepath: string) {

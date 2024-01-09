@@ -35,7 +35,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     }
   }
 
-  const fS = new FileService(fileConfigurations, fileItemType);
+  const fS = new FileService(fileConfigurations, fileItemType, fastify.log);
 
   fastify.decorate('files', { service: fS });
 };

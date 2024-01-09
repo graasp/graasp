@@ -32,6 +32,7 @@ export abstract class HtmlService {
   protected readonly mimetype: string;
   protected readonly extension: string;
   protected readonly pathPrefix: string;
+  protected readonly logger: FastifyBaseLogger;
 
   protected readonly tempDir: string;
 
@@ -47,13 +48,14 @@ export abstract class HtmlService {
     mimetype: string,
     extension: string,
     validator: HtmlValidator,
+    log: FastifyBaseLogger,
   ) {
     if (pathPrefix && pathPrefix.startsWith('/')) {
       throw new Error('path prefix should not start with a "/"!');
     }
-
+    this.logger = log;
     this.extension = extension;
-    this.fileService = new FileService(config, type);
+    this.fileService = new FileService(config, type, this.logger);
     this.mimetype = mimetype;
     this.pathPrefix = pathPrefix;
     this.validator = validator;

@@ -8,6 +8,8 @@ import fetch from 'node-fetch';
 import path from 'path';
 import { Readable } from 'stream';
 
+import { FastifyBaseLogger } from 'fastify';
+
 import { UUID } from '@graasp/sdk';
 
 import { S3_FILE_ITEM_HOST, TMP_FOLDER } from '../../../utils/config';
@@ -162,7 +164,7 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  private async _downloadS3File({ url, filepath, id }) {
+  private async _downloadS3File({ url, filepath, id }, log: FastifyBaseLogger) {
     try {
       // return readstream of the file saved at given filepath
       // fetch and save file in temporary path
@@ -180,7 +182,7 @@ export class S3FileRepository implements FileRepository {
 
       file.on('close', function (err: Error) {
         if (err) {
-          console.error(err);
+          log.error(err);
         }
         fs.unlinkSync(filepath);
       });
@@ -200,7 +202,7 @@ export class S3FileRepository implements FileRepository {
    * @param
    * @returns temporary file content
    */
-  async getFile({ filepath, id }) {
+  async getFile({ filepath, id }, log: FastifyBaseLogger) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -219,11 +221,11 @@ export class S3FileRepository implements FileRepository {
       // return readstream of the file saved in tmp folder
       // fetch and save file in temporary path
       const tmpPath = path.join(TMP_FOLDER, 'files', id);
-      const file = await this._downloadS3File({ url, filepath: tmpPath, id });
+      const file = await this._downloadS3File({ url, filepath: tmpPath, id }, log);
 
       return file;
     } catch (e) {
-      console.error(e);
+      log.error(e);
       if (!(e instanceof DownloadFileUnexpectedError)) {
         throw new DownloadFileUnexpectedError({ filepath, id });
       }
@@ -231,7 +233,10 @@ export class S3FileRepository implements FileRepository {
     }
   }
 
-  async getUrl({ expiration, filepath }: { filepath: string; expiration?: number }) {
+  async getUrl(
+    { expiration, filepath }: { filepath: string; expiration?: number },
+    log: FastifyBaseLogger,
+  ) {
     const { s3Bucket: bucket } = this.options;
     try {
       // check whether file exists
@@ -249,7 +254,9 @@ export class S3FileRepository implements FileRepository {
 
       return url;
     } catch (e) {
-      console.error(e);
+      // todo: usign console.log polutes the logs
+      log.error(e);
+      // todo: handle the "Not Found" error
       if (!(e instanceof DownloadFileUnexpectedError)) {
         throw new DownloadFileUnexpectedError({ filepath });
       }

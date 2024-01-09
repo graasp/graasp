@@ -22,10 +22,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     actions: { service: aS },
     h5p: h5pService,
+    log: fastifyLogger,
     db,
   } = fastify;
 
-  const importExportService = new ImportExportService(db, fS, iS, h5pService);
+  const importExportService = new ImportExportService(db, fS, iS, h5pService, fastifyLogger);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -108,7 +109,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const archiveStream = await importExportService.export(member, repositories, {
         item,
         reply,
-        log,
       });
 
       // trigger download action for a collection

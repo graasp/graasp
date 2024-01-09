@@ -36,17 +36,20 @@ export class ImportExportService {
   h5pService: H5PService;
   itemService: ItemService;
   db: DataSource;
+  logger: FastifyBaseLogger;
 
   constructor(
     db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
+    log: FastifyBaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
+    this.logger = log;
   }
 
   private async _getDescriptionForFilepath(filepath: string): Promise<string> {
@@ -306,7 +309,7 @@ export class ImportExportService {
   async export(
     actor: Actor,
     repositories: Repositories,
-    { item, reply }: { item: Item; reply: FastifyReply; log?: FastifyBaseLogger },
+    { item, reply }: { item: Item; reply: FastifyReply },
   ) {
     // init archive
     const archive = new yazl.ZipFile();
