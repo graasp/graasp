@@ -70,7 +70,7 @@ const iframelyResult = {
   thumbnails: [],
 };
 
-describe('Member routes tests', () => {
+describe('ZIP routes tests', () => {
   let app, actor;
 
   beforeEach(() => {
@@ -156,6 +156,55 @@ describe('Member routes tests', () => {
       await waitForExpect(async () => {
         const items = await ItemRepository.find();
         expect(items).toHaveLength(1);
+      }, 1000);
+    });
+    it('Import and sanitize html, txt and description', async () => {
+      ({ app } = await build());
+      const form = createFormData('htmlAndText.zip');
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: '/items/zip-import',
+        payload: form,
+        headers: form.getHeaders(),
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+      await waitForExpect(async () => {
+        const items = await ItemRepository.find();
+        expect(items).toHaveLength(2);
+
+        for (const item of items) {
+          // .txt + description
+          if (item.name === 'mytext') {
+            // allowed tags
+            expect(item.description).toContain(`<h1>My First Heading</h1>`);
+            expect(item.description).toContain(`<p>My first paragraph.</p>`);
+
+            // the script with a console should not appear in the text
+            expect(item.description).not.toContain(`script`);
+            expect(item.description).not.toContain(`console`);
+
+            // content
+            expect(item.extra[ItemType.DOCUMENT].content).toEqual('This is a txt content');
+          }
+          // .html
+          else if (item.name === 'myhtml') {
+            // description
+            expect(item.description).toEqual('');
+
+            // allowed tags
+            expect(item.extra[ItemType.DOCUMENT].content).toContain(`<h1>My First Heading</h1>`);
+            expect(item.extra[ItemType.DOCUMENT].content).toContain(`<p>My first paragraph.</p>`);
+
+            // the script with a console should not appear in the text
+            expect(item.extra[ItemType.DOCUMENT].content).not.toContain(`script`);
+            expect(item.extra[ItemType.DOCUMENT].content).not.toContain(`console`);
+          } else {
+            throw new Error('did not find the wanted files');
+          }
+        }
       }, 1000);
     });
     it('Throws if signed out', async () => {

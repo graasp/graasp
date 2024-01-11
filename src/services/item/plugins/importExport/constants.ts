@@ -16,6 +16,8 @@ export const buildSettings = (hasThumbnail) => ({
 
 export const GRAASP_DOCUMENT_EXTENSION = '.graasp';
 export const LINK_EXTENSION = '.url';
+export const HTML_EXTENSION = '.html';
+export const TXT_EXTENSION = '.txt';
 
 export const ZIP_FILE_MIME_TYPES = [
   'application/zip',
