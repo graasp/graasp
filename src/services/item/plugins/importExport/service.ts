@@ -154,7 +154,7 @@ export class ImportExportService {
                 url,
               },
             },
-          } as Partial<Item>;
+          };
           return this.itemService.post(
             actor,
             repositories,
@@ -171,7 +171,7 @@ export class ImportExportService {
                 url,
               },
             },
-          } as Partial<Item>;
+          };
           return this.itemService.post(
             actor,
             repositories,
@@ -194,7 +194,7 @@ export class ImportExportService {
               content: sanitize(content),
             },
           },
-        } as Partial<Item>;
+        };
         return this.itemService.post(
           actor,
           repositories,
