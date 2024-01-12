@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.14.0](https://github.com/graasp/graasp/compare/v1.13.2...v1.14.0) (2024-01-12)
+
+
+### Features
+
+* import html and txt files ([#751](https://github.com/graasp/graasp/issues/751)) ([4f40f21](https://github.com/graasp/graasp/commit/4f40f2171adaa645b4431a9e6409ae731ea0fc18))
+
+
+### Bug Fixes
+
+* add logger to FileService ([#740](https://github.com/graasp/graasp/issues/740)) ([4c05f8e](https://github.com/graasp/graasp/commit/4c05f8e573d34aba871f034e75aca97cee9200c5))
+
 ## [1.13.2](https://github.com/graasp/graasp/compare/v1.13.1...v1.13.2) (2024-01-08)
 
 
