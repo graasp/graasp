@@ -4,6 +4,7 @@ import mime from 'mime-types';
 import mmm from 'mmmagic';
 import fetch from 'node-fetch';
 import path from 'path';
+import sanitize from 'sanitize-html';
 import { DataSource } from 'typeorm';
 import util from 'util';
 import yazl, { ZipFile } from 'yazl';
@@ -22,7 +23,9 @@ import { H5PService } from '../html/h5p/service';
 import {
   DESCRIPTION_EXTENSION,
   GRAASP_DOCUMENT_EXTENSION,
+  HTML_EXTENSION,
   LINK_EXTENSION,
+  TXT_EXTENSION,
   URL_PREFIX,
 } from './constants';
 import { UnexpectedExportError } from './errors';
@@ -56,10 +59,11 @@ export class ImportExportService {
     const descriptionFilePath = filepath + DESCRIPTION_EXTENSION;
     if (existsSync(descriptionFilePath)) {
       // get folder description (inside folder) if it exists
-      return readFile(descriptionFilePath, {
+      const text = await readFile(descriptionFilePath, {
         encoding: 'utf8',
         flag: 'r',
       });
+      return sanitize(text);
     }
     return '';
   }
@@ -128,88 +132,92 @@ export class ImportExportService {
     });
     const description = await this._getDescriptionForFilepath(filepath);
 
+    const { name, ext } = path.parse(filename);
+
     // links and apps
-    if (filename.endsWith(LINK_EXTENSION)) {
-      const [_source, link, linkType] = content.split('\n');
+    switch (ext) {
+      case LINK_EXTENSION: {
+        const [_source, link, linkType] = content.split('\n');
 
-      // get url from content
-      const url = link.slice(URL_PREFIX.length);
+        // get url from content
+        const url = link.slice(URL_PREFIX.length);
 
-      // get if app in content -> url is either a link or an app
-      const type = linkType.includes('1') ? ItemType.APP : ItemType.LINK;
-      if (type === ItemType.APP) {
-        const newItem = {
-          name: filename.slice(0, -LINK_EXTENSION.length),
-          description,
-          type,
-          extra: {
-            [type]: {
-              url,
+        // get if app in content -> url is either a link or an app
+        const type = linkType.includes('1') ? ItemType.APP : ItemType.LINK;
+        if (type === ItemType.APP) {
+          const newItem = {
+            name,
+            description,
+            type,
+            extra: {
+              [type]: {
+                url,
+              },
             },
-          },
-        } as Partial<Item>;
-        return this.itemService.post(
-          actor,
-          repositories,
-          { item: newItem, parentId: parent?.id },
-          log,
-        );
-      } else if (type === ItemType.LINK) {
-        const newItem = {
-          name: filename.slice(0, -LINK_EXTENSION.length),
-          description,
-          type,
-          extra: {
-            [type]: {
-              url,
+          };
+          return this.itemService.post(
+            actor,
+            repositories,
+            { item: newItem, parentId: parent?.id },
+            log,
+          );
+        } else if (type === ItemType.LINK) {
+          const newItem = {
+            name,
+            description,
+            type,
+            extra: {
+              [type]: {
+                url,
+              },
             },
-          },
-        } as Partial<Item>;
-        return this.itemService.post(
-          actor,
-          repositories,
-          { item: newItem, parentId: parent?.id },
-          log,
-        );
-      } else {
-        throw new Error(`${type} is not handled`);
+          };
+          return this.itemService.post(
+            actor,
+            repositories,
+            { item: newItem, parentId: parent?.id },
+            log,
+          );
+        } else {
+          throw new Error(`${type} is not handled`);
+        }
       }
-    }
-    // documents
-    else if (filename.endsWith(GRAASP_DOCUMENT_EXTENSION)) {
-      const newItem = {
-        // remove .graasp from name
-        name: filename.slice(0, -GRAASP_DOCUMENT_EXTENSION.length),
-        description,
-        type: ItemType.DOCUMENT,
-        extra: {
-          [ItemType.DOCUMENT]: {
-            // not sure
-            content: content,
+      case GRAASP_DOCUMENT_EXTENSION:
+      case HTML_EXTENSION:
+      case TXT_EXTENSION: {
+        const newItem = {
+          name,
+          description,
+          type: ItemType.DOCUMENT,
+          extra: {
+            [ItemType.DOCUMENT]: {
+              content: sanitize(content),
+            },
           },
-        },
-      } as Partial<Item>;
-      return this.itemService.post(
-        actor,
-        repositories,
-        { item: newItem, parentId: parent?.id },
-        log,
-      );
-    }
-    // normal files
-    else {
-      const mimetype = await asyncDetectFile(filepath);
-      // upload file
-      const file = fs.createReadStream(filepath);
-      const item = await this.fileItemService.upload(actor, repositories, {
-        filename,
-        mimetype,
-        description,
-        stream: file,
-        parentId: parent?.id,
-      });
+        };
+        return this.itemService.post(
+          actor,
+          repositories,
+          { item: newItem, parentId: parent?.id },
+          log,
+        );
+      }
 
-      return item;
+      // normal files
+      default: {
+        const mimetype = await asyncDetectFile(filepath);
+        // upload file
+        const file = fs.createReadStream(filepath);
+        const item = await this.fileItemService.upload(actor, repositories, {
+          filename,
+          mimetype,
+          description,
+          stream: file,
+          parentId: parent?.id,
+        });
+
+        return item;
+      }
     }
   }
 
