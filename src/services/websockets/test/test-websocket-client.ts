@@ -63,7 +63,7 @@ export class TestWsClient {
         update.channel === channel &&
         update.topic === topic
       ) {
-        updates.push(parseStringToDate(update.body));
+        updates.push(parseStringToDate(update.body) as UpdatesType);
       }
     });
 
