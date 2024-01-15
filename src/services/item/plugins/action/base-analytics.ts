@@ -1,10 +1,15 @@
 import Ajv from 'ajv';
 
+import { UUID } from '@graasp/sdk';
+
 import { Action } from '../../../action/entities/action';
 import { ChatMessage } from '../../../chat/chatMessage';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
+import { AppAction } from '../app/appAction/appAction';
+import { AppData } from '../app/appData/appData';
+import { AppSetting } from '../app/appSetting/appSettings';
 import { memberSchema, memberSchemaForAnalytics } from './schemas';
 
 export class BaseAnalytics {
@@ -13,6 +18,13 @@ export class BaseAnalytics {
   readonly itemMemberships: ItemMembership[];
   readonly descendants: Item[];
   readonly item: Item;
+  readonly apps: {
+    [key: UUID]: {
+      data: AppData[];
+      settings: AppSetting[];
+      actions: AppAction[];
+    };
+  };
   readonly chatMessages: ChatMessage[];
   readonly metadata: {
     numActionsRetrieved: number;
@@ -26,6 +38,13 @@ export class BaseAnalytics {
     members: Member[];
     itemMemberships: ItemMembership[];
     chatMessages: ChatMessage[];
+    apps: {
+      [key: UUID]: {
+        data: AppData[];
+        settings: AppSetting[];
+        actions: AppAction[];
+      };
+    };
     metadata: {
       numActionsRetrieved: number;
       requestedSampleSize: number;
@@ -50,6 +69,15 @@ export class BaseAnalytics {
 
     args.chatMessages.forEach((m) => validateMember(m.creator));
 
+    Object.values(args.apps).forEach(({ actions, data, settings }) => {
+      settings.forEach(({ creator }) => {
+        validateMember(creator);
+      });
+
+      data.forEach(({ member, creator }) => validateMember(member) && validateMember(creator));
+      actions.forEach(({ member }) => validateMember(member));
+    });
+
     this.actions = args.actions;
     this.members = args.members;
     this.item = args.item;
@@ -57,5 +85,6 @@ export class BaseAnalytics {
     this.metadata = args.metadata;
     this.itemMemberships = args.itemMemberships;
     this.chatMessages = args.chatMessages;
+    this.apps = args.apps;
   }
 }

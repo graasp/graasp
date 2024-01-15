@@ -30,7 +30,7 @@ const expectAppSettings = (values, expected) => {
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
 
-const saveAppSettings = async ({ item, creator }) => {
+export const saveAppSettings = async ({ item, creator }) => {
   const defaultData = { name: 'setting-name', data: { setting: 'value' } };
   const s1 = await AppSettingRepository.save({ item, creator, ...defaultData });
   const s2 = await AppSettingRepository.save({ item, creator, ...defaultData });

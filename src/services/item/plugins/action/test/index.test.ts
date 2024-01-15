@@ -2,7 +2,7 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
-import { Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
+import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
@@ -13,6 +13,9 @@ import {
 } from '../../../../itemMembership/test/fixtures/memberships';
 import { BOB, MEMBERS, saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { getDummyItem, savePublicItem } from '../../../test/fixtures/items';
+import { saveAppActions } from '../../app/appAction/test/index.test';
+import { saveAppData } from '../../app/appData/test/index.test';
+import { saveAppSettings } from '../../app/appSetting/test/index.test';
 import { CannotPostAction } from '../errors';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
@@ -201,6 +204,36 @@ describe('Action Plugin Tests', () => {
         item: getDummyItem(),
         member: actor,
       });
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions/export`,
+      });
+
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+
+      await waitForExpect(() => {
+        expect(uploadDoneMock).toHaveBeenCalled();
+        expect(mockSendEmail).toHaveBeenCalled();
+      });
+    });
+
+    it('Create archive for item with an app and send email', async () => {
+      ({ app, actor } = await build());
+      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+
+      const { item } = await saveItemAndMembership({
+        item: getDummyItem(),
+        member: actor,
+      });
+      const { item: appItem } = await saveItemAndMembership({
+        item: getDummyItem({ type: ItemType.APP }),
+        parentItem: item,
+        member: actor,
+      });
+      await saveAppData({ item: appItem, creator: actor });
+      await saveAppActions({ item: appItem, member: actor });
+      await saveAppSettings({ item: appItem, creator: actor });
 
       const response = await app.inject({
         method: HttpMethod.POST,

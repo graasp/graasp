@@ -14,8 +14,16 @@ export const baseAnalytics = S.object()
   .prop('item', item)
   .prop('itemMemberships', S.array())
   .prop('members', S.array())
+  .prop(
+    'apps',
+    S.object()
+      .additionalProperties(false)
+      .prop('actions', S.array())
+      .prop('settings', S.array())
+      .prop('data', S.array()),
+  )
   .prop('metadata', S.object())
-  .required(['item', 'actions', 'itemMemberships', 'members', 'metadata']);
+  .required(['item', 'actions', 'itemMemberships', 'members', 'metadata', 'apps']);
 
 // schema for getting item analytics with view and requestedSampleSize query parameters
 export const getItemActions = {
