@@ -9,19 +9,20 @@ export const buildWordList = (badWordsFilter: BadWordsFilter): void => {
 };
 
 export const detectFieldNameWithBadWords = (
-  documents: {
+  _documents: {
     name: string;
     value: string;
   }[],
 ): string[] => {
-  const contents = documents?.filter(Boolean);
-  const badWordsFilter = new BadWordsFilter();
-  buildWordList(badWordsFilter);
-  const suspiciousFields: string[] = [];
-  for (const { value, name } of contents) {
-    if (badWordsFilter.isProfane(value)) {
-      suspiciousFields.push(name);
-    }
-  }
-  return suspiciousFields;
+  return [];
+  // const contents = documents?.filter(Boolean);
+  // const badWordsFilter = new BadWordsFilter();
+  // buildWordList(badWordsFilter);
+  // const suspiciousFields: string[] = [];
+  // for (const { value, name } of contents) {
+  //   if (badWordsFilter.isProfane(value)) {
+  //     suspiciousFields.push(name);
+  //   }
+  // }
+  // return suspiciousFields;
 };
