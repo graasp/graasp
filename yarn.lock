@@ -1718,16 +1718,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:3.2.0":
-  version: 3.2.0
-  resolution: "@graasp/sdk@npm:3.2.0"
+"@graasp/sdk@github:graasp/graasp-sdk#remove-etherpad-api-dep":
+  version: 3.4.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=37e7373c4e0dafa3bca1bcdbb80a3e24f27152ff"
   dependencies:
-    "@graasp/etherpad-api": "npm:2.1.1"
-    date-fns: "npm:2.30.0"
+    date-fns: "npm:3.2.0"
     js-cookie: "npm:3.0.5"
     uuid: "npm:9.0.1"
     validator: "npm:13.11.0"
-  checksum: 54c321bee3b37fbe6c9b098782e9891de5b0a12326fb27e3bd5bc8fb7f0ceb0a6e70f3223394350978eeee91a481f5508b60fe41ffd58ee3d034ced8634ab941
+  checksum: d30055475cc5e7e90e3a68d25bcbf7c6844526557b58e754af0917804fbb7dc419c80c0a1906e2df96ebd3248f9fe39d59c0dbb3b23c29f48f30df0679a1b1f8
   languageName: node
   linkType: hard
 
@@ -5063,7 +5062,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:2.30.0, date-fns@npm:^2.29.1, date-fns@npm:^2.29.3, date-fns@npm:^2.30.0":
+"date-fns@npm:3.2.0":
+  version: 3.2.0
+  resolution: "date-fns@npm:3.2.0"
+  checksum: 2f36cb9165a066ae90c0b6f0c25b3c70eb75bc52e64ba6dd8680964ebda144851a244ff4ed0b2afb4a6bab796a1af6a0e6c7c2814529d04c72fa434f931d4e81
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:^2.29.1, date-fns@npm:^2.29.3, date-fns@npm:^2.30.0":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
   dependencies:
@@ -6456,7 +6462,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:3.2.0"
+    "@graasp/sdk": "github:graasp/graasp-sdk#remove-etherpad-api-dep"
     "@graasp/translations": "npm:1.21.0"
     "@sentry/node": "npm:7.64.0"
     "@sentry/tracing": "npm:7.64.0"
