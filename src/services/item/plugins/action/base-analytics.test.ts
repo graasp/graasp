@@ -17,6 +17,18 @@ const metadata = {
   requestedSampleSize: 0,
 };
 
+const expectMinimalMemberOrUndefined = (member?: Partial<Member> | null) => {
+  if (!member) {
+    return;
+  }
+
+  expect(member.createdAt).toBeUndefined();
+  expect(member.updatedAt).toBeUndefined();
+  expect(member.name).toBeTruthy();
+  expect(member.id).toBeTruthy();
+  expect(member.email).toBeTruthy();
+};
+
 // mock database and decorator plugins
 jest.mock('../../../../plugins/datasource');
 
@@ -29,7 +41,7 @@ describe('Base Analytics', () => {
     app.close();
   });
 
-  it.only('Members should be cleaned', async () => {
+  it('Members should be cleaned', async () => {
     // build app to be able to instantiate member data
     ({ app } = await build({ member: null }));
 
@@ -73,11 +85,11 @@ describe('Base Analytics', () => {
       if (m?.extra?.lang) {
         expect(member?.extra.lang).toBeTruthy();
       }
-      expect(member?.createdAt).toBeUndefined();
+      expectMinimalMemberOrUndefined(member);
     }
 
     for (const cm of analytics.chatMessages) {
-      expect(cm.creator?.createdAt).toBeUndefined();
+      expectMinimalMemberOrUndefined(cm.creator);
     }
 
     const {
@@ -86,14 +98,14 @@ describe('Base Analytics', () => {
       settings: appSettings,
     } = Object.values(analytics.apps)[0];
     for (const aa of appActions) {
-      expect(aa.member?.createdAt).toBeUndefined();
+      expectMinimalMemberOrUndefined(aa.member);
     }
     for (const ad of appData) {
-      expect(ad.member?.createdAt).toBeUndefined();
-      expect(ad.creator?.createdAt).toBeUndefined();
+      expectMinimalMemberOrUndefined(ad.member);
+      expectMinimalMemberOrUndefined(ad.creator);
     }
     for (const as of appSettings) {
-      expect(as.creator?.createdAt).toBeUndefined();
+      expectMinimalMemberOrUndefined(as.creator);
     }
   });
 });
