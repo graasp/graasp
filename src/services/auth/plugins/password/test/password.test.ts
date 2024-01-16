@@ -1,5 +1,5 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import fetch from 'node-fetch';
+import fetch, { type Response } from 'node-fetch';
 
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
@@ -12,10 +12,9 @@ jest.mock('node-fetch');
 
 // mock captcha
 // bug: cannot use exported mockCaptchaValidation
-export const mockCaptchaValidation = (action: RecaptchaActionType) => {
+const mockCaptchaValidation = (action: RecaptchaActionType) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { json: async () => ({ success: true, action, score: 1 }) } as any;
+    return { json: async () => ({ success: true, action, score: 1 }) } as Response;
   });
 };
 // mock database and decorator plugins
@@ -42,6 +41,54 @@ describe('Password routes tests', () => {
     });
 
     it('Sign In successfully', async () => {
+      const m = MEMBERS_FIXTURES.LOUISA;
+      const pwd = MOCK_PASSWORD;
+
+      const member = await saveMemberAndPassword(m, pwd);
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: '/login-password',
+        payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      expect(response.json()).toHaveProperty('resource');
+    });
+
+    it('Sign In successfully with captcha score = 0', async () => {
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        return {
+          json: async () => ({
+            success: true,
+            action: RecaptchaAction.SignInWithPassword,
+            score: 0,
+          }),
+        } as Response;
+      });
+      const m = MEMBERS_FIXTURES.LOUISA;
+      const pwd = MOCK_PASSWORD;
+
+      const member = await saveMemberAndPassword(m, pwd);
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: '/login-password',
+        payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      expect(response.json()).toHaveProperty('resource');
+    });
+
+    it('Sign In successfully with captcha score < 0.5', async () => {
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        return {
+          json: async () => ({
+            success: true,
+            action: RecaptchaAction.SignInWithPassword,
+            score: 0.3,
+          }),
+        } as Response;
+      });
       const m = MEMBERS_FIXTURES.LOUISA;
       const pwd = MOCK_PASSWORD;
 

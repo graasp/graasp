@@ -65,7 +65,8 @@ const plugin: FastifyPluginAsync<{ secretAccessKey: string }> = async (fastify, 
       !data ||
       !data.success ||
       data.action !== actionType ||
-      !data.score ||
+      // data.score should be checked for definition not for boolean value
+      data.score == undefined ||
       (shouldFailIfLowScore && data.score < RECAPTCHA_SCORE_THRESHOLD)
     ) {
       console.error(`The captcha verification has thrown with value: '${JSON.stringify(data)}'`);
