@@ -104,7 +104,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemCategoryRepository: manager
     ? manager.withRepository(ItemCategoryRepository)
     : ItemCategoryRepository,
-  itemFavoriteRepository: manager ? new FavoriteRepository(manager) : new FavoriteRepository(),
+  itemFavoriteRepository: new FavoriteRepository(manager),
   categoryRepository: manager ? manager.withRepository(CategoryRepository) : CategoryRepository,
   itemTagRepository: manager ? manager.withRepository(ItemTagRepository) : ItemTagRepository,
   itemValidationRepository: manager

@@ -2,6 +2,7 @@ import { EntityManager, Repository } from 'typeorm';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { Item } from '../../../entities/Item';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
 
@@ -14,6 +15,21 @@ export class FavoriteRepository {
     } else {
       this.repository = AppDataSource.getRepository(ItemFavorite);
     }
+  }
+
+  async get(favoriteId: string): Promise<ItemFavorite> {
+    if (!favoriteId) {
+      throw new ItemFavoriteNotFound(favoriteId);
+    }
+    const favorite = await this.repository.findOne({
+      where: { id: favoriteId },
+      relations: { item: true, member: true },
+    });
+
+    if (!favorite) {
+      throw new ItemFavoriteNotFound(favoriteId);
+    }
+    return favorite;
   }
 
   /**
@@ -29,14 +45,6 @@ export class FavoriteRepository {
       .where('favorite.member_id = :memberId', { memberId })
       .getMany();
     return favorites;
-  }
-
-  async get(favoriteId: string): Promise<ItemFavorite> {
-    if (!favoriteId) {
-      throw new ItemFavoriteNotFound(favoriteId);
-    }
-
-    return await this.repository.findOneByOrFail({ id: favoriteId });
   }
 
   async post(itemId: string, memberId: string): Promise<ItemFavorite> {
@@ -55,7 +63,7 @@ export class FavoriteRepository {
     }
   }
 
-  async deleteOne(itemId: string, memberId: string): Promise<string> {
+  async deleteOne(itemId: string, memberId: string): Promise<Item['id']> {
     await this.repository.delete({
       item: { id: itemId },
       member: { id: memberId },
