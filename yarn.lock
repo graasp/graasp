@@ -1718,15 +1718,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#remove-etherpad-api-dep":
-  version: 3.4.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=37e7373c4e0dafa3bca1bcdbb80a3e24f27152ff"
+"@graasp/sdk@npm:3.4.1":
+  version: 3.4.1
+  resolution: "@graasp/sdk@npm:3.4.1"
   dependencies:
     date-fns: "npm:3.2.0"
     js-cookie: "npm:3.0.5"
     uuid: "npm:9.0.1"
     validator: "npm:13.11.0"
-  checksum: d30055475cc5e7e90e3a68d25bcbf7c6844526557b58e754af0917804fbb7dc419c80c0a1906e2df96ebd3248f9fe39d59c0dbb3b23c29f48f30df0679a1b1f8
+  checksum: 6bf2d3fbb28d61a457a534628620982a656258ab2e5c101294da8e7e4327eacff526378983c4e06a85f0115e0547325f9dbece793f7f4bc6129aa8909a42a24b
   languageName: node
   linkType: hard
 
@@ -6462,7 +6462,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "github:graasp/graasp-sdk#remove-etherpad-api-dep"
+    "@graasp/sdk": "npm:3.4.1"
     "@graasp/translations": "npm:1.21.0"
     "@sentry/node": "npm:7.64.0"
     "@sentry/tracing": "npm:7.64.0"
