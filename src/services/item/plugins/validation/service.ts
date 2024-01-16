@@ -102,7 +102,8 @@ export class ItemValidationService {
   ) {
     // execute each process on item
     await Promise.all(
-      Object.values(ItemValidationProcess).map(async (process) => {
+      // todo: add more validation processes to this array
+      [ItemValidationProcess.ImageChecking].map(async (process) => {
         try {
           // if item is not of type 'file', skip the image checking
           if (

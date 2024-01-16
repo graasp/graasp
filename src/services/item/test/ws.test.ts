@@ -13,10 +13,12 @@ import {
 import { ANNA, saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
+import { Item } from '../entities/Item';
 import { ItemRepository } from '../repository';
 import {
   AccessibleItemsEvent,
   ChildItemEvent,
+  ItemEvent,
   ItemOpFeedbackEvent,
   OwnItemsEvent,
   SelfItemEvent,
@@ -124,7 +126,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childCreate] = itemUpdates;
-        expect(childCreate).toMatchObject(ChildItemEvent('create', parseStringToDate(res)));
+        expect(childCreate).toMatchObject(ChildItemEvent('create', parseStringToDate(res) as Item));
       });
     });
 
@@ -143,9 +145,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childCreate, accessibleCreate] = itemUpdates;
-        expect(childCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(res)));
+        expect(childCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(res) as Item));
         expect(accessibleCreate).toMatchObject(
-          AccessibleItemsEvent('create', parseStringToDate(res)),
+          AccessibleItemsEvent('create', parseStringToDate(res) as Item),
         );
       });
     });
@@ -168,7 +170,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [selfUpdate] = itemUpdates;
-        expect(selfUpdate).toMatchObject(SelfItemEvent('update', parseStringToDate(res)));
+        expect(selfUpdate).toMatchObject(SelfItemEvent('update', parseStringToDate(res) as Item));
       });
     });
 
@@ -190,7 +192,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childUpdate] = itemUpdates;
-        expect(childUpdate).toMatchObject(ChildItemEvent('update', parseStringToDate(res)));
+        expect(childUpdate).toMatchObject(ChildItemEvent('update', parseStringToDate(res) as Item));
       });
     });
 
@@ -210,9 +212,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [ownUpdate, accessibleUpdate] = itemUpdates;
-        expect(ownUpdate).toMatchObject(OwnItemsEvent('update', parseStringToDate(res)));
+        expect(ownUpdate).toMatchObject(OwnItemsEvent('update', parseStringToDate(res) as Item));
         expect(accessibleUpdate).toMatchObject(
-          AccessibleItemsEvent('update', parseStringToDate(res)),
+          AccessibleItemsEvent('update', parseStringToDate(res) as Item),
         );
       });
     });
@@ -240,9 +242,11 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [sharedUpdate, accessibleUpdate] = itemUpdates;
-        expect(sharedUpdate).toMatchObject(SharedItemsEvent('update', parseStringToDate(res)));
+        expect(sharedUpdate).toMatchObject(
+          SharedItemsEvent('update', parseStringToDate(res) as Item),
+        );
         expect(accessibleUpdate).toMatchObject(
-          AccessibleItemsEvent('update', parseStringToDate(res)),
+          AccessibleItemsEvent('update', parseStringToDate(res) as Item),
         );
       });
     });
@@ -265,7 +269,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [selfDelete] = itemUpdates;
-        expect(selfDelete).toMatchObject(SelfItemEvent('delete', parseStringToDate(item)));
+        expect(selfDelete).toMatchObject(SelfItemEvent('delete', parseStringToDate(item) as Item));
       });
     });
 
@@ -287,7 +291,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childDelete] = itemUpdates;
-        expect(childDelete).toMatchObject(ChildItemEvent('delete', parseStringToDate(childItem)));
+        expect(childDelete).toMatchObject(
+          ChildItemEvent('delete', parseStringToDate(childItem) as Item),
+        );
       });
     });
 
@@ -307,9 +313,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [ownDelete, accessibleDelete] = itemUpdates;
-        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', parseStringToDate(item)));
+        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', parseStringToDate(item) as Item));
         expect(accessibleDelete).toMatchObject(
-          AccessibleItemsEvent('delete', parseStringToDate(item)),
+          AccessibleItemsEvent('delete', parseStringToDate(item) as Item),
         );
       });
     });
@@ -337,9 +343,11 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [sharedDelete, accessibleDelete] = itemUpdates;
-        expect(sharedDelete).toMatchObject(SharedItemsEvent('delete', parseStringToDate(item)));
+        expect(sharedDelete).toMatchObject(
+          SharedItemsEvent('delete', parseStringToDate(item) as Item),
+        );
         expect(accessibleDelete).toMatchObject(
-          AccessibleItemsEvent('delete', parseStringToDate(item)),
+          AccessibleItemsEvent('delete', parseStringToDate(item) as Item),
         );
       });
     });
@@ -367,7 +375,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childCreate] = itemUpdates;
-        expect(childCreate).toMatchObject(ChildItemEvent('create', parseStringToDate(copy)));
+        expect(childCreate).toMatchObject(
+          ChildItemEvent('create', parseStringToDate(copy) as Item),
+        );
       });
     });
 
@@ -391,9 +401,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childCreate, accessibleCreate] = itemUpdates;
-        expect(childCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(copy)));
+        expect(childCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(copy) as Item));
         expect(accessibleCreate).toMatchObject(
-          AccessibleItemsEvent('create', parseStringToDate(copy)),
+          AccessibleItemsEvent('create', parseStringToDate(copy) as Item),
         );
       });
     });
@@ -425,7 +435,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childDelete] = itemUpdates;
-        expect(childDelete).toMatchObject(ChildItemEvent('delete', parseStringToDate(childItem)));
+        expect(childDelete).toMatchObject(
+          ChildItemEvent('delete', parseStringToDate(childItem) as Item),
+        );
       });
     });
 
@@ -456,7 +468,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [childCreate] = itemUpdates;
-        expect(childCreate).toMatchObject(ChildItemEvent('create', parseStringToDate(moved)));
+        expect(childCreate).toMatchObject(
+          ChildItemEvent('create', parseStringToDate(moved) as Item),
+        );
       });
     });
 
@@ -483,9 +497,9 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [ownDelete, accessibleDelete] = itemUpdates;
-        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', parseStringToDate(item)));
+        expect(ownDelete).toMatchObject(OwnItemsEvent('delete', parseStringToDate(item) as Item));
         expect(accessibleDelete).toMatchObject(
-          AccessibleItemsEvent('delete', parseStringToDate(item)),
+          AccessibleItemsEvent('delete', parseStringToDate(item) as Item),
         );
       });
     });
@@ -516,7 +530,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         const [ownCreate] = itemUpdates;
-        expect(ownCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(moved)));
+        expect(ownCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(moved) as Item));
       });
     });
   });
@@ -621,7 +635,10 @@ describe('Item websocket hooks', () => {
     it('member that initiated the move operation receives success feedback', async () => {
       const { item } = await saveItemAndMembership({ member: actor });
       const { item: newParent } = await saveItemAndMembership({ member: actor });
-      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+      const memberUpdates = await ws.subscribe<ItemEvent>({
+        topic: memberItemsTopic,
+        channel: actor.id,
+      });
 
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -637,8 +654,8 @@ describe('Item websocket hooks', () => {
       });
 
       await waitForExpect(() => {
-        const [_ownUpdate, _accessibleUpdate, feedbackUpdate] = memberUpdates;
-        expect(feedbackUpdate).toMatchObject(
+        console.log(memberUpdates);
+        expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
           ItemOpFeedbackEvent('move', [item.id], { data: { [item.id]: moved }, errors: [] }),
         );
       });

@@ -14,6 +14,7 @@ import {
 import { ANNA, BOB, saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
+import { ItemMembership } from '../entities/ItemMembership';
 import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events';
 import { saveItemAndMembership, saveMembership } from './fixtures/memberships';
 
@@ -139,7 +140,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [membershipCreate] = membershipUpdates;
         expect(membershipCreate).toMatchObject(
-          ItemMembershipEvent('create', parseStringToDate(membership)),
+          ItemMembershipEvent('create', parseStringToDate(membership) as ItemMembership),
         );
       });
     });
@@ -176,7 +177,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [membershipUpdate] = membershipUpdates;
         expect(membershipUpdate).toMatchObject(
-          ItemMembershipEvent('update', parseStringToDate(result)),
+          ItemMembershipEvent('update', parseStringToDate(result) as ItemMembership),
         );
       });
     });
