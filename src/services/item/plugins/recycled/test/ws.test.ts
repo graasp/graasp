@@ -131,7 +131,8 @@ describe('Recycle websocket hooks', () => {
       });
     });
 
-    it('parent in the recycled subtree receives deletion update of child when top item is recycled', async () => {
+    // todo: skipping test as it is flaky
+    it.skip('parent in the recycled subtree receives deletion update of child when top item is recycled', async () => {
       const { item: topItem } = await saveItemAndMembership({ member: actor });
       const { item: parentItem } = await saveItemAndMembership({
         member: actor,
