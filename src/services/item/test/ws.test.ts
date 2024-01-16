@@ -18,6 +18,7 @@ import { ItemRepository } from '../repository';
 import {
   AccessibleItemsEvent,
   ChildItemEvent,
+  ItemEvent,
   ItemOpFeedbackEvent,
   OwnItemsEvent,
   SelfItemEvent,
@@ -634,7 +635,10 @@ describe('Item websocket hooks', () => {
     it('member that initiated the move operation receives success feedback', async () => {
       const { item } = await saveItemAndMembership({ member: actor });
       const { item: newParent } = await saveItemAndMembership({ member: actor });
-      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+      const memberUpdates = await ws.subscribe<ItemEvent>({
+        topic: memberItemsTopic,
+        channel: actor.id,
+      });
 
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -650,8 +654,8 @@ describe('Item websocket hooks', () => {
       });
 
       await waitForExpect(() => {
-        const [_ownUpdate, _accessibleUpdate, feedbackUpdate] = memberUpdates;
-        expect(feedbackUpdate).toMatchObject(
+        console.log(memberUpdates);
+        expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
           ItemOpFeedbackEvent('move', [item.id], { data: { [item.id]: moved }, errors: [] }),
         );
       });
