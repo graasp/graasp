@@ -131,8 +131,7 @@ describe('Recycle websocket hooks', () => {
       });
     });
 
-    // todo: skipping test as it is flaky
-    it.skip('parent in the recycled subtree receives deletion update of child when top item is recycled', async () => {
+    it('parent in the recycled subtree receives deletion update of child when top item is recycled', async () => {
       const { item: topItem } = await saveItemAndMembership({ member: actor });
       const { item: parentItem } = await saveItemAndMembership({
         member: actor,
@@ -165,9 +164,14 @@ describe('Recycle websocket hooks', () => {
       if (!updatedParent) throw new Error('item should be found in test');
 
       await waitForExpect(() => {
-        const [selfDelete, childDelete] = itemUpdates;
-        expect(selfDelete).toMatchObject(SelfItemEvent('delete', updatedParent));
-        expect(childDelete).toMatchObject(ChildItemEvent('delete', updatedChild));
+        // todo: this part of the test seemed flaky as the order of the updates may not be guarantied
+        // const [selfDelete, childDelete] = itemUpdates;
+        expect(itemUpdates.find((v) => v.kind === 'self')).toMatchObject(
+          SelfItemEvent('delete', updatedParent),
+        );
+        expect(itemUpdates.find((v) => v.kind === 'child')).toMatchObject(
+          ChildItemEvent('delete', updatedChild),
+        );
       });
     });
 
