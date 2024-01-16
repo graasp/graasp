@@ -94,14 +94,14 @@ describe('exportActionsInArchive', () => {
 
     // call on success callback
     expect(result).toBeTruthy();
-    // create files for all views, items, members and memberships, chat messages
-    expect(writeFileSyncMock).toHaveBeenCalledTimes(views.length + 5);
+    // create files for all views, items, members and memberships, chat messages, apps
+    expect(writeFileSyncMock).toHaveBeenCalledTimes(views.length + 6);
     const files = fs.readdirSync(storageFolder);
     expect(files.length).toBeTruthy();
 
     // assume only 2 files exist in the folder
     const [folder, zip] = files;
     expect(zip.includes(baseAnalytics.item.name)).toBeTruthy();
-    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(views.length + 5);
+    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(views.length + 6);
   });
 });

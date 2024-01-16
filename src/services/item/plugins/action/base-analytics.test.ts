@@ -1,15 +1,14 @@
 import build, { clearDatabase } from '../../../../../test/app';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { Member } from '../../../member/entities/member';
-import { BOB, CEDRIC, MEMBERS, saveMember } from '../../../member/test/fixtures/members';
-import { Item } from '../../entities/Item';
+import { BOB, CEDRIC, saveMember } from '../../../member/test/fixtures/members';
+import { ItemRepository } from '../../repository';
 import { getDummyItem } from '../../test/fixtures/items';
 import { saveAppActions } from '../app/appAction/test/index.test';
 import { saveAppData } from '../app/appData/test/index.test';
 import { saveAppSettings } from '../app/appSetting/test/index.test';
 import { BaseAnalytics } from './base-analytics';
 
-const item = {} as unknown as Item;
 const descendants = [];
 const actions = [];
 const itemMemberships = [];
@@ -30,7 +29,7 @@ describe('Base Analytics', () => {
     app.close();
   });
 
-  it('Members should be cleaned', async () => {
+  it.only('Members should be cleaned', async () => {
     // build app to be able to instantiate member data
     ({ app } = await build({ member: null }));
 
@@ -39,10 +38,13 @@ describe('Base Analytics', () => {
     for (const m of data) {
       members.push(await saveMember(m));
     }
+
+    const item = await ItemRepository.save(getDummyItem({ creator: members[0] }));
+
     const chatMessages = [
       await ChatMessageRepository.create({
-        item: getDummyItem(),
-        creator: MEMBERS[0] as Member,
+        item,
+        creator: members[0],
         body: 'message',
       }),
     ];
