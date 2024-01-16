@@ -4,6 +4,9 @@ import { Member } from '../../../member/entities/member';
 import { BOB, CEDRIC, MEMBERS, saveMember } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
 import { getDummyItem } from '../../test/fixtures/items';
+import { saveAppActions } from '../app/appAction/test/index.test';
+import { saveAppData } from '../app/appData/test/index.test';
+import { saveAppSettings } from '../app/appSetting/test/index.test';
 import { BaseAnalytics } from './base-analytics';
 
 const item = {} as unknown as Item;
@@ -43,6 +46,13 @@ describe('Base Analytics', () => {
         body: 'message',
       }),
     ];
+    const apps = {
+      [item.id]: {
+        data: await saveAppData({ item, creator: members[0] }),
+        actions: await saveAppActions({ item, member: members[0] }),
+        settings: await saveAppSettings({ item, creator: members[0] }),
+      },
+    };
     const analytics = new BaseAnalytics({
       item,
       descendants,
@@ -51,6 +61,7 @@ describe('Base Analytics', () => {
       itemMemberships,
       metadata,
       chatMessages,
+      apps,
     });
 
     for (const m of data) {
@@ -65,6 +76,22 @@ describe('Base Analytics', () => {
 
     for (const cm of analytics.chatMessages) {
       expect(cm.creator?.createdAt).toBeUndefined();
+    }
+
+    const {
+      actions: appActions,
+      data: appData,
+      settings: appSettings,
+    } = Object.values(analytics.apps)[0];
+    for (const aa of appActions) {
+      expect(aa.member?.createdAt).toBeUndefined();
+    }
+    for (const ad of appData) {
+      expect(ad.member?.createdAt).toBeUndefined();
+      expect(ad.creator?.createdAt).toBeUndefined();
+    }
+    for (const as of appSettings) {
+      expect(as.creator?.createdAt).toBeUndefined();
     }
   });
 });

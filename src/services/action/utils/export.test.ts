@@ -59,6 +59,7 @@ const setUpActions = async (app, member: Member) => {
     descendants: [getDummyItem()],
     chatMessages,
     metadata: { numActionsRetrieved: 5, requestedSampleSize: 5 },
+    apps: {},
   });
   return { baseAnalytics, actions, views };
 };
