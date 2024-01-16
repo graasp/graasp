@@ -164,8 +164,12 @@ describe('Recycle websocket hooks', () => {
       if (!updatedParent) throw new Error('item should be found in test');
 
       await waitForExpect(() => {
-        expect(itemUpdates).toContainEqual(SelfItemEvent('delete', updatedParent));
-        expect(itemUpdates).toContainEqual(ChildItemEvent('delete', updatedChild));
+        expect(itemUpdates.find((v) => v.kind === 'self')).toMatchObject(
+          SelfItemEvent('delete', updatedParent),
+        );
+        expect(itemUpdates.find((v) => v.kind === 'child')).toMatchObject(
+          ChildItemEvent('delete', updatedChild),
+        );
       });
     });
 
