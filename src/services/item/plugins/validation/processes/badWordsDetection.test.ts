@@ -5,7 +5,8 @@ describe('detectFieldNameWithBadWords', () => {
     const result = detectFieldNameWithBadWords([{ name: 'name', value: 'value' }]);
     expect(result).toHaveLength(0);
   });
-  it('Bad words should return name', async () => {
+  // this test is disabled since the bad words validation is disabled
+  it.skip('Bad words should return name', async () => {
     const doc = [
       { name: 'name', value: 'fuck' },
       { name: 'name1', value: 'ok' },
