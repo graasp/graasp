@@ -27,7 +27,7 @@ import { filterOutItems, validatePermission, validatePermissionMany } from '../a
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, isItemType } from './entities/Item';
-import { ItemSearchParams } from './types';
+import { ItemSearchParams, SortByForChildren } from './types';
 
 export class ItemService {
   hooks = new HookManager<{
@@ -86,8 +86,8 @@ export class ItemService {
       itemRepository.checkHierarchyDepth(parentItem);
 
       // check if there's too many children under the same parent
-      const descendants = await itemRepository.getChildren(parentItem);
-      if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
+      const directChildren = await itemRepository.getChildren(parentItem);
+      if (directChildren.totalCount + 1 > MAX_NUMBER_OF_CHILDREN) {
         throw new TooManyChildren();
       }
     }
@@ -188,12 +188,17 @@ export class ItemService {
     return filterOutItems(actor, repositories, items);
   }
 
-  async getChildren(actor: Actor, repositories: Repositories, itemId: string, ordered?: boolean) {
+  async getChildren(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: string,
+    search?: ItemSearchParams<SortByForChildren>,
+    paginationParams?: PaginationParams,
+  ): Promise<Paginated<Item>> {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
-    // TODO optimize?
-    return filterOutItems(actor, repositories, await itemRepository.getChildren(item, ordered));
+    return itemRepository.getChildren(item, search, paginationParams);
   }
 
   async getDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {

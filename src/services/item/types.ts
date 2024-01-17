@@ -8,6 +8,15 @@ export enum SortBy {
   ItemName = 'item.name',
 }
 
+export enum SortByForChildren {
+  ItemType = 'item.type',
+  ItemUpdatedAt = 'item.updated_at',
+  ItemCreatedAt = 'item.created_at',
+  ItemCreatorName = 'item.creator.name',
+  ItemName = 'item.name',
+  ChildrenOrder = 'childrenOrder',
+}
+
 export enum Ordering {
   asc = 'asc',
   desc = 'desc',
@@ -15,9 +24,10 @@ export enum Ordering {
   DESC = 'DESC',
 }
 
-export type ItemSearchParams = {
+export type ItemSearchParams<SortType = SortBy> = {
   creatorId?: Member['id'];
   name?: string;
-  sortBy?: SortBy;
+  sortBy?: SortType;
   ordering?: Ordering;
+  hideFor?: Member['id'];
 };

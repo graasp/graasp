@@ -5,6 +5,7 @@ import {
   FileItemType,
   ItemSettings,
   ItemType,
+  MAX_NUMBER_OF_CHILDREN,
   MAX_TREE_LEVELS,
   PermissionLevel,
   ResultOf,
@@ -13,6 +14,7 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { Paginated, PaginationParams } from '../../types';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -21,9 +23,13 @@ import {
   TooManyDescendants,
   UnexpectedError,
 } from '../../utils/errors';
+import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
+import { ITEMS_PAGE_SIZE_MAX } from './constants';
 import { Item, ItemExtraUnion, isItemType } from './entities/Item';
+import { ItemTag } from './plugins/itemTag/ItemTag';
+import { ItemSearchParams, Ordering, SortByForChildren } from './types';
 import {
   _fixChildrenOrder,
   dashToUnderscore,
@@ -142,19 +148,103 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
-  async getChildren(parent: Item, ordered?: boolean): Promise<Item[]> {
+  async getChildren(
+    parent: Item,
+    searchParams?: ItemSearchParams<SortByForChildren>,
+    paginationParams?: PaginationParams,
+  ): Promise<Paginated<Item>> {
     if (!isItemType(parent, ItemType.FOLDER)) {
       throw new ItemNotFolder(parent);
     }
 
-    // CHECK SQL
-    const children = await this.createQueryBuilder('item')
+    // we want the highest default because we often want all the children
+    const { page = 1, pageSize = MAX_NUMBER_OF_CHILDREN } = paginationParams ?? {};
+    const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
+    const skip = (page - 1) * limit;
+
+    const query = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('path ~ :path', { path: `${parent.path}.*{1}` })
-      .orderBy('item.createdAt', 'ASC')
-      .getMany();
+      .orderBy('item.createdAt', 'ASC');
 
-    if (ordered) {
+    const { name, creatorId, sortBy, ordering = Ordering.ASC, hideFor } = searchParams ?? {};
+
+    if (name) {
+      query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
+        name: name.toLowerCase().trim(),
+      });
+    }
+
+    if (creatorId) {
+      query.andWhere('item.creator = :creatorId', { creatorId });
+    }
+
+    if (sortBy) {
+      // map strings to correct sort by column
+      let mappedSortBy;
+      switch (sortBy) {
+        case SortByForChildren.ItemType:
+          mappedSortBy = 'item.type';
+          break;
+        case SortByForChildren.ItemUpdatedAt:
+          mappedSortBy = 'item.updated_at';
+          break;
+        case SortByForChildren.ItemCreatedAt:
+          mappedSortBy = 'item.created_at';
+          break;
+        case SortByForChildren.ItemCreatorName:
+          mappedSortBy = 'creator.name';
+          break;
+        case SortByForChildren.ItemName:
+          mappedSortBy = 'item.name';
+          break;
+        case SortByForChildren.ChildrenOrder:
+          // ordering happens later
+          break;
+      }
+      if (mappedSortBy) {
+        query.orderBy(mappedSortBy, ordering.toUpperCase());
+      }
+    }
+
+    if (hideFor) {
+      // cannot use filterOutItems because of pagination - total count
+      query.andWhere((qb) => {
+        // return for admin and write
+        const membershipSubQuery = qb
+          .subQuery()
+          .from(ItemMembership, 'im')
+          .select('im.permission')
+          .where('item.path <@ im.item_path')
+          .andWhere('im.member_id = :actorId', { actorId: hideFor })
+          .orderBy('im.item_path', 'DESC')
+          .limit(1)
+          .getQuery();
+
+        // return if not hidden
+        const hiddenSubQuery = qb
+          .subQuery()
+          .from(ItemTag, 'it')
+          .select('count(*)')
+          .where("it.type = 'hidden'")
+          .andWhere('item.path <@ it.item_path')
+          .limit(1)
+          .getQuery();
+
+        return (
+          // has membership
+          `${membershipSubQuery} IN ('read','admin', 'write') AND ( ` +
+          // is admin or write
+          `${membershipSubQuery} IN ('admin', 'write') OR ` +
+          // is read and not hidden
+          `(${membershipSubQuery} = 'read' AND ${hiddenSubQuery} = '0'))`
+        );
+      });
+    }
+
+    const [children, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
+
+    if (sortBy === SortByForChildren.ChildrenOrder) {
       const { extra: { folder } = {} } = parent;
       const childrenOrder = folder?.childrenOrder ?? [];
       if (childrenOrder.length) {
@@ -162,7 +252,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
         children.sort(compareFn);
       }
     }
-    return children;
+
+    return { data: children, totalCount };
   },
 
   /**
