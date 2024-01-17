@@ -298,7 +298,7 @@ export class ImportExportService {
       const folderPath = path.join(archiveRootPath, item.name);
       const children = await repositories.itemRepository.getChildren(item);
       const result = await Promise.all(
-        children.map((child) =>
+        children.data.map((child) =>
           this._addItemToZip(actor, repositories, {
             item: child,
             archiveRootPath: folderPath,

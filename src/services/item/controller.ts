@@ -14,6 +14,7 @@ import {
   deleteMany,
   getAccessible,
   getChildren,
+  getChildrenPaginated,
   getDescendants,
   getMany,
   getOne,
@@ -24,7 +25,7 @@ import {
   updateMany,
 } from './fluent-schema';
 import { Ordered } from './interfaces/requests';
-import { ItemSearchParams } from './types';
+import { ItemSearchParams, Ordering, SortByForChildren } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -120,11 +121,49 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get item's children
+  /**
+   * @deprecated use children-paginated
+   * once frontends all use the paginated hook
+   * update this endpoint to use the pagination
+   * children-paginated will be deprecated then
+   */
   fastify.get<{ Params: IdParam; Querystring: Ordered }>(
     '/:id/children',
     { schema: getChildren, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { id }, query: { ordered } }) => {
-      return itemService.getChildren(member, buildRepositories(), id, ordered);
+      return (
+        await itemService.getChildren(member, buildRepositories(), id, {
+          sortBy: ordered ? SortByForChildren.ChildrenOrder : SortByForChildren.ItemUpdatedAt,
+          ordering: ordered ? undefined : Ordering.DESC,
+          hideFor: member?.id,
+        })
+      ).data;
+    },
+  );
+
+  // get item's children
+  fastify.get<{
+    Params: IdParam;
+    Querystring: ItemSearchParams<SortByForChildren> & PaginationParams;
+  }>(
+    '/:id/children-paginated',
+    { schema: getChildrenPaginated, preHandler: fastify.attemptVerifyAuthentication },
+    async ({ member, params: { id }, query }) => {
+      const {
+        page,
+        pageSize,
+        creatorId,
+        name,
+        sortBy = SortByForChildren.ChildrenOrder,
+        ordering,
+      } = query;
+      return itemService.getChildren(
+        member,
+        buildRepositories(),
+        id,
+        { creatorId, name, sortBy, ordering, hideFor: member?.id },
+        { page, pageSize },
+      );
     },
   );
 

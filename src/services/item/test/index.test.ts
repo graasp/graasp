@@ -992,7 +992,6 @@ describe('Item routes tests', () => {
     });
   });
   describe('GET /items/:id/children', () => {
-    // warning: this will change if the endpoint becomes public
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
@@ -1217,6 +1216,434 @@ describe('Item routes tests', () => {
 
         const data = response.json();
         expect(data).toHaveLength(children.length);
+        children.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            children.find(({ id: thisId }) => thisId === id),
+          );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+    });
+  });
+  describe('GET /items/:id/children-paginated', () => {
+    it('Throws if signed out', async () => {
+      ({ app } = await build({ member: null }));
+      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const { item } = await saveItemAndMembership({ member });
+
+      const response = await app.inject({
+        method: HttpMethod.GET,
+        url: `/items/${item.id}/children-paginated`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+    });
+
+    describe('Signed In', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+      });
+
+      it('Returns successfully all items', async () => {
+        const { item: parent } = await saveItemAndMembership({ member: actor });
+        const { item: child1 } = await saveItemAndMembership({ member: actor, parentItem: parent });
+        const { item: child2 } = await saveItemAndMembership({ member: actor, parentItem: parent });
+
+        const children = [child1, child2];
+        // create child of child
+        await saveItemAndMembership({ item: getDummyItem(), member: actor, parentItem: child1 });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children-paginated`,
+        });
+
+        const { data, totalCount } = response.json();
+        expect(data).toHaveLength(children.length);
+        expect(totalCount).toEqual(children.length);
+        children.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            children.find(({ id: thisId }) => thisId === id),
+          );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Returns successfully empty children', async () => {
+        const { item: parent } = await saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children-paginated`,
+        });
+
+        const { data, totalCount } = response.json();
+        expect(data).toEqual([]);
+        expect(totalCount).toEqual(0);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Returns ordered children by default', async () => {
+        const { item: parent } = await saveItemAndMembership({ member: actor });
+        const { item: child1 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1' }),
+          member: actor,
+          parentItem: parent,
+        });
+        const { item: child2 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2' }),
+          member: actor,
+          parentItem: parent,
+        });
+
+        const childrenOrder = [child2.id, child1.id];
+        const children = [child1, child2];
+
+        await ItemRepository.patch(parent.id, { extra: { [ItemType.FOLDER]: { childrenOrder } } });
+        // create child of child
+        await saveItemAndMembership({ item: getDummyItem(), member: actor, parentItem: child1 });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children-paginated`,
+        });
+
+        const { data, totalCount } = response.json();
+        expect(data).toHaveLength(children.length);
+        expect(totalCount).toEqual(children.length);
+        // verify order and content
+        data.forEach((item, idx) => {
+          const child = children.find(({ id: thisId }) => thisId === childrenOrder[idx]);
+          expectItem(item, child);
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Returns ordered successfully even without order defined', async () => {
+        const { item: parent } = await saveItemAndMembership({ member: actor });
+        const { item: child1 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1' }),
+          member: actor,
+          parentItem: parent,
+        });
+        const { item: child2 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2' }),
+          member: actor,
+          parentItem: parent,
+        });
+
+        const children = [child1, child2];
+
+        // create child of child
+        await saveItemAndMembership({ member: actor, parentItem: child1 });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children-paginated`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const { data, totalCount } = response.json();
+        expect(data).toHaveLength(children.length);
+        expect(totalCount).toEqual(children.length);
+        children.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            children.find(({ id: thisId }) => thisId === id),
+          );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Filter out hidden children on read permission', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: parent } = await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Read,
+        });
+        const { item: child1 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1' }),
+          member,
+          parentItem: parent,
+        });
+        const { item: child2 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2' }),
+          member,
+          parentItem: parent,
+        });
+        await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
+
+        const children = [child2];
+
+        // create child of child that shouldn't be returned
+        await saveItemAndMembership({ member: actor, parentItem: child1 });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children-paginated`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const { data, totalCount } = response.json();
+        expect(data).toHaveLength(children.length);
+        expect(totalCount).toEqual(children.length);
+        children.forEach(({ id }) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            children.find(({ id: thisId }) => thisId === id),
+          );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Returns successfully sorted items by name asc', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await saveItemAndMembership({
+          member: actor,
+          item: { name: '2' },
+          parentItem,
+        });
+        const { item: item2 } = await saveItemAndMembership({
+          member: actor,
+          item: { name: '3' },
+          parentItem,
+        });
+        const { item: item3 } = await saveItemAndMembership({
+          member: actor,
+          item: { name: '1' },
+          parentItem,
+        });
+
+        const items = [item3, item1, item2];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parentItem.id}/children-paginated?sortBy=${SortBy.ItemName}&ordering=asc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach((_, idx) => {
+          expectItem(data[idx], items[idx]);
+        });
+      });
+
+      it('Returns successfully sorted items by type desc', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+          parentItem,
+        });
+        const { item: item2 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+          parentItem,
+        });
+        const { item: item3 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+          parentItem,
+        });
+
+        const items = [item2, item1, item3];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parentItem.id}/children-paginated?sortBy=${SortBy.ItemType}&ordering=desc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach((_, idx) => {
+          expectItem(data[idx], items[idx]);
+        });
+      });
+
+      it('Returns successfully sorted items by creator name asc', async () => {
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          item: { type: ItemType.DOCUMENT },
+          parentItem,
+        });
+        const { item: item2 } = await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+          parentItem,
+        });
+        const { item: item3 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          item: { type: ItemType.APP },
+          parentItem,
+        });
+
+        const items = [item2, item1, item3];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parentItem.id}/children-paginated?sortBy=${SortBy.ItemCreatorName}&ordering=asc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach((_, idx) => {
+          expectItem(data[idx], items[idx]);
+        });
+      });
+
+      it('Throws for wrong sort by', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parentItem.id}/children-paginated?sortBy=dontexist&ordering=desc`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Throws for wrong ordering', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+          parentItem,
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+          parentItem,
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+          parentItem,
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parentItem.id}/children-paginated?sortBy=${SortBy.ItemName}&ordering=nimp`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Returns successfully paginated items', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+
+        await saveItemAndMembership({ parentItem, member: actor, item: { name: '2' } });
+        await saveItemAndMembership({ parentItem, member: actor, item: { name: '1' } });
+        const { item } = await saveItemAndMembership({
+          parentItem,
+          member: actor,
+          item: { name: '3' },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          // add sorting for result to be less flacky
+          url: `/items/${parentItem.id}/children-paginated?ordering=asc&sortBy=${SortBy.ItemName}&pageSize=1&page=3`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(3);
+        expect(data).toHaveLength(1);
+        expectItem(data[0], item);
+      });
+      it('Bad Request for invalid id', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parentItem.id}/invalid-id/children-paginated`,
+        });
+
+        expect(response.statusMessage).toEqual(ReasonPhrases.NOT_FOUND);
+        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      });
+      it('Cannot get children from unexisting item', async () => {
+        const id = uuidv4();
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${id}/children-paginated`,
+        });
+
+        expect(response.json()).toEqual(new ItemNotFound(id));
+        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      });
+      it('Cannot get children if does not have membership on parent', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: parent } = await saveItemAndMembership({ member });
+        await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1' }),
+          member,
+          parentItem: parent,
+        });
+        await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2' }),
+          member,
+          parentItem: parent,
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children-paginated`,
+        });
+
+        expect(response.json()).toEqual(new MemberCannotAccess(parent.id));
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+    });
+
+    describe('Public', () => {
+      it('Returns successfully', async () => {
+        ({ app } = await build({ member: null }));
+        const actor = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const parent = await savePublicItem({ item: getDummyItem(), actor });
+        const child1 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
+        const child2 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
+
+        const children = [child1, child2];
+        // create child of child
+        await savePublicItem({ item: getDummyItem(), actor, parentItem: child1 });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children-paginated`,
+        });
+
+        const { data, totalCount } = response.json();
+        expect(data).toHaveLength(children.length);
+        expect(totalCount).toEqual(children.length);
         children.forEach(({ id }) => {
           expectItem(
             data.find(({ id: thisId }) => thisId === id),

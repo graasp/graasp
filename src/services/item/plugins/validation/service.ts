@@ -125,7 +125,7 @@ export class ItemValidationService {
     if (item?.type === ItemType.FOLDER) {
       const subItems = await this.itemService.getChildren(actor, repositories, item.id);
       await Promise.all(
-        subItems.map(async (subitem) => {
+        subItems.data.map(async (subitem) => {
           await this._post(actor, repositories, subitem, itemValidationGroup).catch((error) => {
             throw new ItemValidationError(error);
           });

@@ -4,13 +4,14 @@ import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 import {
   ItemType,
   MAX_ITEM_NAME_LENGTH,
+  MAX_NUMBER_OF_CHILDREN,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST,
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { ITEMS_PAGE_SIZE } from './constants';
-import { Ordering, SortBy } from './types';
+import { Ordering, SortBy, SortByForChildren } from './types';
 
 /**
  * for serialization
@@ -33,7 +34,7 @@ export const partialMember = S.object()
   .prop('email', S.string());
 
 export const item = S.object()
-  .additionalProperties(false)
+  // .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
   .prop('description', S.mixed(['string', 'null']))
@@ -158,6 +159,27 @@ export const getChildren = {
   querystring: S.object().additionalProperties(false).prop('ordered', S.boolean()),
   response: {
     200: S.array().items(item),
+    '4xx': error,
+  },
+};
+
+export const getChildrenPaginated = {
+  params: idParam,
+  querystring: S.object()
+    .prop('page', S.number().default(1))
+    .prop('name', S.string())
+    .prop('sortBy', S.enum(Object.values(SortByForChildren)))
+    .prop('ordering', S.enum(Object.values(Ordering)))
+    .prop('creatorId', S.string())
+    .prop(
+      'pageSize',
+      S.number().minimum(1).maximum(MAX_NUMBER_OF_CHILDREN).default(MAX_NUMBER_OF_CHILDREN),
+    ),
+  response: {
+    200: S.object()
+      .additionalProperties(false)
+      .prop('data', S.array().items(item))
+      .prop('totalCount', S.number()),
     '4xx': error,
   },
 };
