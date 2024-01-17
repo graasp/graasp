@@ -16,3 +16,16 @@ export class DuplicateFavoriteError extends GraaspFavoriteError {
     );
   }
 }
+
+export class ItemFavoriteNotFound extends GraaspFavoriteError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPCATERR002',
+        statusCode: StatusCodes.NOT_FOUND,
+        message: 'favorite not found',
+      },
+      data,
+    );
+  }
+}
