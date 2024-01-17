@@ -4,15 +4,17 @@ import { v4 } from 'uuid';
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors';
 import { ChatMention } from '../plugins/mentions/chatMention';
-import { ChatMentionRepository } from '../plugins/mentions/repository';
 import { saveItemWithChatMessages } from './chatMessage.test';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+
+const adminRepository = AppDataSource.getRepository(ChatMention);
 
 // create item, chat messages from another member and members
 // as well as mentions of actor
@@ -21,17 +23,49 @@ const saveItemWithChatMessagesAndMentions = async (actor) => {
   const { item, chatMessages, members } = await saveItemWithChatMessages(otherActor);
   const chatMentions: ChatMention[] = [];
   for (const c of chatMessages) {
-    chatMentions.push(await ChatMentionRepository.save({ message: c, member: actor }));
+    chatMentions.push(await adminRepository.save({ member: actor, message: c }));
   }
   return { item, chatMessages, members, chatMentions };
 };
 
-const expectChatMentions = (mentions, correctMentions) => {
+export const expectChatMentions = (
+  mentions,
+  correctMentions,
+  relations: { member?: boolean; message?: { item?: boolean; creator?: boolean } } = {},
+) => {
+  const relationsMessageCreator = relations?.message?.creator ?? true;
+  const relationsMessageItem = relations?.message?.item ?? true;
+  const relationsMessage = (relationsMessageCreator || relationsMessageItem) ?? true;
+  const relationsMember = relations?.member ?? true;
+
+  console.log(relations, relationsMessageCreator);
   expect(mentions).toHaveLength(correctMentions.length);
   for (const m of mentions) {
     const correctMention = correctMentions.find(({ id }) => id === m.id);
-    expect(m.message.id).toEqual(correctMention.message.id);
-    expect(m.member.id).toEqual(correctMention.member.id);
+
+    // foreign keys
+    if (relationsMessage) {
+      expect(m.message.id).toEqual(correctMention.message.id);
+
+      if (relationsMessageCreator) {
+        expect(m.message.creator.id).toEqual(correctMention.message.creator.id);
+      } else {
+        expect(m.message.creator).toBeUndefined();
+      }
+      if (relationsMessageItem) {
+        expect(m.message.item.id).toEqual(correctMention.message.item.id);
+      } else {
+        expect(m.message.item).toBeUndefined();
+      }
+    } else {
+      expect(m.message).toBeUndefined();
+    }
+
+    if (relationsMember) {
+      expect(m.member.id).toEqual(correctMention.member.id);
+    } else {
+      expect(m.member).toBeUndefined();
+    }
   }
 };
 
@@ -147,7 +181,7 @@ describe('Chat Mention tests', () => {
           name: 'new-user',
           email: 'new@email.org',
         });
-        const mention = await ChatMentionRepository.save({ member, message: chatMessages[0] });
+        const mention = (await adminRepository.save({ member, message: chatMessages[0] }))[0];
 
         const response = await app.inject({
           method: HttpMethod.PATCH,
@@ -183,7 +217,7 @@ describe('Chat Mention tests', () => {
       });
 
       it('Delete successfully', async () => {
-        const initialCount = (await ChatMentionRepository.find()).length;
+        const initialCount = (await adminRepository.find()).length;
 
         const response = await app.inject({
           method: HttpMethod.DELETE,
@@ -192,8 +226,8 @@ describe('Chat Mention tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(chatMentions[0].body);
 
-        expect(await ChatMentionRepository.find()).toHaveLength(initialCount - 1);
-        expect(await ChatMentionRepository.findOneBy({ id: chatMentions[0].id })).toBeNull();
+        expect(await adminRepository.find()).toHaveLength(initialCount - 1);
+        expect(await adminRepository.findOneBy({ id: chatMentions[0].id })).toBeNull();
       });
 
       it('Throws if chat mention id is incorrect', async () => {
@@ -214,7 +248,7 @@ describe('Chat Mention tests', () => {
       });
 
       it('Throws if member does not have access to chat message', async () => {
-        const mention = await ChatMentionRepository.save({
+        const mention = await adminRepository.save({
           message: chatMessages[0],
           member: members[0],
         });
@@ -253,9 +287,9 @@ describe('Chat Mention tests', () => {
         // more messages
         const otherMessages: ChatMention[] = [];
         const message = chatMessages[0];
-        otherMessages.push(await ChatMentionRepository.save({ message, member: members[0] }));
-        otherMessages.push(await ChatMentionRepository.save({ message, member: members[1] }));
-        otherMessages.push(await ChatMentionRepository.save({ message, member: members[2] }));
+        otherMessages.push(await adminRepository.save({ message, member: members[0] }));
+        otherMessages.push(await adminRepository.save({ message, member: members[1] }));
+        otherMessages.push(await adminRepository.save({ message, member: members[2] }));
 
         const response = await app.inject({
           method: HttpMethod.DELETE,
@@ -263,7 +297,7 @@ describe('Chat Mention tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        expect(await ChatMentionRepository.find()).toHaveLength(otherMessages.length);
+        expect(await adminRepository.find()).toHaveLength(otherMessages.length);
       });
     });
   });

@@ -55,7 +55,7 @@ export type Repositories = {
   itemValidationReviewRepository: typeof ItemValidationReviewRepository;
   memberPasswordRepository: typeof MemberPasswordRepository;
   memberRepository: typeof MemberRepository;
-  mentionRepository: typeof ChatMentionRepository;
+  mentionRepository: ChatMentionRepository;
   publisherRepository: typeof PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
   memberProfileRepository: typeof MemberProfileRepository;
@@ -98,9 +98,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   chatMessageRepository: manager
     ? manager.withRepository(ChatMessageRepository)
     : ChatMessageRepository,
-  mentionRepository: manager
-    ? manager.withRepository(ChatMentionRepository)
-    : ChatMentionRepository,
+  mentionRepository: new ChatMentionRepository(manager),
   itemCategoryRepository: manager
     ? manager.withRepository(ItemCategoryRepository)
     : ItemCategoryRepository,

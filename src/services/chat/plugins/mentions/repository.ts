@@ -1,96 +1,94 @@
+import { EntityManager, In, Repository } from 'typeorm';
+
 import { MentionStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
-import { Item } from '../../../item/entities/Item';
+import { Member } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
-import { ChatMentionNotFound } from '../../errors';
+import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { ChatMention } from './chatMention';
 
-// TODO: finish to refactor this
-export const ChatMentionRepository = AppDataSource.getRepository(ChatMention).extend({
+export class ChatMentionRepository {
+  repository: Repository<ChatMention>;
+
+  constructor(manager?: EntityManager) {
+    if (manager) {
+      this.repository = manager.getRepository(ChatMention);
+    } else {
+      this.repository = AppDataSource.getRepository(ChatMention);
+    }
+  }
+
   /**
    * Retrieves all the mentions for the given memberId
    * @param memberId Id of the member to retrieve
    */
   async getForMember(memberId: string): Promise<ChatMention[]> {
-    return this.find({
+    if (!memberId) {
+      throw new NoChatMentionForMember(memberId);
+    }
+
+    return this.repository.find({
       where: { member: { id: memberId } },
-      relations: ['message', 'message.item', 'message.creator', 'member'],
+      relations: {
+        message: { item: true, creator: true },
+        member: true,
+      },
     });
-  },
+  }
 
   /**
    * Retrieves a mention given the mention id
    * @param mentionId Id of the mention to retrieve
    */
   async get(mentionId: string): Promise<ChatMention> {
-    const mention = await this.findOne({ where: { id: mentionId }, relations: { member: true } });
+    if (!mentionId) {
+      throw new ChatMentionNotFound(mentionId);
+    }
+
+    const mention = await this.repository.findOne({
+      where: { id: mentionId },
+      relations: { member: true },
+    });
 
     if (!mention) {
       throw new ChatMentionNotFound(mentionId);
     }
 
     return mention;
-  },
+  }
 
-  // /**
-  //  * Retrieves all mentions having the itemPath or being children of the itemPath
-  //  * @param itemPath Id of the mention to retrieve
-  //  */
-  // async getForItem(
-  //   item: Item,
-  // ): Promise<ChatMention[]> {
-  //   return transactionHandler
-  //     .query<ChatMention>(
-  //       sql`
-  //           SELECT ${MentionService.allColumns}
-  //           FROM ${MentionService.tableName}
-  //           WHERE item_path <@ ${itemPath}
-  //       `,
-  //     )
-  //     .then(({ rows }) => rows.slice(0));
-  // }
-  // /**
-  //  * Retrieves all mentions having the messageId
-  //  * @param messageId Id of the message
-  //  */
-  // async getMentionsByMessageId(
-  //   messageId: string,
-  //   transactionHandler: TrxHandler,
-  // ): Promise<ChatMention[]> {
-  //   return transactionHandler
-  //     .query<ChatMention>(
-  //       sql`
-  //           SELECT ${MentionService.allColumns}
-  //           FROM ${MentionService.tableName}
-  //           WHERE message_id = ${messageId}
-  //       `,
-  //     )
-  //     .then(({ rows }) => rows.slice(0));
-  // }
-  // /**
-  //  * Adds mentions for the chat message
-  //  * @param mentions Array of memberIds that are mentioned
-  //  * @param itemPath path of the item
-  //  * @param messageId id of the chat message where the mention occurs
-  //  * @param creator user creating the message and creating the mentions
-  //  */
+  /**
+   * Return chat mentions by id
+   * @param ids ids of the chat mentions
+   */
+  async getMany(ids: ChatMessage['id'][]): Promise<ChatMention[]> {
+    const items = await this.repository.find({
+      where: { id: In(ids) },
+      relations: { member: true },
+    });
+
+    return items;
+  }
+
+  /**
+   * Create many mentions for members
+   * @param mentionedMemberIds Id of the mention to retrieve
+   * @param messageId message id with the mentions
+   * @param item
+   */
   async postMany(
-    mentionedMembers: string[],
-    message: ChatMessage,
-    item: Item,
+    mentionedMemberIds: Member['id'][],
+    messageId: ChatMessage['id'],
   ): Promise<ChatMention[]> {
-    const entries = this.create(
-      mentionedMembers.map((member) => ({
-        member: { id: member },
-        item,
-        message,
-        status: MentionStatus.Unread,
-      })),
-    );
-    await this.insert(entries);
-    return entries;
-  },
+    const entries = mentionedMemberIds.map((memberId) => ({
+      member: { id: memberId },
+      message: { id: messageId },
+      status: MentionStatus.Unread,
+    }));
+    const result = await this.repository.insert(entries);
+    return this.getMany(result.identifiers.map(({ id }) => id));
+  }
 
   /**
    * Edit the status of a mention
@@ -98,27 +96,30 @@ export const ChatMentionRepository = AppDataSource.getRepository(ChatMention).ex
    * @param status new status to be set
    */
   async patch(mentionId: string, status: MentionStatus): Promise<ChatMention> {
-    await this.update(mentionId, { status });
+    await this.repository.update(mentionId, { status });
     return this.get(mentionId);
-  },
+  }
 
   /**
    * Remove a mention
    * @param mentionId Id of chat
    */
-  async deleteOne(mentionId: string): Promise<ChatMention> {
-    return this.delete(mentionId);
-  },
+  async deleteOne(mentionId: ChatMention['id']): Promise<ChatMention> {
+    const mention = await this.get(mentionId);
+    await this.repository.delete(mentionId);
+    return mention;
+  }
 
   /**
    * Remove all mentions for the given memberId
    * @param memberId Id of the member
    */
-  async deleteAll(memberId: string): Promise<unknown> {
-    return this.createQueryBuilder('mention')
+  async deleteAll(memberId: string): Promise<void> {
+    await this.repository
+      .createQueryBuilder('mention')
       .leftJoinAndSelect('mention.member', 'member')
       .delete()
       .where('member.id = :memberId', { memberId })
       .execute();
-  },
-});
+  }
+}
