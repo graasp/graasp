@@ -181,7 +181,7 @@ describe('Chat Mention tests', () => {
           name: 'new-user',
           email: 'new@email.org',
         });
-        const mention = (await adminRepository.save({ member, message: chatMessages[0] }))[0];
+        const mention = await adminRepository.save({ member, message: chatMessages[0] });
 
         const response = await app.inject({
           method: HttpMethod.PATCH,
