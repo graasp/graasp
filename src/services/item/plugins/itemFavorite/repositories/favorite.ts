@@ -1,41 +1,73 @@
+import { EntityManager, Repository } from 'typeorm';
+
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { Item } from '../../../entities/Item';
 import { ItemFavorite } from '../entities/ItemFavorite';
-import { DuplicateFavoriteError } from '../errors';
+import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
 
-export const FavoriteRepository = AppDataSource.getRepository(ItemFavorite).extend({
+export class FavoriteRepository {
+  private repository: Repository<ItemFavorite>;
+
+  constructor(manager?: EntityManager) {
+    if (manager) {
+      this.repository = manager.getRepository(ItemFavorite);
+    } else {
+      this.repository = AppDataSource.getRepository(ItemFavorite);
+    }
+  }
+
+  async get(favoriteId: string): Promise<ItemFavorite> {
+    if (!favoriteId) {
+      throw new ItemFavoriteNotFound(favoriteId);
+    }
+    const favorite = await this.repository.findOne({
+      where: { id: favoriteId },
+      relations: { item: true, member: true },
+    });
+
+    if (!favorite) {
+      throw new ItemFavoriteNotFound(favoriteId);
+    }
+    return favorite;
+  }
+
   /**
    * Get favorite items by given memberId.
    * @param memberId user's id
    */
   async getFavoriteForMember(memberId: string): Promise<ItemFavorite[]> {
     // alias item_favorite table to favorite
-    const favorites = await this.createQueryBuilder('favorite')
+    const favorites = await this.repository
+      .createQueryBuilder('favorite')
       // add relation to item, but use innerJoin to remove item that have been soft-deleted
       .innerJoinAndSelect('favorite.item', 'item')
       .where('favorite.member_id = :memberId', { memberId })
       .getMany();
     return favorites;
-  },
+  }
 
   async post(itemId: string, memberId: string): Promise<ItemFavorite> {
     try {
-      const favorite = this.create({ item: { id: itemId }, member: { id: memberId } });
-      await this.insert(favorite);
-      return favorite;
+      const created = await this.repository.insert({
+        item: { id: itemId },
+        member: { id: memberId },
+      });
+
+      return this.get(created.identifiers[0].id);
     } catch (e) {
       if (e.code === DUPLICATE_ENTRY_ERROR_CODE) {
         throw new DuplicateFavoriteError({ itemId, memberId });
       }
       throw e;
     }
-  },
+  }
 
-  async deleteOne(itemId: string, memberId: string): Promise<string> {
-    await this.delete({
+  async deleteOne(itemId: string, memberId: string): Promise<Item['id']> {
+    await this.repository.delete({
       item: { id: itemId },
       member: { id: memberId },
     });
     return itemId;
-  },
-});
+  }
+}

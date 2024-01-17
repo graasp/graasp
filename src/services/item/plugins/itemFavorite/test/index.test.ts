@@ -37,7 +37,7 @@ describe('Favorite', () => {
         const { item } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({ member: actor }); // Unused second item
 
-        favorite = await FavoriteRepository.post(item.id, actor.id);
+        favorite = await new FavoriteRepository().post(item.id, actor.id);
       });
 
       it('Get favorite', async () => {
@@ -91,7 +91,7 @@ describe('Favorite', () => {
           url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
         });
 
-        const favorites = await FavoriteRepository.getFavoriteForMember(actor.id);
+        const favorites = await new FavoriteRepository().getFavoriteForMember(actor.id);
 
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toMatchObject({ item: { id: item.id } });
@@ -149,7 +149,7 @@ describe('Favorite', () => {
         beforeEach(async () => {
           ({ app, actor } = await build());
           ({ item } = await saveItemAndMembership({ member: actor }));
-          favorite = await FavoriteRepository.post(item.id, actor.id);
+          favorite = await new FavoriteRepository().post(item.id, actor.id);
         });
 
         it('Delete removes favorite', async () => {
@@ -160,7 +160,7 @@ describe('Favorite', () => {
 
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          const favorites = await FavoriteRepository.getFavoriteForMember(actor.id);
+          const favorites = await new FavoriteRepository().getFavoriteForMember(actor.id);
           expect(favorites).toHaveLength(0);
         });
       });
