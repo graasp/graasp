@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
-import fetch from 'node-fetch';
+import fetch, { type Response } from 'node-fetch';
 
 import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
@@ -21,10 +21,10 @@ jest.mock('node-fetch');
 
 // mock captcha
 // bug: cannot use exported mockCaptchaValidation
-export const mockCaptchaValidation = (action: RecaptchaActionType) => {
+const mockCaptchaValidation = (action: RecaptchaActionType) => {
   (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { json: async () => ({ success: true, action, score: 1 }) } as any;
+    return { json: async () => ({ success: true, action, score: 1 }) } as Response;
   });
 };
 
@@ -210,6 +210,68 @@ describe('Mobile Endpoints', () => {
       mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
     });
     it('Sign In successfully', async () => {
+      const member = LOUISA;
+      await saveMemberAndPassword(member, MOCK_PASSWORD);
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: '/m/login-password',
+        payload: {
+          email: member.email,
+          challenge,
+          password: MOCK_PASSWORD.password,
+          captcha: MOCK_CAPTCHA,
+        },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      const result = await response.json();
+      expect(result).toHaveProperty('resource');
+      const url = new URL(`${MOBILE_DEEP_LINK_PROTOCOL}//auth`);
+      url.searchParams.set('t', ''); // we don't know the generated token, but the parameter should exist
+      expect(result.resource).toContain(url.toString());
+    });
+
+    it('Sign In successfully with captcha score = 0', async () => {
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        return {
+          json: async () => ({
+            success: true,
+            action: RecaptchaAction.SignInWithPasswordMobile,
+            score: 0,
+          }),
+        } as Response;
+      });
+      const member = LOUISA;
+      await saveMemberAndPassword(member, MOCK_PASSWORD);
+
+      const response = await app.inject({
+        method: HttpMethod.POST,
+        url: '/m/login-password',
+        payload: {
+          email: member.email,
+          challenge,
+          password: MOCK_PASSWORD.password,
+          captcha: MOCK_CAPTCHA,
+        },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      const result = await response.json();
+      expect(result).toHaveProperty('resource');
+      const url = new URL(`${MOBILE_DEEP_LINK_PROTOCOL}//auth`);
+      url.searchParams.set('t', ''); // we don't know the generated token, but the parameter should exist
+      expect(result.resource).toContain(url.toString());
+    });
+
+    it('Sign In successfully with captcha score < 0.5', async () => {
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        return {
+          json: async () => ({
+            success: true,
+            action: RecaptchaAction.SignInWithPasswordMobile,
+            score: 0.3,
+          }),
+        } as Response;
+      });
       const member = LOUISA;
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
