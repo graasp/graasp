@@ -4,6 +4,7 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
@@ -14,11 +15,13 @@ import MemberRepository from '../../member/repository';
 import { BOB, CEDRIC, MEMBERS, saveMember } from '../../member/test/fixtures/members';
 import { ChatMessage } from '../chatMessage';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
-import { ChatMentionRepository } from '../plugins/mentions/repository';
+import { ChatMention } from '../plugins/mentions/chatMention';
 import { ChatMessageRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+
+const adminChatMentionRepository = AppDataSource.getRepository(ChatMention);
 
 export const saveItemWithChatMessages = async (creator) => {
   const { item } = await saveItemAndMembership({ member: creator });
@@ -200,7 +203,7 @@ describe('Chat Message tests', () => {
         expect(await ChatMessageRepository.find()).toHaveLength(initialCount + 1);
 
         // check mentions and send email
-        const mentions = await ChatMentionRepository.find();
+        const mentions = await adminChatMentionRepository.find();
         expect(mentions).toHaveLength(members.length);
 
         expect(mock).toHaveBeenCalledTimes(members.length);

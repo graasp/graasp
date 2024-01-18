@@ -61,7 +61,7 @@ export class MentionService {
     await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
     // TODO: optimize ? suppose same item - validate multiple times
-    const results = await mentionRepository.postMany(mentionedMembers, message, item);
+    const results = await mentionRepository.postMany(mentionedMembers, message.id);
 
     this.hooks.runPostHooks('createMany', actor, repositories, { mentions: results, item });
 
@@ -104,7 +104,7 @@ export class MentionService {
 
   async deleteAll(actor: Member, repositories: Repositories) {
     const { mentionRepository } = repositories;
-    return mentionRepository.deleteAll(actor.id);
+    await mentionRepository.deleteAll(actor.id);
     //     const clearedChat: Chat = { id: this.targetId, messages: [] };
     //     await this.postHookHandler?.(clearedChat, this.actor, { log, handler });
   }
