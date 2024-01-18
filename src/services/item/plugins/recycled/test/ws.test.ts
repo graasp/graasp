@@ -315,7 +315,7 @@ describe('Recycle websocket hooks', () => {
       });
     });
 
-    it.only('admins receive recycle bin create update when item is recycled', async () => {
+    it('admins receive recycle bin create update when item is recycled', async () => {
       const anna = await saveMember(ANNA);
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
