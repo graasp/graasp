@@ -14,18 +14,18 @@ import { ChatMentionRepository } from './repository';
 // mock datasource
 jest.mock('../../../../plugins/datasource');
 
-const adminRepository = AppDataSource.getRepository(ChatMention);
+const rawRepository = AppDataSource.getRepository(ChatMention);
 const repository = new ChatMentionRepository();
 
 const saveItemWithChatMessagesAndMentionsAndNoise = async (actor: Actor) => {
   const { chatMessages, members } = await saveItemWithChatMessages(actor);
   const member = members[0];
-  const mention1 = await adminRepository.save({ member, message: chatMessages[0] });
-  const mention2 = await adminRepository.save({ member, message: chatMessages[1] });
+  const mention1 = await rawRepository.save({ member, message: chatMessages[0] });
+  const mention2 = await rawRepository.save({ member, message: chatMessages[1] });
 
   // noise
-  await adminRepository.save({ member: members[1], message: chatMessages[1] });
-  await adminRepository.save({ member: members[2], message: chatMessages[2] });
+  await rawRepository.save({ member: members[1], message: chatMessages[1] });
+  await rawRepository.save({ member: members[2], message: chatMessages[2] });
 
   return { mentions: [mention1, mention2], member };
 };
@@ -59,8 +59,8 @@ describe('ChatMentionRepository', () => {
       const member = members[0];
 
       // noise
-      await adminRepository.save({ member: members[1], message: chatMessages[1] });
-      await adminRepository.save({ member: members[2], message: chatMessages[2] });
+      await rawRepository.save({ member: members[1], message: chatMessages[1] });
+      await rawRepository.save({ member: members[2], message: chatMessages[2] });
 
       const result = await repository.getForMember(member.id);
       expect(result).toHaveLength(0);
@@ -70,12 +70,12 @@ describe('ChatMentionRepository', () => {
       const { chatMessages, members } = await saveItemWithChatMessages(actor);
 
       // noise
-      await adminRepository.save({ member: members[1], message: chatMessages[1] });
-      await adminRepository.save({ member: members[2], message: chatMessages[2] });
+      await rawRepository.save({ member: members[1], message: chatMessages[1] });
+      await rawRepository.save({ member: members[2], message: chatMessages[2] });
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await expect(repository.getForMember(undefined!)).rejects.toMatchObject(
-        new NoChatMentionForMember(undefined),
+        new NoChatMentionForMember({ memberId: undefined }),
       );
     });
   });
@@ -195,7 +195,7 @@ describe('ChatMentionRepository', () => {
 
       await repository.deleteAll(member.id);
 
-      expect(await adminRepository.findBy({ member: { id: member.id } })).toHaveLength(0);
+      expect(await rawRepository.findBy({ member: { id: member.id } })).toHaveLength(0);
     });
     it('do nothing if user does not exist', async () => {
       await repository.deleteAll(v4());

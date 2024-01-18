@@ -81,7 +81,7 @@ export class NoChatMentionForMember extends GraaspChatboxError {
       {
         code: 'GICERR007',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Member cannot have chat mention',
+        message: 'This member cannot have chat mention',
       },
       data,
     );

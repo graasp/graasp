@@ -38,7 +38,6 @@ export const expectChatMentions = (
   const relationsMessage = (relationsMessageCreator || relationsMessageItem) ?? true;
   const relationsMember = relations?.member ?? true;
 
-  console.log(relations, relationsMessageCreator);
   expect(mentions).toHaveLength(correctMentions.length);
   for (const m of mentions) {
     const correctMention = correctMentions.find(({ id }) => id === m.id);

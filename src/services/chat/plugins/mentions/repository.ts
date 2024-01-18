@@ -25,7 +25,7 @@ export class ChatMentionRepository {
    */
   async getForMember(memberId: string): Promise<ChatMention[]> {
     if (!memberId) {
-      throw new NoChatMentionForMember(memberId);
+      throw new NoChatMentionForMember({ memberId });
     }
 
     return this.repository.find({
