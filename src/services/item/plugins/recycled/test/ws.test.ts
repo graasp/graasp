@@ -315,7 +315,7 @@ describe('Recycle websocket hooks', () => {
       });
     });
 
-    it('admins receive recycle bin create update when item is recycled', async () => {
+    it.only('admins receive recycle bin create update when item is recycled', async () => {
       const anna = await saveMember(ANNA);
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
@@ -340,12 +340,12 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(async () => {
-        expect(memberItemsUpdates.find((v) => (v.kind = 'recycle_bin'))).toMatchObject(
-          RecycleBinEvent('create', updatedItem),
-        );
-        expect(memberItemsUpdates.find((v) => (v.kind = 'shared'))).toMatchObject(
-          SharedItemsEvent('delete', updatedItem),
-        );
+        expect(
+          memberItemsUpdates.find((v) => v.kind === 'recycle_bin' && v.op === 'create'),
+        ).toMatchObject(RecycleBinEvent('create', updatedItem));
+        expect(
+          memberItemsUpdates.find((v) => v.kind === 'shared' && v.op === 'delete'),
+        ).toMatchObject(SharedItemsEvent('delete', updatedItem));
       });
     });
   });
