@@ -74,3 +74,16 @@ export class ChatMentionNotFound extends GraaspChatboxError {
     );
   }
 }
+
+export class NoChatMentionForMember extends GraaspChatboxError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GICERR007',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'This member cannot have chat mention',
+      },
+      data,
+    );
+  }
+}
