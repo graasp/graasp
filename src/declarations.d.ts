@@ -88,6 +88,7 @@ declare module 'fastify' {
       request: FastifyRequest,
       captcha: string,
       actionType: RecaptchaActionType,
+      options?: { shouldFail?: boolean },
     ) => Promise<void>;
     attemptVerifyAuthentication: (request: FastifyRequest) => Promise<void>;
     fetchMemberInSession: (request: FastifyRequest) => Promise<void>;

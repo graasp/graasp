@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.14.1](https://github.com/graasp/graasp/compare/v1.14.0...v1.14.1) (2024-01-18)
+
+
+### Bug Fixes
+
+* add dummy bad words validation ([#763](https://github.com/graasp/graasp/issues/763)) ([8ccb3d6](https://github.com/graasp/graasp/commit/8ccb3d60816e59c3e88b6d12446af3676f9eaeab))
+* add nudenet container in devcontainer ([8ccb3d6](https://github.com/graasp/graasp/commit/8ccb3d60816e59c3e88b6d12446af3676f9eaeab))
+* disable bad words validation ([#755](https://github.com/graasp/graasp/issues/755)) ([ae29565](https://github.com/graasp/graasp/commit/ae29565de8d925657a64ca2905e2003be0800f7d))
+* do not fail login with password if score is low ([#757](https://github.com/graasp/graasp/issues/757)) ([cee9574](https://github.com/graasp/graasp/commit/cee95741d1e32514b5dfb1748ef42702174b0303))
+* **test:** fix flacky tests ([ae29565](https://github.com/graasp/graasp/commit/ae29565de8d925657a64ca2905e2003be0800f7d))
+* update sdk with removed etherpad api dep ([#753](https://github.com/graasp/graasp/issues/753)) ([9b08705](https://github.com/graasp/graasp/commit/9b08705d4062bb65c1019124349b5c279f70ae2a))
+
 ## [1.14.0](https://github.com/graasp/graasp/compare/v1.13.2...v1.14.0) (2024-01-12)
 
 

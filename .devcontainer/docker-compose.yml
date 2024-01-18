@@ -160,9 +160,16 @@ services:
     container_name: graasp-iframely
     image: graasp/iframely:latest
     environment:
-      NODE_ENV: staging
+      NODE_ENV: staging # why "staging" ??
     ports:
       - 8061:8061
+
+  # necessary for validation
+  nudenet:
+    container_name: graasp-nudenet
+    image: notaitech/nudenet:classifier
+    ports:
+      - 8080:8080
 
   # a mock mailbox on port 1025 (web UI at http://localhost:1080)
   mailer:

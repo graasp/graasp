@@ -103,22 +103,24 @@ export class ItemValidationService {
     // execute each process on item
     await Promise.all(
       // todo: add more validation processes to this array
-      [ItemValidationProcess.ImageChecking].map(async (process) => {
-        try {
-          // if item is not of type 'file', skip the image checking
-          if (
-            process === ItemValidationProcess.ImageChecking &&
-            item?.type !== this.fileService.type
-          ) {
-            return;
-          }
+      [ItemValidationProcess.ImageChecking, ItemValidationProcess.BadWordsDetection].map(
+        async (process) => {
+          try {
+            // if item is not of type 'file', skip the image checking
+            if (
+              process === ItemValidationProcess.ImageChecking &&
+              item?.type !== this.fileService.type
+            ) {
+              return;
+            }
 
-          // create and validate item
-          await this.validateItem(actor, repositories, item, itemValidationGroup.id, process);
-        } catch (error) {
-          throw new ProcessExecutionError(process, error);
-        }
-      }),
+            // create and validate item
+            await this.validateItem(actor, repositories, item, itemValidationGroup.id, process);
+          } catch (error) {
+            throw new ProcessExecutionError(process, error);
+          }
+        },
+      ),
     );
 
     // recursively validate subitems
