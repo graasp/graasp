@@ -6,6 +6,7 @@ import {
   MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST,
+  PermissionLevel,
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
@@ -127,6 +128,7 @@ export const getAccessible = {
   querystring: S.object()
     .prop('page', S.number().default(1))
     .prop('name', S.string())
+    .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
     .prop('sortBy', S.enum(Object.values(SortBy)))
     .prop('ordering', S.enum(Object.values(Ordering)))
     .prop('creatorId', S.string())

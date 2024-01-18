@@ -927,6 +927,87 @@ describe('Item routes tests', () => {
         });
       });
 
+      it('Returns successfully items by read', async () => {
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: item1 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          permission: PermissionLevel.Read,
+          item: { type: ItemType.DOCUMENT },
+        });
+
+        // noise
+        await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Admin,
+          item: { type: ItemType.FOLDER },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          permission: PermissionLevel.Write,
+          item: { type: ItemType.APP },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible`,
+          query: {
+            sorty: SortBy.ItemCreatorName,
+            ordering: 'asc',
+            permissions: [PermissionLevel.Read],
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(1);
+        expect(data).toHaveLength(1);
+        expectItem(data[0], item1);
+      });
+
+      it('Returns successfully items by write and admin', async () => {
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          permission: PermissionLevel.Read,
+          item: { type: ItemType.DOCUMENT },
+        });
+        const { item: item2 } = await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Admin,
+          item: { type: ItemType.FOLDER },
+        });
+        const { item: item3 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          permission: PermissionLevel.Write,
+          item: { type: ItemType.APP },
+        });
+        const items = [item2, item3];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible`,
+          query: {
+            sorty: SortBy.ItemCreatorName,
+            ordering: 'asc',
+            permissions: [PermissionLevel.Write, PermissionLevel.Admin],
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        items.forEach((_, idx) => {
+          expectItem(data[idx], items[idx]);
+        });
+      });
+
       it('Throws for wrong sort by', async () => {
         await saveItemAndMembership({
           member: actor,

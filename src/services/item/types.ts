@@ -1,3 +1,5 @@
+import { PermissionLevel } from '@graasp/sdk';
+
 import { Member } from '../member/entities/member';
 
 export enum SortBy {
@@ -20,4 +22,5 @@ export type ItemSearchParams = {
   name?: string;
   sortBy?: SortBy;
   ordering?: Ordering;
+  permissions?: PermissionLevel[];
 };

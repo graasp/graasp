@@ -101,7 +101,13 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
    *  */
   async getAccessibleItems(
     actor: Member,
-    { creatorId, name, sortBy = SortBy.ItemUpdatedAt, ordering = Ordering.desc }: ItemSearchParams,
+    {
+      creatorId,
+      name,
+      sortBy = SortBy.ItemUpdatedAt,
+      ordering = Ordering.desc,
+      permissions,
+    }: ItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
   ): Promise<Paginated<Item>> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
@@ -120,9 +126,12 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
           .where('im.item_path <@ im1.item_path')
           .andWhere('im1.member_id = :actorId', { actorId: actor.id })
           .orderBy('im1.item_path', 'ASC')
-          .limit(1)
-          .getQuery();
-        return 'item.path =' + subQuery;
+          .limit(1);
+
+        if (permissions) {
+          subQuery.andWhere('im1.permission IN (:...permissions)', { permissions });
+        }
+        return 'item.path =' + subQuery.getQuery();
       });
 
     if (name) {
@@ -133,6 +142,10 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     if (creatorId) {
       query.andWhere('item.creator = :creatorId', { creatorId });
+    }
+
+    if (permissions) {
+      query.andWhere('im.permission IN (:...permissions)', { permissions });
     }
 
     if (sortBy) {
