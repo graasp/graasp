@@ -130,7 +130,7 @@ export class InvitationService {
     // invitations to memberships is triggered on register: no actor available
     const { invitationRepository, itemMembershipRepository } = repositories;
     const invitations = await invitationRepository.find({
-      where: { email: member.email },
+      where: { email: member.email.toLowerCase() },
       relations: { item: true },
     });
     const memberships = invitations.map(({ permission, item }) => ({ item, member, permission }));
