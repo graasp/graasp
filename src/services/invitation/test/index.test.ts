@@ -79,7 +79,7 @@ describe('Invitation Plugin', () => {
   });
 
   describe('POST /invite', () => {
-    it('Throws if signed out', async () => {
+    it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
       const { item, invitations } = await saveInvitations({ member });
@@ -125,7 +125,28 @@ describe('Invitation Plugin', () => {
         });
       });
 
-      it('Throws if one invitation is malformed', async () => {
+      it('normalise emails before saving', async () => {
+        const { item } = await saveItemAndMembership({ member: actor });
+        const invitation = {
+          email: 'TestCase@graap.org',
+          permission: PermissionLevel.Read,
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
+          payload: { invitations: [invitation] },
+        });
+
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const completeInvitations = await InvitationRepository.find({
+          where: { email: invitation.email.toLowerCase() },
+        });
+        const result = await response.json();
+        expectInvitations(Object.values(result.data), completeInvitations);
+      });
+
+      it('throws if one invitation is malformed', async () => {
         const { item, invitations } = await createInvitations({ member: actor });
         const faultyInvitation = { email: 'not-correct-email', permission: PermissionLevel.Read };
 
@@ -152,7 +173,7 @@ describe('Invitation Plugin', () => {
   });
 
   describe('GET /:itemId/invitations', () => {
-    it('Throws if signed out', async () => {
+    it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
       const { item } = await saveInvitations({ member });
@@ -203,7 +224,7 @@ describe('Invitation Plugin', () => {
         expectInvitations(await response.json(), [...invitations, ...childInvitations]);
       });
 
-      it('Throw if item with invitations has been trashed', async () => {
+      it('throw if item with invitations has been trashed', async () => {
         await ItemRepository.softDelete(item.id);
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -259,7 +280,7 @@ describe('Invitation Plugin', () => {
         expectInvitations([await response.json()], [invitations[0]]);
       });
 
-      it("Don't return an invitation for a trashed item", async () => {
+      it("don't return an invitation for a trashed item", async () => {
         await ItemRepository.softDelete(invitations[0].item.id);
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -281,7 +302,7 @@ describe('Invitation Plugin', () => {
   });
 
   describe('PATCH /:itemId/invitations/:id', () => {
-    it('Throws if signed out', async () => {
+    it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
       const { item, invitations } = await saveInvitations({ member });
@@ -358,7 +379,7 @@ describe('Invitation Plugin', () => {
   });
 
   describe('DELETE /:itemId/invitations/:id', () => {
-    it('Throws if signed out', async () => {
+    it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
       const { item, invitations } = await saveInvitations({ member });
@@ -409,7 +430,7 @@ describe('Invitation Plugin', () => {
   });
 
   describe('POST /:itemId/invitations/:id/send', () => {
-    it('Throws if signed out', async () => {
+    it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember(BOB);
       const { item, invitations } = await saveInvitations({ member });
@@ -429,7 +450,7 @@ describe('Invitation Plugin', () => {
         ({ app, actor } = await build());
         ({ item, invitations } = await saveInvitations({ member: actor }));
       });
-      it('Resend invitation successfully', async () => {
+      it('resend invitation successfully', async () => {
         const mockSendMail = mockEmail(app);
 
         const response = await app.inject({
@@ -470,7 +491,7 @@ describe('Invitation Plugin', () => {
       ({ invitations } = await saveInvitations({ member: actor }));
     });
 
-    it('Remove invitation on member registration and create memberships successfully', async () => {
+    it('remove invitation on member registration and create memberships successfully', async () => {
       const { id, email, item, permission } = invitations[0];
 
       // register
@@ -495,7 +516,7 @@ describe('Invitation Plugin', () => {
       });
     });
 
-    it('Does not throw if no invitation found', async () => {
+    it('does not throw if no invitation found', async () => {
       const email = 'random@email.org';
       const allInvitations = await InvitationRepository.find();
       const allMemberships = await ItemMembershipRepository.find();
