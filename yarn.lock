@@ -1524,13 +1524,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/cors@npm:8.2.1":
-  version: 8.2.1
-  resolution: "@fastify/cors@npm:8.2.1"
+"@fastify/cors@npm:8.5.0":
+  version: 8.5.0
+  resolution: "@fastify/cors@npm:8.5.0"
   dependencies:
     fastify-plugin: "npm:^4.0.0"
-    mnemonist: "npm:0.39.5"
-  checksum: 718c82e2ba28317932d3eae3f472c4e4d4533cf3c8b6e54cfee20a89b07dbfd198cac17a684cfcbe9d98f1936d3abacef1dbf34167cbe328160880302277683c
+    mnemonist: "npm:0.39.6"
+  checksum: 5ebb5a390b81d2dff2219d2cc147759eb9a16a3e7dc799ac82da72d640974ea1afcce3d4e2def98000b539b23f46c4c250b5132217511fbdb4696ca7fbf33684
   languageName: node
   linkType: hard
 
@@ -6445,7 +6445,7 @@ __metadata:
     "@commitlint/config-conventional": "npm:17.8.1"
     "@fastify/auth": "npm:4.2.0"
     "@fastify/bearer-auth": "npm:9.0.0"
-    "@fastify/cors": "npm:8.2.1"
+    "@fastify/cors": "npm:8.5.0"
     "@fastify/forwarded": "npm:2.2.0"
     "@fastify/helmet": "npm:10.1.1"
     "@fastify/jwt": "npm:6.7.1"
@@ -8498,7 +8498,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mnemonist@npm:0.39.5, mnemonist@npm:^0.39.5":
+"mnemonist@npm:0.39.6":
+  version: 0.39.6
+  resolution: "mnemonist@npm:0.39.6"
+  dependencies:
+    obliterator: "npm:^2.0.1"
+  checksum: d7b8a85767072389502e8235e251ddb3be7fcd173f41b20f6d848e21a0d569f0c2ca0992b20f204fc23b112a4dd3fcc25c00de65406214912a62a1000c21fab9
+  languageName: node
+  linkType: hard
+
+"mnemonist@npm:^0.39.5":
   version: 0.39.5
   resolution: "mnemonist@npm:0.39.5"
   dependencies:
