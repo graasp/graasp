@@ -22,7 +22,7 @@ const expectAppAction = (values, expected) => {
   }
 };
 
-const saveAppActions = async ({ item, member }: { item: Item; member?: Member }) => {
+export const saveAppActions = async ({ item, member }: { item: Item; member?: Member }) => {
   const defaultData = { type: 'some-type', data: { some: 'data' } };
   const s1 = await AppActionRepository.save({ item, member, ...defaultData });
   const s2 = await AppActionRepository.save({ item, member, ...defaultData });

@@ -23,7 +23,7 @@ const expectAppData = (values, expected) => {
   }
 };
 
-const saveAppData = async ({
+export const saveAppData = async ({
   item,
   creator,
   member,

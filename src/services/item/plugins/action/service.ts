@@ -6,7 +6,9 @@ import {
   AggregateMetric,
   Context,
   CountGroupBy,
+  ItemType,
   PermissionLevel,
+  UUID,
 } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
@@ -17,6 +19,9 @@ import { Actor } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
+import { AppAction } from '../app/appAction/appAction';
+import { AppData } from '../app/appData/appData';
+import { AppSetting } from '../app/appSetting/appSettings';
 import { BaseAnalytics } from './base-analytics';
 import {
   DEFAULT_ACTIONS_SAMPLE_SIZE,
@@ -171,6 +176,30 @@ export class ActionItemService {
       ).data,
     ).flat();
 
+    // get for all app-item
+    const apps: {
+      [key: UUID]: {
+        data: AppData[];
+        settings: AppSetting[];
+        actions: AppAction[];
+      };
+    } = {};
+    for (const { id: appId } of [item, ...descendants].filter(
+      ({ type }) => type === ItemType.APP,
+    )) {
+      const appData = await repositories.appDataRepository.getForItem(
+        appId,
+        {},
+        PermissionLevel.Admin,
+      );
+      // TODO member id?
+      // todo: create getForItems?
+      const appActions = await repositories.appActionRepository.getForItem(appId, {});
+      const appSettings = await repositories.appSettingRepository.getForItem(appId);
+
+      apps[appId] = { data: appData, actions: appActions, settings: appSettings };
+    }
+
     // set all data in last task's result
     return new BaseAnalytics({
       item,
@@ -179,6 +208,7 @@ export class ActionItemService {
       members,
       itemMemberships: allMemberships,
       chatMessages,
+      apps,
       metadata: {
         numActionsRetrieved: actions.length,
         requestedSampleSize: payload.sampleSize ?? MAX_ACTIONS_SAMPLE_SIZE,
