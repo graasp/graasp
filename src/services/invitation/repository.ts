@@ -66,10 +66,15 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
    * @param invitation Invitation to create
    */
   async postMany(
-    invitations: Partial<Invitation>[],
+    partialInvitations: Partial<Invitation>[],
     itemPath: string,
     creator: Member,
   ): Promise<ResultOf<Invitation>> {
+    const invitations = partialInvitations.map((inv) => ({
+      ...inv,
+      // this normalisation is necessary because we match emails 1:1 and they are expeted to be in lowercase
+      email: inv.email?.toLowerCase(),
+    }));
     const existingEntries = await this.createQueryBuilder('invitation')
       .leftJoinAndSelect('invitation.item', 'item')
       .where('item.path @> :path', { path: itemPath })
@@ -81,7 +86,11 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
           (i) =>
             !existingEntries.find(({ email, item }) => email === i.email && item.id === itemPath),
         )
-        .map((invitation) => ({ ...invitation, item: { path: itemPath }, creator })),
+        .map((invitations) => ({
+          ...invitations,
+          item: { path: itemPath },
+          creator,
+        })),
     );
     // TODO: optimize
     return this.getMany(insertResult.identifiers.map(({ id }) => id));
