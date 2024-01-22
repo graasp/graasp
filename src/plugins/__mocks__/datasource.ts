@@ -13,6 +13,7 @@ import { AppData } from '../../services/item/plugins/app/appData/appData';
 import { AppSetting } from '../../services/item/plugins/app/appSetting/appSettings';
 import { App } from '../../services/item/plugins/app/entities/app';
 import { Publisher } from '../../services/item/plugins/app/entities/publisher';
+import { ItemGeolocation } from '../../services/item/plugins/geolocation/itemGeolocation';
 import { Category } from '../../services/item/plugins/itemCategory/entities/Category';
 import { ItemCategory } from '../../services/item/plugins/itemCategory/entities/ItemCategory';
 import { ItemFavorite } from '../../services/item/plugins/itemFavorite/entities/ItemFavorite';
@@ -79,6 +80,7 @@ export const AppDataSource = new DataSource({
     ActionRequestExport,
     MemberProfile,
     ShortLink,
+    ItemGeolocation,
   ],
   // refer to built files in js because it cannot run ts files
   migrations: ['dist/migrations/*.js'],

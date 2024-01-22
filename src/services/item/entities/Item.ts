@@ -7,6 +7,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -28,6 +29,7 @@ import {
 } from '@graasp/sdk';
 
 import { Member } from '../../member/entities/member';
+import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 
 // Map of the item types to their item extra
 export type ItemExtraMap = {
@@ -110,6 +112,11 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   // because we need path <@
   // @ManyToMany(() => ItemCategory, (iC) => iC.item)
   // categories: ItemCategory[];
+
+  @OneToOne(() => ItemGeolocation, (geoloc) => geoloc.item, {
+    onDelete: 'SET NULL',
+  })
+  geolocation: ItemGeolocation;
 }
 
 // all sub-item types defined using a specific variant of the `ItemType` enumeration

@@ -11,6 +11,7 @@ import { AppDataRepository } from '../services/item/plugins/app/appData/reposito
 import { AppSettingRepository } from '../services/item/plugins/app/appSetting/repository';
 import { PublisherRepository } from '../services/item/plugins/app/publisherRepository';
 import { AppRepository } from '../services/item/plugins/app/repository';
+import { ItemGeolocationRepository } from '../services/item/plugins/geolocation/repository';
 import { CategoryRepository } from '../services/item/plugins/itemCategory/repositories/category';
 import { ItemCategoryRepository } from '../services/item/plugins/itemCategory/repositories/itemCategory';
 import { FavoriteRepository } from '../services/item/plugins/itemFavorite/repositories/favorite';
@@ -60,6 +61,7 @@ export type Repositories = {
   recycledItemRepository: typeof RecycledItemDataRepository;
   memberProfileRepository: typeof MemberProfileRepository;
   shortLinkRepository: typeof ShortLinkRepository;
+  itemGeolocationRepository: ItemGeolocationRepository;
 };
 // public: exists in item tag
 
@@ -123,4 +125,5 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
     ? manager.withRepository(MemberProfileRepository)
     : MemberProfileRepository,
   shortLinkRepository: manager ? manager.withRepository(ShortLinkRepository) : ShortLinkRepository,
+  itemGeolocationRepository: new ItemGeolocationRepository(manager),
 });

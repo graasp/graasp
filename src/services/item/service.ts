@@ -437,7 +437,7 @@ export class ItemService {
       throw new UnauthorizedMember(actor);
     }
 
-    const { itemRepository, itemMembershipRepository } = repositories;
+    const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
     const item = await this.get(actor, repositories, itemId);
 
@@ -485,6 +485,8 @@ export class ItemService {
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {
       await this.hooks.runPostHooks('copy', actor, repositories, { original, copy });
+      // copy geolocation
+      await itemGeolocationRepository.copy(original, copy);
     }
 
     return copyRoot;

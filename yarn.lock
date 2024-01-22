@@ -2218,6 +2218,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rapideditor/country-coder@npm:5.2.2":
+  version: 5.2.2
+  resolution: "@rapideditor/country-coder@npm:5.2.2"
+  dependencies:
+    which-polygon: "npm:^2.2.1"
+  checksum: 4b3823f65a95b5d115fe0244bf414a388865f3b7ee2c578a23434f283950e341a80fb99f90d8419d009a6572b6b9ca8f9e4b751a869e833e13a7328157317fdd
+  languageName: node
+  linkType: hard
+
 "@sentry-internal/tracing@npm:7.64.0":
   version: 7.64.0
   resolution: "@sentry-internal/tracing@npm:7.64.0"
@@ -6464,6 +6473,7 @@ __metadata:
     "@graasp/etherpad-api": "npm:2.1.1"
     "@graasp/sdk": "npm:3.4.1"
     "@graasp/translations": "npm:1.21.1"
+    "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"
     "@sentry/tracing": "npm:7.64.0"
     "@trivago/prettier-plugin-sort-imports": "npm:4.1.1"
@@ -7863,6 +7873,13 @@ __metadata:
     process-warning: "npm:^2.0.0"
     set-cookie-parser: "npm:^2.4.1"
   checksum: e4e35b5c7afe73611dcd328018a70f9ac33d25909d726d6ae85b8198fcdc8fb4b79fc079bc71f608f0d7631e1d4d4d88d6c322d3e243b1eee50469a1bd0f5862
+  languageName: node
+  linkType: hard
+
+"lineclip@npm:^1.1.5":
+  version: 1.1.5
+  resolution: "lineclip@npm:1.1.5"
+  checksum: fd6b585ef3a34ea23b75269cf610f8b7d9414d2d60e385d41664dc8cfd6eaf70be6344b0facc1b8d98a288ead928ca7889d79db18b0121d93ff1113d39edbcdc
   languageName: node
   linkType: hard
 
@@ -9623,6 +9640,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"quickselect@npm:^1.0.1":
+  version: 1.1.1
+  resolution: "quickselect@npm:1.1.1"
+  checksum: 419c88a1fbd57d66365be9498e694c6fbd10bfabe8910fedfa3f75c008c08f9b05d10e4b79f462e7875dd6053431638d7fd66b6a7226ff752d657c82633981e1
+  languageName: node
+  linkType: hard
+
+"rbush@npm:^2.0.1":
+  version: 2.0.2
+  resolution: "rbush@npm:2.0.2"
+  dependencies:
+    quickselect: "npm:^1.0.1"
+  checksum: c9ef68ffbf213f040796316c66e898c6344817feed100afa078432de3e5dace5f3aa6391d00df2123a0b05a88cb04c491abba3e818be2e592239e2de6126d3dd
+  languageName: node
+  linkType: hard
+
 "rc@npm:^1.2.7":
   version: 1.2.8
   resolution: "rc@npm:1.2.8"
@@ -11361,6 +11394,16 @@ __metadata:
     tr46: "npm:~0.0.3"
     webidl-conversions: "npm:^3.0.0"
   checksum: f95adbc1e80820828b45cc671d97da7cd5e4ef9deb426c31bcd5ab00dc7103042291613b3ef3caec0a2335ed09e0d5ed026c940755dbb6d404e2b27f940fdf07
+  languageName: node
+  linkType: hard
+
+"which-polygon@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "which-polygon@npm:2.2.1"
+  dependencies:
+    lineclip: "npm:^1.1.5"
+    rbush: "npm:^2.0.1"
+  checksum: e8af90fd42c89fda3fcfcbd01d50e3a03017f04fbabe5e7ac05bd9480677b98d9fb51adc7da30157991d93044925eee000f91be9773dacc04cfd9318a6e25f18
   languageName: node
   linkType: hard
 
