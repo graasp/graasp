@@ -1,3 +1,4 @@
+import { NotFound } from '@aws-sdk/client-s3';
 import FormData from 'form-data';
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
@@ -13,6 +14,7 @@ import { MemberCannotAccess, MemberCannotWriteItem } from '../../../../../utils/
 import {
   DownloadFileInvalidParameterError,
   DownloadFileUnexpectedError,
+  S3FileNotFound,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
@@ -41,6 +43,7 @@ const MOCK_SIGNED_URL = 'signed-url';
 jest.mock('@aws-sdk/client-s3', () => {
   return {
     GetObjectCommand: jest.fn(),
+    NotFound: jest.fn(() => ({ name: 'NotFound' })),
     S3: function () {
       return {
         copyObject: copyObjectMock,
@@ -478,6 +481,19 @@ describe('File Item routes tests', () => {
 
           // we want the download file to wrap the error
           expect(response.json()).toMatchObject(new DownloadFileUnexpectedError(expect.anything()));
+        });
+        it('Gracefully fails if s3 returns NotFound error', async () => {
+          headObjectMock.mockImplementation(() => {
+            throw new NotFound({ message: 'hello', $metadata: {} });
+          });
+
+          const response = await app.inject({
+            method: HttpMethod.GET,
+            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
+          });
+
+          // we want the download file to wrap the error
+          expect(response.json()).toMatchObject(new S3FileNotFound(expect.anything()));
         });
       });
     });

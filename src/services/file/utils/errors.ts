@@ -19,6 +19,7 @@ export class UploadFileInvalidParameterError extends GraaspFileError {
     );
   }
 }
+
 export class CopyFileInvalidPathError extends GraaspFileError {
   constructor(filepath?: unknown) {
     super(
@@ -31,6 +32,7 @@ export class CopyFileInvalidPathError extends GraaspFileError {
     );
   }
 }
+
 export class CopyFolderInvalidPathError extends GraaspFileError {
   constructor(filepath?: unknown) {
     super(
@@ -43,6 +45,7 @@ export class CopyFolderInvalidPathError extends GraaspFileError {
     );
   }
 }
+
 export class DeleteFileInvalidPathError extends GraaspFileError {
   constructor(filepath?: unknown) {
     super(
@@ -55,6 +58,7 @@ export class DeleteFileInvalidPathError extends GraaspFileError {
     );
   }
 }
+
 export class DeleteFolderInvalidPathError extends GraaspFileError {
   constructor(folderPath?: unknown) {
     super(
@@ -67,6 +71,7 @@ export class DeleteFolderInvalidPathError extends GraaspFileError {
     );
   }
 }
+
 export class DownloadFileInvalidParameterError extends GraaspFileError {
   constructor(data?: unknown) {
     super(

@@ -10,6 +10,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import {
   DownloadFileUnexpectedError,
+  GraaspFileError,
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../file/utils/errors';
@@ -99,7 +100,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       const url = await thumbnailService
         .getUrl(member, buildRepositories(), { memberId, size })
         .catch((e) => {
-          if (e.code) {
+          if (e instanceof GraaspFileError) {
             throw e;
           }
           throw new DownloadFileUnexpectedError(e);

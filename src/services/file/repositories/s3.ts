@@ -254,12 +254,13 @@ export class S3FileRepository implements FileRepository {
 
       return url;
     } catch (e) {
-      // todo: usign console.log polutes the logs
-      log.error(e);
-      // todo: handle the "Not Found" error
+      if (e.name === 'NotFound') {
+        throw new S3FileNotFound({ filepath });
+      }
       if (!(e instanceof DownloadFileUnexpectedError)) {
         throw new DownloadFileUnexpectedError({ filepath });
       }
+      log.error(e);
       throw e;
     }
   }
