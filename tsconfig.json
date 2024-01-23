@@ -9,6 +9,7 @@
     "checkJs": false,
     "allowJs": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

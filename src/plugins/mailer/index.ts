@@ -1,5 +1,5 @@
 import * as eta from 'eta';
-import type { i18n } from 'i18next';
+import i18next, { i18n } from 'i18next';
 import { promisify } from 'util';
 
 import pointOfView from '@fastify/view';
@@ -7,8 +7,12 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { DEFAULT_LANG } from '@graasp/sdk';
-import buildI18n, { namespaces } from '@graasp/translations';
 
+import arTranslations from './langs/ar.json';
+import enTranslations from './langs/en.json';
+import esTranslations from './langs/es.json';
+import frTranslations from './langs/fr.json';
+import itTranslations from './langs/it.json';
 import { applyLayout } from './layout';
 
 export interface MailerOptions {
@@ -47,7 +51,25 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     secure: useSsl,
   });
 
-  const i18n = buildI18n(namespaces.mail, false);
+  i18next.init({
+    resources: {
+      en: {
+        translation: enTranslations,
+      },
+      fr: {
+        translation: frTranslations,
+      },
+      es: {
+        translation: esTranslations,
+      },
+      it: {
+        translation: itTranslations,
+      },
+      ar: {
+        translation: arTranslations,
+      },
+    },
+  });
 
   const promisifiedNodemailerSendMail =
     // sendMail() uses 'this' internally and 'promisify' breaks that, so it needs to be passed
@@ -86,8 +108,8 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   const buildText = (text: string) => `<p>${text}</p>`;
 
   const translate = (lang: string = DEFAULT_LANG) => {
-    i18n.changeLanguage(lang);
-    return i18n.t;
+    i18next.changeLanguage(lang);
+    return i18next.t;
   };
 
   const decorations: MailerDecoration = {

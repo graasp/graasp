@@ -6,9 +6,9 @@ import {
   PermissionLevel,
   UUID,
 } from '@graasp/sdk';
-import { MAIL } from '@graasp/translations';
 
 import { MailerDecoration } from '../../../../../plugins/mailer';
+import { MAIL } from '../../../../../plugins/mailer/langs/constants';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
