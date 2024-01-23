@@ -1,5 +1,5 @@
 import * as eta from 'eta';
-import i18next, { i18n } from 'i18next';
+import type { i18n } from 'i18next';
 import { promisify } from 'util';
 
 import pointOfView from '@fastify/view';
@@ -8,11 +8,7 @@ import fp from 'fastify-plugin';
 
 import { DEFAULT_LANG } from '@graasp/sdk';
 
-import arTranslations from './langs/ar.json';
-import enTranslations from './langs/en.json';
-import esTranslations from './langs/es.json';
-import frTranslations from './langs/fr.json';
-import itTranslations from './langs/it.json';
+import i18next from './i18n';
 import { applyLayout } from './layout';
 
 export interface MailerOptions {
@@ -49,26 +45,6 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     pool: true,
     port,
     secure: useSsl,
-  });
-
-  i18next.init({
-    resources: {
-      en: {
-        translation: enTranslations,
-      },
-      fr: {
-        translation: frTranslations,
-      },
-      es: {
-        translation: esTranslations,
-      },
-      it: {
-        translation: itTranslations,
-      },
-      ar: {
-        translation: arTranslations,
-      },
-    },
   });
 
   const promisifiedNodemailerSendMail =
