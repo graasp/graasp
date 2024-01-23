@@ -42,6 +42,7 @@ export class FavoriteRepository {
       .createQueryBuilder('favorite')
       // add relation to item, but use innerJoin to remove item that have been soft-deleted
       .innerJoinAndSelect('favorite.item', 'item')
+      .innerJoinAndSelect('item.creator', 'member')
       .where('favorite.member_id = :memberId', { memberId })
       .getMany();
     return favorites;

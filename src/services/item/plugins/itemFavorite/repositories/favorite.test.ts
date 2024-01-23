@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { BOB, saveMember } from '../../../../member/test/fixtures/members';
 import { getDummyItem, saveItem } from '../../../test/fixtures/items';
 import { ItemFavorite } from '../entities/ItemFavorite';
@@ -18,9 +19,13 @@ describe('FavoriteRepository', () => {
   beforeEach(async () => {
     ({ app, actor } = await build());
     const r = new FavoriteRepository();
+    const rawRepository = AppDataSource.getRepository(ItemFavorite);
     const item1 = await saveItem({ actor, item: getDummyItem() });
     const item2 = await saveItem({ actor, item: getDummyItem() });
-    favorites = [await r.post(item1.id, actor.id), await r.post(item2.id, actor.id)];
+    favorites = [
+      await rawRepository.save({ item: item1, member: actor }),
+      await rawRepository.save({ item: item2, member: actor }),
+    ];
 
     // noise
     const m1 = await saveMember(BOB);
@@ -68,7 +73,10 @@ describe('FavoriteRepository', () => {
       for (const f of favorites) {
         expect(result).toContainEqual(
           expect.objectContaining({
-            item: expect.objectContaining({ id: f.item.id }),
+            item: expect.objectContaining({
+              id: f.item.id,
+              creator: expect.objectContaining({ id: f.item?.creator?.id }),
+            }),
           }),
         );
       }
