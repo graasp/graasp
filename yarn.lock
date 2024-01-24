@@ -2101,7 +2101,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mapbox/node-pre-gyp@npm:^1.0.10":
+"@mapbox/node-pre-gyp@npm:^1.0.11":
   version: 1.0.11
   resolution: "@mapbox/node-pre-gyp@npm:1.0.11"
   dependencies:
@@ -4105,13 +4105,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bcrypt@npm:5.1.0":
-  version: 5.1.0
-  resolution: "bcrypt@npm:5.1.0"
+"bcrypt@npm:5.1.1":
+  version: 5.1.1
+  resolution: "bcrypt@npm:5.1.1"
   dependencies:
-    "@mapbox/node-pre-gyp": "npm:^1.0.10"
+    "@mapbox/node-pre-gyp": "npm:^1.0.11"
     node-addon-api: "npm:^5.0.0"
-  checksum: 6477ddb871e6ad01b88cb1b0fe9cb500484c820a05bd9900158ad724b430ac3f0bf3a6dc83eeccd7bf0b46f29648d0c08bf5e0869406f6636bcdf9ca646f33f7
+  checksum: be6af3a93d90a0071c3b4412e8b82e2f319e26cb4e6cb14a1790cfe7c164792fa8add3ac9f30278a017d7d332ee8852601ce81a69737e9bfb9f10c878dd3d0dd
   languageName: node
   linkType: hard
 
@@ -6489,7 +6489,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:5.62.0"
     archiver: "npm:5.3.2"
     bad-words: "npm:3.0.4"
-    bcrypt: "npm:5.1.0"
+    bcrypt: "npm:5.1.1"
     bullmq: "npm:4.4.0"
     checksum: "npm:1.0.0"
     concurrently: "npm:7.6.0"
