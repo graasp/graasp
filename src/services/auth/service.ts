@@ -3,9 +3,8 @@ import { promisify } from 'util';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { MAIL } from '@graasp/translations';
-
 import { MailerDecoration } from '../../plugins/mailer';
+import { MAIL } from '../../plugins/mailer/langs/constants';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,

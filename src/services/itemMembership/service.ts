@@ -1,7 +1,7 @@
 import { PermissionLevel, UUID } from '@graasp/sdk';
-import { MAIL } from '@graasp/translations';
 
 import { MailerDecoration } from '../../plugins/mailer';
+import { MAIL } from '../../plugins/mailer/langs/constants';
 import { PLAYER_HOST } from '../../utils/config';
 import {
   CannotDeleteOnlyAdmin,

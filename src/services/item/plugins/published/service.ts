@@ -1,9 +1,9 @@
 import { FastifyBaseLogger } from 'fastify';
 
 import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
-import { MAIL } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
+import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { resultOfToList } from '../../../../services/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';

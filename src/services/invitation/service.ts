@@ -1,9 +1,9 @@
 import { FastifyBaseLogger } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
-import { MAIL } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../plugins/mailer';
+import { MAIL } from '../../plugins/mailer/langs/constants';
 import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';

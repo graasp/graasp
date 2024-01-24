@@ -1,7 +1,7 @@
 import { PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
-import { MAIL } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
+import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
@@ -36,10 +36,18 @@ export class MentionService {
     const lang = member?.extra?.lang as string;
 
     const translated = this.mailer.translate(lang);
-    const subject = translated(MAIL.CHAT_MENTION_TITLE);
+    const subject = translated(MAIL.CHAT_MENTION_TITLE, {
+      creatorName: creator.name,
+      itemName: item.name,
+    });
     const html = `
     ${this.mailer.buildText(translated(MAIL.GREETINGS))}
-    ${this.mailer.buildText(translated(MAIL.CHAT_MENTION_TEXT, { creator }))}
+    ${this.mailer.buildText(
+      translated(MAIL.CHAT_MENTION_TEXT, {
+        creatorName: creator.name,
+        itemName: item.name,
+      }),
+    )}
     ${this.mailer.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
 
     this.mailer.sendEmail(subject, member.email, itemLink, html).catch((err) => {
