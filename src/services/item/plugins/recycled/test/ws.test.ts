@@ -681,8 +681,7 @@ describe('Recycle websocket hooks', () => {
       if (!updatedItem) throw new Error('item should be found in test');
 
       await waitForExpect(() => {
-        const [_ownDelete, _recycleCreate, _accessibleCreate, feedbackUpdate] = memberUpdates;
-        expect(feedbackUpdate).toMatchObject(
+        expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
           ItemOpFeedbackEvent('recycle', [item.id], {
             data: { [item.id]: updatedItem },
             errors: [],
