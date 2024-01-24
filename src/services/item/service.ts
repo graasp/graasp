@@ -57,16 +57,16 @@ export class ItemService {
   async post(
     actor: Actor,
     repositories: Repositories,
-    args: { item: Partial<Item>; parentId?: string },
+    args: { item: Partial<Item>; parentId?: string; geolocation?: { lat: number; lng: number } },
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
-    const { itemRepository, itemMembershipRepository } = repositories;
+    const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
-    const { item, parentId } = args;
+    const { item, parentId, geolocation } = args;
 
     log?.debug(`run prehook for ${item.name}`);
     await this.hooks.runPreHooks('create', actor, repositories, { item }, log);
@@ -124,6 +124,11 @@ export class ItemService {
 
     log?.debug(`run posthook for ${createdItem.id}`);
     await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem }, log);
+
+    // geolocation
+    if (geolocation) {
+      await itemGeolocationRepository.put(createdItem.path, geolocation.lat, geolocation.lng);
+    }
 
     return createdItem;
   }

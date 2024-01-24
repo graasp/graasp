@@ -22,3 +22,16 @@ export class ItemGeolocationNotFound extends GraaspItemGeolocationError {
     );
   }
 }
+
+export class PartialItemGeolocation extends GraaspItemGeolocationError {
+  constructor(data?: { lat?: unknown; lng?: unknown }) {
+    super(
+      {
+        code: 'GIGEOERR002',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Geolocation should have both lat and lng',
+      },
+      data,
+    );
+  }
+}

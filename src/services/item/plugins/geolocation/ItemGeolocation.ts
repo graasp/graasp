@@ -34,8 +34,8 @@ export class ItemGeolocation extends BaseEntity {
   lng: number;
 
   // easier for display in frontend
-  @Column()
-  country: string;
+  @Column({ type: 'character varying', nullable: true, length: 4 })
+  country: string | null;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

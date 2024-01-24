@@ -6,7 +6,7 @@ const geolocation = {
     id: { $ref: 'http://graasp.org/#/definitions/uuid' },
     lat: { type: 'number' },
     lng: { type: 'number' },
-    country: { type: 'string' },
+    country: { type: ['string', 'null'] },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
     item: {
@@ -16,7 +16,7 @@ const geolocation = {
   required: ['lat', 'lng'],
 };
 
-export const getForItem = {
+export const getByItem = {
   params: idParam,
   response: {
     200: geolocation,
@@ -32,6 +32,7 @@ export const getItemsInBox = {
       lng1: { type: 'number' },
       lng2: { type: 'number' },
     },
+    required: ['lat1', 'lat2', 'lng1', 'lng2'],
   },
   response: {
     200: {
@@ -43,20 +44,6 @@ export const getItemsInBox = {
 
 export const putGeolocation = {
   params: idParam,
-  body: {
-    type: 'object',
-    properties: {
-      lat: { type: 'number' },
-      lng: { type: 'number' },
-    },
-    required: ['lat', 'lng'],
-  },
-};
-
-export const postItemWithGeolocation = {
-  query: {
-    id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-  },
   body: {
     type: 'object',
     properties: {

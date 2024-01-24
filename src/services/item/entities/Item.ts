@@ -113,7 +113,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   // @ManyToMany(() => ItemCategory, (iC) => iC.item)
   // categories: ItemCategory[];
 
-  @OneToOne(() => ItemGeolocation, (geoloc) => geoloc.item, {
+  @OneToOne(() => ItemGeolocation, (geoloc: ItemGeolocation) => geoloc.item, {
     onDelete: 'SET NULL',
   })
   geolocation: ItemGeolocation;

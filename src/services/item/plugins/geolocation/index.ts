@@ -1,14 +1,11 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
-import {
-  deleteGeolocation,
-  getForItem,
-  getItemsInBox,
-  postItemWithGeolocation,
-  putGeolocation,
-} from './schemas';
+import { ItemGeolocation } from './ItemGeolocation';
+import { deleteGeolocation, getByItem, getItemsInBox, putGeolocation } from './schemas';
 import { ItemGeolocationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -23,15 +20,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get<{ Params: { id: Item['id'] } }>(
       '/:id/geolocation',
       {
-        schema: getForItem,
+        schema: getByItem,
         preHandler: fastify.attemptVerifyAuthentication,
       },
       async ({ member, params }) => {
-        return itemGeolocationService.getForItem(member, buildRepositories(), params.id);
+        return itemGeolocationService.getByItem(member, buildRepositories(), params.id);
       },
     );
 
-    fastify.get<{ Querystring: { lat1: number; lat2: number; lng1: number; lng2: number } }>(
+    fastify.get<{
+      Querystring: {
+        lat1: ItemGeolocation['lat'];
+        lat2: ItemGeolocation['lat'];
+        lng1: ItemGeolocation['lng'];
+        lng2: ItemGeolocation['lng'];
+      };
+    }>(
       '/geolocation',
       {
         schema: getItemsInBox,
@@ -42,40 +46,25 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       },
     );
 
-    fastify.put<{ Body: { lat: number; lng: number }; Params: { id: Item['id'] } }>(
+    fastify.put<{
+      Body: Pick<ItemGeolocation, 'lat' | 'lng'>;
+      Params: { id: Item['id'] };
+    }>(
       '/:id/geolocation',
       {
         schema: putGeolocation,
         preHandler: fastify.verifyAuthentication,
       },
-      async ({ member, body, params }) => {
-        return db.transaction((manager) => {
-          return itemGeolocationService.put(
+      async ({ member, body, params }, reply) => {
+        return db.transaction(async (manager) => {
+          await itemGeolocationService.put(
             member,
             buildRepositories(manager),
             params.id,
             body.lat,
             body.lng,
           );
-        });
-      },
-    );
-
-    // add item from map
-    fastify.post<{ Body: { lat: number; lng: number }; Querystring: { id?: Item['id'] } }>(
-      '/map',
-      {
-        schema: postItemWithGeolocation,
-        preHandler: fastify.verifyAuthentication,
-      },
-      async ({ member, body, query }) => {
-        return db.transaction((manager) => {
-          return itemGeolocationService.postItemWithGeolocation(
-            member,
-            buildRepositories(manager),
-            body,
-            query.id,
-          );
+          reply.status(StatusCodes.NO_CONTENT);
         });
       },
     );
@@ -86,9 +75,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         schema: deleteGeolocation,
         preHandler: fastify.verifyAuthentication,
       },
-      async ({ member, params }) => {
-        return db.transaction((manager) => {
-          return itemGeolocationService.delete(member, buildRepositories(manager), params.id);
+      async ({ member, params }, reply) => {
+        return db.transaction(async (manager) => {
+          await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
+          reply.status(StatusCodes.NO_CONTENT);
         });
       },
     );

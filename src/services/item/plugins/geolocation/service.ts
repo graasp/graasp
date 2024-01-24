@@ -5,6 +5,7 @@ import { validatePermissionMany } from '../../../authorization';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
+import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationNotFound } from './errors';
 
 export class ItemGeolocationService {
@@ -14,12 +15,22 @@ export class ItemGeolocationService {
     this.itemService = itemService;
   }
 
-  async getForItem(actor: Actor, repositories: Repositories, itemId: Item['id']) {
+  async delete(actor: Actor, repositories: Repositories, itemId: Item['id']) {
     const { itemGeolocationRepository } = repositories;
 
+    // check item exists and actor has permission
+    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
+
+    return itemGeolocationRepository.delete(item);
+  }
+
+  async getByItem(actor: Actor, repositories: Repositories, itemId: Item['id']) {
+    const { itemGeolocationRepository } = repositories;
+
+    // check item exists and actor has permission
     const item = await this.itemService.get(actor, repositories, itemId);
 
-    const geoloc = await itemGeolocationRepository.getForItem(item);
+    const geoloc = await itemGeolocationRepository.getByItem(item);
 
     if (!geoloc) {
       throw new ItemGeolocationNotFound({ itemId: item.id });
@@ -31,11 +42,20 @@ export class ItemGeolocationService {
   async getIn(
     actor: Actor,
     repositories: Repositories,
-    { lat1, lat2, lng1, lng2 }: { lat1: number; lat2: number; lng1: number; lng2: number },
+    {
+      lat1,
+      lat2,
+      lng1,
+      lng2,
+    }: {
+      lat1: ItemGeolocation['lat'];
+      lat2: ItemGeolocation['lat'];
+      lng1: ItemGeolocation['lng'];
+      lng2: ItemGeolocation['lng'];
+    },
   ) {
     const { itemGeolocationRepository } = repositories;
     const geoloc = await itemGeolocationRepository.getItemsIn(lat1, lat2, lng1, lng2);
-
     const validatedItems = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
@@ -44,51 +64,21 @@ export class ItemGeolocationService {
     );
 
     // TODO optimize?
-    return geoloc.filter((g) => validatedItems.data[g.item.id]);
-  }
-
-  async postItemWithGeolocation(
-    actor: Actor,
-    repositories: Repositories,
-    itemWithGeolocation: Partial<Item> & {
-      lat: number;
-      lng: number;
-    },
-    parentId?: Item['id'],
-  ) {
-    // save item and check permissions
-    const item = await this.itemService.post(actor, repositories, {
-      item: itemWithGeolocation,
-      parentId,
-    });
-
-    // add geolocation
-    await repositories.itemGeolocationRepository.put(
-      item.path,
-      itemWithGeolocation.lat,
-      itemWithGeolocation.lng,
-    );
+    return geoloc.filter((g) => g.item.id in validatedItems.data);
   }
 
   async put(
     actor: Actor,
     repositories: Repositories,
     itemId: Item['id'],
-    lat: number,
-    lng: number,
+    lat: ItemGeolocation['lat'],
+    lng: ItemGeolocation['lng'],
   ) {
     const { itemGeolocationRepository } = repositories;
 
+    // check item exists and actor has permission
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
 
     return itemGeolocationRepository.put(item.path, lat, lng);
-  }
-
-  async delete(actor: Actor, repositories: Repositories, itemId: Item['id']) {
-    const { itemGeolocationRepository } = repositories;
-
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
-
-    return itemGeolocationRepository.delete(item);
   }
 }
