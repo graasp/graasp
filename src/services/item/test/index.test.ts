@@ -19,6 +19,7 @@ import build, { clearDatabase } from '../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
 import {
   HierarchyTooDeep,
+  ItemNotFolder,
   ItemNotFound,
   MemberCannotAccess,
   MemberCannotWriteItem,
@@ -344,6 +345,22 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
         expect(response.json()).toEqual(new HierarchyTooDeep());
+      });
+
+      it('Cannot create inside non-folder item', async () => {
+        const { item: parent } = await saveItemAndMembership({
+          member: actor,
+          item: getDummyItem({ type: ItemType.DOCUMENT }),
+        });
+        const payload = getDummyItem();
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items?parentId=${parent.id}`,
+          payload,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(response.json()).toMatchObject(new ItemNotFolder(parent.id));
       });
     });
   });
@@ -2282,6 +2299,28 @@ describe('Item routes tests', () => {
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
+      it('Fail to move items in non-folder parent', async () => {
+        const { item: parentItem } = await saveItemAndMembership({
+          item: getDummyItem({ type: ItemType.FOLDER }),
+          member: actor,
+        });
+        const { item } = await saveItemAndMembership({ member: actor });
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/move?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // item should have a different path
+        await waitForExpect(async () => {
+          const all = await ItemRepository.find();
+          expect(all).toHaveLength(2);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
       it('Move lots of items', async () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: MAX_TARGETS_FOR_MODIFY_REQUEST, actor });
@@ -2571,6 +2610,34 @@ describe('Item routes tests', () => {
           // contains twice the items (and the target item)
           const newCount = await ItemRepository.count();
           expect(newCount).toEqual(initialCount);
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+
+      it('Fail to copy if parent item is not a folder', async () => {
+        const { item } = await saveItemAndMembership({
+          member: actor,
+          item: getDummyItem({ type: ItemType.DOCUMENT }),
+        });
+        const { item: parentItem } = await saveItemAndMembership({
+          member: actor,
+          item: getDummyItem({ type: ItemType.DOCUMENT }),
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          // contains twice the items (and the target item)
+          const newCount = await ItemRepository.count();
+          expect(newCount).toEqual(2);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Copy lots of items', async () => {
