@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.15.0](https://github.com/graasp/graasp/compare/v1.14.1...v1.15.0) (2024-01-25)
+
+
+### Features
+
+* filter accessible items by permission ([#762](https://github.com/graasp/graasp/issues/762)) ([c453ba5](https://github.com/graasp/graasp/commit/c453ba5c0a9f05a665f3e0bbe3847e722af6888d))
+* include app data, setting and actions in analytics ([#752](https://github.com/graasp/graasp/issues/752)) ([b4ac8c7](https://github.com/graasp/graasp/commit/b4ac8c76278d2209e35d21a55a0a80f90000f88f))
+
+
+### Bug Fixes
+
+* add mail translations and fix mention translations in mail ([#779](https://github.com/graasp/graasp/issues/779)) ([0664f7d](https://github.com/graasp/graasp/commit/0664f7db8df3e4b1d2c5010a5d13246bacd90902))
+* **deps:** update dependency @fastify/cors to v8.5.0 ([#473](https://github.com/graasp/graasp/issues/473)) ([ed468e8](https://github.com/graasp/graasp/commit/ed468e82f0d9ab62b493d1c67f125c82b652d8ec))
+* **deps:** update dependency @graasp/translations to v1.21.1 ([#710](https://github.com/graasp/graasp/issues/710)) ([391e047](https://github.com/graasp/graasp/commit/391e0479aabf92a64f2363fe1b86c6ffacb311f3))
+* **deps:** update dependency bcrypt to v5.1.1 ([af69cf1](https://github.com/graasp/graasp/commit/af69cf127fa28424275c7c38d8108fd11de4e64e))
+* **deps:** update dependency fastify-plugin to v4.5.1 ([52f7206](https://github.com/graasp/graasp/commit/52f7206841591e76506046075f1edead692b8f08))
+* **deps:** update dependency typeorm to v0.3.19 ([#774](https://github.com/graasp/graasp/issues/774)) ([30e184b](https://github.com/graasp/graasp/commit/30e184b95b506f46f11c65885c6afed8f91cfa53))
+* flacky recycle feedback test ([#784](https://github.com/graasp/graasp/issues/784)) ([8fa68bf](https://github.com/graasp/graasp/commit/8fa68bf6d5fda574ef50ff283c185923ba8a4594))
+* handle better S3 NotFound errors and return them as such ([#649](https://github.com/graasp/graasp/issues/649)) ([63b5b95](https://github.com/graasp/graasp/commit/63b5b95fe1800081996bd8a81f95174337266d49))
+* normalise invitation email ([#771](https://github.com/graasp/graasp/issues/771)) ([f29e350](https://github.com/graasp/graasp/commit/f29e350fbb1153650adf44cf9165df4d75c3ed6e))
+* return creator for item in favorite ([#782](https://github.com/graasp/graasp/issues/782)) ([097314b](https://github.com/graasp/graasp/commit/097314b9e887ccef3bf4e40e7a8a43a7f94ed300))
+* **test:** add test to check s3 not found error ([63b5b95](https://github.com/graasp/graasp/commit/63b5b95fe1800081996bd8a81f95174337266d49))
+* use WEBP format for thumbnails and update sizes ([#776](https://github.com/graasp/graasp/issues/776)) ([de94be9](https://github.com/graasp/graasp/commit/de94be9f96e35daddf9e6cff697c57f09f675cf4))
+
 ## [1.14.1](https://github.com/graasp/graasp/compare/v1.14.0...v1.14.1) (2024-01-18)
 
 
