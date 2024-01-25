@@ -28,6 +28,7 @@ import { filterOutItems, validatePermission, validatePermissionMany } from '../a
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, isItemType } from './entities/Item';
+import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemSearchParams } from './types';
 
 export class ItemService {
@@ -57,7 +58,11 @@ export class ItemService {
   async post(
     actor: Actor,
     repositories: Repositories,
-    args: { item: Partial<Item>; parentId?: string; geolocation?: { lat: number; lng: number } },
+    args: {
+      item: Partial<Item>;
+      parentId?: string;
+      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
+    },
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     if (!actor) {

@@ -5,8 +5,10 @@ A geolocation attached to a hierarchy of items. It is composed of:
 - `id`
 - `lat`: latitude
 - `lng`: longitude
-- `country`: derived from `lat` and `lng`
+- `country`: derived from `lat` and `lng`, could be `null`
 - `item_path`: attached item, that can be inherited (a folder gives its geolocation to its children).
+
+`lat` and `lng` are always defined. However they could not match a specific `country` (ie. ocean).
 
 ## Endpoints
 

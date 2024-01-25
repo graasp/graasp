@@ -33,7 +33,7 @@ const expectItemGeolocations = (results, expected) => {
   }
 };
 
-describe('Favorite', () => {
+describe('Item Geolocation', () => {
   let app;
   let actor;
   let item;
@@ -122,10 +122,10 @@ describe('Favorite', () => {
         expect(res.json()).toMatchObject(new ItemGeolocationNotFound(expect.anything()));
       });
 
-      it('Throws if id is incorrect', async () => {
+      it('Throws if id is not a uuid', async () => {
         const res = await app.inject({
           method: HttpMethod.GET,
-          url: `${ITEMS_ROUTE_PREFIX}/uuid/geolocation`,
+          url: `${ITEMS_ROUTE_PREFIX}/not-valid/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });

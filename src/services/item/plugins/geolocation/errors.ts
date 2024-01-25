@@ -5,7 +5,7 @@ import { ErrorFactory } from '@graasp/sdk';
 const PLUGIN_NAME = 'graasp-plugin-item-geolocation';
 
 /**
- * Errors thrown by the chat tasks
+ * Errors thrown by item geolocation
  */
 
 export const GraaspItemGeolocationError = ErrorFactory(PLUGIN_NAME);

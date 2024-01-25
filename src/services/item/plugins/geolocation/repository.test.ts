@@ -106,14 +106,14 @@ describe('ItemGeolocationRepository', () => {
       await rawRepository.save(geoloc);
 
       // noise
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'fr' };
       await rawRepository.save(geolocParent);
 
       const res = await repository.getByItem(item);
       expect(res).toMatchObject({
         lat: geoloc.lat,
         lng: geoloc.lng,
-        country: geolocParent.country,
+        country: geoloc.country,
       });
     });
 
@@ -136,7 +136,7 @@ describe('ItemGeolocationRepository', () => {
 
       // noise
       const { item: item1 } = await saveItemAndMembership({ member: actor });
-      const geolocParent = { lat: 1, lng: 2, item: item1, country: 'de' };
+      const geolocParent = { lat: 1, lng: 2, item: item1, country: 'fr' };
       await rawRepository.save(geolocParent);
 
       const res = await repository.getByItem(item);

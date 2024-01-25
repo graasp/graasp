@@ -33,7 +33,6 @@ export class ItemGeolocation extends BaseEntity {
   @Column({ type: 'float' })
   lng: number;
 
-  // easier for display in frontend
   @Column({ type: 'character varying', nullable: true, length: 4 })
   country: string | null;
 
