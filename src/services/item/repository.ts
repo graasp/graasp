@@ -368,7 +368,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     creator: Member,
     parentItem?: Item,
   ): Promise<{ copyRoot: Item; treeCopyMap: Map<string, { original: Item; copy: Item }> }> {
-    // cannot move inside non folder item
+    // cannot copy inside non folder item
     if (parentItem && !isItemType(parentItem, ItemType.FOLDER)) {
       throw new ItemNotFolder(parentItem.id);
     }
