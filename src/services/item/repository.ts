@@ -76,6 +76,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       settings = DEFAULT_ITEM_SETTINGS,
       creator,
     } = args;
+
+    if (parent && !isItemType(parent, ItemType.FOLDER)) {
+      throw new ItemNotFolder(parent);
+    }
+
     // TODO: extra
     // folder's extra can be empty
     let parsedExtra: ItemExtraUnion = extra ? JSON.parse(JSON.stringify(extra)) : {};
@@ -276,6 +281,12 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     if (parentItem) {
       // attaching tree to new parent item
       const { id: parentItemId, path: parentItemPath } = parentItem;
+
+      // cannot move inside non folder item
+      if (!isItemType(parentItem, ItemType.FOLDER)) {
+        throw new ItemNotFolder(parentItemId);
+      }
+
       // fail if
       if (
         parentItemPath.startsWith(item.path) || // moving into itself or "below" itself
@@ -357,6 +368,11 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     creator: Member,
     parentItem?: Item,
   ): Promise<{ copyRoot: Item; treeCopyMap: Map<string, { original: Item; copy: Item }> }> {
+    // cannot copy inside non folder item
+    if (parentItem && !isItemType(parentItem, ItemType.FOLDER)) {
+      throw new ItemNotFolder(parentItem.id);
+    }
+
     const descendants = await this.getDescendants(item, { ordered: true });
 
     // copy (memberships from origin are not copied/kept)

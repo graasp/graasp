@@ -16,6 +16,7 @@ import {
 import { Paginated, PaginationParams } from '../../types';
 import {
   InvalidMembership,
+  ItemNotFolder,
   MemberCannotWriteItem,
   TooManyChildren,
   TooManyDescendants,
@@ -79,8 +80,9 @@ export class ItemService {
       parentItem = await this.get(actor, repositories, parentId, PermissionLevel.Write);
       inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
 
+      // quick check, necessary for ts
       if (!isItemType(parentItem, ItemType.FOLDER)) {
-        throw new Error('ITEM NOT FOLDER'); // TODO
+        throw new ItemNotFolder(parentItem.id);
       }
 
       itemRepository.checkHierarchyDepth(parentItem);
