@@ -1,6 +1,5 @@
 # Production Docker backend image definition
 # Used in CI for creating images to push on registry
-ARG RELEASE_TAG="latest"
 
 # Update the VARIANT arg in docker-compose.yml to pick a Node version: 10, 12, 14
 ARG VARIANT=18
@@ -15,6 +14,9 @@ RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
   && chown -R $USER_UID:$USER_GID /home/node \
   && chown -R $USER_UID:root /usr/local/share/nvm /usr/local/share/npm-global; \
   fi
+
+# variable passed as a build arg. Represents the tag or git sha used for the build
+ARG APP_VERSION
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -43,5 +45,5 @@ RUN yarn install
 RUN yarn build-ts
 
 # set APP_VERSION as ENV variable from ARG passed at build step
-ENV APP_VERSION = $RELEASE_TAG
+ENV APP_VERSION=${APP_VERSION:-latest}
 CMD NODE_PATH=./dist node dist/server.js

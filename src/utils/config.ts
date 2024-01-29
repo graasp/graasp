@@ -24,26 +24,22 @@ enum Environment {
   test = 'test',
 }
 
-export let ENVIRONMENT: Environment;
-
-switch (process.env.NODE_ENV) {
-  case Environment.production:
-    dotenv.config({ path: '.env.production', override: true });
-    ENVIRONMENT = Environment.production;
-    break;
-  case Environment.staging:
-    dotenv.config({ path: '.env.staging', override: true });
-    ENVIRONMENT = Environment.staging;
-    break;
-  case Environment.test:
-    dotenv.config({ path: '.env.test', override: true });
-    ENVIRONMENT = Environment.test;
-    break;
-  default:
-    dotenv.config({ path: '.env.development', override: true });
-    ENVIRONMENT = Environment.development;
-    break;
-}
+export const ENVIRONMENT: Environment = (() => {
+  switch (process.env.NODE_ENV) {
+    case Environment.production:
+      dotenv.config({ path: '.env.production', override: true });
+      return Environment.production;
+    case Environment.staging:
+      dotenv.config({ path: '.env.staging', override: true });
+      return Environment.staging;
+    case Environment.test:
+      dotenv.config({ path: '.env.test', override: true });
+      return Environment.test;
+    default:
+      dotenv.config({ path: '.env.development', override: true });
+      return Environment.development;
+  }
+})();
 
 export const PROD = ENVIRONMENT === Environment.production;
 export const STAGING = ENVIRONMENT === Environment.staging;
@@ -226,25 +222,30 @@ export const S3_FILE_ITEM_ACCESS_KEY_ID = process.env.S3_FILE_ITEM_ACCESS_KEY_ID
 export const S3_FILE_ITEM_SECRET_ACCESS_KEY = process.env.S3_FILE_ITEM_SECRET_ACCESS_KEY;
 export const S3_FILE_ITEM_HOST = process.env.S3_FILE_ITEM_HOST;
 
-export let S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration;
-
-if (S3_FILE_ITEM_PLUGIN) {
-  if (
-    !S3_FILE_ITEM_REGION ||
-    !S3_FILE_ITEM_BUCKET ||
-    !S3_FILE_ITEM_ACCESS_KEY_ID ||
-    !S3_FILE_ITEM_SECRET_ACCESS_KEY
-  ) {
-    throw new Error('Missing one s3 config');
+const getS3FilePluginConfig = () => {
+  if (!S3_FILE_ITEM_REGION) {
+    throw new Error('Missing s3 "region" config for file plugin');
   }
-
-  S3_FILE_ITEM_PLUGIN_OPTIONS = {
+  if (!S3_FILE_ITEM_BUCKET) {
+    throw new Error('Missing s3 "bucket" config for file plugin');
+  }
+  if (!S3_FILE_ITEM_ACCESS_KEY_ID) {
+    throw new Error('Missing s3 "access key" config for file plugin');
+  }
+  if (!S3_FILE_ITEM_SECRET_ACCESS_KEY) {
+    throw new Error('Missing s3 "secret access key" config for file plugin');
+  }
+  return {
     s3Region: S3_FILE_ITEM_REGION,
     s3Bucket: S3_FILE_ITEM_BUCKET,
     s3AccessKeyId: S3_FILE_ITEM_ACCESS_KEY_ID,
     s3SecretAccessKey: S3_FILE_ITEM_SECRET_ACCESS_KEY,
   };
-}
+};
+// the varaible is undefined when `S3_FILE_ITEM_PLUGIN` is false
+export const S3_FILE_ITEM_PLUGIN_OPTIONS: S3FileConfiguration | undefined = S3_FILE_ITEM_PLUGIN
+  ? getS3FilePluginConfig()
+  : undefined;
 
 if (!process.env.H5P_PATH_PREFIX) {
   throw new Error('Invalid H5P path prefix');
