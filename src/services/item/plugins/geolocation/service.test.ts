@@ -264,7 +264,7 @@ describe('ItemGeolocationService', () => {
         member: actor,
       });
 
-      await service.put(actor, buildRepositories(), item.id, 1, 2);
+      await service.put(actor, buildRepositories(), item.id, { lat: 1, lng: 2 });
       const all = await ItemGeolocation.find();
       expect(all).toHaveLength(1);
       expect(all[0]).toMatchObject({ lat: 1, lng: 2 });
@@ -278,7 +278,7 @@ describe('ItemGeolocationService', () => {
         permission: PermissionLevel.Write,
       });
 
-      await service.put(actor, buildRepositories(), item.id, 1, 2);
+      await service.put(actor, buildRepositories(), item.id, { lat: 1, lng: 2 });
       const all = await ItemGeolocation.find();
       expect(all).toHaveLength(1);
       expect(all[0]).toMatchObject({ lat: 1, lng: 2 });
@@ -292,14 +292,14 @@ describe('ItemGeolocationService', () => {
         permission: PermissionLevel.Read,
       });
 
-      await service.put(actor, buildRepositories(), item.id, 1, 2).catch((e) => {
+      await service.put(actor, buildRepositories(), item.id, { lat: 1, lng: 2 }).catch((e) => {
         expect(e).toMatchObject(new MemberCannotWriteItem(expect.anything()));
       });
     });
 
     it('throws if item not found', async () => {
       await service
-        .put(actor, buildRepositories(), v4(), 1, 2)
+        .put(actor, buildRepositories(), v4(), { lat: 1, lng: 2 })
         .then(() => {
           throw new Error('This should have throw');
         })

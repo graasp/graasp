@@ -212,8 +212,10 @@ describe('Item Geolocation', () => {
           method: HttpMethod.PUT,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
-            lat: 1,
-            lng: 2,
+            geolocation: {
+              lat: 1,
+              lng: 2,
+            },
           },
         });
         expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -231,13 +233,22 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
+      it('throw for no geolocation', async () => {
+        const res = await app.inject({
+          method: HttpMethod.PUT,
+          url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
+          body: {},
+        });
+      });
       it('throw for invalid lat or lng', async () => {
         const res = await app.inject({
           method: HttpMethod.PUT,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
-            lat: 1,
-            lng: 'lng',
+            geolocation: {
+              lat: 1,
+              lng: 'lng',
+            },
           },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -245,8 +256,10 @@ describe('Item Geolocation', () => {
           method: HttpMethod.PUT,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
-            lat: 'lat',
-            lng: 1,
+            geolocation: {
+              lat: 'lat',
+              lng: 1,
+            },
           },
         });
         expect(res1.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -256,7 +269,9 @@ describe('Item Geolocation', () => {
           method: HttpMethod.PUT,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
-            lat: 1,
+            geolocation: {
+              lat: 1,
+            },
           },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -264,7 +279,9 @@ describe('Item Geolocation', () => {
           method: HttpMethod.PUT,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
-            lng: 1,
+            geolocation: {
+              lng: 1,
+            },
           },
         });
         expect(res1.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -276,8 +293,10 @@ describe('Item Geolocation', () => {
           method: HttpMethod.PUT,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
           body: {
-            lat: 2,
-            lng: 1,
+            geolocation: {
+              lat: 2,
+              lng: 1,
+            },
           },
         });
         expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);

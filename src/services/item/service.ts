@@ -132,7 +132,7 @@ export class ItemService {
 
     // geolocation
     if (geolocation) {
-      await itemGeolocationRepository.put(createdItem.path, geolocation.lat, geolocation.lng);
+      await itemGeolocationRepository.put(createdItem.path, geolocation);
     }
 
     return createdItem;

@@ -53,7 +53,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
 
       // lat and lng should exist together
-      const { lat, lng } = data;
+      const { geolocation } = data;
+      const { lat, lng } = geolocation || {};
       if ((lat && !lng) || (lng && !lat)) {
         throw new PartialItemGeolocation({ lat, lng });
       }
@@ -63,7 +64,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const item = await itemService.post(member, repositories, {
           item: data,
           parentId,
-          ...(data.lng && data.lat ? { geolocation: { lng: data.lng, lat: data.lat } } : {}),
+          ...(geolocation ? { geolocation } : {}),
         });
         await actionItemService.postPostAction(request, reply, repositories, item);
         return item;

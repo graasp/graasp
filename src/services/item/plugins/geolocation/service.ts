@@ -71,14 +71,13 @@ export class ItemGeolocationService {
     actor: Actor,
     repositories: Repositories,
     itemId: Item['id'],
-    lat: ItemGeolocation['lat'],
-    lng: ItemGeolocation['lng'],
+    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'>,
   ) {
     const { itemGeolocationRepository } = repositories;
 
     // check item exists and actor has permission
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
 
-    return itemGeolocationRepository.put(item.path, lat, lng);
+    return itemGeolocationRepository.put(item.path, geolocation);
   }
 }

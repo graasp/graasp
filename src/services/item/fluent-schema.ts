@@ -63,9 +63,7 @@ export const baseItemCreate = S.object()
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
   .prop('settings', settings)
-  // geolocation
-  .prop('lat', S.number())
-  .prop('lng', S.number())
+  .prop('geolocation', S.object().prop('lat', S.number()).prop('lng', S.number()))
   .required(['name', 'type']);
 
 // type 'shortcut' (specific extra)

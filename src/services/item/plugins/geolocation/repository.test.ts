@@ -201,7 +201,7 @@ describe('ItemGeolocationRepository', () => {
 
       const lat = 40.785091;
       const lng = -73.968285;
-      await repository.put(item.path, lat, lng);
+      await repository.put(item.path, { lat, lng });
       const geoloc = await rawRepository.findOneBy({ lat, lng });
       expect(geoloc).toMatchObject({ lat, lng, country: 'AQ' });
     });
@@ -210,7 +210,7 @@ describe('ItemGeolocationRepository', () => {
 
       const lat = 1;
       const lng = 2;
-      await repository.put(item.path, lat, lng);
+      await repository.put(item.path, { lat, lng });
       const geoloc = await rawRepository.findOneBy({ lat, lng });
       expect(geoloc).toMatchObject({ lat, lng, country: null });
     });
@@ -221,7 +221,7 @@ describe('ItemGeolocationRepository', () => {
 
       const lat = 40.785091;
       const lng = -73.968285;
-      await repository.put(item.path, lat, lng);
+      await repository.put(item.path, { lat, lng });
       const geoloc = await rawRepository.findOneBy({ lat, lng });
       expect(geoloc).toMatchObject({ lat, lng, country: 'AQ' });
       const allGeoloc = await rawRepository.find();

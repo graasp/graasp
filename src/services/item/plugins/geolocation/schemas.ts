@@ -47,10 +47,16 @@ export const putGeolocation = {
   body: {
     type: 'object',
     properties: {
-      lat: { type: 'number' },
-      lng: { type: 'number' },
+      geolocation: {
+        type: 'object',
+        properties: {
+          lat: { type: 'number' },
+          lng: { type: 'number' },
+        },
+        required: ['lat', 'lng'],
+      },
     },
-    required: ['lat', 'lng'],
+    required: ['geolocation'],
   },
 };
 

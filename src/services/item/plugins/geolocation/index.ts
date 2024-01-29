@@ -47,7 +47,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     );
 
     fastify.put<{
-      Body: Pick<ItemGeolocation, 'lat' | 'lng'>;
+      Body: { geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> };
       Params: { id: Item['id'] };
     }>(
       '/:id/geolocation',
@@ -61,8 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             member,
             buildRepositories(manager),
             params.id,
-            body.lat,
-            body.lng,
+            body.geolocation,
           );
           reply.status(StatusCodes.NO_CONTENT);
         });

@@ -87,23 +87,22 @@ export class ItemGeolocationRepository {
    * Add or update geolocation given item path
    * deduce country based on lat and lng
    * @param itemPath
-   * @param lat
-   * @param lng
+   * @param geolocation lat and lng values
    */
   async put(
     itemPath: Item['path'],
-    lat: ItemGeolocation['lat'],
-    lng: ItemGeolocation['lng'],
+
+    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'>,
   ): Promise<void> {
     // if cannot find country, lat and lng are incorrect
-    const country = iso1A2Code([lat, lng]);
+    const country = iso1A2Code([geolocation.lat, geolocation.lng]);
 
     await this.repository.upsert(
       [
         {
           item: { path: itemPath },
-          lat,
-          lng,
+          lat: geolocation.lat,
+          lng: geolocation.lng,
           country,
         },
       ],
