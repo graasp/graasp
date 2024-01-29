@@ -17,6 +17,7 @@ import {
 
 import build, { clearDatabase } from '../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../test/constants';
+import { AppDataSource } from '../../../plugins/datasource';
 import {
   HierarchyTooDeep,
   ItemNotFolder,
@@ -33,6 +34,7 @@ import {
 import { Member } from '../../member/entities/member';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
+import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
 import { SortBy } from '../types';
@@ -212,6 +214,46 @@ describe('Item routes tests', () => {
         // one membership for sharing
         // admin for the new item
         expect(await ItemMembershipRepository.count()).toEqual(3);
+      });
+
+      it('Create successfully with geolocation', async () => {
+        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items`,
+          payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(1);
+      });
+
+      it('Throw if geolocation is partial', async () => {
+        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items`,
+          payload: { ...payload, geolocation: { lat: 1 } },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        // no item nor geolocation is created
+        expect(await ItemRepository.find()).toHaveLength(0);
+        expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
+
+        const response1 = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items`,
+          payload: { ...payload, geolocation: { lng: 1 } },
+        });
+
+        expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        // no item nor geolocation is created
+        expect(await ItemRepository.find()).toHaveLength(0);
+        expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
       });
 
       it('Bad request if name is invalid', async () => {
@@ -2667,6 +2709,28 @@ describe('Item routes tests', () => {
             const copy = results.find(({ id }) => id !== item.id);
             expect(copy?.path.startsWith(parentItem.path)).toBeTruthy();
           }
+        }, MULTIPLE_ITEMS_LOADING_TIME);
+      });
+
+      it('Copy attached geolocation', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const itemGeolocationRepository = AppDataSource.getRepository(ItemGeolocation);
+        const { item } = await saveItemAndMembership({ member: actor });
+        await itemGeolocationRepository.save({ item, lat: 1, lng: 22 });
+
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+
+        // wait a bit for tasks to complete
+        await waitForExpect(async () => {
+          const results = await itemGeolocationRepository.find();
+          expect(results).toHaveLength(2);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
     });

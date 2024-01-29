@@ -24,6 +24,7 @@ import {
   updateMany,
 } from './fluent-schema';
 import { Ordered } from './interfaces/requests';
+import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
@@ -34,7 +35,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // create item
   // question: add link hook here? or have another endpoint?
-  fastify.post<{ Querystring: ParentIdParam; Body: Partial<Item> }>(
+  fastify.post<{
+    Querystring: ParentIdParam;
+    Body: Partial<Item> & Pick<ItemGeolocation, 'lat' | 'lng'>;
+  }>(
     '/',
     {
       schema: items.extendCreateSchema(),
@@ -46,11 +50,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         query: { parentId },
         body: data,
       } = request;
+
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.post(member, repositories, {
           item: data,
           parentId,
+          geolocation: data.geolocation,
         });
         await actionItemService.postPostAction(request, reply, repositories, item);
         return item;

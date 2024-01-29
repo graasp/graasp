@@ -52,13 +52,13 @@ export const saveItem = async ({
 };
 
 export const savePublicItem = async ({
-  item,
+  item = getDummyItem(),
   parentItem,
   actor,
 }: {
   parentItem?: Item;
   actor: Member;
-  item: Partial<Item>;
+  item?: Partial<Item>;
 }) => {
   const newItem = await ItemRepository.post(item, actor, parentItem);
   await setItemPublic(newItem, actor);

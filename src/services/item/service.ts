@@ -28,6 +28,8 @@ import { filterOutItems, validatePermission, validatePermissionMany } from '../a
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, isItemType } from './entities/Item';
+import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
+import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemSearchParams } from './types';
 
 export class ItemService {
@@ -57,16 +59,26 @@ export class ItemService {
   async post(
     actor: Actor,
     repositories: Repositories,
-    args: { item: Partial<Item>; parentId?: string },
+    args: {
+      item: Partial<Item>;
+      parentId?: string;
+      geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
+    },
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
-    const { itemRepository, itemMembershipRepository } = repositories;
+    const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
-    const { item, parentId } = args;
+    const { item, parentId, geolocation } = args;
+
+    // lat and lng should exist together
+    const { lat, lng } = geolocation || {};
+    if ((lat && !lng) || (lng && !lat)) {
+      throw new PartialItemGeolocation({ lat, lng });
+    }
 
     log?.debug(`run prehook for ${item.name}`);
     await this.hooks.runPreHooks('create', actor, repositories, { item }, log);
@@ -124,6 +136,11 @@ export class ItemService {
 
     log?.debug(`run posthook for ${createdItem.id}`);
     await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem }, log);
+
+    // geolocation
+    if (geolocation) {
+      await itemGeolocationRepository.put(createdItem.path, geolocation);
+    }
 
     return createdItem;
   }
@@ -437,7 +454,7 @@ export class ItemService {
       throw new UnauthorizedMember(actor);
     }
 
-    const { itemRepository, itemMembershipRepository } = repositories;
+    const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
     const item = await this.get(actor, repositories, itemId);
 
@@ -485,6 +502,8 @@ export class ItemService {
     // post hook
     for (const { original, copy } of treeCopyMap.values()) {
       await this.hooks.runPostHooks('copy', actor, repositories, { original, copy });
+      // copy geolocation
+      await itemGeolocationRepository.copy(original, copy);
     }
 
     return copyRoot;

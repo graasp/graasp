@@ -34,6 +34,7 @@ import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
 import graaspEtherpadPlugin from './plugins/etherpad';
 import graaspFileItem from './plugins/file';
+import itemGeolocationPlugin from './plugins/geolocation/index';
 import graaspH5PPlugin from './plugins/html/h5p';
 import graaspZipPlugin from './plugins/importExport';
 import graaspCategoryPlugin from './plugins/itemCategory';
@@ -141,6 +142,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         fastify.register(fp(graaspChatbox));
 
         fastify.register(actionItemPlugin);
+
+        fastify.register(itemGeolocationPlugin);
 
         fastify.register(itemController);
       });
