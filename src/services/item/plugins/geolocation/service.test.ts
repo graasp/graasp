@@ -69,9 +69,14 @@ describe('ItemGeolocationService', () => {
       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geoloc);
 
-      expect(service.delete(actor, buildRepositories(), item.id)).rejects.toMatchObject(
-        new MemberCannotWriteItem(expect.anything()),
-      );
+      await service
+        .delete(actor, buildRepositories(), item.id)
+        .then(() => {
+          throw new Error('This should have throw');
+        })
+        .catch((e) => {
+          expect(e).toMatchObject(new MemberCannotWriteItem(expect.anything()));
+        });
 
       expect(await rawRepository.find()).toHaveLength(1);
     });
@@ -84,17 +89,22 @@ describe('ItemGeolocationService', () => {
       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geoloc);
 
-      expect(service.delete(actor, buildRepositories(), item.id)).rejects.toMatchObject(
-        new MemberCannotAccess(expect.anything()),
-      );
+      await service.delete(actor, buildRepositories(), item.id).catch((e) => {
+        expect(e).toMatchObject(new MemberCannotAccess(expect.anything()));
+      });
 
       expect(await rawRepository.find()).toHaveLength(1);
     });
 
     it('throws if item not found', async () => {
-      expect(service.delete(actor, buildRepositories(), v4())).rejects.toMatchObject(
-        new ItemNotFound(expect.anything()),
-      );
+      await service
+        .delete(actor, buildRepositories(), v4())
+        .then(() => {
+          throw new Error('This should have throw');
+        })
+        .catch((e) => {
+          expect(e).toMatchObject(new ItemNotFound(expect.anything()));
+        });
     });
   });
 
@@ -132,15 +142,25 @@ describe('ItemGeolocationService', () => {
         permission: PermissionLevel.Read,
       });
 
-      expect(service.getByItem(actor, buildRepositories(), item.id)).rejects.toMatchObject(
-        new ItemGeolocationNotFound({ itemId: item.id }),
-      );
+      await service
+        .getByItem(actor, buildRepositories(), item.id)
+        .then(() => {
+          throw new Error('This should have throw');
+        })
+        .catch((e) => {
+          expect(e).toMatchObject(new ItemGeolocationNotFound({ itemId: item.id }));
+        });
     });
 
     it('throws if item not found', async () => {
-      expect(service.getByItem(actor, buildRepositories(), v4())).rejects.toMatchObject(
-        new ItemNotFound(expect.anything()),
-      );
+      await service
+        .getByItem(actor, buildRepositories(), v4())
+        .then(() => {
+          throw new Error('This should have throw');
+        })
+        .catch((e) => {
+          expect(e).toMatchObject(new ItemNotFound(expect.anything()));
+        });
     });
   });
 
@@ -272,15 +292,20 @@ describe('ItemGeolocationService', () => {
         permission: PermissionLevel.Read,
       });
 
-      expect(service.put(actor, buildRepositories(), item.id, 1, 2)).rejects.toMatchObject(
-        new MemberCannotWriteItem(expect.anything()),
-      );
+      await service.put(actor, buildRepositories(), item.id, 1, 2).catch((e) => {
+        expect(e).toMatchObject(new MemberCannotWriteItem(expect.anything()));
+      });
     });
 
     it('throws if item not found', async () => {
-      expect(service.put(actor, buildRepositories(), v4(), 1, 2)).rejects.toMatchObject(
-        new ItemNotFound(expect.anything()),
-      );
+      await service
+        .put(actor, buildRepositories(), v4(), 1, 2)
+        .then(() => {
+          throw new Error('This should have throw');
+        })
+        .catch((e) => {
+          expect(e).toMatchObject(new ItemNotFound(expect.anything()));
+        });
     });
   });
 });
