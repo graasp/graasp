@@ -136,7 +136,8 @@ export const getAccessible = {
     .prop('sortBy', S.enum(Object.values(SortBy)))
     .prop('ordering', S.enum(Object.values(Ordering)))
     .prop('creatorId', S.string())
-    .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE)),
+    .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
+    .prop('itemType', S.enum(Object.values(ItemType))),
   response: {
     200: S.object()
       .additionalProperties(false)

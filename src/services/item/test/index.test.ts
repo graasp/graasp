@@ -1067,6 +1067,55 @@ describe('Item routes tests', () => {
         });
       });
 
+      it('Returns successfully folder items by write and admin', async () => {
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          permission: PermissionLevel.Read,
+          item: { type: ItemType.DOCUMENT },
+        });
+        const { item: itemFolder1 } = await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Admin,
+          item: { type: ItemType.FOLDER },
+        });
+        const { item: itemFolder2 } = await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Write,
+          item: { type: ItemType.FOLDER },
+        });
+        const { item: notAFolder } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          permission: PermissionLevel.Write,
+          item: { type: ItemType.APP },
+        });
+
+        const folders = [itemFolder1, itemFolder2];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible`,
+          query: {
+            sorty: SortBy.ItemCreatorName,
+            ordering: 'asc',
+            permissions: [PermissionLevel.Write, PermissionLevel.Admin],
+            itemType: ItemType.FOLDER,
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(folders.length);
+        expect(data).toHaveLength(folders.length);
+        folders.forEach((folder, idx) => {
+          expectItem(data[idx], folder);
+          expect(() => expectItem(data[idx], notAFolder)).toThrow(Error);
+        });
+      });
+
       it('Throws for wrong sort by', async () => {
         await saveItemAndMembership({
           member: actor,
@@ -1106,6 +1155,28 @@ describe('Item routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `/items/accessible?sortBy=${SortBy.ItemName}&ordering=nimp`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Throws for wrong item type', async () => {
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible?sortBy=${SortBy.ItemName}&itemType=nimp`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);

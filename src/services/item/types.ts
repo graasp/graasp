@@ -1,4 +1,4 @@
-import { PermissionLevel } from '@graasp/sdk';
+import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { Member } from '../member/entities/member';
 
@@ -23,4 +23,5 @@ export type ItemSearchParams = {
   sortBy?: SortBy;
   ordering?: Ordering;
   permissions?: PermissionLevel[];
+  itemType?: (typeof ItemType)[keyof typeof ItemType];
 };
