@@ -8,7 +8,7 @@ import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
-import { DownloadFileUnexpectedError, UploadFileUnexpectedError } from '../../../file/utils/errors';
+import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { download, upload } from './schemas';
 import { ItemThumbnailService } from './service';
@@ -56,6 +56,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       const {
         member,
         params: { id: itemId },
+        log,
       } = request;
 
       if (!member) {
@@ -79,7 +80,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
           reply.status(StatusCodes.NO_CONTENT);
         })
         .catch((e) => {
-          console.error(e);
+          log.error(e);
 
           if (e.code) {
             throw e;
@@ -99,15 +100,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { size, id: itemId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService
-        .getUrl(member, buildRepositories(), { itemId, size })
-        .catch((e) => {
-          if (e.code) {
-            console.error(e);
-            throw e;
-          }
-          throw new DownloadFileUnexpectedError(e);
-        });
+      const url = await thumbnailService.getUrl(member, buildRepositories(), { itemId, size });
 
       fileService.setHeaders({ reply, replyUrl, url, id: itemId });
     },
