@@ -4,6 +4,8 @@ import { Transaction } from '@sentry/types';
 
 import { FastifyInstance } from 'fastify';
 
+import { APP_VERSION } from './utils/config';
+
 // todo: use graasp-sdk?
 declare module 'fastify' {
   interface FastifyRequest {
@@ -49,6 +51,7 @@ export function initSentry(instance: FastifyInstance): {
   Sentry.init({
     dsn: SentryConfig.dsn,
     environment: process.env.SENTRY_ENV ?? process.env.NODE_ENV,
+    release: APP_VERSION,
     integrations: [
       // TODO: re-enable when @sentry/profiling-node is more stable
       // (currently does not report profiles and also causes compilation issues)

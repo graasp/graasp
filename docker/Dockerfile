@@ -1,5 +1,6 @@
 # Production Docker backend image definition
 # Used in CI for creating images to push on registry
+ARG RELEASE_TAG="latest"
 
 # Update the VARIANT arg in docker-compose.yml to pick a Node version: 10, 12, 14
 ARG VARIANT=18
@@ -41,4 +42,6 @@ RUN yarn install
 
 RUN yarn build-ts
 
+# set APP_VERSION as ENV variable from ARG passed at build step
+ENV APP_VERSION = $RELEASE_TAG
 CMD NODE_PATH=./dist node dist/server.js

@@ -4,7 +4,7 @@ import fastify from 'fastify';
 import registerAppPlugins from './app';
 import { initSentry } from './sentry';
 // import fastifyCompress from 'fastify-compress';
-import { CORS_ORIGIN_REGEX, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
+import { APP_VERSION, CORS_ORIGIN_REGEX, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
 
 const start = async () => {
   const instance = fastify({
@@ -47,7 +47,7 @@ const start = async () => {
 
   try {
     await instance.listen({ port: PORT, host: HOSTNAME });
-    instance.log.info('App is running %s mode', ENVIRONMENT);
+    instance.log.info('App is running version %s in %s mode', APP_VERSION, ENVIRONMENT);
   } catch (err) {
     instance.log.error(err);
     Sentry?.withScope((_scope) => {

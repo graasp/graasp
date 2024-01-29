@@ -54,8 +54,9 @@ jobs:
         id: build-image
         env:
           TARGET_IMAGE_URL: ${{ steps.image-url.outputs.image_url }}
+          RELEASE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $TARGET_IMAGE_URL -f docker/Dockerfile .
+          docker build -t $TARGET_IMAGE_URL -f docker/Dockerfile --build-arg "RELEASE_TAG=${ RELEASE_TAG }" .
           docker push $TARGET_IMAGE_URL
 
   # Deploy to dev environment

@@ -50,6 +50,8 @@ export const STAGING = ENVIRONMENT === Environment.staging;
 export const DEV = ENVIRONMENT === Environment.development;
 export const TEST = ENVIRONMENT === Environment.test;
 
+export const APP_VERSION = process.env.APP_VERSION;
+
 const DEFAULT_HOST = 'http://localhost:3000';
 
 export const BUILDER_HOST = {
