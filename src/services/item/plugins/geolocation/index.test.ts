@@ -18,7 +18,7 @@ jest.mock('../../../../plugins/datasource');
 
 const repository = AppDataSource.getRepository(ItemGeolocation);
 
-const expectItemGeolocations = (results, expected) => {
+const expectItemGeolocations = (results: ItemGeolocation[], expected: ItemGeolocation[]) => {
   for (const ig of expected) {
     expect(results).toContainEqual(
       expect.objectContaining({
@@ -26,7 +26,7 @@ const expectItemGeolocations = (results, expected) => {
         lng: ig.lng,
         item: expect.objectContaining({
           id: ig.item.id,
-          creator: expect.objectContaining({ id: ig.item.creator.id }),
+          creator: expect.objectContaining({ id: ig.item.creator!.id }),
         }),
       }),
     );

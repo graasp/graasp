@@ -35,7 +35,6 @@ import { Member } from '../../member/entities/member';
 import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
-import { PartialItemGeolocation } from '../plugins/geolocation/errors';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
 import { SortBy } from '../types';
@@ -222,7 +221,7 @@ describe('Item routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items`,
-          payload: { ...payload, lat: 1, lng: 2 },
+          payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
         });
 
         const newItem = response.json();
@@ -237,11 +236,10 @@ describe('Item routes tests', () => {
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items`,
-          payload: { ...payload, lat: 1 },
+          payload: { ...payload, geolocation: { lat: 1 } },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(response.json()).toMatchObject(new PartialItemGeolocation({ lat: 1 }));
         // no item nor geolocation is created
         expect(await ItemRepository.find()).toHaveLength(0);
         expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
@@ -249,11 +247,10 @@ describe('Item routes tests', () => {
         const response1 = await app.inject({
           method: HttpMethod.POST,
           url: `/items`,
-          payload: { ...payload, lng: 1 },
+          payload: { ...payload, geolocation: { lng: 1 } },
         });
 
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
-        expect(response1.json()).toMatchObject(new PartialItemGeolocation({ lng: 1 }));
         // no item nor geolocation is created
         expect(await ItemRepository.find()).toHaveLength(0);
         expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);

@@ -29,6 +29,7 @@ import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
+import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemSearchParams } from './types';
 
 export class ItemService {
@@ -72,6 +73,12 @@ export class ItemService {
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
     const { item, parentId, geolocation } = args;
+
+    // lat and lng should exist together
+    const { lat, lng } = geolocation || {};
+    if ((lat && !lng) || (lng && !lat)) {
+      throw new PartialItemGeolocation({ lat, lng });
+    }
 
     log?.debug(`run prehook for ${item.name}`);
     await this.hooks.runPreHooks('create', actor, repositories, { item }, log);

@@ -25,7 +25,6 @@ import {
 } from './fluent-schema';
 import { Ordered } from './interfaces/requests';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
@@ -52,19 +51,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: data,
       } = request;
 
-      // lat and lng should exist together
-      const { geolocation } = data;
-      const { lat, lng } = geolocation || {};
-      if ((lat && !lng) || (lng && !lat)) {
-        throw new PartialItemGeolocation({ lat, lng });
-      }
-
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.post(member, repositories, {
           item: data,
           parentId,
-          ...(geolocation ? { geolocation } : {}),
+          geolocation: data.geolocation,
         });
         await actionItemService.postPostAction(request, reply, repositories, item);
         return item;
