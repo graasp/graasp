@@ -56,7 +56,7 @@ jobs:
           TARGET_IMAGE_URL: ${{ steps.image-url.outputs.image_url }}
           RELEASE_TAG: ${{ github.event.client_payload.tag }}
         run: |
-          docker build -t $TARGET_IMAGE_URL -f docker/Dockerfile --build-arg "RELEASE_TAG=${ RELEASE_TAG }" .
+          docker build -t $TARGET_IMAGE_URL -f docker/Dockerfile --build-arg "RELEASE_TAG=${RELEASE_TAG}" .
           docker push $TARGET_IMAGE_URL
 
   # Deploy to dev environment
