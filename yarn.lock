@@ -3307,23 +3307,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node-fetch@npm:2":
-  version: 2.6.9
-  resolution: "@types/node-fetch@npm:2.6.9"
+"@types/node-fetch@npm:2, @types/node-fetch@npm:^2.6.4":
+  version: 2.6.11
+  resolution: "@types/node-fetch@npm:2.6.11"
   dependencies:
     "@types/node": "npm:*"
     form-data: "npm:^4.0.0"
-  checksum: fc46141516191699b5f34fdf3516d3bd67421ad18da9f14785252abd22c1aa7a80ea5bcde835531b33df681f2b0d671786c3e987941547532fb447d77ebb8588
-  languageName: node
-  linkType: hard
-
-"@types/node-fetch@npm:^2.6.4":
-  version: 2.6.6
-  resolution: "@types/node-fetch@npm:2.6.6"
-  dependencies:
-    "@types/node": "npm:*"
-    form-data: "npm:^4.0.0"
-  checksum: ed3ccfe5ad000e55e42835e620c8854033457d475d341177509a32306f530fe6671c966634b1aae3942e93ac377c0960abd878863a9fe06f958a6035e088052e
+  checksum: c416df8f182ec3826278ea42557fda08f169a48a05e60722d9c8edd4e5b2076ae281c6b6601ad406035b7201f885b0257983b61c26b3f9eb0f41192a807b5de5
   languageName: node
   linkType: hard
 
@@ -3366,10 +3356,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qs@npm:6.9.10":
-  version: 6.9.10
-  resolution: "@types/qs@npm:6.9.10"
-  checksum: 3e479ee056bd2b60894baa119d12ecd33f20a25231b836af04654e784c886f28a356477630430152a86fba253da65d7ecd18acffbc2a8877a336e75aa0272c67
+"@types/qs@npm:6.9.11":
+  version: 6.9.11
+  resolution: "@types/qs@npm:6.9.11"
+  checksum: 620ca1628bf3da65662c54ed6ebb120b18a3da477d0bfcc872b696685a9bb1893c3c92b53a1190a8f54d52eaddb6af8b2157755699ac83164604329935e8a7f2
   languageName: node
   linkType: hard
 
@@ -3414,10 +3404,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:9.0.7":
-  version: 9.0.7
-  resolution: "@types/uuid@npm:9.0.7"
-  checksum: c7321194aeba9ea173efd1e721403bdf4e7ae6945f8f8cdbc87c791f4b505ccf3dbc4a8883d90b394ef13b7c2dc778045792b05dbb23b3c746f8ea347804d448
+"@types/uuid@npm:9.0.8":
+  version: 9.0.8
+  resolution: "@types/uuid@npm:9.0.8"
+  checksum: b8c60b7ba8250356b5088302583d1704a4e1a13558d143c549c408bf8920535602ffc12394ede77f8a8083511b023704bc66d1345792714002bfa261b17c5275
   languageName: node
   linkType: hard
 
@@ -6489,11 +6479,11 @@ __metadata:
     "@types/mmmagic": "npm:0.4.33"
     "@types/node": "npm:18.15.13"
     "@types/node-fetch": "npm:2"
-    "@types/qs": "npm:6.9.10"
+    "@types/qs": "npm:6.9.11"
     "@types/sanitize-html": "npm:2.9.5"
     "@types/sharp": "npm:0.31.1"
     "@types/striptags": "npm:3.1.1"
-    "@types/uuid": "npm:9.0.7"
+    "@types/uuid": "npm:9.0.8"
     "@types/yazl": "npm:2.4.5"
     "@typescript-eslint/eslint-plugin": "npm:5.62.0"
     "@typescript-eslint/parser": "npm:5.62.0"
