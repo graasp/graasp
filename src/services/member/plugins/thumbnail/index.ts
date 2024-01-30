@@ -8,12 +8,7 @@ import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
-import {
-  DownloadFileUnexpectedError,
-  GraaspFileError,
-  UploadEmptyFileError,
-  UploadFileUnexpectedError,
-} from '../../../file/utils/errors';
+import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { download, upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
@@ -97,14 +92,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService
-        .getUrl(member, buildRepositories(), { memberId, size })
-        .catch((e) => {
-          if (e instanceof GraaspFileError) {
-            throw e;
-          }
-          throw new DownloadFileUnexpectedError(e);
-        });
+      const url = await thumbnailService.getUrl(member, buildRepositories(), { memberId, size });
+
       fileService.setHeaders({ reply, replyUrl, url, id: memberId });
     },
   );

@@ -55,7 +55,7 @@ jobs:
         env:
           TARGET_IMAGE_URL: ${{ steps.image-url.outputs.image_url }}
         run: |
-          docker build -t $TARGET_IMAGE_URL -f docker/Dockerfile .
+          docker build -t $TARGET_IMAGE_URL -f docker/Dockerfile --build-arg APP_VERSION=${{ github.sha }} .
           docker push $TARGET_IMAGE_URL
 
   # Deploy to dev environment

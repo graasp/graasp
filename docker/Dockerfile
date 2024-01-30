@@ -15,6 +15,9 @@ RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
   && chown -R $USER_UID:root /usr/local/share/nvm /usr/local/share/npm-global; \
   fi
 
+# variable passed as a build arg. Represents the tag or git sha used for the build
+ARG APP_VERSION
+
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
@@ -41,4 +44,6 @@ RUN yarn install
 
 RUN yarn build-ts
 
+# set APP_VERSION as ENV variable from ARG passed at build step
+ENV APP_VERSION=${APP_VERSION:-latest}
 CMD NODE_PATH=./dist node dist/server.js
