@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.16.0](https://github.com/graasp/graasp/compare/v1.15.0...v1.16.0) (2024-01-29)
+
+
+### Features
+
+* add geolocation endpoints ([#777](https://github.com/graasp/graasp/issues/777)) ([415d4c1](https://github.com/graasp/graasp/commit/415d4c1869c2aecb9d25c8b8d2196bbb39683604))
+
+
+### Bug Fixes
+
+* throw if item is not folder for copy, move and post ([#786](https://github.com/graasp/graasp/issues/786)) ([81c70a5](https://github.com/graasp/graasp/commit/81c70a5d263f4b77d6891226652ba4b30cd9d93b))
+
 ## [1.15.0](https://github.com/graasp/graasp/compare/v1.14.1...v1.15.0) (2024-01-25)
 
 
