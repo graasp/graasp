@@ -1101,7 +1101,7 @@ describe('Item routes tests', () => {
             sorty: SortBy.ItemCreatorName,
             ordering: 'asc',
             permissions: [PermissionLevel.Write, PermissionLevel.Admin],
-            itemType: ItemType.FOLDER,
+            types: [ItemType.FOLDER],
           },
         });
 
@@ -1176,7 +1176,7 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=${SortBy.ItemName}&itemType=nimp`,
+          url: `/items/accessible?sortBy=${SortBy.ItemName}&types=nimp`,
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -1363,6 +1363,42 @@ describe('Item routes tests', () => {
             data.find(({ id: thisId }) => thisId === id),
             children.find(({ id: thisId }) => thisId === id),
           );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Filter children by Folder', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: parent } = await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Read,
+        });
+        const { item: notAFolder } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1', type: ItemType.DOCUMENT }),
+          member,
+          parentItem: parent,
+        });
+        const { item: child2 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2', type: ItemType.FOLDER }),
+          member,
+          parentItem: parent,
+        });
+        const children = [child2];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children?types=folder`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const data = response.json();
+        expect(data).toHaveLength(children.length);
+        children.forEach(({ id }, idx) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            children.find(({ id: thisId }) => thisId === id),
+          );
+          expect(() => expectItem(data[idx], notAFolder)).toThrow(Error);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

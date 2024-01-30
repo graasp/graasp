@@ -30,7 +30,7 @@ import { mapById } from '../utils';
 import { Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
-import { ItemSearchParams } from './types';
+import { ItemChildrenParams, ItemSearchParams } from './types';
 
 export class ItemService {
   hooks = new HookManager<{
@@ -207,12 +207,17 @@ export class ItemService {
     return filterOutItems(actor, repositories, items);
   }
 
-  async getChildren(actor: Actor, repositories: Repositories, itemId: string, ordered?: boolean) {
+  async getChildren(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: string,
+    params?: ItemChildrenParams,
+  ) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
     // TODO optimize?
-    return filterOutItems(actor, repositories, await itemRepository.getChildren(item, ordered));
+    return filterOutItems(actor, repositories, await itemRepository.getChildren(item, params));
   }
 
   async getDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {

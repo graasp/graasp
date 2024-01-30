@@ -23,9 +23,8 @@ import {
   moveMany,
   updateMany,
 } from './fluent-schema';
-import { Ordered } from './interfaces/requests';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { ItemSearchParams } from './types';
+import { ItemChildrenParams, ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -94,11 +93,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       if (!member) {
         throw new UnauthorizedMember();
       }
-      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, itemType } = query;
+      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types } = query;
       return itemService.getAccessible(
         member,
         buildRepositories(),
-        { creatorId, name, sortBy, ordering, permissions, itemType },
+        { creatorId, name, sortBy, ordering, permissions, types },
         { page, pageSize },
       );
     },
@@ -126,11 +125,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get item's children
-  fastify.get<{ Params: IdParam; Querystring: Ordered }>(
+  fastify.get<{ Params: IdParam; Querystring: ItemChildrenParams }>(
     '/:id/children',
     { schema: getChildren, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { id }, query: { ordered } }) => {
-      return itemService.getChildren(member, buildRepositories(), id, ordered);
+    async ({ member, params: { id }, query: { ordered, types } }) => {
+      return itemService.getChildren(member, buildRepositories(), id, { ordered, types });
     },
   );
 

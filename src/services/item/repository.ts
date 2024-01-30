@@ -24,6 +24,7 @@ import {
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, ItemExtraUnion, isItemType } from './entities/Item';
+import { ItemChildrenParams } from './types';
 import {
   _fixChildrenOrder,
   dashToUnderscore,
@@ -147,19 +148,24 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .getMany();
   },
 
-  async getChildren(parent: Item, ordered?: boolean): Promise<Item[]> {
+  async getChildren(parent: Item, params?: ItemChildrenParams): Promise<Item[]> {
     if (!isItemType(parent, ItemType.FOLDER)) {
       throw new ItemNotFolder(parent);
     }
 
     // CHECK SQL
-    const children = await this.createQueryBuilder('item')
+    const query = await this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
-      .where('path ~ :path', { path: `${parent.path}.*{1}` })
-      .orderBy('item.createdAt', 'ASC')
-      .getMany();
+      .where('path ~ :path', { path: `${parent.path}.*{1}` });
 
-    if (ordered) {
+    if (params?.types) {
+      const types = params.types;
+      query.andWhere('item.type IN (:...types)', { types });
+    }
+
+    const children = await query.orderBy('item.createdAt', 'ASC').getMany();
+
+    if (params?.ordered) {
       const { extra: { folder } = {} } = parent;
       const childrenOrder = folder?.childrenOrder ?? [];
       if (childrenOrder.length) {

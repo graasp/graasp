@@ -107,7 +107,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       sortBy = SortBy.ItemUpdatedAt,
       ordering = Ordering.desc,
       permissions,
-      itemType,
+      types,
     }: ItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
   ): Promise<Paginated<Item>> {
@@ -149,8 +149,8 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       query.andWhere('im.permission IN (:...permissions)', { permissions });
     }
 
-    if (itemType) {
-      query.andWhere('item.type = :itemType', { itemType });
+    if (types) {
+      query.andWhere('item.type IN (:...types)', { types });
     }
 
     if (sortBy) {
