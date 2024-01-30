@@ -48,24 +48,36 @@ export class ItemGeolocationRepository {
    * @param lng2
    * @returns item geolocations within bounding box. Does not include inheritance.
    */
-  async getItemsIn(
-    lat1: ItemGeolocation['lat'],
-    lat2: ItemGeolocation['lat'],
-    lng1: ItemGeolocation['lng'],
-    lng2: ItemGeolocation['lng'],
-  ): Promise<ItemGeolocation[]> {
+  async getItemsIn({
+    lat1,
+    lat2,
+    lng1,
+    lng2,
+    search,
+  }: {
+    lat1: ItemGeolocation['lat'];
+    lat2: ItemGeolocation['lat'];
+    lng1: ItemGeolocation['lng'];
+    lng2: ItemGeolocation['lng'];
+    search: string[];
+  }): Promise<ItemGeolocation[]> {
     const [minLat, maxLat] = [lat1, lat2].sort();
     const [minLng, maxLng] = [lng1, lng2].sort();
 
-    const geoloc = await this.repository.find({
-      where: {
-        lat: Between(minLat, maxLat),
-        lng: Between(minLng, maxLng),
-      },
-      relations: { item: { creator: true } },
-    });
+    const geoloc = this.repository
+      .createQueryBuilder('ig')
+      .leftJoinAndSelect('ig.item', 'item')
+      .leftJoinAndSelect('item.creator', 'member')
+      .where('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
+      .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
 
-    return geoloc;
+    if (search?.length) {
+      geoloc.andWhere("item.search_document @@ to_tsquery('english', :search)", {
+        search: search.join(' '),
+      });
+    }
+
+    return geoloc.getMany();
   }
 
   /**
