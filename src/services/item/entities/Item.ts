@@ -119,6 +119,9 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   })
   geolocation: ItemGeolocation;
 
+  @Column({ nullable: false, default: 'en' })
+  language: string;
+
   @Column({
     type: 'tsvector',
     generatedType: 'STORED',
@@ -126,36 +129,54 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
     asExpression: `(
       setweight(to_tsvector('simple', name), 'A')  || ' ' ||
       setweight(to_tsvector('english', name), 'A') || ' ' ||
-      setweight(to_tsvector('french', name), 'A') || ' ' ||
-      setweight(to_tsvector('italian', name), 'A') || ' ' ||
-      setweight(to_tsvector('german', name), 'A') || ' ' ||
-      setweight(to_tsvector('spanish', name), 'A') || ' ' ||
+      setweight(to_tsvector('french', name), 'A') || ' ' || (
+        case 
+            when language='de' then to_tsvector('german', name) 
+            when language='it' then to_tsvector('italian', name)
+            when language='es' then to_tsvector('spanish', name)
+            else ' '
+        end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(description,'')), 'B') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(description,'')), 'B') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(description,'')), 'B') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(description,'')), 'B') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(description,'')), 'B') || ' ' ||
+      setweight(to_tsvector('french', COALESCE(description,'')), 'B') || ' ' || (
+        case 
+            when language='de' then setweight(to_tsvector('german', COALESCE(description,'')), 'B')
+            when language='it' then setweight(to_tsvector('italian', COALESCE(description,'')), 'B')
+            when language='es' then setweight(to_tsvector('spanish', COALESCE(description,'')), 'B')
+            else ' '
+        end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
+      setweight(to_tsvector('french', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' || (
+        case 
+            when language='de' then setweight(to_tsvector('german', COALESCE(settings::jsonb->'tags','{}')), 'C')
+            when language='it' then setweight(to_tsvector('italian', COALESCE(settings::jsonb->'tags','{}')), 'C')
+            when language='es' then setweight(to_tsvector('spanish', COALESCE(settings::jsonb->'tags','{}')), 'C')
+            else ' '
+        end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' || (
+        case 
+            when language='de' then setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D')
+            when language='it' then setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D')
+            when language='es' then setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D')
+            else ' '
+        end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' || (
+        case 
+            when language='de' then setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D')
+            when language='it' then setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D')
+            when language='es' then setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D')
+            else ' '
+        end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')
-       ):: tsvector `,
+      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' || (
+        case 
+            when language='de' then setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')
+            when language='it' then setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')
+            when language='es' then setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')
+            else ' '
+        end)
+       ):: tsvector`,
   })
   search_document: string;
 }

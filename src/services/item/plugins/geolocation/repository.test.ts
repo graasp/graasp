@@ -199,11 +199,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return with keywords in english and french', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'chat chien' }),
+        item: getDummyItem({ name: 'chat chien', language: 'fr' }),
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'poisson' }),
+        item: getDummyItem({ name: 'poisson', language: 'fr' }),
         member: actor,
         parentItem,
       });
@@ -227,6 +227,39 @@ describe('ItemGeolocationRepository', () => {
       );
       expect(res).toHaveLength(1);
       expect(res).toContainEqual(geolocParent);
+    });
+
+    it('return with keywords in english and spanish', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'gatos perros', language: 'es' }),
+        member: actor,
+      });
+      const { item } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'poisson', language: 'fr' }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+
+      const res1 = await repository.getItemsIn(
+        { ...actor, lang: 'fr' },
+        {
+          lat1: 0,
+          lat2: 4,
+          lng1: 0,
+          lng2: 4,
+          // this checked the search_document stemmed correctly gatos
+          keywords: ['gato'],
+        },
+      );
+      expect(res1).toHaveLength(1);
+      expect(res1).toContainEqual(geolocParent);
     });
 
     it('return only item within keywords in name', async () => {

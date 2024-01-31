@@ -376,9 +376,9 @@ export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;
  * mapping from language code and postgres full text search supported language
  */
 export const ALLOWED_SEARCH_LANGS = {
-  en: 'english',
-  fr: 'french',
   de: 'german',
-  it: 'italian',
+  en: 'english',
   es: 'spanish',
+  fr: 'french',
+  it: 'italian',
 };
