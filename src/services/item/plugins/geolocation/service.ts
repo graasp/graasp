@@ -47,7 +47,7 @@ export class ItemGeolocationService {
       lat2: ItemGeolocation['lat'];
       lng1: ItemGeolocation['lng'];
       lng2: ItemGeolocation['lng'];
-      search;
+      search?: string[];
     },
   ) {
     const { itemGeolocationRepository } = repositories;

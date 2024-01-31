@@ -53,13 +53,13 @@ export class ItemGeolocationRepository {
     lat2,
     lng1,
     lng2,
-    search,
+    keywords,
   }: {
     lat1: ItemGeolocation['lat'];
     lat2: ItemGeolocation['lat'];
     lng1: ItemGeolocation['lng'];
     lng2: ItemGeolocation['lng'];
-    search?: string[];
+    keywords?: string[];
   }): Promise<ItemGeolocation[]> {
     const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
     const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
@@ -71,9 +71,9 @@ export class ItemGeolocationRepository {
       .where('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
       .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
 
-    if (search?.filter((s) => s.length)?.length) {
-      geoloc.andWhere("item.search_document @@ to_tsquery('english', :search)", {
-        search: search.join(' '),
+    if (keywords?.filter((s) => s.length)?.length) {
+      geoloc.andWhere("item.search_document @@ plainto_tsquery('english', :keywords)", {
+        keywords: keywords.join(' '),
       });
     }
 

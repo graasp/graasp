@@ -201,6 +201,32 @@ describe('Item Geolocation', () => {
         expect(res.json()).toHaveLength(3);
         expectItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
       });
+
+      it('Get item geolocations with search strings', async () => {
+        const { item: item1 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'hello bye' }),
+          member: actor,
+        });
+        const geoloc1 = await repository.save({ item: item1, lat: 1, lng: 2, country: 'de' });
+        const { item: item2 } = await saveItemAndMembership({
+          item: getDummyItem({ description: 'hello bye' }),
+          member: actor,
+        });
+        const geoloc2 = await repository.save({ item: item2, lat: 1, lng: 2, country: 'de' });
+        const { item: item3 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'bye hello' }),
+          member: actor,
+        });
+        const geoloc3 = await repository.save({ item: item3, lat: 1, lng: 2, country: 'de' });
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2&keywords=hello&keywords=bye`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toHaveLength(3);
+        expectItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
+      });
     });
   });
 
