@@ -31,7 +31,7 @@ export const getItemsInBox = {
       lat2: { type: 'number' },
       lng1: { type: 'number' },
       lng2: { type: 'number' },
-      tags: { type: 'array', items: { type: 'string' } },
+      search: { type: 'array', items: { type: 'string' } },
     },
     required: ['lat1', 'lat2', 'lng1', 'lng2'],
   },

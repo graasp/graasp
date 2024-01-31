@@ -59,10 +59,10 @@ export class ItemGeolocationRepository {
     lat2: ItemGeolocation['lat'];
     lng1: ItemGeolocation['lng'];
     lng2: ItemGeolocation['lng'];
-    search: string[];
+    search?: string[];
   }): Promise<ItemGeolocation[]> {
-    const [minLat, maxLat] = [lat1, lat2].sort();
-    const [minLng, maxLng] = [lng1, lng2].sort();
+    const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
+    const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
 
     const geoloc = this.repository
       .createQueryBuilder('ig')
@@ -71,7 +71,7 @@ export class ItemGeolocationRepository {
       .where('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
       .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
 
-    if (search?.length) {
+    if (search?.filter((s) => s.length)?.length) {
       geoloc.andWhere("item.search_document @@ to_tsquery('english', :search)", {
         search: search.join(' '),
       });
