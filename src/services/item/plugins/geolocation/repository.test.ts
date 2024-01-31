@@ -3,7 +3,6 @@ import { ItemType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { ItemRepository } from '../../repository';
 import { getDummyItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationRepository } from './repository';

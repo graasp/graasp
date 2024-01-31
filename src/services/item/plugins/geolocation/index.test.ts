@@ -26,6 +26,7 @@ const expectItemGeolocations = (results: ItemGeolocation[], expected: ItemGeoloc
         lng: ig.lng,
         item: expect.objectContaining({
           id: ig.item.id,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           creator: expect.objectContaining({ id: ig.item.creator!.id }),
         }),
       }),
@@ -260,7 +261,7 @@ describe('Item Geolocation', () => {
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('throw for no geolocation', async () => {
-        const res = await app.inject({
+        await app.inject({
           method: HttpMethod.PUT,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {},
