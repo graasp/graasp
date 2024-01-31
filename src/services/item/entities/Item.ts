@@ -55,6 +55,7 @@ export type ItemTypeEnumKeys = keyof ItemExtraMap;
 
 @Entity()
 @Index('IDX_gist_item_path', { synchronize: false })
+@Index('IDX_gin_item_search_document', { synchronize: false })
 export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEntity {
   // we do not generate by default because if need to generate
   // the id to define the path
@@ -139,21 +140,21 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
       setweight(to_tsvector('italian', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
       setweight(to_tsvector('german', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
       setweight(to_tsvector('spanish', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
-      setweight(to_tsvector('english', COALESCE(extra::jsonb->'document'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(extra::jsonb->'document'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(extra::jsonb->'document'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(extra::jsonb->'document'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(extra::jsonb->'document'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('english', COALESCE(extra::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(extra::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(extra::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(extra::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(extra::jsonb->'file'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('english', COALESCE(extra::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('french', COALESCE(extra::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('italian', COALESCE(extra::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('german', COALESCE(extra::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
-      setweight(to_tsvector('spanish', COALESCE(extra::jsonb->'s3File'->'content','{}')), 'D')
+      setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
+      setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')
        ):: tsvector `,
   })
   search_document: string;
