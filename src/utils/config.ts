@@ -371,3 +371,14 @@ export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
 export const OPENAI_GPT_VERSION = process.env.OPENAI_GPT_VERSION || GPTVersion.GPT_4;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;
+
+/**
+ * mapping from language code and postgres full text search supported language
+ */
+export const ALLOWED_SEARCH_LANGS = {
+  en: 'english',
+  fr: 'french',
+  de: 'german',
+  it: 'italian',
+  es: 'spanish',
+};

@@ -2,6 +2,8 @@ import { iso1A2Code } from '@rapideditor/country-coder';
 import { EntityManager, Repository } from 'typeorm';
 
 import { AppDataSource } from '../../../../plugins/datasource';
+import { ALLOWED_SEARCH_LANGS } from '../../../../utils/config';
+import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 
@@ -48,19 +50,22 @@ export class ItemGeolocationRepository {
    * @param lng2
    * @returns item geolocations within bounding box. Does not include inheritance.
    */
-  async getItemsIn({
-    lat1,
-    lat2,
-    lng1,
-    lng2,
-    keywords,
-  }: {
-    lat1: ItemGeolocation['lat'];
-    lat2: ItemGeolocation['lat'];
-    lng1: ItemGeolocation['lng'];
-    lng2: ItemGeolocation['lng'];
-    keywords?: string[];
-  }): Promise<ItemGeolocation[]> {
+  async getItemsIn(
+    actor: Actor,
+    {
+      lat1,
+      lat2,
+      lng1,
+      lng2,
+      keywords,
+    }: {
+      lat1: ItemGeolocation['lat'];
+      lat2: ItemGeolocation['lat'];
+      lng1: ItemGeolocation['lng'];
+      lng2: ItemGeolocation['lng'];
+      keywords?: string[];
+    },
+  ): Promise<ItemGeolocation[]> {
     const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
     const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
 
@@ -72,8 +77,21 @@ export class ItemGeolocationRepository {
       .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
 
     if (keywords?.filter((s) => s.length)?.length) {
-      geoloc.andWhere("item.search_document @@ plainto_tsquery('english', :keywords)", {
-        keywords: keywords.join(' '),
+      const keywordsString = keywords.join(' ');
+      const memberLang = actor?.lang;
+      geoloc.andWhere((q) => {
+        // search in english by default
+        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // search by member lang
+        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+            keywords: keywordsString,
+            lang: ALLOWED_SEARCH_LANGS[memberLang],
+          });
+        }
       });
     }
 

@@ -51,7 +51,7 @@ export class ItemGeolocationService {
     },
   ) {
     const { itemGeolocationRepository } = repositories;
-    const geoloc = await itemGeolocationRepository.getItemsIn(query);
+    const geoloc = await itemGeolocationRepository.getItemsIn(actor, query);
     const validatedItems = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
