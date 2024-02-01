@@ -5,10 +5,7 @@ export class Migrations1706713997488 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TYPE "public"."item_lang_enum" AS ENUM('de', 'en', 'es', 'fr', 'it')`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "item" ADD "lang" "public"."item_lang_enum" NOT NULL DEFAULT 'en'`,
+      `ALTER TABLE "item" ADD "lang" character varying NOT NULL DEFAULT 'en'`,
     );
     await queryRunner.query(`ALTER TABLE "item" ADD "search_document" tsvector GENERATED ALWAYS AS ((
       setweight(to_tsvector('simple', name), 'A')  || ' ' ||
@@ -85,7 +82,5 @@ export class Migrations1706713997488 implements MigrationInterface {
       ['GENERATED_COLUMN', 'search_document', process.env.DB_NAME, 'public', 'item'],
     );
     await queryRunner.query(`ALTER TABLE "item" DROP COLUMN "search_document"`);
-    await queryRunner.query(`ALTER TABLE "item" DROP COLUMN "lang"`);
-    await queryRunner.query(`DROP TYPE "public"."item_lang_enum"`);
   }
 }
