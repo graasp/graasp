@@ -37,7 +37,7 @@ import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
-import { SortBy } from '../types';
+import { Ordering, SortBy } from '../types';
 import {
   expectItem,
   expectManyItems,
@@ -1012,7 +1012,7 @@ describe('Item routes tests', () => {
           method: HttpMethod.GET,
           url: `/items/accessible`,
           query: {
-            sorty: SortBy.ItemCreatorName,
+            sortBy: SortBy.ItemCreatorName,
             ordering: 'asc',
             permissions: [PermissionLevel.Read],
           },
@@ -1051,7 +1051,7 @@ describe('Item routes tests', () => {
           method: HttpMethod.GET,
           url: `/items/accessible`,
           query: {
-            sorty: SortBy.ItemCreatorName,
+            sortBy: SortBy.ItemCreatorName,
             ordering: 'asc',
             permissions: [PermissionLevel.Write, PermissionLevel.Admin],
           },
@@ -1067,14 +1067,8 @@ describe('Item routes tests', () => {
         });
       });
 
-      it('Returns successfully folder items by write and admin', async () => {
+      it('Returns successfully folder items', async () => {
         const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        await saveItemAndMembership({
-          member: actor,
-          creator: bob,
-          permission: PermissionLevel.Read,
-          item: { type: ItemType.DOCUMENT },
-        });
         const { item: itemFolder1 } = await saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Admin,
@@ -1092,15 +1086,14 @@ describe('Item routes tests', () => {
           item: { type: ItemType.APP },
         });
 
-        const folders = [itemFolder1, itemFolder2];
+        const sortByName = (a, b) => a.name.localeCompare(b.name);
+
+        const folders = [itemFolder1, itemFolder2].sort(sortByName);
 
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `/items/accessible`,
           query: {
-            sorty: SortBy.ItemCreatorName,
-            ordering: 'asc',
-            permissions: [PermissionLevel.Write, PermissionLevel.Admin],
             types: [ItemType.FOLDER],
           },
         });
@@ -1108,11 +1101,12 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         const { data, totalCount } = response.json();
+        const sortedData = data.sort(sortByName);
         expect(totalCount).toEqual(folders.length);
         expect(data).toHaveLength(folders.length);
         folders.forEach((folder, idx) => {
-          expectItem(data[idx], folder);
-          expect(() => expectItem(data[idx], notAFolder)).toThrow(Error);
+          expectItem(sortedData[idx], folder);
+          expect(() => expectItem(sortedData[idx], notAFolder)).toThrow(Error);
         });
       });
 
@@ -1132,7 +1126,11 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=dontexist&ordering=desc`,
+          url: `/items/accessible`,
+          query: {
+            sortBy: 'nimp',
+            ordering: Ordering.DESC,
+          },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -1154,13 +1152,17 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=${SortBy.ItemName}&ordering=nimp`,
+          url: `/items/accessible`,
+          query: {
+            sortBy: SortBy.ItemName,
+            ordering: 'nimp',
+          },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
-      it('Throws for wrong item type', async () => {
+      it('Throws for wrong item types', async () => {
         await saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
@@ -1176,7 +1178,10 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=${SortBy.ItemName}&types=nimp`,
+          url: `/items/accessible`,
+          query: {
+            types: 'nimp',
+          },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
