@@ -304,6 +304,7 @@ export default {
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
         path: { type: 'string' },
+        lang: { type: 'string' },
         extra: {
           type: 'object',
           additionalProperties: true,
