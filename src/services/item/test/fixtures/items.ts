@@ -19,6 +19,7 @@ export const getDummyItem = (options: Partial<Item> & { parentPath?: string } = 
     extra = { [ItemType.FOLDER]: { childrenOrder: [] } },
     name,
     settings = {},
+    lang = 'en',
   } = options;
   const buildId = id ?? uuidv4();
   let buildPath = path ?? buildPathFromIds(buildId);
@@ -35,6 +36,7 @@ export const getDummyItem = (options: Partial<Item> & { parentPath?: string } = 
     settings,
     updatedAt: new Date(),
     createdAt: new Date(),
+    lang,
   } as Item; // HACK: Item entity contains much more data
 };
 
@@ -95,6 +97,7 @@ export const expectItem = (
   expect(newItem.description).toEqual(correctItem.description ?? null);
   expect(newItem.extra).toEqual(correctItem.extra);
   expect(newItem.type).toEqual(correctItem.type);
+  expect(newItem.lang).toEqual(correctItem.lang);
 
   expect(newItem.path).toContain(buildPathFromIds(newItem.id));
   if (parent) {

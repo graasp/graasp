@@ -231,6 +231,19 @@ describe('Item routes tests', () => {
         expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(1);
       });
 
+      it('Create successfully with language', async () => {
+        const payload = getDummyItem({ type: ItemType.FOLDER, lang: 'fr' });
+        const response = await app.inject({
+          method: HttpMethod.POST,
+          url: `/items`,
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
       it('Throw if geolocation is partial', async () => {
         const payload = getDummyItem({ type: ItemType.FOLDER });
         const response = await app.inject({
@@ -1896,6 +1909,28 @@ describe('Item routes tests', () => {
               ...payload.extra.folder,
             },
           },
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Update successfully new language', async () => {
+        const { item } = await saveItemAndMembership({
+          member: actor,
+        });
+        const payload = {
+          lang: 'fr',
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.PATCH,
+          url: `/items/${item.id}`,
+          payload,
+        });
+
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(response.json(), {
+          ...item,
+          ...payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

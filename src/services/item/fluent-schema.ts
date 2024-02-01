@@ -227,6 +227,7 @@ export const updateOne =
                 S.required(['description']),
                 S.required(['extra']),
                 S.required(['settings']),
+                S.required(['lang']),
               ]),
             );
 
