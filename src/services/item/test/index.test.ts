@@ -37,7 +37,7 @@ import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
-import { SortBy } from '../types';
+import { Ordering, SortBy } from '../types';
 import {
   expectItem,
   expectManyItems,
@@ -1012,7 +1012,7 @@ describe('Item routes tests', () => {
           method: HttpMethod.GET,
           url: `/items/accessible`,
           query: {
-            sorty: SortBy.ItemCreatorName,
+            sortBy: SortBy.ItemCreatorName,
             ordering: 'asc',
             permissions: [PermissionLevel.Read],
           },
@@ -1051,7 +1051,7 @@ describe('Item routes tests', () => {
           method: HttpMethod.GET,
           url: `/items/accessible`,
           query: {
-            sorty: SortBy.ItemCreatorName,
+            sortBy: SortBy.ItemCreatorName,
             ordering: 'asc',
             permissions: [PermissionLevel.Write, PermissionLevel.Admin],
           },
@@ -1064,6 +1064,49 @@ describe('Item routes tests', () => {
         expect(data).toHaveLength(items.length);
         items.forEach((_, idx) => {
           expectItem(data[idx], items[idx]);
+        });
+      });
+
+      it('Returns successfully folder items', async () => {
+        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: itemFolder1 } = await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Admin,
+          item: { type: ItemType.FOLDER },
+        });
+        const { item: itemFolder2 } = await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Write,
+          item: { type: ItemType.FOLDER },
+        });
+        const { item: notAFolder } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          permission: PermissionLevel.Write,
+          item: { type: ItemType.APP },
+        });
+
+        const sortByName = (a, b) => a.name.localeCompare(b.name);
+
+        const folders = [itemFolder1, itemFolder2].sort(sortByName);
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible`,
+          query: {
+            types: [ItemType.FOLDER],
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        const sortedData = data.sort(sortByName);
+        expect(totalCount).toEqual(folders.length);
+        expect(data).toHaveLength(folders.length);
+        folders.forEach((folder, idx) => {
+          expectItem(sortedData[idx], folder);
+          expect(() => expectItem(sortedData[idx], notAFolder)).toThrow(Error);
         });
       });
 
@@ -1083,7 +1126,11 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=dontexist&ordering=desc`,
+          url: `/items/accessible`,
+          query: {
+            sortBy: 'nimp',
+            ordering: Ordering.DESC,
+          },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -1105,7 +1152,36 @@ describe('Item routes tests', () => {
 
         const response = await app.inject({
           method: HttpMethod.GET,
-          url: `/items/accessible?sortBy=${SortBy.ItemName}&ordering=nimp`,
+          url: `/items/accessible`,
+          query: {
+            sortBy: SortBy.ItemName,
+            ordering: 'nimp',
+          },
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Throws for wrong item types', async () => {
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.DOCUMENT },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.FOLDER },
+        });
+        await saveItemAndMembership({
+          member: actor,
+          item: { type: ItemType.APP },
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/accessible`,
+          query: {
+            types: 'nimp',
+          },
         });
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -1292,6 +1368,42 @@ describe('Item routes tests', () => {
             data.find(({ id: thisId }) => thisId === id),
             children.find(({ id: thisId }) => thisId === id),
           );
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Filter children by Folder', async () => {
+        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const { item: parent } = await saveItemAndMembership({
+          member: actor,
+          creator: member,
+          permission: PermissionLevel.Read,
+        });
+        const { item: notAFolder } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child1', type: ItemType.DOCUMENT }),
+          member,
+          parentItem: parent,
+        });
+        const { item: child2 } = await saveItemAndMembership({
+          item: getDummyItem({ name: 'child2', type: ItemType.FOLDER }),
+          member,
+          parentItem: parent,
+        });
+        const children = [child2];
+
+        const response = await app.inject({
+          method: HttpMethod.GET,
+          url: `/items/${parent.id}/children?types=folder`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        const data = response.json();
+        expect(data).toHaveLength(children.length);
+        children.forEach(({ id }, idx) => {
+          expectItem(
+            data.find(({ id: thisId }) => thisId === id),
+            children.find(({ id: thisId }) => thisId === id),
+          );
+          expect(() => expectItem(data[idx], notAFolder)).toThrow(Error);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

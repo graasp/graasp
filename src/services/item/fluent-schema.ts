@@ -136,7 +136,8 @@ export const getAccessible = {
     .prop('sortBy', S.enum(Object.values(SortBy)))
     .prop('ordering', S.enum(Object.values(Ordering)))
     .prop('creatorId', S.string())
-    .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE)),
+    .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
+    .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
     200: S.object()
       .additionalProperties(false)
@@ -161,7 +162,10 @@ export const getMany = {
 
 export const getChildren = {
   params: idParam,
-  querystring: S.object().additionalProperties(false).prop('ordered', S.boolean()),
+  querystring: S.object()
+    .additionalProperties(false)
+    .prop('ordered', S.boolean())
+    .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
     200: S.array().items(item),
     '4xx': error,
