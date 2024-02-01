@@ -3,7 +3,6 @@ import { ItemType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { ItemLang } from '../../entities/Item';
 import { getDummyItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationRepository } from './repository';
@@ -200,11 +199,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return with keywords in english and french', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'chat chien', lang: ItemLang.FR }),
+        item: getDummyItem({ name: 'chat chien', lang: 'fr' }),
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'poisson', lang: ItemLang.FR }),
+        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
         member: actor,
         parentItem,
       });
@@ -217,7 +216,7 @@ describe('ItemGeolocationRepository', () => {
       await saveItemAndMembership({ member: actor, parentItem });
 
       const res = await repository.getItemsIn(
-        { ...actor, lang: ItemLang.FR },
+        { ...actor, lang: 'fr' },
         {
           lat1: 0,
           lat2: 4,
@@ -232,11 +231,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return with keywords in english and spanish', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'gatos perros', lang: ItemLang.ES }),
+        item: getDummyItem({ name: 'gatos perros', lang: 'es' }),
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'poisson', lang: ItemLang.FR }),
+        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
         member: actor,
         parentItem,
       });
@@ -249,7 +248,7 @@ describe('ItemGeolocationRepository', () => {
       await saveItemAndMembership({ member: actor, parentItem });
 
       const res1 = await repository.getItemsIn(
-        { ...actor, lang: ItemLang.FR },
+        { ...actor, lang: 'fr' },
         {
           lat1: 0,
           lat2: 4,

@@ -53,14 +53,6 @@ export type ItemTypeEnumKeys = keyof ItemExtraMap;
 // this is how you would get the litteral union from the nominal types but this does not work to index into ItemExtraMap in Item Entity...
 // type ItemTypeRawKeys = `${ItemTypeEnumKeys}`;
 
-export enum ItemLang {
-  DE = 'de',
-  EN = 'en',
-  ES = 'es',
-  FR = 'fr',
-  IT = 'it',
-}
-
 @Entity()
 @Index('IDX_gist_item_path', { synchronize: false })
 @Index('IDX_gin_item_search_document', { synchronize: false })
@@ -127,8 +119,10 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   })
   geolocation: ItemGeolocation;
 
-  @Column({ type: 'enum', nullable: false, default: ItemLang.EN, enum: Object.values(ItemLang) })
-  lang: ItemLang;
+  // We don't use an enum because it might easily break if a new language is added in the frontend
+  // plus this value should be at least the same set of member.extra.lang
+  @Column({ nullable: false, default: 'en' })
+  lang: string;
 
   @Column({
     type: 'tsvector',
