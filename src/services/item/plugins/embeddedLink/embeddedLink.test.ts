@@ -8,7 +8,7 @@ import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { BOB, saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
-import { expectItem } from '../../test/fixtures/items';
+import { expectItem, getDummyItem } from '../../test/fixtures/items';
 
 jest.mock('node-fetch');
 
@@ -83,12 +83,12 @@ describe('Link Item tests', () => {
           payload,
         });
 
-        const expectedItem = {
+        const expectedItem = getDummyItem({
           name: iframelyMeta.title,
           type: ItemType.LINK,
           extra,
           description: iframelyMeta.description,
-        };
+        });
 
         // check response value
         const newItem = response.json();
