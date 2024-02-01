@@ -34,6 +34,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         lat2: ItemGeolocation['lat'];
         lng1: ItemGeolocation['lng'];
         lng2: ItemGeolocation['lng'];
+        keywords?: string[];
       };
     }>(
       '/geolocation',

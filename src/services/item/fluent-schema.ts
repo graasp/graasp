@@ -42,6 +42,7 @@ export const item = S.object()
   .prop('path', S.string())
   .prop('extra', S.object().additionalProperties(true))
   .prop('settings', settings)
+  .prop('lang', S.string())
   // creator could have been deleted
   .prop('creator', S.ifThenElse(S.null(), S.null(), partialMember))
   /**
@@ -63,6 +64,7 @@ export const baseItemCreate = S.object()
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
   .prop('settings', settings)
+  .prop('lang', S.string())
   .prop(
     'geolocation',
     S.object().prop('lat', S.number()).prop('lng', S.number()).required(['lat', 'lng']),
@@ -108,8 +110,14 @@ export const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
+  .prop('lang', S.string())
   .prop('settings', settings)
-  .anyOf([S.required(['name']), S.required(['description']), S.required(['settings'])]);
+  .anyOf([
+    S.required(['name']),
+    S.required(['description']),
+    S.required(['settings']),
+    S.required(['lang']),
+  ]);
 
 export const create =
   (...itemSchemas: JSONSchema[]) =>
@@ -219,6 +227,7 @@ export const updateOne =
                 S.required(['description']),
                 S.required(['extra']),
                 S.required(['settings']),
+                S.required(['lang']),
               ]),
             );
 
@@ -295,6 +304,7 @@ export default {
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
         path: { type: 'string' },
+        lang: { type: 'string' },
         extra: {
           type: 'object',
           additionalProperties: true,

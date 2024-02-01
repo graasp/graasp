@@ -13,7 +13,10 @@ A geolocation attached to a hierarchy of items. It is composed of:
 ## Endpoints
 
 - `GET /items/:id/geolocation`: return geolocation for item, inherits from parent
-- `GET /items/geolocation?lat1<lat1>&lat2<lat2>&lng1<lng1>&lng2<lng2>`: return geolocations and their items within bounding box. Return folder with a geolocation but not its children without geolocation.
+- `GET /items/geolocation`: return geolocations and their items within bounding box. Return folder with a geolocation but not its children without geolocation.
+  - `lat1` & `lat2`: latitude bounds. Order does not matter
+  - `lng1` & `lng2`: longitude bounds. Order does not matter
+  - `keywords`: array of words to search. Returned results satisfies all the keywords.
 - `PUT /items/:id/geolocation`: save geolocation for item, replace if it exists
 - `DELETE /items/:id/geolocation`: delete geolocation for item
 

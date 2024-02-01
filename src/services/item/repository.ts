@@ -66,6 +66,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     extra: ItemExtraUnion;
     settings?: ItemSettings;
     creator: Member;
+    lang?: string;
     parent?: Item;
   }): Item {
     const {
@@ -75,6 +76,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       type = ItemType.FOLDER,
       extra,
       settings = DEFAULT_ITEM_SETTINGS,
+      lang,
       creator,
     } = args;
 
@@ -99,6 +101,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       type,
       extra: parsedExtra,
       settings,
+      // set lang from user lang
+      lang: lang ?? creator.lang ?? 'en',
       creator,
     });
     item.path = parent ? `${parent.path}.${dashToUnderscore(id)}` : dashToUnderscore(id);

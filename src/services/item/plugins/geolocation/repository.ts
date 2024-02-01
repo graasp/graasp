@@ -1,7 +1,9 @@
 import { iso1A2Code } from '@rapideditor/country-coder';
-import { Between, EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 import { AppDataSource } from '../../../../plugins/datasource';
+import { ALLOWED_SEARCH_LANGS } from '../../../../utils/config';
+import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 
@@ -49,23 +51,51 @@ export class ItemGeolocationRepository {
    * @returns item geolocations within bounding box. Does not include inheritance.
    */
   async getItemsIn(
-    lat1: ItemGeolocation['lat'],
-    lat2: ItemGeolocation['lat'],
-    lng1: ItemGeolocation['lng'],
-    lng2: ItemGeolocation['lng'],
+    actor: Actor,
+    {
+      lat1,
+      lat2,
+      lng1,
+      lng2,
+      keywords,
+    }: {
+      lat1: ItemGeolocation['lat'];
+      lat2: ItemGeolocation['lat'];
+      lng1: ItemGeolocation['lng'];
+      lng2: ItemGeolocation['lng'];
+      keywords?: string[];
+    },
   ): Promise<ItemGeolocation[]> {
-    const [minLat, maxLat] = [lat1, lat2].sort();
-    const [minLng, maxLng] = [lng1, lng2].sort();
+    const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
+    const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
 
-    const geoloc = await this.repository.find({
-      where: {
-        lat: Between(minLat, maxLat),
-        lng: Between(minLng, maxLng),
-      },
-      relations: { item: { creator: true } },
-    });
+    const geoloc = this.repository
+      .createQueryBuilder('ig')
+      .leftJoinAndSelect('ig.item', 'item')
+      .leftJoinAndSelect('item.creator', 'member')
+      .where('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
+      .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
 
-    return geoloc;
+    if (keywords?.filter((s) => s.length)?.length) {
+      const keywordsString = keywords.join(' ');
+      const memberLang = actor?.lang;
+      geoloc.andWhere((q) => {
+        // search in english by default
+        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // search by member lang
+        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+            keywords: keywordsString,
+            lang: ALLOWED_SEARCH_LANGS[memberLang],
+          });
+        }
+      });
+    }
+
+    return geoloc.getMany();
   }
 
   /**

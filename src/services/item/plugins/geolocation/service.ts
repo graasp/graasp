@@ -42,20 +42,16 @@ export class ItemGeolocationService {
   async getIn(
     actor: Actor,
     repositories: Repositories,
-    {
-      lat1,
-      lat2,
-      lng1,
-      lng2,
-    }: {
+    query: {
       lat1: ItemGeolocation['lat'];
       lat2: ItemGeolocation['lat'];
       lng1: ItemGeolocation['lng'];
       lng2: ItemGeolocation['lng'];
+      keywords?: string[];
     },
   ) {
     const { itemGeolocationRepository } = repositories;
-    const geoloc = await itemGeolocationRepository.getItemsIn(lat1, lat2, lng1, lng2);
+    const geoloc = await itemGeolocationRepository.getItemsIn(actor, query);
     const validatedItems = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,

@@ -1,6 +1,9 @@
+import { ItemType } from '@graasp/sdk';
+
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
+import { getDummyItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationRepository } from './repository';
 
@@ -156,7 +159,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(0, 4, 0, 4);
+      const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
       expect(res).toHaveLength(2);
       expect(res).toContainEqual(geoloc);
       expect(res).toContainEqual(geolocParent);
@@ -173,7 +176,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(0, 0.5, 0, 0.5);
+      const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 0.5, lng1: 0, lng2: 0.5 });
       expect(res).toHaveLength(0);
     });
 
@@ -188,10 +191,322 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await saveItemAndMembership({ member: actor, parentItem });
 
-      const res = await repository.getItemsIn(4, 0, 4, 0);
+      const res = await repository.getItemsIn(actor, { lat1: 0, lat2: 4, lng1: 0, lng2: 4 });
       expect(res).toHaveLength(2);
       expect(res).toContainEqual(geoloc);
       expect(res).toContainEqual(geolocParent);
+    });
+
+    it('return with keywords in english and french', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'chat chien', lang: 'fr' }),
+        member: actor,
+      });
+      const { item } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+
+      const res = await repository.getItemsIn(
+        { ...actor, lang: 'fr' },
+        {
+          lat1: 0,
+          lat2: 4,
+          lng1: 0,
+          lng2: 4,
+          keywords: ['chats'],
+        },
+      );
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geolocParent);
+    });
+
+    it('return with keywords in english and spanish', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'gatos perros', lang: 'es' }),
+        member: actor,
+      });
+      const { item } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+
+      const res1 = await repository.getItemsIn(
+        { ...actor, lang: 'fr' },
+        {
+          lat1: 0,
+          lat2: 4,
+          lng1: 0,
+          lng2: 4,
+          // this checked the search_document stemmed correctly gatos
+          keywords: ['gato'],
+        },
+      );
+      expect(res1).toHaveLength(1);
+      expect(res1).toContainEqual(geolocParent);
+    });
+
+    it('return only item within keywords in name', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'publics private' }),
+        member: actor,
+      });
+      const { item } = await saveItemAndMembership({
+        item: getDummyItem({ name: 'private publication' }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+
+      const res = await repository.getItemsIn(actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public', 'private'],
+      });
+      expect(res).toHaveLength(2);
+      expect(res).toContainEqual(geolocParent);
+      expect(res).toContainEqual(geoloc);
+    });
+
+    it('return only item within keywords in description', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        item: getDummyItem({ description: 'public' }),
+        member: actor,
+      });
+      const { item } = await saveItemAndMembership({
+        item: getDummyItem({ description: 'private' }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+
+      const res = await repository.getItemsIn(actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geolocParent);
+    });
+
+    it('return only item within keywords in tags', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        item: getDummyItem({ settings: { tags: ['public'] } }),
+        member: actor,
+      });
+      const { item } = await saveItemAndMembership({
+        item: getDummyItem({ settings: { tags: ['private'] } }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+
+      const res = await repository.getItemsIn(actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geolocParent);
+    });
+
+    it('return only item with keywords in file content', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        member: actor,
+      });
+      const { item: item1 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: ItemType.LOCAL_FILE,
+          extra: {
+            [ItemType.LOCAL_FILE]: {
+              content: 'public',
+              name: 'name',
+              path: 'path',
+              mimetype: 'mimetype',
+              size: 1,
+            },
+          },
+        }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+      const { item: item2 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: ItemType.LOCAL_FILE,
+          extra: {
+            [ItemType.LOCAL_FILE]: {
+              content: 'private',
+              name: 'name',
+              path: 'path',
+              mimetype: 'mimetype',
+              size: 1,
+            },
+          },
+        }),
+        member: actor,
+        parentItem,
+      });
+      await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
+
+      const res = await repository.getItemsIn(actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geoloc);
+    });
+
+    it('return only item with keywords in s3File content', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        member: actor,
+      });
+      const { item: item1 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: ItemType.S3_FILE,
+          extra: {
+            [ItemType.S3_FILE]: {
+              content: 'public',
+              name: 'name',
+              path: 'path',
+              mimetype: 'mimetype',
+              size: 1,
+            },
+          },
+        }),
+        member: actor,
+      });
+      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+      const { item: item2 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: ItemType.S3_FILE,
+          extra: {
+            [ItemType.S3_FILE]: {
+              content: 'private',
+              name: 'name',
+              path: 'path',
+              mimetype: 'mimetype',
+              size: 1,
+            },
+          },
+        }),
+        member: actor,
+        parentItem,
+      });
+      await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
+
+      const res = await repository.getItemsIn(actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geoloc);
+    });
+
+    it('return only item with keywords in document content', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        member: actor,
+      });
+      const { item: item1 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: ItemType.DOCUMENT,
+          extra: {
+            [ItemType.DOCUMENT]: {
+              content: 'public',
+            },
+          },
+        }),
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
+      await rawRepository.save(geoloc);
+      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      await rawRepository.save(geolocParent);
+
+      // noise
+      await saveItemAndMembership({ member: actor, parentItem });
+      const { item: item2 } = await saveItemAndMembership({
+        item: getDummyItem({
+          type: ItemType.DOCUMENT,
+          extra: {
+            [ItemType.DOCUMENT]: {
+              content: 'private',
+            },
+          },
+        }),
+        member: actor,
+        parentItem,
+      });
+      await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
+
+      const res = await repository.getItemsIn(actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+        keywords: ['public'],
+      });
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geoloc);
     });
   });
 
