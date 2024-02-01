@@ -8,6 +8,7 @@ import {
   MAX_TARGETS_FOR_READ_REQUEST,
   PermissionLevel,
 } from '@graasp/sdk';
+import { langs } from '@graasp/translations';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { ITEMS_PAGE_SIZE } from './constants';
@@ -42,6 +43,7 @@ export const item = S.object()
   .prop('path', S.string())
   .prop('extra', S.object().additionalProperties(true))
   .prop('settings', settings)
+  .prop('lang', S.enum(Object.keys(langs)))
   // creator could have been deleted
   .prop('creator', S.ifThenElse(S.null(), S.null(), partialMember))
   /**
@@ -63,6 +65,7 @@ export const baseItemCreate = S.object()
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
   .prop('settings', settings)
+  .prop('lang', S.enum(Object.keys(langs)))
   .prop(
     'geolocation',
     S.object().prop('lat', S.number()).prop('lng', S.number()).required(['lat', 'lng']),
@@ -108,8 +111,14 @@ export const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
+  .prop('lang', S.enum(Object.keys(langs)))
   .prop('settings', settings)
-  .anyOf([S.required(['name']), S.required(['description']), S.required(['settings'])]);
+  .anyOf([
+    S.required(['name']),
+    S.required(['description']),
+    S.required(['settings']),
+    S.required(['lang']),
+  ]);
 
 export const create =
   (...itemSchemas: JSONSchema[]) =>

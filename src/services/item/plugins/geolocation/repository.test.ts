@@ -199,11 +199,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return with keywords in english and french', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'chat chien', language: 'fr' }),
+        item: getDummyItem({ name: 'chat chien', lang: 'fr' }),
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'poisson', language: 'fr' }),
+        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
         member: actor,
         parentItem,
       });
@@ -231,11 +231,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return with keywords in english and spanish', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'gatos perros', language: 'es' }),
+        item: getDummyItem({ name: 'gatos perros', lang: 'es' }),
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'poisson', language: 'fr' }),
+        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
         member: actor,
         parentItem,
       });
