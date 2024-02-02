@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0](https://github.com/graasp/graasp/compare/v1.16.0...v1.17.0) (2024-02-01)
+
+
+### Features
+
+* add search for geolocation endpoint ([#798](https://github.com/graasp/graasp/issues/798)) ([5d8ae03](https://github.com/graasp/graasp/commit/5d8ae03c9986d78a7358fe52a120dbfa0d0b2552))
+* allow to filter out item by type in accessible ([#793](https://github.com/graasp/graasp/issues/793)) ([3e817f2](https://github.com/graasp/graasp/commit/3e817f2dd02a8e93dff1b5a84c2923636dfd67d1))
+
+
+### Bug Fixes
+
+* add release tag to build step and docker image ([#792](https://github.com/graasp/graasp/issues/792)) ([276e51a](https://github.com/graasp/graasp/commit/276e51a76b5197a4f10350bf77290b19116a96fb))
+* console logs missing from the NonException PR ([276e51a](https://github.com/graasp/graasp/commit/276e51a76b5197a4f10350bf77290b19116a96fb))
+* **deps:** update dependency @fastify/auth to v4.4.0 ([#469](https://github.com/graasp/graasp/issues/469)) ([6d73f81](https://github.com/graasp/graasp/commit/6d73f8129dd04a9d2ac3dda6907f40e710e5ef35))
+
 ## [1.16.0](https://github.com/graasp/graasp/compare/v1.15.0...v1.16.0) (2024-01-29)
 
 
