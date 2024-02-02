@@ -151,5 +151,5 @@
     "typescript": "5.0.4",
     "wait-for-expect": "3.0.2"
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.1.0"
 }
