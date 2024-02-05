@@ -1726,18 +1726,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#factory-faker":
-  version: 3.6.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=1fe4c278ece622496d5353580ca1e5fabe377b02"
+"@graasp/sdk@npm:3.7.0":
+  version: 3.7.0
+  resolution: "@graasp/sdk@npm:3.7.0"
   dependencies:
     "@faker-js/faker": "npm:8.4.0"
     js-cookie: "npm:3.0.5"
-    lodash.merge: "npm:4.6.2"
     validator: "npm:13.11.0"
   peerDependencies:
     date-fns: ^3
     uuid: ^9
-  checksum: 10/9d27dbb5731e7c3976496fa057b0e8f18672381a6d37486b74af5e98caf9a38f5d13412faef29eb64387e068df9ab8a61bd159183d2feda4a95e86b9ac62046a
+  checksum: 10/686ecf2f252ccaf17a63730e3a9f486bbf5d4744a62c66fc338ec7bc4e1c9161387ce1c72bd560946a57aaa6798ef5e50fe97ccd8178c52ff5c497c8d11ee131
   languageName: node
   linkType: hard
 
@@ -6475,7 +6474,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "github:graasp/graasp-sdk#factory-faker"
+    "@graasp/sdk": "npm:3.7.0"
     "@graasp/translations": "npm:1.23.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"
@@ -8056,7 +8055,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.merge@npm:4.6.2, lodash.merge@npm:^4.6.2":
+"lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: 10/d0ea2dd0097e6201be083865d50c3fb54fbfbdb247d9cc5950e086c991f448b7ab0cdab0d57eacccb43473d3f2acd21e134db39f22dac2d6c9ba6bf26978e3d6
