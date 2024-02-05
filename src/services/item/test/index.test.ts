@@ -1,6 +1,6 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
-import { v4 as uuidv4, v4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import {
@@ -1950,7 +1950,7 @@ describe('Item routes tests', () => {
         };
         const response = await app.inject({
           method: HttpMethod.PATCH,
-          url: `/items/${v4()}`,
+          url: `/items/${uuidv4()}`,
           payload,
         });
 
@@ -2085,7 +2085,10 @@ describe('Item routes tests', () => {
       it('Bad Request for one invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.PATCH,
-          url: `/items?${qs.stringify({ id: [v4(), 'invalid-id'] }, { arrayFormat: 'repeat' })}`,
+          url: `/items?${qs.stringify(
+            { id: [uuidv4(), 'invalid-id'] },
+            { arrayFormat: 'repeat' },
+          )}`,
           payload,
         });
 

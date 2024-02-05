@@ -1,6 +1,6 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+import { DEFAULT_LANG, ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
@@ -45,7 +45,7 @@ export class ItemPublishedService {
     const link = buildPublishedItemLink(item);
 
     for (const member of contributors) {
-      const lang = member.lang ?? 'en';
+      const lang = member.lang ?? DEFAULT_LANG;
       const t = this.mailer.translate(lang);
 
       const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });

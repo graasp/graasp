@@ -110,10 +110,7 @@ export const saveItems = async ({
 
 export const expectItem = (
   newItem: Partial<Item> | undefined | null,
-  correctItem:
-    | Partial<Pick<Item, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings' | 'lang'>>
-    | undefined
-    | null,
+  correctItem: Partial<Omit<Item, 'createdAt' | 'updatedAt'>> | undefined | null,
   creator?: Member,
   parent?: Item,
 ) => {
