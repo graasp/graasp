@@ -10,6 +10,7 @@ import { ChatMessage } from '../../chat/chatMessage';
 import { ChatMessageRepository } from '../../chat/repository';
 import { Item } from '../../item/entities/Item';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
+import { createItem } from '../../item/test/fixtures/items';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
@@ -56,7 +57,7 @@ const setUpActions = async (app, member: Member) => {
     members: [member],
     itemMemberships: [itemMembership],
     item,
-    descendants: [FolderItemFactory() as unknown as Item],
+    descendants: [createItem()],
     chatMessages,
     metadata: { numActionsRetrieved: 5, requestedSampleSize: 5 },
     apps: {},

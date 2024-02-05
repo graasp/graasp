@@ -1,7 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 
-import { FileItemProperties, HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
@@ -9,9 +9,7 @@ import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import MemberRepository from '../repository';
-import * as MEMBERS_FIXTURES from './fixtures/members';
-
-const { saveMember, saveMembers } = MEMBERS_FIXTURES;
+import { saveMember, saveMembers } from './fixtures/members';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -62,43 +60,49 @@ describe('Member routes tests', () => {
       const fileServiceType = FILE_ITEM_TYPE;
 
       // fill db with files
-      const member = await MEMBERS_FIXTURES.saveMember();
-      const item1Properties = {
-        size: 1234,
-      } as FileItemProperties;
+      const member = await saveMember();
       const { item: item1 } = await saveItemAndMembership({
         item: {
-          type: fileServiceType,
-          extra:
-            fileServiceType === ItemType.S3_FILE
-              ? { [ItemType.S3_FILE]: item1Properties }
-              : { [ItemType.LOCAL_FILE]: item1Properties },
+          type: ItemType.S3_FILE,
+          extra: {
+            [ItemType.S3_FILE]: {
+              size: 1234,
+              content: 'content',
+              mimetype: 'image/png',
+              name: 'name',
+              path: 'path',
+            },
+          },
         },
         member: actor,
       });
-      const item2Properties = {
-        size: 534,
-      } as FileItemProperties;
       const { item: item2 } = await saveItemAndMembership({
         item: {
-          type: fileServiceType,
-          extra:
-            fileServiceType === ItemType.S3_FILE
-              ? { [ItemType.S3_FILE]: item2Properties }
-              : { [ItemType.LOCAL_FILE]: item2Properties },
+          type: ItemType.S3_FILE,
+          extra: {
+            [ItemType.S3_FILE]: {
+              size: 534,
+              content: 'content',
+              mimetype: 'image/png',
+              name: 'name',
+              path: 'path',
+            },
+          },
         },
         member: actor,
       });
-      const item3Properties = {
-        size: 8765,
-      } as FileItemProperties;
+
       const { item: item3 } = await saveItemAndMembership({
         item: {
-          type: fileServiceType,
-          extra:
-            fileServiceType === ItemType.S3_FILE
-              ? { [ItemType.S3_FILE]: item3Properties }
-              : { [ItemType.LOCAL_FILE]: item3Properties },
+          extra: {
+            [ItemType.S3_FILE]: {
+              size: 8765,
+              content: 'content',
+              mimetype: 'image/png',
+              name: 'name',
+              path: 'path',
+            },
+          },
         },
         member: actor,
       });
@@ -106,9 +110,9 @@ describe('Member routes tests', () => {
       await saveItemAndMembership({ member });
 
       const totalStorage =
-        (item1.extra[fileServiceType] as FileItemProperties).size +
-        (item2.extra[fileServiceType] as FileItemProperties).size +
-        (item3.extra[fileServiceType] as FileItemProperties).size;
+        item1.extra[fileServiceType].size +
+        item2.extra[fileServiceType].size +
+        item3.extra[fileServiceType].size;
 
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -123,20 +127,20 @@ describe('Member routes tests', () => {
     it('Returns successfully if empty items', async () => {
       ({ app, actor } = await build());
 
-      const fileServiceType = FILE_ITEM_TYPE;
-
       // fill db with noise data
-      const member = await MEMBERS_FIXTURES.saveMember();
-      const dummyItemProperties = {
-        size: 8765,
-      } as FileItemProperties;
+      const member = await saveMember();
       await saveItemAndMembership({
         item: {
-          type: fileServiceType,
-          extra:
-            fileServiceType === ItemType.S3_FILE
-              ? { [ItemType.S3_FILE]: dummyItemProperties }
-              : { [ItemType.LOCAL_FILE]: dummyItemProperties },
+          type: ItemType.S3_FILE,
+          extra: {
+            [ItemType.S3_FILE]: {
+              size: 8765,
+              content: 'content',
+              mimetype: 'image/png',
+              name: 'name',
+              path: 'path',
+            },
+          },
         },
         member,
       });

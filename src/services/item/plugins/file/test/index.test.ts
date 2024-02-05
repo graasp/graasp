@@ -372,7 +372,6 @@ describe('File Item routes tests', () => {
       });
 
       it('Download public file item', async () => {
-        console.log(item);
         await setItemPublic(item, member);
 
         const response = await app.inject({

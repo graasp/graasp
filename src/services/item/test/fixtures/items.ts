@@ -1,5 +1,6 @@
 import {
   AppItemFactory,
+  DiscriminatedItem,
   DocumentItemFactory,
   EmbeddedLinkItemFactory,
   EtherpadItemFactory,
@@ -17,8 +18,14 @@ import { Item } from '../../entities/Item';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemRepository } from '../../repository';
 
-export const createItem = (args?): Item => {
+export const createItem = (
+  args?: Partial<DiscriminatedItem> & {
+    parentItem?: Item;
+    creator?: Actor | null;
+  },
+): Item => {
   let item;
+
   switch (args?.type) {
     case ItemType.APP:
       item = AppItemFactory(args);
@@ -45,8 +52,10 @@ export const createItem = (args?): Item => {
       item = ShortcutItemFactory(args);
       break;
     case ItemType.FOLDER:
-    default:
       item = FolderItemFactory(args);
+      break;
+    default:
+      item = FolderItemFactory(args as never);
   }
   // by default we generate data with type date to match with entity's types
   return {
@@ -64,7 +73,7 @@ export const saveItem = async ({
 }: {
   parentItem?: Item;
   actor?: Actor | null;
-  item?: Partial<Item>;
+  item?: Partial<DiscriminatedItem>;
 }) => {
   const value = createItem({ ...item, creator: actor, parentItem });
   return ItemRepository.save(value);
@@ -77,7 +86,7 @@ export const savePublicItem = async ({
 }: {
   parentItem?: Item;
   actor: Actor | null;
-  item?: Partial<Item>;
+  item?: Partial<DiscriminatedItem>;
 }) => {
   const value = createItem({ ...item, creator: actor, parentItem });
   const newItem = await ItemRepository.save(value);
