@@ -1,1 +1,26 @@
-{}
+{
+  "GREETINGS": "Grazie per esserti iscritto alla nostra piattaforma.",
+  "SIGN_UP_VERIFY_EMAIL": "Verifica la tua email cliccando sul pulsante seguente.",
+  "SIGN_UP_TEXT": "Completa la registrazione e accedi",
+  "SIGN_UP_NOT_REQUESTED": "Se non ricordi di esserti iscritto a Graasp, puoi semplicemente ignorare questa email.",
+  "SIGN_IN_BUTTON_TEXT": "Registrazione",
+  "SIGN_UP_BUTTON_TEXT": "Registrati",
+  "SIGN_IN_TEXT": "Ci hai chiesto di inviarti un collegamento magico per accedere rapidamente al tuo account. Ecco qua:",
+  "SIGN_IN_NOT_REQUESTED": "Se non hai richiesto il collegamento, non sono necessarie ulteriori azioni. Scadrà presto, non preoccuparti, il tuo account e i tuoi dati sono al sicuro.",
+  "EXPORT_ACTIONS_TEXT": "Hai richiesto di scaricare azioni dall'elemento {{itemName}}, ecco il collegamento per scaricare i file. Sarà disponibile per {{days}} giorni",
+  "EXPORT_ACTIONS_BUTTON_TEXT": "Scaricamento",
+  "SIGN_IN_TITLE": "Collegamento di accesso",
+  "SIGN_UP_TITLE": "Registrati",
+  "EXPORT_ACTIONS_TITLE": "Link per il download delle tracce analitiche per {{itemName}}",
+  "INVITATION_TEXT": "{{creatorName}} ha condiviso {{itemName}} con te sulla piattaforma Graasp. Clicca sul pulsante seguente per completare la registrazione.",
+  "INVITATION_TITLE": "L'elemento {{itemName}} è stato condiviso con te su Graasp",
+  "PUBLISH_ITEM_TEXT": "Il tuo articolo {{itemName}} è stato pubblicato nella Libreria Graasp. Clicca sul seguente link per visualizzarlo.",
+  "PUBLISH_ITEM_BUTTON_TEXT": "Visualizza elemento",
+  "PUBLISH_ITEM_TITLE": "{{itemName}} è stato pubblicato",
+  "CHAT_MENTION_TEXT": "Sei stato menzionato in un messaggio da {{creatorName}} in {{itemName}}. Fare clic sul collegamento seguente per visualizzare la conversazione.",
+  "CHAT_MENTION_TITLE": "{{creatorName}} ti ha menzionato in {{itemName}}",
+  "CHAT_MENTION_BUTTON_TEXT": "Visualizza conversazione",
+  "SHARE_ITEM_TEXT": "L'elemento {{itemName}} è stato condiviso con te su Graasp. Fare clic sul seguente collegamento per visualizzare l'elemento in Graasp Builder.",
+  "SHARE_ITEM_BUTTON": "Visualizza elemento",
+  "SHARE_ITEM_TITLE": "{{creatorName}} ha condiviso {{itemName}} con te su Graasp"
+}
