@@ -3,6 +3,8 @@ import { ItemType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
+import { ItemRepository } from '../../repository';
+import { RecycledItemDataRepository } from '../recycled/repository';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationRepository } from './repository';
 
@@ -506,6 +508,37 @@ describe('ItemGeolocationRepository', () => {
       });
       expect(res).toHaveLength(1);
       expect(res).toContainEqual(geoloc);
+    });
+
+    it('return only non-recycled items', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        member: actor,
+      });
+      const { item: item1 } = await saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
+      await rawRepository.save(geoloc);
+      // recycle item1
+      await RecycledItemDataRepository.save({ item: item1 });
+      await ItemRepository.softRemove(item1);
+
+      await saveItemAndMembership({ member: actor, parentItem });
+      const { item: item2 } = await saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
+      const geoloc2 = await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
+
+      const res = await repository.getItemsIn(actor, {
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+      });
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geoloc2);
     });
   });
 
