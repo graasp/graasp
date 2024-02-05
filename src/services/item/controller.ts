@@ -275,26 +275,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.moveMany(member, repositories, ids, parentId);
         await actionItemService.postManyMoveAction(request, reply, repositories, items);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, {
-              data: Object.fromEntries(items.map((i) => [i.id, i])),
-              errors: [],
-            }),
-          );
-        }
-      }).catch((e) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, { error: e }),
-          );
-        }
-      });
+        return items;
+      })
+        // TODO: do the same for the copy and the others ?
+        .then((items) => {
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('move', ids, {
+                data: Object.fromEntries(items.map((i) => [i.id, i])),
+                errors: [],
+              }),
+            );
+          }
+        })
+        .catch((e) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('move', ids, { error: e }),
+            );
+          }
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
