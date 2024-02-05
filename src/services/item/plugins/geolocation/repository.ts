@@ -74,7 +74,7 @@ export class ItemGeolocationRepository {
       // inner join to filter out recycled items
       .innerJoinAndSelect('ig.item', 'item')
       .leftJoinAndSelect('item.creator', 'member')
-      .andWhere('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
+      .where('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
       .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
 
     if (keywords?.filter((s) => s.length)?.length) {
