@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.1](https://github.com/graasp/graasp/compare/v1.17.0...v1.17.1) (2024-02-05)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/bearer-auth to v9.3.0 ([#785](https://github.com/graasp/graasp/issues/785)) ([bcd9fae](https://github.com/graasp/graasp/commit/bcd9faef9a9038643a04117850c87cf608e1234a))
+* filter out recycled items on get geolocation ([#805](https://github.com/graasp/graasp/issues/805)) ([77c63cf](https://github.com/graasp/graasp/commit/77c63cf8db97519dd45e056d8a9a5819f5e70a85))
+* use member and item factories, set lang in i18n ([#790](https://github.com/graasp/graasp/issues/790)) ([b52aac9](https://github.com/graasp/graasp/commit/b52aac9b7f6c8a3092c0e1c938e4c02a3acbea04))
+
 ## [1.17.0](https://github.com/graasp/graasp/compare/v1.16.0...v1.17.0) (2024-02-01)
 
 
