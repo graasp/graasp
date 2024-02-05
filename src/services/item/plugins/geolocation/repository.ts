@@ -71,7 +71,8 @@ export class ItemGeolocationRepository {
 
     const geoloc = this.repository
       .createQueryBuilder('ig')
-      .leftJoinAndSelect('ig.item', 'item')
+      // inner join to filter out recycled items
+      .innerJoinAndSelect('ig.item', 'item')
       .leftJoinAndSelect('item.creator', 'member')
       .where('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
       .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });

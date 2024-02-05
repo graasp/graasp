@@ -2,13 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { Context, FolderItemFactory } from '@graasp/sdk';
+import { Context } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { TMP_FOLDER } from '../../../utils/config';
 import { ChatMessage } from '../../chat/chatMessage';
 import { ChatMessageRepository } from '../../chat/repository';
-import { Item } from '../../item/entities/Item';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
 import { createItem } from '../../item/test/fixtures/items';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
