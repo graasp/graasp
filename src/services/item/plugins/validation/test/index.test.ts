@@ -7,7 +7,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemValidationGroupNotFound } from '../errors';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { saveItemValidation } from './utils';
@@ -64,7 +64,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if has read permission', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -81,7 +81,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if has write permission', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -147,7 +147,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if has read permission', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -164,7 +164,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if has write permission', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -254,7 +254,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if has read permission', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -279,7 +279,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if has write permission', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,

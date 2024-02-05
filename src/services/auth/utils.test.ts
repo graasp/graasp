@@ -8,7 +8,7 @@ import build, { clearDatabase } from '../../../test/app';
 import { AUTH_TOKEN_JWT_SECRET } from '../../utils/config';
 import { InvalidSession, MemberNotFound, OrphanSession } from '../../utils/errors';
 import { Member } from '../member/entities/member';
-import { BOB, saveMember } from '../member/test/fixtures/members';
+import { saveMember } from '../member/test/fixtures/members';
 import { fetchMemberInSession, verifyMemberInAuthToken, verifyMemberInSession } from './utils';
 
 // mock datasource
@@ -28,7 +28,7 @@ describe('Auth utils', () => {
   beforeAll(async () => {
     ({ app } = await build());
 
-    member = await saveMember(BOB);
+    member = await saveMember();
   });
 
   afterAll(async () => {

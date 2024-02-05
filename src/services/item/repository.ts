@@ -384,7 +384,6 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
 
     const descendants = await this.getDescendants(item, { ordered: true });
-
     // copy (memberships from origin are not copied/kept)
     const treeItemsCopy = this._copy(item, descendants, creator, parentItem);
 

@@ -14,7 +14,7 @@ import { generateRandomEmail } from '../../itemLogin/utils';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
+import { saveMember } from '../../member/test/fixtures/members';
 import { Invitation } from '../invitation';
 import { InvitationRepository } from '../repository';
 
@@ -81,7 +81,7 @@ describe('Invitation Plugin', () => {
   describe('POST /invite', () => {
     it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({
@@ -175,7 +175,7 @@ describe('Invitation Plugin', () => {
   describe('GET /:itemId/invitations', () => {
     it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveInvitations({ member });
 
       const response = await app.inject({
@@ -250,7 +250,7 @@ describe('Invitation Plugin', () => {
   describe('GET /invitations/:id', () => {
     it('get invitation by id successfully if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
 
       const { invitations } = await saveInvitations({ member });
       const response = await app.inject({
@@ -304,7 +304,7 @@ describe('Invitation Plugin', () => {
   describe('PATCH /:itemId/invitations/:id', () => {
     it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({
@@ -381,7 +381,7 @@ describe('Invitation Plugin', () => {
   describe('DELETE /:itemId/invitations/:id', () => {
     it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({
@@ -432,7 +432,7 @@ describe('Invitation Plugin', () => {
   describe('POST /:itemId/invitations/:id/send', () => {
     it('throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({

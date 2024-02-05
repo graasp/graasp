@@ -1468,6 +1468,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@faker-js/faker@npm:8.4.0":
+  version: 8.4.0
+  resolution: "@faker-js/faker@npm:8.4.0"
+  checksum: 10/f9253d0b4846ab0fd769cd78be88c4ea24741d9201cccb0038b3627ac21041a2aef150b0f843b2f63d5a056737bec28bcdf493e0b72201a892df4423be0dff79
+  languageName: node
+  linkType: hard
+
 "@fastify/accept-negotiator@npm:^1.0.0":
   version: 1.1.0
   resolution: "@fastify/accept-negotiator@npm:1.1.0"
@@ -1719,15 +1726,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:3.4.1":
-  version: 3.4.1
-  resolution: "@graasp/sdk@npm:3.4.1"
+"@graasp/sdk@github:graasp/graasp-sdk#factory-faker":
+  version: 3.6.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=1fe4c278ece622496d5353580ca1e5fabe377b02"
   dependencies:
-    date-fns: "npm:3.2.0"
+    "@faker-js/faker": "npm:8.4.0"
     js-cookie: "npm:3.0.5"
-    uuid: "npm:9.0.1"
+    lodash.merge: "npm:4.6.2"
     validator: "npm:13.11.0"
-  checksum: 10/6bf2d3fbb28d61a457a534628620982a656258ab2e5c101294da8e7e4327eacff526378983c4e06a85f0115e0547325f9dbece793f7f4bc6129aa8909a42a24b
+  peerDependencies:
+    date-fns: ^3
+    uuid: ^9
+  checksum: 10/9d27dbb5731e7c3976496fa057b0e8f18672381a6d37486b74af5e98caf9a38f5d13412faef29eb64387e068df9ab8a61bd159183d2feda4a95e86b9ac62046a
   languageName: node
   linkType: hard
 
@@ -3308,13 +3318,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node-fetch@npm:2, @types/node-fetch@npm:^2.6.4":
+"@types/node-fetch@npm:2":
   version: 2.6.11
   resolution: "@types/node-fetch@npm:2.6.11"
   dependencies:
     "@types/node": "npm:*"
     form-data: "npm:^4.0.0"
   checksum: 10/c416df8f182ec3826278ea42557fda08f169a48a05e60722d9c8edd4e5b2076ae281c6b6601ad406035b7201f885b0257983b61c26b3f9eb0f41192a807b5de5
+  languageName: node
+  linkType: hard
+
+"@types/node-fetch@npm:^2.6.4":
+  version: 2.6.6
+  resolution: "@types/node-fetch@npm:2.6.6"
+  dependencies:
+    "@types/node": "npm:*"
+    form-data: "npm:^4.0.0"
+  checksum: 10/ed3ccfe5ad000e55e42835e620c8854033457d475d341177509a32306f530fe6671c966634b1aae3942e93ac377c0960abd878863a9fe06f958a6035e088052e
   languageName: node
   linkType: hard
 
@@ -5062,13 +5082,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:3.2.0":
-  version: 3.2.0
-  resolution: "date-fns@npm:3.2.0"
-  checksum: 10/2f36cb9165a066ae90c0b6f0c25b3c70eb75bc52e64ba6dd8680964ebda144851a244ff4ed0b2afb4a6bab796a1af6a0e6c7c2814529d04c72fa434f931d4e81
-  languageName: node
-  linkType: hard
-
 "date-fns@npm:^2.29.1, date-fns@npm:^2.30.0":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
@@ -6462,7 +6475,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:3.4.1"
+    "@graasp/sdk": "github:graasp/graasp-sdk#factory-faker"
     "@graasp/translations": "npm:1.23.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"
@@ -8043,7 +8056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.merge@npm:^4.6.2":
+"lodash.merge@npm:4.6.2, lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: 10/d0ea2dd0097e6201be083865d50c3fb54fbfbdb247d9cc5950e086c991f448b7ab0cdab0d57eacccb43473d3f2acd21e134db39f22dac2d6c9ba6bf26978e3d6

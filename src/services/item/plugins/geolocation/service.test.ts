@@ -7,9 +7,9 @@ import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../member/test/fixtures/members';
+import { saveMember } from '../../../member/test/fixtures/members';
 import ItemService from '../../service';
-import { getDummyItem, savePublicItem } from '../../test/fixtures/items';
+import { savePublicItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationNotFound } from './errors';
 import { ItemGeolocationService } from './service';
@@ -46,7 +46,7 @@ describe('ItemGeolocationService', () => {
       expect(await rawRepository.find()).toHaveLength(0);
     });
     it('delete successfully with write permission', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({
         member: actor,
         permission: PermissionLevel.Write,
@@ -60,7 +60,7 @@ describe('ItemGeolocationService', () => {
       expect(await rawRepository.find()).toHaveLength(0);
     });
     it('cannot delete with read permission', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({
         member: actor,
         permission: PermissionLevel.Read,
@@ -81,7 +81,7 @@ describe('ItemGeolocationService', () => {
       expect(await rawRepository.find()).toHaveLength(1);
     });
     it('cannot delete without permission', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({
         member,
         permission: PermissionLevel.Read,
@@ -110,7 +110,7 @@ describe('ItemGeolocationService', () => {
 
   describe('getByItem', () => {
     it('get successfully with read permission', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({
         member: actor,
         creator: member,
@@ -124,10 +124,9 @@ describe('ItemGeolocationService', () => {
     });
 
     it('get successfully for public item', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const item = await savePublicItem({
         actor: member,
-        item: getDummyItem(),
       });
       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geoloc);
@@ -166,7 +165,7 @@ describe('ItemGeolocationService', () => {
 
   describe('getIn', () => {
     it('get successfully with read permission', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item: item1 } = await saveItemAndMembership({
         member: actor,
         creator: member,
@@ -203,7 +202,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('get successfully for public item', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item: item1 } = await saveItemAndMembership({
         member: actor,
         creator: member,
@@ -213,7 +212,6 @@ describe('ItemGeolocationService', () => {
       await rawRepository.save(geoloc1);
       const publicItem = await savePublicItem({
         actor: member,
-        item: getDummyItem(),
       });
       const geoloc2 = { lat: 1, lng: 2, item: publicItem, country: 'de' };
       await rawRepository.save(geoloc2);
@@ -221,7 +219,6 @@ describe('ItemGeolocationService', () => {
       // noise
       const publicItem1 = await savePublicItem({
         actor: member,
-        item: getDummyItem(),
       });
       const geoloc3 = { lat: 1, lng: 6, item: publicItem1, country: 'de' };
       await rawRepository.save(geoloc3);
@@ -239,7 +236,7 @@ describe('ItemGeolocationService', () => {
 
     it('return empty for nothing in box', async () => {
       // noise
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({
         member: actor,
         creator: member,
@@ -271,7 +268,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('save successfully for write permission', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({
         member: actor,
         creator: member,
@@ -285,7 +282,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('throws for read permission', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({
         member: actor,
         creator: member,

@@ -3,12 +3,12 @@ import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
-import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
 import MemberRepository from '../../../member/repository';
-import { ANNA, BOB, expectMember, saveMember } from '../../../member/test/fixtures/members';
+import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
 jest.mock('node-fetch');
@@ -91,7 +91,7 @@ describe('Auth routes tests', () => {
 
     it('Sign Up fallback to login for already register member', async () => {
       // register already existing member
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
       const response = await app.inject({
@@ -137,7 +137,7 @@ describe('Auth routes tests', () => {
       mockCaptchaValidation(RecaptchaAction.SignIn);
     });
     it('Sign In successfully', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -155,7 +155,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Sign In successfully with given lang', async () => {
-      const member = await saveMember(ANNA);
+      const member = await saveMember(MemberFactory({ extra: { lang: 'fr' } }));
       const { lang } = member.extra;
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
@@ -203,7 +203,7 @@ describe('Auth routes tests', () => {
 
   describe('GET /auth', () => {
     it('Authenticate successfully', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -238,7 +238,7 @@ describe('Auth routes tests', () => {
     });
 
     it('Fail to authenticate if token is invalid', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, 'secret');
       const response = await app.inject({
         method: HttpMethod.GET,

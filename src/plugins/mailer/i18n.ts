@@ -7,6 +7,7 @@ import frTranslations from './langs/fr.json';
 import itTranslations from './langs/it.json';
 
 i18next.init({
+  fallbackLng: 'en',
   resources: {
     en: {
       translation: enTranslations,

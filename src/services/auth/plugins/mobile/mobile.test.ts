@@ -3,7 +3,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import fetch, { type Response } from 'node-fetch';
 
-import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import {
@@ -13,7 +13,7 @@ import {
 } from '../../../../utils/config';
 import { MemberNotFound } from '../../../../utils/errors';
 import MemberRepository from '../../../member/repository';
-import { ANNA, BOB, LOUISA, expectMember, saveMember } from '../../../member/test/fixtures/members';
+import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
@@ -96,8 +96,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign Up fallback to login for already register member', async () => {
-      const member = BOB;
-      await saveMember(member);
+      const member = await saveMember();
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
@@ -138,8 +137,7 @@ describe('Mobile Endpoints', () => {
       mockCaptchaValidation(RecaptchaAction.SignInMobile);
     });
     it('Sign In successfully', async () => {
-      const member = BOB;
-      await saveMember(member);
+      const member = await saveMember();
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
@@ -158,9 +156,8 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In successfully with given lang', async () => {
-      const member = ANNA;
       const lang = 'de';
-      await saveMember(member);
+      const member = await saveMember();
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
@@ -210,7 +207,7 @@ describe('Mobile Endpoints', () => {
       mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
     });
     it('Sign In successfully', async () => {
-      const member = LOUISA;
+      const member = MemberFactory();
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
@@ -241,7 +238,7 @@ describe('Mobile Endpoints', () => {
           }),
         } as Response;
       });
-      const member = LOUISA;
+      const member = MemberFactory();
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
@@ -272,7 +269,7 @@ describe('Mobile Endpoints', () => {
           }),
         } as Response;
       });
-      const member = LOUISA;
+      const member = MemberFactory();
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
@@ -294,7 +291,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
-      const member = LOUISA;
+      const member = MemberFactory();
       const wrongPassword = '1234';
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
@@ -308,9 +305,8 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Sign In send not acceptable error when member does not have password', async () => {
-      const member = BOB;
       const clearPassword = 'asd';
-      await saveMember(member);
+      const member = await saveMember();
 
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -352,7 +348,7 @@ describe('Mobile Endpoints', () => {
 
   describe('GET /m/auth', () => {
     it('Authenticate successfully', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const verifier = 'verifier';
       // compute challenge from verifier
       const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
@@ -373,7 +369,7 @@ describe('Mobile Endpoints', () => {
     });
 
     it('Fail to authenticate if verifier and challenge do not match', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, JWT_SECRET);
       const verifier = 'verifier';
       const response = await app.inject({
@@ -425,7 +421,7 @@ describe('Mobile Endpoints', () => {
 
   describe('GET /m/auth/refresh', () => {
     it('Refresh tokens successfully', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, REFRESH_TOKEN_JWT_SECRET);
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -450,7 +446,7 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     });
     it('Fail if token is invalid', async () => {
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, 'REFRESH_TOKEN_JWT_SECRET');
       const response = await app.inject({
         method: HttpMethod.GET,

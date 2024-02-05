@@ -8,7 +8,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTag } from '../ItemTag';
 import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
 import { ItemTagRepository } from '../repository';
@@ -49,7 +49,7 @@ describe('Tags', () => {
     describe('Signed Out', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
       });
 
@@ -120,7 +120,7 @@ describe('Tags', () => {
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
       });
 
@@ -212,7 +212,7 @@ describe('Tags', () => {
 
       it('Return errors if does not have rights on one item', async () => {
         const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item: item2 } = await saveItemAndMembership({ member });
         await saveTagsForItem({ item: item2, creator: member });
         const ids = [item1.id, item2.id];
@@ -236,7 +236,7 @@ describe('Tags', () => {
 
       it('Throws if item is private', async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
 
         const response = await app.inject({
@@ -322,7 +322,7 @@ describe('Tags', () => {
 
       it('Throws if item is private', async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
 
         const response = await app.inject({

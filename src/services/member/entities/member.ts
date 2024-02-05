@@ -34,7 +34,7 @@ export class Member extends BaseEntity {
     default: MemberType.Individual,
     enum: Object.values(MemberType),
   })
-  type: MemberType;
+  type: `${MemberType}` | MemberType;
 
   @Column('simple-json', { nullable: false, default: '{}' })
   extra: MemberExtra;

@@ -8,7 +8,7 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Item } from '../../../../item/entities/Item';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
@@ -91,7 +91,7 @@ describe('Categories', () => {
     describe('Signed out', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         ({ itemCategories, categories } = await setUp({ item }));
       });
@@ -169,7 +169,7 @@ describe('Categories', () => {
     describe('Signed out', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         ({ itemCategories, categories } = await setUp({ item }));
       });
@@ -186,7 +186,7 @@ describe('Categories', () => {
     describe('Public', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         await setItemPublic(item, member);
         ({ itemCategories, categories } = await setUp({ item }));
@@ -236,7 +236,7 @@ describe('Categories', () => {
     describe('Signed out', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ categories } = await setUp({}));
       });
 
@@ -320,7 +320,7 @@ describe('Categories', () => {
     describe('Signed out', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         ({ itemCategories, categories } = await setUp({ item }));
       });

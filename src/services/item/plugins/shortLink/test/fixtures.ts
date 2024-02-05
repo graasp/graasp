@@ -5,7 +5,6 @@ import {
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
-import { getDummyItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service';
 
@@ -37,7 +36,6 @@ export const mockItemAndMemberships = async ({
   setPublic?: boolean;
 }) => {
   const { item } = await saveItemAndMembership({
-    item: getDummyItem(),
     member: itemCreator,
   });
 

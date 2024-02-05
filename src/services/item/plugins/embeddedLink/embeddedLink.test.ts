@@ -1,14 +1,14 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 
-import { EmbeddedLinkItemExtra, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { EmbeddedLinkItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../member/test/fixtures/members';
+import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
-import { expectItem, getDummyItem } from '../../test/fixtures/items';
+import { expectItem } from '../../test/fixtures/items';
 
 jest.mock('node-fetch');
 
@@ -26,14 +26,6 @@ const iframelyResult = {
   icons: [],
   thumbnails: [],
 };
-const extra = {
-  [ItemType.LINK]: {
-    html: 'html',
-    icons: [],
-    thumbnails: [],
-    url: 'http://myurl.com',
-  },
-} as EmbeddedLinkItemExtra;
 
 // TODO: test iframely
 
@@ -59,7 +51,7 @@ describe('Link Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = { name: 'link', type: ItemType.LINK, extra };
+      const payload = EmbeddedLinkItemFactory();
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/items',
@@ -75,25 +67,31 @@ describe('Link Item tests', () => {
       });
 
       it('Create successfully', async () => {
-        const payload = { type: ItemType.LINK, extra, name: 'mylink' };
-
+        const payload = EmbeddedLinkItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/items',
           payload,
         });
 
-        const expectedItem = getDummyItem({
+        const expectedItem = {
           name: iframelyMeta.title,
           type: ItemType.LINK,
-          extra,
+          extra: {
+            [ItemType.LINK]: {
+              url: payload.extra.embeddedLink.url,
+              html: 'html',
+              icons: [],
+              thumbnails: [],
+            },
+          },
           description: iframelyMeta.description,
-        });
+        };
 
         // check response value
         const newItem = response.json();
-        expectItem(newItem, expectedItem);
         expect(response.statusCode).toBe(StatusCodes.OK);
+        expectItem(newItem, expectedItem);
 
         // check item exists in db
         const item = await ItemRepository.get(newItem.id);
@@ -107,7 +105,14 @@ describe('Link Item tests', () => {
       it('Fail to create if type does not match extra', async () => {
         const payload = {
           type: ItemType.DOCUMENT,
-          extra,
+          extra: {
+            [ItemType.LINK]: {
+              html: 'html',
+              icons: [],
+              thumbnails: [],
+              url: 'http://myurl.com',
+            },
+          },
           name: 'mylink',
         };
 
@@ -158,7 +163,7 @@ describe('Link Item tests', () => {
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -180,7 +185,6 @@ describe('Link Item tests', () => {
           item: {
             name: 'link item',
             type: ItemType.LINK,
-            extra,
           },
           member: actor,
         });
@@ -212,7 +216,7 @@ describe('Link Item tests', () => {
   describe('PATCH many /items', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({

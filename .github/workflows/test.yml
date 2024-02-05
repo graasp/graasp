@@ -173,6 +173,7 @@ jobs:
         run: yarn test:ci --shard=${{ matrix.shard }}
         env:
           CI: true
+          LOG_LEVEL: fatal # avoid unnecessary logging
           # random keys
           APPS_JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
           APPS_PUBLISHER_ID: 9c9cea73-f3b7-48a3-aa6e-ead82c0685e7 # mock uuid

@@ -7,7 +7,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Actor, Member } from '../../../../member/entities/member';
-import { BOB, expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
+import { expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { expectItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
@@ -62,7 +62,7 @@ describe('Apps Plugin Tests', () => {
     describe('Signed Out', () => {
       it('Unauthenticated member throws error', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         apps = await saveAppList();
         const chosenApp = apps[0];
         const { item } = await saveApp({ url: chosenApp.url, member });
@@ -81,7 +81,7 @@ describe('Apps Plugin Tests', () => {
     describe('Public', () => {
       it('Successfully request api access', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         apps = await saveAppList();
         const chosenApp = apps[0];
         const { item } = await saveApp({ url: chosenApp.url, member });
@@ -147,7 +147,7 @@ describe('Apps Plugin Tests', () => {
       });
 
       it('Unauthorized if actor does not have membership on the app item', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveApp({ url: chosenApp.url, member });
 
         const response = await app.inject({
@@ -165,7 +165,7 @@ describe('Apps Plugin Tests', () => {
     describe('Public', () => {
       it('Get app context successfully for one item without members', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item, token } = await setUpForAppContext(app, member, member, undefined, true);
 
         const response = await app.inject({
@@ -203,7 +203,7 @@ describe('Apps Plugin Tests', () => {
 
       it('Get app context successfully for one item', async () => {
         ({ app, actor } = await build());
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, token } = await setUpForAppContext(app, actor, member, PermissionLevel.Read));
         if (!actor) {
           throw new Error('actor is undefined');
@@ -230,7 +230,7 @@ describe('Apps Plugin Tests', () => {
         if (!actor) {
           throw new Error('actor is undefined');
         }
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({ member: actor, parentItem });
         ({ item, token } = await setUpForAppContext(
@@ -266,7 +266,7 @@ describe('Apps Plugin Tests', () => {
         if (!actor) {
           throw new Error('actor is undefined');
         }
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({ member: actor, parentItem });
         await setItemPublic(parentItem, actor);

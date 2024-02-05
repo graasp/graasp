@@ -7,7 +7,6 @@ import build, { clearDatabase } from '../../../../test/app';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
-import { getDummyItem } from '../../item/test/fixtures/items';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import MemberRepository from '../repository';
 import * as MEMBERS_FIXTURES from './fixtures/members';
@@ -63,44 +62,44 @@ describe('Member routes tests', () => {
       const fileServiceType = FILE_ITEM_TYPE;
 
       // fill db with files
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await MEMBERS_FIXTURES.saveMember();
       const item1Properties = {
         size: 1234,
       } as FileItemProperties;
       const { item: item1 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: fileServiceType,
           extra:
             fileServiceType === ItemType.S3_FILE
               ? { [ItemType.S3_FILE]: item1Properties }
               : { [ItemType.LOCAL_FILE]: item1Properties },
-        }),
+        },
         member: actor,
       });
       const item2Properties = {
         size: 534,
       } as FileItemProperties;
       const { item: item2 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: fileServiceType,
           extra:
             fileServiceType === ItemType.S3_FILE
               ? { [ItemType.S3_FILE]: item2Properties }
               : { [ItemType.LOCAL_FILE]: item2Properties },
-        }),
+        },
         member: actor,
       });
       const item3Properties = {
         size: 8765,
       } as FileItemProperties;
       const { item: item3 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: fileServiceType,
           extra:
             fileServiceType === ItemType.S3_FILE
               ? { [ItemType.S3_FILE]: item3Properties }
               : { [ItemType.LOCAL_FILE]: item3Properties },
-        }),
+        },
         member: actor,
       });
       // noise data
@@ -127,18 +126,18 @@ describe('Member routes tests', () => {
       const fileServiceType = FILE_ITEM_TYPE;
 
       // fill db with noise data
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await MEMBERS_FIXTURES.saveMember();
       const dummyItemProperties = {
         size: 8765,
       } as FileItemProperties;
       await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: fileServiceType,
           extra:
             fileServiceType === ItemType.S3_FILE
               ? { [ItemType.S3_FILE]: dummyItemProperties }
               : { [ItemType.LOCAL_FILE]: dummyItemProperties },
-        }),
+        },
         member,
       });
 
@@ -170,7 +169,7 @@ describe('Member routes tests', () => {
         ({ app } = await build({ member: null }));
       });
       it('Returns successfully', async () => {
-        const member = await saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const memberId = member.id;
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -190,7 +189,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const member = await saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const memberId = member.id;
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -236,7 +235,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const members = await saveMembers([MEMBERS_FIXTURES.ANNA, MEMBERS_FIXTURES.BOB]);
+        const members = await saveMembers();
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -264,7 +263,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const members = await saveMembers([MEMBERS_FIXTURES.ANNA, MEMBERS_FIXTURES.BOB]);
+        const members = await saveMembers();
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -286,7 +285,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns one member successfully', async () => {
-        const members = await saveMembers([MEMBERS_FIXTURES.ANNA]);
+        const members = await saveMembers();
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -307,7 +306,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns Bad Request for duplicate id', async () => {
-        const members = await saveMembers([MEMBERS_FIXTURES.ANNA]);
+        const members = await saveMembers();
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -322,7 +321,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns Bad Request for one invalid id', async () => {
-        const members = await saveMembers([MEMBERS_FIXTURES.ANNA, MEMBERS_FIXTURES.BOB]);
+        const members = await saveMembers();
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -339,7 +338,7 @@ describe('Member routes tests', () => {
       it('Returns MemberNotFound for one missing id', async () => {
         // the following id is not part of the fixtures
         const memberId = 'a3894999-c958-49c0-a5f0-f82dfebd941e';
-        const members = await saveMembers([MEMBERS_FIXTURES.ANNA, MEMBERS_FIXTURES.BOB]);
+        const members = await saveMembers();
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -363,7 +362,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const member = await saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `/members/search?email=${member.email}`,
@@ -386,7 +385,7 @@ describe('Member routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const member = await saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `/members/search?email=${member.email}`,
@@ -476,7 +475,7 @@ describe('Member routes tests', () => {
       });
 
       it('Current member cannot modify another member', async () => {
-        const member = await saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const newName = 'new name';
         const response = await app.inject({
           method: HttpMethod.PATCH,
@@ -498,7 +497,7 @@ describe('Member routes tests', () => {
   describe('DELETE /members/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
 
       const response = await app.inject({
         method: HttpMethod.DELETE,
@@ -525,7 +524,7 @@ describe('Member routes tests', () => {
       });
 
       it('Current member cannot delete another member', async () => {
-        const member = await saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const response = await app.inject({
           method: HttpMethod.DELETE,
           url: `/members/${member.id}`,

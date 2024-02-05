@@ -224,7 +224,7 @@ describe('ZIP routes tests', () => {
   describe('POST /zip-export', () => {
     it('Export successfully if signed in', async () => {
       ({ app, actor } = await build());
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await saveItemAndMembership({ member: actor, item: { name: 'itemname' } });
 
       const response = await app.inject({
         method: HttpMethod.GET,

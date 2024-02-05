@@ -9,7 +9,6 @@ import {
 } from '../../../../itemMembership/test/fixtures/memberships';
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
-import { getDummyItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { PublisherRepository } from '../publisherRepository';
 import { AppRepository } from '../repository';
@@ -84,7 +83,7 @@ export const saveApp = ({
   parentItem?: Item;
 }) => {
   return saveItemAndMembership({
-    item: getDummyItem({ type: ItemType.APP, extra: { [ItemType.APP]: { url } } }),
+    item: { type: ItemType.APP, extra: { [ItemType.APP]: { url } } },
     member,
     parentItem,
   });

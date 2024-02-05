@@ -1,16 +1,18 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import {
   FolderItemExtra,
+  FolderItemFactory,
   HttpMethod,
   ItemTagType,
   ItemType,
   MAX_NUMBER_OF_CHILDREN,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TREE_LEVELS,
+  MemberFactory,
   PermissionLevel,
   buildPathFromIds,
 } from '@graasp/sdk';
@@ -32,20 +34,13 @@ import {
   saveMembership,
 } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
-import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
+import { saveMember } from '../../member/test/fixtures/members';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
 import { Ordering, SortBy } from '../types';
-import {
-  expectItem,
-  expectManyItems,
-  getDummyItem,
-  saveItem,
-  saveItems,
-  savePublicItem,
-} from './fixtures/items';
+import { expectItem, expectManyItems, saveItem, saveItems, savePublicItem } from './fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -56,7 +51,6 @@ const saveUntilMaxDescendants = async (parent: Item, actor: Member) => {
   let currentParent = parent;
   for (let i = 0; i < MAX_TREE_LEVELS - 1; i++) {
     const newCurrentParent = await saveItem({
-      item: getDummyItem({ type: ItemType.FOLDER }),
       actor,
       parentItem: currentParent,
     });
@@ -80,7 +74,7 @@ const saveNbOfItems = async ({
   const items: Item[] = [];
   for (let i = 0; i < nb; i++) {
     const { item } = await saveItemAndMembership({
-      item: getDummyItem({ name: 'item ' + i }),
+      item: { name: 'item ' + i },
       member: member ?? actor,
       parentItem,
       creator: actor,
@@ -105,7 +99,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = getDummyItem();
+      const payload = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/items',
@@ -121,7 +115,7 @@ describe('Item routes tests', () => {
       });
 
       it('Create successfully', async () => {
-        const payload = getDummyItem();
+        const payload = FolderItemFactory();
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -146,9 +140,8 @@ describe('Item routes tests', () => {
       it('Create successfully in parent item', async () => {
         const { item: parent } = await saveItemAndMembership({
           member: actor,
-          item: getDummyItem(),
         });
-        const payload = getDummyItem();
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items?parentId=${parent.id}`,
@@ -172,9 +165,9 @@ describe('Item routes tests', () => {
         const { item: parent } = await saveItemAndMembership({
           member: actor,
           // hack to simulate a legacy folder item that had an empty extra (no folder.childrenOrder)
-          item: { ...getDummyItem(), extra: {} as FolderItemExtra },
+          item: { extra: {} as FolderItemExtra },
         });
-        const payload = getDummyItem();
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items?parentId=${parent.id}`,
@@ -195,10 +188,10 @@ describe('Item routes tests', () => {
       });
 
       it('Create successfully in shared parent item', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member });
         await saveMembership({ member: actor, item: parent, permission: PermissionLevel.Write });
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items?parentId=${parent.id}`,
@@ -217,7 +210,7 @@ describe('Item routes tests', () => {
       });
 
       it('Create successfully with geolocation', async () => {
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items`,
@@ -232,7 +225,7 @@ describe('Item routes tests', () => {
       });
 
       it('Create successfully with language', async () => {
-        const payload = getDummyItem({ type: ItemType.FOLDER, lang: 'fr' });
+        const payload = FolderItemFactory({ lang: 'fr' });
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items`,
@@ -245,7 +238,7 @@ describe('Item routes tests', () => {
       });
 
       it('Throw if geolocation is partial', async () => {
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items`,
@@ -271,7 +264,7 @@ describe('Item routes tests', () => {
 
       it('Bad request if name is invalid', async () => {
         // by default the item creator use an invalid item type
-        const newItem = getDummyItem({ name: '' });
+        const newItem = FolderItemFactory({ name: '' });
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/items',
@@ -281,7 +274,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
 
         // by default the item creator use an invalid item type
-        const newItem1 = getDummyItem({ name: ' ' });
+        const newItem1 = FolderItemFactory({ name: ' ' });
         const response1 = await app.inject({
           method: HttpMethod.POST,
           url: '/items',
@@ -293,7 +286,7 @@ describe('Item routes tests', () => {
 
       it('Bad request if type is invalid', async () => {
         // by default the item creator use an invalid item type
-        const newItem = getDummyItem();
+        const newItem = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: '/items',
@@ -304,7 +297,7 @@ describe('Item routes tests', () => {
       });
 
       it('Bad request if parentId id is invalid', async () => {
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
         const parentId = 'invalid-id';
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -316,7 +309,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Cannot create item in non-existing parent', async () => {
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
         const parentId = uuidv4();
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -329,9 +322,9 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if member does not have membership on parent', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const { item: parent } = await saveItemAndMembership({ item: getDummyItem(), member });
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const member = await saveMember();
+        const { item: parent } = await saveItemAndMembership({ member });
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items?parentId=${parent.id}`,
@@ -343,15 +336,14 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if member can only read parent', async () => {
-        const owner = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const owner = await saveMember();
         const { item: parent } = await saveItemAndMembership({
-          item: getDummyItem(),
           member: actor,
           creator: owner,
           permission: PermissionLevel.Read,
         });
 
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items?parentId=${parent.id}`,
@@ -363,16 +355,12 @@ describe('Item routes tests', () => {
 
       it('Cannot create item if parent item has too many children', async () => {
         const { item: parent } = await saveItemAndMembership({
-          item: getDummyItem(),
           member: actor,
         });
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
 
         // save maximum children
-        const items = Array.from({ length: MAX_NUMBER_OF_CHILDREN }, () =>
-          getDummyItem({ type: ItemType.FOLDER, parentPath: parent.path }),
-        );
-        await saveItems({ items, parentItem: parent, actor });
+        await saveItems({ nb: MAX_NUMBER_OF_CHILDREN, parentItem: parent, actor });
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -385,9 +373,8 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if parent is too deep in hierarchy', async () => {
-        const payload = getDummyItem({ type: ItemType.FOLDER });
+        const payload = FolderItemFactory();
         const { item: parent } = await saveItemAndMembership({
-          item: getDummyItem({ type: ItemType.FOLDER }),
           member: actor,
         });
         const currentParent = await saveUntilMaxDescendants(parent, actor);
@@ -405,9 +392,9 @@ describe('Item routes tests', () => {
       it('Cannot create inside non-folder item', async () => {
         const { item: parent } = await saveItemAndMembership({
           member: actor,
-          item: getDummyItem({ type: ItemType.DOCUMENT }),
+          item: { type: ItemType.DOCUMENT },
         });
-        const payload = getDummyItem();
+        const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `/items?parentId=${parent.id}`,
@@ -422,8 +409,8 @@ describe('Item routes tests', () => {
   describe('GET /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-      const { item } = await saveItemAndMembership({ item: getDummyItem(), member });
+      const member = await saveMember();
+      const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -439,7 +426,7 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const { item } = await saveItemAndMembership({ item: getDummyItem(), member: actor });
+        const { item } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -471,8 +458,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
       it('Cannot get item if have no membership', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const item = await saveItem({ item: getDummyItem(), actor: member });
+        const member = await saveMember();
+        const item = await saveItem({ actor: member });
         const response = await app.inject({
           method: HttpMethod.GET,
           url: `/items/${item.id}`,
@@ -486,8 +473,8 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const item = await savePublicItem({ item: getDummyItem(), actor: member });
+        const member = await saveMember();
+        const item = await savePublicItem({ actor: member });
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -505,7 +492,7 @@ describe('Item routes tests', () => {
     // warning: this will change if it becomes a public endpoint
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -599,10 +586,10 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const items: Item[] = [];
         for (let i = 0; i < 3; i++) {
-          const item = await savePublicItem({ item: getDummyItem(), actor: member });
+          const item = await savePublicItem({ actor: member });
           items.push(item);
         }
 
@@ -629,7 +616,7 @@ describe('Item routes tests', () => {
   describe('GET /items/own', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -672,7 +659,7 @@ describe('Item routes tests', () => {
   describe('GET /items/shared-with', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -690,7 +677,7 @@ describe('Item routes tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
 
-        member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        member = await saveMember();
         const { item: item1 } = await saveItemAndMembership({ member });
         const { item: item2 } = await saveItemAndMembership({ member });
         const { item: item3 } = await saveItemAndMembership({ member });
@@ -700,7 +687,7 @@ describe('Item routes tests', () => {
         await saveMembership({ item: item3, member: actor, permission: PermissionLevel.Read });
 
         // save own item that should not be returned
-        await saveItemAndMembership({ item: getDummyItem(), member: actor });
+        await saveItemAndMembership({ member: actor });
       });
 
       it('Returns successfully', async () => {
@@ -826,7 +813,7 @@ describe('Item routes tests', () => {
   describe('GET /items/accessible', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -849,7 +836,7 @@ describe('Item routes tests', () => {
         const { item: item3 } = await saveItemAndMembership({ member: actor });
 
         // shared
-        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const bob = await saveMember();
         const { item: item4 } = await saveItemAndMembership({ member: actor, creator: bob });
         const { item: item5 } = await saveItemAndMembership({ member: bob });
         const { item: item6 } = await saveItemAndMembership({
@@ -888,7 +875,7 @@ describe('Item routes tests', () => {
         await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({ member: actor });
 
-        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const bob = await saveMember();
         const { item: item1 } = await saveItemAndMembership({ member: actor, creator: bob });
         const { item: item2 } = await saveItemAndMembership({ member: actor, creator: bob });
 
@@ -966,19 +953,22 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully sorted items by creator name asc', async () => {
-        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const anna = await saveMember(MemberFactory({ name: 'anna' }));
+        const bob = await saveMember(MemberFactory({ name: 'bob' }));
+        const cedric = await saveMember(MemberFactory({ name: 'cedric' }));
         const { item: item1 } = await saveItemAndMembership({
           member: actor,
           creator: bob,
           item: { type: ItemType.DOCUMENT },
         });
         const { item: item2 } = await saveItemAndMembership({
+          creator: anna,
           member: actor,
           item: { type: ItemType.FOLDER },
         });
         const { item: item3 } = await saveItemAndMembership({
           member: actor,
-          creator: bob,
+          creator: cedric,
           item: { type: ItemType.APP },
         });
 
@@ -1000,7 +990,7 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully items by read', async () => {
-        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const bob = await saveMember();
         const { item: item1 } = await saveItemAndMembership({
           member: actor,
           creator: bob,
@@ -1040,7 +1030,8 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully items by write and admin', async () => {
-        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const anna = await saveMember(MemberFactory({ name: 'anna' }));
+        const bob = await saveMember(MemberFactory({ name: 'bob' }));
         await saveItemAndMembership({
           member: actor,
           creator: bob,
@@ -1049,6 +1040,7 @@ describe('Item routes tests', () => {
         });
         const { item: item2 } = await saveItemAndMembership({
           member: actor,
+          creator: anna,
           permission: PermissionLevel.Admin,
           item: { type: ItemType.FOLDER },
         });
@@ -1081,7 +1073,7 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully folder items', async () => {
-        const bob = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const bob = await saveMember();
         const { item: itemFolder1 } = await saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Admin,
@@ -1224,7 +1216,7 @@ describe('Item routes tests', () => {
     // warning: this will change if the endpoint becomes public
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -1247,7 +1239,7 @@ describe('Item routes tests', () => {
 
         const children = [child1, child2];
         // create child of child
-        await saveItemAndMembership({ item: getDummyItem(), member: actor, parentItem: child1 });
+        await saveItemAndMembership({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -1279,12 +1271,12 @@ describe('Item routes tests', () => {
       it('Returns ordered children', async () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item: child1 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
         const { item: child2 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member: actor,
           parentItem: parent,
         });
@@ -1294,7 +1286,7 @@ describe('Item routes tests', () => {
 
         await ItemRepository.patch(parent.id, { extra: { [ItemType.FOLDER]: { childrenOrder } } });
         // create child of child
-        await saveItemAndMembership({ item: getDummyItem(), member: actor, parentItem: child1 });
+        await saveItemAndMembership({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -1313,12 +1305,12 @@ describe('Item routes tests', () => {
       it('Returns ordered successfully even without order defined', async () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item: child1 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
         const { item: child2 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member: actor,
           parentItem: parent,
         });
@@ -1345,19 +1337,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Filter out hidden children on read permission', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Read,
         });
         const { item: child1 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member,
           parentItem: parent,
         });
         const { item: child2 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member,
           parentItem: parent,
         });
@@ -1385,19 +1377,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Filter children by Folder', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Read,
         });
         const { item: notAFolder } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1', type: ItemType.DOCUMENT }),
+          item: { name: 'child1', type: ItemType.DOCUMENT },
           member,
           parentItem: parent,
         });
         const { item: child2 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2', type: ItemType.FOLDER }),
+          item: { name: 'child2', type: ItemType.FOLDER },
           member,
           parentItem: parent,
         });
@@ -1440,15 +1432,15 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
       it('Cannot get children if does not have membership on parent', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member,
           parentItem: parent,
         });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member,
           parentItem: parent,
         });
@@ -1466,14 +1458,14 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const actor = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const parent = await savePublicItem({ item: getDummyItem(), actor });
-        const child1 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
-        const child2 = await savePublicItem({ item: getDummyItem(), actor, parentItem: parent });
+        const actor = await saveMember();
+        const parent = await savePublicItem({ actor });
+        const child1 = await savePublicItem({ actor, parentItem: parent });
+        const child2 = await savePublicItem({ actor, parentItem: parent });
 
         const children = [child1, child2];
         // create child of child
-        await savePublicItem({ item: getDummyItem(), actor, parentItem: child1 });
+        await savePublicItem({ actor, parentItem: child1 });
 
         const response = await app.inject({
           method: HttpMethod.GET,
@@ -1497,7 +1489,7 @@ describe('Item routes tests', () => {
     // warning: this will change if the endpoint becomes public
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -1516,12 +1508,12 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item: child1 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
         const { item: child2 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member: actor,
           parentItem: parent,
         });
@@ -1548,19 +1540,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Filter out hidden items for read rights', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Read,
         });
         const { item: child1 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member,
           parentItem: parent,
         });
         const { item: child2 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member,
           parentItem: parent,
         });
@@ -1575,7 +1567,7 @@ describe('Item routes tests', () => {
         // another item with child
         const { item: parent1 } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child' }),
+          item: { name: 'child' },
           member: actor,
           parentItem: parent1,
         });
@@ -1595,7 +1587,7 @@ describe('Item routes tests', () => {
         // another item with child
         const { item: parent1 } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member: actor,
           parentItem: parent1,
         });
@@ -1628,15 +1620,15 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
       it('Cannot get descendants if does not have membership on parent', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member,
           parentItem: parent,
         });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member,
           parentItem: parent,
         });
@@ -1653,22 +1645,22 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        const actor = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const actor = await saveMember();
         ({ app } = await build({ member: null }));
-        const parent = await savePublicItem({ item: getDummyItem(), actor });
+        const parent = await savePublicItem({ actor });
         const child1 = await savePublicItem({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           actor,
           parentItem: parent,
         });
         const child2 = await savePublicItem({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           actor,
           parentItem: parent,
         });
 
         const childOfChild = await savePublicItem({
-          item: getDummyItem({ name: 'child3' }),
+          item: { name: 'child3' },
           actor,
           parentItem: child1,
         });
@@ -1695,7 +1687,7 @@ describe('Item routes tests', () => {
   describe('GET /items/:id/parents', () => {
     it('Throws if signed out and item is private', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -1714,13 +1706,13 @@ describe('Item routes tests', () => {
       it('Returns successfully in order', async () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item: child1 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
         // noise
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member: actor,
           parentItem: parent,
         });
@@ -1753,7 +1745,7 @@ describe('Item routes tests', () => {
         // another item with child
         const { item: parent1 } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member: actor,
           parentItem: parent1,
         });
@@ -1786,15 +1778,15 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
       });
       it('Cannot get parents if does not have membership on parent', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           member,
           parentItem: parent,
         });
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           member,
           parentItem: parent,
         });
@@ -1812,22 +1804,22 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const parent = await savePublicItem({ item: getDummyItem(), actor });
+        const parent = await savePublicItem({ actor });
         const child1 = await savePublicItem({
-          item: getDummyItem({ name: 'child1' }),
+          item: { name: 'child1' },
           actor,
           parentItem: parent,
         });
 
         const childOfChild = await savePublicItem({
-          item: getDummyItem({ name: 'child3' }),
+          item: { name: 'child3' },
           actor,
           parentItem: child1,
         });
 
         // noise
         await savePublicItem({
-          item: getDummyItem({ name: 'child2' }),
+          item: { name: 'child2' },
           actor,
           parentItem: parent,
         });
@@ -1852,7 +1844,7 @@ describe('Item routes tests', () => {
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -1871,13 +1863,13 @@ describe('Item routes tests', () => {
 
       it('Update successfully', async () => {
         const { item } = await saveItemAndMembership({
-          item: getDummyItem({
+          item: {
             extra: {
               [ItemType.FOLDER]: {
                 childrenOrder: ['value'],
               },
             },
-          }),
+          },
           member: actor,
         });
         const payload = {
@@ -1956,10 +1948,9 @@ describe('Item routes tests', () => {
           name: 'new name',
           extra: { key: 'false' },
         };
-        const id = getDummyItem().id;
         const response = await app.inject({
           method: HttpMethod.PATCH,
-          url: `/items/${id}`,
+          url: `/items/${v4()}`,
           payload,
         });
 
@@ -1985,7 +1976,7 @@ describe('Item routes tests', () => {
         const payload = {
           name: 'new name',
         };
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
@@ -2001,7 +1992,7 @@ describe('Item routes tests', () => {
         const payload = {
           name: 'new name',
         };
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
         await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
         const response = await app.inject({
@@ -2022,7 +2013,7 @@ describe('Item routes tests', () => {
     };
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
       const payload = { name: 'new name' };
 
@@ -2094,10 +2085,7 @@ describe('Item routes tests', () => {
       it('Bad Request for one invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.PATCH,
-          url: `/items?${qs.stringify(
-            { id: [getDummyItem().id, 'invalid-id'] },
-            { arrayFormat: 'repeat' },
-          )}`,
+          url: `/items?${qs.stringify({ id: [v4(), 'invalid-id'] }, { arrayFormat: 'repeat' })}`,
           payload,
         });
 
@@ -2132,7 +2120,7 @@ describe('Item routes tests', () => {
   describe('DELETE /items', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -2193,7 +2181,7 @@ describe('Item routes tests', () => {
       it('Delete successfully one item in parent, with children and memberships', async () => {
         // root with membership for two members
         const { item: root } = await saveItemAndMembership({ member: actor });
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         await saveMembership({ member, item: root });
 
         // parent to delete and its child
@@ -2268,7 +2256,7 @@ describe('Item routes tests', () => {
   describe('POST /items/move', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item: item1 } = await saveItemAndMembership({ member });
       const { item: item2 } = await saveItemAndMembership({ member });
       const { item: item3 } = await saveItemAndMembership({ member });
@@ -2359,9 +2347,7 @@ describe('Item routes tests', () => {
       it('Move successfully item to root and create new membership', async () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         // manually save item that doesn't need a membership because of inheritance
-        const data = getDummyItem();
-        data.path = buildPathFromIds(parentItem.id, data.id);
-        const item = await ItemRepository.save({ ...data, creator: actor });
+        const item = await saveItem({ parentItem, actor });
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -2490,7 +2476,7 @@ describe('Item routes tests', () => {
       });
       it('Fail to move items in non-folder parent', async () => {
         const { item: parentItem } = await saveItemAndMembership({
-          item: getDummyItem({ type: ItemType.FOLDER }),
+          item: { type: ItemType.DOCUMENT },
           member: actor,
         });
         const { item } = await saveItemAndMembership({ member: actor });
@@ -2545,7 +2531,7 @@ describe('Item routes tests', () => {
   describe('POST /items/copy', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -2630,7 +2616,7 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully from root to item with write rights', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: targetItem } = await saveItemAndMembership({
           member: actor,
           creator: member,
@@ -2670,14 +2656,14 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully root item from shared items to home', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
         });
         const { item: youngParent } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'young parent' }),
+          item: { name: 'young parent' },
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
@@ -2685,7 +2671,7 @@ describe('Item routes tests', () => {
         });
         // children, saved in weird order (children updated first so it appears first when fetching)
         await saveItemAndMembership({
-          item: getDummyItem({ name: 'old child' }),
+          item: { name: 'old child' },
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
@@ -2805,11 +2791,11 @@ describe('Item routes tests', () => {
       it('Fail to copy if parent item is not a folder', async () => {
         const { item } = await saveItemAndMembership({
           member: actor,
-          item: getDummyItem({ type: ItemType.DOCUMENT }),
+          item: { type: ItemType.DOCUMENT },
         });
         const { item: parentItem } = await saveItemAndMembership({
           member: actor,
-          item: getDummyItem({ type: ItemType.DOCUMENT }),
+          item: { type: ItemType.DOCUMENT },
         });
 
         const response = await app.inject({

@@ -1,16 +1,16 @@
-import { DEFAULT_LANG, MemberType } from '@graasp/sdk';
+import { CompleteMember, DEFAULT_LANG, MemberFactory, MemberType } from '@graasp/sdk';
 
 import { Member } from '../../entities/member';
 import MemberRepository from '../../repository';
 
-export const saveMember = async (m: Partial<Member>) => {
-  const member = MemberRepository.create(m);
-  const savedMember = await MemberRepository.save(member);
-
+export const saveMember = async (m: CompleteMember = MemberFactory()) => {
+  const savedMember = await MemberRepository.save({ ...m, email: m.email.toLowerCase() });
   return savedMember;
 };
 
-export const saveMembers = async (members: Partial<Member>[]) => {
+export const saveMembers = async (
+  members: CompleteMember[] = [MemberFactory(), MemberFactory(), MemberFactory()],
+) => {
   const promises = members.map((m) => saveMember(m));
   return Promise.all(promises);
 };
@@ -38,36 +38,3 @@ export const expectMinimalMember = (
   expect(m.name).toEqual(validation.name);
   expect(m.email).toEqual(validation.email);
 };
-
-export const ANNA = {
-  name: 'anna',
-  email: 'anna@email.org',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
-export const BOB = {
-  name: 'bob',
-  email: 'bob@email.org',
-  extra: { lang: 'fr' },
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
-export const CEDRIC = {
-  name: 'cedric',
-  email: 'cedric@email.org',
-  extra: {},
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
-export const LOUISA = {
-  name: 'louisa',
-  email: 'louisa@email.org',
-  extra: { lang: 'fr' },
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
-export const MEMBERS = [ANNA, BOB, LOUISA];

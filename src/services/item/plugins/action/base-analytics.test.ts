@@ -1,9 +1,10 @@
+import { FolderItemFactory } from '@graasp/sdk';
+
 import build, { clearDatabase } from '../../../../../test/app';
 import { ChatMessageRepository } from '../../../chat/repository';
 import { Member } from '../../../member/entities/member';
-import { BOB, CEDRIC, saveMember } from '../../../member/test/fixtures/members';
+import { saveMembers } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
-import { getDummyItem } from '../../test/fixtures/items';
 import { saveAppActions } from '../app/appAction/test/index.test';
 import { saveAppData } from '../app/appData/test/index.test';
 import { saveAppSettings } from '../app/appSetting/test/index.test';
@@ -45,13 +46,9 @@ describe('Base Analytics', () => {
     // build app to be able to instantiate member data
     ({ app } = await build({ member: null }));
 
-    const members: Member[] = [];
-    const data: Partial<Member>[] = [BOB, CEDRIC];
-    for (const m of data) {
-      members.push(await saveMember(m));
-    }
+    const members = await saveMembers();
 
-    const item = await ItemRepository.save(getDummyItem({ creator: members[0] }));
+    const item = await ItemRepository.save(FolderItemFactory({ creator: members[0] }));
 
     const chatMessages = [
       await ChatMessageRepository.create({
@@ -78,7 +75,7 @@ describe('Base Analytics', () => {
       apps,
     });
 
-    for (const m of data) {
+    for (const m of members) {
       const member = analytics.members.find((me) => me.name === m.name);
 
       // lang exists

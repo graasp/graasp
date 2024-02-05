@@ -1,18 +1,18 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { HttpMethod, ItemLoginSchemaType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemLoginSchemaType, MemberFactory, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
 import { Item } from '../../item/entities/Item';
-import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
+import { saveItem } from '../../item/test/fixtures/items';
 import {
   saveItemAndMembership,
   saveMembership,
 } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
-import { BOB, expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
+import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
 import { ItemLogin } from '../entities/itemLogin';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
 import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
@@ -47,11 +47,13 @@ const expectItemLogin = (member, m) => {
   expectMinimalMember(member, m);
 };
 
-const savePseudonymizedMember = (name) => {
-  return saveMember({
-    name,
-    email: generateRandomEmail(),
-  });
+const savePseudonymizedMember = (name?: string) => {
+  return saveMember(
+    MemberFactory({
+      name,
+      email: generateRandomEmail(),
+    }),
+  );
 };
 
 describe('Item Login Tests', () => {
@@ -72,7 +74,7 @@ describe('Item Login Tests', () => {
   describe('GET /:id/login-schema-type', () => {
     it('Get item login if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       ({ item } = await saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLogin({ item });
 
@@ -84,12 +86,13 @@ describe('Item Login Tests', () => {
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.body).toEqual(itemLoginSchema.type);
     });
+
     it('Get item login if signed out for child', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       ({ item } = await saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLogin({ item });
-      const child = await saveItem({ item: getDummyItem(), parentItem: item, actor });
+      const child = await saveItem({ parentItem: item });
 
       const res = await app.inject({
         method: HttpMethod.GET,
@@ -104,7 +107,7 @@ describe('Item Login Tests', () => {
   describe('GET /:id/login-schema', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       ({ item } = await saveItemAndMembership({ member }));
       await saveItemLogin({ item });
 
@@ -121,7 +124,7 @@ describe('Item Login Tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         ({ itemLoginSchema } = await saveItemLogin({ item }));
       });
@@ -142,7 +145,7 @@ describe('Item Login Tests', () => {
 
       it('Successfully get item login for child', async () => {
         await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
-        const child = await saveItem({ item: getDummyItem(), parentItem: item, actor });
+        const child = await saveItem({ parentItem: item, actor });
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema`,
@@ -182,7 +185,7 @@ describe('Item Login Tests', () => {
     describe('Signed In', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         await saveItemLogin({ item });
       });
@@ -201,7 +204,7 @@ describe('Item Login Tests', () => {
       describe('Signed Out', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
-          member = await saveMember(BOB);
+          member = await saveMember();
           ({ item } = await saveItemAndMembership({ member }));
         });
 
@@ -309,7 +312,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             // set up second item
-            const newItem = await saveItem({ item: getDummyItem(), actor: member });
+            const newItem = await saveItem({ actor: member });
             await saveItemLogin({ item: newItem });
 
             const res = await app.inject({
@@ -344,7 +347,7 @@ describe('Item Login Tests', () => {
       describe('Signed Out', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
-          member = await saveMember(BOB);
+          member = await saveMember();
           ({ item } = await saveItemAndMembership({ member }));
         });
 
@@ -508,7 +511,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             // set up second item
-            const newItem = await saveItem({ item: getDummyItem(), actor: member });
+            const newItem = await saveItem({ actor: member });
             await saveItemLogin({ item: newItem, type: ItemLoginSchemaType.UsernameAndPassword });
 
             const res = await app.inject({
@@ -545,7 +548,7 @@ describe('Item Login Tests', () => {
 
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       ({ item } = await saveItemAndMembership({ member }));
 
       const res = await app.inject({
@@ -595,7 +598,7 @@ describe('Item Login Tests', () => {
 
       it('Cannot put item login schema if is inherited', async () => {
         // save new item with wanted memberships
-        const child = await saveItem({ parentItem: item, item: getDummyItem(), actor });
+        const child = await saveItem({ parentItem: item, actor });
 
         const res = await app.inject({
           method: HttpMethod.PUT,

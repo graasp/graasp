@@ -19,7 +19,7 @@ import FileService from '../../../../file/service';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
-import { getDummyItem } from '../../../test/fixtures/items';
+import { createItem } from '../../../test/fixtures/items';
 import { ItemCategory } from '../../itemCategory/entities/ItemCategory';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { ItemTagRepository } from '../../itemTag/repository';
@@ -145,7 +145,7 @@ describe('MeilisearchWrapper', () => {
 
   describe('index', () => {
     it('uses the sdk to index', async () => {
-      const item = getDummyItem();
+      const item = createItem();
 
       // Given
       itemRepositoryMock.getManyDescendants.mockResolvedValue([]);
@@ -172,9 +172,9 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('index descendants', async () => {
-      const item = getDummyItem();
-      const descendant = getDummyItem();
-      const descendant2 = getDummyItem();
+      const item = createItem();
+      const descendant = createItem();
+      const descendant2 = createItem();
       // Given
       itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
@@ -222,11 +222,11 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('can index multiple items', async () => {
-      const item = getDummyItem();
-      const descendant = getDummyItem();
-      const descendant2 = getDummyItem();
-      const item2 = getDummyItem();
-      const descendant3 = getDummyItem();
+      const item = createItem();
+      const descendant = createItem();
+      const descendant2 = createItem();
+      const item2 = createItem();
+      const descendant3 = createItem();
 
       const descendants = {
         [item.id]: [descendant, descendant2],
@@ -276,9 +276,9 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('index correct categories and published state', async () => {
-      const item = getDummyItem();
-      const descendant = getDummyItem();
-      const descendant2 = getDummyItem();
+      const item = createItem();
+      const descendant = createItem();
+      const descendant2 = createItem();
       // Given
       const mockItemCategory = (id) => {
         return {
@@ -354,20 +354,20 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('content is indexed', async () => {
-      const item = getDummyItem();
+      const item = createItem();
       const extraS3 = {
         [ItemType.S3_FILE]: {
           mimetype: MimeTypes.PDF,
           content: 's3 content',
         },
       } as S3FileItemExtra;
-      const descendant = getDummyItem({ type: ItemType.S3_FILE, extra: extraS3 });
+      const descendant = createItem({ type: ItemType.S3_FILE, extra: extraS3 });
       const extra = {
         [ItemType.DOCUMENT]: {
           content: 'my text is here',
         },
       };
-      const descendant2 = getDummyItem({ type: ItemType.DOCUMENT, extra });
+      const descendant2 = createItem({ type: ItemType.DOCUMENT, extra });
       // Given
 
       itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
@@ -406,9 +406,9 @@ describe('MeilisearchWrapper', () => {
 
   describe('delete', () => {
     it('uses the sdk to delete with descendants', async () => {
-      const item = getDummyItem();
-      const descendant = getDummyItem();
-      const descendant2 = getDummyItem();
+      const item = createItem();
+      const descendant = createItem();
+      const descendant2 = createItem();
 
       itemRepositoryMock.getDescendants.mockResolvedValue([descendant, descendant2]);
 

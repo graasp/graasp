@@ -1,18 +1,18 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
-import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
+import { saveItem } from '../../item/test/fixtures/items';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
 import MemberRepository from '../../member/repository';
-import { BOB, CEDRIC, MEMBERS, saveMember } from '../../member/test/fixtures/members';
+import { saveMember } from '../../member/test/fixtures/members';
 import { ChatMessage } from '../chatMessage';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
 import { ChatMention } from '../plugins/mentions/chatMention';
@@ -27,8 +27,8 @@ export const saveItemWithChatMessages = async (creator) => {
   const { item } = await saveItemAndMembership({ member: creator });
   const chatMessages: ChatMessage[] = [];
   const members: Member[] = [];
-  for (let i = 0; i < MEMBERS.length; i++) {
-    const member = await saveMember(MEMBERS[i]);
+  for (let i = 0; i < 3; i++) {
+    const member = await saveMember();
     members.push(member);
     chatMessages.push(await ChatMessageRepository.save({ item, creator, body: 'some-text-' + i }));
   }
@@ -59,8 +59,8 @@ describe('Chat Message tests', () => {
     it('Throws for private item', async () => {
       ({ app } = await build({ member: null }));
 
-      const member = await saveMember(BOB);
-      const item = await saveItem({ item: getDummyItem(), actor: member });
+      const member = await saveMember();
+      const item = await saveItem({ actor: member });
 
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -109,10 +109,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if member does not have access to item', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember({
-          name: 'new-user',
-          email: 'new@email.org',
-        });
+        const member = await saveMember();
         const { item } = await saveItemWithChatMessages(member);
 
         const response = await app.inject({
@@ -127,7 +124,7 @@ describe('Chat Message tests', () => {
     describe('Public', () => {
       it('Get successfully', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(CEDRIC);
+        const member = await saveMember();
         const { item, chatMessages } = await saveItemWithChatMessages(member);
         await setItemPublic(item, member);
 
@@ -149,7 +146,7 @@ describe('Chat Message tests', () => {
     it('Throws for private item', async () => {
       ({ app } = await build({ member: null }));
 
-      const item = getDummyItem({ type: ItemType.FOLDER });
+      const item = FolderItemFactory();
       const payload = { body: 'hello' };
 
       const response = await app.inject({
@@ -244,10 +241,7 @@ describe('Chat Message tests', () => {
       it('Throws if member does not have access to item', async () => {
         const payload = { body: 'hello' };
         // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember({
-          name: 'new-user',
-          email: 'new@email.org',
-        });
+        const member = await saveMember();
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
@@ -265,7 +259,7 @@ describe('Chat Message tests', () => {
     it('Throws for private item', async () => {
       ({ app } = await build({ member: null }));
 
-      const item = getDummyItem({ type: ItemType.FOLDER });
+      const item = FolderItemFactory();
       const payload = { body: 'hello' };
 
       const response = await app.inject({
@@ -363,10 +357,7 @@ describe('Chat Message tests', () => {
       it('Throws if member does not have access to item', async () => {
         const payload = { body: 'hello' };
         // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember({
-          name: 'new-user',
-          email: 'new@email.org',
-        });
+        const member = await saveMember();
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
@@ -401,7 +392,7 @@ describe('Chat Message tests', () => {
     it('Throws for private item', async () => {
       ({ app } = await build({ member: null }));
 
-      const item = getDummyItem({ type: ItemType.FOLDER });
+      const item = FolderItemFactory();
 
       const response = await app.inject({
         method: HttpMethod.DELETE,
@@ -474,10 +465,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if member does not have access to item', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember({
-          name: 'new-user',
-          email: 'new@email.org',
-        });
+        const member = await saveMember();
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
@@ -509,7 +497,7 @@ describe('Chat Message tests', () => {
     it('Throws for private item', async () => {
       ({ app } = await build({ member: null }));
 
-      const item = getDummyItem({ type: ItemType.FOLDER });
+      const item = FolderItemFactory();
 
       const response = await app.inject({
         method: HttpMethod.DELETE,
@@ -569,10 +557,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if member does not have access to item', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember({
-          name: 'new-user',
-          email: 'new@email.org',
-        });
+        const member = await saveMember();
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
