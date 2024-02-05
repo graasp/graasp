@@ -94,6 +94,7 @@ describe('Member routes tests', () => {
 
       const { item: item3 } = await saveItemAndMembership({
         item: {
+          type: ItemType.S3_FILE,
           extra: {
             [ItemType.S3_FILE]: {
               size: 8765,
