@@ -1,89 +1,119 @@
-import { v4 as uuidv4 } from 'uuid';
+import {
+  AppItemFactory,
+  DiscriminatedItem,
+  DocumentItemFactory,
+  EmbeddedLinkItemFactory,
+  EtherpadItemFactory,
+  FolderItemFactory,
+  H5PItemFactory,
+  ItemType,
+  LocalFileItemFactory,
+  S3FileItemFactory,
+  ShortcutItemFactory,
+  buildPathFromIds,
+} from '@graasp/sdk';
 
-import { ItemType, buildPathFromIds } from '@graasp/sdk';
-
-import { Member } from '../../../member/entities/member';
-import { randomHexOf4 } from '../../../utils';
+import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemRepository } from '../../repository';
 
-export const getDummyItem = (options: Partial<Item> & { parentPath?: string } = {}): Item => {
-  const {
-    type = ItemType.FOLDER,
-    parentPath,
-    id,
-    description,
-    path,
-    creator = null,
-    extra = { [ItemType.FOLDER]: { childrenOrder: [] } },
-    name,
-    settings = {},
-    lang = 'en',
-  } = options;
-  const buildId = id ?? uuidv4();
-  let buildPath = path ?? buildPathFromIds(buildId);
-  if (parentPath) buildPath = `${parentPath}.${buildPath}`;
+export const createItem = (
+  args?: Partial<DiscriminatedItem> & {
+    parentItem?: Item;
+    creator?: Actor | null;
+  },
+): Item => {
+  let item;
 
+  switch (args?.type) {
+    case ItemType.APP:
+      item = AppItemFactory(args);
+      break;
+    case ItemType.LINK:
+      item = EmbeddedLinkItemFactory(args);
+      break;
+    case ItemType.DOCUMENT:
+      item = DocumentItemFactory(args);
+      break;
+    case ItemType.LOCAL_FILE:
+      item = LocalFileItemFactory(args);
+      break;
+    case ItemType.S3_FILE:
+      item = S3FileItemFactory(args);
+      break;
+    case ItemType.H5P:
+      item = H5PItemFactory(args);
+      break;
+    case ItemType.ETHERPAD:
+      item = EtherpadItemFactory(args);
+      break;
+    case ItemType.SHORTCUT:
+      item = ShortcutItemFactory(args);
+      break;
+    case ItemType.FOLDER:
+      item = FolderItemFactory(args);
+      break;
+    default:
+      item = FolderItemFactory(args as never);
+  }
+  // by default we generate data with type date to match with entity's types
   return {
-    id: buildId,
-    name: name ?? randomHexOf4(),
-    description: description ?? 'some description',
-    type,
-    path: buildPath,
-    extra,
-    creator,
-    settings,
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    lang,
-  } as Item; // HACK: Item entity contains much more data
+    ...item,
+    createdAt: new Date(item.createdAt),
+    updatedAt: new Date(item.updatedAt),
+  };
 };
 
 // todo: factor out
 export const saveItem = async ({
-  item,
+  item = {},
+  actor = null,
   parentItem,
-  actor,
 }: {
   parentItem?: Item;
-  actor: Member;
-  item: Partial<Item>;
+  actor?: Actor | null;
+  item?: Partial<DiscriminatedItem>;
 }) => {
-  return ItemRepository.post(item, actor, parentItem);
+  const value = createItem({ ...item, creator: actor, parentItem });
+  return ItemRepository.save(value);
 };
 
 export const savePublicItem = async ({
-  item = getDummyItem(),
+  item = {},
   parentItem,
   actor,
 }: {
   parentItem?: Item;
-  actor: Member;
-  item?: Partial<Item>;
+  actor: Actor | null;
+  item?: Partial<DiscriminatedItem>;
 }) => {
-  const newItem = await ItemRepository.post(item, actor, parentItem);
+  const value = createItem({ ...item, creator: actor, parentItem });
+  const newItem = await ItemRepository.save(value);
   await setItemPublic(newItem, actor);
   return newItem;
 };
 
 export const saveItems = async ({
-  items,
+  nb,
   parentItem,
-  actor,
+  actor = null,
 }: {
-  items: Item[];
+  nb: number;
   parentItem: Item;
-  actor: Member;
+  actor: Actor | null;
 }) => {
-  for (const i of items) {
-    await saveItem({ actor, parentItem, item: i });
+  for (let i = 0; i < nb; i++) {
+    await saveItem({ actor, parentItem });
   }
 };
 
 export const expectItem = (
   newItem: Partial<Item> | undefined | null,
-  correctItem: Partial<Item> | undefined | null,
+  correctItem:
+    | Partial<Pick<Item, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings' | 'lang'>>
+    | undefined
+    | null,
   creator?: Member,
   parent?: Item,
 ) => {
@@ -97,8 +127,9 @@ export const expectItem = (
   expect(newItem.description).toEqual(correctItem.description ?? null);
   expect(newItem.extra).toEqual(correctItem.extra);
   expect(newItem.type).toEqual(correctItem.type);
-  expect(newItem.lang).toEqual(correctItem.lang);
-
+  if (correctItem.lang) {
+    expect(newItem.lang).toEqual(correctItem.lang);
+  }
   expect(newItem.path).toContain(buildPathFromIds(newItem.id));
   if (parent) {
     expect(newItem.path).toContain(buildPathFromIds(parent.path));
@@ -111,7 +142,9 @@ export const expectItem = (
 
 export const expectManyItems = (
   items: Item[],
-  correctItems: Item[],
+  correctItems: Partial<
+    Pick<Item, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
+  >[],
   creator?: Member,
   parent?: Item,
 ) => {

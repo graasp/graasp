@@ -11,8 +11,8 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, MEMBERS, saveMember, saveMembers } from '../../../../member/test/fixtures/members';
-import { getDummyItem, savePublicItem } from '../../../test/fixtures/items';
+import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
+import { savePublicItem } from '../../../test/fixtures/items';
 import { saveAppActions } from '../../app/appAction/test/index.test';
 import { saveAppData } from '../../app/appData/test/index.test';
 import { saveAppSettings } from '../../app/appSetting/test/index.test';
@@ -71,9 +71,8 @@ describe('Action Plugin Tests', () => {
     describe('Sign Out', () => {
       it('Cannot post action when signed out', async () => {
         ({ app, actor } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
-          item: getDummyItem(),
           member,
         });
         const response = await app.inject({
@@ -94,8 +93,8 @@ describe('Action Plugin Tests', () => {
     describe('Public', () => {
       it('Post action for public item', async () => {
         ({ app, actor } = await build({ member: null }));
-        const member = await saveMember(BOB);
-        const item = await savePublicItem({ item: getDummyItem(), actor: member });
+        const member = await saveMember();
+        const item = await savePublicItem({ actor: member });
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
@@ -120,7 +119,6 @@ describe('Action Plugin Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         ({ item } = await saveItemAndMembership({
-          item: getDummyItem(),
           member: actor,
         }));
       });
@@ -201,7 +199,6 @@ describe('Action Plugin Tests', () => {
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
       const { item } = await saveItemAndMembership({
-        item: getDummyItem(),
         member: actor,
       });
 
@@ -223,11 +220,10 @@ describe('Action Plugin Tests', () => {
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
       const { item } = await saveItemAndMembership({
-        item: getDummyItem(),
         member: actor,
       });
       const { item: appItem } = await saveItemAndMembership({
-        item: getDummyItem({ type: ItemType.APP }),
+        item: { type: ItemType.APP },
         parentItem: item,
         member: actor,
       });
@@ -253,7 +249,6 @@ describe('Action Plugin Tests', () => {
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
       const { item } = await saveItemAndMembership({
-        item: getDummyItem(),
         member: actor,
       });
 
@@ -265,7 +260,6 @@ describe('Action Plugin Tests', () => {
 
       // another item to add noise
       const { item: otherItem } = await saveItemAndMembership({
-        item: getDummyItem(),
         member: actor,
       });
       await ActionRequestExportRepository.save({
@@ -291,7 +285,6 @@ describe('Action Plugin Tests', () => {
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
       const { item } = await saveItemAndMembership({
-        item: getDummyItem(),
         member: actor,
       });
 
@@ -320,7 +313,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Unauthorized if the user does not have any permission', async () => {
-      const members = await saveMembers(MEMBERS);
+      const members = await saveMembers();
       const { item } = await saveItemAndMembership({ member: members[0] });
 
       const parameters = {
@@ -341,7 +334,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Succeed if the user has READ permission', async () => {
-      const members = await saveMembers(MEMBERS);
+      const members = await saveMembers();
       const { item } = await saveItemAndMembership({ member: members[0] });
       await saveMembership({
         item,
@@ -367,7 +360,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Successfully get the average action count aggregated by the createdDay and the actionType', async () => {
-      const members = await saveMembers(MEMBERS);
+      const members = await saveMembers();
       const { item } = await saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 
@@ -397,7 +390,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Successfully get the number of active user by day', async () => {
-      const members = await saveMembers(MEMBERS);
+      const members = await saveMembers();
       const { item } = await saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 
@@ -425,7 +418,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Successfully get the total action count aggregated by the actionType', async () => {
-      const members = await saveMembers(MEMBERS);
+      const members = await saveMembers();
       const { item } = await saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 
@@ -453,7 +446,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Successfully get the total action count aggregated by time of day', async () => {
-      const members = await saveMembers(MEMBERS);
+      const members = await saveMembers();
       const { item } = await saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 

@@ -32,7 +32,7 @@ export class ItemCategory extends BaseEntity {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member;
+  creator: Member | null;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

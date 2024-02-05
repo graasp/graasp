@@ -7,7 +7,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemFlagRepository } from '../repository';
 
 // mock datasource
@@ -64,7 +64,7 @@ describe('Item Flag Tests', () => {
   describe('POST /:itemId/flags', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({

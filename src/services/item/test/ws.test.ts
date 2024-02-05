@@ -2,7 +2,13 @@ import { StatusCodes } from 'http-status-codes';
 import { Not } from 'typeorm';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
+import {
+  FolderItemFactory,
+  HttpMethod,
+  PermissionLevel,
+  Websocket,
+  parseStringToDate,
+} from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
@@ -10,7 +16,7 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../itemMembership/test/fixtures/memberships';
-import { ANNA, saveMember } from '../../member/test/fixtures/members';
+import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
 import { Item } from '../entities/Item';
@@ -26,7 +32,7 @@ import {
   itemTopic,
   memberItemsTopic,
 } from '../ws/events';
-import { expectItem, getDummyItem } from './fixtures/items';
+import { expectItem } from './fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -68,7 +74,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('subscribes to item with membership successfully', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor });
       const request = {
@@ -88,7 +94,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('cannot subscribe to item with no membership', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       const request = {
         realm: Websocket.Realms.Notif,
@@ -114,7 +120,7 @@ describe('Item websocket hooks', () => {
 
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: parent.id });
 
-      const child = getDummyItem();
+      const child = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/items?parentId=${parent.id}`,
@@ -133,7 +139,7 @@ describe('Item websocket hooks', () => {
     it('creator receives own item create update', async () => {
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      const item = getDummyItem();
+      const item = FolderItemFactory();
       const response = await app.inject({
         method: HttpMethod.POST,
         url: `/items`,
@@ -220,7 +226,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('member with membership on item receives shared items update', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
@@ -321,7 +327,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('member with membership on item receives shared items delete update', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
@@ -654,7 +660,6 @@ describe('Item websocket hooks', () => {
       });
 
       await waitForExpect(() => {
-        console.log(memberUpdates);
         expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
           ItemOpFeedbackEvent('move', [item.id], { data: { [item.id]: moved }, errors: [] }),
         );

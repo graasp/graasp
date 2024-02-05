@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { Member } from '../../../../entities/member';
+import { CompleteMember } from '@graasp/sdk';
+
 import { saveMember } from '../../../../test/fixtures/members';
 import { MemberProfile } from '../../entities/profile';
 import { IMemberProfile } from '../../types';
@@ -28,7 +29,7 @@ export const getDummyProfile = (options: Partial<MemberProfile>): Partial<Member
   };
 };
 
-export const saveMemberProfile = async (m: Partial<Member>, profile: IMemberProfile) => {
+export const saveMemberProfile = async (m: CompleteMember, profile: IMemberProfile) => {
   const member = await saveMember(m);
   const memberProfile = MemberProfile.create({ ...profile, member });
   const savedMember = await MemberProfile.save(memberProfile);

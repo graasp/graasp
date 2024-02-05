@@ -11,7 +11,7 @@ import {
   SharedItemsEvent,
   memberItemsTopic,
 } from '../../item/ws/events';
-import { ANNA, BOB, saveMember } from '../../member/test/fixtures/members';
+import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
 import { ItemMembership } from '../entities/ItemMembership';
@@ -59,7 +59,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('cannot subscribe to item memberships with no membership', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       const request = {
         realm: Websocket.Realms.Notif,
@@ -81,7 +81,7 @@ describe('Item websocket hooks', () => {
 
   describe('on create membership', () => {
     it('member receives shared item create event', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
 
       const memberUpdates = await ws.subscribe<ItemEvent>({
@@ -110,8 +110,8 @@ describe('Item websocket hooks', () => {
     });
 
     it('receives item membership create event', async () => {
-      const anna = await saveMember(ANNA);
-      const bob = await saveMember(BOB);
+      const anna = await saveMember();
+      const bob = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({
         item,
@@ -148,7 +148,7 @@ describe('Item websocket hooks', () => {
 
   describe('on update membership', () => {
     it('receives item membership update event', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       const membership = await saveMembership({
         item,
@@ -185,7 +185,7 @@ describe('Item websocket hooks', () => {
 
   describe('on delete membership', () => {
     it('member receives shared items delete event', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       const membership = await saveMembership({
         item,
@@ -219,7 +219,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('receives item membership delete event', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       const membership = await saveMembership({
         item,

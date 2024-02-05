@@ -27,7 +27,7 @@ export class ItemTag extends BaseEntity {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'creator_id' })
-  creator: Member;
+  creator: Member | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

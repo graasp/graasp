@@ -10,7 +10,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { UploadFileNotImageError } from '../utils/errors';
@@ -68,7 +68,7 @@ describe('Thumbnail Plugin Tests', () => {
   describe('GET /:id/thumbnails/:size', () => {
     it('Throws if item is private', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -84,7 +84,7 @@ describe('Thumbnail Plugin Tests', () => {
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         await setItemPublic(item, member);
       });
@@ -133,7 +133,7 @@ describe('Thumbnail Plugin Tests', () => {
       });
 
       it('Cannot download without rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item: someItem } = await saveItemAndMembership({
           member,
         });
@@ -157,7 +157,7 @@ describe('Thumbnail Plugin Tests', () => {
       form.append('file', fileStream);
 
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -201,7 +201,7 @@ describe('Thumbnail Plugin Tests', () => {
         const form3 = new FormData();
         form3.append('file', fileStream4);
 
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
 
         const response = await app.inject({

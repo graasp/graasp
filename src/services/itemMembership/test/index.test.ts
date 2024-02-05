@@ -15,8 +15,8 @@ import {
   ModifyExisting,
 } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
-import { getDummyItem, saveItem } from '../../item/test/fixtures/items';
-import * as MEMBERS_FIXTURES from '../../member/test/fixtures/members';
+import { saveItem } from '../../item/test/fixtures/items';
+import { saveMember } from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
 import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
 
@@ -37,7 +37,7 @@ describe('Membership routes tests', () => {
   describe('GET /item-memberships?itemId=<itemId>', () => {
     it('Returns error if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -56,7 +56,7 @@ describe('Membership routes tests', () => {
       it('Returns successfully for one id', async () => {
         const { item, itemMembership } = await saveItemAndMembership({ member: actor });
 
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const membership = await saveMembership({ item, member });
 
         const memberships = [itemMembership, membership];
@@ -79,7 +79,7 @@ describe('Membership routes tests', () => {
         const { item: item1, itemMembership: im1 } = await saveItemAndMembership({ member: actor });
         const { item: item2, itemMembership: im2 } = await saveItemAndMembership({ member: actor });
 
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const membership1 = await saveMembership({ item: item1, member });
         const membership2 = await saveMembership({ item: item2, member });
 
@@ -110,17 +110,17 @@ describe('Membership routes tests', () => {
         //     |-> C (Membership)
         //         |-> D
         //             |-> E (Membership)
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: itemA, itemMembership: im1 } = await saveItemAndMembership({
           member: member,
         });
         const { item: item2 } = await saveItemAndMembership({
           member: member,
         });
-        const itemB = await saveItem({ item: getDummyItem(), parentItem: itemA, actor: member });
-        const itemC = await saveItem({ item: getDummyItem(), parentItem: itemB, actor: member });
-        const itemD = await saveItem({ item: getDummyItem(), parentItem: itemC, actor: member });
-        const itemE = await saveItem({ item: getDummyItem(), parentItem: itemD, actor: member });
+        const itemB = await saveItem({ parentItem: itemA, actor: member });
+        const itemC = await saveItem({ parentItem: itemB, actor: member });
+        const itemD = await saveItem({ parentItem: itemC, actor: member });
+        const itemE = await saveItem({ parentItem: itemD, actor: member });
 
         const membership1 = await saveMembership({
           item: itemA,
@@ -192,7 +192,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Returns error if user has no membership', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
@@ -209,11 +209,11 @@ describe('Membership routes tests', () => {
         ({ app } = await build());
       });
       it('Returns successfully for one id', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item, itemMembership } = await saveItemAndMembership({ member });
         await setItemPublic(item, member);
 
-        const member1 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.LOUISA);
+        const member1 = await saveMember();
         const membership = await saveMembership({ item, member: member1 });
 
         const memberships = [itemMembership, membership];
@@ -238,9 +238,9 @@ describe('Membership routes tests', () => {
   describe('POST /item-memberships', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const creator = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
+      const creator = await saveMember();
       const { item } = await saveItemAndMembership({ member: creator });
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
 
       const payload = {
         memberId: member.id,
@@ -265,7 +265,7 @@ describe('Membership routes tests', () => {
         const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
 
         const { item } = await saveItemAndMembership({ member: actor });
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
 
         const payload = {
           memberId: member.id,
@@ -290,7 +290,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Delete successfully memberships lower in the tree ', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
         const membership = await saveMembership({
@@ -329,7 +329,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot add new membership at same item for same member', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
         const membership = await saveMembership({
@@ -357,7 +357,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot set lower permission than inherited permission', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
         await saveMembership({ permission: PermissionLevel.Write, item: parent, member });
@@ -383,7 +383,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Bad Request for invalid id', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member: actor });
         const initialCount = await ItemMembershipRepository.find();
 
@@ -405,7 +405,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Bad Request for invalid payload', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member: actor });
         const initialCount = await ItemMembershipRepository.find();
 
@@ -429,9 +429,9 @@ describe('Membership routes tests', () => {
   describe('POST many /item-memberships/itemId', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const creator = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
+      const creator = await saveMember();
       const { item } = await saveItemAndMembership({ member: creator });
-      const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+      const member = await saveMember();
 
       const payload = {
         memberId: member.id,
@@ -456,8 +456,8 @@ describe('Membership routes tests', () => {
       it('Create new memberships successfully', async () => {
         const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
         const { item } = await saveItemAndMembership({ member: actor });
-        const member1 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
-        const member2 = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
+        const member1 = await saveMember();
+        const member2 = await saveMember();
         const members = [member1, member2];
         const newMemberships = [
           { memberId: member1.id, permission: PermissionLevel.Read },
@@ -496,7 +496,7 @@ describe('Membership routes tests', () => {
 
       it('Bad Request for invalid id', async () => {
         const id = 'invalid-id';
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
+        const member = await saveMember();
         const newMemberships = [
           { memberId: member.id, permission: PermissionLevel.Read },
           { memberId: member.id, permission: PermissionLevel.Write },
@@ -514,7 +514,7 @@ describe('Membership routes tests', () => {
 
       it('Return error array for invalid payload', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
+        const member = await saveMember();
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -539,7 +539,7 @@ describe('Membership routes tests', () => {
   describe('PATCH /item-memberships/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const creator = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
+      const creator = await saveMember();
       const { itemMembership } = await saveItemAndMembership({ member: creator });
 
       const payload = {
@@ -561,7 +561,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Downgrading permission deletes the membership if has corresponding inherited permission', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const inheritedMembership = await saveMembership({
           member,
@@ -599,7 +599,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Upgrade successfully', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member: actor });
         const membership = await saveMembership({
           permission: PermissionLevel.Write,
@@ -632,7 +632,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Delete successfully memberships lower in the tree', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
         const inheritedMembership = await saveMembership({
@@ -694,7 +694,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot set lower permission than inherited permission', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item: parent } = await saveItemAndMembership({ member: actor });
         const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
         await saveMembership({ permission: PermissionLevel.Write, item: parent, member });
@@ -724,7 +724,7 @@ describe('Membership routes tests', () => {
   describe('DELETE /item-memberships/:id?purgeBelow=<boolean>', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const creator = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.ANNA);
+      const creator = await saveMember();
       const { itemMembership } = await saveItemAndMembership({ member: creator });
       const response = await app.inject({
         method: HttpMethod.DELETE,
@@ -740,7 +740,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Delete successfully', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member: actor });
         const { item: child } = await saveItemAndMembership({ member: actor, parentItem: item });
         const membership = await saveMembership({
@@ -764,7 +764,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Delete successfully with purgeBelow=true', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member: actor });
         const { item: child } = await saveItemAndMembership({ member: actor, parentItem: item });
         const membership = await saveMembership({
@@ -813,7 +813,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot delete membership if can only read', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
         const membership = await saveMembership({
           permission: PermissionLevel.Read,
@@ -834,7 +834,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot delete membership if can only write', async () => {
-        const member = await MEMBERS_FIXTURES.saveMember(MEMBERS_FIXTURES.BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
         const membership = await saveMembership({
           permission: PermissionLevel.Write,

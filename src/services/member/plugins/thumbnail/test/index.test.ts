@@ -6,7 +6,7 @@ import path from 'path';
 import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { BOB, saveMember } from '../../../test/fixtures/members';
+import { saveMember } from '../../../test/fixtures/members';
 import { UploadFileNotImageError } from '../utils/errors';
 
 const filepath = path.resolve(__dirname, './fixtures/image.png');
@@ -63,7 +63,7 @@ describe('Thumbnail Plugin Tests', () => {
   describe('GET /:id/avatar/:size', () => {
     it('Get member avatar', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
 
       const response = await app.inject({
         method: HttpMethod.GET,
@@ -80,7 +80,7 @@ describe('Thumbnail Plugin Tests', () => {
       });
 
       it('Successfully redirect to thumbnails of all different sizes', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
             method: HttpMethod.GET,
@@ -109,7 +109,7 @@ describe('Thumbnail Plugin Tests', () => {
       });
 
       it('Successfully redirect to thumbnails of all different sizes for other member', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
             method: HttpMethod.GET,
@@ -121,7 +121,7 @@ describe('Thumbnail Plugin Tests', () => {
       });
 
       it('Return avatar urls of member', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
             method: HttpMethod.GET,

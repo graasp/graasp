@@ -6,7 +6,7 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Member } from '../../../../../member/entities/member';
-import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { setUp } from '../../test/fixtures';
 import { AppActionRepository } from '../repository';
@@ -95,7 +95,7 @@ describe('App Actions Tests', () => {
 
         it('Get all app actions with admin permission', async () => {
           // get other users' actions
-          member = await saveMember(BOB);
+          member = await saveMember();
           const otherActions = await saveAppActions({ item, member });
 
           const response = await app.inject({
@@ -130,7 +130,7 @@ describe('App Actions Tests', () => {
       describe('Read', () => {
         beforeEach(async () => {
           ({ app, actor } = await build());
-          member = await saveMember(BOB);
+          member = await saveMember();
           ({ item, appActions, token } = await setUpForAppActions(
             app,
             actor,

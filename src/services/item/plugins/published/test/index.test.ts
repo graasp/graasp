@@ -13,12 +13,10 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
-import { ANNA, BOB, CEDRIC, saveMember } from '../../../../member/test/fixtures/members';
-import { MEMBERS } from '../../../../member/test/fixtures/members';
-import { saveMembers } from '../../../../member/test/fixtures/members';
+import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
-import { expectItem, expectManyItems, getDummyItem } from '../../../test/fixtures/items';
+import { expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { CategoryRepository } from '../../itemCategory/repositories/category';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
@@ -70,7 +68,7 @@ describe('Item Published', () => {
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         collections = await saveCollections(member);
         categories = await saveCategories();
 
@@ -255,7 +253,7 @@ describe('Item Published', () => {
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
         collections = await saveCollections(member);
       });
 
@@ -298,7 +296,7 @@ describe('Item Published', () => {
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        members = await saveMembers(Object.values(MEMBERS));
+        members = await saveMembers();
         collections = await saveCollections(members[0]);
 
         // add idx x likes
@@ -348,7 +346,7 @@ describe('Item Published', () => {
     describe('Signed Out', () => {
       it('Returns published collections for member', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const items = await saveCollections(member);
         await saveCategories();
 
@@ -371,7 +369,7 @@ describe('Item Published', () => {
 
       it('Get published collections for member', async () => {
         // add other collections
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const items = await saveCollections(member);
 
         const res = await app.inject({
@@ -388,7 +386,7 @@ describe('Item Published', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
 
         const res = await app.inject({
@@ -407,7 +405,7 @@ describe('Item Published', () => {
       });
 
       it('Publish item with admin rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -432,19 +430,19 @@ describe('Item Published', () => {
       it('Publish item with admin rights and send notification', async () => {
         const sendEmailMock = jest.spyOn(app.mailer, 'sendEmail');
 
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
         });
-        const anna = await saveMember(ANNA);
+        const anna = await saveMember();
         await saveMembership({
           item,
           member: anna,
           permission: PermissionLevel.Admin,
         });
-        const cedric = await saveMember(CEDRIC);
+        const cedric = await saveMember();
         await saveMembership({
           item,
           member: cedric,
@@ -477,7 +475,7 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish private item', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -493,7 +491,7 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish item with write rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -509,7 +507,7 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish item with read rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -546,7 +544,7 @@ describe('Item Published', () => {
     describe('Signed Out', () => {
       it('Throw if signed out', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
 
         const res = await app.inject({
@@ -565,7 +563,7 @@ describe('Item Published', () => {
       });
 
       it('Unpublish item with admin rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -587,7 +585,7 @@ describe('Item Published', () => {
       });
 
       it('Throws when unpublish non-published item', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -604,7 +602,7 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish item with write rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -621,7 +619,7 @@ describe('Item Published', () => {
       });
 
       it('Cannot publish item with read rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({
           creator: member,
           member: actor,
@@ -771,7 +769,7 @@ describe('Item Published', () => {
           },
         };
         const { item } = await saveItemAndMembership({
-          item: getDummyItem({ type: ItemType.DOCUMENT, extra }),
+          item: { type: ItemType.DOCUMENT, extra },
           creator: actor,
           member: actor,
           permission: PermissionLevel.Admin,
@@ -853,7 +851,7 @@ describe('Item Published', () => {
         // Move unpublished into published folder should be indexed
         const { item: unpublishedItem } = await saveItemAndMembership({
           member: actor,
-          item: getDummyItem({ name: 'unpublishedItem' }),
+          item: { name: 'unpublishedItem' },
         });
         const move3 = await app.inject({
           method: HttpMethod.POST,

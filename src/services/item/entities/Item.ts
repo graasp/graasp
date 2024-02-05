@@ -71,8 +71,9 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   @Column({
     nullable: true,
     length: 5000,
+    type: 'character varying',
   })
-  description: string;
+  description: string | null;
 
   @Column({
     default: ItemType.FOLDER,

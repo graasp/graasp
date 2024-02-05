@@ -1,14 +1,14 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
-import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../member/test/fixtures/members';
+import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
-import { expectItem, getDummyItem } from '../../test/fixtures/items';
+import { expectItem } from '../../test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -34,7 +34,7 @@ describe('Document Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = getDummyItem({ type: ItemType.DOCUMENT, extra });
+      const payload = { name: 'name', type: ItemType.DOCUMENT, extra };
 
       const response = await app.inject({
         method: HttpMethod.POST,
@@ -51,7 +51,7 @@ describe('Document Item tests', () => {
       });
 
       it('Create successfully', async () => {
-        const payload = getDummyItem({ type: ItemType.DOCUMENT, extra });
+        const payload = DocumentItemFactory({ extra });
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -74,10 +74,11 @@ describe('Document Item tests', () => {
       });
 
       it('Fail to create if type does not match extra', async () => {
-        const payload = getDummyItem({
+        const payload = {
+          name: 'name',
           type: ItemType.LINK,
           extra: { [ItemType.DOCUMENT]: { content: 'content' } },
-        });
+        };
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -89,11 +90,12 @@ describe('Document Item tests', () => {
       });
 
       it('Fail to create if payload is invalid', async () => {
-        const payload = getDummyItem({
+        const payload = {
+          name: 'name',
           type: ItemType.DOCUMENT,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           extra: { [ItemType.FOLDER]: { content: 'content' } } as any,
-        });
+        };
 
         const response = await app.inject({
           method: HttpMethod.POST,
@@ -105,11 +107,12 @@ describe('Document Item tests', () => {
       });
 
       it('Fail to create if content of document is not defined', async () => {
-        const payload1 = getDummyItem({
+        const payload1 = {
+          name: 'name',
           type: ItemType.DOCUMENT,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           extra: { [ItemType.DOCUMENT]: {} } as any,
-        });
+        };
 
         const response1 = await app.inject({
           method: HttpMethod.POST,
@@ -125,7 +128,7 @@ describe('Document Item tests', () => {
   describe('PATCH /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -144,14 +147,14 @@ describe('Document Item tests', () => {
 
       it('Update successfully', async () => {
         const { item } = await saveItemAndMembership({
-          item: getDummyItem({
+          item: {
             type: ItemType.DOCUMENT,
             extra: {
               [ItemType.DOCUMENT]: {
                 content: 'value',
               },
             },
-          }),
+          },
           member: actor,
         });
         const payload = {
@@ -174,7 +177,6 @@ describe('Document Item tests', () => {
           url: `/items/${item.id}`,
           payload,
         });
-
         // this test a bit how we deal with extra: it replaces existing keys
         expectItem(response.json(), {
           ...item,
@@ -183,21 +185,21 @@ describe('Document Item tests', () => {
           settings: { ...item.settings, ...payload.settings },
         });
 
-        expect(response.json().settings).toEqual(payload.settings);
+        expect(response.json().settings).toMatchObject(payload.settings);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
       it('Bad Request if extra is invalid', async () => {
         const { item } = await saveItemAndMembership({
-          item: getDummyItem({
+          item: {
             type: ItemType.DOCUMENT,
             extra: {
               [ItemType.DOCUMENT]: {
                 content: 'value',
               },
             },
-          }),
+          },
           member: actor,
         });
         const payload = {
@@ -227,7 +229,7 @@ describe('Document Item tests', () => {
   describe('PATCH many /items', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -246,14 +248,14 @@ describe('Document Item tests', () => {
 
       it('Update successfully', async () => {
         const { item } = await saveItemAndMembership({
-          item: getDummyItem({
+          item: {
             type: ItemType.DOCUMENT,
             extra: {
               [ItemType.DOCUMENT]: {
                 content: 'value',
               },
             },
-          }),
+          },
           member: actor,
         });
         const payload = {
@@ -291,14 +293,14 @@ describe('Document Item tests', () => {
 
       it('Bad Request if extra is invalid', async () => {
         const { item } = await saveItemAndMembership({
-          item: getDummyItem({
+          item: {
             type: ItemType.DOCUMENT,
             extra: {
               [ItemType.DOCUMENT]: {
                 content: 'value',
               },
             },
-          }),
+          },
           member: actor,
         });
         const payload = {

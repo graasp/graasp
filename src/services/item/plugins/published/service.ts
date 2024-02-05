@@ -45,7 +45,7 @@ export class ItemPublishedService {
     const link = buildPublishedItemLink(item);
 
     for (const member of contributors) {
-      const lang = member.lang;
+      const lang = member.lang ?? 'en';
       const t = this.mailer.translate(lang);
 
       const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });

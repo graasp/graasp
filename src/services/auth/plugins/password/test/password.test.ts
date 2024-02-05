@@ -1,10 +1,10 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch, { type Response } from 'node-fetch';
 
-import { HttpMethod, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import * as MEMBERS_FIXTURES from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../../captcha/test/utils';
 import { MOCK_PASSWORD, saveMemberAndPassword } from './fixtures/password';
 
@@ -41,7 +41,7 @@ describe('Password routes tests', () => {
     });
 
     it('Sign In successfully', async () => {
-      const m = MEMBERS_FIXTURES.LOUISA;
+      const m = MemberFactory();
       const pwd = MOCK_PASSWORD;
 
       const member = await saveMemberAndPassword(m, pwd);
@@ -65,7 +65,7 @@ describe('Password routes tests', () => {
           }),
         } as Response;
       });
-      const m = MEMBERS_FIXTURES.LOUISA;
+      const m = MemberFactory();
       const pwd = MOCK_PASSWORD;
 
       const member = await saveMemberAndPassword(m, pwd);
@@ -89,7 +89,7 @@ describe('Password routes tests', () => {
           }),
         } as Response;
       });
-      const m = MEMBERS_FIXTURES.LOUISA;
+      const m = MemberFactory();
       const pwd = MOCK_PASSWORD;
 
       const member = await saveMemberAndPassword(m, pwd);
@@ -104,7 +104,7 @@ describe('Password routes tests', () => {
     });
 
     it('Sign In does send unauthorized error for wrong password', async () => {
-      const member = MEMBERS_FIXTURES.LOUISA;
+      const member = MemberFactory();
       const wrongPassword = '1234';
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
@@ -118,10 +118,8 @@ describe('Password routes tests', () => {
     });
 
     it('Sign In does send not acceptable error when member does not have password', async () => {
-      const member = MEMBERS_FIXTURES.BOB;
       const password = 'asd';
-      await MEMBERS_FIXTURES.saveMember(member);
-
+      const member = await saveMember();
       const response = await app.inject({
         method: HttpMethod.POST,
         url: '/login-password',

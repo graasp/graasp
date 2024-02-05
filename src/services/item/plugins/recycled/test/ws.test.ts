@@ -8,7 +8,7 @@ import {
   saveItemAndMembership,
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
-import { ANNA, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
 import { ItemRepository } from '../../../repository';
@@ -203,7 +203,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('members with memberships receive shared items delete update when item is recycled', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
       const memberItemsUpdates = await ws.subscribe<ItemEvent>({
@@ -238,7 +238,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('members with memberships on item in the recycled subtree receive shared items delete update when top item is recycled', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item: parentItem } = await saveItemAndMembership({ member: anna });
       const { item: childItem } = await saveItemAndMembership({ member: anna, parentItem });
       await saveMembership({ item: childItem, member: actor, permission: PermissionLevel.Read });
@@ -274,7 +274,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('members with multiple memberships on related items in the recycled subtree receive shared items delete update on topmost shared item only when top item is recycled', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item: topItem } = await saveItemAndMembership({ member: anna });
       const { item: parentItem } = await saveItemAndMembership({
         member: anna,
@@ -316,7 +316,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('admins receive recycle bin create update when item is recycled', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
       const memberItemsUpdates = await ws.subscribe<ItemEvent>({
@@ -430,7 +430,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('members with memberships receive shared items create update when item is restored', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ member: actor, item, permission: PermissionLevel.Read });
 
@@ -486,7 +486,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('members with memberships on item in the recycled subtree receive shared items create update when top item is restored', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item: parentItem } = await saveItemAndMembership({ member: anna });
       const { item: childItem } = await saveItemAndMembership({ member: anna, parentItem });
       await saveMembership({ member: actor, item: childItem, permission: PermissionLevel.Read });
@@ -543,7 +543,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('members with multiple memberships on related items in the recycled subtree receive shared items create update on topmost shared item only when top item is recycled', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item: topItem } = await saveItemAndMembership({ member: anna });
       const { item: parentItem } = await saveItemAndMembership({
         member: anna,
@@ -605,7 +605,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('admins receive recycle bin delete update when item is recycled', async () => {
-      const anna = await saveMember(ANNA);
+      const anna = await saveMember();
       const { item } = await saveItemAndMembership({ member: anna });
       await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
 

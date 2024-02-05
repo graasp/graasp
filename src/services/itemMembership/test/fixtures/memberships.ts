@@ -1,7 +1,7 @@
-import { PermissionLevel } from '@graasp/sdk';
+import { DiscriminatedItem, PermissionLevel } from '@graasp/sdk';
 
 import { Item } from '../../../item/entities/Item';
-import { getDummyItem, saveItem } from '../../../item/test/fixtures/items';
+import { saveItem } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
 import { ItemMembership } from '../../entities/ItemMembership';
 import { ItemMembershipRepository } from '../../repository';
@@ -20,14 +20,14 @@ export const saveMembership = ({
 
 export const saveItemAndMembership = async (options: {
   member: Member;
-  item?: Partial<Item>;
+  item?: Partial<DiscriminatedItem>;
   permission?: PermissionLevel;
   creator?: Member;
   parentItem?: Item;
 }) => {
   const { item, member, permission, creator, parentItem } = options;
   const newItem = await saveItem({
-    item: { ...getDummyItem(), ...(item ?? {}) },
+    item,
     actor: creator ?? member,
     parentItem,
   });

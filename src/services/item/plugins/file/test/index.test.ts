@@ -18,10 +18,10 @@ import {
   UploadEmptyFileError,
   UploadFileUnexpectedError,
 } from '../../../../file/utils/errors';
-import { expectItem, expectManyItems, getDummyItem } from '../../../../item/test/fixtures/items';
+import { expectItem, expectManyItems } from '../../../../item/test/fixtures/items';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ThumbnailSizeFormat } from '../../../../thumbnail/constants';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
@@ -68,32 +68,6 @@ jest.mock('@aws-sdk/lib-storage', () => {
     }),
   };
 });
-
-const MOCK_FILE_ITEM = getDummyItem({
-  type: FILE_ITEM_TYPE,
-  extra: {
-    [FILE_ITEM_TYPE]: {
-      name: 'name',
-      mimetype: 'mimetype',
-      path: 'filepath',
-      size: 10,
-    },
-  },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any);
-
-const MOCK_HUGE_FILE_ITEM = getDummyItem({
-  type: FILE_ITEM_TYPE,
-  extra: {
-    [FILE_ITEM_TYPE]: {
-      name: 'name',
-      mimetype: 'mimetype',
-      path: 'filepath',
-      size: DEFAULT_MAX_STORAGE,
-    },
-  },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any);
 
 // we need a different form data for each test
 const createFormData = (form = new FormData()) => {
@@ -237,7 +211,7 @@ describe('File Item routes tests', () => {
         });
 
         it('Cannot upload in parent with read rights', async () => {
-          const member = await saveMember(BOB);
+          const member = await saveMember();
           const { item: parentItem } = await saveItemAndMembership({
             member: actor,
             permission: PermissionLevel.Read,
@@ -266,10 +240,10 @@ describe('File Item routes tests', () => {
           const form = createFormData();
           await saveItemAndMembership({
             member: actor,
-            item: getDummyItem({
+            item: {
               type: ItemType.S3_FILE,
               extra: { [ItemType.S3_FILE]: { size: DEFAULT_MAX_STORAGE + 1 } } as S3FileItemExtra,
-            }),
+            },
           });
 
           const response = await app.inject({
@@ -384,8 +358,8 @@ describe('File Item routes tests', () => {
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
-        ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member }));
+        member = await saveMember();
+        ({ item } = await saveItemAndMembership({ item: { type: ItemType.S3_FILE }, member }));
       });
 
       it('Throws if signed out and item is private', async () => {
@@ -415,7 +389,10 @@ describe('File Item routes tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor }));
+        ({ item } = await saveItemAndMembership({
+          item: { type: ItemType.S3_FILE },
+          member: actor,
+        }));
       });
       describe('Without error', () => {
         it('Redirect to file item', async () => {
@@ -439,7 +416,7 @@ describe('File Item routes tests', () => {
         });
 
         it('Cannot download without rights', async () => {
-          const member = await saveMember(BOB);
+          const member = await saveMember();
           const { item: someItem } = await saveItemAndMembership({
             member,
           });
@@ -504,7 +481,10 @@ describe('File Item routes tests', () => {
 
     beforeEach(async () => {
       ({ app, actor } = await build());
-      ({ item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor }));
+      ({ item } = await saveItemAndMembership({
+        item: { type: ItemType.S3_FILE },
+        member: actor,
+      }));
     });
 
     it('Edit file item altText', async () => {
@@ -547,7 +527,10 @@ describe('File Item routes tests', () => {
         });
       });
       it('Delete corresponding file for file item', async () => {
-        const { item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor });
+        const { item } = await saveItemAndMembership({
+          item: { type: ItemType.S3_FILE },
+          member: actor,
+        });
 
         await app.inject({
           method: HttpMethod.DELETE,
@@ -562,80 +545,94 @@ describe('File Item routes tests', () => {
           }, MULTIPLE_ITEMS_LOADING_TIME);
         });
       });
+    });
 
-      describe('Copy Pre Hook', () => {
-        it('Stop if item is not a file item', async () => {
-          const { item: parentItem } = await saveItemAndMembership({ member: actor });
-          const { item } = await saveItemAndMembership({ member: actor });
-          await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/${item.id}/copy`,
-            payload: {
-              parentId: parentItem.id,
-            },
-          });
-
-          await new Promise(async (done) => {
-            setTimeout(async () => {
-              await expect(copyObjectMock).not.toHaveBeenCalled();
-
-              done(true);
-            }, MULTIPLE_ITEMS_LOADING_TIME);
-          });
-        });
-        it('Copy corresponding file for file item', async () => {
-          const { item: parentItem } = await saveItemAndMembership({ member: actor });
-
-          const { item } = await saveItemAndMembership({ item: MOCK_FILE_ITEM, member: actor });
-
-          await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
-            payload: {
-              parentId: parentItem.id,
-            },
-          });
-
-          await new Promise(async (done) => {
-            setTimeout(async () => {
-              await expect(copyObjectMock).toHaveBeenCalled();
-
-              const items = await ItemRepository.find({ where: { name: item.name } });
-              expect(items).toHaveLength(2);
-              expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
-                (items[1].extra as S3FileItemExtra).s3File.path,
-              );
-
-              done(true);
-            }, MULTIPLE_ITEMS_LOADING_TIME);
-          });
+    describe('Copy Pre Hook', () => {
+      it('Stop if item is not a file item', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item } = await saveItemAndMembership({ member: actor });
+        await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/copy`,
+          payload: {
+            parentId: parentItem.id,
+          },
         });
 
-        it('Prevent copy if member storage is exceeded', async () => {
-          const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        await new Promise(async (done) => {
+          setTimeout(async () => {
+            await expect(copyObjectMock).not.toHaveBeenCalled();
 
-          const { item } = await saveItemAndMembership({
-            item: MOCK_HUGE_FILE_ITEM,
-            member: actor,
-          });
-          const itemCount = await ItemRepository.find();
+            done(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
+        });
+      });
+      it('Copy corresponding file for file item', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
 
-          await app.inject({
-            method: HttpMethod.POST,
-            url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
-            payload: {
-              parentId: parentItem.id,
+        const { item } = await saveItemAndMembership({
+          item: { type: ItemType.S3_FILE },
+          member: actor,
+        });
+
+        await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+
+        await new Promise(async (done) => {
+          setTimeout(async () => {
+            await expect(copyObjectMock).toHaveBeenCalled();
+
+            const items = await ItemRepository.find({ where: { name: item.name } });
+            expect(items).toHaveLength(2);
+            expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
+              (items[1].extra as S3FileItemExtra).s3File.path,
+            );
+
+            done(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
+        });
+      });
+
+      it('Prevent copy if member storage is exceeded', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+
+        const { item } = await saveItemAndMembership({
+          item: {
+            type: ItemType.S3_FILE,
+            extra: {
+              [ItemType.S3_FILE]: {
+                size: DEFAULT_MAX_STORAGE,
+                name: 'name',
+                mimetype: 'mimetype',
+                path: 'filepath',
+                content: 'content',
+              },
             },
-          });
+          },
+          member: actor,
+        });
+        const itemCount = await ItemRepository.find();
 
-          await new Promise(async (done) => {
-            setTimeout(async () => {
-              await expect(copyObjectMock).not.toHaveBeenCalled();
-              // did not copy
-              expect(await ItemRepository.find()).toHaveLength(itemCount.length);
-              done(true);
-            }, MULTIPLE_ITEMS_LOADING_TIME);
-          });
+        await app.inject({
+          method: HttpMethod.POST,
+          url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
+          payload: {
+            parentId: parentItem.id,
+          },
+        });
+
+        await new Promise(async (done) => {
+          setTimeout(async () => {
+            await expect(copyObjectMock).not.toHaveBeenCalled();
+            // did not copy
+            expect(await ItemRepository.find()).toHaveLength(itemCount.length);
+            done(true);
+          }, MULTIPLE_ITEMS_LOADING_TIME);
         });
       });
     });

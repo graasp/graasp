@@ -15,10 +15,11 @@ import {
   saveMembership,
 } from '../../../../itemMembership/test/fixtures/memberships';
 import { Actor, Member } from '../../../../member/entities/member';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
+import { ItemMissingExtraError } from '../errors';
 import { EtherpadItemService } from '../service';
 import { setUpApi } from './api';
 
@@ -253,7 +254,7 @@ describe('Etherpad service API', () => {
     });
 
     it('views a pad in write mode returns a read-only pad ID if user has read permission only', async () => {
-      const bob = await saveMember(BOB);
+      const bob = await saveMember();
       const { item } = await saveItemAndMembership({
         member: bob,
         item: {
@@ -589,17 +590,11 @@ describe('Etherpad service API', () => {
       const res = await app.inject(payloadView(mode, bogusItem.id));
 
       expect(res.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
-      expect(res.json()).toEqual({
-        code: 'GPEPERR003',
-        message: 'Item missing etherpad extra',
-        origin: 'graasp-plugin-etherpad',
-        data: bogusItem.id,
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      });
+      expect(res.json()).toMatchObject(new ItemMissingExtraError(bogusItem.id));
     });
 
     it.each(MODES)('returns error if member does not have %p permission', async (mode) => {
-      const bob = await saveMember(BOB);
+      const bob = await saveMember();
       const { item } = await saveItemAndMembership({
         member: bob,
         item: {

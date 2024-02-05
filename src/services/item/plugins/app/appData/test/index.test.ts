@@ -6,7 +6,7 @@ import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graas
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Actor, Member } from '../../../../../member/entities/member';
-import { BOB, expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
+import { expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
 import { setUp } from '../../test/fixtures';
 import { PreventUpdateAppDataFile } from '../errors';
@@ -108,7 +108,7 @@ describe('App Data Tests', () => {
     describe('Sign Out', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
 
         ({ item, token, appData } = await setUpForAppData(app, actor, member));
         // logout after getting token and setting up
@@ -130,7 +130,7 @@ describe('App Data Tests', () => {
     describe('Public', () => {
       it('Throws if is signed out', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appData, token } = await setUpForAppData(
           app,
           actor,
@@ -150,7 +150,7 @@ describe('App Data Tests', () => {
 
       it('Get data with item visibility successfully', async () => {
         ({ app, actor } = await build());
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appData, token } = await setUpForAppData(
           app,
           member,
@@ -238,7 +238,7 @@ describe('App Data Tests', () => {
     describe('Sign in as reader', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item, appData, token } = await setUpForAppData(
           app,
           actor,
@@ -418,7 +418,7 @@ describe('App Data Tests', () => {
       });
 
       it('Post app data to some member', async () => {
-        const bob = await saveMember(BOB);
+        const bob = await saveMember();
         const response = await app.inject({
           method: HttpMethod.POST,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
@@ -556,7 +556,7 @@ describe('App Data Tests', () => {
     describe('Sign In as reader', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        member = await saveMember(BOB);
+        member = await saveMember();
         let appData;
         ({ item, token, appData } = await setUpForAppData(
           app,

@@ -2,17 +2,18 @@ import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
-import { Context } from '@graasp/sdk';
+import { Context, FolderItemFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { TMP_FOLDER } from '../../../utils/config';
 import { ChatMessage } from '../../chat/chatMessage';
 import { ChatMessageRepository } from '../../chat/repository';
+import { Item } from '../../item/entities/Item';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { getDummyItem } from '../../item/test/fixtures/items';
+import { createItem } from '../../item/test/fixtures/items';
 import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
-import { BOB, saveMember } from '../../member/test/fixtures/members';
+import { saveMember } from '../../member/test/fixtures/members';
 import { Action } from '../entities/action';
 import { ActionRepository } from '../repositories/action';
 import { exportActionsInArchive } from './export';
@@ -56,7 +57,7 @@ const setUpActions = async (app, member: Member) => {
     members: [member],
     itemMemberships: [itemMembership],
     item,
-    descendants: [getDummyItem()],
+    descendants: [createItem()],
     chatMessages,
     metadata: { numActionsRetrieved: 5, requestedSampleSize: 5 },
     apps: {},
@@ -81,7 +82,7 @@ describe('exportActionsInArchive', () => {
   });
 
   it('Create archive successfully', async () => {
-    const member = await saveMember(BOB);
+    const member = await saveMember();
     const { baseAnalytics, views } = await setUpActions(app, member);
 
     const writeFileSyncMock = jest.spyOn(fs, 'writeFileSync');

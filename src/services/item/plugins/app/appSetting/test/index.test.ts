@@ -8,7 +8,7 @@ import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../../member/entities/member';
-import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../../member/test/fixtures/members';
 import { setItemPublic } from '../../../itemTag/test/fixtures';
 import { setUp } from '../../test/fixtures';
 import { AppSettingRepository } from '../repository';
@@ -228,7 +228,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Post app setting throws for read membership', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appSettings, token } = await setUpForAppSettings(
           app,
           actor,
@@ -248,7 +248,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Post app setting throws for write membership', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appSettings, token } = await setUpForAppSettings(
           app,
           actor,
@@ -324,7 +324,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Patch app setting throws for read membership', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appSettings, token } = await setUpForAppSettings(
           app,
           actor,
@@ -344,7 +344,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Patch app setting throws for write membership', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appSettings, token } = await setUpForAppSettings(
           app,
           actor,
@@ -420,7 +420,7 @@ describe('Apps Settings Tests', () => {
     describe('Sign Out', () => {
       it('Delete app setting without member and token throws', async () => {
         ({ app, actor } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
@@ -481,7 +481,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Delete app setting throws for read membership', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appSettings, token } = await setUpForAppSettings(
           app,
           actor,
@@ -501,7 +501,7 @@ describe('Apps Settings Tests', () => {
       });
 
       it('Delete app setting throws for write membership', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, appSettings, token } = await setUpForAppSettings(
           app,
           actor,

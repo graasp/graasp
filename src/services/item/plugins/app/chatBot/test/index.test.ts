@@ -9,7 +9,7 @@ import {
   OpenAITimeOutError,
   OpenAIUnknownStopError,
 } from '../../../../../../utils/errors';
-import { BOB, saveMember } from '../../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../../member/test/fixtures/members';
 import { setUp, setUpForbidden } from '../../test/fixtures';
 import { FinishReason } from '../interfaces/finishReason';
 import { GPTVersion } from '../interfaces/gptVersion';
@@ -46,7 +46,7 @@ describe('Chat Bot Tests', () => {
     describe('Sign Out', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
 
         ({ item, token } = await setUp(app, actor, member));
       });
@@ -231,7 +231,7 @@ describe('Chat Bot Tests', () => {
     describe('Try access as unauthorized app', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item, token } = await setUpForbidden(app, actor, member));
         mockResponse(FinishReason.STOP);
       });

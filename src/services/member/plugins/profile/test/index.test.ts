@@ -1,10 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { HttpMethod } from '@graasp/sdk';
+import { HttpMethod, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MEMBER_PROFILE_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ANNA, BOB, saveMember } from '../../../test/fixtures/members';
+import { saveMember } from '../../../test/fixtures/members';
 import {
   ANNA_PROFILE,
   BOB_PROFILE,
@@ -127,7 +127,7 @@ describe('Profile Member routes tests', () => {
   describe('GET /members/profile/:id', () => {
     it('Returns Not Found if visibilty set to false', async () => {
       ({ app, actor } = await build());
-      const member = await saveMemberProfile(ANNA, ANNA_PROFILE);
+      const member = await saveMemberProfile(MemberFactory(), ANNA_PROFILE);
       const memberId = member.id;
 
       const response = await app.inject({
@@ -139,7 +139,7 @@ describe('Profile Member routes tests', () => {
     });
     it('Returns Not Found if no profile for this member', async () => {
       ({ app, actor } = await build());
-      const member = await saveMember(ANNA);
+      const member = await saveMember();
       const memberId = member.id;
 
       const response = await app.inject({
@@ -151,7 +151,7 @@ describe('Profile Member routes tests', () => {
     });
     it('Returns member if visibilty set to true', async () => {
       ({ app, actor } = await build());
-      const memberProfile = await saveMemberProfile(BOB, BOB_PROFILE);
+      const memberProfile = await saveMemberProfile(MemberFactory(), BOB_PROFILE);
 
       const memberId = memberProfile?.member?.id;
 

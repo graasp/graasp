@@ -19,7 +19,7 @@ const adminRepository = AppDataSource.getRepository(ChatMention);
 // create item, chat messages from another member and members
 // as well as mentions of actor
 const saveItemWithChatMessagesAndMentions = async (actor) => {
-  const otherActor = await saveMember({ name: 'other-actor', email: 'email@email.org' });
+  const otherActor = await saveMember();
   const { item, chatMessages, members } = await saveItemWithChatMessages(otherActor);
   const chatMentions: ChatMention[] = [];
   for (const c of chatMessages) {
@@ -176,10 +176,7 @@ describe('Chat Mention tests', () => {
 
       it('Throws if member does not have access to mention', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
-        const member = await saveMember({
-          name: 'new-user',
-          email: 'new@email.org',
-        });
+        const member = await saveMember();
         const mention = await adminRepository.save({ member, message: chatMessages[0] });
 
         const response = await app.inject({

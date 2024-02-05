@@ -7,7 +7,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
 import { expectManyItems } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
@@ -125,7 +125,7 @@ describe('Item Like', () => {
       let member;
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
       });
 
       it('Throws if signed out', async () => {
@@ -143,7 +143,7 @@ describe('Item Like', () => {
       let member;
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
-        member = await saveMember(BOB);
+        member = await saveMember();
       });
 
       it('Get like entries for public item', async () => {
@@ -195,7 +195,7 @@ describe('Item Like', () => {
       });
 
       it('Cannot get like item if does not have rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
         await saveItemLikes([item], member);
 
@@ -207,7 +207,7 @@ describe('Item Like', () => {
       });
 
       it('Get like entries for public item', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
         await setItemPublic(item, member);
         const likes = await saveItemLikes([item], member);
@@ -235,7 +235,7 @@ describe('Item Like', () => {
   describe('POST /:itemId/like', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -269,7 +269,7 @@ describe('Item Like', () => {
       });
 
       it('Cannot like item if does not have rights', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const { item } = await saveItemAndMembership({ member });
 
         const res = await app.inject({
@@ -292,7 +292,7 @@ describe('Item Like', () => {
   describe('DELETE :itemId/like', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
-      const member = await saveMember(BOB);
+      const member = await saveMember();
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
@@ -321,7 +321,7 @@ describe('Item Like', () => {
       });
 
       it('Cannot dislike if have no rights on item', async () => {
-        const member = await saveMember(BOB);
+        const member = await saveMember();
 
         const { item } = await saveItemAndMembership({ member });
         const [itemLike] = await saveItemLikes([item], member);

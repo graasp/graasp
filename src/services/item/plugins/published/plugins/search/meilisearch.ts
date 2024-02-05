@@ -84,8 +84,8 @@ export class MeiliSearchWrapper {
     this.getIndex();
   }
 
-  private removeHTMLTags(s: string): string {
-    if (s === null) return '';
+  private removeHTMLTags(s?: string | null): string {
+    if (!s) return '';
     return stripHtml(s);
   }
 

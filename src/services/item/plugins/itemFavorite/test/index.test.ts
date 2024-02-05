@@ -6,7 +6,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemRepository } from '../../../repository';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError } from '../errors';
@@ -77,7 +77,7 @@ describe('Favorite', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
 
-        member = await saveMember(BOB);
+        member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
       });
 
@@ -142,7 +142,7 @@ describe('Favorite', () => {
       describe('Signed out', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
-          member = await saveMember(BOB);
+          member = await saveMember();
           ({ item } = await saveItemAndMembership({ member }));
         });
 

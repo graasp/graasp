@@ -6,7 +6,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors';
 import { saveMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { ANNA, BOB, CEDRIC, saveMember } from '../../../../member/test/fixtures/members';
+import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemPublishedNotFound } from '../../published/errors';
 import {
   MOCK_ALIAS,
@@ -43,7 +43,7 @@ describe('Short links routes tests', () => {
 
   beforeEach(async () => {
     ({ app, actor } = await build());
-    bob = await saveMember(BOB);
+    bob = await saveMember();
   });
 
   afterEach(async () => {
@@ -661,8 +661,8 @@ describe('Short links routes tests', () => {
     describe('GET /short-links/list/:itemId', () => {
       const platformLinks = [ShortLinkPlatform.builder, ShortLinkPlatform.player];
       beforeEach(async () => {
-        cedric = await saveMember(CEDRIC);
-        anna = await saveMember(ANNA);
+        cedric = await saveMember();
+        anna = await saveMember();
 
         ({ item } = await mockItemAndMemberships({
           itemCreator: actor,

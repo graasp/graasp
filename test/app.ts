@@ -1,16 +1,13 @@
 import fastify from 'fastify';
 
+import { CompleteMember } from '@graasp/sdk';
+
 import registerAppPlugins from '../src/app';
-import { Actor, Member } from '../src/services/member/entities/member';
+import { Actor } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
-const ACTOR = {
-  name: 'actor',
-  email: 'graasp@email.org',
-};
-
-const build = async ({ member }: { member?: Partial<Member> | null } = { member: ACTOR }) => {
+const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
   // const app = fastify({
   //   logger: {
   //     prettyPrint: true,
@@ -35,10 +32,9 @@ const build = async ({ member }: { member?: Partial<Member> | null } = { member:
 
   await registerAppPlugins(app);
 
-  let actor: Actor = undefined;
-  if (member) {
-    actor = await saveMember(member);
-    const authenticatedActor = actor as Member;
+  const actor: Actor = member !== null ? await saveMember(member) : undefined;
+  if (actor) {
+    const authenticatedActor = actor;
 
     jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request) => {
       request.member = authenticatedActor;

@@ -8,8 +8,8 @@ import { AppDataSource } from '../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { BOB, saveMember } from '../../../member/test/fixtures/members';
-import { getDummyItem, savePublicItem } from '../../test/fixtures/items';
+import { saveMember } from '../../../member/test/fixtures/members';
+import { savePublicItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationNotFound } from './errors';
 
@@ -51,8 +51,8 @@ describe('Item Geolocation', () => {
     describe('Signed out', () => {
       it('Get geolocation for public item', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
-        item = await savePublicItem({ actor: member, item: getDummyItem() });
+        const member = await saveMember();
+        item = await savePublicItem({ actor: member });
         const geoloc = await repository.save({ item, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
@@ -68,7 +68,7 @@ describe('Item Geolocation', () => {
       });
       it('Throws for non public item', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         ({ item } = await saveItemAndMembership({ member }));
         await repository.save({ item, lat: 1, lng: 2, country: 'de' });
 
@@ -136,7 +136,7 @@ describe('Item Geolocation', () => {
     describe('Signed out', () => {
       it('Get public item geolocations', async () => {
         ({ app } = await build({ member: null }));
-        const member = await saveMember(BOB);
+        const member = await saveMember();
         const item1 = await savePublicItem({ actor: member });
         const geoloc1 = await repository.save({ item: item1, lat: 1, lng: 2, country: 'de' });
         const item2 = await savePublicItem({ actor: member });
@@ -205,17 +205,17 @@ describe('Item Geolocation', () => {
 
       it('Get item geolocations with search strings', async () => {
         const { item: item1 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'hello bye' }),
+          item: { name: 'hello bye' },
           member: actor,
         });
         const geoloc1 = await repository.save({ item: item1, lat: 1, lng: 2, country: 'de' });
         const { item: item2 } = await saveItemAndMembership({
-          item: getDummyItem({ description: 'hello bye' }),
+          item: { description: 'hello bye' },
           member: actor,
         });
         const geoloc2 = await repository.save({ item: item2, lat: 1, lng: 2, country: 'de' });
         const { item: item3 } = await saveItemAndMembership({
-          item: getDummyItem({ name: 'bye hello' }),
+          item: { name: 'bye hello' },
           member: actor,
         });
         const geoloc3 = await repository.save({ item: item3, lat: 1, lng: 2, country: 'de' });

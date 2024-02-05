@@ -3,7 +3,6 @@ import { ItemType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
-import { getDummyItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { ItemGeolocationRepository } from './repository';
 
@@ -199,11 +198,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return with keywords in english and french', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'chat chien', lang: 'fr' }),
+        item: { name: 'chat chien', lang: 'fr' },
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
+        item: { name: 'poisson', lang: 'fr' },
         member: actor,
         parentItem,
       });
@@ -231,11 +230,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return with keywords in english and spanish', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'gatos perros', lang: 'es' }),
+        item: { name: 'gatos perros', lang: 'es' },
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'poisson', lang: 'fr' }),
+        item: { name: 'poisson', lang: 'fr' },
         member: actor,
         parentItem,
       });
@@ -264,11 +263,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return only item within keywords in name', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'publics private' }),
+        item: { name: 'publics private' },
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ name: 'private publication' }),
+        item: { name: 'private publication' },
         member: actor,
         parentItem,
       });
@@ -294,11 +293,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return only item within keywords in description', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ description: 'public' }),
+        item: { description: 'public' },
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ description: 'private' }),
+        item: { description: 'private' },
         member: actor,
         parentItem,
       });
@@ -323,11 +322,11 @@ describe('ItemGeolocationRepository', () => {
 
     it('return only item within keywords in tags', async () => {
       const { item: parentItem } = await saveItemAndMembership({
-        item: getDummyItem({ settings: { tags: ['public'] } }),
+        item: { settings: { tags: ['public'] } },
         member: actor,
       });
       const { item } = await saveItemAndMembership({
-        item: getDummyItem({ settings: { tags: ['private'] } }),
+        item: { settings: { tags: ['private'] } },
         member: actor,
         parentItem,
       });
@@ -355,7 +354,7 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
       });
       const { item: item1 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: ItemType.LOCAL_FILE,
           extra: {
             [ItemType.LOCAL_FILE]: {
@@ -366,7 +365,7 @@ describe('ItemGeolocationRepository', () => {
               size: 1,
             },
           },
-        }),
+        },
         member: actor,
         parentItem,
       });
@@ -378,7 +377,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await saveItemAndMembership({ member: actor, parentItem });
       const { item: item2 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: ItemType.LOCAL_FILE,
           extra: {
             [ItemType.LOCAL_FILE]: {
@@ -389,7 +388,7 @@ describe('ItemGeolocationRepository', () => {
               size: 1,
             },
           },
-        }),
+        },
         member: actor,
         parentItem,
       });
@@ -411,7 +410,7 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
       });
       const { item: item1 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: ItemType.S3_FILE,
           extra: {
             [ItemType.S3_FILE]: {
@@ -422,7 +421,7 @@ describe('ItemGeolocationRepository', () => {
               size: 1,
             },
           },
-        }),
+        },
         member: actor,
       });
       const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
@@ -433,7 +432,7 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await saveItemAndMembership({ member: actor, parentItem });
       const { item: item2 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: ItemType.S3_FILE,
           extra: {
             [ItemType.S3_FILE]: {
@@ -444,7 +443,7 @@ describe('ItemGeolocationRepository', () => {
               size: 1,
             },
           },
-        }),
+        },
         member: actor,
         parentItem,
       });
@@ -466,14 +465,14 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
       });
       const { item: item1 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: ItemType.DOCUMENT,
           extra: {
             [ItemType.DOCUMENT]: {
               content: 'public',
             },
           },
-        }),
+        },
         member: actor,
         parentItem,
       });
@@ -485,14 +484,14 @@ describe('ItemGeolocationRepository', () => {
       // noise
       await saveItemAndMembership({ member: actor, parentItem });
       const { item: item2 } = await saveItemAndMembership({
-        item: getDummyItem({
+        item: {
           type: ItemType.DOCUMENT,
           extra: {
             [ItemType.DOCUMENT]: {
               content: 'private',
             },
           },
-        }),
+        },
         member: actor,
         parentItem,
       });
