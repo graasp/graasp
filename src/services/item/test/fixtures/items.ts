@@ -1,6 +1,5 @@
 import {
   AppItemFactory,
-  DiscriminatedItem,
   DocumentItemFactory,
   EmbeddedLinkItemFactory,
   EtherpadItemFactory,
@@ -19,43 +18,45 @@ import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemRepository } from '../../repository';
 
 export const createItem = (
-  args?: Partial<DiscriminatedItem> & {
+  args?: Partial<Item> & {
     parentItem?: Item;
     creator?: Actor | null;
   },
 ): Item => {
   let item;
 
+  // necessary cast since we don't use DiscriminatedItem
+  const castedArgs = args as never;
+
   switch (args?.type) {
     case ItemType.APP:
-      item = AppItemFactory(args);
+      item = AppItemFactory(castedArgs);
       break;
     case ItemType.LINK:
-      item = EmbeddedLinkItemFactory(args);
+      item = EmbeddedLinkItemFactory(castedArgs);
       break;
     case ItemType.DOCUMENT:
-      item = DocumentItemFactory(args);
+      item = DocumentItemFactory(castedArgs);
       break;
     case ItemType.LOCAL_FILE:
-      item = LocalFileItemFactory(args);
+      item = LocalFileItemFactory(castedArgs);
       break;
     case ItemType.S3_FILE:
-      item = S3FileItemFactory(args);
+      item = S3FileItemFactory(castedArgs);
       break;
     case ItemType.H5P:
-      item = H5PItemFactory(args);
+      item = H5PItemFactory(castedArgs);
       break;
     case ItemType.ETHERPAD:
-      item = EtherpadItemFactory(args);
+      item = EtherpadItemFactory(castedArgs);
       break;
     case ItemType.SHORTCUT:
-      item = ShortcutItemFactory(args);
+      item = ShortcutItemFactory(castedArgs);
       break;
     case ItemType.FOLDER:
-      item = FolderItemFactory(args);
-      break;
     default:
-      item = FolderItemFactory(args as never);
+      item = FolderItemFactory(castedArgs);
+      break;
   }
   // by default we generate data with type date to match with entity's types
   return {
@@ -73,7 +74,7 @@ export const saveItem = async ({
 }: {
   parentItem?: Item;
   actor?: Actor | null;
-  item?: Partial<DiscriminatedItem>;
+  item?: Partial<Item>;
 }) => {
   const value = createItem({ ...item, creator: actor, parentItem });
   return ItemRepository.save(value);
@@ -86,7 +87,7 @@ export const savePublicItem = async ({
 }: {
   parentItem?: Item;
   actor: Actor | null;
-  item?: Partial<DiscriminatedItem>;
+  item?: Partial<Item>;
 }) => {
   const value = createItem({ ...item, creator: actor, parentItem });
   const newItem = await ItemRepository.save(value);
@@ -110,7 +111,7 @@ export const saveItems = async ({
 
 export const expectItem = (
   newItem: Partial<Item> | undefined | null,
-  correctItem: Partial<Omit<Item, 'createdAt' | 'updatedAt'>> | undefined | null,
+  correctItem: Partial<Omit<Item, 'createdAt' | 'updatedAt' | 'creator'>> | undefined | null,
   creator?: Member,
   parent?: Item,
 ) => {
