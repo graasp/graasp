@@ -196,7 +196,7 @@ PLAYER_CLIENT_HOST=http://localhost:3112
 LIBRARY_CLIENT_HOST=http://localhost:3005
 AUTH_CLIENT_HOST=http://localhost:3001
 ACCOUNT_CLIENT_HOST=http://localhost:3114
-ANALYTICS_CLIENT_HOST=http://localhost:3005
+ANALYTICS_CLIENT_HOST=http://localhost:3113
 GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
 # validation containers
