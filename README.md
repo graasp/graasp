@@ -1,6 +1,9 @@
 # Graasp Backend
 
-![GitHub package.json version](https://img.shields.io/github/package-json/v/graasp/graasp?color=deepskyblue)
+[![GitHub Release](https://img.shields.io/github/release/graasp/graasp)]()
+![Test CI](https://github.com/graasp/graasp/actions/workflows/test.yml/badge.svg?branch=main)
+![typescript version](https://img.shields.io/github/package-json/dependency-version/graasp/graasp/dev/typescript)
+<a href="https://gitlocalize.com/repo/9284?utm_source=badge"> <img src="https://gitlocalize.com/repo/9284/whole_project/badge.svg" /> </a>
 
 This repository contains the source code and confgurations for the Graasp Backend. Visit the Graasp Platform at [graasp.org](https://graasp.org)
 
@@ -22,6 +25,7 @@ In order to run the Graasp backend, it requires:
 - [Postman](https://www.postman.com) : Application to explore and test your APIs.
 - [Starship](https://starship.rs/): A shell prompt enhancer that shows you the current git branch nvm version and package version, very usefull for quick look at your environment (works on all shells and is super fast), requires you to use a [NerdFont](https://www.nerdfonts.com/)
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
+
   - [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) : A extension for VS Code. It allows to easily setup the dev environnement.
 
   - [SQLTools](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools) : A extension for VS Code. It allows easy access to the database.
@@ -220,7 +224,6 @@ To run the application, use `yarn watch`. If any file change, the application wi
 ## Utilities
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080). If you do not want to use mailcatcher, set the `MAILER_CONFIG_SMTP_HOST` variable in your `.env.development` to some random value (e.g. empty string). This will log the authentication links in the server console instead.
-
 
 ## Database and Migrations
 
