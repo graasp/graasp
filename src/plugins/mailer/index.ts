@@ -6,7 +6,7 @@ import pointOfView from '@fastify/view';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { DEFAULT_LANG } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import i18next from './i18n';
 import { applyLayout } from './layout';

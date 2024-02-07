@@ -11,7 +11,6 @@ import { saveMember } from '../../../member/test/fixtures/members';
 import ItemService from '../../service';
 import { savePublicItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
-import { ItemGeolocationNotFound } from './errors';
 import { ItemGeolocationService } from './service';
 
 // mock datasource
@@ -135,20 +134,15 @@ describe('ItemGeolocationService', () => {
       expect(res).toMatchObject({ lat: geoloc.lat, lng: geoloc.lng, country: geoloc.country });
     });
 
-    it('throws if does not have geolocation', async () => {
+    it('return null if does not have geolocation', async () => {
       const { item } = await saveItemAndMembership({
         member: actor,
         permission: PermissionLevel.Read,
       });
 
-      await service
-        .getByItem(actor, buildRepositories(), item.id)
-        .then(() => {
-          throw new Error('This should have throw');
-        })
-        .catch((e) => {
-          expect(e).toMatchObject(new ItemGeolocationNotFound({ itemId: item.id }));
-        });
+      const res = await service.getByItem(actor, buildRepositories(), item.id);
+
+      expect(res).toBeNull();
     });
 
     it('throws if item not found', async () => {

@@ -7,6 +7,7 @@ const geolocation = {
     lat: { type: 'number' },
     lng: { type: 'number' },
     country: { type: ['string', 'null'] },
+    addressLabel: { type: ['string', 'null'] },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
     item: {
@@ -14,6 +15,7 @@ const geolocation = {
     },
   },
   required: ['lat', 'lng'],
+  nullable: true,
 };
 
 export const getByItem = {
@@ -23,17 +25,30 @@ export const getByItem = {
   },
 };
 
+const getItemsInBoxProps = {
+  type: 'object',
+  properties: {
+    parentItemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    lat1: { type: 'number' },
+    lat2: { type: 'number' },
+    lng1: { type: 'number' },
+    lng2: { type: 'number' },
+    keywords: { type: 'array', items: { type: 'string' } },
+  },
+};
+
 export const getItemsInBox = {
   query: {
-    type: 'object',
-    properties: {
-      lat1: { type: 'number' },
-      lat2: { type: 'number' },
-      lng1: { type: 'number' },
-      lng2: { type: 'number' },
-      keywords: { type: 'array', items: { type: 'string' } },
-    },
-    required: ['lat1', 'lat2', 'lng1', 'lng2'],
+    oneOf: [
+      {
+        ...getItemsInBoxProps,
+        required: ['parentItemId'],
+      },
+      {
+        ...getItemsInBoxProps,
+        required: ['lat1', 'lat2', 'lng1', 'lng2'],
+      },
+    ],
   },
   response: {
     200: {
@@ -53,6 +68,7 @@ export const putGeolocation = {
         properties: {
           lat: { type: 'number' },
           lng: { type: 'number' },
+          addressLabel: { type: 'string' },
         },
         required: ['lat', 'lng'],
       },

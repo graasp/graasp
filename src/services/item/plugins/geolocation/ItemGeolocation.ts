@@ -33,6 +33,9 @@ export class ItemGeolocation extends BaseEntity {
   @Column({ type: 'float' })
   lng: number;
 
+  @Column({ length: 300, nullable: true })
+  addressLabel: string;
+
   @Column({ type: 'character varying', nullable: true, length: 4 })
   country: string | null;
 

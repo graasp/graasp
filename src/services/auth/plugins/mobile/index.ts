@@ -2,7 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { DEFAULT_LANG, RecaptchaAction } from '@graasp/sdk';
+import { RecaptchaAction } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';

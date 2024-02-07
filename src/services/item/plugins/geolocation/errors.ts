@@ -35,3 +35,16 @@ export class PartialItemGeolocation extends GraaspItemGeolocationError {
     );
   }
 }
+
+export class MissingGeolocationSearchParams extends GraaspItemGeolocationError {
+  constructor(data?) {
+    super(
+      {
+        code: 'GIGEOERR003',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Geolocation Search should include parent item, or all lat1, lat2, lng1 and lng2',
+      },
+      data,
+    );
+  }
+}

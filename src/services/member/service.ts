@@ -1,4 +1,5 @@
-import { DEFAULT_LANG, UUID } from '@graasp/sdk';
+import { UUID } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { CannotModifyOtherMembers, MemberAlreadySignedUp } from '../../utils/errors';
 import HookManager from '../../utils/hook';

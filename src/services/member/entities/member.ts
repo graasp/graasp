@@ -8,7 +8,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { DEFAULT_LANG, MemberExtra, MemberType } from '@graasp/sdk';
+import { MemberExtra, MemberType } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 @Entity()
 @Unique('email', ['email'])
