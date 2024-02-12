@@ -6,7 +6,7 @@ export const h5pImport = {
   querystring: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      parentId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -15,7 +15,7 @@ export const h5pImport = {
 export const h5pDownload = {
   params: {
     itemId: {
-      $ref: 'http://graasp.org/#/definitions/uuid',
+      $ref: 'https://graasp.org/#/definitions/uuid',
     },
   },
   required: ['itemId'],

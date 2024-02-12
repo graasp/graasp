@@ -3,14 +3,14 @@ import { idParam } from '../../../../schemas/fluent-schema';
 const geolocation = {
   type: 'object',
   properties: {
-    id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    id: { $ref: 'https://graasp.org/#/definitions/uuid' },
     lat: { type: 'number' },
     lng: { type: 'number' },
     country: { type: ['string', 'null'] },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
     item: {
-      $ref: 'http://graasp.org/items/#/definitions/item',
+      $ref: 'https://graasp.org/items/#/definitions/item',
     },
   },
   required: ['lat', 'lng'],

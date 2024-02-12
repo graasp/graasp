@@ -15,7 +15,7 @@ export const MOCK_S3_OPTIONS = {
 export const MOCK_LOCAL_OPTIONS = {
   storageRootPath: '/storageRootPath',
 };
-export const MOCK_APP_ORIGIN = 'http://app.localhost:3000';
+export const MOCK_APP_ORIGIN = 'https://app.localhost:3000';
 
 export const MOCK_CONTEXT = {
   id: v4(),

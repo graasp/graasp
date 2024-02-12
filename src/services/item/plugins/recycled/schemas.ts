@@ -1,16 +1,16 @@
 export default {
-  $id: 'http://graasp.org/recycle-bin/',
+  $id: 'https://graasp.org/recycle-bin/',
   definitions: {
     // item properties to be returned to the client
     recycledItem: {
       type: 'object',
       required: ['id', 'item'],
       properties: {
-        id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         item: {
-          $ref: 'http://graasp.org/items/#/definitions/item',
+          $ref: 'https://graasp.org/items/#/definitions/item',
         },
-        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
       },
       additionalProperties: false,
@@ -23,30 +23,30 @@ const getRecycledItemDatas = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/recycle-bin/#/definitions/recycledItem' },
+      items: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
     },
   },
 };
 
 // schema for recycling one item
 const recycleOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/recycle-bin/#/definitions/recycledItem' },
+    200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
   },
 };
 // schema for restoring one item
 const restoreOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/recycle-bin/#/definitions/recycledItem' },
+    200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
   },
 };
 // schema for deleting one item
 const deleteOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/recycle-bin/#/definitions/recycledItem' },
+    200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
   },
 };
 
@@ -55,7 +55,7 @@ const deleteOne = {
 const recycleMany = (maxItems: number) => ({
   querystring: {
     allOf: [
-      { $ref: 'http://graasp.org/#/definitions/idsQuery' },
+      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
       { type: 'object', properties: { id: { type: 'array', maxItems } } },
     ],
   },
@@ -63,7 +63,7 @@ const recycleMany = (maxItems: number) => ({
     202: {
       // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      items: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
 });
@@ -72,7 +72,7 @@ const recycleMany = (maxItems: number) => ({
 const restoreMany = (maxItems: number) => ({
   querystring: {
     allOf: [
-      { $ref: 'http://graasp.org/#/definitions/idsQuery' },
+      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
       { type: 'object', properties: { id: { type: 'array', maxItems } } },
     ],
   },
@@ -80,7 +80,7 @@ const restoreMany = (maxItems: number) => ({
     202: {
       // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      items: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
 });
@@ -89,7 +89,7 @@ const restoreMany = (maxItems: number) => ({
 const deleteMany = (maxItems: number) => ({
   querystring: {
     allOf: [
-      { $ref: 'http://graasp.org/#/definitions/idsQuery' },
+      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
       { type: 'object', properties: { id: { type: 'array', maxItems } } },
     ],
   },
@@ -97,7 +97,7 @@ const deleteMany = (maxItems: number) => ({
     202: {
       // ids > MAX_TARGETS_FOR_MODIFY_REQUEST_W_RESPONSE
       type: 'array',
-      items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      items: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
 });

@@ -170,7 +170,7 @@ describe('Action Plugin Tests', () => {
             type: 'view',
           },
           headers: {
-            Origin: 'http://myorigin.com',
+            Origin: 'https://myorigin.com',
           },
         });
         expect(response.json().message).toEqual(new CannotPostAction().message);

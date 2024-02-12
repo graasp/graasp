@@ -16,16 +16,16 @@ import { AppRepository } from '../repository';
 export const GRAASP_PUBLISHER = {
   id: APPS_PUBLISHER_ID,
   name: 'graasp',
-  origins: ['http://origin.org'],
+  origins: ['https://origin.org'],
 };
 
 export const BOB_PUBLISHER = {
   id: '13844630-eaef-4286-b12b-6fd537d33d45',
   name: 'bob',
-  origins: ['http://bob.org'],
+  origins: ['https://bob.org'],
 };
 
-export const MOCK_APP_ORIGIN = 'http://app.localhost:3000';
+export const MOCK_APP_ORIGIN = 'https://app.localhost:3000';
 
 export const buildMockAuthTokenSubject = ({ app = v4(), member = v4(), item = v4() } = {}) => ({
   item,

@@ -3,7 +3,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import { UUID_REGEX } from '../../schemas/global';
 
 export default {
-  $id: 'http://graasp.org/item-memberships/',
+  $id: 'https://graasp.org/item-memberships/',
   definitions: {
     // permission values
     permission: {
@@ -15,20 +15,20 @@ export default {
     itemMembership: {
       type: 'object',
       properties: {
-        id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-        member: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
         /**
          * itemPath's 'pattern' not supported in serialization.
          * since 'itemMembership' schema is only used for serialization it's safe
          * to just use `{ type: 'string' }`
          */
-        // itemPath: { $ref: 'http://graasp.org/#/definitions/itemPath' },
+        // itemPath: { $ref: 'https://graasp.org/#/definitions/itemPath' },
         // bug: cannot set item schema because it's a fluent schema
-        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
+        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
         // TODO: bug! should allow relative $ref: #/definitions/permission
         // check: https://github.com/fastify/fastify/issues/2328
-        permission: { $ref: 'http://graasp.org/item-memberships/#/definitions/permission' },
-        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        permission: { $ref: 'https://graasp.org/item-memberships/#/definitions/permission' },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },
@@ -40,7 +40,7 @@ export default {
       type: 'object',
       required: ['memberId', 'permission'],
       properties: {
-        memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
         permission: { $ref: '#/definitions/permission' },
       },
       additionalProperties: false,
@@ -64,13 +64,13 @@ const create = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
-  body: { $ref: 'http://graasp.org/item-memberships/#/definitions/createPartialItemMembership' },
+  body: { $ref: 'https://graasp.org/item-memberships/#/definitions/createPartialItemMembership' },
   response: {
-    201: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+    201: { $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership' },
   },
 };
 
@@ -80,7 +80,7 @@ const createMany = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -90,7 +90,7 @@ const createMany = {
       memberships: {
         type: 'array',
         items: {
-          $ref: 'http://graasp.org/item-memberships/#/definitions/createPartialItemMembership',
+          $ref: 'https://graasp.org/item-memberships/#/definitions/createPartialItemMembership',
         },
       },
     },
@@ -108,7 +108,7 @@ const getItems = {
     properties: {
       itemId: {
         type: 'array',
-        items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        items: { $ref: 'https://graasp.org/#/definitions/uuid' },
       },
     },
 
@@ -125,7 +125,7 @@ const getItems = {
             [UUID_REGEX]: {
               type: 'array',
               items: {
-                $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership',
+                $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership',
               },
             },
           },
@@ -133,7 +133,7 @@ const getItems = {
         errors: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/#/definitions/error',
+            $ref: 'https://graasp.org/#/definitions/error',
           },
         },
       },
@@ -143,16 +143,16 @@ const getItems = {
 
 // schema for updating an item membership
 const updateOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
-  body: { $ref: 'http://graasp.org/item-memberships/#/definitions/updatePartialItemMembership' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  body: { $ref: 'https://graasp.org/item-memberships/#/definitions/updatePartialItemMembership' },
   response: {
-    200: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+    200: { $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership' },
   },
 };
 
 // schema for deleting an item membership
 const deleteOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   querystring: {
     type: 'object',
     properties: {
@@ -161,7 +161,7 @@ const deleteOne = {
     additionalProperties: false,
   },
   response: {
-    200: { $ref: 'http://graasp.org/item-memberships/#/definitions/itemMembership' },
+    200: { $ref: 'https://graasp.org/item-memberships/#/definitions/itemMembership' },
   },
 };
 
@@ -171,7 +171,7 @@ const deleteAll = {
     type: 'object',
     required: ['itemId'],
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },

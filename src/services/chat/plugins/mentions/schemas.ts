@@ -5,13 +5,13 @@
 import { MentionStatus } from '@graasp/sdk';
 
 export default {
-  $id: 'http://graasp.org/mentions/',
+  $id: 'https://graasp.org/mentions/',
   definitions: {
     memberIdParam: {
       type: 'object',
       required: ['memberId'],
       properties: {
-        memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
       },
     },
 
@@ -19,7 +19,7 @@ export default {
       type: 'object',
       required: ['mentionId'],
       properties: {
-        mentionId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        mentionId: { $ref: 'https://graasp.org/#/definitions/uuid' },
       },
     },
 
@@ -32,9 +32,9 @@ export default {
     chatMention: {
       type: 'object',
       properties: {
-        id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-        message: { $ref: 'http://graasp.org/chat/#/definitions/chatMessage' },
-        member: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        message: { $ref: 'https://graasp.org/chat/#/definitions/chatMessage' },
+        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
         status: {
@@ -65,7 +65,7 @@ export default {
  */
 const getMentions = {
   response: {
-    200: { $ref: 'http://graasp.org/mentions/#/definitions/memberMentions' },
+    200: { $ref: 'https://graasp.org/mentions/#/definitions/memberMentions' },
   },
 };
 
@@ -73,10 +73,10 @@ const getMentions = {
  * JSON schema on PATCH mention route for request and response
  */
 const patchMention = {
-  params: { $ref: 'http://graasp.org/mentions/#/definitions/mentionParam' },
-  body: { $ref: 'http://graasp.org/mentions/#/definitions/partialChatMention' },
+  params: { $ref: 'https://graasp.org/mentions/#/definitions/mentionParam' },
+  body: { $ref: 'https://graasp.org/mentions/#/definitions/partialChatMention' },
   response: {
-    200: { $ref: 'http://graasp.org/mentions/#/definitions/chatMention' },
+    200: { $ref: 'https://graasp.org/mentions/#/definitions/chatMention' },
   },
 };
 
@@ -84,9 +84,9 @@ const patchMention = {
  * JSON schema on DELETE remove mention route for request and response
  */
 const deleteMention = {
-  params: { $ref: 'http://graasp.org/mentions/#/definitions/mentionParam' },
+  params: { $ref: 'https://graasp.org/mentions/#/definitions/mentionParam' },
   response: {
-    200: { $ref: 'http://graasp.org/mentions/#/definitions/chatMention' },
+    200: { $ref: 'https://graasp.org/mentions/#/definitions/chatMention' },
   },
 };
 
@@ -95,7 +95,7 @@ const deleteMention = {
  */
 const clearAllMentions = {
   response: {
-    200: { $ref: 'http://graasp.org/mentions/#/definitions/memberMentions' },
+    200: { $ref: 'https://graasp.org/mentions/#/definitions/memberMentions' },
   },
 };
 

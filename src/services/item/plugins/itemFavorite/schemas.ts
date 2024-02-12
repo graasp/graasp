@@ -1,14 +1,14 @@
 export default {
-  $id: 'http://graasp.org/favorite/',
+  $id: 'https://graasp.org/favorite/',
   definitions: {
     favorite: {
       type: 'object',
       properties: {
         id: {
-          $ref: 'http://graasp.org/#/definitions/uuid',
+          $ref: 'https://graasp.org/#/definitions/uuid',
         },
         item: {
-          $ref: 'http://graasp.org/items/#/definitions/item',
+          $ref: 'https://graasp.org/items/#/definitions/item',
         },
         createdAt: { type: 'string' },
       },
@@ -21,7 +21,7 @@ export const getFavorite = {
   querystring: {
     type: 'object',
     properties: {
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -29,7 +29,7 @@ export const getFavorite = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/favorite/#/definitions/favorite',
+        $ref: 'https://graasp.org/favorite/#/definitions/favorite',
       },
     },
   },
@@ -37,20 +37,20 @@ export const getFavorite = {
 
 export const create = {
   params: {
-    itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
   response: {
     200: {
-      $ref: 'http://graasp.org/favorite/#/definitions/favorite',
+      $ref: 'https://graasp.org/favorite/#/definitions/favorite',
     },
   },
 };
 
 export const deleteOne = {
   params: {
-    itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
   response: {
-    200: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    200: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
 };

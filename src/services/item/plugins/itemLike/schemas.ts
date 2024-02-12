@@ -1,18 +1,18 @@
 export default {
-  $id: 'http://graasp.org/itemlikes/',
+  $id: 'https://graasp.org/itemlikes/',
   definitions: {
     itemLike: {
       type: 'object',
       properties: {
         id: {
-          $ref: 'http://graasp.org/#/definitions/uuid',
+          $ref: 'https://graasp.org/#/definitions/uuid',
         },
         item: {
-          $ref: 'http://graasp.org/items/#/definitions/item',
+          $ref: 'https://graasp.org/items/#/definitions/item',
         },
         // warning: do not include for privacy for now
         // member: {
-        //   $ref: 'http://graasp.org/#/definitions/uuid',
+        //   $ref: 'https://graasp.org/#/definitions/uuid',
         // },
         createdAt: {},
       },
@@ -29,7 +29,7 @@ export const getLikesForMember = {
   querystring: {
     type: 'object',
     properties: {
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -37,7 +37,7 @@ export const getLikesForMember = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/itemlikes/#/definitions/itemLike',
+        $ref: 'https://graasp.org/itemlikes/#/definitions/itemLike',
       },
     },
   },
@@ -45,13 +45,13 @@ export const getLikesForMember = {
 
 export const getLikesForItem = {
   params: {
-    itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
   response: {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/itemlikes/#/definitions/itemLike',
+        $ref: 'https://graasp.org/itemlikes/#/definitions/itemLike',
       },
     },
   },
@@ -59,20 +59,20 @@ export const getLikesForItem = {
 
 export const create = {
   params: {
-    itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
   response: {
     200: {
-      $ref: 'http://graasp.org/itemlikes/#/definitions/itemLike',
+      $ref: 'https://graasp.org/itemlikes/#/definitions/itemLike',
     },
   },
 };
 
 export const deleteOne = {
   params: {
-    itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
   response: {
-    200: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    200: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
 };
