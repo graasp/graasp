@@ -4,7 +4,7 @@ const upload = {
   params: {
     type: 'object',
     properties: {
-      id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -13,7 +13,7 @@ const upload = {
 const download = {
   params: {
     allOf: [
-      { $ref: 'http://graasp.org/#/definitions/idParam' },
+      { $ref: 'https://graasp.org/#/definitions/idParam' },
       {
         type: 'object',
         properties: {

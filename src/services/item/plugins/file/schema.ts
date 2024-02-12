@@ -6,14 +6,14 @@ export const upload = {
   querystring: {
     type: 'object',
     properties: {
-      id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
 };
 
 export const download = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   querystring: {
     type: 'object',
     properties: {

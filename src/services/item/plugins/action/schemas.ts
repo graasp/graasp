@@ -137,7 +137,7 @@ export const memberSchemaForAnalytics = {
 };
 
 export const postAction = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   body: {
     type: 'object',
     properties: {

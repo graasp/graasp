@@ -1,17 +1,17 @@
 import { UUID_REGEX } from '../../../../../schemas/global';
 
 export default {
-  $id: 'http://graasp.org/apps/app-action/',
+  $id: 'https://graasp.org/apps/app-action/',
   definitions: {
     appAction: {
       type: 'object',
       properties: {
         id: { type: 'string' },
         member: {
-          $ref: 'http://graasp.org/members/#/definitions/member',
+          $ref: 'https://graasp.org/members/#/definitions/member',
         },
         item: {
-          $ref: 'http://graasp.org/items/#/definitions/item',
+          $ref: 'https://graasp.org/items/#/definitions/item',
         },
         data: {},
         type: { type: 'string' },
@@ -22,34 +22,34 @@ export default {
 };
 
 const create = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   body: {
     type: 'object',
     required: ['data', 'type'],
     properties: {
       data: { type: 'object', additionalProperties: true },
       type: { type: 'string', minLength: 3, maxLength: 25 },
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
   response: {
-    200: { $ref: 'http://graasp.org/apps/app-action/#/definitions/appAction' },
+    200: { $ref: 'https://graasp.org/apps/app-action/#/definitions/appAction' },
   },
 };
 
 const getForOne = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   querystring: {
     type: 'object',
     properties: {
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/apps/app-action/#/definitions/appAction' },
+      items: { $ref: 'https://graasp.org/apps/app-action/#/definitions/appAction' },
     },
   },
 };
@@ -61,10 +61,10 @@ const getForMany = {
     properties: {
       itemId: {
         type: 'array',
-        items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        items: { $ref: 'https://graasp.org/#/definitions/uuid' },
         uniqueItems: true,
       },
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -78,14 +78,14 @@ const getForMany = {
           patternProperties: {
             [UUID_REGEX]: {
               type: 'array',
-              items: { $ref: 'http://graasp.org/apps/app-action/#/definitions/appAction' },
+              items: { $ref: 'https://graasp.org/apps/app-action/#/definitions/appAction' },
             },
           },
         },
         errors: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/#/definitions/error',
+            $ref: 'https://graasp.org/#/definitions/error',
           },
         },
       },

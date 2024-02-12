@@ -397,14 +397,14 @@ export const applyLayout = (body: string) => {
             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
               <tr>
                 <td class="content-block">
-                  You are receiving this email because of your account on <a href="http://auth.graasp.com">Graasp</a>.
+                  You are receiving this email because of your account on <a href="https://graasp.org">Graasp</a>.
                   <br />
                   <span class="apple-link">React Group, Station 11 EPFL, Ecublens 1015 Lausanne</span>
                 </td>
               </tr>
               <tr>
                 <td class="content-block powered-by">
-                  Powered by <a href="http://graasp.org">Graasp</a>.
+                  Powered by <a href="https://graasp.org">Graasp</a>.
                 </td>
               </tr>
             </table>

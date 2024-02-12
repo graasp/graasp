@@ -293,13 +293,13 @@ export const copyMany = {
 
 // ajv for other schemas to import
 export default {
-  $id: 'http://graasp.org/items/',
+  $id: 'https://graasp.org/items/',
   definitions: {
     item: {
       type: 'object',
       additionalProperties: false,
       properties: {
-        id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         name: { type: 'string' },
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
@@ -313,7 +313,7 @@ export default {
           type: 'object',
           additionalProperties: true,
         },
-        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },

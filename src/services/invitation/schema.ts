@@ -1,16 +1,16 @@
 import { UUID_REGEX } from '../../schemas/global';
 
 export default {
-  $id: 'http://graasp.org/invitations/',
+  $id: 'https://graasp.org/invitations/',
   definitions: {
     invitation: {
       type: 'object',
       properties: {
-        id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         email: { type: 'string', format: 'email' },
         name: { type: ['string', 'null'] },
         permission: { type: 'string' },
-        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
+        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
 
         /**
          * for some reason setting these date fields as "type: 'string'"
@@ -58,13 +58,13 @@ export default {
 };
 
 export const invite = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   body: {
     type: 'object',
     properties: {
       invitations: {
         type: 'array',
-        items: { $ref: 'http://graasp.org/invitations/#/definitions/partialInvitation' },
+        items: { $ref: 'https://graasp.org/invitations/#/definitions/partialInvitation' },
       },
     },
     additionalProperties: false,
@@ -76,13 +76,13 @@ export const invite = {
         data: {
           type: 'object',
           patternProperties: {
-            [UUID_REGEX]: { $ref: 'http://graasp.org/invitations/#/definitions/invitation' },
+            [UUID_REGEX]: { $ref: 'https://graasp.org/invitations/#/definitions/invitation' },
           },
         },
         errors: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/#/definitions/error',
+            $ref: 'https://graasp.org/#/definitions/error',
           },
         },
       },
@@ -91,19 +91,19 @@ export const invite = {
 };
 
 export const getForItem = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/invitations/#/definitions/invitation' },
+      items: { $ref: 'https://graasp.org/invitations/#/definitions/invitation' },
     },
   },
 };
 
 export const getById = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/invitations/#/definitions/invitation' },
+    200: { $ref: 'https://graasp.org/invitations/#/definitions/invitation' },
   },
 };
 
@@ -112,13 +112,13 @@ export const updateOne = {
     type: 'object',
     required: ['id', 'invitationId'],
     properties: {
-      id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-      invitationId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      invitationId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
-  body: { $ref: 'http://graasp.org/invitations/#/definitions/partialInvitationForUpdate' },
+  body: { $ref: 'https://graasp.org/invitations/#/definitions/partialInvitationForUpdate' },
   response: {
-    200: { $ref: 'http://graasp.org/invitations/#/definitions/invitation' },
+    200: { $ref: 'https://graasp.org/invitations/#/definitions/invitation' },
   },
 };
 
@@ -127,8 +127,8 @@ export const deleteOne = {
     type: 'object',
     required: ['id', 'invitationId'],
     properties: {
-      id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-      invitationId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      invitationId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
   response: {
@@ -141,8 +141,8 @@ export const sendOne = {
     type: 'object',
     required: ['id', 'invitationId'],
     properties: {
-      id: { $ref: 'http://graasp.org/#/definitions/uuid' },
-      invitationId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      invitationId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
 };

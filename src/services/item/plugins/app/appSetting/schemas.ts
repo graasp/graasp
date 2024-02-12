@@ -1,5 +1,5 @@
 export default {
-  $id: 'http://graasp.org/apps/app-settings/',
+  $id: 'https://graasp.org/apps/app-settings/',
   definitions: {
     appSetting: {
       type: 'object',
@@ -7,10 +7,10 @@ export default {
         id: { type: 'string' },
         name: { type: 'string' },
         item: {
-          $ref: 'http://graasp.org/items/#/definitions/item',
+          $ref: 'https://graasp.org/items/#/definitions/item',
         },
         data: {},
-        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },
@@ -19,7 +19,7 @@ export default {
 };
 
 const create = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   body: {
     type: 'object',
     required: ['data', 'name'],
@@ -29,15 +29,15 @@ const create = {
     },
   },
   response: {
-    200: { $ref: 'http://graasp.org/apps/app-settings/#/definitions/appSetting' },
+    200: { $ref: 'https://graasp.org/apps/app-settings/#/definitions/appSetting' },
   },
 };
 
 const updateOne = {
   params: {
     allOf: [
-      { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'http://graasp.org/#/definitions/idParam' },
+      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+      { $ref: 'https://graasp.org/#/definitions/idParam' },
     ],
   },
   body: {
@@ -48,24 +48,24 @@ const updateOne = {
     },
   },
   response: {
-    200: { $ref: 'http://graasp.org/apps/app-settings/#/definitions/appSetting' },
+    200: { $ref: 'https://graasp.org/apps/app-settings/#/definitions/appSetting' },
   },
 };
 
 const deleteOne = {
   params: {
     allOf: [
-      { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'http://graasp.org/#/definitions/idParam' },
+      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+      { $ref: 'https://graasp.org/#/definitions/idParam' },
     ],
   },
   response: {
-    200: { $ref: 'http://graasp.org/apps/app-settings/#/definitions/appSetting' },
+    200: { $ref: 'https://graasp.org/apps/app-settings/#/definitions/appSetting' },
   },
 };
 
 const getForOne = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   querystring: {
     type: 'object',
     properties: {
@@ -76,7 +76,7 @@ const getForOne = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/apps/app-settings/#/definitions/appSetting' },
+      items: { $ref: 'https://graasp.org/apps/app-settings/#/definitions/appSetting' },
     },
   },
 };

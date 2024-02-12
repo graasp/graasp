@@ -42,7 +42,7 @@ services:
       # the Localstack config is set by the "localstack" service below
       S3_FILE_ITEM_HOST: http://localstack:4566
       # the Iframely config is set by the "iframely" service below
-      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://localhost:8061
+      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: https://localhost:8061
 
     volumes:
       - ..:/workspace:cached

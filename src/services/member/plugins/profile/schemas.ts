@@ -40,7 +40,7 @@ export const getProfileForMember = {
   params: {
     type: 'object',
     properties: {
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -51,7 +51,7 @@ export const getProfileForMember = {
       properties: {
         id: { type: 'string' },
         ...sharedProporities,
-        member: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },
@@ -68,7 +68,7 @@ export const getOwnProfile = {
       properties: {
         id: { type: 'string' },
         ...sharedProporities,
-        member: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
         visibility: { type: 'boolean' },
