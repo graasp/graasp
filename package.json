@@ -10,7 +10,7 @@
     "url": "https://github.com/graasp/graasp"
   },
   "license": "AGPL-3.0-only",
-  "author": "Graasp Association",
+  "author": "Graasp",
   "scripts": {
     "start": "yarn serve",
     "build": "yarn build-ts && yarn lint",

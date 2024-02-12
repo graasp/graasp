@@ -174,7 +174,7 @@ H5P_PATH_PREFIX=h5p-content/
 
 # Graasp embedded link item
 # Set by ./.devcontainer/docker-compose.yml
-# EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://localhost:8061
+# EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://graasp-iframely:8061
 
 # Graasp apps
 APPS_JWT_SECRET=<content>
