@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.18.0](https://github.com/graasp/graasp/compare/v1.17.1...v1.18.0) (2024-02-13)
+
+
+### Features
+
+* translate es.json via GitLocalize ([#810](https://github.com/graasp/graasp/issues/810)) ([4354cc9](https://github.com/graasp/graasp/commit/4354cc9ec96373ec4b441b3115f715f3a6ce8dba))
+* translate it.json via GitLocalize ([#809](https://github.com/graasp/graasp/issues/809)) ([8522dbc](https://github.com/graasp/graasp/commit/8522dbc4c0fab1f148b8463c0281629e6ec99bbb))
+
+
+### Bug Fixes
+
+* update iframely env var and package author ([#815](https://github.com/graasp/graasp/issues/815)) ([6d0400a](https://github.com/graasp/graasp/commit/6d0400a312e9dbacf9ee5ce310c682aadf202e49))
+* update readme values ([#812](https://github.com/graasp/graasp/issues/812)) ([35ccfd4](https://github.com/graasp/graasp/commit/35ccfd406dcba0229cc4b41b49250b96a6f056ee))
+* use https in schemas ([#816](https://github.com/graasp/graasp/issues/816)) ([75658dd](https://github.com/graasp/graasp/commit/75658dd676498ea94bb1f6a3d210cac780fffdb3))
+
+
+### Documentation
+
+* add badges to readme ([#807](https://github.com/graasp/graasp/issues/807)) ([97a6b97](https://github.com/graasp/graasp/commit/97a6b977149cfdb69fd3d9062985ed3b77d9cad4))
+
 ## [1.17.1](https://github.com/graasp/graasp/compare/v1.17.0...v1.17.1) (2024-02-05)
 
 
