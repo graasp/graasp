@@ -1,15 +1,15 @@
 export default {
-  $id: 'http://graasp.org/categories/',
+  $id: 'https://graasp.org/categories/',
   definitions: {
     category: {
       type: 'object',
       properties: {
         id: {
-          $ref: 'http://graasp.org/#/definitions/uuid',
+          $ref: 'https://graasp.org/#/definitions/uuid',
         },
         name: { type: 'string' },
         type: {
-          $ref: 'http://graasp.org/#/definitions/uuid',
+          $ref: 'https://graasp.org/#/definitions/uuid',
         },
       },
       additionalProperties: false,
@@ -18,17 +18,17 @@ export default {
       type: 'object',
       properties: {
         id: {
-          $ref: 'http://graasp.org/#/definitions/uuid',
+          $ref: 'https://graasp.org/#/definitions/uuid',
         },
         category: {
-          $ref: 'http://graasp.org/categories/#/definitions/category',
+          $ref: 'https://graasp.org/categories/#/definitions/category',
         },
         createdAt: {},
         item: {
-          $ref: 'http://graasp.org/items/#/definitions/item',
+          $ref: 'https://graasp.org/items/#/definitions/item',
         },
         creator: {
-          $ref: 'http://graasp.org/members/#/definitions/member',
+          $ref: 'https://graasp.org/members/#/definitions/member',
         },
       },
       additionalProperties: false,
@@ -37,7 +37,7 @@ export default {
       type: 'object',
       required: ['itemId'],
       properties: {
-        itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
       },
       additionalProperties: false,
     },
@@ -51,12 +51,12 @@ export default {
 };
 
 export const getItemCategories = {
-  params: { $ref: 'http://graasp.org/categories/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/categories/#/definitions/itemIdParam' },
   response: {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/categories/#/definitions/itemCategory',
+        $ref: 'https://graasp.org/categories/#/definitions/itemCategory',
       },
     },
   },
@@ -68,7 +68,7 @@ export const getCategories = {
     properties: {
       typeId: {
         type: 'array',
-        items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        items: { $ref: 'https://graasp.org/#/definitions/uuid' },
       },
     },
     additionalProperties: false,
@@ -76,7 +76,7 @@ export const getCategories = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/categories/#/definitions/category' },
+      items: { $ref: 'https://graasp.org/categories/#/definitions/category' },
     },
   },
 };
@@ -85,12 +85,12 @@ export const getCategory = {
   params: {
     type: 'object',
     properties: {
-      categoryId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      categoryId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
   response: {
-    200: { $ref: 'http://graasp.org/categories/#/definitions/category' },
+    200: { $ref: 'https://graasp.org/categories/#/definitions/category' },
   },
 };
 
@@ -99,22 +99,22 @@ export const getCategoryTypes = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/categories/#/definitions/categoryType',
+        $ref: 'https://graasp.org/categories/#/definitions/categoryType',
       },
     },
   },
 };
 
 export const create = {
-  params: { $ref: 'http://graasp.org/categories/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/categories/#/definitions/itemIdParam' },
   body: {
     type: 'object',
     properties: {
-      categoryId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      categoryId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
   response: {
-    200: { $ref: 'http://graasp.org/categories/#/definitions/itemCategory' },
+    200: { $ref: 'https://graasp.org/categories/#/definitions/itemCategory' },
   },
 };
 
@@ -126,7 +126,7 @@ export const getByCategories = {
       categoryId: {
         type: 'array',
         items: {
-          $ref: 'http://graasp.org/categories/#/definitions/concatenatedIds',
+          $ref: 'https://graasp.org/categories/#/definitions/concatenatedIds',
         },
       },
     },
@@ -136,7 +136,7 @@ export const getByCategories = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/items/#/definitions/item',
+        $ref: 'https://graasp.org/items/#/definitions/item',
       },
     },
   },
@@ -147,13 +147,13 @@ export const deleteOne = {
     type: 'object',
     required: ['itemId', 'itemCategoryId'],
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
-      itemCategoryId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      itemCategoryId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
   response: {
-    200: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    200: { $ref: 'https://graasp.org/#/definitions/uuid' },
   },
 };
 
@@ -163,11 +163,11 @@ export const createCategory = {
     required: ['name', 'type'],
     properties: {
       name: { type: 'string' },
-      type: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      type: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
   response: {
-    200: { $ref: 'http://graasp.org/categories/#/definitions/category' },
+    200: { $ref: 'https://graasp.org/categories/#/definitions/category' },
   },
 };
 
@@ -176,7 +176,7 @@ export const deleteById = {
     type: 'object',
     required: ['id'],
     properties: {
-      id: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },

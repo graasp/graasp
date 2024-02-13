@@ -1,22 +1,22 @@
 export default {
-  $id: 'http://graasp.org/apps/',
+  $id: 'https://graasp.org/apps/',
   definitions: {
     itemIdParam: {
       type: 'object',
       required: ['itemId'],
       properties: {
-        itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
       },
     },
 
     appContext: {
       type: 'object',
       properties: {
-        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
+        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
         members: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/members/#/definitions/member',
+            $ref: 'https://graasp.org/members/#/definitions/member',
           },
         },
       },
@@ -25,12 +25,12 @@ export default {
 };
 
 const generateToken = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   body: {
     type: 'object',
     required: ['key', 'origin'],
     properties: {
-      key: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      key: { $ref: 'https://graasp.org/#/definitions/uuid' },
       origin: { type: 'string', format: 'url' },
     },
     additionalProperties: false,
@@ -44,13 +44,13 @@ const generateToken = {
 };
 
 const getContext = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   response: {
-    200: { $ref: 'http://graasp.org/apps/#/definitions/appContext' },
+    200: { $ref: 'https://graasp.org/apps/#/definitions/appContext' },
   },
 };
 const patchSettings = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   body: {
     type: 'object',
     additionalProperties: true,

@@ -5,7 +5,7 @@ import { UUID_REGEX } from '../../schemas/global';
 const EMAIL_REGEX = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$';
 
 export default {
-  $id: 'http://graasp.org/members/',
+  $id: 'https://graasp.org/members/',
   definitions: {
     member: {
       type: 'object',
@@ -60,7 +60,7 @@ export default {
 // schema for getting current member
 export const getCurrent = {
   response: {
-    200: { $ref: 'http://graasp.org/members/#/definitions/currentMember' },
+    200: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
   },
 };
 
@@ -85,9 +85,9 @@ export const getStorage = {
 
 // schema for getting a member
 export const getOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/members/#/definitions/member' },
+    200: { $ref: 'https://graasp.org/members/#/definitions/member' },
   },
 };
 
@@ -95,7 +95,7 @@ export const getOne = {
 export const getMany = {
   querystring: {
     allOf: [
-      { $ref: 'http://graasp.org/#/definitions/idsQuery' },
+      { $ref: 'https://graasp.org/#/definitions/idsQuery' },
       {
         type: 'object',
         properties: { id: { type: 'array', maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
@@ -122,7 +122,7 @@ export const getMany = {
         errors: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/#/definitions/error',
+            $ref: 'https://graasp.org/#/definitions/error',
           },
         },
       },
@@ -163,7 +163,7 @@ export const getManyBy = {
         errors: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/#/definitions/error',
+            $ref: 'https://graasp.org/#/definitions/error',
           },
         },
       },
@@ -173,17 +173,17 @@ export const getManyBy = {
 
 // schema for updating own member
 export const updateOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
-  body: { $ref: 'http://graasp.org/members/#/definitions/partialMemberRequireOne' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+  body: { $ref: 'https://graasp.org/members/#/definitions/partialMemberRequireOne' },
   response: {
-    200: { $ref: 'http://graasp.org/members/#/definitions/currentMember' },
+    200: { $ref: 'https://graasp.org/members/#/definitions/currentMember' },
   },
 };
 
 // schema for getting a member
 export const deleteOne = {
-  params: { $ref: 'http://graasp.org/#/definitions/idParam' },
+  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
-    200: { $ref: 'http://graasp.org/members/#/definitions/member' },
+    200: { $ref: 'https://graasp.org/members/#/definitions/member' },
   },
 };

@@ -110,7 +110,7 @@ describe('Link Item tests', () => {
               html: 'html',
               icons: [],
               thumbnails: [],
-              url: 'http://myurl.com',
+              url: 'https://myurl.com',
             },
           },
           name: 'mylink',
@@ -128,7 +128,7 @@ describe('Link Item tests', () => {
       it('Fail to create if payload is invalid', async () => {
         const payload = {
           type: ItemType.DOCUMENT,
-          extra: { [ItemType.FOLDER]: { url: 'http://myurl.com' } },
+          extra: { [ItemType.FOLDER]: { url: 'https://myurl.com' } },
           name: 'mylink',
         };
 
@@ -192,7 +192,7 @@ describe('Link Item tests', () => {
           name: 'new name',
           extra: {
             [ItemType.LINK]: {
-              url: 'http://newurl.com',
+              url: 'https://newurl.com',
             },
           },
           settings: {
@@ -239,7 +239,7 @@ describe('Link Item tests', () => {
             type: ItemType.LINK,
             extra: {
               [ItemType.LINK]: {
-                url: 'http://myurl.com',
+                url: 'https://myurl.com',
               },
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any,
@@ -251,7 +251,7 @@ describe('Link Item tests', () => {
           name: 'new name',
           extra: {
             [ItemType.LINK]: {
-              url: 'http://validurl.com',
+              url: 'https://validurl.com',
             },
           },
           settings: {

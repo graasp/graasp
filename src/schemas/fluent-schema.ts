@@ -32,7 +32,7 @@ export const error = S.object()
 // this way 'graasp-file-item', or "others", can use these using '$ref' - without using
 // fluent schema or TS, just static JSON Schema
 const shared = S.object()
-  .id('http://graasp.org/')
+  .id('https://graasp.org/')
   .definition('uuid', uuid)
   .definition('itemPath', itemPath)
   .definition('idParam', idParam)

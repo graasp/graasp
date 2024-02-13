@@ -1,21 +1,21 @@
 import { UUID_REGEX } from '../../../../../schemas/global';
 
 export default {
-  $id: 'http://graasp.org/apps/app-data/',
+  $id: 'https://graasp.org/apps/app-data/',
   definitions: {
     appData: {
       type: 'object',
       properties: {
         id: { type: 'string' },
-        member: { $ref: 'http://graasp.org/members/#/definitions/member' },
-        item: { $ref: 'http://graasp.org/items/#/definitions/item' },
+        member: { $ref: 'https://graasp.org/members/#/definitions/member' },
+        item: { $ref: 'https://graasp.org/items/#/definitions/item' },
         data: {
           type: 'object',
           additionalProperties: true,
         },
         type: { type: 'string' },
         visibility: { type: 'string' }, // TODO: should we always return this
-        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
       },
@@ -24,7 +24,7 @@ export default {
 };
 
 const create = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   body: {
     type: 'object',
     required: ['data', 'type'],
@@ -32,19 +32,19 @@ const create = {
       data: { type: 'object', additionalProperties: true },
       type: { type: 'string', minLength: 3, maxLength: 25 },
       visibility: { type: 'string', enum: ['member', 'item'] },
-      memberId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      memberId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
   },
   response: {
-    200: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+    200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
   },
 };
 
 const updateOne = {
   params: {
     allOf: [
-      { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'http://graasp.org/#/definitions/idParam' },
+      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+      { $ref: 'https://graasp.org/#/definitions/idParam' },
     ],
   },
   body: {
@@ -55,24 +55,24 @@ const updateOne = {
     },
   },
   response: {
-    200: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+    200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
   },
 };
 
 const deleteOne = {
   params: {
     allOf: [
-      { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
-      { $ref: 'http://graasp.org/#/definitions/idParam' },
+      { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
+      { $ref: 'https://graasp.org/#/definitions/idParam' },
     ],
   },
   response: {
-    200: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+    200: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
   },
 };
 
 const getForOne = {
-  params: { $ref: 'http://graasp.org/apps/#/definitions/itemIdParam' },
+  params: { $ref: 'https://graasp.org/apps/#/definitions/itemIdParam' },
   querystring: {
     type: 'object',
     properties: {
@@ -83,7 +83,7 @@ const getForOne = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+      items: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
     },
   },
 };
@@ -95,7 +95,7 @@ const getForMany = {
     properties: {
       itemId: {
         type: 'array',
-        items: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        items: { $ref: 'https://graasp.org/#/definitions/uuid' },
         uniqueItems: true,
       },
     },
@@ -111,14 +111,14 @@ const getForMany = {
           patternProperties: {
             [UUID_REGEX]: {
               type: 'array',
-              items: { $ref: 'http://graasp.org/apps/app-data/#/definitions/appData' },
+              items: { $ref: 'https://graasp.org/apps/app-data/#/definitions/appData' },
             },
           },
         },
         errors: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/#/definitions/error',
+            $ref: 'https://graasp.org/#/definitions/error',
           },
         },
       },

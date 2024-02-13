@@ -1,13 +1,13 @@
 import { FlagType } from '@graasp/sdk';
 
 export default {
-  $id: 'http://graasp.org/item-flags/',
+  $id: 'https://graasp.org/item-flags/',
   definitions: {
     itemIdParam: {
       type: 'object',
       required: ['itemId'],
       properties: {
-        itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+        itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
       },
     },
     // flag
@@ -19,10 +19,10 @@ export default {
       properties: {
         id: { type: 'string' },
         item: {
-          $ref: 'http://graasp.org/items/#/definitions/item',
+          $ref: 'https://graasp.org/items/#/definitions/item',
         },
-        type: { $ref: 'http://graasp.org/item-flags/#/definitions/flag' },
-        creator: { $ref: 'http://graasp.org/members/#/definitions/member' },
+        type: { $ref: 'https://graasp.org/item-flags/#/definitions/flag' },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
       },
       additionalProperties: false,
@@ -33,7 +33,7 @@ export default {
       type: 'object',
       required: ['type'],
       properties: {
-        type: { $ref: 'http://graasp.org/item-flags/#/definitions/flag' },
+        type: { $ref: 'https://graasp.org/item-flags/#/definitions/flag' },
       },
       additionalProperties: false,
     },
@@ -42,10 +42,10 @@ export default {
 
 // schema for creating an item flag
 const create = {
-  params: { $ref: 'http://graasp.org/item-flags/#/definitions/itemIdParam' },
-  body: { $ref: 'http://graasp.org/item-flags/#/definitions/createPartialItemFlag' },
+  params: { $ref: 'https://graasp.org/item-flags/#/definitions/itemIdParam' },
+  body: { $ref: 'https://graasp.org/item-flags/#/definitions/createPartialItemFlag' },
   response: {
-    201: { $ref: 'http://graasp.org/item-flags/#/definitions/itemFlag' },
+    201: { $ref: 'https://graasp.org/item-flags/#/definitions/itemFlag' },
   },
 };
 
@@ -54,7 +54,7 @@ const getFlags = {
   response: {
     200: {
       type: 'array',
-      items: { $ref: 'http://graasp.org/item-flags/#/definitions/flag' },
+      items: { $ref: 'https://graasp.org/item-flags/#/definitions/flag' },
     },
   },
 };

@@ -2,7 +2,7 @@ export const zipImport = {
   querystring: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      parentId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -11,7 +11,7 @@ export const zipImport = {
 export const zipExport = {
   params: {
     itemId: {
-      $ref: 'http://graasp.org/#/definitions/uuid',
+      $ref: 'https://graasp.org/#/definitions/uuid',
     },
   },
   required: ['itemId'],

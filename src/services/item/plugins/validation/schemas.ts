@@ -11,7 +11,7 @@ export const status = {
 export const itemValidation = {
   params: {
     itemId: {
-      $ref: 'http://graasp.org/#/definitions/uuid',
+      $ref: 'https://graasp.org/#/definitions/uuid',
     },
   },
   required: ['itemId'],
@@ -21,7 +21,7 @@ export const itemValidation = {
 // export const itemValidationReview = {
 //   params: {
 //     id: {
-//       $ref: 'http://graasp.org/#/definitions/uuid',
+//       $ref: 'https://graasp.org/#/definitions/uuid',
 //     },
 //   },
 //   body: {
@@ -39,10 +39,10 @@ export const itemValidation = {
 export const itemValidationGroup = {
   params: {
     itemId: {
-      $ref: 'http://graasp.org/#/definitions/uuid',
+      $ref: 'https://graasp.org/#/definitions/uuid',
     },
     itemValidationGroupId: {
-      $ref: 'http://graasp.org/#/definitions/uuid',
+      $ref: 'https://graasp.org/#/definitions/uuid',
     },
   },
   required: ['itemValidationId'],

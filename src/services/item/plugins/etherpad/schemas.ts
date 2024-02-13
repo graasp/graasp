@@ -2,7 +2,7 @@ export const createEtherpad = {
   querystring: {
     type: 'object',
     properties: {
-      parentId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      parentId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },
@@ -27,7 +27,7 @@ export const getEtherpadFromItem = {
   params: {
     type: 'object',
     properties: {
-      itemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+      itemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     required: ['itemId'],
     additionalProperties: false,

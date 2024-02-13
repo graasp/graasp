@@ -11,10 +11,10 @@ const publishEntry = {
   properties: {
     id: { type: 'string' },
     item: {
-      $ref: 'http://graasp.org/items/#/definitions/item',
+      $ref: 'https://graasp.org/items/#/definitions/item',
     },
     creator: {
-      $ref: 'http://graasp.org/members/#/definitions/member',
+      $ref: 'https://graasp.org/members/#/definitions/member',
     },
     createdAt: { type: 'string' },
   },
@@ -26,10 +26,10 @@ const publishEntryWithViews = {
   properties: {
     id: { type: 'string' },
     item: {
-      $ref: 'http://graasp.org/items/#/definitions/item',
+      $ref: 'https://graasp.org/items/#/definitions/item',
     },
     creator: {
-      $ref: 'http://graasp.org/members/#/definitions/member',
+      $ref: 'https://graasp.org/members/#/definitions/member',
     },
     createdAt: { type: 'string' },
     totalViews: {
@@ -66,7 +66,7 @@ export const getCollections = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/items/#/definitions/item',
+        $ref: 'https://graasp.org/items/#/definitions/item',
       },
     },
   },
@@ -88,7 +88,7 @@ export const getRecentCollections = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/items/#/definitions/item',
+        $ref: 'https://graasp.org/items/#/definitions/item',
       },
     },
   },
@@ -110,7 +110,7 @@ export const getMostLikedItems = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/items/#/definitions/item',
+        $ref: 'https://graasp.org/items/#/definitions/item',
       },
     },
   },
@@ -121,7 +121,7 @@ export const getCollectionsForMember = {
     type: 'object',
     properties: {
       memberId: {
-        $ref: 'http://graasp.org/#/definitions/uuid',
+        $ref: 'https://graasp.org/#/definitions/uuid',
       },
     },
     required: ['memberId'],
@@ -131,7 +131,7 @@ export const getCollectionsForMember = {
     200: {
       type: 'array',
       items: {
-        $ref: 'http://graasp.org/items/#/definitions/item',
+        $ref: 'https://graasp.org/items/#/definitions/item',
       },
     },
   },
@@ -142,7 +142,7 @@ export const publishItem = {
     type: 'object',
     properties: {
       itemId: {
-        $ref: 'http://graasp.org/#/definitions/uuid',
+        $ref: 'https://graasp.org/#/definitions/uuid',
       },
     },
     required: ['itemId'],
@@ -158,7 +158,7 @@ export const unpublishItem = {
     type: 'object',
     properties: {
       itemId: {
-        $ref: 'http://graasp.org/#/definitions/uuid',
+        $ref: 'https://graasp.org/#/definitions/uuid',
       },
     },
     required: ['itemId'],
@@ -174,7 +174,7 @@ export const getInformations = {
     type: 'object',
     properties: {
       itemId: {
-        $ref: 'http://graasp.org/#/definitions/uuid',
+        $ref: 'https://graasp.org/#/definitions/uuid',
       },
     },
     required: ['itemId'],
@@ -195,7 +195,7 @@ export const getManyInformations = {
           itemId: {
             type: 'array',
             items: {
-              $ref: 'http://graasp.org/#/definitions/uuid',
+              $ref: 'https://graasp.org/#/definitions/uuid',
             },
             uniqueItems: true,
           },
@@ -222,7 +222,7 @@ export const getManyInformations = {
         errors: {
           type: 'array',
           items: {
-            $ref: 'http://graasp.org/#/definitions/error',
+            $ref: 'https://graasp.org/#/definitions/error',
           },
         },
       },
