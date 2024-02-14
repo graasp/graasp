@@ -233,6 +233,27 @@ describe('Item Published', () => {
         const items = Object.values(result).map((i) => i.item);
         expectManyItems(items as Item[], [otherParentItem, parentItem]);
       });
+      it('Get publish info of non public item returns forbidden', async () => {
+        // simple item not public and not published
+        const { item } = await saveItemAndMembership({ member });
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+      it('Get publish info of public item that is not published yet returns null', async () => {
+        const { item } = await saveItemAndMembership({ member });
+        // make item public
+        await ItemTagRepository.post(member, item, ItemTagType.Public);
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toBe(null);
+      });
       it('Throw if category id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.GET,
