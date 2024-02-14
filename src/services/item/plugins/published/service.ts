@@ -13,6 +13,7 @@ import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { buildPublishedItemLink } from './constants';
+import { ItemPublishedNotFound } from './errors';
 
 interface ActionCount {
   actionCount: number;
@@ -67,12 +68,24 @@ export class ItemPublishedService {
 
     // item should be public first
     await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
-    const totalViews = await actionRepository.getAggregationForItem(item.path, {
-      view: 'library',
-      types: ['collection-view'],
-    });
-    const publishedItem = await itemPublishedRepository.getForItem(item);
-    return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
+
+    try {
+      // get item published entry
+      const publishedItem = await itemPublishedRepository.getForItem(item);
+      // get views from the actions table
+      const totalViews = await actionRepository.getAggregationForItem(item.path, {
+        view: 'library',
+        types: ['collection-view'],
+      });
+      return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
+    } catch (err) {
+      // when the item is found but it is not published we simply return `null`
+      if (err instanceof ItemPublishedNotFound) {
+        return null;
+      }
+      // if the error was not expecte we throw it back
+      throw err;
+    }
   }
 
   async getMany(actor: Actor, repositories: Repositories, itemIds: string[]) {
