@@ -1,6 +1,10 @@
 import { FastifyBaseLogger } from 'fastify';
 
+<<<<<<< HEAD
 import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+=======
+import { Context, ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+>>>>>>> 693e0232 (refactor: add test for action repository)
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';

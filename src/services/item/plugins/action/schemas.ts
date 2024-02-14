@@ -4,8 +4,11 @@ import { StatusCodes } from 'http-status-codes';
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy } from '@graasp/sdk';
 
 import { idParam } from '../../../../schemas/fluent-schema';
+import {
+  MAX_ACTIONS_SAMPLE_SIZE,
+  MIN_ACTIONS_SAMPLE_SIZE,
+} from '../../../action/constants/constants';
 import { item } from '../../fluent-schema';
-import { MAX_ACTIONS_SAMPLE_SIZE, MIN_ACTIONS_SAMPLE_SIZE } from './utils';
 
 // todo: complete schema
 export const baseAnalytics = S.object()
@@ -69,7 +72,7 @@ export const getAggregateActions = {
           enum: Object.values(CountGroupBy),
         },
       },
-      aggregateFuction: {
+      aggregateFunction: {
         type: 'string',
         enum: Object.values(AggregateFunction),
       },

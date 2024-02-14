@@ -11,12 +11,18 @@ export enum ItemActionType {
   Copy = 'copy',
   Move = 'move',
 }
-export const validateAggregateRequest = (
+
+export const validateAggregateParameters = (
   countGroupBy: CountGroupBy[],
   aggregateFuction: AggregateFunction,
   aggregateMetric: AggregateMetric,
   aggregateBy?: AggregateBy[],
 ) => {
+  // TODO: to change!!!!
+  if (!countGroupBy || !aggregateFuction || !aggregateMetric) {
+    return;
+  }
+
   // Aggregate by user is not allowed
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -68,11 +74,6 @@ export const validateAggregateRequest = (
 
   return;
 };
-
-// Constants to check the validity of the query parameters when obtaining actions
-export const DEFAULT_ACTIONS_SAMPLE_SIZE = 5000;
-export const MIN_ACTIONS_SAMPLE_SIZE = 0;
-export const MAX_ACTIONS_SAMPLE_SIZE = 10000;
 
 export const ZIP_MIMETYPE = 'application/zip';
 

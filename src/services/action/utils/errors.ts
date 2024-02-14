@@ -19,14 +19,11 @@ export class CannotWriteFileError extends GraaspActionError {
 }
 
 export class InvalidAggregationError extends GraaspActionError {
-  constructor(data?: unknown) {
-    super(
-      {
-        code: 'GPAERR002',
-        statusCode: StatusCodes.BAD_REQUEST,
-        message: 'The query parameters for the aggregation are invalid.',
-      },
-      data,
-    );
+  constructor(message?: string) {
+    super({
+      code: 'GPAERR002',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: 'The query parameters for the aggregation are invalid: ' + message,
+    });
   }
 }

@@ -5,8 +5,9 @@ import waitForExpect from 'wait-for-expect';
 import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { ActionRepository } from '../../../../action/repositories/action';
+import { Action } from '../../../../action/entities/action';
 import {
   saveItemAndMembership,
   saveMembership,
@@ -23,6 +24,8 @@ import { saveActions } from './fixtures/actions';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+
+const rawActionRepository = AppDataSource.getRepository(Action);
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
@@ -87,7 +90,7 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-        expect(await ActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.find()).toHaveLength(0);
       });
     });
     describe('Public', () => {
@@ -107,7 +110,9 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const [action] = await ActionRepository.find({ relations: { item: true, member: true } });
+        const [action] = await rawActionRepository.find({
+          relations: { item: true, member: true },
+        });
         expect(action.type).toEqual('view');
         expect(action.item!.id).toEqual(item.id);
         expect(action.member).toBeNull();
@@ -135,7 +140,9 @@ describe('Action Plugin Tests', () => {
           },
         });
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const [action] = await ActionRepository.find({ relations: { item: true, member: true } });
+        const [action] = await rawActionRepository.find({
+          relations: { item: true, member: true },
+        });
         expect(action.type).toEqual('view');
         expect(action.item!.id).toEqual(item.id);
         expect(action.member!.id).toEqual(actor.id);
@@ -155,7 +162,9 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.OK);
-        const [action] = await ActionRepository.find({ relations: { item: true, member: true } });
+        const [action] = await rawActionRepository.find({
+          relations: { item: true, member: true },
+        });
         expect(action.type).toEqual('view');
         expect(action.item!.id).toEqual(item.id);
         expect(action.member!.id).toEqual(actor.id);
@@ -174,7 +183,7 @@ describe('Action Plugin Tests', () => {
           },
         });
         expect(response.json().message).toEqual(new CannotPostAction().message);
-        expect(await ActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.find()).toHaveLength(0);
       });
 
       it('Throw for missing type', async () => {
@@ -188,7 +197,7 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        expect(await ActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.find()).toHaveLength(0);
       });
     });
   });

@@ -13,6 +13,11 @@ import {
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import {
+  DEFAULT_ACTIONS_SAMPLE_SIZE,
+  MAX_ACTIONS_SAMPLE_SIZE,
+  MIN_ACTIONS_SAMPLE_SIZE,
+} from '../../../action/constants/constants';
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { Actor } from '../../../member/entities/member';
@@ -23,12 +28,7 @@ import { AppAction } from '../app/appAction/appAction';
 import { AppData } from '../app/appData/appData';
 import { AppSetting } from '../app/appSetting/appSettings';
 import { BaseAnalytics } from './base-analytics';
-import {
-  DEFAULT_ACTIONS_SAMPLE_SIZE,
-  ItemActionType,
-  MAX_ACTIONS_SAMPLE_SIZE,
-  MIN_ACTIONS_SAMPLE_SIZE,
-} from './utils';
+import { ItemActionType } from './utils';
 
 export class ActionItemService {
   itemService: ItemService;

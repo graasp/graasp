@@ -25,7 +25,6 @@ import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
 import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas';
 import { ActionItemService } from './service';
-import { validateAggregateRequest } from './utils';
 
 export interface GraaspActionsOptions {
   shouldSave?: boolean;
@@ -92,14 +91,6 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member, params: { id }, query }) => {
-      // validate request
-      validateAggregateRequest(
-        query.countGroupBy,
-        query.aggregateFunction,
-        query.aggregateMetric,
-        query.aggregateBy,
-      );
-
       return actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,

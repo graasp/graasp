@@ -5,6 +5,7 @@ import { v4 } from 'uuid';
 import { Context } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { AppDataSource } from '../../../plugins/datasource';
 import { TMP_FOLDER } from '../../../utils/config';
 import { ChatMessage } from '../../chat/chatMessage';
 import { ChatMessageRepository } from '../../chat/repository';
@@ -14,14 +15,15 @@ import { saveItemAndMembership } from '../../itemMembership/test/fixtures/member
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
 import { Action } from '../entities/action';
-import { ActionRepository } from '../repositories/action';
 import { exportActionsInArchive } from './export';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
 
+const rawActionRepository = AppDataSource.getRepository(Action);
+
 const createDummyAction = async ({ item, member, view }): Promise<Action> => {
-  return ActionRepository.save({
+  return rawActionRepository.save({
     id: v4(),
     item,
     member,

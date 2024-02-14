@@ -32,7 +32,7 @@ import MemberProfileRepository from '../services/member/plugins/profile/reposito
 import MemberRepository from '../services/member/repository';
 
 export type Repositories = {
-  actionRepository: typeof ActionRepository;
+  actionRepository: ActionRepository;
   actionRequestExportRepository: typeof ActionRequestExportRepository;
   appActionRepository: typeof AppActionRepository;
   appDataRepository: typeof AppDataRepository;
@@ -117,7 +117,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
     ? manager.withRepository(ItemValidationGroupRepository)
     : ItemValidationGroupRepository,
 
-  actionRepository: manager ? manager.withRepository(ActionRepository) : ActionRepository,
+  actionRepository: new ActionRepository(manager),
   actionRequestExportRepository: manager
     ? manager.withRepository(ActionRequestExportRepository)
     : ActionRequestExportRepository,
