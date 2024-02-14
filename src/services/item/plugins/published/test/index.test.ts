@@ -142,10 +142,11 @@ describe('Item Published', () => {
           category: selectedCategories[1],
         });
 
+        const categoryId = selectedCategories.map(({ id }) => id);
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryId: selectedCategories.map(({ id }) => id) },
+            { categoryId },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
@@ -167,10 +168,11 @@ describe('Item Published', () => {
         // one random item category
         await ItemCategoryRepository.save({ item: collections[2], category: categories[2] });
 
+        const categoryId = selectedCategories.map(({ id }) => id).join(',');
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryId: selectedCategories.map(({ id }) => id).join(',') },
+            { categoryId },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
