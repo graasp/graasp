@@ -28,7 +28,7 @@ export const getByItem = {
 const getItemsInBoxProps = {
   type: 'object',
   properties: {
-    parentItemId: { $ref: 'http://graasp.org/#/definitions/uuid' },
+    parentItemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     lat1: { type: 'number' },
     lat2: { type: 'number' },
     lng1: { type: 'number' },
