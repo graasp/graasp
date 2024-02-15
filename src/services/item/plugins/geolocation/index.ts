@@ -30,10 +30,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     fastify.get<{
       Querystring: {
-        lat1: ItemGeolocation['lat'];
-        lat2: ItemGeolocation['lat'];
-        lng1: ItemGeolocation['lng'];
-        lng2: ItemGeolocation['lng'];
+        parentItemId?: Item['id'];
+        lat1?: ItemGeolocation['lat'];
+        lat2?: ItemGeolocation['lat'];
+        lng1?: ItemGeolocation['lng'];
+        lng2?: ItemGeolocation['lng'];
         keywords?: string[];
       };
     }>(
@@ -48,7 +49,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     );
 
     fastify.put<{
-      Body: { geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> };
+      Body: {
+        geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
+          Pick<Partial<ItemGeolocation>, 'addressLabel'>;
+      };
       Params: { id: Item['id'] };
     }>(
       '/:id/geolocation',

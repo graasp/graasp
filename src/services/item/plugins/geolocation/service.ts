@@ -6,7 +6,6 @@ import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemGeolocation } from './ItemGeolocation';
-import { ItemGeolocationNotFound } from './errors';
 
 export class ItemGeolocationService {
   private itemService: ItemService;
@@ -32,10 +31,6 @@ export class ItemGeolocationService {
 
     const geoloc = await itemGeolocationRepository.getByItem(item);
 
-    if (!geoloc) {
-      throw new ItemGeolocationNotFound({ itemId: item.id });
-    }
-
     return geoloc;
   }
 
@@ -43,15 +38,22 @@ export class ItemGeolocationService {
     actor: Actor,
     repositories: Repositories,
     query: {
-      lat1: ItemGeolocation['lat'];
-      lat2: ItemGeolocation['lat'];
-      lng1: ItemGeolocation['lng'];
-      lng2: ItemGeolocation['lng'];
+      parentItemId?: Item['id'];
+      lat1?: ItemGeolocation['lat'];
+      lat2?: ItemGeolocation['lat'];
+      lng1?: ItemGeolocation['lng'];
+      lng2?: ItemGeolocation['lng'];
       keywords?: string[];
     },
   ) {
     const { itemGeolocationRepository } = repositories;
-    const geoloc = await itemGeolocationRepository.getItemsIn(actor, query);
+
+    let parentItem: Item | undefined;
+    if (query.parentItemId) {
+      parentItem = await this.itemService.get(actor, repositories, query.parentItemId);
+    }
+
+    const geoloc = await itemGeolocationRepository.getItemsIn(actor, query, parentItem);
     const validatedItems = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
@@ -67,7 +69,8 @@ export class ItemGeolocationService {
     actor: Actor,
     repositories: Repositories,
     itemId: Item['id'],
-    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'>,
+    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
+      Pick<Partial<ItemGeolocation>, 'addressLabel'>,
   ) {
     const { itemGeolocationRepository } = repositories;
 

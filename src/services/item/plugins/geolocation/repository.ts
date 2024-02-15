@@ -6,6 +6,7 @@ import { ALLOWED_SEARCH_LANGS } from '../../../../utils/config';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
+import { MissingGeolocationSearchParams } from './errors';
 
 export class ItemGeolocationRepository {
   private repository: Repository<ItemGeolocation>;
@@ -44,10 +45,13 @@ export class ItemGeolocationRepository {
   }
 
   /**
+   * Returns geolocation within boundaries and/or within parentItem. At least one of the two should be defined
    * @param lat1
    * @param lat2
    * @param lng1
    * @param lng2
+   * @param keywords search words
+   * @param parentItem item to search within
    * @returns item geolocations within bounding box. Does not include inheritance.
    */
   async getItemsIn(
@@ -59,28 +63,54 @@ export class ItemGeolocationRepository {
       lng2,
       keywords,
     }: {
-      lat1: ItemGeolocation['lat'];
-      lat2: ItemGeolocation['lat'];
-      lng1: ItemGeolocation['lng'];
-      lng2: ItemGeolocation['lng'];
+      lat1?: ItemGeolocation['lat'];
+      lat2?: ItemGeolocation['lat'];
+      lng1?: ItemGeolocation['lng'];
+      lng2?: ItemGeolocation['lng'];
       keywords?: string[];
     },
+    parentItem?: Item,
   ): Promise<ItemGeolocation[]> {
-    const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
-    const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
+    // should include at least parentItem or all lat/lng
+    if (
+      !parentItem &&
+      ((!lat1 && lat1 !== 0) ||
+        (!lat2 && lat2 !== 0) ||
+        (!lng1 && lng1 !== 0) ||
+        (!lng2 && lng2 !== 0))
+    ) {
+      throw new MissingGeolocationSearchParams({ parentItem, lat1, lat2, lng1, lng2 });
+    }
 
-    const geoloc = this.repository
+    const query = this.repository
       .createQueryBuilder('ig')
       // inner join to filter out recycled items
       .innerJoinAndSelect('ig.item', 'item')
       .leftJoinAndSelect('item.creator', 'member')
-      .where('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
-      .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
+      // basic where to allow following where to be `andWhere`
+      .where('item = item');
+
+    if (
+      typeof lat1 === 'number' &&
+      typeof lat2 === 'number' &&
+      typeof lng1 === 'number' &&
+      typeof lng2 === 'number'
+    ) {
+      const [minLat, maxLat] = [lat1, lat2].sort((a, b) => a - b);
+      const [minLng, maxLng] = [lng1, lng2].sort((a, b) => a - b);
+      query
+        .andWhere('lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
+        .andWhere('lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
+    }
+
+    if (parentItem) {
+      query.andWhere('item.path <@ :path', { path: parentItem.path });
+    }
 
     if (keywords?.filter((s) => s.length)?.length) {
       const keywordsString = keywords.join(' ');
       const memberLang = actor?.lang;
-      geoloc.andWhere((q) => {
+      query.andWhere((q) => {
         // search in english by default
         q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
           keywords: keywordsString,
@@ -96,7 +126,7 @@ export class ItemGeolocationRepository {
       });
     }
 
-    return geoloc.getMany();
+    return query.getMany();
   }
 
   /**
@@ -106,7 +136,8 @@ export class ItemGeolocationRepository {
   async getByItem(item: Item): Promise<ItemGeolocation | null> {
     const geoloc = await this.repository
       .createQueryBuilder('geoloc')
-      .where('geoloc.item_path @> :path', { path: item.path })
+      .leftJoinAndSelect('geoloc.item', 'item')
+      .where('item.path @> :path', { path: item.path })
       .orderBy('geoloc.item_path', 'DESC')
       .limit(1)
       .getOne();
@@ -118,15 +149,15 @@ export class ItemGeolocationRepository {
    * Add or update geolocation given item path
    * deduce country based on lat and lng
    * @param itemPath
-   * @param geolocation lat and lng values
+   * @param geolocation lat and lng values, optional addressLabel
    */
   async put(
     itemPath: Item['path'],
-
-    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'>,
+    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
+      Pick<Partial<ItemGeolocation>, 'addressLabel'>,
   ): Promise<void> {
-    // if cannot find country, lat and lng are incorrect
-    const country = iso1A2Code([geolocation.lat, geolocation.lng]);
+    // country might not exist because the point is outside borders
+    const country = iso1A2Code([geolocation.lng, geolocation.lat]);
 
     await this.repository.upsert(
       [
@@ -134,6 +165,7 @@ export class ItemGeolocationRepository {
           item: { path: itemPath },
           lat: geolocation.lat,
           lng: geolocation.lng,
+          addressLabel: geolocation.addressLabel,
           country,
         },
       ],

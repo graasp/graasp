@@ -1,4 +1,5 @@
-import { CompleteMember, DEFAULT_LANG, MemberFactory, MemberType } from '@graasp/sdk';
+import { CompleteMember, MemberFactory, MemberType } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { Member } from '../../entities/member';
 import MemberRepository from '../../repository';

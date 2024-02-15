@@ -6,6 +6,7 @@ import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/mem
 import { ItemRepository } from '../../repository';
 import { RecycledItemDataRepository } from '../recycled/repository';
 import { ItemGeolocation } from './ItemGeolocation';
+import { MissingGeolocationSearchParams } from './errors';
 import { ItemGeolocationRepository } from './repository';
 
 // mock datasource
@@ -540,17 +541,125 @@ describe('ItemGeolocationRepository', () => {
       expect(res).toHaveLength(1);
       expect(res).toContainEqual(geoloc2);
     });
+
+    it('return only children for given parent item with bounds', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        member: actor,
+      });
+      const { item: item1 } = await saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
+      await rawRepository.save(geoloc);
+
+      // noise
+      await saveItemAndMembership({ member: actor });
+      const { item: item2 } = await saveItemAndMembership({
+        item: {
+          type: ItemType.DOCUMENT,
+          extra: {
+            [ItemType.DOCUMENT]: {
+              content: 'private',
+            },
+          },
+        },
+        member: actor,
+      });
+      await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
+
+      const res = await repository.getItemsIn(
+        actor,
+        {
+          lat1: 0,
+          lat2: 4,
+          lng1: 0,
+          lng2: 4,
+        },
+        parentItem,
+      );
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geoloc);
+    });
+
+    it('return only children for given parent item', async () => {
+      const { item: parentItem } = await saveItemAndMembership({
+        member: actor,
+      });
+      const { item: item1 } = await saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
+      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
+      await rawRepository.save(geoloc);
+
+      // noise
+      await saveItemAndMembership({ member: actor });
+      const { item: item2 } = await saveItemAndMembership({
+        item: {
+          type: ItemType.DOCUMENT,
+          extra: {
+            [ItemType.DOCUMENT]: {
+              content: 'private',
+            },
+          },
+        },
+        member: actor,
+      });
+      await rawRepository.save({ lat: 1, lng: 2, item: item2, country: 'de' });
+
+      const res = await repository.getItemsIn(actor, {}, parentItem);
+      expect(res).toHaveLength(1);
+      expect(res).toContainEqual(geoloc);
+    });
+
+    it('throw if does not provide parent item or lat lng', async () => {
+      repository
+        .getItemsIn(actor, {
+          lat1: null,
+          lat2: null,
+          lng1: null,
+          lng2: null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
+        .catch((e) => {
+          expect(e).toMatchObject(new MissingGeolocationSearchParams(expect.anything()));
+        });
+
+      repository
+        .getItemsIn(actor, {
+          lat1: 1,
+          lat2: 2,
+          lng1: 1,
+          lng2: null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
+        .catch((e) => {
+          expect(e).toMatchObject(new MissingGeolocationSearchParams(expect.anything()));
+        });
+      repository
+        .getItemsIn(actor, {
+          lat1: 1,
+          lat2: 2,
+          lng1: 1,
+          lng2: null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
+        .catch((e) => {
+          expect(e).toMatchObject(new MissingGeolocationSearchParams(expect.anything()));
+        });
+    });
   });
 
   describe('put', () => {
     it('create new geolocation for item', async () => {
       const { item } = await saveItemAndMembership({ member: actor });
 
-      const lat = 40.785091;
-      const lng = -73.968285;
+      const lat = 46.2017559;
+      const lng = 6.1466014;
       await repository.put(item.path, { lat, lng });
       const geoloc = await rawRepository.findOneBy({ lat, lng });
-      expect(geoloc).toMatchObject({ lat, lng, country: 'AQ' });
+      expect(geoloc).toMatchObject({ lat, lng, country: 'CH' });
     });
     it('create new geolocation that does not have a country', async () => {
       const { item } = await saveItemAndMembership({ member: actor });
@@ -566,11 +675,11 @@ describe('ItemGeolocationRepository', () => {
       const geolocParent = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geolocParent);
 
-      const lat = 40.785091;
-      const lng = -73.968285;
+      const lat = 46.2017559;
+      const lng = 6.1466014;
       await repository.put(item.path, { lat, lng });
       const geoloc = await rawRepository.findOneBy({ lat, lng });
-      expect(geoloc).toMatchObject({ lat, lng, country: 'AQ' });
+      expect(geoloc).toMatchObject({ lat, lng, country: 'CH' });
       const allGeoloc = await rawRepository.find();
       expect(allGeoloc).toHaveLength(1);
     });

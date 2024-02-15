@@ -1,6 +1,7 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { DEFAULT_LANG, ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';

@@ -11,7 +11,6 @@ import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/mem
 import { saveMember } from '../../../member/test/fixtures/members';
 import { savePublicItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
-import { ItemGeolocationNotFound } from './errors';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -114,13 +113,13 @@ describe('Item Geolocation', () => {
         });
       });
 
-      it('Throws if no geolocation', async () => {
+      it('Return null if no geolocation', async () => {
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
-        expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-        expect(res.json()).toMatchObject(new ItemGeolocationNotFound(expect.anything()));
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toBeNull();
       });
 
       it('Throws if id is not a uuid', async () => {
@@ -227,6 +226,51 @@ describe('Item Geolocation', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(3);
         expectItemGeolocations(res.json(), [geoloc1, geoloc2, geoloc3]);
+      });
+
+      it('Get item geolocations within parent item', async () => {
+        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await saveItemAndMembership({
+          item: { name: 'hello bye' },
+          member: actor,
+          parentItem,
+        });
+        const geoloc1 = await repository.save({ item: item1, lat: 1, lng: 2, country: 'de' });
+        const { item: item2 } = await saveItemAndMembership({
+          item: { description: 'hello bye' },
+          member: actor,
+          parentItem,
+        });
+        const geoloc2 = await repository.save({ item: item2, lat: 1, lng: 2, country: 'de' });
+        const { item: item3 } = await saveItemAndMembership({
+          item: { name: 'bye hello' },
+          member: actor,
+        });
+        await repository.save({ item: item3, lat: 1, lng: 2, country: 'de' });
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation?parentItemId=${parentItem.id}`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toHaveLength(2);
+        expectItemGeolocations(res.json(), [geoloc1, geoloc2]);
+      });
+
+      it('Throw for incorrect parent item id', async () => {
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2&parentItemId=incorrect-id`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Throw if no parent item id and no lat lng', async () => {
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
     });
   });

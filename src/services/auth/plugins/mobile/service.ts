@@ -5,7 +5,7 @@ import { promisify } from 'util';
 
 import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
-import { DEFAULT_LANG } from '@graasp/sdk';
+import { DEFAULT_LANG } from '@graasp/translations';
 
 import { JWT_SECRET } from '../../../../utils/config';
 import {
