@@ -181,7 +181,10 @@ export const getInformations = {
   },
 
   response: {
-    200: publishEntryWithViews,
+    200: {
+      ...publishEntryWithViews,
+      nullable: true,
+    },
   },
 };
 

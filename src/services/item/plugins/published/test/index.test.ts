@@ -142,10 +142,11 @@ describe('Item Published', () => {
           category: selectedCategories[1],
         });
 
+        const categoryId = selectedCategories.map(({ id }) => id);
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryId: selectedCategories.map(({ id }) => id) },
+            { categoryId },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
@@ -167,10 +168,11 @@ describe('Item Published', () => {
         // one random item category
         await ItemCategoryRepository.save({ item: collections[2], category: categories[2] });
 
+        const categoryId = selectedCategories.map(({ id }) => id).join(',');
         const res = await app.inject({
           method: HttpMethod.GET,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
-            { categoryId: selectedCategories.map(({ id }) => id).join(',') },
+            { categoryId },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
           )}`,
         });
@@ -232,6 +234,27 @@ describe('Item Published', () => {
         const result = (await res.json().data) as { [key: string]: ItemPublished };
         const items = Object.values(result).map((i) => i.item);
         expectManyItems(items as Item[], [otherParentItem, parentItem]);
+      });
+      it('Get publish info of non public item returns forbidden', async () => {
+        // simple item not public and not published
+        const { item } = await saveItemAndMembership({ member });
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
+      });
+      it('Get publish info of public item that is not published yet returns null', async () => {
+        const { item } = await saveItemAndMembership({ member });
+        // make item public
+        await ItemTagRepository.post(member, item, ItemTagType.Public);
+
+        const res = await app.inject({
+          method: HttpMethod.GET,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toBe(null);
       });
       it('Throw if category id is invalid', async () => {
         const res = await app.inject({
