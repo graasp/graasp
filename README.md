@@ -21,7 +21,7 @@ In order to run the Graasp backend, it requires:
 
 ## Recommended Tools
 
-- [NVM](https://github.com/nvm-sh/nvm) : CLI to manage multiple versions of Node.js and NPM.
+- [NVM](https://github.com/nvm-sh/nvm) or [Volta (recommended)](https://volta.sh/) : CLI to manage multiple versions of Node.js and NPM.
 - [Postman](https://www.postman.com) : Application to explore and test your APIs.
 - [Starship](https://starship.rs/): A shell prompt enhancer that shows you the current git branch nvm version and package version, very usefull for quick look at your environment (works on all shells and is super fast), requires you to use a [NerdFont](https://www.nerdfonts.com/)
 - [VS Code](https://code.visualstudio.com) : IDE to manage the database and make changes to the source code.
@@ -225,6 +225,20 @@ To run the application, use `yarn watch`. If any file change, the application wi
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080). If you do not want to use mailcatcher, set the `MAILER_CONFIG_SMTP_HOST` variable in your `.env.development` to some random value (e.g. empty string). This will log the authentication links in the server console instead.
 
+## Testing
+
+To run the tests locally without obliterating your database you should create a new `.env.test` file that can contain the same values as your `.env.development` file. 
+Simply change the config values for the database connection:
+
+```sh
+DB_NAME=docker-test
+DB_USERNAME=docker-test
+DB_PASSWORD=docker-test
+DB_HOST=graasp-postgres-test
+```
+
+This will ensure your tests run on the second database container. As they will clean the database between test runs you will not loose your development data.
+
 ## Database and Migrations
 
 The application will run migrations on start.
@@ -255,3 +269,13 @@ yarn migration:fake
 Each migration should have its own test to verify the `up` and `down` procedures in `test/migrations`.
 
 Up tests start from the previous migration state, insert mock data and apply the up procedure. Then each table should still contain the inserted data with necessary changes. The down tests have a similar approach.
+
+## Known issues
+
+The development environnement uses `localstack` as a local alternative to AWS s3 storage. But persistence accross restarts is not supported without the premium license.
+This means that it is expected that you see 404 on uploaded files after a restart of your computer. 
+In details: 
+- the items are persisted in the DB
+- the files stored on the fake s3 are not.
+
+In the future we might investigate different solutions to mocking s3 storage, or improve the local storage to provide a durable local storage option.
