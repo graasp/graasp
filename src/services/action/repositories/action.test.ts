@@ -585,6 +585,7 @@ describe('Action Repository', () => {
         });
         expect(result).toContainEqual({ aggregateResult: '3' });
       });
+
       it('returns aggregate result with aggregateFunction for action created day', async () => {
         const view = Context.Library;
         const sampleSize = 5;
@@ -593,10 +594,10 @@ describe('Action Repository', () => {
         const aggregateMetric = AggregateMetric.CreatedDay;
         await rawRepository.save([
           ...Array.from({ length: sampleSize }, () =>
-            ActionFactory({ item, member, view, type: 'type' }),
+            ActionFactory({ item, member, view, type: 'type', createdAt: '2000-12-17T03:24:00' }),
           ),
-          ActionFactory({ item, member, view, type: 'type1' }),
-          ActionFactory({ item, member, view, type: 'type2' }),
+          ActionFactory({ item, member, view, type: 'type1', createdAt: '2000-12-16T03:24:00' }),
+          ActionFactory({ item, member, view, type: 'type2', createdAt: '2000-12-18T03:24:00' }),
         ] as unknown as Action[]);
 
         const r = new ActionRepository();
@@ -605,7 +606,7 @@ describe('Action Repository', () => {
           aggregateFunction,
           aggregateMetric,
         });
-        expect(result).toContainEqual({ aggregateResult: '7' });
+        expect(result).toContainEqual({ aggregateResult: '3' });
       });
       it('returns average number of actions per user', async () => {
         const view = Context.Library;

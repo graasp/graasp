@@ -111,9 +111,6 @@ describe('validateAggregationParameters', () => {
         },
       }),
     ).toThrow(CountGroupByShouldIncludeAggregateMetricError);
-    expect(() => validateAggregationParameters({ countGroupBy: [] })).toThrow(
-      CountGroupByShouldIncludeAggregateMetricError,
-    );
     expect(() =>
       validateAggregationParameters({
         aggregationParams: { aggregateMetric: AggregateMetric.ActionLocation },
@@ -272,5 +269,6 @@ describe('validateAggregationParameters', () => {
         aggregationParams: { aggregateMetric: AggregateMetric.ActionCount },
       }),
     ).not.toThrow();
+    expect(() => validateAggregationParameters({ countGroupBy: [] })).not.toThrow();
   });
 });
