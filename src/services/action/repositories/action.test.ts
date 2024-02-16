@@ -1,16 +1,16 @@
 import {
   ActionFactory,
+  AggregateBy,
   AggregateFunction,
   AggregateMetric,
   Context,
   CountGroupBy,
-  FolderItemFactory,
+  DiscriminatedItem,
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
-import { ItemRepository } from '../../item/repository';
-import { createItem, saveItem } from '../../item/test/fixtures/items';
+import { saveItem } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
@@ -212,9 +212,9 @@ describe('Action Repository', () => {
       const actions = [
         ActionFactory({ item, member }),
         ActionFactory({ item, member }),
-        ActionFactory({ item: child as any, member }),
-        ActionFactory({ item: child as any, member }),
-        ActionFactory({ item: child as any, member }),
+        ActionFactory({ item: child as unknown as DiscriminatedItem, member }),
+        ActionFactory({ item: child as unknown as DiscriminatedItem, member }),
+        ActionFactory({ item: child as unknown as DiscriminatedItem, member }),
       ] as unknown as Action[];
       await rawRepository.save(actions);
 
@@ -521,12 +521,12 @@ describe('Action Repository', () => {
             }),
           ),
           ActionFactory({
-            item: child1 as any,
+            item: child1 as unknown as DiscriminatedItem,
             view,
             member,
           }),
           ActionFactory({
-            item: child2 as any,
+            item: child2 as unknown as DiscriminatedItem,
             view,
             member,
           }),
@@ -563,31 +563,174 @@ describe('Action Repository', () => {
       });
     });
     describe('aggregateFunction & aggregateMetric', () => {
-      it.skip('returns action count with aggregateFunction for action type', async () => {
+      it('returns aggregate result with aggregateFunction for action type', async () => {
         const view = Context.Library;
         const sampleSize = 5;
         const countGroupBy = [CountGroupBy.ActionType];
-        const aggregateFunction = AggregateFunction.Avg;
+        const aggregateFunction = AggregateFunction.Count;
         const aggregateMetric = AggregateMetric.ActionType;
         await rawRepository.save([
           ...Array.from({ length: sampleSize }, () =>
             ActionFactory({ item, member, view, type: 'type' }),
           ),
           ActionFactory({ item, member, view, type: 'type1' }),
+          ActionFactory({ item, member, view, type: 'type2' }),
+        ] as unknown as Action[]);
+
+        const r = new ActionRepository();
+
+        const result = await r.getAggregationForItem(item.path, { view }, countGroupBy, {
+          aggregateFunction,
+          aggregateMetric,
+        });
+        expect(result).toContainEqual({ aggregateResult: '3' });
+      });
+      it('returns aggregate result with aggregateFunction for action created day', async () => {
+        const view = Context.Library;
+        const sampleSize = 5;
+        const countGroupBy = [CountGroupBy.CreatedDay];
+        const aggregateFunction = AggregateFunction.Count;
+        const aggregateMetric = AggregateMetric.CreatedDay;
+        await rawRepository.save([
+          ...Array.from({ length: sampleSize }, () =>
+            ActionFactory({ item, member, view, type: 'type' }),
+          ),
           ActionFactory({ item, member, view, type: 'type1' }),
+          ActionFactory({ item, member, view, type: 'type2' }),
+        ] as unknown as Action[]);
+
+        const r = new ActionRepository();
+
+        const result = await r.getAggregationForItem(item.path, { view }, countGroupBy, {
+          aggregateFunction,
+          aggregateMetric,
+        });
+        expect(result).toContainEqual({ aggregateResult: '7' });
+      });
+      it('returns average number of actions per user', async () => {
+        const view = Context.Library;
+        const sampleSize = 5;
+        const bob = await saveMember();
+        const countGroupBy = [CountGroupBy.User];
+        const aggregateFunction = AggregateFunction.Avg;
+        const aggregateMetric = AggregateMetric.ActionCount;
+        await rawRepository.save([
+          ...Array.from({ length: sampleSize }, () =>
+            ActionFactory({ item, member, view, type: 'type' }),
+          ),
+          ActionFactory({ item, member: bob, view, type: 'type1' }),
+          ActionFactory({ item, member: bob, view, type: 'type2' }),
+        ] as unknown as Action[]);
+
+        const r = new ActionRepository();
+
+        const result = await r.getAggregationForItem(item.path, { view }, countGroupBy, {
+          aggregateFunction,
+          aggregateMetric,
+        });
+        expect(result).toHaveLength(1);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(parseFloat((result[0] as any).aggregateResult)).toEqual(3.5);
+      });
+    });
+    describe('aggregateBy', () => {
+      it('returns total actions per action type', async () => {
+        const view = Context.Library;
+        const sampleSize = 5;
+        const bob = await saveMember();
+        await rawRepository.save([
+          ...Array.from({ length: sampleSize }, () =>
+            ActionFactory({ item, member, view, type: 'type' }),
+          ),
+          ActionFactory({ item, member, view, type: 'type1' }),
+          ActionFactory({ item, member: bob, view, type: 'type1' }),
+          ActionFactory({ item, member: bob, view, type: 'type1' }),
+          ActionFactory({ item, member: bob, view, type: 'type2' }),
         ] as unknown as Action[]);
 
         const r = new ActionRepository();
 
         const result = await r.getAggregationForItem(
           item.path,
-          { view, sampleSize },
-          countGroupBy,
-          aggregateFunction,
-          aggregateMetric,
+          { view },
+          [CountGroupBy.User, CountGroupBy.ActionType],
+          {
+            aggregateFunction: AggregateFunction.Sum,
+            aggregateMetric: AggregateMetric.ActionCount,
+            aggregateBy: [AggregateBy.ActionType],
+          },
         );
-        expect(result).toContainEqual({ actionCount: '2', actionType: 'type1' });
-        expect(result).toContainEqual({ actionCount: sampleSize.toString(), actionType: 'type' });
+
+        expect(result).toContainEqual({ actionType: 'type', aggregateResult: '5' });
+        expect(result).toContainEqual({ actionType: 'type1', aggregateResult: '3' });
+        expect(result).toContainEqual({ actionType: 'type2', aggregateResult: '1' });
+      });
+      it('returns total actions per action type', async () => {
+        const view = Context.Library;
+        const sampleSize = 5;
+        const bob = await saveMember();
+        await rawRepository.save([
+          ...Array.from({ length: sampleSize }, () =>
+            ActionFactory({ item, member, view, type: 'type', createdAt: '2000-12-19T03:24:00' }),
+          ),
+          ActionFactory({ item, member, view, type: 'type1', createdAt: '2000-12-18T03:24:00' }),
+          ActionFactory({
+            item,
+            member: bob,
+            view,
+            type: 'type1',
+            createdAt: '2000-12-17T03:24:00',
+          }),
+          ActionFactory({
+            item,
+            member: bob,
+            view,
+            type: 'type1',
+            createdAt: '2000-12-16T03:24:00',
+          }),
+          ActionFactory({
+            item,
+            member: bob,
+            view,
+            type: 'type2',
+            createdAt: '2000-12-15T03:24:00',
+          }),
+        ] as unknown as Action[]);
+
+        const r = new ActionRepository();
+
+        const result = await r.getAggregationForItem(
+          item.path,
+          { view },
+          [CountGroupBy.User, CountGroupBy.CreatedDay],
+          {
+            aggregateFunction: AggregateFunction.Avg,
+            aggregateMetric: AggregateMetric.ActionCount,
+            aggregateBy: [AggregateBy.CreatedDay],
+          },
+        );
+
+        expect(result).toHaveLength(5);
+        expect(result).toContainEqual({
+          aggregateResult: '1.00000000000000000000',
+          createdDay: new Date('2000-12-15T00:00:00.000Z'),
+        });
+        expect(result).toContainEqual({
+          aggregateResult: '1.00000000000000000000',
+          createdDay: new Date('2000-12-16T00:00:00.000Z'),
+        });
+        expect(result).toContainEqual({
+          aggregateResult: '1.00000000000000000000',
+          createdDay: new Date('2000-12-17T00:00:00.000Z'),
+        });
+        expect(result).toContainEqual({
+          aggregateResult: '1.00000000000000000000',
+          createdDay: new Date('2000-12-18T00:00:00.000Z'),
+        });
+        expect(result).toContainEqual({
+          aggregateResult: '5.0000000000000000',
+          createdDay: new Date('2000-12-19T00:00:00.000Z'),
+        });
       });
     });
   });

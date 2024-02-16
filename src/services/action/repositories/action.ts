@@ -3,10 +3,10 @@ import { EntityManager, Repository } from 'typeorm';
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
-import { validateAggregateParameters } from '../../item/plugins/action/utils';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
 import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions';
+import { validateAggregationParameters } from '../utils/utils';
 
 export class ActionRepository {
   private repository: Repository<Action>;
@@ -82,12 +82,16 @@ export class ActionRepository {
     itemPath: UUID,
     filters?: { sampleSize?: number; view?: string; types?: string[] },
     countGroupBy?: CountGroupBy[],
-    aggregateFunction?: AggregateFunction,
-    aggregateMetric?: AggregateMetric,
-    aggregateBy?: AggregateBy[],
+    aggregationParams?: {
+      aggregateFunction: AggregateFunction;
+      aggregateMetric: AggregateMetric;
+      aggregateBy?: AggregateBy[];
+    },
   ): Promise<unknown[]> {
     // verify parameters
-    validateAggregateParameters(countGroupBy!, aggregateFunction!, aggregateMetric!, aggregateBy);
+    validateAggregationParameters({ countGroupBy, aggregationParams });
+
+    const { aggregateFunction, aggregateMetric, aggregateBy } = aggregationParams ?? {};
 
     const size = filters?.sampleSize ?? DEFAULT_ACTIONS_SAMPLE_SIZE;
     const view = filters?.view ?? 'Unknown';

@@ -116,9 +116,11 @@ export class ActionItemService {
         types: payload.type,
       },
       payload.countGroupBy,
-      payload.aggregateFunction,
-      payload.aggregateMetric,
-      payload.aggregateBy,
+      {
+        aggregateFunction: payload.aggregateFunction,
+        aggregateMetric: payload.aggregateMetric,
+        aggregateBy: payload.aggregateBy,
+      },
     );
 
     return aggregateActions;
