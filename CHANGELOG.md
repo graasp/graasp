@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0](https://github.com/graasp/graasp/compare/v1.18.0...v1.19.0) (2024-02-20)
+
+
+### Features
+
+* get geolocation within item, provide addressLabel ([#814](https://github.com/graasp/graasp/issues/814)) ([759f2e6](https://github.com/graasp/graasp/commit/759f2e6fedd78d57199fc754c89a1cef2852dfb6))
+
+
+### Bug Fixes
+
+* return 200 with `null` when item is not published instead of error ([#819](https://github.com/graasp/graasp/issues/819)) ([35d77f6](https://github.com/graasp/graasp/commit/35d77f610fae41bbbfa1c2baef17c1c855b2e04b))
+* **spanish:** update translations ([#827](https://github.com/graasp/graasp/issues/827)) ([557942c](https://github.com/graasp/graasp/commit/557942c0a65c7dd4f3a8499751aee40352d544e8))
+* update sdk dep and schemas ([#828](https://github.com/graasp/graasp/issues/828)) ([f9efa8c](https://github.com/graasp/graasp/commit/f9efa8ccf5fbf27522ea692dc41210e948bab75f))
+
+
+### Documentation
+
+* testing env and localstack issues ([#822](https://github.com/graasp/graasp/issues/822)) ([2f33472](https://github.com/graasp/graasp/commit/2f33472d78b77fa99b9a56c00290d717222a21e5))
+
 ## [1.18.0](https://github.com/graasp/graasp/compare/v1.17.1...v1.18.0) (2024-02-13)
 
 
