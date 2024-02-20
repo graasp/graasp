@@ -23,7 +23,7 @@ export const validateAggregationParameters = ({
 
   // Aggregate by user is not allowed
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-ignore: additional check on aggregateBy. Is it necessary?
   if (aggregateBy?.includes('user')) {
     throw new AggregateByCannotUserError({ aggregateBy });
   }

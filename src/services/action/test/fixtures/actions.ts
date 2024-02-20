@@ -1,17 +1,15 @@
-import { v4 as uuidv4 } from 'uuid';
-
-import { Context } from '@graasp/sdk';
+import { ActionFactory, Action as GraaspAction } from '@graasp/sdk';
 
 import { Action } from '../../entities/action';
 
-export const buildAction = (data: Partial<Action>): Partial<Action> => ({
-  id: uuidv4(),
-  view: Context.Builder,
-  type: 'type',
-  extra: {},
-  createdAt: new Date('2021-03-29T08:46:52.939Z'),
-  ...data,
-});
+export const saveActions = async (
+  rawRepository,
+  actions: Partial<GraaspAction>[],
+): Promise<Action[]> => {
+  const data = actions.map((d) => ActionFactory(d)) as unknown as Action[];
+
+  return rawRepository.save(data);
+};
 
 export const expectAction = (action, correctAction) => {
   expect(action.extra).toMatchObject(correctAction.extra);
