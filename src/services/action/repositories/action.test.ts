@@ -145,8 +145,10 @@ describe('Action Repository', () => {
     it('get all actions for item for view', async () => {
       const sampleSize = 5;
       const view = Context.Builder;
-      const actions = Array.from({ length: sampleSize }, () => ({ item, member, view }));
-      await saveActions(rawRepository, actions);
+      const actions = await saveActions(
+        rawRepository,
+        Array.from({ length: sampleSize }, () => ({ item, member, view })),
+      );
 
       // noise
       await saveActions(rawRepository, [
@@ -181,8 +183,10 @@ describe('Action Repository', () => {
     it('get all actions for item for member Id', async () => {
       const bob = await saveMember();
       const sampleSize = 5;
-      const actions = Array.from({ length: sampleSize }, () => ({ item, member }));
-      await saveActions(rawRepository, actions);
+      const actions = await saveActions(
+        rawRepository,
+        Array.from({ length: sampleSize }, () => ({ item, member })),
+      );
 
       // noise
       await saveActions(rawRepository, [{ member: bob }, { member: bob }]);
@@ -196,16 +200,16 @@ describe('Action Repository', () => {
     it('get all actions for item and its descendants', async () => {
       const child = await saveItem({ actor: member, parentItem: item });
 
-      await saveActions(rawRepository, [
+      const actions = await saveActions(rawRepository, [
         { item, member },
         { item, member },
-        { item: child as unknown as DiscriminatedItem, member },
-        { item: child as unknown as DiscriminatedItem, member },
-        { item: child as unknown as DiscriminatedItem, member },
+        { item: child, member },
+        { item: child, member },
+        { item: child, member },
       ]);
 
       // noise
-      const actions = await saveActions(rawRepository, [{ member }, { member }]);
+      await saveActions(rawRepository, [{ member }, { member }]);
 
       const r = new ActionRepository();
       const result = await r.getForItem(item.path, { memberId: member.id });
