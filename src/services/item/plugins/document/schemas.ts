@@ -12,6 +12,7 @@ export const updateSchema = S.object()
       // .additionalProperties(false)
       .prop('content', S.string())
       .prop('flavor', S.string().enum(Object.values(DocumentItemExtraFlavor)))
+      .prop('isRaw', S.boolean())
       .required(['content']),
   )
   .required([ItemType.DOCUMENT]);
