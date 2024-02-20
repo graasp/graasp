@@ -161,24 +161,27 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       } = request;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await requestExportService.request(member, repositories, itemId);
-        if (member && item) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('export', [itemId], { data: { [item.id]: item }, errors: [] }),
-          );
-        }
-      }).catch((e: Error) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('export', [itemId], { error: e }),
-          );
-        }
-      });
+        return await requestExportService.request(member, repositories, itemId);
+      })
+        .then((item) => {
+          if (member && item) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('export', [itemId], { data: { [item.id]: item }, errors: [] }),
+            );
+          }
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('export', [itemId], { error: e }),
+            );
+          }
+        });
 
       // reply no content and let the server create the archive and send the mail
       reply.status(StatusCodes.NO_CONTENT);

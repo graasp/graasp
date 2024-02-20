@@ -73,25 +73,27 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
         log,
       } = request;
       db.transaction(async (manager) => {
-        const items = await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('recycle', ids, items),
-          );
-        }
-        return items;
-      }).catch((e: Error) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('recycle', ids, { error: e }),
-          );
-        }
-      });
+        return await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
+      })
+        .then((items) => {
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('recycle', ids, items),
+            );
+          }
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('recycle', ids, { error: e }),
+            );
+          }
+        });
 
       reply.status(StatusCodes.ACCEPTED);
       return ids;
@@ -124,24 +126,27 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
       log.info(`Restoring items ${ids}`);
 
       db.transaction(async (manager) => {
-        const items = await recycleBinService.restoreMany(member, buildRepositories(manager), ids);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('restore', ids, items),
-          );
-        }
-      }).catch((e: Error) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('restore', ids, { error: e }),
-          );
-        }
-      });
+        return await recycleBinService.restoreMany(member, buildRepositories(manager), ids);
+      })
+        .then((items) => {
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('restore', ids, items),
+            );
+          }
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('restore', ids, { error: e }),
+            );
+          }
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },

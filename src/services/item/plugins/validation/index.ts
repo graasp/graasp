@@ -82,26 +82,28 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
           throw new UnauthorizedMember();
         }
         const repositories = buildRepositories(manager);
-        const item = await validationService.post(member, repositories, itemId);
-
-        // the process could take long time, so let the process run in the background and return the itemId instead
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('validate', [itemId], { data: { [item.id]: item }, errors: [] }),
-          );
-        }
-      }).catch((e: Error) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('validate', [itemId], { error: e }),
-          );
-        }
-      });
+        return await validationService.post(member, repositories, itemId);
+      })
+        .then((item) => {
+          // the process could take long time, so let the process run in the background and return the itemId instead
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('validate', [itemId], { data: { [item.id]: item }, errors: [] }),
+            );
+          }
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('validate', [itemId], { error: e }),
+            );
+          }
+        });
       reply.status(StatusCodes.ACCEPTED);
       return itemId;
     },
