@@ -271,30 +271,55 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const items = await itemService.moveMany(member, repositories, ids, parentId);
-        await actionItemService.postManyMoveAction(request, reply, repositories, items);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, {
-              data: Object.fromEntries(items.map((i) => [i.id, i])),
-              errors: [],
-            }),
+
+      Promise.allSettled<Item>(
+        ids.map((itemId) => itemService.move(member, db, itemId, parentId)),
+      ).then(async (results) => {
+        const successfulItems = results
+          .filter((result) => result.status === 'fulfilled')
+          .map((result) => (result as PromiseFulfilledResult<Item>).value);
+
+        const errors = results
+          .filter((result) => result.status === 'rejected')
+          .map((result) => (result as PromiseRejectedResult).reason);
+
+        if (successfulItems.length) {
+          await actionItemService.postManyMoveAction(
+            request,
+            reply,
+            buildRepositories(),
+            successfulItems,
           );
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent(
+                'move',
+                successfulItems.map((i) => i.id),
+                {
+                  data: Object.fromEntries(successfulItems.map((i) => [i.id, i])),
+                  errors: [],
+                },
+              ),
+            );
+          }
         }
-      }).catch((e) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, { error: e }),
-          );
+
+        if (errors.length) {
+          if (member) {
+            errors.forEach((e) => {
+              log.error(e);
+              websockets.publish(
+                memberItemsTopic,
+                member.id,
+                ItemOpFeedbackEvent('move', ids, { error: e }),
+              );
+            });
+          }
         }
       });
+
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },

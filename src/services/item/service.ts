@@ -23,7 +23,7 @@ import {
   UnauthorizedMember,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
-import { Repositories } from '../../utils/repositories';
+import { Repositories, buildRepositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
@@ -364,59 +364,47 @@ export class ItemService {
   }
 
   /////// -------- MOVE
-  async move(actor: Actor, repositories: Repositories, itemId: UUID, toItemId?: UUID) {
+  async move(actor: Actor, db, itemId: UUID, toItemId?: UUID) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
-    const { itemRepository } = repositories;
-    // TODO: check memberships
-    let parentItem;
-    if (toItemId) {
-      parentItem = await itemRepository.get(toItemId);
-      await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
-    }
-    const item = await itemRepository.get(itemId);
+    return db
+      .transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const { itemRepository } = repositories;
 
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+        // TODO: check memberships
+        let parentItem;
+        if (toItemId) {
+          parentItem = await itemRepository.get(toItemId);
+          await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
+        }
+        const item = await itemRepository.get(itemId);
 
-    // check how "big the tree is" below the item
-    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_MOVE);
+        await validatePermission(repositories, PermissionLevel.Admin, actor, item);
 
-    if (parentItem) {
-      // check how deep (number of levels) the resulting tree will be
-      const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
-      await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
-    }
+        // check how "big the tree is" below the item
+        await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_MOVE);
 
-    // post hook
-    // question: invoque on all items?
-    await this.hooks.runPreHooks('move', actor, repositories, {
-      source: item,
-      destinationParent: parentItem,
-    });
+        if (parentItem) {
+          // check how deep (number of levels) the resulting tree will be
+          const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
+          await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+        }
 
-    const result = await this._move(actor, repositories, item, parentItem);
+        const result = await this._move(actor, repositories, item, parentItem);
+        return { result, item };
+      })
+      .then(async ({ result, item }) => {
+        await this.hooks.runPostHooks('move', actor, buildRepositories(), {
+          source: item,
+          sourceParentId: getParentFromPath(item.path),
+          destination: result,
+        });
 
-    await this.hooks.runPostHooks('move', actor, repositories, {
-      source: item,
-      sourceParentId: getParentFromPath(item.path),
-      destination: result,
-    });
-
-    return result;
-  }
-
-  // TODO: optimize
-  async moveMany(actor: Actor, repositories: Repositories, itemIds: string[], toItemId?: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
-    const items = await Promise.all(
-      itemIds.map((id) => this.move(actor, repositories, id, toItemId)),
-    );
-    return items;
+        return result;
+      });
   }
 
   /**
