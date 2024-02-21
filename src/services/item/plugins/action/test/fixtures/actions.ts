@@ -72,6 +72,6 @@ const buildActions = (item: Item, member: Member[]) => {
 export const saveActions = async (item: Item, member: Member[]) => {
   const actions: Action[] = buildActions(item, member);
 
-  await ActionRepository.postMany(actions);
+  await new ActionRepository().postMany(actions);
   return actions;
 };
