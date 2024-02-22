@@ -23,7 +23,7 @@ import {
   UnauthorizedMember,
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
-import { Repositories, buildRepositories } from '../../utils/repositories';
+import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
@@ -364,47 +364,41 @@ export class ItemService {
   }
 
   /////// -------- MOVE
-  async move(actor: Actor, db, itemId: UUID, toItemId?: UUID) {
+  async move(actor: Actor, repositories: Repositories, itemId: UUID, toItemId?: UUID) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
-    return db
-      .transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const { itemRepository } = repositories;
+    const { itemRepository } = repositories;
 
-        // TODO: check memberships
-        let parentItem;
-        if (toItemId) {
-          parentItem = await itemRepository.get(toItemId);
-          await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
-        }
-        const item = await itemRepository.get(itemId);
+    // TODO: check memberships
+    let parentItem;
+    if (toItemId) {
+      parentItem = await itemRepository.get(toItemId);
+      await validatePermission(repositories, PermissionLevel.Write, actor, parentItem);
+    }
+    const item = await itemRepository.get(itemId);
 
-        await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
 
-        // check how "big the tree is" below the item
-        await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_MOVE);
+    // check how "big the tree is" below the item
+    await itemRepository.checkNumberOfDescendants(item, MAX_DESCENDANTS_FOR_MOVE);
 
-        if (parentItem) {
-          // check how deep (number of levels) the resulting tree will be
-          const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
-          await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
-        }
+    if (parentItem) {
+      // check how deep (number of levels) the resulting tree will be
+      const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
+      await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
+    }
 
-        const result = await this._move(actor, repositories, item, parentItem);
-        return { result, item };
-      })
-      .then(async ({ result, item }) => {
-        await this.hooks.runPostHooks('move', actor, buildRepositories(), {
-          source: item,
-          sourceParentId: getParentFromPath(item.path),
-          destination: result,
-        });
+    const result = await this._move(actor, repositories, item, parentItem);
 
-        return result;
-      });
+    await this.hooks.runPostHooks('move', actor, repositories, {
+      source: item,
+      sourceParentId: getParentFromPath(item.path),
+      destination: result,
+    });
+
+    return { destination: result, source: item };
   }
 
   /**

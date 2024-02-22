@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
+import { IdParam, IdsParams, ParentIdParam, PermissionLevel, getParentFromPath } from '@graasp/sdk';
 
 import { PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
@@ -26,6 +26,7 @@ import {
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
+import { publishAfterMoved, publishFeedbackAfterAllMoved } from './ws/services';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
@@ -271,52 +272,42 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-
       Promise.allSettled<Item>(
-        ids.map((itemId) => itemService.move(member, db, itemId, parentId)),
-      ).then(async (results) => {
-        const successfulItems = results
-          .filter((result) => result.status === 'fulfilled')
-          .map((result) => (result as PromiseFulfilledResult<Item>).value);
-
-        const errors = results
-          .filter((result) => result.status === 'rejected')
-          .map((result) => (result as PromiseRejectedResult).reason);
-
-        if (successfulItems.length) {
-          await actionItemService.postManyMoveAction(
-            request,
-            reply,
-            buildRepositories(),
-            successfulItems,
-          );
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackEvent(
-                'move',
-                successfulItems.map((i) => i.id),
-                {
-                  data: Object.fromEntries(successfulItems.map((i) => [i.id, i])),
-                  errors: [],
-                },
-              ),
-            );
-          }
-        }
-
-        if (errors.length) {
-          if (member) {
-            errors.forEach((e) => {
-              log.error(e);
-              websockets.publish(
-                memberItemsTopic,
-                member.id,
-                ItemOpFeedbackEvent('move', ids, { error: e }),
+        ids.map((itemId) => {
+          return db
+            .transaction(async (manager) => {
+              const repositories = buildRepositories(manager);
+              const { source, destination } = await itemService.move(
+                member,
+                repositories,
+                itemId,
+                parentId,
               );
+
+              await actionItemService.postManyMoveAction(request, reply, repositories, [
+                destination,
+              ]);
+
+              return { source, destination };
+            })
+            .then(async ({ source, destination }) => {
+              publishAfterMoved(websockets, {
+                source,
+                destination,
+                sourceParentId: getParentFromPath(source.path),
+              });
+              return destination;
             });
-          }
+        }),
+      ).then(async (results) => {
+        if (member) {
+          publishFeedbackAfterAllMoved({
+            websockets,
+            log,
+            results,
+            itemIds: ids,
+            memberId: member.id,
+          });
         }
       });
 

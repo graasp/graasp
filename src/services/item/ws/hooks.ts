@@ -70,23 +70,6 @@ function registerItemTopic(websockets: WebsocketService, itemService: ItemServic
       websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
     }
   });
-
-  // on move item, notify:
-  // - parent of old location of deleted child
-  // - parent of new location of new child
-  itemService.hooks.setPostHook(
-    'move',
-    async (actor, repositories, { sourceParentId, source, destination }) => {
-      if (sourceParentId !== undefined) {
-        websockets.publish(itemTopic, sourceParentId, ChildItemEvent('delete', source));
-      }
-
-      const destParentId = getParentFromPath(destination.path);
-      if (destParentId) {
-        websockets.publish(itemTopic, destParentId, ChildItemEvent('create', destination));
-      }
-    },
-  );
 }
 
 /**
@@ -189,43 +172,6 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
       websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('create', item));
     }
   });
-
-  // on move item:
-  // - notify own items of creator of delete IF old location was root
-  // - notify own items of creator of create IF new location is root
-  itemService.hooks.setPostHook(
-    'move',
-    async (actor, repositories, { source, destination, sourceParentId }) => {
-      if (sourceParentId === undefined && source.creator) {
-        // root item, notify creator
-
-        // todo: remove own when we don't use own anymore
-        websockets.publish(memberItemsTopic, source.creator.id, OwnItemsEvent('delete', source));
-
-        websockets.publish(
-          memberItemsTopic,
-          source.creator.id,
-          AccessibleItemsEvent('delete', source),
-        );
-      }
-
-      const destParentId = getParentFromPath(destination.path);
-      if (destParentId === undefined && destination.creator) {
-        // root item, notify creator
-        // todo: remove own when we don't use own anymore
-        websockets.publish(
-          memberItemsTopic,
-          destination.creator.id,
-          OwnItemsEvent('create', destination),
-        );
-        websockets.publish(
-          memberItemsTopic,
-          destination.creator.id,
-          AccessibleItemsEvent('create', destination),
-        );
-      }
-    },
-  );
 }
 
 /**

@@ -89,3 +89,15 @@ export const readPdfContent = async (source: string | URL) => {
     return '';
   }
 };
+
+export const getPromiseResults = <T>(results: PromiseSettledResult<T>[]) => {
+  const success = results
+    .filter((result) => result.status === 'fulfilled')
+    .map((result) => (result as PromiseFulfilledResult<T>).value);
+
+  const failed = results
+    .filter((result) => result.status === 'rejected')
+    .map((result) => (result as PromiseRejectedResult).reason);
+
+  return { success, failed };
+};
