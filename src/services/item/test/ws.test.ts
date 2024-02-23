@@ -7,6 +7,7 @@ import {
   HttpMethod,
   PermissionLevel,
   Websocket,
+  getParentFromPath,
   parseStringToDate,
 } from '@graasp/sdk';
 
@@ -433,11 +434,11 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
-          newParentItem.path,
-        );
-      });
+      // When the websocket is not received, indicating that the transaction
+      // is still in progress, the item should contain the old path.
+      expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+        oldParentItem.path,
+      );
 
       await waitForExpect(() => {
         const [childDelete] = itemUpdates;
@@ -445,6 +446,12 @@ describe('Item websocket hooks', () => {
           ChildItemEvent('delete', parseStringToDate(childItem) as Item),
         );
       });
+
+      // When the websocket is received, indicating that the transaction
+      // is done, the item should contain the new path.
+      expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+        newParentItem.path,
+      );
     });
 
     it('parent of new location receives child creation update', async () => {
@@ -464,20 +471,25 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
+      // When the websocket is not received, indicating that the transaction
+      // is still in progress, the item should contain the old path.
+      expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+        oldParentItem.path,
+      );
+
       await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
-          newParentItem.path,
-        );
-      });
-
-      const moved = await ItemRepository.findOneBy({ id: childItem.id });
-
-      await waitForExpect(() => {
         const [childCreate] = itemUpdates;
+        const moved = await ItemRepository.findOneBy({ id: childItem.id });
         expect(childCreate).toMatchObject(
           ChildItemEvent('create', parseStringToDate(moved) as Item),
         );
       });
+
+      // When the websocket is received, indicating that the transaction
+      // is done, the item should contain the new path.
+      expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+        newParentItem.path,
+      );
     });
 
     it('creator receives own items delete update if old location was root of creator', async () => {
@@ -495,11 +507,13 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: item.id }))?.path).toContain(
-          newParentItem.path,
-        );
-      });
+      // When the websocket is not received, indicating that the transaction
+      // is still in progress, the item's parent path should be root (undefined).
+      const itemBeforeUpdate = await ItemRepository.findOneBy({ id: item.id });
+      if (!itemBeforeUpdate) {
+        fail('The item was not found in the repository.');
+      }
+      expect(getParentFromPath(itemBeforeUpdate.path)).toBeUndefined();
 
       await waitForExpect(() => {
         const [ownDelete, accessibleDelete] = itemUpdates;
@@ -508,6 +522,14 @@ describe('Item websocket hooks', () => {
           AccessibleItemsEvent('delete', parseStringToDate(item) as Item),
         );
       });
+
+      // When the websocket is received, indicating that the transaction
+      // is done, the item should contain the new parent path.
+      const itemAfterUpdate = await ItemRepository.findOneBy({ id: item.id });
+      if (!itemAfterUpdate) {
+        fail('The item was not found in the repository.');
+      }
+      expect(itemAfterUpdate.path).toContain(newParentItem.path);
     });
 
     it('creator receives own items create update if new location is root of creator', async () => {
@@ -526,18 +548,25 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
+      // When the websocket is not received, indicating that the transaction
+      // is still in progress, the item should contain the old path.
+      expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+        oldParentItem.path,
+      );
+
       await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).not.toContain(
-          oldParentItem.path,
-        );
-      });
-
-      const moved = await ItemRepository.findOneBy({ id: childItem.id });
-
-      await waitForExpect(() => {
         const [ownCreate] = itemUpdates;
+        const moved = await ItemRepository.findOneBy({ id: childItem.id });
         expect(ownCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(moved) as Item));
       });
+
+      // When the websocket is received, indicating that the transaction
+      // is done, the item's parent path should be root (undefined).
+      const itemAfterUpdate = await ItemRepository.findOneBy({ id: childItem.id });
+      if (!itemAfterUpdate) {
+        fail('The item was not found in the repository.');
+      }
+      expect(getParentFromPath(itemAfterUpdate.path)).toBeUndefined();
     });
   });
 
