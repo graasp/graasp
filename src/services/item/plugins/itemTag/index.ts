@@ -2,8 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, IdsParams, ItemTagType } from '@graasp/sdk';
+import { ItemTagType } from '@graasp/sdk';
 
+import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
 import common, { create, deleteOne, getItemTags, getMany } from './schemas';

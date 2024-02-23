@@ -3,8 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { IdParam } from '@graasp/sdk';
-
+import { IdParam } from '../../types';
 import { Repositories, buildRepositories } from '../../utils/repositories';
 import { Actor, Member } from '../member/entities/member';
 import { Invitation } from './invitation';

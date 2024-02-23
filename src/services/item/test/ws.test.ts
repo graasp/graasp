@@ -122,7 +122,7 @@ describe('Item websocket hooks', () => {
 
       const child = FolderItemFactory();
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items?parentId=${parent.id}`,
         payload: child,
       });
@@ -141,7 +141,7 @@ describe('Item websocket hooks', () => {
 
       const item = FolderItemFactory();
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items`,
         payload: item,
       });
@@ -166,7 +166,7 @@ describe('Item websocket hooks', () => {
 
       const payload = { name: 'new name' };
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/${item.id}`,
         payload: { name: 'new name' },
       });
@@ -188,7 +188,7 @@ describe('Item websocket hooks', () => {
 
       const payload = { name: 'new name' };
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/${childItem.id}`,
         payload: { name: 'new name' },
       });
@@ -208,7 +208,7 @@ describe('Item websocket hooks', () => {
 
       const payload = { name: 'new name' };
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/${item.id}`,
         payload: { name: 'new name' },
       });
@@ -238,7 +238,7 @@ describe('Item websocket hooks', () => {
       });
       const payload = { name: 'new name' };
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/${item.id}`,
         payload: { name: 'new name' },
       });
@@ -264,7 +264,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item.id });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items?id=${item.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -286,7 +286,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: parentItem.id });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items?id=${childItem.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -308,7 +308,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items?id=${item.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -338,7 +338,7 @@ describe('Item websocket hooks', () => {
         request.member = anna;
       });
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items?id=${item.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -367,7 +367,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item1.id });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/copy?id=${item2.id}`,
         payload: { parentId: item1.id },
       });
@@ -393,7 +393,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/copy?id=${item.id}`,
         payload: {},
       });
@@ -427,7 +427,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: oldParentItem.id });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/move?id=${childItem.id}`,
         payload: { parentId: newParentItem.id },
       });
@@ -458,7 +458,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: newParentItem.id });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/move?id=${childItem.id}`,
         payload: { parentId: newParentItem.id },
       });
@@ -489,7 +489,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/move?id=${item.id}`,
         payload: { parentId: newParentItem.id },
       });
@@ -520,7 +520,7 @@ describe('Item websocket hooks', () => {
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/move?id=${childItem.id}`,
         payload: {},
       });
@@ -548,7 +548,7 @@ describe('Item websocket hooks', () => {
 
       const payload = { name: 'new name' };
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/?id=${item.id}`,
         payload,
       });
@@ -580,7 +580,7 @@ describe('Item websocket hooks', () => {
 
       const payload = { name: 'new name' };
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/?id=${item.id}`,
         payload,
       });
@@ -599,7 +599,7 @@ describe('Item websocket hooks', () => {
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items/?id=${item.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -625,7 +625,7 @@ describe('Item websocket hooks', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items/?id=${item.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -647,7 +647,7 @@ describe('Item websocket hooks', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/move?id=${item.id}`,
         payload: { parentId: newParent.id },
       });
@@ -676,7 +676,7 @@ describe('Item websocket hooks', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/move?id=${item.id}`,
         payload: { parentId: newParent.id },
       });
@@ -696,7 +696,7 @@ describe('Item websocket hooks', () => {
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/copy?id=${item.id}`,
         payload: { parentId: newParent.id },
       });
@@ -726,7 +726,7 @@ describe('Item websocket hooks', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/copy?id=${item.id}`,
         payload: { parentId: newParent.id },
       });

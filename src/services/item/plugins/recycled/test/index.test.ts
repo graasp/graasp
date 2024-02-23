@@ -54,7 +54,7 @@ describe('Recycle Bin Tests', () => {
         ({ app } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/recycled',
         });
 
@@ -78,7 +78,7 @@ describe('Recycle Bin Tests', () => {
           const recycled = [item0, item1];
 
           const res = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: '/items/recycled',
           });
 
@@ -113,7 +113,7 @@ describe('Recycle Bin Tests', () => {
           const recycled = [item0, deletedChild];
 
           const res = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: '/items/recycled',
           });
 
@@ -136,7 +136,7 @@ describe('Recycle Bin Tests', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/recycle?id=${item.id}`,
         });
 
@@ -157,7 +157,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Successfully recycle many items', async () => {
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `/items/recycle?${qs.stringify({ id: itemIds }, { arrayFormat: 'repeat' })}`,
           });
           expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -187,7 +187,7 @@ describe('Recycle Bin Tests', () => {
           const member = await saveMember();
           const errorItem = await saveRecycledItem(member);
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `/items/recycle?${qs.stringify(
               { id: [items.map(({ id }) => id), errorItem.id] },
               { arrayFormat: 'repeat' },
@@ -219,7 +219,7 @@ describe('Recycle Bin Tests', () => {
           );
 
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `/items/recycle?${qs.stringify(
               { id: items.map(({ id }) => id) },
               { arrayFormat: 'repeat' },
@@ -230,7 +230,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Bad request for invalid id', async () => {
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `/items/recycle?${qs.stringify(
               { id: ['invalid-id', v4()] },
               { arrayFormat: 'repeat' },
@@ -247,7 +247,7 @@ describe('Recycle Bin Tests', () => {
         ({ app } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/restore?id=${v4()}`,
         });
 
@@ -268,7 +268,7 @@ describe('Recycle Bin Tests', () => {
         it('Successfully restore multiple items', async () => {
           const nonRecycledItems = await ItemRepository.find();
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
               { id: itemIds },
               { arrayFormat: 'repeat' },
@@ -287,7 +287,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Bad request for invalid id', async () => {
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
               { id: ['invalid-id', v4()] },
               { arrayFormat: 'repeat' },
@@ -300,7 +300,7 @@ describe('Recycle Bin Tests', () => {
         it('Bad request if submit same id', async () => {
           const sameId = v4();
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
               { id: [sameId, sameId] },
               { arrayFormat: 'repeat' },
@@ -312,7 +312,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Bad request if submit too many ids', async () => {
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
               { id: Array.from({ length: MAX_TARGETS_FOR_MODIFY_REQUEST }, () => v4()) },
               { arrayFormat: 'repeat' },
@@ -333,7 +333,7 @@ describe('Recycle Bin Tests', () => {
           const initialCountRecycled = await RecycledItemDataRepository.find();
 
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
               { id: [itemIds, item.id] },
               { arrayFormat: 'repeat' },
@@ -359,7 +359,7 @@ describe('Recycle Bin Tests', () => {
           const initialCountRecycled = await RecycledItemDataRepository.find();
 
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
               { id: [itemIds, v4()] },
               { arrayFormat: 'repeat' },
@@ -396,7 +396,7 @@ describe('Recycle Bin Tests', () => {
       const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
 
       const recycle = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${parentItem.id}`,
       });
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -407,7 +407,7 @@ describe('Recycle Bin Tests', () => {
       expect(await ItemRepository.findOneBy({ id: childItem.id })).toBe(null);
 
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${parentItem.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);

@@ -41,7 +41,7 @@ describe('Membership routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/item-memberships?itemId=${item.id}`,
       });
 
@@ -62,7 +62,7 @@ describe('Membership routes tests', () => {
         const memberships = [itemMembership, membership];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/item-memberships?itemId=${item.id}`,
         });
         const { data, errors } = response.json();
@@ -87,7 +87,7 @@ describe('Membership routes tests', () => {
         const memberships2 = [im2, membership2];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/item-memberships?itemId=${item1.id}&itemId=${item2.id}`,
         });
         const { data, errors } = response.json();
@@ -143,7 +143,7 @@ describe('Membership routes tests', () => {
         const memberships3 = [membership3];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/item-memberships?itemId=${item2.id}&itemId=${itemB.id}&itemId=${itemD.id}&itemId=${itemE.id}`,
         });
         const { data, errors } = response.json();
@@ -171,7 +171,7 @@ describe('Membership routes tests', () => {
       });
       it('Bad request for invalid id', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/item-memberships?itemId=invalid-id',
         });
 
@@ -182,7 +182,7 @@ describe('Membership routes tests', () => {
         await saveItemAndMembership({ member: actor });
         const itemId = v4();
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/item-memberships?itemId=${itemId}`,
         });
 
@@ -196,7 +196,7 @@ describe('Membership routes tests', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/item-memberships?itemId=${item.id}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -219,7 +219,7 @@ describe('Membership routes tests', () => {
         const memberships = [itemMembership, membership];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/item-memberships?itemId=${item.id}`,
         });
         const { data, errors } = response.json();
@@ -249,7 +249,7 @@ describe('Membership routes tests', () => {
       };
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/item-memberships?itemId=${item.id}`,
         payload,
       });
@@ -274,7 +274,7 @@ describe('Membership routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships?itemId=${item.id}`,
           payload,
         });
@@ -309,7 +309,7 @@ describe('Membership routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships?itemId=${parent.id}`,
           payload: newMembership,
         });
@@ -340,7 +340,7 @@ describe('Membership routes tests', () => {
         const initialCount = await ItemMembershipRepository.find();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships?itemId=${item.id}`,
           payload: {
             permission: PermissionLevel.Read,
@@ -370,7 +370,7 @@ describe('Membership routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships?itemId=${newMembership.itemId}`,
           payload: newMembership,
         });
@@ -389,7 +389,7 @@ describe('Membership routes tests', () => {
 
         const id = 'invalid-id';
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships?itemId=${id}`,
           payload: {
             permission: PermissionLevel.Read,
@@ -410,7 +410,7 @@ describe('Membership routes tests', () => {
         const initialCount = await ItemMembershipRepository.find();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships?itemId=${item.id}`,
           payload: {
             memberId: member.id,
@@ -440,7 +440,7 @@ describe('Membership routes tests', () => {
       };
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/item-memberships/${item.id}`,
         payload: { memberships: [payload] },
       });
@@ -466,7 +466,7 @@ describe('Membership routes tests', () => {
         const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships/${item.id}`,
           payload: { memberships: newMemberships },
         });
@@ -503,7 +503,7 @@ describe('Membership routes tests', () => {
         ];
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships/${id}`,
           payload: { memberships: newMemberships },
         });
@@ -517,7 +517,7 @@ describe('Membership routes tests', () => {
         const member = await saveMember();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/item-memberships/${item.id}`,
           payload: {
             memberships: [
@@ -547,7 +547,7 @@ describe('Membership routes tests', () => {
       };
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/item-memberships/${itemMembership.id}`,
         payload,
       });
@@ -583,7 +583,7 @@ describe('Membership routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/item-memberships/${membership.id}`,
           payload: newMembership,
         });
@@ -614,7 +614,7 @@ describe('Membership routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/item-memberships/${membership.id}`,
           payload: newMembership,
         });
@@ -650,7 +650,7 @@ describe('Membership routes tests', () => {
         const newMembership = { permission: PermissionLevel.Write };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/item-memberships/${inheritedMembership.id}`,
           payload: newMembership,
         });
@@ -672,7 +672,7 @@ describe('Membership routes tests', () => {
       });
       it('Bad request if payload is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/item-memberships/${v4()}`,
           payload: { permission: 'permission' },
         });
@@ -684,7 +684,7 @@ describe('Membership routes tests', () => {
       it('Bad request if id is invalid', async () => {
         const id = 'invalid-id';
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/item-memberships/${id}`,
           payload: { permission: PermissionLevel.Write },
         });
@@ -710,7 +710,7 @@ describe('Membership routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/item-memberships/${membership.id}`,
           payload: newMembership,
         });
@@ -727,7 +727,7 @@ describe('Membership routes tests', () => {
       const creator = await saveMember();
       const { itemMembership } = await saveItemAndMembership({ member: creator });
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/item-memberships/${itemMembership.id}`,
       });
 
@@ -752,7 +752,7 @@ describe('Membership routes tests', () => {
         const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/item-memberships/${membership.id}`,
         });
 
@@ -776,7 +776,7 @@ describe('Membership routes tests', () => {
         const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/item-memberships/${membership.id}?purgeBelow=true`,
         });
 
@@ -789,7 +789,7 @@ describe('Membership routes tests', () => {
       it('Bad request if id is invalid', async () => {
         const id = 'invalid-id';
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/item-memberships/${id}`,
         });
 
@@ -803,7 +803,7 @@ describe('Membership routes tests', () => {
 
         const id = v4();
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/item-memberships/${id}`,
         });
 
@@ -824,7 +824,7 @@ describe('Membership routes tests', () => {
         const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/item-memberships/${membership.id}`,
         });
 
@@ -845,7 +845,7 @@ describe('Membership routes tests', () => {
         const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/item-memberships/${membership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
@@ -858,7 +858,7 @@ describe('Membership routes tests', () => {
         const { itemMembership } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/item-memberships/${itemMembership.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);

@@ -31,7 +31,7 @@ describe('Profile Member routes tests', () => {
       ({ app, actor } = await build());
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
       const ownProfile = response.json();
@@ -43,7 +43,7 @@ describe('Profile Member routes tests', () => {
       await saveMemberProfile(actor, ANNA_PROFILE);
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
       const ownProfile = response.json();
@@ -55,7 +55,7 @@ describe('Profile Member routes tests', () => {
       await saveMemberProfile(actor, { ...ANNA_PROFILE, visibility: false });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
       const ownProfile = response.json();
@@ -67,7 +67,7 @@ describe('Profile Member routes tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/own`,
       });
 
@@ -81,7 +81,7 @@ describe('Profile Member routes tests', () => {
 
       const payload = getDummyProfile({ bio: 'Random Bio' });
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
         payload,
       });
@@ -98,7 +98,7 @@ describe('Profile Member routes tests', () => {
         const payload = getDummyProfile({ bio: 'Random Bio' });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
           payload,
         });
@@ -114,7 +114,7 @@ describe('Profile Member routes tests', () => {
         await saveMemberProfile(actor, ANNA_PROFILE);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
           payload,
         });
@@ -131,7 +131,7 @@ describe('Profile Member routes tests', () => {
       const memberId = member.id;
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
 
@@ -143,7 +143,7 @@ describe('Profile Member routes tests', () => {
       const memberId = member.id;
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
 
@@ -156,7 +156,7 @@ describe('Profile Member routes tests', () => {
       const memberId = memberProfile?.member?.id;
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
       const bobProfile = response.json();
@@ -174,7 +174,7 @@ describe('Profile Member routes tests', () => {
 
       const payload = getDummyProfile({ bio: 'Random Bio' });
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
         payload,
       });
@@ -192,7 +192,7 @@ describe('Profile Member routes tests', () => {
         const member = await saveMemberProfile(actor, ANNA_PROFILE);
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}`,
           payload,
         });

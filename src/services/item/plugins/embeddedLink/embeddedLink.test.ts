@@ -1,7 +1,7 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 
-import { EmbeddedLinkItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
+import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
@@ -51,9 +51,9 @@ describe('Link Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
 
-      const payload = EmbeddedLinkItemFactory();
+      const payload = LinkItemFactory();
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items',
         payload,
       });
@@ -67,9 +67,9 @@ describe('Link Item tests', () => {
       });
 
       it('Create successfully', async () => {
-        const payload = EmbeddedLinkItemFactory();
+        const payload = LinkItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload,
         });
@@ -117,7 +117,7 @@ describe('Link Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload,
         });
@@ -133,7 +133,7 @@ describe('Link Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload,
         });
@@ -149,7 +149,7 @@ describe('Link Item tests', () => {
         };
 
         const response1 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload: payload1,
         });
@@ -167,7 +167,7 @@ describe('Link Item tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/${item.id}`,
         payload: { name: 'new name' },
       });
@@ -201,7 +201,7 @@ describe('Link Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -220,7 +220,7 @@ describe('Link Item tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items?id=${item.id}`,
         payload: { name: 'new name' },
       });
@@ -260,7 +260,7 @@ describe('Link Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items?id=${item.id}`,
           payload,
         });

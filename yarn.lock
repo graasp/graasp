@@ -1500,10 +1500,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:8.4.0":
-  version: 8.4.0
-  resolution: "@faker-js/faker@npm:8.4.0"
-  checksum: 10/f9253d0b4846ab0fd769cd78be88c4ea24741d9201cccb0038b3627ac21041a2aef150b0f843b2f63d5a056737bec28bcdf493e0b72201a892df4423be0dff79
+"@faker-js/faker@npm:8.4.1":
+  version: 8.4.1
+  resolution: "@faker-js/faker@npm:8.4.1"
+  checksum: 10/5983c2ea64f26055ad6648de748878e11ebe2fb751e3c7435ae141cdffabc2dccfe4c4f49da69a3d2add71e21b415c683ac5fba196fab0d5ed6779fbec436c80
   languageName: node
   linkType: hard
 
@@ -1758,17 +1758,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:3.10.0":
-  version: 3.10.0
-  resolution: "@graasp/sdk@npm:3.10.0"
+"@graasp/sdk@github:graasp/graasp-sdk#fix-exports-issues":
+  version: 4.0.0
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=1711b82b673848b6cc799034c85c16239b20e1a4"
   dependencies:
-    "@faker-js/faker": "npm:8.4.0"
+    "@faker-js/faker": "npm:8.4.1"
     js-cookie: "npm:3.0.5"
     validator: "npm:13.11.0"
   peerDependencies:
     date-fns: ^3
     uuid: ^9
-  checksum: 10/4a2353869d4bdbcd5e9fac19cf11adf2a63a25864eedb8be938b788d3028844ebf28565d6164c84b7ff5b4da56e6821071d0623f4793c6ff590ae45866edd239
+  checksum: 10/703dc84f7f0591b18ca16f62217dde17752116847b124c81e0ea8aa9f4e076d1415e6b3a5660995817fd2ec87930801b97758527afbc5025f93a179f2c1775ef
   languageName: node
   linkType: hard
 
@@ -6500,7 +6500,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:3.10.0"
+    "@graasp/sdk": "github:graasp/graasp-sdk#fix-exports-issues"
     "@graasp/translations": "npm:1.23.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"

@@ -2,9 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 
-import { PaginationParams } from '../../types';
+import { IdParam, IdsParams, PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
@@ -35,7 +35,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // create item
   // question: add link hook here? or have another endpoint?
   fastify.post<{
-    Querystring: ParentIdParam;
+    Querystring: {
+      parentId?: string;
+    };
     Body: Partial<Item> & Pick<ItemGeolocation, 'lat' | 'lng'>;
   }>(
     '/',
@@ -261,7 +263,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Querystring: IdsParams; Body: ParentIdParam }>(
+  fastify.post<{
+    Querystring: IdsParams;
+    Body: {
+      parentId?: string;
+    };
+  }>(
     '/move',
     { schema: moveMany, preHandler: fastify.verifyAuthentication },
     async (request, reply) => {

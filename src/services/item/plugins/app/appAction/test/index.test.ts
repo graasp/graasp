@@ -70,14 +70,14 @@ describe('App Actions Tests', () => {
         ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
       });
 
       it('Get app actions without member and token throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-action`,
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -99,7 +99,7 @@ describe('App Actions Tests', () => {
           const otherActions = await saveAppActions({ item, member });
 
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${APP_ITEMS_PREFIX}/${item.id}/app-action`,
             headers: {
               Authorization: `Bearer ${token}`,
@@ -117,7 +117,7 @@ describe('App Actions Tests', () => {
 
         it('Get app actions with invalid item id throws', async () => {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${APP_ITEMS_PREFIX}/invalid-id/app-action`,
             headers: {
               Authorization: `Bearer ${token}`,
@@ -144,7 +144,7 @@ describe('App Actions Tests', () => {
           const otherActions = await saveAppActions({ item, member });
 
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${APP_ITEMS_PREFIX}/${item.id}/app-action`,
             headers: {
               Authorization: `Bearer ${token}`,
@@ -176,14 +176,14 @@ describe('App Actions Tests', () => {
 
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
       });
 
       it('Get many app actions without member and token throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/app-action?itemId=${item.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -214,7 +214,7 @@ describe('App Actions Tests', () => {
 
       it('Get many app actions successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/app-action?itemId=${items[0].id}&itemId=${items[1].id}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -228,7 +228,7 @@ describe('App Actions Tests', () => {
 
       it('Get many app actions with invalid item id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/app-action?itemId=invalid-id`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -250,7 +250,7 @@ describe('App Actions Tests', () => {
         ({ item, token, appActions } = await setUpForAppActions(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
         member = null;
@@ -260,7 +260,7 @@ describe('App Actions Tests', () => {
         ({ app } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-action`,
           payload,
         });
@@ -271,7 +271,7 @@ describe('App Actions Tests', () => {
         ({ app } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-action`,
           payload: { data: { some: 'data' } },
           headers: {
@@ -290,7 +290,7 @@ describe('App Actions Tests', () => {
 
       it('Post app actions successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-action`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -310,7 +310,7 @@ describe('App Actions Tests', () => {
 
       it('Invalid item id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-action`,
           headers: {
             Authorization: `Bearer ${token}`,

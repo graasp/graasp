@@ -27,7 +27,7 @@ export const sendRequestToClassifier = async (
     const buffer = await imageUrlData.arrayBuffer();
     const encodedImage = Buffer.from(buffer).toString('base64');
     const response = await fetch(classifierApi, {
-      method: HttpMethod.POST,
+      method: HttpMethod.Post,
       body: JSON.stringify({ data: { image: encodedImage } }),
       headers: { 'Content-Type': 'application/json' },
     });

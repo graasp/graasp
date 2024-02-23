@@ -53,7 +53,7 @@ describe('Recycle websocket hooks', () => {
       const itemUpdates = await ws.subscribe<ItemEvent>({ topic: itemTopic, channel: item.id });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -82,7 +82,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${parentItem.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -111,7 +111,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${childItem.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -144,7 +144,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${topItem.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -181,7 +181,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -217,7 +217,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -253,7 +253,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${parentItem.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -295,7 +295,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${topItem.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -325,7 +325,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -356,7 +356,7 @@ describe('Recycle websocket hooks', () => {
       const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
 
       const recycle = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${childItem.id}`,
       });
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -371,7 +371,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${childItem.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -394,7 +394,7 @@ describe('Recycle websocket hooks', () => {
       const { item } = await saveItemAndMembership({ member: actor });
 
       const recycle = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -409,7 +409,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${item.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -440,7 +440,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -465,7 +465,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${item.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -497,7 +497,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${parentItem.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -522,7 +522,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${parentItem.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -559,7 +559,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${parentItem.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -584,7 +584,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${parentItem.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -615,7 +615,7 @@ describe('Recycle websocket hooks', () => {
         request.member = anna;
       });
       const recycle = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(recycle.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -635,7 +635,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${item.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -666,7 +666,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -702,7 +702,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const res = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/recycle?id=${item.id}`,
       });
       expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -726,7 +726,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${item.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -763,7 +763,7 @@ describe('Recycle websocket hooks', () => {
       });
 
       const restore = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/restore?id=${item.id}`,
       });
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);

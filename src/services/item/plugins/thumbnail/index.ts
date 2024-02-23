@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, ThumbnailSizeType } from '@graasp/sdk';
+import { ThumbnailSizeType } from '@graasp/sdk';
 
+import { IdParam } from '../../../../types';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';

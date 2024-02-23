@@ -2,8 +2,8 @@ import { Brackets, In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import {
+  DiscriminatedItem,
   FileItemType,
-  ItemSettings,
   ItemType,
   MAX_TREE_LEVELS,
   PermissionLevel,
@@ -34,6 +34,7 @@ import {
   sortChildrenWith,
 } from './utils';
 
+type ItemSettings = DiscriminatedItem['settings'];
 export const DEFAULT_ITEM_SETTINGS: ItemSettings = {
   hasThumbnail: false,
 };

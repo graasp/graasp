@@ -57,42 +57,42 @@ const shortLinkUrl = (alias) => {
 
 export const injectGet = async (app, alias) => {
   return app.inject({
-    method: HttpMethod.GET,
+    method: HttpMethod.Get,
     url: shortLinkUrl(alias),
   });
 };
 
 export const injectGetShortLink = async (app, alias) => {
   return app.inject({
-    method: HttpMethod.GET,
+    method: HttpMethod.Get,
     url: `${SHORT_LINKS_FULL_PREFIX}/alias/${alias}`,
   });
 };
 
 export const injectGetAvailable = async (app, alias) => {
   return app.inject({
-    method: HttpMethod.GET,
+    method: HttpMethod.Get,
     url: `${SHORT_LINKS_FULL_PREFIX}/available/${alias}`,
   });
 };
 
 export const injectGetAll = async (app, itemId) => {
   return app.inject({
-    method: HttpMethod.GET,
+    method: HttpMethod.Get,
     url: `${SHORT_LINKS_FULL_PREFIX}${SHORT_LINKS_LIST_ROUTE}/${itemId}`,
   });
 };
 
 export const injectPost = async (app, payload?) => {
-  return app.inject({ method: HttpMethod.POST, url: SHORT_LINKS_FULL_PREFIX, payload });
+  return app.inject({ method: HttpMethod.Post, url: SHORT_LINKS_FULL_PREFIX, payload });
 };
 
 export const injectPatch = async (app, alias, payload?) => {
-  return app.inject({ method: HttpMethod.PATCH, url: shortLinkUrl(alias), payload });
+  return app.inject({ method: HttpMethod.Patch, url: shortLinkUrl(alias), payload });
 };
 
 export const injectDelete = async (app, alias) => {
-  return app.inject({ method: HttpMethod.DELETE, url: shortLinkUrl(alias) });
+  return app.inject({ method: HttpMethod.Delete, url: shortLinkUrl(alias) });
 };
 
 export const logOut = (app) => {

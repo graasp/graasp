@@ -92,7 +92,7 @@ describe('ZIP routes tests', () => {
       const form = createFormData('archive.zip');
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
@@ -145,7 +145,7 @@ describe('ZIP routes tests', () => {
       const form = createFormData('empty.zip');
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
@@ -163,7 +163,7 @@ describe('ZIP routes tests', () => {
       const form = createFormData('htmlAndText.zip');
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
@@ -212,7 +212,7 @@ describe('ZIP routes tests', () => {
       const form = createFormData('archive.zip');
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items/zip-import',
         payload: form,
         headers: form.getHeaders(),
@@ -227,7 +227,7 @@ describe('ZIP routes tests', () => {
       const { item } = await saveItemAndMembership({ member: actor, item: { name: 'itemname' } });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/items/zip-export/${item.id}`,
       });
 

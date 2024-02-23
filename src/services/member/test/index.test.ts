@@ -29,7 +29,7 @@ describe('Member routes tests', () => {
       ({ app, actor } = await build());
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/members/current',
       });
       const m = response.json();
@@ -45,7 +45,7 @@ describe('Member routes tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/members/current',
       });
 
@@ -116,7 +116,7 @@ describe('Member routes tests', () => {
         item3.extra[fileServiceType].size;
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/members/current/storage',
       });
       const { current, maximum } = response.json();
@@ -147,7 +147,7 @@ describe('Member routes tests', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/members/current/storage',
       });
       const { current, maximum } = response.json();
@@ -160,7 +160,7 @@ describe('Member routes tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/members/current/storage',
       });
 
@@ -177,7 +177,7 @@ describe('Member routes tests', () => {
         const member = await saveMember();
         const memberId = member.id;
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/${memberId}`,
         });
 
@@ -197,7 +197,7 @@ describe('Member routes tests', () => {
         const member = await saveMember();
         const memberId = member.id;
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/${memberId}`,
         });
 
@@ -211,7 +211,7 @@ describe('Member routes tests', () => {
       it('Returns Bad Request for invalid id', async () => {
         const memberId = 'invalid-id';
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/${memberId}`,
         });
 
@@ -223,7 +223,7 @@ describe('Member routes tests', () => {
         // the following id is not part of the fixtures
         const memberId = 'a3894999-c958-49c0-a5f0-f82dfebd941e';
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/${memberId}`,
         });
         expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -243,7 +243,7 @@ describe('Member routes tests', () => {
         const members = await saveMembers();
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members?${qs.stringify(
             { id: members.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -271,7 +271,7 @@ describe('Member routes tests', () => {
         const members = await saveMembers();
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members?${qs.stringify(
             { id: members.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -293,7 +293,7 @@ describe('Member routes tests', () => {
         const members = await saveMembers();
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members?${qs.stringify({ id: members[0].id }, { arrayFormat: 'repeat' })}`,
         });
 
@@ -314,7 +314,7 @@ describe('Member routes tests', () => {
         const members = await saveMembers();
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members?${qs.stringify(
             { id: [members[0].id, members[0].id] },
             { arrayFormat: 'repeat' },
@@ -329,7 +329,7 @@ describe('Member routes tests', () => {
         const members = await saveMembers();
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members?${qs.stringify(
             { id: [members.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
@@ -346,7 +346,7 @@ describe('Member routes tests', () => {
         const members = await saveMembers();
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members?${qs.stringify(
             { id: [memberId, ...members.map(({ id }) => id)] },
             { arrayFormat: 'repeat' },
@@ -369,7 +369,7 @@ describe('Member routes tests', () => {
       it('Returns successfully', async () => {
         const member = await saveMember();
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/search?email=${member.email}`,
         });
         if (!member.email) {
@@ -392,7 +392,7 @@ describe('Member routes tests', () => {
       it('Returns successfully', async () => {
         const member = await saveMember();
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/search?email=${member.email}`,
         });
         if (!member.email) {
@@ -410,7 +410,7 @@ describe('Member routes tests', () => {
       it('Returns Bad Request for invalid email', async () => {
         const email = 'not-a-valid-email';
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/search?email=${email}`,
         });
 
@@ -422,7 +422,7 @@ describe('Member routes tests', () => {
         const email = 'empty@gmail.com';
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/members/search?email=${email}`,
         });
 
@@ -439,7 +439,7 @@ describe('Member routes tests', () => {
       const newName = 'new name';
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/members/${actor.id}`,
         payload: {
           name: newName,
@@ -461,7 +461,7 @@ describe('Member routes tests', () => {
         const newName = 'new name';
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/members/${actor.id}`,
           payload: {
             name: newName,
@@ -483,7 +483,7 @@ describe('Member routes tests', () => {
         const member = await saveMember();
         const newName = 'new name';
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/members/${member.id}`,
           payload: {
             name: newName,
@@ -505,7 +505,7 @@ describe('Member routes tests', () => {
       const member = await saveMember();
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/members/${member.id}`,
       });
 
@@ -518,7 +518,7 @@ describe('Member routes tests', () => {
       });
       it('Returns successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/members/${actor.id}`,
         });
 
@@ -531,7 +531,7 @@ describe('Member routes tests', () => {
       it('Current member cannot delete another member', async () => {
         const member = await saveMember();
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/members/${member.id}`,
         });
 

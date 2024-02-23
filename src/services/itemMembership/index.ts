@@ -3,8 +3,9 @@ import { UUID } from 'crypto';
 import fastifyCors from '@fastify/cors';
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 
+import { IdParam } from '../../types';
 import { buildRepositories } from '../../utils/repositories';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';

@@ -81,14 +81,14 @@ describe('Apps Settings Tests', () => {
         ({ item, token, appSettings } = await setUpForAppSettings(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
       });
 
       it('Get app setting throws without token', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings`,
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -98,7 +98,7 @@ describe('Apps Settings Tests', () => {
         await setItemPublic(item, member);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -117,7 +117,7 @@ describe('Apps Settings Tests', () => {
         const { item } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings`,
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -127,7 +127,7 @@ describe('Apps Settings Tests', () => {
         const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -141,7 +141,7 @@ describe('Apps Settings Tests', () => {
         const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings?name=new-setting`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -155,7 +155,7 @@ describe('Apps Settings Tests', () => {
         const { item, appSettings, token } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings?name=no-setting`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -173,7 +173,7 @@ describe('Apps Settings Tests', () => {
         const { token } = await setUpForAppSettings(app, actor, actor);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-settings`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -192,7 +192,7 @@ describe('Apps Settings Tests', () => {
         ({ app } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-settings`,
           payload: appSetting,
         });
@@ -209,7 +209,7 @@ describe('Apps Settings Tests', () => {
         ({ item, token } = await setUpForAppSettings(app, actor, actor));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -237,7 +237,7 @@ describe('Apps Settings Tests', () => {
         ));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -257,7 +257,7 @@ describe('Apps Settings Tests', () => {
         ));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -269,7 +269,7 @@ describe('Apps Settings Tests', () => {
 
       it('Invalid item id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-settings`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -424,7 +424,7 @@ describe('Apps Settings Tests', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings/${v4()}`,
         });
@@ -444,7 +444,7 @@ describe('Apps Settings Tests', () => {
 
       it('Delete app setting successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings/${chosenAppSetting.id}`,
           headers: {
@@ -460,7 +460,7 @@ describe('Apps Settings Tests', () => {
 
       it('Delete app setting with invalid id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-settings/${chosenAppSetting.id}`,
           headers: {
@@ -471,7 +471,7 @@ describe('Apps Settings Tests', () => {
       });
       it('Delete app setting with invalid app setting id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings/invalid-id`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -490,7 +490,7 @@ describe('Apps Settings Tests', () => {
         ));
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings/${chosenAppSetting.id}`,
           headers: {
@@ -510,7 +510,7 @@ describe('Apps Settings Tests', () => {
         ));
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-settings/${chosenAppSetting.id}`,
           headers: {

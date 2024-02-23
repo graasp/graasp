@@ -101,7 +101,7 @@ describe('Item routes tests', () => {
 
       const payload = FolderItemFactory();
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items',
         payload,
       });
@@ -118,7 +118,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload,
         });
@@ -143,7 +143,7 @@ describe('Item routes tests', () => {
         });
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parent.id}`,
           payload,
         });
@@ -169,7 +169,7 @@ describe('Item routes tests', () => {
         });
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parent.id}`,
           payload,
         });
@@ -193,7 +193,7 @@ describe('Item routes tests', () => {
         await saveMembership({ member: actor, item: parent, permission: PermissionLevel.Write });
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parent.id}`,
           payload,
         });
@@ -212,7 +212,7 @@ describe('Item routes tests', () => {
       it('Create successfully with geolocation', async () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items`,
           payload: { ...payload, geolocation: { lat: 1, lng: 2 } },
         });
@@ -227,7 +227,7 @@ describe('Item routes tests', () => {
       it('Create successfully with language', async () => {
         const payload = FolderItemFactory({ lang: 'fr' });
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items`,
           payload,
         });
@@ -240,7 +240,7 @@ describe('Item routes tests', () => {
       it('Throw if geolocation is partial', async () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items`,
           payload: { ...payload, geolocation: { lat: 1 } },
         });
@@ -251,7 +251,7 @@ describe('Item routes tests', () => {
         expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
 
         const response1 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items`,
           payload: { ...payload, geolocation: { lng: 1 } },
         });
@@ -266,7 +266,7 @@ describe('Item routes tests', () => {
         // by default the item creator use an invalid item type
         const newItem = FolderItemFactory({ name: '' });
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload: newItem,
         });
@@ -276,7 +276,7 @@ describe('Item routes tests', () => {
         // by default the item creator use an invalid item type
         const newItem1 = FolderItemFactory({ name: ' ' });
         const response1 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload: newItem1,
         });
@@ -288,7 +288,7 @@ describe('Item routes tests', () => {
         // by default the item creator use an invalid item type
         const newItem = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload: { ...newItem, type: 'invalid-type' },
         });
@@ -300,7 +300,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const parentId = 'invalid-id';
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parentId}`,
           payload,
         });
@@ -312,7 +312,7 @@ describe('Item routes tests', () => {
         const payload = FolderItemFactory();
         const parentId = uuidv4();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parentId}`,
           payload,
         });
@@ -326,7 +326,7 @@ describe('Item routes tests', () => {
         const { item: parent } = await saveItemAndMembership({ member });
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parent.id}`,
           payload,
         });
@@ -345,7 +345,7 @@ describe('Item routes tests', () => {
 
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parent.id}`,
           payload,
         });
@@ -363,7 +363,7 @@ describe('Item routes tests', () => {
         await saveItems({ nb: MAX_NUMBER_OF_CHILDREN, parentItem: parent, actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parent.id}`,
           payload,
         });
@@ -380,7 +380,7 @@ describe('Item routes tests', () => {
         const currentParent = await saveUntilMaxDescendants(parent, actor);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${currentParent.id}`,
           payload,
         });
@@ -396,7 +396,7 @@ describe('Item routes tests', () => {
         });
         const payload = FolderItemFactory();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items?parentId=${parent.id}`,
           payload,
         });
@@ -413,7 +413,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/items/${item.id}`,
       });
 
@@ -429,7 +429,7 @@ describe('Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}`,
         });
 
@@ -440,7 +440,7 @@ describe('Item routes tests', () => {
 
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/invalid-id',
         });
 
@@ -450,7 +450,7 @@ describe('Item routes tests', () => {
       it('Not found for missing item given id', async () => {
         const id = uuidv4();
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${id}`,
         });
 
@@ -461,7 +461,7 @@ describe('Item routes tests', () => {
         const member = await saveMember();
         const item = await saveItem({ actor: member });
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}`,
         });
 
@@ -477,7 +477,7 @@ describe('Item routes tests', () => {
         const item = await savePublicItem({ actor: member });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}`,
         });
 
@@ -496,7 +496,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -516,7 +516,7 @@ describe('Item routes tests', () => {
         }
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -536,7 +536,7 @@ describe('Item routes tests', () => {
       it('Returns one item successfully for valid item', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         });
 
@@ -548,7 +548,7 @@ describe('Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items?${qs.stringify({ id: [item.id, 'invalid-id'] }, { arrayFormat: 'repeat' })}`,
         });
 
@@ -562,7 +562,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items?${qs.stringify(
             { id: [...items.map(({ id }) => id), missingId] },
             { arrayFormat: 'repeat' },
@@ -594,7 +594,7 @@ describe('Item routes tests', () => {
         }
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -620,7 +620,7 @@ describe('Item routes tests', () => {
       await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/items/own',
       });
 
@@ -639,7 +639,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2, item3];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/own',
         });
 
@@ -663,7 +663,7 @@ describe('Item routes tests', () => {
       await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/items/own',
       });
 
@@ -692,7 +692,7 @@ describe('Item routes tests', () => {
 
       it('Returns successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/shared-with',
         });
 
@@ -709,7 +709,7 @@ describe('Item routes tests', () => {
 
       it('Returns successfully with read permission filter', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/shared-with?permission=read',
         });
         const data = response.json();
@@ -726,7 +726,7 @@ describe('Item routes tests', () => {
       it('Returns successfully with write permission filter', async () => {
         const validItems = items.slice(0, 2);
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/shared-with?permission=write',
         });
         const data = response.json();
@@ -744,7 +744,7 @@ describe('Item routes tests', () => {
       it('Returns successfully with admin permission filter', async () => {
         const validItems = items.slice(0, 1);
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/shared-with?permission=admin',
         });
         const data = response.json();
@@ -769,7 +769,7 @@ describe('Item routes tests', () => {
         await saveMembership({ item: item2, member: actor, permission: PermissionLevel.Write });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/shared-with',
         });
 
@@ -794,7 +794,7 @@ describe('Item routes tests', () => {
         await saveMembership({ item: item2, member: actor, permission: PermissionLevel.Write });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/shared-with',
         });
 
@@ -817,7 +817,7 @@ describe('Item routes tests', () => {
       await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/items/accessible',
       });
 
@@ -853,7 +853,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2, item3, item4, item6];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/accessible',
         });
 
@@ -882,7 +882,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible?creatorId=${bob.id}`,
         });
 
@@ -907,7 +907,7 @@ describe('Item routes tests', () => {
         const items = [item3, item1, item2];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible?sortBy=${SortBy.ItemName}&ordering=asc`,
         });
 
@@ -938,7 +938,7 @@ describe('Item routes tests', () => {
         const items = [item2, item1, item3];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible?sortBy=${SortBy.ItemType}&ordering=desc`,
         });
 
@@ -975,7 +975,7 @@ describe('Item routes tests', () => {
         const items = [item2, item1, item3];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible?sortBy=${SortBy.ItemCreatorName}&ordering=asc`,
         });
 
@@ -1012,7 +1012,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible`,
           query: {
             sortBy: SortBy.ItemCreatorName,
@@ -1053,7 +1053,7 @@ describe('Item routes tests', () => {
         const items = [item2, item3];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible`,
           query: {
             sortBy: SortBy.ItemCreatorName,
@@ -1096,7 +1096,7 @@ describe('Item routes tests', () => {
         const folders = [itemFolder1, itemFolder2].sort(sortByName);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible`,
           query: {
             types: [ItemType.FOLDER],
@@ -1130,7 +1130,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible`,
           query: {
             sortBy: 'nimp',
@@ -1156,7 +1156,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible`,
           query: {
             sortBy: SortBy.ItemName,
@@ -1182,7 +1182,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/accessible`,
           query: {
             types: 'nimp',
@@ -1198,7 +1198,7 @@ describe('Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member: actor, item: { name: '3' } });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           // add sorting for result to be less flacky
           url: `/items/accessible?ordering=asc&sortBy=${SortBy.ItemName}&pageSize=1&page=3`,
         });
@@ -1220,7 +1220,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/items/${item.id}/children`,
       });
 
@@ -1242,7 +1242,7 @@ describe('Item routes tests', () => {
         await saveItemAndMembership({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children`,
         });
 
@@ -1261,7 +1261,7 @@ describe('Item routes tests', () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children`,
         });
 
@@ -1289,7 +1289,7 @@ describe('Item routes tests', () => {
         await saveItemAndMembership({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children?ordered=true`,
         });
 
@@ -1321,7 +1321,7 @@ describe('Item routes tests', () => {
         await saveItemAndMembership({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children?ordered=true`,
         });
 
@@ -1361,7 +1361,7 @@ describe('Item routes tests', () => {
         await saveItemAndMembership({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children?ordered=true`,
         });
 
@@ -1396,7 +1396,7 @@ describe('Item routes tests', () => {
         const children = [child2];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children?types=folder`,
         });
 
@@ -1414,7 +1414,7 @@ describe('Item routes tests', () => {
       });
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/invalid-id/children',
         });
 
@@ -1424,7 +1424,7 @@ describe('Item routes tests', () => {
       it('Cannot get children from unexisting item', async () => {
         const id = uuidv4();
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${id}/children`,
         });
 
@@ -1446,7 +1446,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children`,
         });
 
@@ -1468,7 +1468,7 @@ describe('Item routes tests', () => {
         await savePublicItem({ actor, parentItem: child1 });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/children`,
         });
 
@@ -1493,7 +1493,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/items/${item.id}/descendants`,
       });
 
@@ -1525,7 +1525,7 @@ describe('Item routes tests', () => {
         const descendants = [child1, child2, childOfChild];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/descendants`,
         });
 
@@ -1573,7 +1573,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/descendants`,
         });
 
@@ -1593,7 +1593,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/descendants`,
         });
 
@@ -1602,7 +1602,7 @@ describe('Item routes tests', () => {
       });
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/invalid-id/descendants',
         });
 
@@ -1612,7 +1612,7 @@ describe('Item routes tests', () => {
       it('Cannot get descendants from unexisting item', async () => {
         const id = uuidv4();
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${id}/descendants`,
         });
 
@@ -1634,7 +1634,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/descendants`,
         });
 
@@ -1667,7 +1667,7 @@ describe('Item routes tests', () => {
         const descendants = [child1, child2, childOfChild];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/descendants`,
         });
 
@@ -1691,7 +1691,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/items/${item.id}/parents`,
       });
 
@@ -1728,7 +1728,7 @@ describe('Item routes tests', () => {
         parent.name = 'newname';
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${childOfChild.id}/parents`,
         });
 
@@ -1751,7 +1751,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/parents`,
         });
 
@@ -1760,7 +1760,7 @@ describe('Item routes tests', () => {
       });
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/invalid-id/parents',
         });
 
@@ -1770,7 +1770,7 @@ describe('Item routes tests', () => {
       it('Cannot get parents from unexisting item', async () => {
         const id = uuidv4();
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${id}/parents`,
         });
 
@@ -1792,7 +1792,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${parent.id}/parents`,
         });
 
@@ -1827,7 +1827,7 @@ describe('Item routes tests', () => {
         const parents = [parent, child1];
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${childOfChild.id}/parents`,
         });
 
@@ -1848,7 +1848,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/${item.id}`,
         payload: { name: 'new name' },
       });
@@ -1885,7 +1885,7 @@ describe('Item routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -1914,7 +1914,7 @@ describe('Item routes tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -1935,7 +1935,7 @@ describe('Item routes tests', () => {
           name: 'new name',
         };
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: '/items/invalid-id',
           payload,
         });
@@ -1949,7 +1949,7 @@ describe('Item routes tests', () => {
           extra: { key: 'false' },
         };
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${uuidv4()}`,
           payload,
         });
@@ -1964,7 +1964,7 @@ describe('Item routes tests', () => {
         };
         const id = uuidv4();
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${id}`,
           payload,
         });
@@ -1980,7 +1980,7 @@ describe('Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -1996,7 +1996,7 @@ describe('Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member });
         await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -2018,7 +2018,7 @@ describe('Item routes tests', () => {
       const payload = { name: 'new name' };
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         payload,
       });
@@ -2035,7 +2035,7 @@ describe('Item routes tests', () => {
         const items = await saveNbOfItems({ nb: 2, actor });
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2061,7 +2061,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items?${qs.stringify(
             { id: [...items.map(({ id }) => id), missingItemId] },
             { arrayFormat: 'repeat' },
@@ -2084,7 +2084,7 @@ describe('Item routes tests', () => {
       });
       it('Bad Request for one invalid id', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items?${qs.stringify(
             { id: [uuidv4(), 'invalid-id'] },
             { arrayFormat: 'repeat' },
@@ -2105,7 +2105,7 @@ describe('Item routes tests', () => {
           extra: { some: 'content' },
         };
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2127,7 +2127,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
       });
 
@@ -2145,7 +2145,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2167,7 +2167,7 @@ describe('Item routes tests', () => {
         const { item: item1 } = await saveItemAndMembership({ member: actor });
         await saveItemAndMembership({ member: actor, parentItem: item1 });
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items?${qs.stringify({ id: [item1.id] }, { arrayFormat: 'repeat' })}`,
         });
 
@@ -2192,7 +2192,7 @@ describe('Item routes tests', () => {
         await saveItemAndMembership({ member: actor, parentItem: parent });
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items?${qs.stringify({ id: [parent.id] }, { arrayFormat: 'repeat' })}`,
         });
 
@@ -2217,7 +2217,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items?${qs.stringify(
             { id: [...items.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
@@ -2235,7 +2235,7 @@ describe('Item routes tests', () => {
         const items = [item1, item2];
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items?${qs.stringify(
             { id: [...items.map(({ id }) => id), missingId] },
             { arrayFormat: 'repeat' },
@@ -2267,7 +2267,7 @@ describe('Item routes tests', () => {
       const { item: parent } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/move?${qs.stringify(
           { id: items.map(({ id }) => id) },
           { arrayFormat: 'repeat' },
@@ -2290,7 +2290,7 @@ describe('Item routes tests', () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2325,7 +2325,7 @@ describe('Item routes tests', () => {
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2353,7 +2353,7 @@ describe('Item routes tests', () => {
         const item = await saveItem({ parentItem, actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: {},
         });
@@ -2383,7 +2383,7 @@ describe('Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: { parentId: parentItem.id },
         });
@@ -2412,7 +2412,7 @@ describe('Item routes tests', () => {
         const items = await saveNbOfItems({ nb: 3, actor, parentItem: originalParent });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2439,7 +2439,7 @@ describe('Item routes tests', () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify(
             { id: [...items.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
@@ -2455,7 +2455,7 @@ describe('Item routes tests', () => {
         const items = await saveNbOfItems({ nb: 3, actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify(
             { id: [...items.map(({ id }) => id), uuidv4()] },
             { arrayFormat: 'repeat' },
@@ -2485,7 +2485,7 @@ describe('Item routes tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: parentItem.id,
@@ -2504,7 +2504,7 @@ describe('Item routes tests', () => {
         const items = await saveNbOfItems({ nb: MAX_TARGETS_FOR_MODIFY_REQUEST, actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2538,7 +2538,7 @@ describe('Item routes tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         payload: {},
       });
@@ -2557,7 +2557,7 @@ describe('Item routes tests', () => {
         const initialCountMembership = await ItemMembershipRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2590,7 +2590,7 @@ describe('Item routes tests', () => {
         const initialCount = await ItemRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2630,7 +2630,7 @@ describe('Item routes tests', () => {
         const initialCount = await ItemRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2688,7 +2688,7 @@ describe('Item routes tests', () => {
         });
 
         await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${youngParent.id}`,
           payload: {
             name: 'new name',
@@ -2699,7 +2699,7 @@ describe('Item routes tests', () => {
         const initialCount = await ItemRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: {},
         });
@@ -2725,7 +2725,7 @@ describe('Item routes tests', () => {
         const initialCountMembership = await ItemMembershipRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2755,7 +2755,7 @@ describe('Item routes tests', () => {
         const items = await saveNbOfItems({ nb: 3, actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify(
             { id: [...items.map(({ id }) => id), 'invalid-id'] },
             { arrayFormat: 'repeat' },
@@ -2773,7 +2773,7 @@ describe('Item routes tests', () => {
         const initialCount = await ItemRepository.count();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify(
             { id: [...items.map(({ id }) => id), missingId] },
             { arrayFormat: 'repeat' },
@@ -2802,7 +2802,7 @@ describe('Item routes tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: parentItem.id,
@@ -2823,7 +2823,7 @@ describe('Item routes tests', () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify(
             { id: items.map(({ id }) => id) },
             { arrayFormat: 'repeat' },
@@ -2855,7 +2855,7 @@ describe('Item routes tests', () => {
         await itemGeolocationRepository.save({ item, lat: 1, lng: 22 });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: parentItem.id,

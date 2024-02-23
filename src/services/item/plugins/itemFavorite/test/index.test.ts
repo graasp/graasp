@@ -46,7 +46,7 @@ describe('Favorite', () => {
 
       it('Get favorite', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/favorite`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -63,7 +63,7 @@ describe('Favorite', () => {
       it('Get favorite with trashed favorite item', async () => {
         await ItemRepository.softDelete(favorite.item.id);
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/favorite`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -83,7 +83,7 @@ describe('Favorite', () => {
 
       it('Throws', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
         });
         expect(res.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -98,7 +98,7 @@ describe('Favorite', () => {
 
       it('Post a new favorite', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
         });
 
@@ -113,13 +113,13 @@ describe('Favorite', () => {
       it('Post the same favorite throws', async () => {
         // Add the favorite the first time
         await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
         });
 
         // Add the same favorite a second time
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
         });
 
@@ -131,7 +131,7 @@ describe('Favorite', () => {
         const invalidId = '123456-invalid';
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/favorite/${invalidId}`,
         });
 
@@ -148,7 +148,7 @@ describe('Favorite', () => {
 
         it('Throws if not authenticated', async () => {
           const res = await app.inject({
-            method: HttpMethod.DELETE,
+            method: HttpMethod.Delete,
             url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
           });
 
@@ -165,7 +165,7 @@ describe('Favorite', () => {
 
         it('Delete removes favorite', async () => {
           const res = await app.inject({
-            method: HttpMethod.DELETE,
+            method: HttpMethod.Delete,
             url: `${ITEMS_ROUTE_PREFIX}/favorite/${item.id}`,
           });
 

@@ -265,7 +265,7 @@ describe('Short links routes tests', () => {
         it('Succeed if post short links with library platform on published item with admin permission', async () => {
           const { item } = await mockItemAndMemberships({ itemCreator: actor, setPublic: true });
           const publishRes = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
           });
           expect(publishRes.statusCode).toBe(StatusCodes.OK);

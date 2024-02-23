@@ -122,7 +122,7 @@ export const setUp = async (
     await saveMembership({ item, member: actor, permission });
   }
   const response = await app.inject({
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
     payload: appDetails,
   });
@@ -141,7 +141,7 @@ export const setUpForbidden = async (app, actor: Member, unauthorized: Member) =
   await saveMembership({ item, member: unauthorized, permission: PermissionLevel.Read });
 
   await app.inject({
-    method: HttpMethod.GET,
+    method: HttpMethod.Get,
     url: '/logout',
   });
 
@@ -159,7 +159,7 @@ export const setUpForbidden = async (app, actor: Member, unauthorized: Member) =
   const appDetails = { origin: unauthorizedApp.publisher.origins[0], key: unauthorizedApp.key };
 
   const response = await app.inject({
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: `${APP_ITEMS_PREFIX}/${item2.id}/api-access-token`,
     payload: appDetails,
   });

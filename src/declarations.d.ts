@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 
 import 'fastify';
 
-import { AuthTokenSubject, Hostname, RecaptchaActionType } from '@graasp/sdk';
+import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 
 import { JobService } from './jobs';
 import type { MailerDecoration } from './plugins/mailer';

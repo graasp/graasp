@@ -57,7 +57,7 @@ describe('Mobile Endpoints', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/register',
         payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
       });
@@ -77,7 +77,7 @@ describe('Mobile Endpoints', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/m/register?lang=${lang}`,
         payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
       });
@@ -100,7 +100,7 @@ describe('Mobile Endpoints', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/register',
         payload: { ...member, challenge, captcha: MOCK_CAPTCHA },
       });
@@ -121,7 +121,7 @@ describe('Mobile Endpoints', () => {
       const email = 'wrongemail';
       const name = 'anna';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/register',
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
@@ -141,7 +141,7 @@ describe('Mobile Endpoints', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login',
         payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
@@ -161,7 +161,7 @@ describe('Mobile Endpoints', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/m/login?lang=${lang}`,
         payload: { email: member.email, challenge, captcha: MOCK_CAPTCHA },
       });
@@ -179,7 +179,7 @@ describe('Mobile Endpoints', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login',
         payload: { email, challenge, captcha: MOCK_CAPTCHA },
       });
@@ -191,7 +191,7 @@ describe('Mobile Endpoints', () => {
     it('Bad request for invalid email', async () => {
       const email = 'wrongemail';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login',
         payload: { email, challenge, captcha: MOCK_CAPTCHA },
       });
@@ -211,7 +211,7 @@ describe('Mobile Endpoints', () => {
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
           email: member.email,
@@ -242,7 +242,7 @@ describe('Mobile Endpoints', () => {
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
           email: member.email,
@@ -273,7 +273,7 @@ describe('Mobile Endpoints', () => {
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login-password',
         payload: {
           email: member.email,
@@ -296,7 +296,7 @@ describe('Mobile Endpoints', () => {
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login-password',
         payload: { email: member.email, challenge, password: wrongPassword, captcha: MOCK_CAPTCHA },
       });
@@ -309,7 +309,7 @@ describe('Mobile Endpoints', () => {
       const member = await saveMember();
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login-password',
         payload: { email: member.email, challenge, password: clearPassword, captcha: MOCK_CAPTCHA },
       });
@@ -322,7 +322,7 @@ describe('Mobile Endpoints', () => {
       const password = '1234';
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login-password',
         payload: { email, challenge, password, captcha: MOCK_CAPTCHA },
       });
@@ -336,7 +336,7 @@ describe('Mobile Endpoints', () => {
       const password = '1234';
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/login-password',
         payload: { email, challenge, password, captcha: MOCK_CAPTCHA },
       });
@@ -356,7 +356,7 @@ describe('Mobile Endpoints', () => {
       const t = jwt.sign({ sub: member.id, challenge }, JWT_SECRET);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/auth',
         payload: {
           t,
@@ -373,7 +373,7 @@ describe('Mobile Endpoints', () => {
       const t = jwt.sign({ sub: member.id }, JWT_SECRET);
       const verifier = 'verifier';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/auth',
         payload: {
           t,
@@ -388,7 +388,7 @@ describe('Mobile Endpoints', () => {
       const t = 'sometoken';
       const verifier = 'verifier';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/auth',
         payload: {
           t,
@@ -406,7 +406,7 @@ describe('Mobile Endpoints', () => {
       const t = jwt.sign({ sub: undefined, challenge }, JWT_SECRET);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/m/auth',
         payload: {
           t,
@@ -424,7 +424,7 @@ describe('Mobile Endpoints', () => {
       const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, REFRESH_TOKEN_JWT_SECRET);
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/m/auth/refresh',
         headers: {
           authorization: `Bearer ${t}`,
@@ -437,7 +437,7 @@ describe('Mobile Endpoints', () => {
     it('Throw if token contains undefined member id', async () => {
       const t = jwt.sign({ sub: undefined }, REFRESH_TOKEN_JWT_SECRET);
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/m/auth/refresh',
         headers: {
           authorization: `Bearer ${t}`,
@@ -449,7 +449,7 @@ describe('Mobile Endpoints', () => {
       const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, 'REFRESH_TOKEN_JWT_SECRET');
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/m/auth/refresh',
         headers: {
           authorization: `Bearer ${t}`,

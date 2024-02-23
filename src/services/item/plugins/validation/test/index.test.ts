@@ -39,7 +39,7 @@ describe('Item Validation Tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/latest`,
       });
 
@@ -56,7 +56,7 @@ describe('Item Validation Tests', () => {
         const { itemValidationGroup } = await saveItemValidation({ item });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -72,7 +72,7 @@ describe('Item Validation Tests', () => {
         });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -89,7 +89,7 @@ describe('Item Validation Tests', () => {
         });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/latest`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -99,7 +99,7 @@ describe('Item Validation Tests', () => {
 
       it('Bad request if id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invalid/validations/latest`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -107,7 +107,7 @@ describe('Item Validation Tests', () => {
 
       it('Throws if item does not exist', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/latest`,
         });
         expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
@@ -120,7 +120,7 @@ describe('Item Validation Tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
       });
 
@@ -138,7 +138,7 @@ describe('Item Validation Tests', () => {
         // save another item validation
         await saveItemValidation({ item });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
@@ -156,7 +156,7 @@ describe('Item Validation Tests', () => {
         const { itemValidationGroup } = await saveItemValidation({ item });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
@@ -173,7 +173,7 @@ describe('Item Validation Tests', () => {
         const { itemValidationGroup } = await saveItemValidation({ item });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${itemValidationGroup!.id}`,
         });
@@ -182,7 +182,7 @@ describe('Item Validation Tests', () => {
 
       it('Bad request if id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/validations/${v4()}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -190,7 +190,7 @@ describe('Item Validation Tests', () => {
 
       it('Throws if item does not exist', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/${v4()}`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -198,7 +198,7 @@ describe('Item Validation Tests', () => {
 
       it('Bad request if group id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validations/invalid-id`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -208,7 +208,7 @@ describe('Item Validation Tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validations/${v4()}`,
         });
         expect(res.json()).toMatchObject(new ItemValidationGroupNotFound(expect.anything()));
@@ -221,7 +221,7 @@ describe('Item Validation Tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validate`,
       });
 
@@ -238,7 +238,7 @@ describe('Item Validation Tests', () => {
         const count = await ItemValidationGroupRepository.find();
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -264,7 +264,7 @@ describe('Item Validation Tests', () => {
         const count = await ItemValidationGroupRepository.find();
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -289,7 +289,7 @@ describe('Item Validation Tests', () => {
         const count = await ItemValidationGroupRepository.find();
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -305,7 +305,7 @@ describe('Item Validation Tests', () => {
 
       it('Bad request if id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -319,7 +319,7 @@ describe('Item Validation Tests', () => {
         const count = await ItemValidationGroupRepository.find();
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/validate`,
         });
         expect(res.statusCode).toBe(StatusCodes.ACCEPTED);

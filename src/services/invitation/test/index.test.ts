@@ -85,7 +85,7 @@ describe('Invitation Plugin', () => {
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
         payload: { invitations },
       });
@@ -104,7 +104,7 @@ describe('Invitation Plugin', () => {
         const { item, invitations } = await createInvitations({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
           payload: { invitations },
         });
@@ -133,7 +133,7 @@ describe('Invitation Plugin', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
           payload: { invitations: [invitation] },
         });
@@ -151,7 +151,7 @@ describe('Invitation Plugin', () => {
         const faultyInvitation = { email: 'not-correct-email', permission: PermissionLevel.Read };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invite`,
           payload: { invitations: [...invitations, faultyInvitation] },
         });
@@ -162,7 +162,7 @@ describe('Invitation Plugin', () => {
       it('throw if id is invalid', async () => {
         const { invitations } = await createInvitations({ member: actor });
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/invite`,
           payload: { invitations },
         });
@@ -179,7 +179,7 @@ describe('Invitation Plugin', () => {
       const { item } = await saveInvitations({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
       });
 
@@ -195,7 +195,7 @@ describe('Invitation Plugin', () => {
       });
       it('get invitations for item successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
           payload: { invitations },
         });
@@ -215,7 +215,7 @@ describe('Invitation Plugin', () => {
         }
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${child.id}/invitations`,
           payload: { invitations },
         });
@@ -227,7 +227,7 @@ describe('Invitation Plugin', () => {
       it('throw if item with invitations has been trashed', async () => {
         await ItemRepository.softDelete(item.id);
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
           payload: { invitations },
         });
@@ -237,7 +237,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/invitations`,
           payload: { invitations },
         });
@@ -254,7 +254,7 @@ describe('Invitation Plugin', () => {
 
       const { invitations } = await saveInvitations({ member });
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
       });
 
@@ -272,7 +272,7 @@ describe('Invitation Plugin', () => {
 
       it('get invitation by id successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
         });
 
@@ -283,7 +283,7 @@ describe('Invitation Plugin', () => {
       it("don't return an invitation for a trashed item", async () => {
         await ItemRepository.softDelete(invitations[0].item.id);
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
         });
 
@@ -292,7 +292,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invitations/invalid-id`,
         });
 
@@ -308,7 +308,7 @@ describe('Invitation Plugin', () => {
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
         payload: {
           permission: PermissionLevel.Admin,
@@ -332,7 +332,7 @@ describe('Invitation Plugin', () => {
           name: 'myname',
         };
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
           payload,
         });
@@ -342,7 +342,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if item id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/invalid/invitations/${invitations[0].id}`,
           payload: {
             permission: PermissionLevel.Admin,
@@ -355,7 +355,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if invitation id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/invalid-id`,
           payload: {
             permission: PermissionLevel.Admin,
@@ -368,7 +368,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if payload is empty', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
           payload: {},
         });
@@ -385,7 +385,7 @@ describe('Invitation Plugin', () => {
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
       });
 
@@ -401,7 +401,7 @@ describe('Invitation Plugin', () => {
       });
       it('delete invitation successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}`,
         });
 
@@ -411,7 +411,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if item id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/invalid/invitations/${invitations[0].id}`,
         });
 
@@ -420,7 +420,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if invitation id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/invalid-id`,
         });
 
@@ -436,7 +436,7 @@ describe('Invitation Plugin', () => {
       const { item, invitations } = await saveInvitations({ member });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}/send`,
       });
 
@@ -454,7 +454,7 @@ describe('Invitation Plugin', () => {
         const mockSendMail = mockEmail(app);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/${invitations[0].id}/send`,
         });
 
@@ -465,7 +465,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if item id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid/invitations/${invitations[0].id}/send`,
         });
 
@@ -474,7 +474,7 @@ describe('Invitation Plugin', () => {
 
       it('throw if invitation id is invalid', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations/invalid-id/send`,
         });
 
@@ -496,7 +496,7 @@ describe('Invitation Plugin', () => {
 
       // register
       await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/register',
         payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });
@@ -523,7 +523,7 @@ describe('Invitation Plugin', () => {
 
       // register
       await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/register',
         payload: { email, name: 'some-name', captcha: MOCK_CAPTCHA },
       });

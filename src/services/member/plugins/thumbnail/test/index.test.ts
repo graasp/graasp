@@ -66,7 +66,7 @@ describe('Thumbnail Plugin Tests', () => {
       const member = await saveMember();
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `members/${member.id}/avatar/${ThumbnailSize.Small}`,
       });
 
@@ -83,7 +83,7 @@ describe('Thumbnail Plugin Tests', () => {
         const member = await saveMember();
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `members/${member.id}/avatar/${size}`,
           });
           expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
@@ -100,7 +100,7 @@ describe('Thumbnail Plugin Tests', () => {
       it('Successfully redirect to thumbnails of all different sizes', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `members/${actor.id}/avatar/${size}`,
           });
           expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
@@ -112,7 +112,7 @@ describe('Thumbnail Plugin Tests', () => {
         const member = await saveMember();
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `members/${member.id}/avatar/${size}`,
           });
           expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
@@ -124,7 +124,7 @@ describe('Thumbnail Plugin Tests', () => {
         const member = await saveMember();
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `members/${member.id}/avatar/${size}?replyUrl=true`,
           });
 
@@ -144,7 +144,7 @@ describe('Thumbnail Plugin Tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: 'members/avatar',
         payload: form,
         headers: form.getHeaders(),
@@ -164,7 +164,7 @@ describe('Thumbnail Plugin Tests', () => {
         form2.append('file', fileStream2);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: 'members/avatar',
           payload: form2,
           headers: form2.getHeaders(),
@@ -179,7 +179,7 @@ describe('Thumbnail Plugin Tests', () => {
         form.append('file', textFileStream);
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: 'members/avatar',
           payload: form,
           headers: form.getHeaders(),

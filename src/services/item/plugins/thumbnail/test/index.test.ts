@@ -72,7 +72,7 @@ describe('Thumbnail Plugin Tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${ThumbnailSize.Small}`,
       });
 
@@ -92,7 +92,7 @@ describe('Thumbnail Plugin Tests', () => {
       it('Successfully redirect to thumbnails of all different sizes', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
           expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
@@ -112,7 +112,7 @@ describe('Thumbnail Plugin Tests', () => {
       it('Successfully redirect to thumbnails of all different sizes', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
           expect(response.statusCode).toBe(StatusCodes.MOVED_TEMPORARILY);
@@ -123,7 +123,7 @@ describe('Thumbnail Plugin Tests', () => {
       it('Return thumbnail urls of item', async () => {
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}/${size}?replyUrl=true`,
           });
 
@@ -140,7 +140,7 @@ describe('Thumbnail Plugin Tests', () => {
 
         for (const size of Object.values(ThumbnailSize)) {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}${THUMBNAILS_ROUTE_PREFIX}/${size}`,
           });
 
@@ -161,7 +161,7 @@ describe('Thumbnail Plugin Tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}`,
         payload: form,
         headers: form.getHeaders(),
@@ -184,7 +184,7 @@ describe('Thumbnail Plugin Tests', () => {
         form2.append('file', fileStream2);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}`,
           payload: form2,
           headers: form2.getHeaders(),
@@ -205,7 +205,7 @@ describe('Thumbnail Plugin Tests', () => {
         ({ item } = await saveItemAndMembership({ member }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}`,
           payload: form3,
           headers: form3.getHeaders(),
@@ -221,7 +221,7 @@ describe('Thumbnail Plugin Tests', () => {
         form.append('file', textFileStream);
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}`,
           payload: form,
           headers: form.getHeaders(),

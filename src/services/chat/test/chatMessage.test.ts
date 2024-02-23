@@ -63,7 +63,7 @@ describe('Chat Message tests', () => {
       const item = await saveItem({ actor: member });
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
       });
 
@@ -79,7 +79,7 @@ describe('Chat Message tests', () => {
         const { item, chatMessages } = await saveItemWithChatMessages(actor);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -92,7 +92,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if item id is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat`,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -100,7 +100,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if item does not exist', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat`,
         });
 
@@ -113,7 +113,7 @@ describe('Chat Message tests', () => {
         const { item } = await saveItemWithChatMessages(member);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
 
@@ -129,7 +129,7 @@ describe('Chat Message tests', () => {
         await setItemPublic(item, member);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -150,7 +150,7 @@ describe('Chat Message tests', () => {
       const payload = { body: 'hello' };
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         payload,
       });
@@ -171,7 +171,7 @@ describe('Chat Message tests', () => {
         const initialCount = (await ChatMessageRepository.find()).length;
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
           payload,
         });
@@ -190,7 +190,7 @@ describe('Chat Message tests', () => {
         const initialCount = (await ChatMessageRepository.find()).length;
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
           payload,
         });
@@ -210,7 +210,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid/chat`,
           payload,
         });
@@ -219,7 +219,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if body is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
           payload: { wrong: 'schema' },
         });
@@ -230,7 +230,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat`,
           payload,
         });
@@ -245,7 +245,7 @@ describe('Chat Message tests', () => {
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat`,
           payload,
         });
@@ -263,7 +263,7 @@ describe('Chat Message tests', () => {
       const payload = { body: 'hello' };
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
         payload,
       });
@@ -289,7 +289,7 @@ describe('Chat Message tests', () => {
         const initialCount = (await ChatMessageRepository.find()).length;
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
           payload,
         });
@@ -303,7 +303,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat/${chatMessages[0].id}`,
           payload,
         });
@@ -314,7 +314,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/invalid-id`,
           payload,
         });
@@ -323,7 +323,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if body is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessages[0].id}`,
           payload: { wrong: 'payload' },
         });
@@ -334,7 +334,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat/${chatMessages[0].id}`,
           payload,
         });
@@ -346,7 +346,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
           payload,
         });
@@ -361,7 +361,7 @@ describe('Chat Message tests', () => {
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat/${chatMessages[0].id}`,
           payload,
         });
@@ -378,7 +378,7 @@ describe('Chat Message tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
           payload,
         });
@@ -395,7 +395,7 @@ describe('Chat Message tests', () => {
       const item = FolderItemFactory();
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
       });
 
@@ -419,7 +419,7 @@ describe('Chat Message tests', () => {
         const initialCount = (await ChatMessageRepository.find()).length;
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -431,7 +431,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if item id is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat/${v4()}`,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -439,7 +439,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if chat message id is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/invalid-id`,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -447,7 +447,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if item does not exist', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat/${v4()}`,
         });
 
@@ -456,7 +456,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if chat message does not exist', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${v4()}`,
         });
 
@@ -469,7 +469,7 @@ describe('Chat Message tests', () => {
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat/${v4()}`,
         });
 
@@ -484,7 +484,7 @@ describe('Chat Message tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat/${chatMessage.id}`,
         });
 
@@ -500,7 +500,7 @@ describe('Chat Message tests', () => {
       const item = FolderItemFactory();
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
       });
 
@@ -530,7 +530,7 @@ describe('Chat Message tests', () => {
         );
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/chat`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -540,7 +540,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if item id is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/chat`,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -548,7 +548,7 @@ describe('Chat Message tests', () => {
 
       it('Throws if item does not exist', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/chat`,
         });
 
@@ -561,7 +561,7 @@ describe('Chat Message tests', () => {
         const { item: otherItem } = await saveItemAndMembership({ member });
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${otherItem.id}/chat`,
         });
 

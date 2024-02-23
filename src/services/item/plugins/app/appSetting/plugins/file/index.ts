@@ -92,7 +92,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   appSettingService.hooks.setPreHook('patch', patchPreHook);
 
   fastify.route<{ Body: unknown }>({
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: '/app-settings/upload',
     schema: upload,
     handler: async (request) => {

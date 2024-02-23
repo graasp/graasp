@@ -55,7 +55,7 @@ describe('Tags', () => {
 
       it('Throws if item is private', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags`,
         });
 
@@ -70,7 +70,7 @@ describe('Tags', () => {
         });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags`,
         });
 
@@ -89,7 +89,7 @@ describe('Tags', () => {
         const itemTags = await saveTagsForItem({ item, creator: actor });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -98,7 +98,7 @@ describe('Tags', () => {
 
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -106,7 +106,7 @@ describe('Tags', () => {
 
       it('Throw if item does not exist', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags`,
         });
         expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
@@ -126,7 +126,7 @@ describe('Tags', () => {
 
       it('Throws if item is private', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?id=${item.id}`,
         });
 
@@ -141,7 +141,7 @@ describe('Tags', () => {
         });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?id=${item.id}`,
         });
 
@@ -161,7 +161,7 @@ describe('Tags', () => {
         const itemTags = await saveTagsForItem({ item, creator: actor });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?id=${item.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -175,7 +175,7 @@ describe('Tags', () => {
         const itemTags2 = await saveTagsForItem({ item: item2, creator: actor });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify(
             { id: [item1.id, item2.id] },
             { arrayFormat: 'repeat' },
@@ -192,7 +192,7 @@ describe('Tags', () => {
       it('Bad request if item id is invalid', async () => {
         const ids = ['invalid-id', v4()];
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -203,7 +203,7 @@ describe('Tags', () => {
         const tags = await saveTagsForItem({ item, creator: actor });
         const ids = [item.id, v4()];
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         });
         expectItemTags(res.json().data[ids[0]], tags);
@@ -218,7 +218,7 @@ describe('Tags', () => {
         const ids = [item1.id, item2.id];
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?${qs.stringify({ id: ids }, { arrayFormat: 'repeat' })}`,
         });
         expect(res.json().data[ids[1]]).toBeUndefined();
@@ -240,7 +240,7 @@ describe('Tags', () => {
         ({ item } = await saveItemAndMembership({ member }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
         });
 
@@ -257,7 +257,7 @@ describe('Tags', () => {
         ({ item } = await saveItemAndMembership({ member: actor }));
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -269,7 +269,7 @@ describe('Tags', () => {
         await ItemTagRepository.save({ item, type, creator: actor });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
         });
         expect(res.json()).toMatchObject(new ConflictingTagsInTheHierarchy(expect.anything()));
@@ -281,7 +281,7 @@ describe('Tags', () => {
         await ItemTagRepository.save({ item: parent, type, creator: actor });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${type}`,
         });
         expect(res.json()).toMatchObject(new ConflictingTagsInTheHierarchy(expect.anything()));
@@ -289,7 +289,7 @@ describe('Tags', () => {
 
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${type}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -297,7 +297,7 @@ describe('Tags', () => {
 
       it('Bad request if type is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/invalid-type`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -305,7 +305,7 @@ describe('Tags', () => {
 
       it('Throws if type is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/invalid-type`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -326,7 +326,7 @@ describe('Tags', () => {
         ({ item } = await saveItemAndMembership({ member }));
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/${type}`,
         });
 
@@ -350,7 +350,7 @@ describe('Tags', () => {
         const descendantToDelete = childTags.find(({ type }) => type === toDelete.type);
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${toDelete.type}`,
         });
 
@@ -367,7 +367,7 @@ describe('Tags', () => {
         const tag = await ItemTagRepository.save({ item: parent, type, creator: actor });
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${tag.type}`,
         });
         expect(res.json()).toMatchObject(new CannotModifyParentTag(expect.anything()));
@@ -376,21 +376,21 @@ describe('Tags', () => {
         const { item: itemWithoutTag } = await saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${itemWithoutTag.id}/tags/${ItemTagType.Hidden}`,
         });
         expect(res.json()).toMatchObject(new ItemTagNotFound(expect.anything()));
       });
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/tags/${ItemTagType.Hidden}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Bad request if item tag id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/tags/invalid-id`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);

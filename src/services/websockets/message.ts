@@ -27,11 +27,11 @@ export const createServerInfo = (message: string, extra?: unknown): Websocket.Se
   extra,
 });
 
-export const createServerUpdate = (
+export const createServerUpdate = <BodyType>(
   topic: string,
   channel: string,
-  body: Websocket.ServerUpdate['body'],
-): Websocket.ServerUpdate => ({
+  body: BodyType,
+): Websocket.ServerUpdate<BodyType> => ({
   realm: Websocket.Realms.Notif,
   type: Websocket.ServerMessageTypes.Update,
   topic,

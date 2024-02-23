@@ -67,7 +67,7 @@ describe('asynchronous feedback', () => {
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
     const response = await app.inject({
-      method: HttpMethod.POST,
+      method: HttpMethod.Post,
       url: `/items/${item.id}/actions/export`,
     });
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -89,7 +89,7 @@ describe('asynchronous feedback', () => {
     });
 
     const response = await app.inject({
-      method: HttpMethod.POST,
+      method: HttpMethod.Post,
       url: `/items/${item.id}/actions/export`,
     });
     expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);

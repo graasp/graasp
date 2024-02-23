@@ -98,7 +98,7 @@ describe('Categories', () => {
 
       it('Get categories', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/categories`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -176,7 +176,7 @@ describe('Categories', () => {
 
       it('Throws for private item', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
@@ -196,7 +196,7 @@ describe('Categories', () => {
         const result = itemCategories;
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -215,7 +215,7 @@ describe('Categories', () => {
         const result = itemCategories;
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -224,7 +224,7 @@ describe('Categories', () => {
 
       it('Bad request if id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/categories`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -242,7 +242,7 @@ describe('Categories', () => {
 
       it('Throws if does not have membership', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/categories`,
           payload: {
             categoryId: categories[0].id,
@@ -263,7 +263,7 @@ describe('Categories', () => {
         const itemCategory = ItemCategoryRepository.create({ item, category: categories[0] });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
           payload: {
             categoryId: itemCategory.category.id,
@@ -283,7 +283,7 @@ describe('Categories', () => {
         await ItemCategoryRepository.save(itemCategory);
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories`,
           payload: {
             categoryId: itemCategory.category.id,
@@ -296,7 +296,7 @@ describe('Categories', () => {
       });
       it('Bad request if id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/categories`,
           payload: {
             categoryId: categories[0].id,
@@ -306,7 +306,7 @@ describe('Categories', () => {
       });
       it('Bad request if body is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/categories`,
           payload: {
             categoryId: 'invalid-id',
@@ -327,7 +327,7 @@ describe('Categories', () => {
 
       it('Throws if does not have membership', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/${itemCategories[0].id}`,
         });
 
@@ -347,7 +347,7 @@ describe('Categories', () => {
         expect(await ItemCategoryRepository.findOneBy({ id: iC.id })).toBeTruthy();
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/${iC.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -357,21 +357,21 @@ describe('Categories', () => {
       });
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/categories/${v4()}`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Bad request if item category id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/invalid-id`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Throw if item category id does not exist', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/categories/${v4()}`,
         });
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
