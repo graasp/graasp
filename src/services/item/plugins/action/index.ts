@@ -97,9 +97,11 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         view: query.view?.toLowerCase(),
         type: query.type,
         countGroupBy: query.countGroupBy,
-        aggregateFunction: query.aggregateFunction,
-        aggregateMetric: query.aggregateMetric,
-        aggregateBy: query.aggregateBy,
+        aggregationParams: {
+          aggregateFunction: query.aggregateFunction,
+          aggregateMetric: query.aggregateMetric,
+          aggregateBy: query.aggregateBy,
+        },
       });
     },
   );

@@ -1,4 +1,4 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyRequest } from 'fastify';
 
 import {
   AggregateBy,
@@ -49,7 +49,7 @@ export class ActionItemService {
     actor: Actor,
     repositories: Repositories,
     itemId: string,
-    filters: { view?: Context; sampleSize?: number },
+    filters: { view?: Context; sampleSize?: number } = {},
   ): Promise<Action[]> {
     const { view = Context.Builder, sampleSize = DEFAULT_ACTIONS_SAMPLE_SIZE } = filters;
 
@@ -94,9 +94,11 @@ export class ActionItemService {
       view?: string;
       type?: string[];
       countGroupBy: CountGroupBy[];
-      aggregateFunction: AggregateFunction;
-      aggregateMetric: AggregateMetric;
-      aggregateBy?: AggregateBy[];
+      aggregationParams?: {
+        aggregateFunction: AggregateFunction;
+        aggregateMetric: AggregateMetric;
+        aggregateBy?: AggregateBy[];
+      };
     },
   ): Promise<unknown[]> {
     // check rights
@@ -116,11 +118,7 @@ export class ActionItemService {
         types: payload.type,
       },
       payload.countGroupBy,
-      {
-        aggregateFunction: payload.aggregateFunction,
-        aggregateMetric: payload.aggregateMetric,
-        aggregateBy: payload.aggregateBy,
-      },
+      payload.aggregationParams,
     );
 
     return aggregateActions;
@@ -218,12 +216,7 @@ export class ActionItemService {
     });
   }
 
-  async postPostAction(
-    request: FastifyRequest,
-    reply: FastifyReply,
-    repositories: Repositories,
-    item: Item,
-  ) {
+  async postPostAction(request: FastifyRequest, repositories: Repositories, item: Item) {
     const { member } = request;
     const action = {
       item,
@@ -233,12 +226,7 @@ export class ActionItemService {
     await this.actionService.postMany(member, repositories, request, [action]);
   }
 
-  async postPatchAction(
-    request: FastifyRequest,
-    reply: FastifyReply,
-    repositories: Repositories,
-    item: Item,
-  ) {
+  async postPatchAction(request: FastifyRequest, repositories: Repositories, item: Item) {
     const { member } = request;
     const action = {
       item,
@@ -250,12 +238,7 @@ export class ActionItemService {
     await this.actionService.postMany(member, repositories, request, [action]);
   }
 
-  async postManyPatchAction(
-    request: FastifyRequest,
-    reply: FastifyReply,
-    repositories: Repositories,
-    items: Item[],
-  ) {
+  async postManyPatchAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
     const { member } = request;
     const actions = items.map((item) => ({
       item,
@@ -267,12 +250,7 @@ export class ActionItemService {
     await this.actionService.postMany(member, repositories, request, actions);
   }
 
-  async postManyDeleteAction(
-    request: FastifyRequest,
-    reply: FastifyReply,
-    repositories: Repositories,
-    items: Item[],
-  ) {
+  async postManyDeleteAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
     const { member } = request;
     const actions = items.map((item) => ({
       // cannot include item since is has been deleted
@@ -282,12 +260,7 @@ export class ActionItemService {
     await this.actionService.postMany(member, repositories, request, actions);
   }
 
-  async postManyMoveAction(
-    request: FastifyRequest,
-    reply: FastifyReply,
-    repositories: Repositories,
-    items: Item[],
-  ) {
+  async postManyMoveAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
     const { member } = request;
     const actions = items.map((item) => ({
       item,
@@ -299,12 +272,7 @@ export class ActionItemService {
     await this.actionService.postMany(member, repositories, request, actions);
   }
 
-  async postManyCopyAction(
-    request: FastifyRequest,
-    reply: FastifyReply,
-    repositories: Repositories,
-    items: Item[],
-  ) {
+  async postManyCopyAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
     const { member } = request;
     const actions = items.map((item) => ({
       item,
