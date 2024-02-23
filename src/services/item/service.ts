@@ -370,6 +370,7 @@ export class ItemService {
     }
 
     const { itemRepository } = repositories;
+
     // TODO: check memberships
     let parentItem;
     if (toItemId) {
@@ -389,13 +390,6 @@ export class ItemService {
       await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
-    // post hook
-    // question: invoque on all items?
-    await this.hooks.runPreHooks('move', actor, repositories, {
-      source: item,
-      destinationParent: parentItem,
-    });
-
     const result = await this._move(actor, repositories, item, parentItem);
 
     await this.hooks.runPostHooks('move', actor, repositories, {
@@ -404,19 +398,7 @@ export class ItemService {
       destination: result,
     });
 
-    return result;
-  }
-
-  // TODO: optimize
-  async moveMany(actor: Actor, repositories: Repositories, itemIds: string[], toItemId?: string) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
-    const items = await Promise.all(
-      itemIds.map((id) => this.move(actor, repositories, id, toItemId)),
-    );
-    return items;
+    return { destination: result, source: item };
   }
 
   /**

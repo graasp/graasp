@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, IdsParams, ParentIdParam, PermissionLevel } from '@graasp/sdk';
+import { IdParam, IdsParams, ParentIdParam, PermissionLevel, getParentFromPath } from '@graasp/sdk';
 
 import { PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
@@ -26,6 +26,7 @@ import {
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
+import { publishAfterMoved, publishFeedbackAfterAllMoved } from './ws/services';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
@@ -271,30 +272,45 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const items = await itemService.moveMany(member, repositories, ids, parentId);
-        await actionItemService.postManyMoveAction(request, reply, repositories, items);
+      Promise.allSettled<Item>(
+        ids.map((itemId) => {
+          return db
+            .transaction(async (manager) => {
+              const repositories = buildRepositories(manager);
+              const { source, destination } = await itemService.move(
+                member,
+                repositories,
+                itemId,
+                parentId,
+              );
+
+              await actionItemService.postManyMoveAction(request, reply, repositories, [
+                destination,
+              ]);
+
+              return { source, destination };
+            })
+            .then(async ({ source, destination }) => {
+              publishAfterMoved(websockets, {
+                source,
+                destination,
+                sourceParentId: getParentFromPath(source.path),
+              });
+              return destination;
+            });
+        }),
+      ).then(async (results) => {
         if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, {
-              data: Object.fromEntries(items.map((i) => [i.id, i])),
-              errors: [],
-            }),
-          );
-        }
-      }).catch((e) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, { error: e }),
-          );
+          publishFeedbackAfterAllMoved({
+            websockets,
+            log,
+            results,
+            itemIds: ids,
+            memberId: member.id,
+          });
         }
       });
+
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
