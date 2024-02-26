@@ -1,6 +1,12 @@
 import { In, Not } from 'typeorm';
 
-import { PermissionLevel, PermissionLevelCompare, ResultOf, UUID } from '@graasp/sdk';
+import {
+  PermissionLevel,
+  PermissionLevelCompare,
+  ResultOf,
+  UUID,
+  getChildFromPath,
+} from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
 import { Paginated, PaginationParams } from '../../types';
@@ -13,7 +19,6 @@ import {
 import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
-import { pathToId } from '../item/utils';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
@@ -220,7 +225,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
     // use id as key
     const idToMemberships = Object.fromEntries(
-      Object.entries(mapByPath.data).map(([key, value]) => [pathToId(key), value]),
+      Object.entries(mapByPath.data).map(([key, value]) => [getChildFromPath(key), value]),
     );
 
     return { data: idToMemberships, errors: mapByPath.errors };

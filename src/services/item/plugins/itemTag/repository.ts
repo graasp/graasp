@@ -1,12 +1,11 @@
 import { Brackets } from 'typeorm';
 
-import { ItemTagType, ResultOf } from '@graasp/sdk';
+import { ItemTagType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';
-import { pathToId } from '../../utils';
 import { ItemTag } from './ItemTag';
 import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from './errors';
 
@@ -72,7 +71,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
 
     // use id as key
     const idToItemTags = Object.fromEntries(
-      Object.entries(mapByPath.data).map(([key, value]) => [pathToId(key), value]),
+      Object.entries(mapByPath.data).map(([key, value]) => [getChildFromPath(key), value]),
     );
 
     return { data: idToItemTags, errors: mapByPath.errors };
@@ -99,7 +98,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
 
     // use id as key
     const idToItemTags = Object.fromEntries(
-      Object.entries(mapByPath.data).map(([key, value]) => [pathToId(key), value]),
+      Object.entries(mapByPath.data).map(([key, value]) => [getChildFromPath(key), value]),
     );
 
     return { data: idToItemTags, errors: mapByPath.errors };
@@ -198,7 +197,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     });
     // use id as key
     const idToItemTags = Object.fromEntries(
-      Object.entries(mapByPath.data).map(([key, value]) => [pathToId(key), value]),
+      Object.entries(mapByPath.data).map(([key, value]) => [getChildFromPath(key), value]),
     );
 
     return { data: idToItemTags, errors: mapByPath.errors };

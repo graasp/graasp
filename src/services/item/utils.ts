@@ -1,25 +1,8 @@
 import { readPdfText } from 'pdf-text-reader';
 
-import { ItemType, UUID } from '@graasp/sdk';
+import { ItemType, UUID, buildPathFromIds } from '@graasp/sdk';
 
 import { Item, isItemType } from './entities/Item';
-
-export const itemDepth = (item: Item): number => {
-  return item.path.split('.').length;
-};
-
-export const parentPath = (item: Item): string | null => {
-  const index = item.path.lastIndexOf('.');
-  return index === -1 ? null : item.path.slice(0, index);
-};
-
-export const pathToId = (path: string): string => {
-  const index = path.lastIndexOf('.');
-  return underscoreToDash(index === -1 ? path : path.slice(index + 1));
-};
-
-export const dashToUnderscore = (value: string) => value.replace(/-/g, '_');
-const underscoreToDash = (value: string) => value.replace(/_/g, '-');
 
 // replace children order with new ids
 export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: Item }>) => {
@@ -46,7 +29,7 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
 
       // get direct children
       const children = copyItemsArray.filter(({ id, path }) => {
-        return path === `${copy.path}.${dashToUnderscore(id)}`;
+        return path === `${copy.path}.${buildPathFromIds(id)}`;
       });
 
       // sort children to get wanter order -> get order by mapping to id
@@ -60,6 +43,7 @@ export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: 
   });
 };
 
+// cannot use sdk sort because of createdAt type
 export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: Item) => {
   if (idsOrder.indexOf(stElem.id) >= 0 && idsOrder.indexOf(ndElem.id) >= 0) {
     return idsOrder.indexOf(stElem.id) - idsOrder.indexOf(ndElem.id);
