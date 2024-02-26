@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: items.extendCreateSchema(),
       preHandler: fastify.verifyAuthentication,
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         member,
         query: { parentId },
@@ -57,7 +57,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           parentId,
           geolocation: data.geolocation,
         });
-        await actionItemService.postPostAction(request, reply, repositories, item);
+        await actionItemService.postPostAction(request, repositories, item);
         return item;
       });
     },
@@ -161,7 +161,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: items.extendExtrasUpdateSchema(),
       preHandler: fastify.verifyAuthentication,
     },
-    async (request, reply) => {
+    async (request) => {
       const {
         member,
         params: { id },
@@ -170,7 +170,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.patch(member, repositories, id, body);
-        await actionItemService.postPatchAction(request, reply, repositories, item);
+        await actionItemService.postPatchAction(request, repositories, item);
         return item;
       });
     },
@@ -194,7 +194,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const items = await itemService.patchMany(member, repositories, ids, body);
         await actionItemService.postManyPatchAction(
           request,
-          reply,
+
           repositories,
           resultOfToList(items),
         );
@@ -235,7 +235,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.deleteMany(member, repositories, ids);
-        await actionItemService.postManyDeleteAction(request, reply, repositories, items);
+        await actionItemService.postManyDeleteAction(request, repositories, items);
         if (member) {
           websockets.publish(
             memberItemsTopic,
@@ -274,7 +274,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.moveMany(member, repositories, ids, parentId);
-        await actionItemService.postManyMoveAction(request, reply, repositories, items);
+        await actionItemService.postManyMoveAction(request, repositories, items);
         if (member) {
           websockets.publish(
             memberItemsTopic,
@@ -318,7 +318,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const items = await itemService.copyMany(member, repositories, ids, {
           parentId,
         });
-        await actionItemService.postManyCopyAction(request, reply, repositories, items);
+        await actionItemService.postManyCopyAction(request, repositories, items);
         if (member) {
           websockets.publish(
             memberItemsTopic,

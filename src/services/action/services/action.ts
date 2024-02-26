@@ -11,15 +11,9 @@ import { getGeolocationIp, getView } from '../utils/actions';
 export class ActionService {
   itemService: ItemService;
   memberService: MemberService;
-  // itemMembershipsService: ItemMembershipService;
 
-  constructor(
-    itemService: ItemService,
-    // itemMembershipsService: ItemMembershipService,
-    memberService: MemberService,
-  ) {
+  constructor(itemService: ItemService, memberService: MemberService) {
     this.itemService = itemService;
-    // this.itemMembershipsService = itemMembershipsService;
     this.memberService = memberService;
   }
 

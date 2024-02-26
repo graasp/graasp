@@ -39,7 +39,7 @@ const getItemsInBoxProps = {
 
 export const getItemsInBox = {
   query: {
-    oneOf: [
+    anyOf: [
       {
         ...getItemsInBoxProps,
         required: ['parentItemId'],
