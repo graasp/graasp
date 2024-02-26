@@ -23,6 +23,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   ) {
     throw new Error('graasp-plugin-file: local service storageRootPath is malformed');
   }
+  if (fileItemType === ItemType.LOCAL_FILE && !fileConfigurations?.local?.localFilesHost) {
+    throw new Error('graasp-plugin-file: local service localFilesHost is not defined');
+  }
 
   if (fileItemType === ItemType.S3_FILE) {
     if (

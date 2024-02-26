@@ -147,6 +147,7 @@ REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 # Graasp file item file storage path
 # File item storage is set by ./.devcontainer/docker-compose.yml
 # FILE_STORAGE_ROOT_PATH=
+FILE_STORAGE_HOST=http://localhost:1081
 
 # Graasp s3 file item
 S3_FILE_ITEM_PLUGIN=false
