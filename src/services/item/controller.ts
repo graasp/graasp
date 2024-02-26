@@ -26,7 +26,7 @@ import {
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
-import { publishAfterMoved, publishFeedbackAfterAllMoved } from './ws/services';
+import { copyWS, moveWS } from './ws/services';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
@@ -291,7 +291,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               return { source, destination };
             })
             .then(async ({ source, destination }) => {
-              publishAfterMoved(websockets, {
+              moveWS.publishUpdateAfter(websockets, {
                 source,
                 destination,
                 sourceParentId: getParentFromPath(source.path),
@@ -301,7 +301,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }),
       ).then(async (results) => {
         if (member) {
-          publishFeedbackAfterAllMoved({
+          moveWS.publishFeedbackAfterAll({
             websockets,
             log,
             results,
@@ -329,30 +329,35 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const items = await itemService.copyMany(member, repositories, ids, {
-          parentId,
-        });
-        await actionItemService.postManyCopyAction(request, reply, repositories, items);
+
+      Promise.allSettled<Item>(
+        ids.map((itemId) => {
+          return db
+            .transaction(async (manager) => {
+              const repositories = buildRepositories(manager);
+              const copyItem = await itemService.copy(member, repositories, itemId, {
+                parentId,
+              });
+              await actionItemService.postManyCopyAction(request, reply, repositories, [copyItem]);
+
+              return copyItem;
+            })
+            .then(async (copyItem) => {
+              copyWS.publishUpdateAfter(websockets, {
+                copyItem,
+              });
+              return copyItem;
+            });
+        }),
+      ).then(async (results) => {
         if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('copy', ids, {
-              data: Object.fromEntries(items.map((i) => [i.id, i])),
-              errors: [],
-            }),
-          );
-        }
-      }).catch((e) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('copy', ids, { error: e }),
-          );
+          copyWS.publishFeedbackAfterAll({
+            websockets,
+            log,
+            results,
+            itemIds: ids,
+            memberId: member.id,
+          });
         }
       });
       reply.status(StatusCodes.ACCEPTED);

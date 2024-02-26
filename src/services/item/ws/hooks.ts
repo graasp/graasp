@@ -62,14 +62,6 @@ function registerItemTopic(websockets: WebsocketService, itemService: ItemServic
       websockets.publish(itemTopic, parentId, ChildItemEvent('delete', item));
     }
   });
-
-  // on copy item, notify destination parent of new child
-  itemService.hooks.setPostHook('copy', async (actor, repositories, { copy: item }) => {
-    const parentId = getParentFromPath(item.path);
-    if (parentId !== undefined) {
-      websockets.publish(itemTopic, parentId, ChildItemEvent('create', item));
-    }
-  });
 }
 
 /**
@@ -159,17 +151,6 @@ function registerMemberItemsTopic(websockets: WebsocketService, itemService: Ite
           websockets.publish(memberItemsTopic, member.id, AccessibleItemsEvent('delete', item));
         }
       });
-    }
-  });
-
-  // on copy, notify own items of creator with new item IF destination is root
-  itemService.hooks.setPostHook('copy', async (actor, repositories, { copy: item }) => {
-    const parentId = getParentFromPath(item.path);
-    if (parentId === undefined && item.creator) {
-      // root item, notify creator
-      // todo: remove own when we don't use own anymore
-      websockets.publish(memberItemsTopic, item.creator.id, OwnItemsEvent('create', item));
-      websockets.publish(memberItemsTopic, item.creator.id, AccessibleItemsEvent('create', item));
     }
   });
 }

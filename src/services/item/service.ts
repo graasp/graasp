@@ -495,17 +495,6 @@ export class ItemService {
 
     return copyRoot;
   }
-
-  // TODO: optimize
-  async copyMany(
-    actor: Actor,
-    repositories: Repositories,
-    itemIds: string[],
-    args: { parentId?: UUID },
-  ) {
-    const items = await Promise.all(itemIds.map((id) => this.copy(actor, repositories, id, args)));
-    return items;
-  }
 }
 
 export default ItemService;

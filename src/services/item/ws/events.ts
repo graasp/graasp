@@ -133,7 +133,7 @@ export const SharedItemsEvent = (op: SharedItemsEvent['op'], item: Item): Shared
 /**
  * Events from asynchronous background operations on given items
  */
-interface ItemOpFeedbackEvent {
+export interface ItemOpFeedbackEventInterface {
   kind: 'feedback';
   op: 'update' | 'delete' | 'move' | 'copy' | 'export' | 'recycle' | 'restore' | 'validate';
   resource: Item['id'][];
@@ -153,10 +153,10 @@ interface ItemOpFeedbackEvent {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ItemOpFeedbackEvent = (
-  op: ItemOpFeedbackEvent['op'],
-  resource: ItemOpFeedbackEvent['resource'],
-  result: ItemOpFeedbackEvent['result'],
-): ItemOpFeedbackEvent => ({
+  op: ItemOpFeedbackEventInterface['op'],
+  resource: ItemOpFeedbackEventInterface['resource'],
+  result: ItemOpFeedbackEventInterface['result'],
+): ItemOpFeedbackEventInterface => ({
   kind: 'feedback',
   op,
   resource,
