@@ -47,7 +47,7 @@ describe('Password routes tests', () => {
       const member = await saveMemberAndPassword(m, pwd);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login-password',
         payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
       });
@@ -71,7 +71,7 @@ describe('Password routes tests', () => {
       const member = await saveMemberAndPassword(m, pwd);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login-password',
         payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
       });
@@ -95,7 +95,7 @@ describe('Password routes tests', () => {
       const member = await saveMemberAndPassword(m, pwd);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login-password',
         payload: { email: member.email, password: pwd.password, captcha: MOCK_CAPTCHA },
       });
@@ -109,7 +109,7 @@ describe('Password routes tests', () => {
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login-password',
         payload: { email: member.email, password: wrongPassword, captcha: MOCK_CAPTCHA },
       });
@@ -121,7 +121,7 @@ describe('Password routes tests', () => {
       const password = 'asd';
       const member = await saveMember();
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login-password',
         payload: { email: member.email, password, captcha: MOCK_CAPTCHA },
       });
@@ -133,7 +133,7 @@ describe('Password routes tests', () => {
       const email = 'some@email.com';
       const password = '1234';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login-password',
         payload: { email, password, captcha: MOCK_CAPTCHA },
       });
@@ -146,7 +146,7 @@ describe('Password routes tests', () => {
       const email = 'wrongemail';
       const password = '1234';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login-password',
         payload: { email, password, captcha: MOCK_CAPTCHA },
       });

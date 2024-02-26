@@ -1,7 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam } from '@graasp/sdk';
-
+import { IdParam } from '../../../../../types';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { ManyItemsGetFilter } from '../interfaces/request';
 import { appDataWsHooks } from '../ws/hooks';

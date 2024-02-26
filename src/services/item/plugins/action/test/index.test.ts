@@ -79,7 +79,7 @@ describe('Action Plugin Tests', () => {
           member,
         });
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {
             type: 'view',
@@ -99,7 +99,7 @@ describe('Action Plugin Tests', () => {
         const member = await saveMember();
         const item = await savePublicItem({ actor: member });
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {
             type: 'view',
@@ -130,7 +130,7 @@ describe('Action Plugin Tests', () => {
 
       it('Post action with allowed origin', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {
             type: 'view',
@@ -150,7 +150,7 @@ describe('Action Plugin Tests', () => {
 
       it('Post action with extra', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {
             type: 'view',
@@ -173,7 +173,7 @@ describe('Action Plugin Tests', () => {
 
       it('Throw for non-allowed origin', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {
             type: 'view',
@@ -188,7 +188,7 @@ describe('Action Plugin Tests', () => {
 
       it('Throw for missing type', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {},
           headers: {
@@ -212,7 +212,7 @@ describe('Action Plugin Tests', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions/export`,
       });
 
@@ -241,7 +241,7 @@ describe('Action Plugin Tests', () => {
       await saveAppSettings({ item: appItem, creator: actor });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions/export`,
       });
 
@@ -278,7 +278,7 @@ describe('Action Plugin Tests', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions/export`,
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -304,7 +304,7 @@ describe('Action Plugin Tests', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions/export`,
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -334,7 +334,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['createdDay', 'actionType'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -360,7 +360,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['createdDay', 'actionType'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -382,7 +382,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['createdDay', 'actionType'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -412,7 +412,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['createdDay'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -440,7 +440,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['actionType'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -468,7 +468,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['createdTimeOfDay'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -494,7 +494,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['user', 'actionType'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -514,7 +514,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['actionType'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });
@@ -534,7 +534,7 @@ describe('Action Plugin Tests', () => {
         aggregateBy: ['createdDay'],
       };
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `items/${item.id}/actions/aggregation`,
         query: parameters,
       });

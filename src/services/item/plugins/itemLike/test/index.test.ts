@@ -62,7 +62,7 @@ describe('Item Like', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/items/liked',
       });
 
@@ -81,7 +81,7 @@ describe('Item Like', () => {
         await saveItemLikes(items, actor);
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/liked',
         });
 
@@ -104,7 +104,7 @@ describe('Item Like', () => {
         await ItemRepository.softDelete(item1.id);
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/items/liked',
         });
 
@@ -131,7 +131,7 @@ describe('Item Like', () => {
       it('Throws if signed out', async () => {
         const { item } = await saveItemAndMembership({ member });
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
         });
 
@@ -151,7 +151,7 @@ describe('Item Like', () => {
         await setItemPublic(item, member);
         const likes = await saveItemLikes([item], member);
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -167,7 +167,7 @@ describe('Item Like', () => {
         // mimic putting an item in the trash by softDeleting it
         await ItemRepository.softDelete(item.id);
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -185,7 +185,7 @@ describe('Item Like', () => {
         const items = [item1, item2];
         const likes = await saveItemLikes(items, actor);
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item1.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -200,7 +200,7 @@ describe('Item Like', () => {
         await saveItemLikes([item], member);
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
         });
         expect(res.json()).toEqual(new MemberCannotAccess(item.id));
@@ -212,7 +212,7 @@ describe('Item Like', () => {
         await setItemPublic(item, member);
         const likes = await saveItemLikes([item], member);
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -225,7 +225,7 @@ describe('Item Like', () => {
 
     it('Bad request if id is invalid', async () => {
       const res = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/items/invalid-id/likes',
       });
       expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -239,7 +239,7 @@ describe('Item Like', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/items/${item.id}/like`,
       });
 
@@ -255,7 +255,7 @@ describe('Item Like', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/${item.id}/like`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -273,7 +273,7 @@ describe('Item Like', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/${item.id}/like`,
         });
         expect(res.json()).toEqual(new MemberCannotAccess(item.id));
@@ -281,7 +281,7 @@ describe('Item Like', () => {
 
       it('Bad request if id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items/invalid-id/like',
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -296,7 +296,7 @@ describe('Item Like', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/items/${item.id}/like`,
       });
 
@@ -313,7 +313,7 @@ describe('Item Like', () => {
         const [itemLike] = await saveItemLikes([item], actor);
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items/${item.id}/like`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -327,7 +327,7 @@ describe('Item Like', () => {
         const [itemLike] = await saveItemLikes([item], member);
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items/${item.id}/like`,
         });
         expect(res.json()).toEqual(new MemberCannotAccess(item.id));
@@ -341,7 +341,7 @@ describe('Item Like', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `/items/${item.id}/like`,
         });
         expect(res.json()).toEqual(new ItemLikeNotFound({ creatorId: actor.id, itemId: item.id }));
@@ -349,7 +349,7 @@ describe('Item Like', () => {
 
       it('Bad request if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: '/items/invalid-id/like',
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);

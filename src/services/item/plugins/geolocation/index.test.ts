@@ -55,7 +55,7 @@ describe('Item Geolocation', () => {
         const geoloc = await repository.save({ item, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -72,7 +72,7 @@ describe('Item Geolocation', () => {
         await repository.save({ item, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -88,7 +88,7 @@ describe('Item Geolocation', () => {
       it('Get geolocation', async () => {
         const geoloc = await repository.save({ item, lat: 1, lng: 2, country: 'de' });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -102,7 +102,7 @@ describe('Item Geolocation', () => {
       it('Get geolocation without country', async () => {
         const geoloc = await repository.save({ item, lat: 1, lng: 2, country: null });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -115,7 +115,7 @@ describe('Item Geolocation', () => {
 
       it('Return null if no geolocation', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -124,7 +124,7 @@ describe('Item Geolocation', () => {
 
       it('Throws if id is not a uuid', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/not-valid/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -144,7 +144,7 @@ describe('Item Geolocation', () => {
         const geoloc3 = await repository.save({ item: item3, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -161,25 +161,25 @@ describe('Item Geolocation', () => {
       it('throws if missing one parameter', async () => {
         // missing lat1
         const res1 = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat2=1&lng1=1&lng2`,
         });
         expect(res1.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // missing lat2
         const res2 = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lng1=1&lng2=1`,
         });
         expect(res2.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // missing lng1
         const res3 = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng2=1`,
         });
         expect(res3.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // missing lng2
         const res4 = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1`,
         });
         expect(res4.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -194,7 +194,7 @@ describe('Item Geolocation', () => {
         const geoloc3 = await repository.save({ item: item3, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -220,7 +220,7 @@ describe('Item Geolocation', () => {
         const geoloc3 = await repository.save({ item: item3, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2&keywords=hello&keywords=bye`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -249,7 +249,7 @@ describe('Item Geolocation', () => {
         await repository.save({ item: item3, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?parentItemId=${parentItem.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -259,7 +259,7 @@ describe('Item Geolocation', () => {
 
       it('Throw for incorrect parent item id', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2&parentItemId=incorrect-id`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -267,7 +267,7 @@ describe('Item Geolocation', () => {
 
       it('Throw if no parent item id and no lat lng', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -280,7 +280,7 @@ describe('Item Geolocation', () => {
       it('Throw', async () => {
         ({ app } = await build({ member: null }));
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
             geolocation: {
@@ -299,21 +299,21 @@ describe('Item Geolocation', () => {
       });
       it('throw for invalid id', async () => {
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/uuid/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('throw for no geolocation', async () => {
         await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {},
         });
       });
       it('throw for invalid lat or lng', async () => {
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
             geolocation: {
@@ -324,7 +324,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
         const res1 = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
             geolocation: {
@@ -337,7 +337,7 @@ describe('Item Geolocation', () => {
       });
       it('throw for missing lat or lng', async () => {
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
             geolocation: {
@@ -347,7 +347,7 @@ describe('Item Geolocation', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
         const res1 = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
           body: {
             geolocation: {
@@ -361,7 +361,7 @@ describe('Item Geolocation', () => {
       it('save successfully', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
           body: {
             geolocation: {
@@ -380,7 +380,7 @@ describe('Item Geolocation', () => {
       it('Throw', async () => {
         ({ app } = await build({ member: null }));
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -393,7 +393,7 @@ describe('Item Geolocation', () => {
       });
       it('throw for invalid id', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/uuid/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -403,7 +403,7 @@ describe('Item Geolocation', () => {
         const { item } = await saveItemAndMembership({ member: actor });
         await repository.save({ item, lat: 1, lng: 1 });
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);

@@ -113,14 +113,14 @@ describe('App Data Tests', () => {
         ({ item, token, appData } = await setUpForAppData(app, actor, member));
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
       });
 
       it('Get app data without member and token throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -139,7 +139,7 @@ describe('App Data Tests', () => {
           true,
         ));
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ describe('App Data Tests', () => {
           ({ visibility }) => visibility === AppDataVisibility.Item,
         );
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -181,7 +181,7 @@ describe('App Data Tests', () => {
 
       it('Get app data successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -193,7 +193,7 @@ describe('App Data Tests', () => {
 
       it('Get app data by type successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data?type=other-type`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -209,7 +209,7 @@ describe('App Data Tests', () => {
 
       it('Get empty data for type that does not exist', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data?type=impossible-type`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -225,7 +225,7 @@ describe('App Data Tests', () => {
 
       it('Get app data with invalid item id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -248,7 +248,7 @@ describe('App Data Tests', () => {
       });
       it('Get app data successfully as reader', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -264,7 +264,7 @@ describe('App Data Tests', () => {
           visibility: AppDataVisibility.Item,
         });
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -289,14 +289,14 @@ describe('App Data Tests', () => {
 
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
       });
 
       it('Get many app data without member and token throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/app-data?itemId=${item.id}`,
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -323,7 +323,7 @@ describe('App Data Tests', () => {
 
       it('Get many app data successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/app-data?itemId=${items[0].id}&itemId=${items[1].id}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -337,7 +337,7 @@ describe('App Data Tests', () => {
 
       it('Get many app data with invalid item id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/app-data?itemId=invalid-id`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -359,7 +359,7 @@ describe('App Data Tests', () => {
         ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
         member = null;
@@ -369,7 +369,7 @@ describe('App Data Tests', () => {
         ({ app } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-data`,
           payload,
         });
@@ -380,7 +380,7 @@ describe('App Data Tests', () => {
         ({ app } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-data`,
           payload: { data: { some: 'data' } },
           headers: {
@@ -399,7 +399,7 @@ describe('App Data Tests', () => {
 
       it('Post app data successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -420,7 +420,7 @@ describe('App Data Tests', () => {
       it('Post app data to some member', async () => {
         const bob = await saveMember();
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -442,7 +442,7 @@ describe('App Data Tests', () => {
 
       it('Invalid item id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-data`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -465,7 +465,7 @@ describe('App Data Tests', () => {
         ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
         member = null;
@@ -473,7 +473,7 @@ describe('App Data Tests', () => {
 
       it('Request without member and token throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${APP_ITEMS_PREFIX}/${v4()}/app-data/${v4()}`,
           payload: { data: updatedData.data },
         });
@@ -491,7 +491,7 @@ describe('App Data Tests', () => {
 
       it('Patch app data successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -504,7 +504,7 @@ describe('App Data Tests', () => {
 
       it('Invalid item id throws bad request', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -515,7 +515,7 @@ describe('App Data Tests', () => {
       });
       it('Invalid app data id throws bad request', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -542,7 +542,7 @@ describe('App Data Tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${fileAppData.id}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -573,7 +573,7 @@ describe('App Data Tests', () => {
           creator: actor,
         });
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${a.id}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -586,7 +586,7 @@ describe('App Data Tests', () => {
 
       it("Cannot patch someone else's app data", async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -606,7 +606,7 @@ describe('App Data Tests', () => {
         ({ item, token, appData } = await setUpForAppData(app, actor, actor));
         // logout after getting token and setting up
         await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: '/logout',
         });
         member = null;
@@ -614,7 +614,7 @@ describe('App Data Tests', () => {
 
       it('Delete app data without member and token throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${v4()}`,
         });
@@ -633,7 +633,7 @@ describe('App Data Tests', () => {
 
       it('Delete app data successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/${chosenAppData.id}`,
           headers: {
@@ -649,7 +649,7 @@ describe('App Data Tests', () => {
 
       it('Delete app data with invalid id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
 
           url: `${APP_ITEMS_PREFIX}/invalid-id/app-data/${chosenAppData.id}`,
           headers: {
@@ -660,7 +660,7 @@ describe('App Data Tests', () => {
       });
       it('Delete app data with invalid app data id throws', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${APP_ITEMS_PREFIX}/${item.id}/app-data/invalid-id`,
           headers: {
             Authorization: `Bearer ${token}`,

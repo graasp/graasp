@@ -2,8 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, IdsParams } from '@graasp/sdk';
-
+import { IdParam, IdsParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { Member } from './entities/member';

@@ -37,7 +37,7 @@ describe('Document Item tests', () => {
       const payload = { name: 'name', type: ItemType.DOCUMENT, extra };
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items',
         payload,
       });
@@ -54,7 +54,7 @@ describe('Document Item tests', () => {
         const payload = DocumentItemFactory({ extra });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload,
         });
@@ -81,7 +81,7 @@ describe('Document Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload,
         });
@@ -98,7 +98,7 @@ describe('Document Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload,
         });
@@ -115,7 +115,7 @@ describe('Document Item tests', () => {
         };
 
         const response1 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: '/items',
           payload: payload1,
         });
@@ -132,7 +132,7 @@ describe('Document Item tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items/${item.id}`,
         payload: { name: 'new name' },
       });
@@ -173,7 +173,7 @@ describe('Document Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -215,7 +215,7 @@ describe('Document Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -233,7 +233,7 @@ describe('Document Item tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/items?id=${item.id}`,
         payload: { name: 'new name' },
       });
@@ -271,7 +271,7 @@ describe('Document Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items?id=${item.id}`,
           payload,
         });
@@ -316,7 +316,7 @@ describe('Document Item tests', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items?id=${item.id}`,
           payload,
         });

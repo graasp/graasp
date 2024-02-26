@@ -11,9 +11,9 @@ import {
   CountGroupBy,
   FileItemType,
   HttpMethod,
-  IdParam,
 } from '@graasp/sdk';
 
+import { IdParam } from '../../../../types';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import {
@@ -107,7 +107,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   );
 
   fastify.route<{ Params: IdParam; Body: { type: string; extra?: { [key: string]: unknown } } }>({
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: '/:id/actions',
     schema: postAction,
     preHandler: fastify.attemptVerifyAuthentication,

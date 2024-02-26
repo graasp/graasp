@@ -2,8 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { IdParam, IdsParams, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
+import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';

@@ -96,7 +96,7 @@ describe('Item websocket hooks', () => {
       });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/item-memberships/${item.id}`,
         payload: { memberships: [{ memberId: actor.id, permission: PermissionLevel.Read }] },
       });
@@ -130,7 +130,7 @@ describe('Item websocket hooks', () => {
         request.member = anna;
       });
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/item-memberships/${item.id}`,
         payload: { memberships: [{ memberId: bob.id, permission: PermissionLevel.Read }] },
       });
@@ -167,7 +167,7 @@ describe('Item websocket hooks', () => {
         request.member = anna;
       });
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `/item-memberships/${membership.id}`,
         payload: { permission: PermissionLevel.Admin },
       });
@@ -206,7 +206,7 @@ describe('Item websocket hooks', () => {
         request.member = anna;
       });
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/item-memberships/${membership.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
@@ -240,7 +240,7 @@ describe('Item websocket hooks', () => {
         request.member = anna;
       });
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `/item-memberships/${membership.id}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);

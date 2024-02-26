@@ -93,7 +93,7 @@ describe('File Item routes tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/items/upload',
         payload: form,
         headers: form.getHeaders(),
@@ -112,7 +112,7 @@ describe('File Item routes tests', () => {
           const form = createFormData();
 
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
             payload: form,
             headers: form.getHeaders(),
@@ -144,7 +144,7 @@ describe('File Item routes tests', () => {
           const form1 = createFormData(form);
 
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
             payload: form1,
             headers: form1.getHeaders(),
@@ -181,7 +181,7 @@ describe('File Item routes tests', () => {
           const { item: parentItem } = await saveItemAndMembership({ member: actor });
           const form = createFormData();
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload?id=${parentItem.id}`,
             payload: form,
             headers: form.getHeaders(),
@@ -220,7 +220,7 @@ describe('File Item routes tests', () => {
           const form = createFormData();
 
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload?id=${parentItem.id}`,
             payload: form,
             headers: form.getHeaders(),
@@ -247,7 +247,7 @@ describe('File Item routes tests', () => {
           });
 
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
             payload: form,
             headers: form.getHeaders(),
@@ -269,7 +269,7 @@ describe('File Item routes tests', () => {
           );
 
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
             payload: form,
             headers: form.getHeaders(),
@@ -301,7 +301,7 @@ describe('File Item routes tests', () => {
 
           ({ app, actor } = await build());
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
             payload: form1,
             headers: form1.getHeaders(),
@@ -334,7 +334,7 @@ describe('File Item routes tests', () => {
           const form = createFormData();
 
           const response = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/upload`,
             payload: form,
             headers: form.getHeaders(),
@@ -364,7 +364,7 @@ describe('File Item routes tests', () => {
 
       it('Throws if signed out and item is private', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
         });
 
@@ -375,7 +375,7 @@ describe('File Item routes tests', () => {
         await setItemPublic(item, member);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
         });
 
@@ -397,7 +397,7 @@ describe('File Item routes tests', () => {
       describe('Without error', () => {
         it('Redirect to file item', async () => {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
@@ -407,7 +407,7 @@ describe('File Item routes tests', () => {
 
         it('Return file url of item', async () => {
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download?replyUrl=true`,
           });
 
@@ -422,7 +422,7 @@ describe('File Item routes tests', () => {
           });
 
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}/download`,
           });
 
@@ -435,7 +435,7 @@ describe('File Item routes tests', () => {
           });
 
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${someItem.id}/download`,
           });
 
@@ -452,7 +452,7 @@ describe('File Item routes tests', () => {
           });
 
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
@@ -465,7 +465,7 @@ describe('File Item routes tests', () => {
           });
 
           const response = await app.inject({
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: `${ITEMS_ROUTE_PREFIX}/${item.id}/download`,
           });
 
@@ -489,7 +489,7 @@ describe('File Item routes tests', () => {
 
     it('Edit file item altText', async () => {
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
         payload: { extra: { [FILE_ITEM_TYPE]: { altText: 'new name' } } },
       });
@@ -498,7 +498,7 @@ describe('File Item routes tests', () => {
 
     it('Cannot edit another file item field', async () => {
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
         payload: { extra: { [FILE_ITEM_TYPE]: { size: 10 } } },
       });
@@ -514,7 +514,7 @@ describe('File Item routes tests', () => {
       it('Do not trigger file delete if item is not a file item', async () => {
         const { item } = await saveItemAndMembership({ member: actor });
         await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
 
@@ -533,7 +533,7 @@ describe('File Item routes tests', () => {
         });
 
         await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}?id=${item.id}`,
         });
 
@@ -552,7 +552,7 @@ describe('File Item routes tests', () => {
         const { item: parentItem } = await saveItemAndMembership({ member: actor });
         const { item } = await saveItemAndMembership({ member: actor });
         await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/copy`,
           payload: {
             parentId: parentItem.id,
@@ -576,7 +576,7 @@ describe('File Item routes tests', () => {
         });
 
         await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
           payload: {
             parentId: parentItem.id,
@@ -619,7 +619,7 @@ describe('File Item routes tests', () => {
         const itemCount = await ItemRepository.find();
 
         await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/copy?id=${item.id}`,
           payload: {
             parentId: parentItem.id,

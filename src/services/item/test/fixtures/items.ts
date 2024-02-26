@@ -1,11 +1,11 @@
 import {
   AppItemFactory,
   DocumentItemFactory,
-  EmbeddedLinkItemFactory,
   EtherpadItemFactory,
   FolderItemFactory,
   H5PItemFactory,
   ItemType,
+  LinkItemFactory,
   LocalFileItemFactory,
   S3FileItemFactory,
   ShortcutItemFactory,
@@ -33,7 +33,7 @@ export const createItem = (
       item = AppItemFactory(castedArgs);
       break;
     case ItemType.LINK:
-      item = EmbeddedLinkItemFactory(castedArgs);
+      item = LinkItemFactory(castedArgs);
       break;
     case ItemType.DOCUMENT:
       item = DocumentItemFactory(castedArgs);

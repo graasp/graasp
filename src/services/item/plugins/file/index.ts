@@ -1,8 +1,9 @@
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { FileItemProperties, HttpMethod, IdParam, PermissionLevel } from '@graasp/sdk';
+import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
+import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../entities/Item';
@@ -106,7 +107,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   fastify.route<{ Querystring: IdParam; Body: unknown }>({
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
     preHandler: fastify.verifyAuthentication,

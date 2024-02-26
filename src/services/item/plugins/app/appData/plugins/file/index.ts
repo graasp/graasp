@@ -1,8 +1,9 @@
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { HttpMethod, IdParam, UUID } from '@graasp/sdk';
+import { HttpMethod, UUID } from '@graasp/sdk';
 
+import { IdParam } from '../../../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import {
   DownloadFileUnexpectedError,
@@ -77,7 +78,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   appDataService.hooks.setPreHook('patch', patchPreHook);
 
   fastify.route<{ Querystring: IdParam; Body: unknown }>({
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: '/app-data/upload',
     schema: upload,
     handler: async (request) => {

@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { Triggers } from '@graasp/sdk';
+import { ActionTriggers } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -114,7 +114,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // trigger download action for a collection
       const action = {
         item,
-        type: Triggers.ItemDownload,
+        type: ActionTriggers.ItemDownload,
         extra: { itemId: item?.id },
       };
       await aS.postMany(member, repositories, request, [action]);

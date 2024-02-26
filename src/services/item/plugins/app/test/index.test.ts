@@ -46,7 +46,7 @@ describe('Apps Plugin Tests', () => {
       const apps = await saveAppList();
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${APP_ITEMS_PREFIX}/list`,
       });
       const data = response.json();
@@ -68,7 +68,7 @@ describe('Apps Plugin Tests', () => {
         const { item } = await saveApp({ url: chosenApp.url, member });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { origin: chosenApp.url, key: chosenApp.key },
         });
@@ -88,7 +88,7 @@ describe('Apps Plugin Tests', () => {
         await setItemPublic(item, member);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { origin: chosenApp.url, key: chosenApp.key },
         });
@@ -112,7 +112,7 @@ describe('Apps Plugin Tests', () => {
         const { item } = await saveApp({ url: chosenApp.url, member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { origin: chosenApp.url, key: chosenApp.key },
         });
@@ -125,21 +125,21 @@ describe('Apps Plugin Tests', () => {
         expect(app).toBeTruthy();
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { origin: MOCK_APP_ORIGIN },
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
 
         const response1 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { key: v4() },
         });
         expect(response1.statusCode).toEqual(StatusCodes.BAD_REQUEST);
 
         const response2 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/unknown/api-access-token`,
           payload: { key: v4() },
         });
@@ -151,7 +151,7 @@ describe('Apps Plugin Tests', () => {
         const { item } = await saveApp({ url: chosenApp.url, member });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { origin: MOCK_APP_ORIGIN, key: v4() },
         });
@@ -169,7 +169,7 @@ describe('Apps Plugin Tests', () => {
         const { item, token } = await setUpForAppContext(app, member, member, undefined, true);
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -189,7 +189,7 @@ describe('Apps Plugin Tests', () => {
         ({ app, actor } = await build({ member: null }));
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
         });
         expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
@@ -209,7 +209,7 @@ describe('Apps Plugin Tests', () => {
           throw new Error('actor is undefined');
         }
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -243,7 +243,7 @@ describe('Apps Plugin Tests', () => {
         ));
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -281,7 +281,7 @@ describe('Apps Plugin Tests', () => {
         ));
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/${item.id}/context`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -303,7 +303,7 @@ describe('Apps Plugin Tests', () => {
         ({ app, actor } = await build());
 
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${APP_ITEMS_PREFIX}/invalid-id/context`,
         });
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);

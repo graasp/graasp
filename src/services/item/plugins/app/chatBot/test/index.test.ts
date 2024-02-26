@@ -53,7 +53,7 @@ describe('Chat Bot Tests', () => {
 
       it('Unauthorized if post chat message without member and token', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           payload: DOCKER_MOCKED_BODY,
         });
@@ -72,7 +72,7 @@ describe('Chat Bot Tests', () => {
         mockResponse(FinishReason.NULL, DOCKER_MOCKED_RESPONSE);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -87,7 +87,7 @@ describe('Chat Bot Tests', () => {
         mockResponse(FinishReason.LENGTH, DOCKER_MOCKED_RESPONSE);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -103,7 +103,7 @@ describe('Chat Bot Tests', () => {
         mockResponse(reason, DOCKER_MOCKED_RESPONSE);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,7 +124,7 @@ describe('Chat Bot Tests', () => {
 
       it('Success post chat with valid body and authorized member', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -138,7 +138,7 @@ describe('Chat Bot Tests', () => {
       it('Success post chat with custom version', async () => {
         const gptVersion = GPTVersion.GPT_4;
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?gptVersion=${gptVersion}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -152,7 +152,7 @@ describe('Chat Bot Tests', () => {
 
       it('Bad request if post chat without body', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -163,7 +163,7 @@ describe('Chat Bot Tests', () => {
 
       it('Bad request if post chat with invalid GPT version', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}?gptVersion=INVALID`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -175,7 +175,7 @@ describe('Chat Bot Tests', () => {
 
       it('Bad request if post chat with empty array body', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -190,7 +190,7 @@ describe('Chat Bot Tests', () => {
         INVALID_ARRAY[0].role = 'invalid';
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -205,7 +205,7 @@ describe('Chat Bot Tests', () => {
         INVALID_ARRAY[1] = { role: 'system' };
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -218,7 +218,7 @@ describe('Chat Bot Tests', () => {
       it('Not found if post chat with invalid item id', async () => {
         const invalidId = '2891ae09-d790-4af1-a290-6eec6972496a';
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${invalidId}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -238,7 +238,7 @@ describe('Chat Bot Tests', () => {
 
       it('Forbidden if Post chat on a different app using authorized user', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -261,7 +261,7 @@ describe('Chat Bot Tests', () => {
         const { token: token2 } = await setUp(app, actor, actor);
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${APP_ITEMS_PREFIX}/${item.id}/${CHAT_PATH}`,
           headers: {
             Authorization: `Bearer ${token2}`,

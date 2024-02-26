@@ -42,7 +42,7 @@ describe('asynchronous feedback', () => {
     });
 
     const res = await app.inject({
-      method: HttpMethod.POST,
+      method: HttpMethod.Post,
       url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
     });
     expect(res.statusCode).toBe(StatusCodes.ACCEPTED);
@@ -73,7 +73,7 @@ describe('asynchronous feedback', () => {
     });
 
     const res = await app.inject({
-      method: HttpMethod.POST,
+      method: HttpMethod.Post,
       url: `${ITEMS_ROUTE_PREFIX}/${item.id}/validate`,
     });
     expect(res.statusCode).toBe(StatusCodes.ACCEPTED);

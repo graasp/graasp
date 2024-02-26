@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { MemberExtra, MemberType } from '@graasp/sdk';
+import { CompleteMember, MemberType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 @Entity()
@@ -38,7 +38,7 @@ export class Member extends BaseEntity {
   type: `${MemberType}` | MemberType;
 
   @Column('simple-json', { nullable: false, default: '{}' })
-  extra: MemberExtra;
+  extra: CompleteMember['extra'];
 
   @CreateDateColumn({
     update: false,

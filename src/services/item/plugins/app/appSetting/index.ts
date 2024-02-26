@@ -1,7 +1,8 @@
 import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
-import { IdParam, ItemType } from '@graasp/sdk';
+import { ItemType } from '@graasp/sdk';
 
+import { IdParam } from '../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';

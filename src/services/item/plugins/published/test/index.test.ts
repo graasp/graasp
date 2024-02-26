@@ -79,7 +79,7 @@ describe('Item Published', () => {
 
       it('Get all published collections', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -89,7 +89,7 @@ describe('Item Published', () => {
       it('Get all published collections even when items are trashed', async () => {
         await ItemRepository.softRemove(collections[0]);
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -104,7 +104,7 @@ describe('Item Published', () => {
           type: ItemTagType.Hidden,
         });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -120,7 +120,7 @@ describe('Item Published', () => {
         }
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
             { categoryId: category.id },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
@@ -144,7 +144,7 @@ describe('Item Published', () => {
 
         const categoryId = selectedCategories.map(({ id }) => id);
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
             { categoryId },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
@@ -170,7 +170,7 @@ describe('Item Published', () => {
 
         const categoryId = selectedCategories.map(({ id }) => id).join(',');
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
             { categoryId },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
@@ -189,7 +189,7 @@ describe('Item Published', () => {
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
             { categoryId: category.id },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
@@ -206,7 +206,7 @@ describe('Item Published', () => {
         await ItemPublishedRepository.save({ item: parentItem, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -224,7 +224,7 @@ describe('Item Published', () => {
         await ItemPublishedRepository.save({ item: otherParentItem, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/informations${qs.stringify(
             { itemId: [item.id, otherParentItem.id] },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
@@ -239,7 +239,7 @@ describe('Item Published', () => {
         // simple item not public and not published
         const { item } = await saveItemAndMembership({ member });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
         });
         expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -250,7 +250,7 @@ describe('Item Published', () => {
         await ItemTagRepository.post(member, item, ItemTagType.Public);
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -258,7 +258,7 @@ describe('Item Published', () => {
       });
       it('Throw if category id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections${qs.stringify(
             { categoryId: 'invalid-id' },
             { addQueryPrefix: true, arrayFormat: 'repeat' },
@@ -282,7 +282,7 @@ describe('Item Published', () => {
 
       it('Get 2 most recent collections', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
           query: { limit: 2 },
         });
@@ -301,7 +301,7 @@ describe('Item Published', () => {
           type: ItemTagType.Hidden,
         });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -332,7 +332,7 @@ describe('Item Published', () => {
 
       it('Get 2 most liked collections', async () => {
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
           query: { limit: 2 },
         });
@@ -353,7 +353,7 @@ describe('Item Published', () => {
         });
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
         });
 
@@ -374,7 +374,7 @@ describe('Item Published', () => {
         await saveCategories();
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -396,7 +396,7 @@ describe('Item Published', () => {
         const items = await saveCollections(member);
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -413,7 +413,7 @@ describe('Item Published', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -439,7 +439,7 @@ describe('Item Published', () => {
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'indexOne');
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -474,7 +474,7 @@ describe('Item Published', () => {
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -506,7 +506,7 @@ describe('Item Published', () => {
         });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -523,7 +523,7 @@ describe('Item Published', () => {
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -539,7 +539,7 @@ describe('Item Published', () => {
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -547,7 +547,7 @@ describe('Item Published', () => {
 
       it('Throws if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/invalid-id/publish`,
         });
         expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
@@ -555,7 +555,7 @@ describe('Item Published', () => {
 
       it('Throws if item is not found', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${v4()}/publish`,
         });
         expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
@@ -571,7 +571,7 @@ describe('Item Published', () => {
         const { item } = await saveItemAndMembership({ member });
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -598,7 +598,7 @@ describe('Item Published', () => {
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -617,7 +617,7 @@ describe('Item Published', () => {
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -635,7 +635,7 @@ describe('Item Published', () => {
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -652,7 +652,7 @@ describe('Item Published', () => {
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/unpublish`,
         });
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
@@ -660,7 +660,7 @@ describe('Item Published', () => {
 
       it('Throws if item id is invalid', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/invalid-id/unpublish`,
         });
         expect(res.statusCode).toEqual(StatusCodes.BAD_REQUEST);
@@ -668,7 +668,7 @@ describe('Item Published', () => {
 
       it('Throws if item is not found', async () => {
         const res = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${v4()}/unpublish`,
         });
         expect(res.json()).toMatchObject(new ItemNotFound(expect.anything()));
@@ -689,7 +689,7 @@ describe('Item Published', () => {
           .mockResolvedValue(fakeResponse);
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
           payload: fakePayload,
         });
@@ -716,7 +716,7 @@ describe('Item Published', () => {
           .mockResolvedValue(fakeResponse);
 
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
           payload: fakePayload,
         });
@@ -747,7 +747,7 @@ describe('Item Published', () => {
         };
 
         await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
           payload: userQuery,
         });
@@ -774,7 +774,7 @@ describe('Item Published', () => {
         };
 
         await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/collections/search`,
           payload: userQuery,
         });
@@ -820,7 +820,7 @@ describe('Item Published', () => {
         };
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `/items/${item.id}`,
           payload,
         });
@@ -841,7 +841,7 @@ describe('Item Published', () => {
         const { item: unpublishedFolder } = await saveItemAndMembership({ member: actor });
 
         const move1 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: unpublishedFolder.id,
@@ -857,7 +857,7 @@ describe('Item Published', () => {
 
         // Move published into published folder should be indexed
         const move2 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify({ id: item.id }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: publishedFolder.id,
@@ -877,7 +877,7 @@ describe('Item Published', () => {
           item: { name: 'unpublishedItem' },
         });
         const move3 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify({ id: unpublishedItem.id }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: publishedFolder.id,
@@ -891,7 +891,7 @@ describe('Item Published', () => {
         expect(indexSpy.mock.calls[3][0].id).toEqual(publishedFolder.id);
         // Move unpublished nested inside published into unpublished should be deleted from index
         const move4 = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/move?${qs.stringify({ id: unpublishedItem.id }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: unpublishedFolder.id,
@@ -907,7 +907,7 @@ describe('Item Published', () => {
         // Testing copy usecase
         const initialCount = await ItemRepository.count();
         const copy = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify({ id: unpublishedItem.id }, { arrayFormat: 'repeat' })}`,
           payload: {
             parentId: publishedFolder.id,
@@ -939,7 +939,7 @@ describe('Item Published', () => {
         });
 
         const categoryCall = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${categoryItem.id}/categories`,
           payload: {
             categoryId: category.id,
@@ -952,7 +952,7 @@ describe('Item Published', () => {
 
         // deleting category also update index
         const deleteCategoryCall = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/${categoryItem.id}/categories/${categoryCall.json().id}`,
         });
 

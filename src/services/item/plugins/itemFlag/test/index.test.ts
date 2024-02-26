@@ -36,7 +36,7 @@ describe('Item Flag Tests', () => {
     it('Successfully get flags', async () => {
       ({ app } = await build({ member: null }));
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/flags`,
       });
 
@@ -51,7 +51,7 @@ describe('Item Flag Tests', () => {
 
       it('Successfully get flags', async () => {
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/flags`,
         });
 
@@ -68,7 +68,7 @@ describe('Item Flag Tests', () => {
       const { item } = await saveItemAndMembership({ member });
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/flags`,
         payload,
       });
@@ -84,7 +84,7 @@ describe('Item Flag Tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/flags`,
           payload,
         });
@@ -98,7 +98,7 @@ describe('Item Flag Tests', () => {
 
       it('Bad request if item id is not valid', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/invalid-id/flags`,
           payload,
         });
@@ -108,7 +108,7 @@ describe('Item Flag Tests', () => {
 
       it('Throws if item is not found', async () => {
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${v4()}/flags`,
           payload,
         });
@@ -120,7 +120,7 @@ describe('Item Flag Tests', () => {
         const { item } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/flags`,
           payload: { flagType: 'invalid-type' },
         });

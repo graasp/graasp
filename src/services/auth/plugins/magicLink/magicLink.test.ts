@@ -49,7 +49,7 @@ describe('Auth routes tests', () => {
       const name = 'anna';
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/register',
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
@@ -73,7 +73,7 @@ describe('Auth routes tests', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/register?lang=${lang}`,
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
@@ -95,7 +95,7 @@ describe('Auth routes tests', () => {
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/register',
         payload: { ...member, captcha: MOCK_CAPTCHA },
       });
@@ -118,7 +118,7 @@ describe('Auth routes tests', () => {
       const email = 'wrongemail';
       const name = 'anna';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/register',
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
@@ -140,7 +140,7 @@ describe('Auth routes tests', () => {
       const member = await saveMember();
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login',
         payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
@@ -159,7 +159,7 @@ describe('Auth routes tests', () => {
       const { lang } = member.extra;
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: `/login?lang=${lang}`,
         payload: { email: member.email, captcha: MOCK_CAPTCHA },
       });
@@ -178,7 +178,7 @@ describe('Auth routes tests', () => {
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login',
         payload: { email, captcha: MOCK_CAPTCHA },
       });
@@ -191,7 +191,7 @@ describe('Auth routes tests', () => {
     it('Bad request for invalid email', async () => {
       const email = 'wrongemail';
       const response = await app.inject({
-        method: HttpMethod.POST,
+        method: HttpMethod.Post,
         url: '/login',
         payload: { email, captcha: MOCK_CAPTCHA },
       });
@@ -206,7 +206,7 @@ describe('Auth routes tests', () => {
       const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, JWT_SECRET);
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
@@ -216,7 +216,7 @@ describe('Auth routes tests', () => {
     it('Fail if token contains undefined memberId', async () => {
       const t = jwt.sign({ sub: undefined }, JWT_SECRET);
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
@@ -228,7 +228,7 @@ describe('Auth routes tests', () => {
     it('Fail if token contains unknown member id', async () => {
       const t = jwt.sign({ sub: v4() }, JWT_SECRET);
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/auth?t=${t}`,
       });
       expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
@@ -241,7 +241,7 @@ describe('Auth routes tests', () => {
       const member = await saveMember();
       const t = jwt.sign({ sub: member.id }, 'secret');
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `/auth?t=${t}`,
       });
 
@@ -255,7 +255,7 @@ describe('Auth routes tests', () => {
   describe('GET /logout', () => {
     it('Authenticate successfully', async () => {
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: '/logout',
       });
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);

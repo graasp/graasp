@@ -79,7 +79,7 @@ describe('Item Login Tests', () => {
       const { itemLoginSchema } = await saveItemLogin({ item });
 
       const res = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema-type`,
       });
 
@@ -95,7 +95,7 @@ describe('Item Login Tests', () => {
       const child = await saveItem({ parentItem: item });
 
       const res = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema-type`,
       });
 
@@ -112,7 +112,7 @@ describe('Item Login Tests', () => {
       await saveItemLogin({ item });
 
       const res = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
       });
 
@@ -132,7 +132,7 @@ describe('Item Login Tests', () => {
       it('Successfully get item login', async () => {
         await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
         });
 
@@ -147,7 +147,7 @@ describe('Item Login Tests', () => {
         await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
         const child = await saveItem({ parentItem: item, actor });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema`,
         });
 
@@ -161,7 +161,7 @@ describe('Item Login Tests', () => {
       it('Throws if has Write permission', async () => {
         await saveMembership({ item, member: actor, permission: PermissionLevel.Write });
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
         });
 
@@ -172,7 +172,7 @@ describe('Item Login Tests', () => {
         const id = 'invalid-id';
 
         const res = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${id}/login-schema`,
         });
 
@@ -192,7 +192,7 @@ describe('Item Login Tests', () => {
 
       it('Cannot item login if already signed in', async () => {
         const res = await app.inject({
-          method: HttpMethod.POST,
+          method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
           payload: { username: 'my-username' },
         });
@@ -228,7 +228,7 @@ describe('Item Login Tests', () => {
           const id = 'invalid-id';
 
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/${id}/login`,
           });
 
@@ -242,7 +242,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(0);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -258,7 +258,7 @@ describe('Item Login Tests', () => {
             await saveItemLogin({ item, member: m });
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -276,7 +276,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(0);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload: { memberId: pseudonymizedMember.id },
             });
@@ -293,7 +293,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -316,7 +316,7 @@ describe('Item Login Tests', () => {
             await saveItemLogin({ item: newItem });
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${newItem.id}/login`,
               payload,
             });
@@ -330,7 +330,7 @@ describe('Item Login Tests', () => {
             const payload = { memberId: 'memberId' };
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -371,7 +371,7 @@ describe('Item Login Tests', () => {
           const id = 'invalid-id';
 
           const res = await app.inject({
-            method: HttpMethod.POST,
+            method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/${id}/login`,
           });
 
@@ -388,7 +388,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(0);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -408,7 +408,7 @@ describe('Item Login Tests', () => {
             });
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -426,7 +426,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(0);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -443,7 +443,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(0);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload: { memberId: pseudonymizedMember.id },
             });
@@ -465,7 +465,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -488,7 +488,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -515,7 +515,7 @@ describe('Item Login Tests', () => {
             await saveItemLogin({ item: newItem, type: ItemLoginSchemaType.UsernameAndPassword });
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${newItem.id}/login`,
               payload,
             });
@@ -529,7 +529,7 @@ describe('Item Login Tests', () => {
             const payload = { memberId: 'memberId' };
 
             const res = await app.inject({
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
               payload,
             });
@@ -552,7 +552,7 @@ describe('Item Login Tests', () => {
       ({ item } = await saveItemAndMembership({ member }));
 
       const res = await app.inject({
-        method: HttpMethod.PUT,
+        method: HttpMethod.Put,
         url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
         payload,
       });
@@ -569,7 +569,7 @@ describe('Item Login Tests', () => {
 
       it('Successfully change item login schema', async () => {
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
           payload,
         });
@@ -588,7 +588,7 @@ describe('Item Login Tests', () => {
         await saveItemLogin({ item: item1 });
 
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${item1.id}/login-schema`,
           payload,
         });
@@ -601,7 +601,7 @@ describe('Item Login Tests', () => {
         const child = await saveItem({ parentItem: item, actor });
 
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema`,
           payload,
         });
@@ -616,7 +616,7 @@ describe('Item Login Tests', () => {
         };
 
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${id}/login-schema`,
           payload,
         });
@@ -631,7 +631,7 @@ describe('Item Login Tests', () => {
         };
 
         const res = await app.inject({
-          method: HttpMethod.PUT,
+          method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${id}/login-schema`,
           payload,
         });

@@ -1,7 +1,8 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { FileItemType, IdParam } from '@graasp/sdk';
+import { FileItemType } from '@graasp/sdk';
 
+import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import {
   LocalFileConfiguration,

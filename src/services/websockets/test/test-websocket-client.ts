@@ -1,7 +1,6 @@
 import WebSocket from 'ws';
 
 import { Websocket, parseStringToDate } from '@graasp/sdk';
-import { ServerUpdate } from '@graasp/sdk/dist/services/websockets/api/server';
 
 /**
  * A helper class to mock a purely WS client for the Graasp protocol
@@ -57,7 +56,7 @@ export class TestWsClient {
     const updates: Array<UpdatesType> = [];
 
     this.ws.on('message', (data) => {
-      const update: ServerUpdate<UpdatesType> = JSON.parse(data.toString());
+      const update: Websocket.ServerUpdate<UpdatesType> = JSON.parse(data.toString());
       if (
         update.type === Websocket.ServerMessageTypes.Update &&
         update.channel === channel &&

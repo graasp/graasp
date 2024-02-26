@@ -15,13 +15,13 @@ import { v4 } from 'uuid';
 
 import {
   AppItemExtra,
+  DiscriminatedItem,
   DocumentItemExtra,
-  EmbeddedLinkItemExtra,
   EtherpadItemExtra,
   FolderItemExtra,
   H5PItemExtra,
-  ItemSettings,
   ItemType,
+  LinkItemExtra,
   LocalFileItemExtra,
   MAX_ITEM_NAME_LENGTH,
   S3FileItemExtra,
@@ -38,7 +38,7 @@ export type ItemExtraMap = {
   [ItemType.ETHERPAD]: EtherpadItemExtra;
   [ItemType.FOLDER]: FolderItemExtra;
   [ItemType.H5P]: H5PItemExtra;
-  [ItemType.LINK]: EmbeddedLinkItemExtra;
+  [ItemType.LINK]: LinkItemExtra;
   [ItemType.LOCAL_FILE]: LocalFileItemExtra;
   [ItemType.S3_FILE]: S3FileItemExtra;
   [ItemType.SHORTCUT]: ShortcutItemExtra;
@@ -105,7 +105,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   // cosmetic settings
   // do not set default value because it gets serialize as a string in map.values()
   @Column('simple-json', { nullable: false })
-  settings: ItemSettings;
+  settings: DiscriminatedItem['settings'];
 
   @Column('ltree', { unique: true, nullable: false })
   path: string;
@@ -133,15 +133,15 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
       setweight(to_tsvector('simple', name), 'A')  || ' ' ||
       setweight(to_tsvector('english', name), 'A') || ' ' ||
       setweight(to_tsvector('french', name), 'A') || ' ' || (
-        case 
-            when lang='de' then to_tsvector('german', name) 
+        case
+            when lang='de' then to_tsvector('german', name)
             when lang='it' then to_tsvector('italian', name)
             when lang='es' then to_tsvector('spanish', name)
             else ' '
         end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(description,'')), 'B') || ' ' ||
       setweight(to_tsvector('french', COALESCE(description,'')), 'B') || ' ' || (
-        case 
+        case
             when lang='de' then setweight(to_tsvector('german', COALESCE(description,'')), 'B')
             when lang='it' then setweight(to_tsvector('italian', COALESCE(description,'')), 'B')
             when lang='es' then setweight(to_tsvector('spanish', COALESCE(description,'')), 'B')
@@ -149,7 +149,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
         end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' ||
       setweight(to_tsvector('french', COALESCE(settings::jsonb->'tags','{}')), 'C') || ' ' || (
-        case 
+        case
             when lang='de' then setweight(to_tsvector('german', COALESCE(settings::jsonb->'tags','{}')), 'C')
             when lang='it' then setweight(to_tsvector('italian', COALESCE(settings::jsonb->'tags','{}')), 'C')
             when lang='es' then setweight(to_tsvector('spanish', COALESCE(settings::jsonb->'tags','{}')), 'C')
@@ -157,7 +157,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
         end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' ||
       setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D') || ' ' || (
-        case 
+        case
             when lang='de' then setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D')
             when lang='it' then setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D')
             when lang='es' then setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'document'->>'content','{}')), 'D')
@@ -165,7 +165,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
         end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' ||
       setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D') || ' ' || (
-        case 
+        case
             when lang='de' then setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D')
             when lang='it' then setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D')
             when lang='es' then setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'file'->'content','{}')), 'D')
@@ -173,7 +173,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
         end) || ' ' ||
       setweight(to_tsvector('english', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' ||
       setweight(to_tsvector('french', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D') || ' ' || (
-        case 
+        case
             when lang='de' then setweight(to_tsvector('german', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')
             when lang='it' then setweight(to_tsvector('italian', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')
             when lang='es' then setweight(to_tsvector('spanish', COALESCE(replace(extra, '\\\\u0000', '')::jsonb->'s3File'->'content','{}')), 'D')

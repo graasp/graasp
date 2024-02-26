@@ -39,7 +39,7 @@ describe('Etherpad service API', () => {
   let member: Member;
 
   const payloadCreate = {
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: 'items/etherpad/create',
     payload: {
       name: 'test-item-name',
@@ -161,7 +161,7 @@ describe('Etherpad service API', () => {
     let item: EtherpadItemType;
 
     const payloadView = (mode: 'read' | 'write', itemId: string) => ({
-      method: HttpMethod.GET,
+      method: HttpMethod.Get,
       url: `items/etherpad/view/${itemId}`,
       query: {
         mode,

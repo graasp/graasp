@@ -84,7 +84,7 @@ describe('Chat Mention tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.GET,
+        method: HttpMethod.Get,
         url: `${ITEMS_ROUTE_PREFIX}/mentions`,
       });
 
@@ -101,7 +101,7 @@ describe('Chat Mention tests', () => {
       it('Get successfully', async () => {
         const { chatMentions } = await saveItemWithChatMessagesAndMentions(actor);
         const response = await app.inject({
-          method: HttpMethod.GET,
+          method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/mentions`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -119,7 +119,7 @@ describe('Chat Mention tests', () => {
       const payload = { status: MentionStatus.Read };
 
       const response = await app.inject({
-        method: HttpMethod.PATCH,
+        method: HttpMethod.Patch,
         url: `${ITEMS_ROUTE_PREFIX}/mentions/${v4()}`,
         payload,
       });
@@ -138,7 +138,7 @@ describe('Chat Mention tests', () => {
 
       it('Patch successfully', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${chatMentions[0].id}`,
           payload,
         });
@@ -148,7 +148,7 @@ describe('Chat Mention tests', () => {
 
       it('Throws if chat mention id is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/invalid`,
           payload,
         });
@@ -157,7 +157,7 @@ describe('Chat Mention tests', () => {
 
       it('Throws if body is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${chatMentions[0].id}`,
           payload: { wrong: 'payload' },
         });
@@ -166,7 +166,7 @@ describe('Chat Mention tests', () => {
 
       it('Throws if chat mention does not exist', async () => {
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${v4()}`,
           payload,
         });
@@ -180,7 +180,7 @@ describe('Chat Mention tests', () => {
         const mention = await adminRepository.save({ member, message: chatMessages[0] });
 
         const response = await app.inject({
-          method: HttpMethod.PATCH,
+          method: HttpMethod.Patch,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${mention.id}`,
           payload,
         });
@@ -195,7 +195,7 @@ describe('Chat Mention tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `${ITEMS_ROUTE_PREFIX}/mentions/${v4()}`,
       });
 
@@ -216,7 +216,7 @@ describe('Chat Mention tests', () => {
         const initialCount = (await adminRepository.find()).length;
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${chatMentions[0].id}`,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -228,7 +228,7 @@ describe('Chat Mention tests', () => {
 
       it('Throws if chat mention id is incorrect', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/invalid-id`,
         });
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -236,7 +236,7 @@ describe('Chat Mention tests', () => {
 
       it('Throws if chat mention does not exist', async () => {
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${v4()}`,
         });
 
@@ -250,7 +250,7 @@ describe('Chat Mention tests', () => {
         });
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/mentions/${mention.id}`,
         });
 
@@ -264,7 +264,7 @@ describe('Chat Mention tests', () => {
       ({ app } = await build({ member: null }));
 
       const response = await app.inject({
-        method: HttpMethod.DELETE,
+        method: HttpMethod.Delete,
         url: `${ITEMS_ROUTE_PREFIX}/mentions`,
       });
 
@@ -288,7 +288,7 @@ describe('Chat Mention tests', () => {
         otherMessages.push(await adminRepository.save({ message, member: members[2] }));
 
         const response = await app.inject({
-          method: HttpMethod.DELETE,
+          method: HttpMethod.Delete,
           url: `${ITEMS_ROUTE_PREFIX}/mentions`,
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
