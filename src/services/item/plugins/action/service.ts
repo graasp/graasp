@@ -280,6 +280,7 @@ export class ActionItemService {
     await this.actionService.postMany(member, repositories, request, actions);
   }
 
+  // TODO: remove it if it is never used
   async postManyMoveAction(
     request: FastifyRequest,
     reply: FastifyReply,
@@ -295,6 +296,18 @@ export class ActionItemService {
       extra: { itemId: item.id, body: request.body as any },
     }));
     await this.actionService.postMany(member, repositories, request, actions);
+  }
+
+  async postMoveAction(request: FastifyRequest, repositories: Repositories, item: Item) {
+    const { member } = request;
+    const action = {
+      item,
+      type: ItemActionType.Move,
+      // TODO: remove any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      extra: { itemId: item.id, body: request.body as any },
+    };
+    await this.actionService.post(member, repositories, request, action);
   }
 
   async postManyCopyAction(

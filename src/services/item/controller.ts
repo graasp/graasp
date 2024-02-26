@@ -24,9 +24,9 @@ import {
   updateMany,
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { ItemChildrenParams, ItemSearchParams } from './types';
+import { ItemChildrenParams, ItemSearchParams, SeriesPromise } from './types';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
-import { publishAfterMoved, publishFeedbackAfterAllMoved } from './ws/services';
+import { ItemWebsocketsService } from './ws/services';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
@@ -272,37 +272,38 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      Promise.allSettled<Item>(
+      const itemWsService = new ItemWebsocketsService(websockets);
+
+      SeriesPromise.allSettled<Item>(
         ids.map((itemId) => {
-          return db
-            .transaction(async (manager) => {
-              const repositories = buildRepositories(manager);
-              const { source, destination } = await itemService.move(
-                member,
-                repositories,
-                itemId,
-                parentId,
-              );
+          return async () => {
+            return db
+              .transaction(async (manager) => {
+                const repositories = buildRepositories(manager);
+                const { source, destination } = await itemService.move(
+                  member,
+                  repositories,
+                  itemId,
+                  parentId,
+                );
 
-              await actionItemService.postManyMoveAction(request, reply, repositories, [
-                destination,
-              ]);
+                await actionItemService.postMoveAction(request, repositories, destination);
 
-              return { source, destination };
-            })
-            .then(async ({ source, destination }) => {
-              publishAfterMoved(websockets, {
-                source,
-                destination,
-                sourceParentId: getParentFromPath(source.path),
+                return { source, destination };
+              })
+              .then(async ({ source, destination }) => {
+                itemWsService.publishTopicsForMove({
+                  source,
+                  destination,
+                  sourceParentId: getParentFromPath(source.path),
+                });
+                return destination;
               });
-              return destination;
-            });
+          };
         }),
       ).then(async (results) => {
         if (member) {
-          publishFeedbackAfterAllMoved({
-            websockets,
+          itemWsService.publishFeedbacksForMove({
             log,
             results,
             itemIds: ids,

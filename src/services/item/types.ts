@@ -30,3 +30,28 @@ export type ItemChildrenParams = {
   ordered?: boolean;
   types?: UnionOfConst<typeof ItemType>[];
 };
+
+export type SeriesPromiseResults<T> = {
+  success: T[];
+  failed: Error[];
+};
+
+export class SeriesPromise {
+  public static async allSettled<T>(
+    promises: (() => Promise<T>)[],
+  ): Promise<SeriesPromiseResults<T>> {
+    const success: SeriesPromiseResults<T>['success'] = [];
+    const failed: SeriesPromiseResults<T>['failed'] = [];
+
+    for (const promise of promises) {
+      try {
+        const result = await promise();
+        success.push(result);
+      } catch (error) {
+        failed.push(error);
+      }
+    }
+
+    return { success, failed };
+  }
+}

@@ -434,7 +434,7 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      // When the websocket is not received, indicating that the transaction
+      // When the websocket is not received, indicates that the transaction
       // is still in progress, the item should contain the old path.
       expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
         oldParentItem.path,
@@ -447,7 +447,7 @@ describe('Item websocket hooks', () => {
         );
       });
 
-      // When the websocket is received, indicating that the transaction
+      // When the websocket is received, indicates that the transaction
       // is done, the item should contain the new path.
       expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
         newParentItem.path,
@@ -471,7 +471,7 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      // When the websocket is not received, indicating that the transaction
+      // When the websocket is not received, indicates that the transaction
       // is still in progress, the item should contain the old path.
       expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
         oldParentItem.path,
@@ -485,7 +485,7 @@ describe('Item websocket hooks', () => {
         );
       });
 
-      // When the websocket is received, indicating that the transaction
+      // When the websocket is received, indicates that the transaction
       // is done, the item should contain the new path.
       expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
         newParentItem.path,
@@ -507,7 +507,7 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      // When the websocket is not received, indicating that the transaction
+      // When the websocket is not received, indicates that the transaction
       // is still in progress, the item's parent path should be root (undefined).
       const itemBeforeUpdate = await ItemRepository.findOneBy({ id: item.id });
       if (!itemBeforeUpdate) {
@@ -523,7 +523,7 @@ describe('Item websocket hooks', () => {
         );
       });
 
-      // When the websocket is received, indicating that the transaction
+      // When the websocket is received, indicates that the transaction
       // is done, the item should contain the new parent path.
       const itemAfterUpdate = await ItemRepository.findOneBy({ id: item.id });
       if (!itemAfterUpdate) {
@@ -548,7 +548,7 @@ describe('Item websocket hooks', () => {
       });
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
-      // When the websocket is not received, indicating that the transaction
+      // When the websocket is not received, indicates that the transaction
       // is still in progress, the item should contain the old path.
       expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
         oldParentItem.path,
@@ -560,7 +560,7 @@ describe('Item websocket hooks', () => {
         expect(ownCreate).toMatchObject(OwnItemsEvent('create', parseStringToDate(moved) as Item));
       });
 
-      // When the websocket is received, indicating that the transaction
+      // When the websocket is received, indicates that the transaction
       // is done, the item's parent path should be root (undefined).
       const itemAfterUpdate = await ItemRepository.findOneBy({ id: childItem.id });
       if (!itemAfterUpdate) {

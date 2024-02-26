@@ -10,14 +10,24 @@ import { aggregateExpressionNames, buildAggregateExpression } from '../utils/act
  */
 export const ActionRepository = AppDataSource.getRepository(Action).extend({
   /**
-   * Create given action and return it.
-   * @param action Action to create
+   * TODO: remove if it not used.
+   * Create given actions.
+   * @param action Actions to create
    */
   async postMany(actions: Pick<Action, 'member' | 'type'>[]): Promise<void> {
     // save action
     for (const action of actions) {
       await this.insert(action);
     }
+  },
+
+  /**
+   * Create given action.
+   * @param action Action to create
+   */
+  async post(action: Pick<Action, 'member' | 'type'>): Promise<void> {
+    // save action
+    await this.insert(action);
   },
 
   /**

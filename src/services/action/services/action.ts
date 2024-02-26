@@ -23,6 +23,7 @@ export class ActionService {
     this.memberService = memberService;
   }
 
+  // TODO: remove if it not used
   async postMany(
     member: Actor,
     repositories: Repositories,
@@ -58,5 +59,41 @@ export class ActionService {
     }));
 
     await repositories.actionRepository.postMany(completeActions);
+  }
+
+  async post(
+    member: Actor,
+    repositories: Repositories,
+    request: FastifyRequest,
+    action: Partial<Action> & Pick<Action, 'type'>,
+  ): Promise<void> {
+    const { headers } = request;
+
+    // prevent saving if member disabled
+    const enableMemberSaving = member?.extra?.enableSaveActions ?? true;
+    if (!enableMemberSaving) {
+      return;
+    }
+
+    // prevent saving if item disabled analytics
+    if (action.item?.settings?.enableSaveActions) {
+      return;
+    }
+
+    const view = getView(headers);
+    // warning: addresses might contained spoofed ips
+    const addresses = forwarded(request.raw);
+    const ip = addresses.pop();
+
+    const geolocation = ip ? getGeolocationIp(ip) : null;
+    const completeAction = {
+      member,
+      geolocation: geolocation ?? undefined,
+      view,
+      extra: {},
+      ...action,
+    };
+
+    await repositories.actionRepository.post(completeAction);
   }
 }
