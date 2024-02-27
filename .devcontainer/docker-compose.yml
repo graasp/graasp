@@ -38,7 +38,7 @@ services:
       # the Mailer config is set by the "mailer" service below
       MAILER_CONFIG_SMTP_HOST: mailer
       MAILER_CONFIG_SMTP_PORT: 1025
-      MAILER_CONFIG_SMTP_USE_SSL: false # only for dev purposes
+      MAILER_CONFIG_SMTP_USE_SSL: 'false' # only for dev purposes
       MAILER_CONFIG_USERNAME: docker
       MAILER_CONFIG_PASSWORD: docker
       # the Localstack config is set by the "localstack" service below
@@ -139,7 +139,6 @@ services:
       - 7700:7700
     volumes:
       - ./meilisearch_data:/meili_data
-
 
   # Localstack is used to test aws services locally
   localstack:
