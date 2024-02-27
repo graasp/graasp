@@ -55,6 +55,7 @@ This will create 10 containers :
 - `graasp-localstack` : Localstack instance use to fake S3 storage locally
 - `graasp-iframely` : Iframely instance used to get embeds for links
 - `mailer-1` : Simple mailer instance used to receive emails locally (see the [Utilities section](#utilities))
+- `localfile-1` : Simple static file server to get files stored in graasp when using the `local` storage otpion (see the [Utilities section](#utilities))
 
 > **Important**
 > To use localstack with the Docker installation, it is necessary to edit your `/etc/hosts` with the following line `127.0.0.1 localstack`. This is necessary because the backend creates signed urls with the localstack container hostname. Without changing the hosts, the developpement machine cannot resolve the `http://localstack` hostname.
@@ -147,7 +148,7 @@ REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 # Graasp file item file storage path
 # File item storage is set by ./.devcontainer/docker-compose.yml
 # FILE_STORAGE_ROOT_PATH=
-FILE_STORAGE_HOST=http://localhost:1081
+# FILE_STORAGE_HOST=http://localhost:1081
 
 # Graasp s3 file item
 S3_FILE_ITEM_PLUGIN=false
@@ -225,6 +226,8 @@ To run the application, use `yarn watch`. If any file change, the application wi
 ## Utilities
 
 The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides an instance of [mailcatcher](https://mailcatcher.me/), which emulates a SMTP server for sending e-mails. When using the email authentication flow, the mailbox web UI is accessible at [http://localhost:1080](http://localhost:1080). If you do not want to use mailcatcher, set the `MAILER_CONFIG_SMTP_HOST` variable in your `.env.development` to some random value (e.g. empty string). This will log the authentication links in the server console instead.
+
+The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides a [static file server](https://static-web-server.net/) for serving files when using the `local` storage option (alternative to the `s3` option). This option has the added benefit of being persistent when used locally in opposition to localstack (see the [known issues section](#known-issues) for more informations). The server is available at `http://localhost:1081`.
 
 ## Testing
 

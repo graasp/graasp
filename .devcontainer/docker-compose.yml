@@ -169,7 +169,6 @@ services:
     ports:
       - 1081:80
 
-
   # necessary for graasp-embedded-link-item
   iframely:
     container_name: graasp-iframely
