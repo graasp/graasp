@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0](https://github.com/graasp/graasp/compare/v1.19.0...v1.20.0) (2024-02-27)
+
+
+### Features
+
+* translate it.json via GitLocalize ([#832](https://github.com/graasp/graasp/issues/832)) ([3c7b08d](https://github.com/graasp/graasp/commit/3c7b08d4b6e8c6f5a517908ec164401e38780969))
+
+
+### Bug Fixes
+
+* local file bugs and add a localfiles server ([#843](https://github.com/graasp/graasp/issues/843)) ([a42ded9](https://github.com/graasp/graasp/commit/a42ded9f8288d0e3836d254d8b80682e32d53a21))
+* update dev deps ([#829](https://github.com/graasp/graasp/issues/829)) ([4c5f881](https://github.com/graasp/graasp/commit/4c5f88159a7ca294cc6cda0eb48db979e6019f3d))
+* use sdk esm version ([#838](https://github.com/graasp/graasp/issues/838)) ([8a164b2](https://github.com/graasp/graasp/commit/8a164b24a2e3ebf649a83e24ef84b9ab225810b8))
+
+
+### Tests
+
+* add test for action services ([#839](https://github.com/graasp/graasp/issues/839)) ([3121004](https://github.com/graasp/graasp/commit/3121004fd860f5faa3dba47f62d06494e9a3e2b4))
+
 ## [1.19.0](https://github.com/graasp/graasp/compare/v1.18.0...v1.19.0) (2024-02-20)
 
 
