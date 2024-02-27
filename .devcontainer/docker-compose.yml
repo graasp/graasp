@@ -19,6 +19,8 @@ services:
       PUBLIC_URL: http://localhost:3000
       # temporary storage for files inside the container
       FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
+      # the localfile config host points to the static file server defined below
+      FILE_STORAGE_HOST: http://localhost:1081
       # the DB config is set by the "db" service below
       DB_NAME: docker
       DB_USERNAME: docker
@@ -154,6 +156,18 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
     ports:
       - 4566-4583:4566-4583
+
+  localfile:
+    image: joseluisq/static-web-server:2
+    environment:
+      # Note: those envs are customizable but also optional
+      # - SERVER_HOST=127.0.0.1
+      - SERVER_PORT=80
+      - SERVER_ROOT=/tmp/graasp-file-item-storage
+    volumes:
+      - ../tmp:/tmp/graasp-file-item-storage
+    ports:
+      - 1081:80
 
   # necessary for graasp-embedded-link-item
   iframely:

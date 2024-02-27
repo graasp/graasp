@@ -212,6 +212,7 @@ export const MAILER_CONFIG_FROM_EMAIL =
 // Graasp file item
 // TODO: should this be here?
 export const FILE_STORAGE_ROOT_PATH = process.env.FILE_STORAGE_ROOT_PATH || process.env.TMPDIR;
+export const FILE_STORAGE_HOST = process.env.FILE_STORAGE_HOST;
 
 // Graasp S3 file item
 // TODO: should this be here?
@@ -326,7 +327,10 @@ export const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) :
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
 
-export const FILE_ITEM_PLUGIN_OPTIONS = { storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root' };
+export const FILE_ITEM_PLUGIN_OPTIONS: LocalFileConfiguration = {
+  storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root',
+  localFilesHost: FILE_STORAGE_HOST,
+};
 
 export const ITEMS_ROUTE_PREFIX = '/items';
 export const APP_ITEMS_PREFIX = '/app-items';
