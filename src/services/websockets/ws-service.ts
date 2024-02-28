@@ -111,7 +111,7 @@ export class WebsocketService {
           ? createServerSuccessResponse(request)
           : createServerErrorResponse(new Websocket.NotFoundError(), request);
       } catch (error) {
-        res = createServerErrorResponse(error, request);
+        res = createServerErrorResponse(error as Error, request);
       }
     }
 

@@ -11,6 +11,7 @@
   },
   "license": "AGPL-3.0-only",
   "author": "Graasp",
+  "type": "module",
   "scripts": {
     "start": "yarn serve",
     "build": "yarn build-ts && yarn lint",
@@ -132,6 +133,7 @@
     "@types/sanitize-html": "2.11.0",
     "@types/striptags": "3.1.1",
     "@types/uuid": "9.0.8",
+    "@types/ws": "8.5.10",
     "@types/yazl": "2.4.5",
     "@typescript-eslint/eslint-plugin": "7.0.1",
     "@typescript-eslint/parser": "7.0.1",
