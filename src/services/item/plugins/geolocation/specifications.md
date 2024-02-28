@@ -6,6 +6,7 @@ A geolocation attached to a hierarchy of items. It is composed of:
 - `lat`: latitude
 - `lng`: longitude
 - `country`: derived from `lat` and `lng`, could be `null`
+- `addressLabel`: human readable address, this value can be in any language depending the user
 - `item_path`: attached item, that can be inherited (a folder gives its geolocation to its children).
 
 `lat` and `lng` are always defined. However they could not match a specific `country` (ie. ocean).

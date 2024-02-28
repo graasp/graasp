@@ -10,6 +10,9 @@ import {
   ResultOf,
   UUID,
   UnionOfConst,
+  buildPathFromIds,
+  getChildFromPath,
+  getParentFromPath,
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
@@ -25,14 +28,7 @@ import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
-import {
-  _fixChildrenOrder,
-  dashToUnderscore,
-  itemDepth,
-  parentPath,
-  pathToId,
-  sortChildrenWith,
-} from './utils';
+import { _fixChildrenOrder, sortChildrenWith } from './utils';
 
 type ItemSettings = DiscriminatedItem['settings'];
 export const DEFAULT_ITEM_SETTINGS: ItemSettings = {
@@ -43,7 +39,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
     // check if hierarchy it too deep
     // adds nb of items to be created
-    if (itemDepth(item) + additionalNbLevel > MAX_TREE_LEVELS) {
+    const itemDepth = item.path.split('.').length;
+    if (itemDepth + additionalNbLevel > MAX_TREE_LEVELS) {
       throw new HierarchyTooDeep();
     }
   },
@@ -106,7 +103,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       lang: lang ?? creator.lang ?? 'en',
       creator,
     });
-    item.path = parent ? `${parent.path}.${dashToUnderscore(id)}` : dashToUnderscore(id);
+    item.path = parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id);
 
     return item;
   },
@@ -301,13 +298,13 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       // fail if
       if (
         parentItemPath.startsWith(item.path) || // moving into itself or "below" itself
-        parentPath(item) === parentItemPath // moving to the same parent ("not moving")
+        getParentFromPath(item.path) === parentItemId // moving to the same parent ("not moving")
       ) {
         throw new InvalidMoveTarget(parentItemId);
       }
 
       // TODO: should this info go into 'message'? (it's the only exception to the rule)
-    } else if (!parentPath(item)) {
+    } else if (!getParentFromPath(item.path)) {
       // moving from "no-parent" to "no-parent" ("not moving")
       throw new InvalidMoveTarget();
     }
@@ -445,7 +442,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       if (!oldParentPath) {
         throw new Error('Path is not defined');
       }
-      const oldParentId_ = pathToId(oldParentPath);
+      const oldParentId_ = getChildFromPath(oldParentPath);
       const oldParentObject = old2New.get(oldParentId_);
       // this shouldn't happen
       if (!oldParentObject) {
