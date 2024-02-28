@@ -1525,13 +1525,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/auth@npm:4.4.0":
-  version: 4.4.0
-  resolution: "@fastify/auth@npm:4.4.0"
+"@fastify/auth@npm:4.6.1":
+  version: 4.6.1
+  resolution: "@fastify/auth@npm:4.6.1"
   dependencies:
     fastify-plugin: "npm:^4.0.0"
     reusify: "npm:^1.0.4"
-  checksum: 10/7087d04f5f46fdc1ca7868054413a331f5a31239315d10e73a058caa1caeec26d20d909a1b9907073e860ca8c752cc28a77313d781ae66983a734b65a6d8427c
+  checksum: 10/abc26d45bc62f68c108301cc0525a47ae9915d523ca19c36a947635b99f3d28e4fdaae085f1a1be76bc2519401ce827bd4342e47c182d661d817a938ca219b45
   languageName: node
   linkType: hard
 
@@ -6488,7 +6488,7 @@ __metadata:
     "@aws-sdk/s3-request-presigner": "npm:3.395.0"
     "@commitlint/cli": "npm:17.8.1"
     "@commitlint/config-conventional": "npm:17.8.1"
-    "@fastify/auth": "npm:4.4.0"
+    "@fastify/auth": "npm:4.6.1"
     "@fastify/bearer-auth": "npm:9.3.0"
     "@fastify/cors": "npm:8.5.0"
     "@fastify/forwarded": "npm:2.2.0"
