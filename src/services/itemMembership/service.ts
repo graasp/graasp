@@ -79,8 +79,8 @@ export class ItemMembershipService {
           await validatePermission(repositories, PermissionLevel.Read, actor, item);
         } catch (e) {
           // if does not have permission, remove data and add error
-          delete data.data[id];
-          errors.push(e);
+          delete data[id];
+          errors.push(e as Error);
         }
       }),
     );

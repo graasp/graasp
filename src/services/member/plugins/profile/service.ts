@@ -3,15 +3,16 @@ import { FastifyBaseLogger } from 'fastify';
 import { MemberNotFound, UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
+import { IMemberProfile } from './types';
 
 export class MemberProfileService {
   log: FastifyBaseLogger;
 
-  constructor(log) {
+  constructor(log: FastifyBaseLogger) {
     this.log = log;
   }
 
-  async post(member: Actor, repositories: Repositories, data) {
+  async post(member: Actor, repositories: Repositories, data: IMemberProfile) {
     const { memberProfileRepository } = repositories;
     if (!member?.id) {
       throw new UnauthorizedMember();
@@ -38,7 +39,7 @@ export class MemberProfileService {
     const memberProfile = await memberProfileRepository.getByMemberId(member.id);
     return memberProfile;
   }
-  async patch(member: Actor, repositories: Repositories, data) {
+  async patch(member: Actor, repositories: Repositories, data: Partial<IMemberProfile>) {
     const { memberProfileRepository } = repositories;
 
     if (!member?.id) {
