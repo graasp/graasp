@@ -1525,13 +1525,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/auth@npm:4.4.0":
-  version: 4.4.0
-  resolution: "@fastify/auth@npm:4.4.0"
+"@fastify/auth@npm:4.6.1":
+  version: 4.6.1
+  resolution: "@fastify/auth@npm:4.6.1"
   dependencies:
     fastify-plugin: "npm:^4.0.0"
     reusify: "npm:^1.0.4"
-  checksum: 10/7087d04f5f46fdc1ca7868054413a331f5a31239315d10e73a058caa1caeec26d20d909a1b9907073e860ca8c752cc28a77313d781ae66983a734b65a6d8427c
+  checksum: 10/abc26d45bc62f68c108301cc0525a47ae9915d523ca19c36a947635b99f3d28e4fdaae085f1a1be76bc2519401ce827bd4342e47c182d661d817a938ca219b45
   languageName: node
   linkType: hard
 
@@ -3469,6 +3469,15 @@ __metadata:
   version: 9.0.8
   resolution: "@types/uuid@npm:9.0.8"
   checksum: 10/b8c60b7ba8250356b5088302583d1704a4e1a13558d143c549c408bf8920535602ffc12394ede77f8a8083511b023704bc66d1345792714002bfa261b17c5275
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:8.5.10":
+  version: 8.5.10
+  resolution: "@types/ws@npm:8.5.10"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/9b414dc5e0b6c6f1ea4b1635b3568c58707357f68076df9e7cd33194747b7d1716d5189c0dbdd68c8d2521b148e88184cf881bac7429eb0e5c989b001539ed31
   languageName: node
   linkType: hard
 
@@ -6488,7 +6497,7 @@ __metadata:
     "@aws-sdk/s3-request-presigner": "npm:3.395.0"
     "@commitlint/cli": "npm:17.8.1"
     "@commitlint/config-conventional": "npm:17.8.1"
-    "@fastify/auth": "npm:4.4.0"
+    "@fastify/auth": "npm:4.6.1"
     "@fastify/bearer-auth": "npm:9.3.0"
     "@fastify/cors": "npm:8.5.0"
     "@fastify/forwarded": "npm:2.2.0"
@@ -6523,6 +6532,7 @@ __metadata:
     "@types/sharp": "npm:0.31.1"
     "@types/striptags": "npm:3.1.1"
     "@types/uuid": "npm:9.0.8"
+    "@types/ws": "npm:8.5.10"
     "@types/yazl": "npm:2.4.5"
     "@typescript-eslint/eslint-plugin": "npm:7.0.1"
     "@typescript-eslint/parser": "npm:7.0.1"

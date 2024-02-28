@@ -264,7 +264,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   },
 
   // TODO: check result value
-  async getNumberOfLevelsToFarthestChild(item: Item): Promise<number> {
+  async getNumberOfLevelsToFarthestChild(item: Item): Promise<number | undefined> {
     return this.createQueryBuilder('item')
       .addSelect(`nlevel(path) - nlevel('${item.path}')`)
       .where('item.path <@ :path', { path: item.path })

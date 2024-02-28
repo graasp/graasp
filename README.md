@@ -114,19 +114,19 @@ DATABASE_LOGS=true
 
 # Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key and https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
 # TLDR: npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
-SECURE_SESSION_SECRET_KEY=<content>
+SECURE_SESSION_SECRET_KEY=<secret-key>
 
 
 ### Auth
 
 TOKEN_BASED_AUTH=true
 # JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
-JWT_SECRET=<content>
+JWT_SECRET=<secret-key>
 # Auth JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
-AUTH_TOKEN_JWT_SECRET=<content>
+AUTH_TOKEN_JWT_SECRET=<secret-key>
 AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
 # Refresh JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
-REFRESH_TOKEN_JWT_SECRET=<content>
+REFRESH_TOKEN_JWT_SECRET=<secret-key>
 REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
 
 
@@ -179,7 +179,7 @@ H5P_PATH_PREFIX=h5p-content/
 # EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://graasp-iframely:8061
 
 # Graasp apps
-APPS_JWT_SECRET=<content>
+APPS_JWT_SECRET=<secret-key>
 APPS_PUBLISHER_ID=<id>
 
 # Graasp websockets
@@ -205,7 +205,7 @@ GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 IMAGE_CLASSIFIER_API=<url>
 
 # get a recaptcha secret access key for your hostname at http://www.google.com/recaptcha/admin
-RECAPTCHA_SECRET_ACCESS_KEY=<content>
+RECAPTCHA_SECRET_ACCESS_KEY=<google-recaptcha-key>
 # Graasp search
 MEILISEARCH_URL=http://graasp-meilisearch:7700
 MEILISEARCH_MASTER_KEY=masterKey
@@ -216,7 +216,7 @@ JOB_SCHEDULING=true
 
 # OPEN AI
 # OPENAI_GPT_VERSION=<DEFAULT_GPT_VERSION> # valid values are gpt-4 or gpt-3.5-turbo
-OPENAI_API_KEY=<token>
+OPENAI_API_KEY=<openai-api-key>
 ```
 
 ## Running
