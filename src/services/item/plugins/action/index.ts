@@ -20,7 +20,7 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import { ItemOpFeedbackEvent, ResultOfFactory, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
 import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas';
@@ -175,7 +175,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('export', [itemId], { error: e }),
+            ItemOpFeedbackEvent('export', [itemId], ResultOfFactory.withError(e)),
           );
         }
       });

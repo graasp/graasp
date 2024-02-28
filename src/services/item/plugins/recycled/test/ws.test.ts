@@ -18,6 +18,7 @@ import {
   ItemEvent,
   ItemOpFeedbackEvent,
   OwnItemsEvent,
+  ResultOfFactory,
   SelfItemEvent,
   SharedItemsEvent,
   itemTopic,
@@ -710,9 +711,11 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('recycle', [item.id], {
-            error: new Error('mock error'),
-          }),
+          ItemOpFeedbackEvent(
+            'recycle',
+            [item.id],
+            ResultOfFactory.withError(new Error('mock error')),
+          ),
         );
       });
     });
@@ -771,9 +774,11 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('restore', [item.id], {
-            error: new Error('mock error'),
-          }),
+          ItemOpFeedbackEvent(
+            'restore',
+            [item.id],
+            ResultOfFactory.withError(new Error('mock error')),
+          ),
         );
       });
     });

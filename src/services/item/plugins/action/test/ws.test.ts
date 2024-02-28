@@ -7,7 +7,7 @@ import { clearDatabase } from '../../../../../../test/app';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../../ws/events';
+import { ItemOpFeedbackEvent, ResultOfFactory, memberItemsTopic } from '../../../ws/events';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 
 // mock datasource
@@ -97,7 +97,11 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
       expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('export', [item.id], { error: new Error('mock error') }),
+        ItemOpFeedbackEvent(
+          'export',
+          [item.id],
+          ResultOfFactory.withError(new Error('mock error')),
+        ),
       );
     });
   });

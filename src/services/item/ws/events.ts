@@ -130,6 +130,11 @@ export const SharedItemsEvent = (op: SharedItemsEvent['op'], item: Item): Shared
   item,
 });
 
+export const ResultOfFactory = {
+  withError: (e: Error) => ResultOfFactory.withErrors([e]),
+  withErrors: (errors: Error[]) => ({ data: {}, errors }),
+};
+
 /**
  * Events from asynchronous background operations on given items
  */
@@ -137,11 +142,7 @@ export interface ItemOpFeedbackEventInterface {
   kind: 'feedback';
   op: 'update' | 'delete' | 'move' | 'copy' | 'export' | 'recycle' | 'restore' | 'validate';
   resource: Item['id'][];
-  result:
-    | {
-        error: Error;
-      }
-    | ResultOf<Item>;
+  result: ResultOf<Item>;
 }
 
 /**
@@ -160,8 +161,12 @@ export const ItemOpFeedbackEvent = (
   kind: 'feedback',
   op,
   resource,
-  result: result['error']
-    ? // monkey patch because somehow JSON.stringify(e: Error) will always result in {}
-      { error: { name: result['error'].name, message: result['error'].message } }
-    : result,
+  result: {
+    data: result.data,
+    // monkey patch because JSON.stringify(e: Error) will always result in {}
+    errors: result.errors.map((e) => ({
+      name: e.name,
+      message: e.message,
+    })),
+  },
 });

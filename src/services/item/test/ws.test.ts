@@ -28,6 +28,7 @@ import {
   ItemEvent,
   ItemOpFeedbackEvent,
   OwnItemsEvent,
+  ResultOfFactory,
   SelfItemEvent,
   SharedItemsEvent,
   itemTopic,
@@ -618,7 +619,11 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('update', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackEvent(
+            'update',
+            [item.id],
+            ResultOfFactory.withError(new Error('mock error')),
+          ),
         );
       });
     });
@@ -662,7 +667,11 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [_ownUpdate, _accessibleUpdate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('delete', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackEvent(
+            'delete',
+            [item.id],
+            ResultOfFactory.withError(new Error('mock error')),
+          ),
         );
       });
     });
@@ -714,7 +723,11 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('move', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackEvent(
+            'move',
+            [item.id],
+            ResultOfFactory.withError(new Error('mock error')),
+          ),
         );
       });
     });
@@ -764,7 +777,11 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('copy', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackEvent(
+            'copy',
+            [item.id],
+            ResultOfFactory.withError(new Error('mock error')),
+          ),
         );
       });
     });

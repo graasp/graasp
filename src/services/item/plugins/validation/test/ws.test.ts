@@ -8,7 +8,12 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { ItemEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../../ws/events';
+import {
+  ItemEvent,
+  ItemOpFeedbackEvent,
+  ResultOfFactory,
+  memberItemsTopic,
+} from '../../../ws/events';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { saveItemValidation } from './utils';
 
@@ -82,9 +87,11 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
       expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('validate', [item.id], {
-          error: new Error('mock error'),
-        }),
+        ItemOpFeedbackEvent(
+          'validate',
+          [item.id],
+          ResultOfFactory.withError(new Error('mock error')),
+        ),
       );
     });
   });

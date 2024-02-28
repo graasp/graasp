@@ -21,50 +21,36 @@ type MoveParams = {
   sourceParentId?: string;
 };
 
+type PublishFeedbackParams = {
+  results: SeriesPromiseResults<Item>;
+  itemIds: string[];
+  log: FastifyBaseLogger;
+  memberId: string;
+  feedbackOp: ItemOpFeedbackEventInterface['op'];
+};
+
 export class ItemWebsocketsService {
-  private websockets;
+  private websockets: WebsocketService;
 
   constructor(websockets: WebsocketService) {
     this.websockets = websockets;
   }
 
   // TODO: update this to send only one ws ? like a warning or success or error ?
-  private publishFeedback({
-    results,
-    itemIds,
-    log,
-    memberId,
-    feedbackOp,
-  }: {
-    results: SeriesPromiseResults<Item>;
-    itemIds: string[];
-    log: FastifyBaseLogger;
-    memberId: string;
-    feedbackOp: ItemOpFeedbackEventInterface['op'];
-  }) {
+  private publishFeedback({ results, itemIds, log, memberId, feedbackOp }: PublishFeedbackParams) {
     const { success, failed } = results;
-    const successIds = success.map((i) => i.id);
-    const failedIds = itemIds.filter((id) => !successIds.includes(id));
 
-    if (success.length) {
-      this.websockets.publish(
-        memberItemsTopic,
-        memberId,
-        ItemOpFeedbackEvent(feedbackOp, successIds, {
-          data: Object.fromEntries(success.map((i) => [i.id, i])),
-          errors: [],
-        }),
-      );
-    }
+    this.websockets.publish(
+      memberItemsTopic,
+      memberId,
+      ItemOpFeedbackEvent(feedbackOp, itemIds, {
+        data: Object.fromEntries(success.map((i) => [i.id, i])),
+        errors: failed,
+      }),
+    );
+
     if (failed.length) {
-      failed.forEach((e) => {
-        log.error(e);
-        this.websockets.publish(
-          memberItemsTopic,
-          memberId,
-          ItemOpFeedbackEvent(feedbackOp, failedIds, { error: e }),
-        );
-      });
+      log.error(failed);
     }
   }
 
@@ -115,12 +101,7 @@ export class ItemWebsocketsService {
     itemIds,
     log,
     memberId,
-  }: {
-    results: SeriesPromiseResults<Item>;
-    itemIds: string[];
-    log: FastifyBaseLogger;
-    memberId: string;
-  }) {
+  }: Omit<PublishFeedbackParams, 'feedbackOp'>) {
     this.publishFeedback({
       results,
       itemIds,

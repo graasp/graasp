@@ -25,7 +25,7 @@ import {
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams, SeriesPromise } from './types';
-import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
+import { ItemOpFeedbackEvent, ResultOfFactory, memberItemsTopic } from './ws/events';
 import { ItemWebsocketsService } from './ws/services';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -212,7 +212,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('update', ids, { error: e }),
+            ItemOpFeedbackEvent('update', ids, ResultOfFactory.withError(e)),
           );
         }
       });
@@ -253,7 +253,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('delete', ids, { error: e }),
+            ItemOpFeedbackEvent('delete', ids, ResultOfFactory.withError(e)),
           );
         }
       });
@@ -352,7 +352,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('copy', ids, { error: e }),
+            ItemOpFeedbackEvent('copy', ids, ResultOfFactory.withError(e)),
           );
         }
       });

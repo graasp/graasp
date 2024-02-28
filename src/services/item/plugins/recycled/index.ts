@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { IdParam, IdsParams, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import { ItemOpFeedbackEvent, ResultOfFactory, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
 import { recycleWsHooks } from './ws/hooks';
@@ -88,7 +88,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('recycle', ids, { error: e }),
+            ItemOpFeedbackEvent('recycle', ids, ResultOfFactory.withError(e)),
           );
         }
       });
@@ -138,7 +138,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('restore', ids, { error: e }),
+            ItemOpFeedbackEvent('restore', ids, ResultOfFactory.withError(e)),
           );
         }
       });
