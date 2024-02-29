@@ -90,3 +90,16 @@ export class NoGroupFoundForInvitations extends GraaspInvitationsError {
     );
   }
 }
+
+export class NoFileProvidedForInvitations extends GraaspInvitationsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPINVERR008',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'No file was provided. Please provide a file for creating bulk invitations',
+      },
+      data,
+    );
+  }
+}
