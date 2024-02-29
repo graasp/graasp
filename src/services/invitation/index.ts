@@ -10,6 +10,7 @@ import { IdParam } from '../../types';
 import { Repositories, buildRepositories } from '../../utils/repositories';
 import { Actor, Member } from '../member/entities/member';
 import { MAX_FILES, MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
+import { NoFileProvidedForInvitations } from './errors';
 import { Invitation } from './invitation';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
 import { InvitationService } from './service';
@@ -66,27 +67,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   });
 
-  fastify.route<{ Querystring: IdParam & { template_id: string } }>({
-    method: HttpMethod.Post,
-    url: '/:id/invitations/upload_csv',
-    preHandler: fastify.verifyAuthentication,
-    handler: async (request) => {
-      // Help: is this a good way to obtain the itemMembershipService?
-      // TO-DO: declare before the memberships
+  // post invitations from a csv file
+  fastify.post<{ Querystring: IdParam & { template_id: string } }>(
+    '/:id/invitations/upload-csv',
+    { preHandler: fastify.verifyAuthentication },
+    async ({ member, query, file }) => {
+      // We need to get the membership service here because it is defined after the invitation service
       const { memberships } = fastify;
-      const { member, query } = request;
-      const file = await request.file();
-      return await db.transaction(async (manager) => {
-        return await iS.handleCSVInvitations(
+      // get uploaded file
+      const uploadedFile = await file();
+
+      if (!uploadedFile) {
+        throw new NoFileProvidedForInvitations();
+      }
+
+      return await db.transaction(async (manager) =>
+        iS.handleCSVInvitations(
           member,
           buildRepositories(manager),
           query,
-          file,
+          uploadedFile,
           memberships.service,
-        );
-      });
+        ),
+      );
     },
-  });
+  );
 
   // get all invitations for an item
   fastify.get<{ Params: IdParam }>(

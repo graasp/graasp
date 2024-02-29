@@ -16,7 +16,7 @@ import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import ItemMembershipService from '../itemMembership/service';
 import { Actor, Member } from '../member/entities/member';
 import { MemberService } from '../member/service';
-import { CSV_MIMETYPE, GRP_COL_NAME, buildInvitationLink } from './constants';
+import { GRP_COL_NAME, buildInvitationLink } from './constants';
 import {
   NoDataFoundForInvitations,
   NoEmailFoundForInvitations,
@@ -24,7 +24,7 @@ import {
   NoGroupNamesFoundForInvitations,
 } from './errors';
 import { Invitation } from './invitation';
-import { CSVInvite, getCSV, regexGenFirstLevelItems } from './utils';
+import { CSVInvite, getCSV, regexGenFirstLevelItems, verifyCSVFileFormat } from './utils';
 
 export class InvitationService {
   log: FastifyBaseLogger;
@@ -168,25 +168,23 @@ export class InvitationService {
     actor: Actor,
     repositories: Repositories,
     query: IdParam & { template_id: string },
-    file: MultipartFile | undefined,
+    file: MultipartFile,
     itemMembershipService: ItemMembershipService,
   ): Promise<{
     data: (Invitation | ItemMembership)[];
     errors: Error[];
   }> {
-    if (!file || file.mimetype != CSV_MIMETYPE) {
-      throw new Error(`
-          An incorrect type of file has been uploaded,
-          Please upload a file with .csv extension
-        `);
-    }
-    const res: {
-      data: (Invitation | ItemMembership)[];
-      errors: Error[];
-    } = { data: [], errors: [] };
+    // verify file is CSV
+    verifyCSVFileFormat(file);
+
+    // declare results
+
     const { id: parentId, template_id } = query;
+
+    // get parentItem
     const parentItem = await repositories.itemRepository.get(parentId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, parentItem);
+
     const stream = file.file;
     const { rows, header } = await getCSV(stream);
     const hasGrpCol = header.includes(GRP_COL_NAME);
@@ -330,6 +328,11 @@ export class InvitationService {
     // non Graasp users and membership for Graasp users.
     const emails = selRows.map((inv) => inv.email.toLocaleLowerCase());
     const accounts = await this.memberService.getManyByEmail(actor, repositories, emails);
+
+    const res: {
+      data: (Invitation | ItemMembership)[];
+      errors: Error[];
+    } = { data: [], errors: [] };
 
     await Promise.all(
       Array.from(invitesPerGroup.values()).map(async (arrOfInvitations) => {
