@@ -1,15 +1,12 @@
-import { copyFile } from 'fs';
-
-import { Multipart, MultipartFields, MultipartFile } from '@fastify/multipart';
+import { MultipartFile } from '@fastify/multipart';
 import { FastifyBaseLogger } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
-import { IdParam, PermissionLevel, ResultOf, partition } from '@graasp/sdk';
+import { PermissionLevel, partitionArray } from '@graasp/sdk';
 import { ItemType } from '@graasp/sdk';
-import { MAIL } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../plugins/mailer';
 import { MAIL } from '../../plugins/mailer/langs/constants';
+import { IdParam } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
@@ -201,7 +198,7 @@ export class InvitationService {
 
     // Check the rows in CSV contain email or there is some rows
     // with missing email
-    const [rowsWithEmail, rowsWithoutEmail] = partition(rows, (d) => Boolean(d.email));
+    const [rowsWithEmail, rowsWithoutEmail] = partitionArray(rows, (d) => Boolean(d.email));
     if (!rowsWithEmail.length) {
       throw new NoDataFoundForInvitations();
     }
@@ -214,7 +211,7 @@ export class InvitationService {
     if (hasGrpCol) {
       // If detecting group column defined, check if there exists rows with
       // group names defined
-      const [rowsWithGroups, rowsWithoutGroup] = partition(rowsWithEmail, (d) =>
+      const [rowsWithGroups, rowsWithoutGroup] = partitionArray(rowsWithEmail, (d) =>
         Boolean(d.group_name),
       );
 
@@ -340,7 +337,7 @@ export class InvitationService {
           ...d,
           memberId: accounts.data[d.email?.toLowerCase()]?.id,
         }));
-        const [newMemberships, invitations] = partition(dataWithMemberId, (d) =>
+        const [newMemberships, invitations] = partitionArray(dataWithMemberId, (d) =>
           Boolean(d.memberId),
         );
         if (newMemberships.length) {

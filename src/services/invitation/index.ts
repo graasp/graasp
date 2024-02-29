@@ -67,7 +67,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.route<{ Querystring: IdParam & { template_id: string } }>({
-    method: HttpMethod.POST,
+    method: HttpMethod.Post,
     url: '/:id/invitations/upload_csv',
     preHandler: fastify.verifyAuthentication,
     handler: async (request) => {
