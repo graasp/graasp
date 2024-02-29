@@ -16,7 +16,6 @@ import { Item } from '../../item/entities/Item';
 import { Member } from '../../member/entities/member';
 
 @Entity()
-@Index('IDX_gist_action_path', { synchronize: false })
 export class Action extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -33,11 +32,11 @@ export class Action extends BaseEntity {
    * action can be related to a behavior not related to an item
    */
   @ManyToOne(() => Item, (item) => item.path, {
-    onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
     nullable: true,
   })
-  @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
+  @Index()
+  @JoinColumn({ referencedColumnName: 'id', name: 'item_id' })
   item?: Item | null;
 
   @Column({
