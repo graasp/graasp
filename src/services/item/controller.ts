@@ -24,7 +24,7 @@ import {
   updateMany,
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { ItemChildrenParams, ItemSearchParams, SeriesPromise } from './types';
+import { ItemChildrenParams, ItemSearchParams, PromiseRunner } from './types';
 import { ItemOpFeedbackEvent, ResultOfFactory, memberItemsTopic } from './ws/events';
 import { ItemWebsocketsService } from './ws/services';
 
@@ -274,7 +274,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       const itemWsService = new ItemWebsocketsService(websockets);
 
-      SeriesPromise.allSettled<Item>(
+      PromiseRunner.inSeries<Item>(
         ids.map((itemId) => {
           return async () => {
             return db
@@ -291,7 +291,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
                 return { source, destination };
               })
-              .then(async ({ source, destination }) => {
+              .then(({ source, destination }) => {
                 itemWsService.publishTopicsForMove({
                   source,
                   destination,
@@ -301,7 +301,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               });
           };
         }),
-      ).then(async (results) => {
+      ).then((results) => {
         if (member) {
           itemWsService.publishFeedbacksForMove({
             log,

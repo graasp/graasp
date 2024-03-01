@@ -4,7 +4,7 @@ import { getParentFromPath } from '@graasp/sdk';
 
 import { WebsocketService } from '../../websockets/ws-service';
 import { Item } from '../entities/Item';
-import { SeriesPromiseResults } from '../types';
+import { PromiseRunnerResults } from '../types';
 import {
   AccessibleItemsEvent,
   ChildItemEvent,
@@ -22,7 +22,7 @@ type MoveParams = {
 };
 
 type PublishFeedbackParams = {
-  results: SeriesPromiseResults<Item>;
+  results: PromiseRunnerResults<Item>;
   itemIds: string[];
   log: FastifyBaseLogger;
   memberId: string;
