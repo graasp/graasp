@@ -25,7 +25,8 @@ const settings = S.object()
   .prop('isResizable', S.boolean())
   .prop('hasThumbnail', S.boolean())
   .prop('ccLicenseAdaption', S.string())
-  .prop('displayCoEditors', S.boolean());
+  .prop('displayCoEditors', S.boolean())
+  .prop('descriptionPlacement', S.string());
 
 export const partialMember = S.object()
   .additionalProperties(false)
