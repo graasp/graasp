@@ -48,3 +48,16 @@ export class MissingGeolocationSearchParams extends GraaspItemGeolocationError {
     );
   }
 }
+
+export class MissingGeolocationApiKey extends GraaspItemGeolocationError {
+  constructor(data?) {
+    super(
+      {
+        code: 'GIGEOERR004',
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        message: 'Geolocation API key is not defined',
+      },
+      data,
+    );
+  }
+}

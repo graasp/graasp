@@ -218,8 +218,8 @@ JOB_SCHEDULING=true
 # OPENAI_GPT_VERSION=<DEFAULT_GPT_VERSION> # valid values are gpt-4 or gpt-3.5-turbo
 OPENAI_API_KEY=<openai-api-key>
 
-# GEOLOCATION API - this can be a mock values if you don't use geolocation
-GEOLOCATION_API_KEY='geolocation-key'
+# GEOLOCATION API - this can be empty if you don't use geolocation
+GEOLOCATION_API_KEY=
 ```
 
 ## Running

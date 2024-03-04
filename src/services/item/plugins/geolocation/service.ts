@@ -6,12 +6,13 @@ import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemGeolocation } from './ItemGeolocation';
+import { MissingGeolocationApiKey } from './errors';
 
 export class ItemGeolocationService {
   private itemService: ItemService;
-  private geolocationKey: string;
+  private geolocationKey?: string;
 
-  constructor(itemService: ItemService, geolocationKey: string) {
+  constructor(itemService: ItemService, geolocationKey?: string) {
     this.itemService = itemService;
     this.geolocationKey = geolocationKey;
   }
@@ -87,8 +88,11 @@ export class ItemGeolocationService {
     repositories: Repositories,
     query: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
   ) {
-    const { itemGeolocationRepository } = repositories;
+    if (!this.geolocationKey) {
+      throw new MissingGeolocationApiKey();
+    }
 
+    const { itemGeolocationRepository } = repositories;
     return itemGeolocationRepository.getAddressFromCoordinates(query, this.geolocationKey);
   }
 
@@ -97,8 +101,11 @@ export class ItemGeolocationService {
     repositories: Repositories,
     query: { query: string; lang?: string },
   ) {
-    const { itemGeolocationRepository } = repositories;
+    if (!this.geolocationKey) {
+      throw new MissingGeolocationApiKey();
+    }
 
+    const { itemGeolocationRepository } = repositories;
     return itemGeolocationRepository.getSuggestionsForQuery(query, this.geolocationKey);
   }
 }
