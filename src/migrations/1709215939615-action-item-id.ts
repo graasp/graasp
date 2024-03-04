@@ -32,7 +32,7 @@ export class Migrations1709215939615 implements MigrationInterface {
 
     // remove action item_id index
     await queryRunner.query(`DROP INDEX "public"."IDX_1214f6f4d832c402751617361c"`);
-    await queryRunner.query(`ALTER TABLE "action" ADD "item_path" uuid`);
+    await queryRunner.query(`ALTER TABLE "action" ADD "item_path" ltree`);
     await queryRunner.query(
       `UPDATE action SET item_path = (SELECT path FROM item WHERE item.id = action.item_id )`,
     );
