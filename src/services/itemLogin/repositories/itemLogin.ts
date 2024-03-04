@@ -11,7 +11,7 @@ export const ItemLoginRepository = AppDataSource.getRepository(ItemLogin).extend
       .leftJoinAndSelect('login.itemLoginSchema', 'iLS')
       .leftJoinAndSelect('iLS.item', 'item')
       .leftJoinAndSelect('login.member', 'member')
-      .where('item.path <@ :path', { path: item.path })
+      .where('item.path @> :path', { path: item.path })
       .andWhere('member.id = :id', { id: memberId })
       .getOne();
   },
@@ -26,16 +26,9 @@ export const ItemLoginRepository = AppDataSource.getRepository(ItemLogin).extend
       .leftJoinAndSelect('login.itemLoginSchema', 'itemLoginSchema')
       .leftJoinAndSelect('itemLoginSchema.item', 'item')
       .leftJoinAndSelect('login.member', 'member')
-      .where('item.path <@ :path', { path: item.path })
+      .where('item.path @> :path', { path: item.path })
       .andWhere('member.name = :name', { name: username })
       .getOne();
-  },
-
-  async getItemMembers(path: string) {
-    return this.createQueryBuilder('login')
-      .leftJoinAndSelect('login.item', 'item')
-      .leftJoinAndSelect('login.member', 'member')
-      .where('item.path <@ :path', { path });
   },
 
   async post(data: Partial<ItemLogin>): Promise<void> {

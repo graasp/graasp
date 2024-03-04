@@ -143,7 +143,7 @@ describe('Item Login Tests', () => {
         expect(result.item.id).toEqual(itemLoginSchema.item.id);
       });
 
-      it('Successfully get item login for child', async () => {
+      it('Successfully get item login defined in parent when calling from child for child ', async () => {
         await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
         const child = await saveItem({ parentItem: item, actor });
         const res = await app.inject({
@@ -267,6 +267,24 @@ describe('Item Login Tests', () => {
             expectItemLogin(member, m);
             expect(res.statusCode).toBe(StatusCodes.OK);
           });
+
+          it('Successfully reuse item login with username defined in parent when calling from child', async () => {
+            const payload = USERNAME_LOGIN;
+            // pre-create pseudonymized data
+            const m = await savePseudonymizedMember(payload.username);
+            await saveItemLogin({ item, member: m });
+            const child = await saveItem({ parentItem: item });
+
+            const res = await app.inject({
+              method: HttpMethod.Post,
+              url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login`,
+              payload,
+            });
+
+            const member = res.json();
+            expectItemLogin(member, m);
+            expect(res.statusCode).toBe(StatusCodes.OK);
+          });
         });
 
         describe('Member Id', () => {
@@ -295,6 +313,25 @@ describe('Item Login Tests', () => {
             const res = await app.inject({
               method: HttpMethod.Post,
               url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login`,
+              payload,
+            });
+
+            expect(res.statusCode).toBe(StatusCodes.OK);
+            expectItemLogin(res.json(), m);
+            expect(await ItemLoginRepository.find()).toHaveLength(1);
+          });
+
+          it('Successfully reuse item login with member id from child', async () => {
+            // pre-create pseudonymized data
+            const m = await savePseudonymizedMember('pseudonymized');
+            const payload = { memberId: m.id };
+            await saveItemLogin({ item, member: m });
+            const child = await saveItem({ parentItem: item });
+            expect(await ItemLoginRepository.find()).toHaveLength(1);
+
+            const res = await app.inject({
+              method: HttpMethod.Post,
+              url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login`,
               payload,
             });
 
