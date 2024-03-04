@@ -425,17 +425,18 @@ describe('Item Geolocation', () => {
     });
 
     describe('Signed out', () => {
-      it('get adress from reverse', async () => {
+      it('Throw', async () => {
         ({ app } = await build({ member: null }));
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
           query: {
-            lat: 1,
+            lat: 2,
             lng: 2,
           },
         });
-        expect(res.json()).toMatchObject({ addressLabel: 'address', country: 'country' });
+
+        expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       });
     });
 
@@ -502,31 +503,17 @@ describe('Item Geolocation', () => {
     });
 
     describe('Signed out', () => {
-      it('get suggestions from query', async () => {
+      it('Throw', async () => {
         ({ app } = await build({ member: null }));
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/search`,
           query: {
-            query: 'suggestion',
+            query: 'address',
           },
         });
-        expect(res.json()).toMatchObject([
-          {
-            addressLabel: 'address',
-            country: 'country',
-            lat: 45,
-            lng: 23,
-            id: 'id',
-          },
-          {
-            addressLabel: 'address1',
-            country: 'country1',
-            id: 'id1',
-            lat: 23,
-            lng: 12,
-          },
-        ]);
+
+        expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
       });
     });
 

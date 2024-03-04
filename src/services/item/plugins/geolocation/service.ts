@@ -2,7 +2,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermissionMany } from '../../../authorization';
-import { Actor } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemGeolocation } from './ItemGeolocation';
@@ -84,7 +84,7 @@ export class ItemGeolocationService {
   }
 
   async getAddressFromCoordinates(
-    actor: Actor,
+    member: Member,
     repositories: Repositories,
     query: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
   ) {
@@ -97,7 +97,7 @@ export class ItemGeolocationService {
   }
 
   async getSuggestionsForQuery(
-    actor: Actor,
+    member: Member,
     repositories: Repositories,
     query: { query: string; lang?: string },
   ) {

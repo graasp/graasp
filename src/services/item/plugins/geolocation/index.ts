@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { GEOLOCATION_API_KEY } from '../../../../utils/config';
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
@@ -99,8 +100,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/geolocation/reverse',
       {
         schema: geolocationReverse,
+        preHandler: fastify.verifyAuthentication,
       },
       async ({ member, query }) => {
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
         return itemGeolocationService.getAddressFromCoordinates(member, buildRepositories(), query);
       },
     );
@@ -109,8 +114,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/geolocation/search',
       {
         schema: geolocationSearch,
+        preHandler: fastify.verifyAuthentication,
       },
       async ({ member, query }) => {
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
         return itemGeolocationService.getSuggestionsForQuery(member, buildRepositories(), query);
       },
     );

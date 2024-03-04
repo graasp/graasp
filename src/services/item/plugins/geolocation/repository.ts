@@ -183,13 +183,15 @@ export class ItemGeolocationRepository {
     const searchParams = new URLSearchParams({
       apiKey: key,
       lat: lat.toString(),
-      lng: lng.toString(),
+      lon: lng.toString(),
       format: 'json',
       lang,
     });
     const { results } = await fetch(
       `${GEOLOCATION_API_HOST}/reverse?${searchParams.toString()}`,
-    ).then((r) => r.json());
+    ).then((r) => {
+      return r.json();
+    });
     return { addressLabel: results[0].formatted, country: results[0].country };
   }
 
