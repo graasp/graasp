@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
 import {
+  DescriptionPlacement,
   FolderItemExtra,
   FolderItemFactory,
   HttpMethod,
@@ -235,6 +236,23 @@ describe('Item routes tests', () => {
         const newItem = response.json();
         expectItem(newItem, payload, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Create successfully with description placement above and should not erase default thumbnail', async () => {
+        const payload = FolderItemFactory({
+          settings: { descriptionPlacement: DescriptionPlacement.ABOVE },
+        });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload,
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
+        expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
 
       it('Throw if geolocation is partial', async () => {
@@ -1925,6 +1943,35 @@ describe('Item routes tests', () => {
           ...payload,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Update successfully description placement above', async () => {
+        const { item } = await saveItemAndMembership({
+          member: actor,
+        });
+        const payload = {
+          settings: {
+            ...item.settings,
+            descriptionPlacement: DescriptionPlacement.ABOVE,
+          },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${item.id}`,
+          payload,
+        });
+
+        const newItem = response.json();
+
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(newItem, {
+          ...item,
+          ...payload,
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
+        expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
 
       // TODO: extra should be patch correctly
