@@ -143,7 +143,7 @@ describe('Item Login Tests', () => {
         expect(result.item.id).toEqual(itemLoginSchema.item.id);
       });
 
-      it('Successfully get item login for child', async () => {
+      it('Successfully get item login defined in parent when calling from child for child ', async () => {
         await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
         const child = await saveItem({ parentItem: item, actor });
         const res = await app.inject({
@@ -268,7 +268,7 @@ describe('Item Login Tests', () => {
             expect(res.statusCode).toBe(StatusCodes.OK);
           });
 
-          it('Successfully reuse item login with username from child', async () => {
+          it('Successfully reuse item login with username defined in parent when calling from child', async () => {
             const payload = USERNAME_LOGIN;
             // pre-create pseudonymized data
             const m = await savePseudonymizedMember(payload.username);
