@@ -95,7 +95,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       },
     );
 
-    fastify.get<{ Querystring: Pick<ItemGeolocation, 'lat' | 'lng'> }>(
+    fastify.get<{ Querystring: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string } }>(
       '/geolocation/reverse',
       {
         schema: geolocationReverse,
@@ -105,17 +105,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       },
     );
 
-    fastify.get<{ Querystring: { query: string } }>(
+    fastify.get<{ Querystring: { query: string } & { lang?: string } }>(
       '/geolocation/search',
       {
         schema: geolocationSearch,
       },
       async ({ member, query }) => {
-        return itemGeolocationService.getSuggestionsForQuery(
-          member,
-          buildRepositories(),
-          query.query,
-        );
+        return itemGeolocationService.getSuggestionsForQuery(member, buildRepositories(), query);
       },
     );
   });

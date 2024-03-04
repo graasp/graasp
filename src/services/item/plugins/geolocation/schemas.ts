@@ -87,6 +87,7 @@ export const geolocationReverse = {
     properties: {
       lat: { type: 'number' },
       lng: { type: 'number' },
+      lang: { type: 'string' },
     },
     required: ['lat', 'lng'],
   },
@@ -107,6 +108,7 @@ export const geolocationSearch = {
     type: 'object',
     properties: {
       query: { type: 'string' },
+      lang: { type: 'string' },
     },
     required: ['query'],
   },

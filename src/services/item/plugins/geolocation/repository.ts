@@ -2,6 +2,8 @@ import { iso1A2Code } from '@rapideditor/country-coder';
 import fetch from 'node-fetch';
 import { EntityManager, Repository } from 'typeorm';
 
+import { DEFAULT_LANG } from '@graasp/translations';
+
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { Actor } from '../../../member/entities/member';
@@ -174,12 +176,16 @@ export class ItemGeolocationRepository {
     );
   }
 
-  async getAddressFromCoordinates({ lat, lng }: Pick<ItemGeolocation, 'lat' | 'lng'>, key: string) {
+  async getAddressFromCoordinates(
+    { lat, lng, lang = DEFAULT_LANG }: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
+    key: string,
+  ) {
     const searchParams = new URLSearchParams({
       apiKey: key,
       lat: lat.toString(),
       lng: lng.toString(),
       format: 'json',
+      lang,
     });
     const { results } = await fetch(
       `${GEOLOCATION_API_HOST}/reverse?${searchParams.toString()}`,
@@ -187,11 +193,15 @@ export class ItemGeolocationRepository {
     return { addressLabel: results[0].formatted, country: results[0].country };
   }
 
-  async getSuggestionsForQuery(query: string, key: string) {
+  async getSuggestionsForQuery(
+    { query, lang = DEFAULT_LANG }: { query: string; lang?: string },
+    key: string,
+  ) {
     const searchParams = new URLSearchParams({
       text: query,
       format: 'json',
       apiKey: key,
+      lang,
     });
 
     const { results } = await fetch(

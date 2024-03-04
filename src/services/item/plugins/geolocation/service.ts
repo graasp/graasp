@@ -85,14 +85,18 @@ export class ItemGeolocationService {
   async getAddressFromCoordinates(
     actor: Actor,
     repositories: Repositories,
-    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'>,
+    query: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
   ) {
     const { itemGeolocationRepository } = repositories;
 
-    return itemGeolocationRepository.getAddressFromCoordinates(geolocation, this.geolocationKey);
+    return itemGeolocationRepository.getAddressFromCoordinates(query, this.geolocationKey);
   }
 
-  async getSuggestionsForQuery(actor: Actor, repositories: Repositories, query: string) {
+  async getSuggestionsForQuery(
+    actor: Actor,
+    repositories: Repositories,
+    query: { query: string; lang?: string },
+  ) {
     const { itemGeolocationRepository } = repositories;
 
     return itemGeolocationRepository.getSuggestionsForQuery(query, this.geolocationKey);
