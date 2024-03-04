@@ -23,6 +23,11 @@ A geolocation attached to a hierarchy of items. It is composed of:
 
 We use `POST /items` (item service) to add an item with a geolocation. The reason is mainly to avoid duplication (and more coherent keys invalidation in query client). If a geolocation (lat, lng) is partial the item cannot be created.
 
+We also have proxies for some endpoints:
+
+- `GET /items/geolocation/reverse`: returns the address given `lat`, `lat` and `lang`
+- `GET /items/geolocation/search`: returns suggestions of addresses given `query` and `lang`
+
 ## Hooks
 
 Copying an item should copy the geolocation.

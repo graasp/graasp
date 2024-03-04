@@ -217,6 +217,9 @@ JOB_SCHEDULING=true
 # OPEN AI
 # OPENAI_GPT_VERSION=<DEFAULT_GPT_VERSION> # valid values are gpt-4 or gpt-3.5-turbo
 OPENAI_API_KEY=<openai-api-key>
+
+# GEOLOCATION API - this can be a mock values if you don't use geolocation
+GEOLOCATION_API_KEY='geolocation-key'
 ```
 
 ## Running
@@ -231,7 +234,7 @@ The development [docker-compose.yml](.devcontainer/docker-compose.yml) provides 
 
 ## Testing
 
-To run the tests locally without obliterating your database you should create a new `.env.test` file that can contain the same values as your `.env.development` file. 
+To run the tests locally without obliterating your database you should create a new `.env.test` file that can contain the same values as your `.env.development` file.
 Simply change the config values for the database connection:
 
 ```sh
@@ -277,8 +280,9 @@ Up tests start from the previous migration state, insert mock data and apply the
 ## Known issues
 
 The development environnement uses `localstack` as a local alternative to AWS s3 storage. But persistence accross restarts is not supported without the premium license.
-This means that it is expected that you see 404 on uploaded files after a restart of your computer. 
-In details: 
+This means that it is expected that you see 404 on uploaded files after a restart of your computer.
+In details:
+
 - the items are persisted in the DB
 - the files stored on the fake s3 are not.
 
