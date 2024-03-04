@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import fetch, { type Response } from 'node-fetch';
 import { v4 } from 'uuid';
 
 import { HttpMethod } from '@graasp/sdk';
@@ -11,6 +12,8 @@ import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/mem
 import { saveMember } from '../../../member/test/fixtures/members';
 import { savePublicItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
+
+jest.mock('node-fetch');
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -407,6 +410,164 @@ describe('Item Geolocation', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
+      });
+    });
+  });
+
+  describe('GET /geolocation/reverse', () => {
+    beforeEach(() => {
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return {
+          json: async () => ({ results: [{ formatted: 'address', country: 'country' }] }),
+        } as Response;
+      });
+    });
+
+    describe('Signed out', () => {
+      it('get adress from reverse', async () => {
+        ({ app } = await build({ member: null }));
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
+          query: {
+            lat: 1,
+            lng: 2,
+          },
+        });
+        expect(res.json()).toMatchObject({ addressLabel: 'address', country: 'country' });
+      });
+    });
+
+    describe('Signed in', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+      });
+
+      it('get adress from coordinates', async () => {
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
+          query: {
+            lat: 2,
+            lng: 2,
+          },
+        });
+        expect(res.json()).toMatchObject({ addressLabel: 'address', country: 'country' });
+      });
+
+      it('throw if missing lat', async () => {
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
+          query: {
+            lng: 2,
+          },
+        });
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('throw if missing lng', async () => {
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
+          query: {
+            lat: 2,
+          },
+        });
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+    });
+  });
+
+  describe('GET /geolocation/search', () => {
+    beforeEach(() => {
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return {
+          json: async () => ({
+            results: [
+              { formatted: 'address', country_code: 'country', place_id: 'id', lat: 45, lon: 23 },
+              {
+                formatted: 'address1',
+                country_code: 'country1',
+                place_id: 'id1',
+                lat: 23,
+                lon: 12,
+              },
+            ],
+          }),
+        } as Response;
+      });
+    });
+
+    describe('Signed out', () => {
+      it('get suggestions from query', async () => {
+        ({ app } = await build({ member: null }));
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation/search`,
+          query: {
+            query: 'suggestion',
+          },
+        });
+        expect(res.json()).toMatchObject([
+          {
+            addressLabel: 'address',
+            country: 'country',
+            lat: 45,
+            lng: 23,
+            id: 'id',
+          },
+          {
+            addressLabel: 'address1',
+            country: 'country1',
+            id: 'id1',
+            lat: 23,
+            lng: 12,
+          },
+        ]);
+      });
+    });
+
+    describe('Signed in', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+      });
+
+      it('get adress from search', async () => {
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation/search`,
+          query: {
+            query: 'suggestion',
+          },
+        });
+
+        expect(res.json()).toMatchObject([
+          {
+            addressLabel: 'address',
+            country: 'country',
+            lat: 45,
+            lng: 23,
+            id: 'id',
+          },
+          {
+            addressLabel: 'address1',
+            country: 'country1',
+            id: 'id1',
+            lat: 23,
+            lng: 12,
+          },
+        ]);
+      });
+
+      it('throw if missing query', async () => {
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation/search`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
     });
   });

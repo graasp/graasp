@@ -1,8 +1,9 @@
 import { iso1A2Code } from '@rapideditor/country-coder';
+import fetch from 'node-fetch';
 import { EntityManager, Repository } from 'typeorm';
 
 import { AppDataSource } from '../../../../plugins/datasource';
-import { ALLOWED_SEARCH_LANGS } from '../../../../utils/config';
+import { ALLOWED_SEARCH_LANGS, GEOLOCATION_API_HOST } from '../../../../utils/config';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
@@ -171,5 +172,38 @@ export class ItemGeolocationRepository {
       ],
       ['item'],
     );
+  }
+
+  async getAddressFromCoordinates({ lat, lng }: Pick<ItemGeolocation, 'lat' | 'lng'>, key: string) {
+    const searchParams = new URLSearchParams({
+      apiKey: key,
+      lat: lat.toString(),
+      lng: lng.toString(),
+      format: 'json',
+    });
+    const { results } = await fetch(
+      `${GEOLOCATION_API_HOST}/reverse?${searchParams.toString()}`,
+    ).then((r) => r.json());
+    return { addressLabel: results[0].formatted, country: results[0].country };
+  }
+
+  async getSuggestionsForQuery(query: string, key: string) {
+    const searchParams = new URLSearchParams({
+      text: query,
+      format: 'json',
+      apiKey: key,
+    });
+
+    const { results } = await fetch(
+      `${GEOLOCATION_API_HOST}/search?${searchParams.toString()}`,
+    ).then((r) => r.json());
+
+    return results.map((r) => ({
+      addressLabel: r.formatted,
+      country: r.country_code,
+      id: r.place_id,
+      lat: r.lat,
+      lng: r.lon,
+    }));
   }
 }

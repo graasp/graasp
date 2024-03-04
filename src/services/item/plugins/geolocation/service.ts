@@ -9,9 +9,11 @@ import { ItemGeolocation } from './ItemGeolocation';
 
 export class ItemGeolocationService {
   private itemService: ItemService;
+  private geolocationKey: string;
 
-  constructor(itemService: ItemService) {
+  constructor(itemService: ItemService, geolocationKey: string) {
     this.itemService = itemService;
+    this.geolocationKey = geolocationKey;
   }
 
   async delete(actor: Actor, repositories: Repositories, itemId: Item['id']) {
@@ -78,5 +80,21 @@ export class ItemGeolocationService {
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
 
     return itemGeolocationRepository.put(item.path, geolocation);
+  }
+
+  async getAddressFromCoordinates(
+    actor: Actor,
+    repositories: Repositories,
+    geolocation: Pick<ItemGeolocation, 'lat' | 'lng'>,
+  ) {
+    const { itemGeolocationRepository } = repositories;
+
+    return itemGeolocationRepository.getAddressFromCoordinates(geolocation, this.geolocationKey);
+  }
+
+  async getSuggestionsForQuery(actor: Actor, repositories: Repositories, query: string) {
+    const { itemGeolocationRepository } = repositories;
+
+    return itemGeolocationRepository.getSuggestionsForQuery(query, this.geolocationKey);
   }
 }

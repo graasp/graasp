@@ -2,10 +2,18 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { GEOLOCATION_API_KEY } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
-import { deleteGeolocation, getByItem, getItemsInBox, putGeolocation } from './schemas';
+import {
+  deleteGeolocation,
+  geolocationReverse,
+  geolocationSearch,
+  getByItem,
+  getItemsInBox,
+  putGeolocation,
+} from './schemas';
 import { ItemGeolocationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -14,7 +22,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     items: { service: iS },
   } = fastify;
 
-  const itemGeolocationService = new ItemGeolocationService(iS);
+  const itemGeolocationService = new ItemGeolocationService(iS, GEOLOCATION_API_KEY);
 
   fastify.register(async function (fastify) {
     fastify.get<{ Params: { id: Item['id'] } }>(
@@ -84,6 +92,30 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
           reply.status(StatusCodes.NO_CONTENT);
         });
+      },
+    );
+
+    fastify.get<{ Querystring: Pick<ItemGeolocation, 'lat' | 'lng'> }>(
+      '/geolocation/reverse',
+      {
+        schema: geolocationReverse,
+      },
+      async ({ member, query }) => {
+        return itemGeolocationService.getAddressFromCoordinates(member, buildRepositories(), query);
+      },
+    );
+
+    fastify.get<{ Querystring: { query: string } }>(
+      '/geolocation/search',
+      {
+        schema: geolocationSearch,
+      },
+      async ({ member, query }) => {
+        return itemGeolocationService.getSuggestionsForQuery(
+          member,
+          buildRepositories(),
+          query.query,
+        );
       },
     );
   });
