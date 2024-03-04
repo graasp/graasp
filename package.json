@@ -103,7 +103,7 @@
     "pdf-text-reader": "3.0.2",
     "pg": "8.10.0",
     "qs": "6.11.2",
-    "sanitize-html": "2.11.0",
+    "sanitize-html": "2.12.1",
     "sharp": "0.32.6",
     "striptags": "3.2.0",
     "tmp-promise": "3.0.3",
