@@ -252,7 +252,7 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
-        expect(newItem.settings.hasThumbnail).toBeFalsy();
+        expect(newItem.settings.hasThumbnail).toBe(false);
       });
 
       it('Throw if geolocation is partial', async () => {
@@ -1971,7 +1971,7 @@ describe('Item routes tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
-        expect(newItem.settings.hasThumbnail).toBeFalsy();
+        expect(newItem.settings.hasThumbnail).toBe(false);
       });
 
       // TODO: extra should be patch correctly

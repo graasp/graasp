@@ -2,6 +2,7 @@
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
+  DescriptionPlacement,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
@@ -26,7 +27,7 @@ const settings = S.object()
   .prop('hasThumbnail', S.boolean())
   .prop('ccLicenseAdaption', S.string())
   .prop('displayCoEditors', S.boolean())
-  .prop('descriptionPlacement', S.string());
+  .prop('descriptionPlacement', S.enum(Object.values(DescriptionPlacement)));
 
 export const partialMember = S.object()
   .additionalProperties(false)

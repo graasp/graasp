@@ -31,7 +31,6 @@ import { ItemChildrenParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
 type ItemSettings = DiscriminatedItem['settings'];
-export const DEFAULT_ITEM_SETTINGS: ItemSettings = {};
 
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
@@ -75,7 +74,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       parent,
       type = ItemType.FOLDER,
       extra,
-      settings = DEFAULT_ITEM_SETTINGS,
+      settings = {},
       lang,
       creator,
     } = args;
@@ -94,18 +93,16 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       parsedExtra = { folder: { childrenOrder: [] } };
     }
 
-    const finalSettings = {
-      ...settings,
-      ...(settings.hasThumbnail === undefined ? DEFAULT_THUMBNAIL_SETTING : {}),
-    };
-
     const item = this.create({
       id,
       name,
       description,
       type,
       extra: parsedExtra,
-      settings: finalSettings,
+      settings: {
+        ...DEFAULT_THUMBNAIL_SETTING,
+        ...settings,
+      },
       // set lang from user lang
       lang: lang ?? creator.lang ?? 'en',
       creator,
