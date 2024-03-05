@@ -26,9 +26,9 @@ import {
 } from '../../utils/errors';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
-import { Item, ItemExtraUnion, isItemType } from './entities/Item';
+import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
-import { _fixChildrenOrder, sortChildrenWith } from './utils';
+import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
 type ItemSettings = DiscriminatedItem['settings'];
 export const DEFAULT_ITEM_SETTINGS: ItemSettings = {
@@ -184,20 +184,23 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
    * @param {boolean} [options.ordered=false] whether the descendants should be ordered by path, guarantees to iterate on parent before children
    * @returns {Item[]}
    */
-  async getDescendants(item: Item, options?: { ordered: boolean }): Promise<Item[]> {
+  async getDescendants(item: FolderItem, options?: { ordered: boolean }): Promise<Item[]> {
     // TODO: LEVEL depth
-    const { ordered = false } = options ?? {};
+    const { ordered = true } = options ?? {};
 
     const query = this.createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path <@ :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id });
 
-    if (ordered) {
-      query.orderBy('item.path', 'ASC');
+    if (!ordered) {
+      return query.getMany();
     }
 
-    return query.getMany();
+    query.orderBy('item.path', 'ASC');
+    const descendants = await query.getMany();
+
+    return sortChildrenForTreeWith(descendants, item);
   },
 
   async getManyDescendants(
