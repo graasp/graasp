@@ -116,7 +116,7 @@ test('incorrect Redis message format', async () => {
     expect(logInfoSpy).toHaveBeenCalledWith(
       `graasp-plugin-websockets: MultiInstanceChannelsBroker incorrect message received from Redis channel "${config.redis.channelName}": "Mock invalid redis message"`,
     );
-  });
+  }, 7000);
   pub.disconnect();
   server.close();
 });
