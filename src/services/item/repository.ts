@@ -170,10 +170,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     if (params?.ordered) {
       const { extra: { folder } = {} } = parent;
       const childrenOrder = folder?.childrenOrder ?? [];
-      if (childrenOrder.length) {
-        const compareFn = sortChildrenWith(childrenOrder);
-        children.sort(compareFn);
-      }
+      const compareFn = sortChildrenWith(childrenOrder);
+      children.sort(compareFn);
     }
     return children;
   },

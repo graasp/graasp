@@ -65,13 +65,12 @@ const getDirectChildren = (descendants: Item[], parentItem: Item): Item[] => {
 
 // cannot use sdk sort because of createdAt type
 export const sortChildrenForTreeWith = (descendants: Item[], parentItem: FolderItem): Item[] => {
-  const order = parentItem.extra.folder.childrenOrder;
+  const order = parentItem.extra?.folder?.childrenOrder ?? [];
   const directChildren = getDirectChildren(descendants, parentItem);
-  // order if exists
-  if (order) {
-    const compareFn = sortChildrenWith(order);
-    directChildren.sort(compareFn);
-  }
+
+  // order
+  const compareFn = sortChildrenWith(order);
+  directChildren.sort(compareFn);
 
   const tree = directChildren.map((directChild) => {
     if (!isItemType(directChild, ItemType.FOLDER)) {
