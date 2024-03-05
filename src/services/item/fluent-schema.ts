@@ -18,8 +18,8 @@ import { Ordering, SortBy } from './types';
  * for serialization
  */
 const settings = S.object()
-  // allow additional properties mostly for apps custom settings
-  .additionalProperties(true)
+  // Setting additional properties to false will only filter out invalid properties.
+  .additionalProperties(false)
   .prop('isPinned', S.boolean())
   .prop('tags', S.array())
   .prop('showChatbox', S.boolean())
