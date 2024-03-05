@@ -24,7 +24,7 @@ import {
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
-import { FolderItem, Item, isItemType } from '../../../../entities/Item';
+import { Item, isItemType } from '../../../../entities/Item';
 import { readPdfContent } from '../../../../utils';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedRepository } from '../../repositories/itemPublished';

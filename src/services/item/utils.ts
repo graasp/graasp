@@ -59,14 +59,10 @@ export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: I
   return stElem.createdAt.getTime() - ndElem.createdAt.getTime();
 };
 
-const getDirectChildren = (descendants: Item[], parentItem: Item): Item[] => {
-  return descendants.filter((child) => isChildOf(child.path, parentItem.path));
-};
-
 // cannot use sdk sort because of createdAt type
 export const sortChildrenForTreeWith = (descendants: Item[], parentItem: FolderItem): Item[] => {
   const order = parentItem.extra?.folder?.childrenOrder ?? [];
-  const directChildren = getDirectChildren(descendants, parentItem);
+  const directChildren = descendants.filter((child) => isChildOf(child.path, parentItem.path));
 
   // order
   const compareFn = sortChildrenWith(order);
