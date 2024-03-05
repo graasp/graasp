@@ -20,6 +20,8 @@ import { Ordering, SortBy } from './types';
 const settings = S.object()
   // Setting additional properties to false will only filter out invalid properties.
   .additionalProperties(false)
+  // lang is deprecated
+  .prop('lang', S.string())
   .prop('isPinned', S.boolean())
   .prop('tags', S.array())
   .prop('showChatbox', S.boolean())
@@ -27,7 +29,9 @@ const settings = S.object()
   .prop('hasThumbnail', S.boolean())
   .prop('ccLicenseAdaption', S.string())
   .prop('displayCoEditors', S.boolean())
-  .prop('descriptionPlacement', S.enum(Object.values(DescriptionPlacement)));
+  .prop('descriptionPlacement', S.enum(Object.values(DescriptionPlacement)))
+  .prop('isCollapsible', S.boolean())
+  .prop('enableSaveActions', S.boolean());
 
 export const partialMember = S.object()
   .additionalProperties(false)
