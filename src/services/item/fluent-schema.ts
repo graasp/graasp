@@ -2,6 +2,7 @@
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
+  DescriptionPlacement,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
@@ -17,15 +18,20 @@ import { Ordering, SortBy } from './types';
  * for serialization
  */
 const settings = S.object()
-  // allow additional properties mostly for apps custom settings
-  .additionalProperties(true)
+  // Setting additional properties to false will only filter out invalid properties.
+  .additionalProperties(false)
+  // lang is deprecated
+  .prop('lang', S.string())
   .prop('isPinned', S.boolean())
   .prop('tags', S.array())
   .prop('showChatbox', S.boolean())
   .prop('isResizable', S.boolean())
   .prop('hasThumbnail', S.boolean())
   .prop('ccLicenseAdaption', S.string())
-  .prop('displayCoEditors', S.boolean());
+  .prop('displayCoEditors', S.boolean())
+  .prop('descriptionPlacement', S.enum(Object.values(DescriptionPlacement)))
+  .prop('isCollapsible', S.boolean())
+  .prop('enableSaveActions', S.boolean());
 
 export const partialMember = S.object()
   .additionalProperties(false)
