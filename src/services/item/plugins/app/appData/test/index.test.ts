@@ -452,6 +452,36 @@ describe('App Data Tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
       });
     });
+
+    describe('Sign In with Read permission', () => {
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+        ({ item, token } = await setUpForAppData(app, actor, actor, PermissionLevel.Read));
+      });
+
+      it('Post app data to some member', async () => {
+        const bob = await saveMember();
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `${APP_ITEMS_PREFIX}/${item.id}/app-data`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          payload: { ...payload, memberId: bob.id },
+        });
+        expect(response.statusCode).toEqual(StatusCodes.OK);
+        const newAppData = response.json();
+
+        // we don't use the util function because it does not contain an id for iteration
+        expect(newAppData.type).toEqual(payload.type);
+        expect(newAppData.data).toEqual(payload.data);
+        expectMinimalMember(newAppData.member, bob);
+        expectMinimalMember(newAppData.creator, actor);
+
+        const savedAppData = await AppDataRepository.get(newAppData.id);
+        expectAppData([newAppData], [savedAppData]);
+      });
+    });
   });
 
   describe('PATCH /:itemId/app-data/:appDataId', () => {
