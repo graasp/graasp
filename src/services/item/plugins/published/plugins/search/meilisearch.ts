@@ -24,7 +24,7 @@ import {
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
-import { Item } from '../../../../entities/Item';
+import { Item, isItemType } from '../../../../entities/Item';
 import { readPdfContent } from '../../../../utils';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedRepository } from '../../repositories/itemPublished';
@@ -263,8 +263,10 @@ export class MeiliSearchWrapper {
   async deleteOne(item: Item, repositories: Repositories) {
     try {
       let itemsToIndex = [item];
-      if (item.type === ItemType.FOLDER) {
-        itemsToIndex = itemsToIndex.concat(await repositories.itemRepository.getDescendants(item));
+      if (isItemType(item, ItemType.FOLDER)) {
+        itemsToIndex = itemsToIndex.concat(
+          await repositories.itemRepository.getDescendants(item, { ordered: false }),
+        );
       }
 
       const documentIds = itemsToIndex.map((i) => i.id);
