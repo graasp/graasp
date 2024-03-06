@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.1](https://github.com/graasp/graasp/compare/v1.20.0...v1.20.1) (2024-03-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/auth to v4.6.1 ([#803](https://github.com/graasp/graasp/issues/803)) ([1e9a697](https://github.com/graasp/graasp/commit/1e9a697a32bf9de9b65c15038d7b03a6a85d47f0))
+* **deps:** update dependency sanitize-html to v2.12.1 [security] ([#853](https://github.com/graasp/graasp/issues/853)) ([05ed9e5](https://github.com/graasp/graasp/commit/05ed9e5b71d5f28d75ebc5f8ab71cc8b46c9b95b))
+* reuse item login from parent ([#855](https://github.com/graasp/graasp/issues/855)) ([1fe3ba5](https://github.com/graasp/graasp/commit/1fe3ba5ef2423e7c6594bba3e1ae3f08b0bf1272))
+* small issues and add greeting ([#848](https://github.com/graasp/graasp/issues/848)) ([8714a54](https://github.com/graasp/graasp/commit/8714a5452cbf9daf702bf55476a521e6b7cced16))
+* update readme with &lt;secret-key&gt; where we need to generate keys ([2dd4aac](https://github.com/graasp/graasp/commit/2dd4aac246963bc836f19a975f22d2842079b172))
+
 ## [1.20.0](https://github.com/graasp/graasp/compare/v1.19.0...v1.20.0) (2024-02-27)
 
 

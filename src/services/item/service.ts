@@ -224,6 +224,10 @@ export class ItemService {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
+    if (!isItemType(item, ItemType.FOLDER)) {
+      return [];
+    }
+
     // TODO optimize?
     return filterOutItems(actor, repositories, await itemRepository.getDescendants(item));
   }
@@ -294,12 +298,14 @@ export class ItemService {
 
     // check how "big the tree is" below the item
     // we do not use checkNumberOfDescendants because we use descendants
-    const descendants = await itemRepository.getDescendants(item);
-    if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
-      throw new TooManyDescendants(itemId);
+    let items = [item];
+    if (isItemType(item, ItemType.FOLDER)) {
+      const descendants = await itemRepository.getDescendants(item, { ordered: false });
+      if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
+        throw new TooManyDescendants(itemId);
+      }
+      items = [...descendants, item];
     }
-
-    const items = [...descendants, item];
 
     // pre hook
     for (const item of items) {
@@ -332,13 +338,16 @@ export class ItemService {
     });
     const allItems = Object.values(itemsMap);
 
-    // todo: optimize
+    // TODO: optimize
     const allDescendants = await Promise.all(
       allItems.map(async (item) => {
         await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+        if (!isItemType(item, ItemType.FOLDER)) {
+          return [];
+        }
         // check how "big the tree is" below the item
         // we do not use checkNumberOfDescendants because we use descendants
-        const descendants = await itemRepository.getDescendants(item);
+        const descendants = await itemRepository.getDescendants(item, { ordered: false });
         if (descendants.length > MAX_DESCENDANTS_FOR_DELETE) {
           throw new TooManyDescendants(item.id);
         }
@@ -477,8 +486,11 @@ export class ItemService {
       await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
     }
 
-    const descendants = await itemRepository.getDescendants(item);
-    const items = [...descendants, item];
+    let items = [item];
+    if (isItemType(item, ItemType.FOLDER)) {
+      const descendants = await itemRepository.getDescendants(item, { ordered: false });
+      items = [...descendants, item];
+    }
 
     // pre hook
     for (const original of items) {

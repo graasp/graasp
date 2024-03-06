@@ -1,8 +1,8 @@
 import { readPdfText } from 'pdf-text-reader';
 
-import { ItemType, UUID, buildPathFromIds } from '@graasp/sdk';
+import { ItemType, UUID, buildPathFromIds, isChildOf } from '@graasp/sdk';
 
-import { Item, isItemType } from './entities/Item';
+import { FolderItem, Item, isItemType } from './entities/Item';
 
 // replace children order with new ids
 export const _fixChildrenOrder = (itemsMap: Map<string, { copy: Item; original: Item }>) => {
@@ -57,6 +57,24 @@ export const sortChildrenWith = (idsOrder: string[]) => (stElem: Item, ndElem: I
   }
 
   return stElem.createdAt.getTime() - ndElem.createdAt.getTime();
+};
+
+// cannot use sdk sort because of createdAt type
+export const sortChildrenForTreeWith = (descendants: Item[], parentItem: FolderItem): Item[] => {
+  const order = parentItem.extra?.folder?.childrenOrder ?? [];
+  const directChildren = descendants.filter((child) => isChildOf(child.path, parentItem.path));
+
+  // order
+  const compareFn = sortChildrenWith(order);
+  directChildren.sort(compareFn);
+
+  const tree = directChildren.map((directChild) => {
+    if (!isItemType(directChild, ItemType.FOLDER)) {
+      return [directChild];
+    }
+    return [directChild, ...sortChildrenForTreeWith(descendants, directChild)];
+  });
+  return tree.flat();
 };
 
 export const readPdfContent = async (source: string | URL) => {

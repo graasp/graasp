@@ -19,7 +19,7 @@ import {
 import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
-import { Item } from '../entities/Item';
+import { FolderItem, Item } from '../entities/Item';
 import { ItemRepository } from '../repository';
 import {
   AccessibleItemsEvent,
@@ -377,7 +377,7 @@ describe('Item websocket hooks', () => {
         expect(await ItemRepository.count()).toBeGreaterThan(2);
       });
 
-      const copy = (await ItemRepository.getDescendants(item1))[0];
+      const copy = (await ItemRepository.getDescendants(item1 as FolderItem))[0];
 
       await waitForExpect(() => {
         const [childCreate] = itemUpdates;
@@ -704,7 +704,7 @@ describe('Item websocket hooks', () => {
 
       let copied;
       await waitForExpect(async () => {
-        [copied] = await ItemRepository.getDescendants(newParent);
+        [copied] = await ItemRepository.getDescendants(newParent as FolderItem);
         expect(copied).toBeDefined();
       });
 
