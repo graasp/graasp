@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.21.0](https://github.com/graasp/graasp/compare/v1.20.1...v1.21.0) (2024-03-07)
+
+
+### Features
+
+* add descriptionPlacement in the fluent setting schema ([d1228df](https://github.com/graasp/graasp/commit/d1228df469a5041d59cb948d30c59e7898916180))
+* add descriptionPlacement support in item settings ([#852](https://github.com/graasp/graasp/issues/852)) ([d1228df](https://github.com/graasp/graasp/commit/d1228df469a5041d59cb948d30c59e7898916180))
+* allow members with read access to post app data for another member ([#863](https://github.com/graasp/graasp/issues/863)) ([5349541](https://github.com/graasp/graasp/commit/534954175a8f4b2c7ab64cf693a390cf5b761b5f))
+* filter out additionnal properties in settings using schema ([d1228df](https://github.com/graasp/graasp/commit/d1228df469a5041d59cb948d30c59e7898916180))
+* set default hasThumbnail even if settings are defined in create item ([d1228df](https://github.com/graasp/graasp/commit/d1228df469a5041d59cb948d30c59e7898916180))
+
+
+### Bug Fixes
+
+* add missing settings attributes in the fluent schema ([d1228df](https://github.com/graasp/graasp/commit/d1228df469a5041d59cb948d30c59e7898916180))
+* order descendants by default ([#861](https://github.com/graasp/graasp/issues/861)) ([eda8f5c](https://github.com/graasp/graasp/commit/eda8f5c24f4e9eaa001108a366f288259f4edf44))
+
 ## [1.20.1](https://github.com/graasp/graasp/compare/v1.20.0...v1.20.1) (2024-03-04)
 
 
