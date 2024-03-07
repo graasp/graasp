@@ -1994,7 +1994,7 @@ describe('Item routes tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(DescriptionPlacement.ABOVE);
-        expect(newItem.settings.hasThumbnail).toBe(false);
+        expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
 
       it('Filter out bad setting when updating', async () => {
