@@ -2,16 +2,19 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermissionMany } from '../../../authorization';
-import { Actor } from '../../../member/entities/member';
+import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemGeolocation } from './ItemGeolocation';
+import { MissingGeolocationApiKey } from './errors';
 
 export class ItemGeolocationService {
   private itemService: ItemService;
+  private geolocationKey?: string;
 
-  constructor(itemService: ItemService) {
+  constructor(itemService: ItemService, geolocationKey?: string) {
     this.itemService = itemService;
+    this.geolocationKey = geolocationKey;
   }
 
   async delete(actor: Actor, repositories: Repositories, itemId: Item['id']) {
@@ -78,5 +81,31 @@ export class ItemGeolocationService {
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
 
     return itemGeolocationRepository.put(item.path, geolocation);
+  }
+
+  async getAddressFromCoordinates(
+    member: Member,
+    repositories: Repositories,
+    query: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string },
+  ) {
+    if (!this.geolocationKey) {
+      throw new MissingGeolocationApiKey();
+    }
+
+    const { itemGeolocationRepository } = repositories;
+    return itemGeolocationRepository.getAddressFromCoordinates(query, this.geolocationKey);
+  }
+
+  async getSuggestionsForQuery(
+    member: Member,
+    repositories: Repositories,
+    query: { query: string; lang?: string },
+  ) {
+    if (!this.geolocationKey) {
+      throw new MissingGeolocationApiKey();
+    }
+
+    const { itemGeolocationRepository } = repositories;
+    return itemGeolocationRepository.getSuggestionsForQuery(query, this.geolocationKey);
   }
 }
