@@ -18,6 +18,8 @@ import { up } from './fixtures';
 // mock datasource
 jest.mock('../../../src/plugins/datasource');
 
+// todo: remove this test once outdated
+// test hangs when running manually too many migrations, so we run all migrations and remove the last one
 describe('Migrations1709215939615', () => {
   let app;
 
@@ -26,7 +28,7 @@ describe('Migrations1709215939615', () => {
     ({ app } = await build());
     await app.db.dropDatabase();
 
-    // // should contain no table
+    // should contain no table
     await checkDatabaseIsEmpty(app);
 
     await app.db.runMigrations();
@@ -64,5 +66,5 @@ describe('Migrations1709215939615', () => {
       expect(action.view).toEqual(expected.view);
       expect(action.created_at.toISOString()).toEqual(expected.created_at);
     }
-  }, 70000);
+  });
 });

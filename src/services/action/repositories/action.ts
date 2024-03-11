@@ -3,6 +3,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
+import { printFilledSQL } from '../../../utils/debug';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
 import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions';
@@ -105,7 +106,12 @@ export class ActionRepository {
     });
 
     // Filtering.
-    subquery.where('action.item_path <@ :path').andWhere('action.view = :view').limit(size);
+    subquery
+      .innerJoin('action.item', 'item')
+      .where('item.path <@ :path')
+      .andWhere('action.view = :view')
+      .limit(size);
+
     if (types) {
       subquery.andWhere('action.type IN (:...types)');
     }
