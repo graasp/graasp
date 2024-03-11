@@ -80,13 +80,11 @@ export class AppDataService {
     const item = await itemRepository.get(itemId);
 
     // posting an app data is allowed to readers
-    const membership = await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    await validatePermission(repositories, PermissionLevel.Read, actor, item);
 
-    let attachedToMemberId = actorId;
-    // only admin can write app data for others
-    if (membership?.permission === PermissionLevel.Admin) {
-      attachedToMemberId = body.memberId ?? actorId;
-    }
+    // any user can write app data for others
+    const attachedToMemberId = body.memberId ?? actorId;
+
     const completeData = Object.assign(
       {
         visibility: AppDataVisibility.Member,
