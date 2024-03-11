@@ -80,3 +80,52 @@ export const putGeolocation = {
 export const deleteGeolocation = {
   params: idParam,
 };
+
+export const geolocationReverse = {
+  querystring: {
+    type: 'object',
+    properties: {
+      lat: { type: 'number' },
+      lng: { type: 'number' },
+      lang: { type: 'string' },
+    },
+    required: ['lat', 'lng'],
+  },
+
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        addressLabel: { type: 'string' },
+        country: { type: 'string' },
+      },
+    },
+  },
+};
+
+export const geolocationSearch = {
+  querystring: {
+    type: 'object',
+    properties: {
+      query: { type: 'string' },
+      lang: { type: 'string' },
+    },
+    required: ['query'],
+  },
+
+  response: {
+    200: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          addressLabel: { type: 'string' },
+          country: { type: 'string' },
+          id: { type: 'string' },
+          lat: { type: 'number' },
+          lng: { type: 'number' },
+        },
+      },
+    },
+  },
+};

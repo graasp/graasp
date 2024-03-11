@@ -16,7 +16,7 @@ import { ItemGeolocationService } from './service';
 // mock datasource
 jest.mock('../../../../plugins/datasource');
 
-const service = new ItemGeolocationService(new ItemService());
+const service = new ItemGeolocationService(new ItemService(), 'geolocation-key');
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
 
 describe('ItemGeolocationService', () => {

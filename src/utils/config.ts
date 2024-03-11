@@ -386,3 +386,7 @@ export const ALLOWED_SEARCH_LANGS = {
   fr: 'french',
   it: 'italian',
 };
+
+// Geolocation API Key
+export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY;
+export const GEOLOCATION_API_HOST = 'https://api.geoapify.com/v1/geocode';

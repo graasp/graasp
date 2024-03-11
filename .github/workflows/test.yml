@@ -215,3 +215,4 @@ jobs:
           MEILISEARCH_URL: fake
           MEILISEARCH_MASTER_KEY: fake
           JOB_SCHEDULING: false
+          GEOLOCATION_API_KEY: geolocation-key

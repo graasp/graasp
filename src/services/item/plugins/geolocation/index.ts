@@ -2,10 +2,19 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { GEOLOCATION_API_KEY } from '../../../../utils/config';
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
-import { deleteGeolocation, getByItem, getItemsInBox, putGeolocation } from './schemas';
+import {
+  deleteGeolocation,
+  geolocationReverse,
+  geolocationSearch,
+  getByItem,
+  getItemsInBox,
+  putGeolocation,
+} from './schemas';
 import { ItemGeolocationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -14,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     items: { service: iS },
   } = fastify;
 
-  const itemGeolocationService = new ItemGeolocationService(iS);
+  const itemGeolocationService = new ItemGeolocationService(iS, GEOLOCATION_API_KEY);
 
   fastify.register(async function (fastify) {
     fastify.get<{ Params: { id: Item['id'] } }>(
@@ -84,6 +93,34 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
           reply.status(StatusCodes.NO_CONTENT);
         });
+      },
+    );
+
+    fastify.get<{ Querystring: Pick<ItemGeolocation, 'lat' | 'lng'> & { lang?: string } }>(
+      '/geolocation/reverse',
+      {
+        schema: geolocationReverse,
+        preHandler: fastify.verifyAuthentication,
+      },
+      async ({ member, query }) => {
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
+        return itemGeolocationService.getAddressFromCoordinates(member, buildRepositories(), query);
+      },
+    );
+
+    fastify.get<{ Querystring: { query: string } & { lang?: string } }>(
+      '/geolocation/search',
+      {
+        schema: geolocationSearch,
+        preHandler: fastify.verifyAuthentication,
+      },
+      async ({ member, query }) => {
+        if (!member) {
+          throw new UnauthorizedMember();
+        }
+        return itemGeolocationService.getSuggestionsForQuery(member, buildRepositories(), query);
       },
     );
   });
