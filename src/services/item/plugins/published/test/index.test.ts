@@ -487,11 +487,13 @@ describe('Item Published', () => {
             anna.email,
             expect.stringContaining(item.id),
             expect.anything(),
+            expect.anything(),
           );
           expect(sendEmailMock).toHaveBeenCalledWith(
             expect.stringContaining(item.name),
             cedric.email,
             expect.stringContaining(item.id),
+            expect.anything(),
             expect.anything(),
           );
         }, 1000);
