@@ -58,7 +58,7 @@ export const item = S.object()
   .prop('createdAt', S.raw({}))
   .prop('updatedAt', S.raw({}));
 
-export const packedItem = S.object()
+export const itemPacked = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
@@ -158,7 +158,7 @@ export const create =
 
 export const getOne = {
   params: idParam,
-  response: { 200: packedItem, '4xx': error },
+  response: { 200: itemPacked, '4xx': error },
 };
 
 export const getAccessible = {

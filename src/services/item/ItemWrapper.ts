@@ -20,7 +20,7 @@ type GraaspItem = Pick<
 >;
 
 // TODO: export in sdk??
-type ItemUnit = GraaspItem & {
+type ItemPacked = GraaspItem & {
   permission?: ItemMembership['permission'];
 };
 
@@ -37,13 +37,13 @@ export class ItemWrapper {
    * merge items and their permission in a result of structure
    * @param items result of many items
    * @param memberships result memberships for many items
-   * @returns ResultOf<ItemUnit>
+   * @returns ResultOf<ItemPacked>
    */
   static merge(
     items: ResultOf<Item>,
     memberships: ResultOf<ItemMembership | null>,
-  ): ResultOf<ItemUnit> {
-    const data: ResultOf<ItemUnit>['data'] = {};
+  ): ResultOf<ItemPacked> {
+    const data: ResultOf<ItemPacked>['data'] = {};
 
     for (const i of Object.values(items.data)) {
       const { permission } = memberships.data[i.id] ?? {};
@@ -57,7 +57,7 @@ export class ItemWrapper {
    * build item unit with complementary info, such as permission
    * @returns item unit with permission
    */
-  packed(): ItemUnit {
+  packed(): ItemPacked {
     return { ...this.item, permission: this.actorHighestItemMembership?.permission };
   }
 }
