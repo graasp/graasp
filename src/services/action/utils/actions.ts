@@ -13,10 +13,10 @@ export const aggregateExpressionNames = {
   user: 'action.member_id',
   actionType: 'action.type',
   actionLocation: 'action.geolocation',
-  itemId: 'action.item_path',
+  itemId: 'action.item_id',
   createdDay: "date_trunc('day', action.createdAt)",
-  createdTimeOfDay: 'extract(hour from created_at)',
-  createdDayOfWeek: 'extract(dow from created_at)',
+  createdTimeOfDay: 'extract(hour from action.created_at)',
+  createdDayOfWeek: 'extract(dow from action.created_at)',
 };
 
 export const buildAggregateExpression = (

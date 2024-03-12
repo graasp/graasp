@@ -485,7 +485,6 @@ describe('Action Repository', () => {
         ]);
       });
 
-      // TODO: this will change because item path will be item id
       it('returns action count with countGroupBy ItemId', async () => {
         const child1 = await saveItem({ actor: member, parentItem: item });
         const child2 = await saveItem({ actor: member, parentItem: item });
@@ -515,10 +514,10 @@ describe('Action Repository', () => {
         const result = await r.getAggregationForItem(item.path, { view }, countGroupBy);
         expect(result).toContainEqual({
           actionCount: sampleSize.toString(),
-          itemId: item.path,
+          itemId: item.id,
         });
-        expect(result).toContainEqual({ actionCount: '1', itemId: child1.path });
-        expect(result).toContainEqual({ actionCount: '1', itemId: child2.path });
+        expect(result).toContainEqual({ actionCount: '1', itemId: child1.id });
+        expect(result).toContainEqual({ actionCount: '1', itemId: child2.id });
       });
 
       it('returns action count with countGroupBy User', async () => {
