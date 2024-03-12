@@ -92,10 +92,10 @@ export abstract class HtmlService {
   buildContentPath = (rootPath: string) => path.join(rootPath, 'content');
 
   /**
-   * Util function to download the package file given an item
+   * Util function to get url of the package file given an item
    * This function should not be used outside html services
    */
-  protected async _download(member: Actor, id: Item['id'], packagePath: string) {
+  protected async _getUrl(member: Actor, id: Item['id'], packagePath: string) {
     return this.fileService.getUrl(member, {
       id,
       path: path.join(this.pathPrefix, packagePath),
@@ -192,6 +192,7 @@ export abstract class HtmlService {
       try {
         // upload whole folder to public storage
         await this.upload(actor, targetFolder, remoteRootPath, log);
+        console.log(targetFolder, remoteRootPath);
         const item = await onComplete(actor, baseName, contentId, parentId);
         return item;
       } catch (error) {

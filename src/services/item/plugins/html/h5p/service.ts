@@ -55,11 +55,11 @@ export class H5PService extends HtmlService {
     path.join(rootPath, `${filename}.${H5P.H5P_FILE_EXTENSION}`);
 
   /**
-   * Download the H5P file referenced by a given Item
+   * Get the H5P file url referenced by a given Item
    */
-  download(item: Item<typeof ItemType.H5P>, member: Actor) {
+  getUrl(item: Item<typeof ItemType.H5P>, member: Actor) {
     const h5pPath = item.extra.h5p.h5pFilePath;
-    return super._download(member, item.id, h5pPath);
+    return super._getUrl(member, item.id, h5pPath);
   }
 
   async copy(
