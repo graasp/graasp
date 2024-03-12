@@ -192,7 +192,6 @@ export abstract class HtmlService {
       try {
         // upload whole folder to public storage
         await this.upload(actor, targetFolder, remoteRootPath, log);
-        console.log(targetFolder, remoteRootPath);
         const item = await onComplete(actor, baseName, contentId, parentId);
         return item;
       } catch (error) {
