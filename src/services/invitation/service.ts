@@ -46,7 +46,10 @@ export class InvitationService {
     const title = t(MAIL.INVITATION_TITLE, {
       itemName: item.name,
     });
-    this.mailer.sendEmail(title, email, link, html).catch((err) => {
+
+    const footer = this.mailer.buildFooter(lang);
+
+    this.mailer.sendEmail(title, email, link, html, footer).catch((err) => {
       this.log.warn(err, `mailer failed. invitation link: ${link}`);
     });
   }

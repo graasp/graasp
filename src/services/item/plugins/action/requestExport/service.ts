@@ -119,7 +119,10 @@ export class ActionRequestExportService {
       ${this.mailer.buildButton(link, t(MAIL.EXPORT_ACTIONS_BUTTON_TEXT))}
     `;
     const title = t(MAIL.EXPORT_ACTIONS_TITLE, { itemName: item.name });
-    this.mailer.sendEmail(title, actor.email, link, html).catch((err) => {
+
+    const footer = this.mailer.buildFooter(lang);
+
+    this.mailer.sendEmail(title, actor.email, link, html, footer).catch((err) => {
       console.debug(err, `mailer failed. export zip link: ${link}`);
     });
   }
