@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.22.0](https://github.com/graasp/graasp/compare/v1.21.0...v1.22.0) (2024-03-12)
+
+
+### Features
+
+* add geocoding endpoints ([#856](https://github.com/graasp/graasp/issues/856)) ([5af0639](https://github.com/graasp/graasp/commit/5af0639c159267c18a9377d0bda88ad60036e366))
+* use item id for actions ([#867](https://github.com/graasp/graasp/issues/867)) ([c421af6](https://github.com/graasp/graasp/commit/c421af6dbbad9b4ed649524e42862d952134dcdb))
+
 ## [1.21.0](https://github.com/graasp/graasp/compare/v1.20.1...v1.21.0) (2024-03-07)
 
 
