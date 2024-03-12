@@ -27,6 +27,7 @@ import { Repositories } from '../../utils/repositories';
 import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
+import { ItemWrapper } from './ItemWrapper';
 import { Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
@@ -145,6 +146,14 @@ export class ItemService {
     return createdItem;
   }
 
+  /**
+   * generic get for an item
+   * @param actor
+   * @param repositories
+   * @param id
+   * @param permission
+   * @returns
+   */
   async get(
     actor: Actor,
     repositories: Repositories,
@@ -158,6 +167,34 @@ export class ItemService {
     return item;
   }
 
+  /**
+   * get an item with complementary info
+   * @param actor
+   * @param repositories
+   * @param id
+   * @param permission
+   * @returns
+   */
+  async getPacked(
+    actor: Actor,
+    repositories: Repositories,
+    id: string,
+    permission: PermissionLevel = PermissionLevel.Read,
+  ) {
+    const item = await repositories.itemRepository.get(id);
+
+    const itemMembership = await validatePermission(repositories, permission, actor, item);
+
+    return new ItemWrapper(item, itemMembership).packed();
+  }
+
+  /**
+   * get generic items
+   * @param actor
+   * @param repositories
+   * @param ids
+   * @returns
+   */
   async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
     const { itemRepository } = repositories;
     const result = await itemRepository.getMany(ids);
@@ -179,6 +216,36 @@ export class ItemService {
     }
 
     return { data: result.data, errors: result.errors.concat(memberships?.errors ?? []) };
+  }
+
+  /**
+   * get item units with complementary items
+   * @param actor
+   * @param repositories
+   * @param ids
+   * @returns
+   */
+  async getManyPacked(actor: Actor, repositories: Repositories, ids: string[]) {
+    const { itemRepository } = repositories;
+    const result = await itemRepository.getMany(ids);
+
+    // check memberships
+    // remove items if they do not have permissions
+    const memberships = await validatePermissionMany(
+      repositories,
+      PermissionLevel.Read,
+      actor,
+      Object.values(result.data),
+    );
+
+    for (const [id, _item] of Object.entries(result.data)) {
+      // Do not delete if value exist but is null, because no memberships but can be public
+      if (memberships?.data[id] === undefined) {
+        delete result.data[id];
+      }
+    }
+
+    return ItemWrapper.merge(result, memberships);
   }
 
   async getAccessible(

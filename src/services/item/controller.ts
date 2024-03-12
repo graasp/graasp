@@ -73,7 +73,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { id } }) => {
-      return itemService.get(member, buildRepositories(), id);
+      return itemService.getPacked(member, buildRepositories(), id);
     },
   );
 
@@ -81,7 +81,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, query: { id: ids } }) => {
-      return itemService.getMany(member, buildRepositories(), ids);
+      return itemService.getManyPacked(member, buildRepositories(), ids);
     },
   );
 

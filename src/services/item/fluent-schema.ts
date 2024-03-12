@@ -49,6 +49,7 @@ export const item = S.object()
   .prop('extra', S.object().additionalProperties(true))
   .prop('settings', settings)
   .prop('lang', S.string())
+  .prop('permission', S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]))
   // creator could have been deleted
   .prop('creator', S.ifThenElse(S.null(), S.null(), partialMember))
   /**
