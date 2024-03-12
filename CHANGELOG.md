@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.23.0](https://github.com/graasp/graasp/compare/v1.22.0...v1.23.0) (2024-03-12)
+
+
+### Features
+
+* add geoloc keys in deploy workflows ([#869](https://github.com/graasp/graasp/issues/869)) ([e4691d9](https://github.com/graasp/graasp/commit/e4691d9da9b87552b7f2f976b826ae78cd2cd7a7))
+
 ## [1.22.0](https://github.com/graasp/graasp/compare/v1.21.0...v1.22.0) (2024-03-12)
 
 
