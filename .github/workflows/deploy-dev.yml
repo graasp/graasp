@@ -153,6 +153,7 @@ jobs:
             WEBSOCKETS_PLUGIN=${{ vars.WEBSOCKETS_PLUGIN }}
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             OPENAI_ORG_ID=${{ secrets.OPENAI_ORG_ID }}
+            GEOLOCATION_API_HOST=${{ secrets.GEOLOCATION_API_HOST }}
             GEOLOCATION_API_KEY=${{ secrets.GEOLOCATION_API_KEY }}
 
       # Use latest revision of the task-definition to deploy the application to ECS
