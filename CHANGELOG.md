@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.24.0](https://github.com/graasp/graasp/compare/v1.23.0...v1.24.0) (2024-03-13)
+
+
+### Features
+
+* translate footer of emails ([#872](https://github.com/graasp/graasp/issues/872)) ([e81a7b5](https://github.com/graasp/graasp/commit/e81a7b55a4674edd5c3c353eaef464aa047aa2e7))
+
+
+### Bug Fixes
+
+* add showLinkIframe and showLinkButton in settings with tests ([#878](https://github.com/graasp/graasp/issues/878)) ([5663bf1](https://github.com/graasp/graasp/commit/5663bf1605cc464082bd0bc035e3f72dcb423ba0))
+
 ## [1.23.0](https://github.com/graasp/graasp/compare/v1.22.0...v1.23.0) (2024-03-12)
 
 

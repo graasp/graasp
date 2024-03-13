@@ -77,6 +77,13 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
     embeddedLink.icons = links
       .filter(({ rel }: { rel: string[] }) => hasIconRel(rel))
       .map(({ href }) => href);
+
+    // default settings
+    item.settings = {
+      showLinkButton: true,
+      showLinkIframe: false,
+      ...(item.settings ?? {}),
+    };
   };
 
   itemService.hooks.setPreHook('create', hook);

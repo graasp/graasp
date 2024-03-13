@@ -86,6 +86,10 @@ describe('Link Item tests', () => {
             },
           },
           description: iframelyMeta.description,
+          settings: {
+            showLinkIframe: false,
+            showLinkButton: true,
+          },
         };
 
         // check response value
