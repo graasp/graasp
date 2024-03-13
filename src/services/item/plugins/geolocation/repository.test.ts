@@ -33,7 +33,14 @@ describe('ItemGeolocationRepository', () => {
     it('copy geolocation on item copy', async () => {
       const { item: originalItem } = await saveItemAndMembership({ member: actor });
       const { item: copyItem } = await saveItemAndMembership({ member: actor });
-      const geoloc = { lat: 1, lng: 2, item: originalItem, country: 'de' };
+      const geoloc: Partial<ItemGeolocation> = {
+        lat: 1,
+        lng: 2,
+        item: originalItem,
+        country: 'de',
+        helperLabel: 'helper text',
+        addressLabel: 'address',
+      };
       await rawRepository.save(geoloc);
 
       await repository.copy(originalItem, copyItem);
@@ -50,7 +57,6 @@ describe('ItemGeolocationRepository', () => {
       );
       expect(allGeoloc).toContainEqual(
         expect.objectContaining({
-          // ...geoloc,
           item: expect.objectContaining({
             id: copyItem.id,
           }),
@@ -107,11 +113,17 @@ describe('ItemGeolocationRepository', () => {
     it('returns direct geolocation', async () => {
       const { item: parentItem } = await saveItemAndMembership({ member: actor });
       const { item } = await saveItemAndMembership({ member: actor, parentItem });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      const geoloc = { lat: 1, lng: 2, item, country: 'de', helperLabel: 'helper' };
       await rawRepository.save(geoloc);
 
       // noise
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'fr' };
+      const geolocParent = {
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'fr',
+        helperLabel: 'helper1',
+      };
       await rawRepository.save(geolocParent);
 
       const res = await repository.getByItem(item.path);
@@ -119,6 +131,7 @@ describe('ItemGeolocationRepository', () => {
         lat: geoloc.lat,
         lng: geoloc.lng,
         country: geoloc.country,
+        helperLabel: geoloc.helperLabel,
       });
     });
 
@@ -155,7 +168,13 @@ describe('ItemGeolocationRepository', () => {
       const { item } = await saveItemAndMembership({ member: actor, parentItem });
       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geoloc);
-      const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
+      const geolocParent = {
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+        helperLabel: 'helper',
+      };
       await rawRepository.save(geolocParent);
 
       // noise
@@ -241,7 +260,7 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
+      const geoloc = { lat: 1, lng: 2, item, country: 'de', helperLabel: 'helper' };
       await rawRepository.save(geoloc);
       const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
       await rawRepository.save(geolocParent);
@@ -479,7 +498,7 @@ describe('ItemGeolocationRepository', () => {
         member: actor,
         parentItem,
       });
-      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de' };
+      const geoloc = { lat: 1, lng: 2, item: item1, country: 'de', helperLabel: 'helper' };
       await rawRepository.save(geoloc);
       const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
       await rawRepository.save(geolocParent);
@@ -660,6 +679,17 @@ describe('ItemGeolocationRepository', () => {
       await repository.put(item.path, { lat, lng });
       const geoloc = await rawRepository.findOneBy({ lat, lng });
       expect(geoloc).toMatchObject({ lat, lng, country: 'CH' });
+    });
+    it('create new geolocation for item with address and helper', async () => {
+      const { item } = await saveItemAndMembership({ member: actor });
+
+      const lat = 46.2017559;
+      const lng = 6.1466014;
+      const helperLabel = 'helper';
+      const addressLabel = 'address';
+      await repository.put(item.path, { lat, lng, helperLabel, addressLabel });
+      const geoloc = await rawRepository.findOneBy({ lat, lng });
+      expect(geoloc).toMatchObject({ lat, lng, country: 'CH', helperLabel, addressLabel });
     });
     it('create new geolocation that does not have a country', async () => {
       const { item } = await saveItemAndMembership({ member: actor });

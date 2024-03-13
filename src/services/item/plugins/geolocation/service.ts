@@ -94,7 +94,7 @@ export class ItemGeolocationService {
     repositories: Repositories,
     itemId: Item['id'],
     geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
-      Pick<Partial<ItemGeolocation>, 'addressLabel'>,
+      Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
   ) {
     const { itemGeolocationRepository } = repositories;
 

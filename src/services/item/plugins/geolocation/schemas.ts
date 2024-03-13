@@ -8,6 +8,7 @@ const geolocation = {
     lng: { type: 'number' },
     country: { type: ['string', 'null'] },
     addressLabel: { type: ['string', 'null'] },
+    helperLabel: { type: ['string', 'null'] },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
     item: {
@@ -79,6 +80,7 @@ export const putGeolocation = {
           lat: { type: 'number' },
           lng: { type: 'number' },
           addressLabel: { type: 'string' },
+          helperLabel: { type: 'string' },
         },
         required: ['lat', 'lng'],
       },
@@ -126,16 +128,7 @@ export const geolocationSearch = {
   response: {
     200: {
       type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          addressLabel: { type: 'string' },
-          country: { type: 'string' },
-          id: { type: 'string' },
-          lat: { type: 'number' },
-          lng: { type: 'number' },
-        },
-      },
+      items: geolocation,
     },
   },
 };
