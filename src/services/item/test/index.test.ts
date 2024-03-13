@@ -1997,6 +1997,36 @@ describe('Item routes tests', () => {
         expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
 
+      it('Update successfully link settings', async () => {
+        const { item } = await saveItemAndMembership({
+          member: actor,
+        });
+        const payload = {
+          settings: {
+            showLinkButton: false,
+            showLinkIframe: true,
+          },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${item.id}`,
+          payload,
+        });
+
+        const newItem = response.json();
+
+        // this test a bit how we deal with extra: it replaces existing keys
+        expectItem(newItem, {
+          ...item,
+          ...payload,
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(newItem.settings.showLinkButton).toBe(false);
+        expect(newItem.settings.showLinkIframe).toBe(true);
+        expect(newItem.settings.hasThumbnail).toBeFalsy();
+      });
+
       it('Filter out bad setting when updating', async () => {
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
