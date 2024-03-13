@@ -272,7 +272,7 @@ describe('Item routes tests', () => {
         });
 
         const newItem = response.json();
-        expectItem(newItem, payload, actor);
+        expectItem(newItem, { ...payload, settings: VALID_SETTING }, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
         expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
@@ -2016,7 +2016,6 @@ describe('Item routes tests', () => {
 
         const newItem = response.json();
 
-        // this test a bit how we deal with extra: it replaces existing keys
         expectItem(newItem, {
           ...item,
           ...payload,
@@ -2054,6 +2053,7 @@ describe('Item routes tests', () => {
         expectItem(newItem, {
           ...item,
           ...payload,
+          settings: VALID_SETTING,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);

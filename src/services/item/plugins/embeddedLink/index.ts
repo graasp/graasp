@@ -80,9 +80,9 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
 
     // default settings
     item.settings = {
-      ...(item.settings ?? {}),
       showLinkButton: true,
       showLinkIframe: false,
+      ...(item.settings ?? {}),
     };
   };
 
