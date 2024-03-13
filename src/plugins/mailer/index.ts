@@ -28,9 +28,11 @@ export interface MailerDecoration {
     to: string,
     text: string,
     html: string,
+    footer: string,
     from?: string,
   ) => Promise<void>;
   translate: (lang: string) => i18n['t'];
+  buildFooter: (lang?: string) => string;
 }
 
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
@@ -56,9 +58,36 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     to: string,
     text: string,
     html: string,
+    footer: string,
     from: string = fromEmail,
   ) => {
-    await promisifiedNodemailerSendMail({ from, to, subject, text, html: applyLayout(html) });
+    await promisifiedNodemailerSendMail({
+      from,
+      to,
+      subject,
+      text,
+      html: applyLayout(html, footer),
+    });
+  };
+
+  const buildFooter = (lang: string = DEFAULT_LANG): string => {
+    const t = translate(lang);
+    return `
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <td class="content-block">
+        ${t('FOOTER')}.
+        <br />
+        <span class="apple-link">Graasp Association, Valais, Switzerland</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="content-block powered-by">
+        ${t('POWERED_BY')}
+      </td>
+    </tr>
+  </table>
+    `;
   };
 
   const buildButton = (link: string, text: string): string => {
@@ -93,6 +122,7 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     buildText,
     sendEmail,
     translate,
+    buildFooter,
   };
   fastify.decorate('mailer', decorations);
 };

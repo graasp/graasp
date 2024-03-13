@@ -48,8 +48,11 @@ export class ItemMembershipService {
       `;
 
     const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: actor.name, itemName: item.name });
+
+    const footer = this.mailer.buildFooter(lang);
+
     await this.mailer
-      .sendEmail(title, member.email, link, html)
+      .sendEmail(title, member.email, link, html, footer)
       .then(() => {
         console.debug('send email on membership creation');
       })

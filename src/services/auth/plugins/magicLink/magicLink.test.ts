@@ -63,6 +63,7 @@ describe('Auth routes tests', () => {
         email,
         expect.anything(),
         expect.anything(),
+        expect.anything(),
       );
     });
 
@@ -81,6 +82,7 @@ describe('Auth routes tests', () => {
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.anything(),
         email,
+        expect.anything(),
         expect.anything(),
         expect.anything(),
       );
@@ -103,6 +105,7 @@ describe('Auth routes tests', () => {
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.anything(),
         member.email,
+        expect.anything(),
         expect.anything(),
         expect.anything(),
       );
@@ -150,6 +153,7 @@ describe('Auth routes tests', () => {
         member.email,
         expect.anything(),
         expect.anything(),
+        expect.anything(),
       );
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
@@ -167,6 +171,7 @@ describe('Auth routes tests', () => {
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.anything(),
         member.email,
+        expect.anything(),
         expect.anything(),
         expect.anything(),
       );
