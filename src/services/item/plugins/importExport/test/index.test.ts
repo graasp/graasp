@@ -5,9 +5,10 @@ import fetch from 'node-fetch';
 import path from 'path';
 import waitForExpect from 'wait-for-expect';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { H5PItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { LocalFileRepository } from '../../../../file/repositories/local';
 import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { ItemRepository } from '../../../repository';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
@@ -233,6 +234,43 @@ describe('ZIP routes tests', () => {
 
       expect(response.statusCode).toBe(StatusCodes.OK);
       expect(response.headers['content-disposition']).toContain(item.name);
+    });
+
+    it('Export successfully h5p file', async () => {
+      ({ app, actor } = await build());
+
+      // mocks - fetching some h5p content
+      jest.spyOn(LocalFileRepository.prototype, 'getUrl').mockImplementation(async () => 'getUrl');
+      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+        return {
+          body: fs.createReadStream(path.resolve(__dirname, './fixtures/accordion.h5p')),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+      });
+
+      const form = new FormData();
+      form.append(
+        'myfile',
+        fs.createReadStream(path.resolve(__dirname, './fixtures/accordion.h5p')),
+      );
+
+      const h5pUploadResponse = await app.inject({
+        method: HttpMethod.Post,
+        url: '/items/h5p-import',
+        payload: form,
+        headers: form.getHeaders(),
+      });
+
+      const { id: h5pId, name: h5pName } = h5pUploadResponse.json();
+
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `/items/zip-export/${h5pId}`,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.payload.length).toBeGreaterThan(100);
+      expect(response.headers['content-disposition']).toContain(h5pName);
     });
   });
 });
