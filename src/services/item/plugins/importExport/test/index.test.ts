@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import path from 'path';
 import waitForExpect from 'wait-for-expect';
 
-import { H5PItemFactory, HttpMethod, ItemType } from '@graasp/sdk';
+import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { LocalFileRepository } from '../../../../file/repositories/local';
