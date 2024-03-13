@@ -28,7 +28,11 @@ export class ItemGeolocationRepository {
    * @param copy copied item
    */
   async copy(original: Item, copy: Item): Promise<void> {
+<<<<<<< HEAD
     const geoloc = await this.getByItem(original.path);
+=======
+    const geoloc = await this.getByItem(original);
+>>>>>>> 1b1214f2 (refactor: update graasp deps)
     if (geoloc) {
       await this.repository.insert({
         item: { path: copy.path },
