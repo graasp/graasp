@@ -50,7 +50,9 @@ export class MentionService {
     )}
     ${this.mailer.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
 
-    this.mailer.sendEmail(subject, member.email, itemLink, html).catch((err) => {
+    const footer = this.mailer.buildFooter(lang);
+
+    this.mailer.sendEmail(subject, member.email, itemLink, html, footer).catch((err) => {
       console.error(err);
       // log.warn(err, `mailer failed. notification link: ${itemLink}`);
     });

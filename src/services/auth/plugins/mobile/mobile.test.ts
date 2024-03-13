@@ -87,6 +87,7 @@ describe('Mobile Endpoints', () => {
         member.email,
         expect.anything(),
         expect.anything(),
+        expect.anything(),
       );
 
       const m = await MemberRepository.findOneBy({ email });
@@ -108,6 +109,7 @@ describe('Mobile Endpoints', () => {
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.anything(),
         member.email,
+        expect.anything(),
         expect.anything(),
         expect.anything(),
       );
@@ -151,6 +153,7 @@ describe('Mobile Endpoints', () => {
         member.email,
         expect.anything(),
         expect.anything(),
+        expect.anything(),
       );
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
@@ -169,6 +172,7 @@ describe('Mobile Endpoints', () => {
       expect(mockSendEmail).toHaveBeenCalledWith(
         expect.anything(),
         member.email,
+        expect.anything(),
         expect.anything(),
         expect.anything(),
       );
