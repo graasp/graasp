@@ -147,7 +147,8 @@ class FileItemService {
         }
       }
 
-      return newItem;
+      // retrieve item again since hasThumbnail might have changed
+      return repositories.itemRepository.get(newItem.id);
     });
   }
 

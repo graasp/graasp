@@ -31,7 +31,10 @@ const settings = S.object()
   .prop('displayCoEditors', S.boolean())
   .prop('descriptionPlacement', S.enum(Object.values(DescriptionPlacement)))
   .prop('isCollapsible', S.boolean())
-  .prop('enableSaveActions', S.boolean());
+  .prop('enableSaveActions', S.boolean())
+  // link settings
+  .prop('showLinkIframe', S.boolean())
+  .prop('showLinkButton', S.boolean());
 
 export const partialMember = S.object()
   .additionalProperties(false)

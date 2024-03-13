@@ -272,7 +272,7 @@ describe('Item routes tests', () => {
         });
 
         const newItem = response.json();
-        expectItem(newItem, payload, actor);
+        expectItem(newItem, { ...payload, settings: VALID_SETTING }, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
         expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
@@ -1997,6 +1997,35 @@ describe('Item routes tests', () => {
         expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
 
+      it('Update successfully link settings', async () => {
+        const { item } = await saveItemAndMembership({
+          member: actor,
+        });
+        const payload = {
+          settings: {
+            showLinkButton: false,
+            showLinkIframe: true,
+          },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${item.id}`,
+          payload,
+        });
+
+        const newItem = response.json();
+
+        expectItem(newItem, {
+          ...item,
+          ...payload,
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(newItem.settings.showLinkButton).toBe(false);
+        expect(newItem.settings.showLinkIframe).toBe(true);
+        expect(newItem.settings.hasThumbnail).toBeFalsy();
+      });
+
       it('Filter out bad setting when updating', async () => {
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
@@ -2024,6 +2053,7 @@ describe('Item routes tests', () => {
         expectItem(newItem, {
           ...item,
           ...payload,
+          settings: VALID_SETTING,
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);

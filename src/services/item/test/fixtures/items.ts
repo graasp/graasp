@@ -136,6 +136,12 @@ export const expectItem = (
   if (newItem.creator && creator) {
     expect(newItem.creator.id).toEqual(creator.id);
   }
+
+  if (correctItem.settings) {
+    for (const [k, s] of Object.entries(correctItem.settings)) {
+      expect(newItem.settings![k]).toEqual(s);
+    }
+  }
 };
 
 export const expectManyItems = (
