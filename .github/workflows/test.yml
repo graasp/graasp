@@ -1,6 +1,11 @@
 name: Node CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  merge_group:
 
 # abort running jobs if newer version is detected on same branch
 concurrency:
