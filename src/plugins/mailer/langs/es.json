@@ -22,5 +22,7 @@
   "CHAT_MENTION_BUTTON_TEXT": "Ver conversación",
   "SHARE_ITEM_TEXT": "El artículo {{itemName}} se ha compartido contigo en Graasp. Haz clic en el siguiente enlace para ver el artículo en Graasp Builder.",
   "SHARE_ITEM_BUTTON": "Ver ítem",
-  "SHARE_ITEM_TITLE": "{{creatorName}} ha compartido {{itemName}} contigo en Graasp"
+  "SHARE_ITEM_TITLE": "{{creatorName}} ha compartido {{itemName}} contigo en Graasp",
+  "FOOTER": "Estás recibiendo este correo electrónico debido a tu cuenta en <a href=\"https://graasp.org\">Graasp</a>.",
+  "POWERED_BY": "Desarrollado por <a href=\"https://graasp.org\">Graasp</a>."
 }
