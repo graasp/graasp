@@ -20,17 +20,19 @@ export class MemberProfileService {
     const profile = await memberProfileRepository.createOne({ ...data, member });
     return profile;
   }
+
   async get(memberId: string, repositories: Repositories) {
     const { memberProfileRepository } = repositories;
     const memberProfile = await memberProfileRepository.getByMemberId(memberId, {
       visibility: true,
     });
-    // to throw error only if member is invisible
+    // profile is not visible, return 200 and null data
     if (!memberProfile) {
-      throw new MemberNotFound(memberId);
+      return null;
     }
     return memberProfile;
   }
+
   async getOwn(member: Actor, repositories: Repositories) {
     const { memberProfileRepository } = repositories;
     if (!member?.id) {
@@ -39,6 +41,7 @@ export class MemberProfileService {
     const memberProfile = await memberProfileRepository.getByMemberId(member.id);
     return memberProfile;
   }
+
   async patch(member: Actor, repositories: Repositories, data: Partial<IMemberProfile>) {
     const { memberProfileRepository } = repositories;
 
