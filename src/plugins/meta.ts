@@ -4,79 +4,128 @@ import { EntityManager } from 'typeorm';
 import { FastifyPluginAsync } from 'fastify';
 
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
-import { ETHERPAD_URL } from '../utils/config';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
 
-type GraaspServiceStatus = { isOk: boolean; message: string };
+class BaseStatus {
+  private isOk: boolean;
+  private message: string;
+  constructor(isOk: boolean, message: string) {
+    this.message = message;
+    this.isOk = isOk;
+  }
+  format() {
+    return {
+      status: this.isOk ? '✅' : '❌',
+      message: this.message,
+    };
+  }
+}
+class OkStatus extends BaseStatus {
+  constructor(message: string = 'Running') {
+    super(true, message);
+  }
+}
+class UnreachableStatus extends BaseStatus {
+  constructor() {
+    super(false, 'Service Unreachable');
+  }
+}
+class UnexpectedErrorStatus extends BaseStatus {
+  constructor(error: Error) {
+    super(false, `Unexpected error: ${error.toString()}`);
+  }
+}
+class NotOkStatus extends BaseStatus {
+  constructor(serviceName: string) {
+    super(false, `${serviceName} is not Ok.`);
+  }
+}
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  // get
-  const {
-    db,
-    search: { service: searchService },
-  } = fastify;
-
   fastify.get('/status', async () => {
-    const dbCheck = await getDBStatusCheck(db.manager);
-    const etherpadCheck = await getEtherpadStatusCheck();
-    const searchCheck = await getSearchStatusCheck(searchService);
+    const {
+      db,
+      search: { service: searchService },
+    } = fastify;
+    const api = new OkStatus().format();
+    const database = (await getDBStatusCheck(db.manager)).format();
+    const etherpad = (await getEtherpadStatusCheck()).format();
+    const meilisearch = (await getSearchStatusCheck(searchService)).format();
+    const iframely = (await getIframelyStatusCheck()).format();
     return {
-      api: { status: '✅', message: 'Running' },
-      database: { status: dbCheck.isOk ? '✅' : '❌', message: dbCheck.message },
-      // add meilisearch, etherpad, iframely, nudenet, etc...
-      meilisearch: { status: searchCheck.isOk ? '✅' : '❌', message: searchCheck.message },
-      etherpad: { status: etherpadCheck.isOk ? '✅' : '❌', message: etherpadCheck.message },
+      api,
+      database,
+      meilisearch,
+      etherpad,
+      iframely,
+      // add nudenet, etc...
     };
   });
 };
 
-const getDBStatusCheck = async (manager: EntityManager): Promise<GraaspServiceStatus> => {
+const getDBStatusCheck = async (manager: EntityManager): Promise<BaseStatus> => {
   try {
     // this just checks that we can execute queries on the database.
     // if tables are locked it will still execute fine as long as the connection is working
     const res = await manager.query('select 1 result;');
     if (res[0].result === 1) {
-      return { isOk: true, message: 'Database is connected' };
+      return new OkStatus();
     }
-    return { isOk: false, message: 'Unexpected result' };
+    return new NotOkStatus('Database');
   } catch (err) {
     if (err.code === 'ENOTFOUND') {
-      return { isOk: false, message: 'Service unreachable' };
+      return new UnreachableStatus();
     }
-    return { isOk: false, message: err.toString() };
+    return new UnexpectedErrorStatus(err);
   }
 };
 
-const getEtherpadStatusCheck = async (): Promise<GraaspServiceStatus> => {
+const getEtherpadStatusCheck = async (): Promise<BaseStatus> => {
   try {
     const etherpadApiEndpoint = new URL(`${ETHERPAD_URL}/api`);
     const res = await fetch(etherpadApiEndpoint.toString());
     if (res.ok) {
       const response = (await res.json()) satisfies { currentVersion: string };
-      return { isOk: true, message: `Running ${response.currentVersion}` };
+      return new OkStatus(`Running ${response.currentVersion}`);
     }
-    return { isOk: false, message: `Etherpad is not OK.\n${await res.json()}` };
+    return new NotOkStatus('Etherpad');
   } catch (err) {
     if (err.code === 'ENOTFOUND') {
-      return { isOk: false, message: 'Service unreachable' };
+      return new UnreachableStatus();
     }
-    return { isOk: false, message: err.toString() };
+    return new UnexpectedErrorStatus(err);
   }
 };
 
-const getSearchStatusCheck = async (search: SearchService): Promise<GraaspServiceStatus> => {
+const getIframelyStatusCheck = async (): Promise<BaseStatus> => {
+  try {
+    const iframelyEndpoint = new URL(`${EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN}/iframely`);
+    iframelyEndpoint.searchParams.set('url', 'https://graasp.org');
+    const res = await fetch(iframelyEndpoint.toString(), { method: 'HEAD' });
+    if (res.ok) {
+      return new OkStatus();
+    }
+    return new NotOkStatus('Iframely');
+  } catch (err) {
+    if (err.code === 'ENOTFOUND') {
+      return new UnreachableStatus();
+    }
+    return new UnexpectedErrorStatus(err);
+  }
+};
+
+const getSearchStatusCheck = async (search: SearchService): Promise<BaseStatus> => {
   try {
     const res = await search.getHealth();
-    console.log(res);
     if (res.status) {
-      return { isOk: true, message: 'Running' };
+      return new OkStatus();
     }
-    return { isOk: false, message: 'Search is not OK.' };
+    return new NotOkStatus('Meilisearch');
   } catch (err) {
-    console.log(err);
     if (err.code === 'ENOTFOUND') {
-      return { isOk: false, message: 'Service unreachable' };
+      return new UnreachableStatus();
     }
-    return { isOk: false, message: 'Service unreachable' };
+    return new UnexpectedErrorStatus(err);
   }
 };
 

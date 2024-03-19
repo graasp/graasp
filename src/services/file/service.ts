@@ -214,8 +214,8 @@ class FileService {
     replyUrl?: boolean;
   }) {
     if (replyUrl) {
-      // const replyUrlExpiration = S3_PRESIGNED_EXPIRATION;
-      // reply.header('Cache-Control', `max-age=${replyUrlExpiration}`);
+      const replyUrlExpiration = S3_PRESIGNED_EXPIRATION;
+      reply.header('Cache-Control', `max-age=${replyUrlExpiration}`);
       reply.status(StatusCodes.OK).send(url);
     } else {
       // this header will make the browser download the file with 'name'
