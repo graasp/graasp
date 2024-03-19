@@ -269,7 +269,7 @@ export class ImportExportService {
       archive.addReadStream(res.body, path.join(archiveRootPath, filename));
     }
     if (isItemType(item, ItemType.H5P)) {
-      const h5pUrl = await this.h5pService.download(item, actor);
+      const h5pUrl = await this.h5pService.getUrl(item, actor);
       const res = await fetch(h5pUrl);
 
       archive.addReadStream(res.body, path.join(archiveRootPath, item.name));
