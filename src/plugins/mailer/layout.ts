@@ -1,4 +1,4 @@
-export const applyLayout = (body: string) => {
+export const applyLayout = (body: string, footer: string) => {
   return `
   <!doctype html>
 <html>
@@ -394,20 +394,7 @@ export const applyLayout = (body: string) => {
 
           <!-- START FOOTER -->
           <div class="footer">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-              <tr>
-                <td class="content-block">
-                  You are receiving this email because of your account on <a href="https://graasp.org">Graasp</a>.
-                  <br />
-                  <span class="apple-link">React Group, Station 11 EPFL, Ecublens 1015 Lausanne</span>
-                </td>
-              </tr>
-              <tr>
-                <td class="content-block powered-by">
-                  Powered by <a href="https://graasp.org">Graasp</a>.
-                </td>
-              </tr>
-            </table>
+           ${footer}
           </div>
           <!-- END FOOTER -->
 

@@ -18,7 +18,7 @@ jobs:
           package-name: graasp
           changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"docs","section":"Documentation","hidden":false},{"type":"test","section":"Tests","hidden":false}]'
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # creates minor and major tags that follow the latest release
       - name: Tag major and minor versions

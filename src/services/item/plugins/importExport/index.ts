@@ -21,7 +21,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       files: { service: fS },
     },
     actions: { service: aS },
-    h5p: h5pService,
+    h5p: { service: h5pService },
     log: fastifyLogger,
     db,
   } = fastify;

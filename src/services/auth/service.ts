@@ -65,9 +65,11 @@ export class AuthService {
     ${this.mailer.buildButton(link, translated(MAIL.SIGN_UP_BUTTON_TEXT))}
     ${this.mailer.buildText(translated(MAIL.SIGN_UP_NOT_REQUESTED))}`;
 
+    const footer = this.mailer.buildFooter(lang);
+
     // don't wait for mailer's response; log error and link if it fails.
     this.mailer
-      .sendEmail(subject, member.email, link, html)
+      .sendEmail(subject, member.email, link, html, footer)
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   };
 
@@ -98,9 +100,11 @@ export class AuthService {
     ${this.mailer.buildButton(link, translated(MAIL.SIGN_IN_BUTTON_TEXT))}
     ${this.mailer.buildText(translated(MAIL.SIGN_IN_NOT_REQUESTED))}`;
 
+    const footer = this.mailer.buildFooter(lang);
+
     // don't wait for mailer's response; log error and link if it fails.
     this.mailer
-      .sendEmail(subject, member.email, link, html)
+      .sendEmail(subject, member.email, link, html, footer)
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   };
 }

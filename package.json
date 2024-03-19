@@ -1,8 +1,8 @@
 {
   "name": "graasp",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "description": "Graasp next level",
   "repository": {
