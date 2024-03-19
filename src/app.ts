@@ -43,7 +43,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
   });
 
   await instance
-    .register(fp(metaPlugin))
     .register(fp(databasePlugin), {
       logs: DATABASE_LOGS,
     })
@@ -59,7 +58,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     // need to be defined before member and item for auth check
     .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
 
-  instance.register(async (instance) => {
+  await instance.register(async (instance) => {
     // core API modules
     await instance
       // the websockets plugin must be registered before but in the same scope as the apis
@@ -99,6 +98,9 @@ export default async function (instance: FastifyInstance): Promise<void> {
     //   { prefix: '/analytics' },
     // );
   });
+
+  // register this meta plugin last as it needs all other apis
+  await instance.register(fp(metaPlugin));
 }
 
 // TODO: set fastify 'on close' handler, and disconnect from services there: db, ...
