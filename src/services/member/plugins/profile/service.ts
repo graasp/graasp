@@ -1,6 +1,6 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { MemberNotFound, UnauthorizedMember } from '../../../../utils/errors';
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { IMemberProfile } from './types';
