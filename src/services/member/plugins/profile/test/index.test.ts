@@ -136,7 +136,7 @@ describe('Profile Member routes tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(response.body).toBeFalsy();
+      expect(response.json()).toBeFalsy();
     });
     it('Returns OK and null data if no profile for this member', async () => {
       ({ app, actor } = await build());
@@ -149,7 +149,7 @@ describe('Profile Member routes tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.OK);
-      expect(response.body).toBeFalsy();
+      expect(response.json()).toBeFalsy();
     });
     it('Returns member if visibilty set to true', async () => {
       ({ app, actor } = await build());
