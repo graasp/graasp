@@ -29,6 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
+
   fastify.get<{ Params: { memberId: string } }>(
     '/:memberId',
     { schema: getProfileForMember, preHandler: fastify.attemptVerifyAuthentication },
@@ -36,6 +37,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return memberProfileService.get(memberId, buildRepositories());
     },
   );
+
   fastify.get<{ Params: { memberId: string } }>(
     '/own',
     { schema: getOwnProfile, preHandler: fastify.verifyAuthentication },
@@ -43,6 +45,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return memberProfileService.getOwn(member, buildRepositories());
     },
   );
+
   fastify.patch<{ Body: Partial<IMemberProfile> }>(
     '/',
     { schema: updateMemberProfile, preHandler: fastify.verifyAuthentication },

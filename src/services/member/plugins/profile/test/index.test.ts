@@ -125,7 +125,7 @@ describe('Profile Member routes tests', () => {
   });
 
   describe('GET /members/profile/:id', () => {
-    it('Returns Not Found if visibilty set to false', async () => {
+    it('Returns OK and null data if visibilty set to false', async () => {
       ({ app, actor } = await build());
       const member = await saveMemberProfile(MemberFactory(), ANNA_PROFILE);
       const memberId = member.id;
@@ -135,9 +135,10 @@ describe('Profile Member routes tests', () => {
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.json()).toBeFalsy();
     });
-    it('Returns Not Found if no profile for this member', async () => {
+    it('Returns OK and null data if no profile for this member', async () => {
       ({ app, actor } = await build());
       const member = await saveMember();
       const memberId = member.id;
@@ -147,7 +148,8 @@ describe('Profile Member routes tests', () => {
         url: `/members${MEMBER_PROFILE_ROUTE_PREFIX}/${memberId}`,
       });
 
-      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.json()).toBeFalsy();
     });
     it('Returns member if visibilty set to true', async () => {
       ({ app, actor } = await build());
