@@ -120,7 +120,7 @@
     "@types/bcrypt": "5.0.2",
     "@types/concurrently": "7.0.0",
     "@types/content-disposition": "0.5.8",
-    "@types/eslint": "8.56.0",
+    "@types/eslint": "8.56.6",
     "@types/geoip-lite": "1.4.4",
     "@types/jest": "29.5.11",
     "@types/jsonwebtoken": "9.0.5",
