@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.24.1](https://github.com/graasp/graasp/compare/v1.24.0...v1.24.1) (2024-03-20)
+
+
+### Bug Fixes
+
+* **arabic:** translate ([#883](https://github.com/graasp/graasp/issues/883)) ([19f4e59](https://github.com/graasp/graasp/commit/19f4e59c273ab3152f09a5a7e531a71ea73700e0))
+* **ci:** add merge group ([#884](https://github.com/graasp/graasp/issues/884)) ([c197364](https://github.com/graasp/graasp/commit/c1973649a454b0cf7602a3131c3a49626900d24d))
+* export h5p in zip ([#874](https://github.com/graasp/graasp/issues/874)) ([a08c0a1](https://github.com/graasp/graasp/commit/a08c0a19ee25903e6c6fe2c3560bd3325890d028))
+* **german:** update footer translations ([#882](https://github.com/graasp/graasp/issues/882)) ([a181ba1](https://github.com/graasp/graasp/commit/a181ba13c05ee03800b6510ac4db6a57cb0bf682))
+* return null when public profile is not visible ([#886](https://github.com/graasp/graasp/issues/886)) ([b369ead](https://github.com/graasp/graasp/commit/b369ead00b03dd76295c28e3bfb650206f2b3174))
+* **spanish:** update footer translations ([#881](https://github.com/graasp/graasp/issues/881)) ([d24094f](https://github.com/graasp/graasp/commit/d24094fd8a251ea8286a5e390ed7307875636355))
+
 ## [1.24.0](https://github.com/graasp/graasp/compare/v1.23.0...v1.24.0) (2024-03-13)
 
 
