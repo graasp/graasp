@@ -55,7 +55,7 @@
     "@aws-sdk/lib-storage": "3.395.0",
     "@aws-sdk/s3-request-presigner": "3.395.0",
     "@fastify/auth": "4.6.1",
-    "@fastify/bearer-auth": "9.3.0",
+    "@fastify/bearer-auth": "9.4.0",
     "@fastify/cors": "8.5.0",
     "@fastify/forwarded": "2.2.0",
     "@fastify/helmet": "10.1.1",
