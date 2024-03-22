@@ -46,6 +46,7 @@ export const item = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
+  .prop('displayName', S.string())
   .prop('description', S.mixed(['string', 'null']))
   .prop('type', S.string())
   .prop('path', S.string())
@@ -88,6 +89,10 @@ export const packedItem = S.object()
 export const baseItemCreate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'))
+  .prop(
+    'displayName',
+    S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'),
+  )
   .prop('description', S.string())
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
