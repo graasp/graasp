@@ -148,9 +148,10 @@ export const expectItem = (
 export const expectPackedItem = (
   newItem: Partial<PackedItem> | undefined | null,
   correctItem:
-    | Partial<Omit<PackedItem, 'createdAt' | 'updatedAt' | 'creator'>>
+    | (Partial<Omit<PackedItem, 'createdAt' | 'updatedAt' | 'creator'>> &
+        Pick<PackedItem, 'permission'>)
     | undefined
-    | (null & Pick<PackedItem, 'permission'>),
+    | null,
   creator?: Member,
   parent?: Item,
 ) => {
@@ -178,9 +179,10 @@ export const expectManyItems = (
 
 export const expectManyPackedItems = (
   items: PackedItem[],
-  correctItems: Partial<
-    Pick<PackedItem, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings' | 'permission'>
-  >[],
+  correctItems: (Partial<
+    Pick<PackedItem, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings'>
+  > &
+    Pick<PackedItem, 'permission'>)[],
   creator?: Member,
   parent?: Item,
 ) => {

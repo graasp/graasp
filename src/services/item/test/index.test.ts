@@ -1466,7 +1466,7 @@ describe('Item routes tests', () => {
           creator: member,
           permission: PermissionLevel.Read,
         });
-        const { item: notAFolder } = await saveItemAndMembership({
+        const { packedItem: notAFolder } = await saveItemAndMembership({
           item: { name: 'child1', type: ItemType.DOCUMENT },
           member,
           parentItem: parent,
