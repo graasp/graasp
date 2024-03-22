@@ -438,4 +438,8 @@ export class MeiliSearchWrapper {
     // compare data (check if updatedAt is more recent)
     // Reindex the modified and unexisting items
   }
+
+  async getHealth() {
+    return this.meilisearchClient.health();
+  }
 }
