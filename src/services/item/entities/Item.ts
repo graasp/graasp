@@ -69,6 +69,13 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   name: string;
 
   @Column({
+    name: 'display_name',
+    length: MAX_ITEM_NAME_LENGTH,
+    nullable: true,
+  })
+  displayName: string;
+
+  @Column({
     nullable: true,
     length: 5000,
     type: 'character varying',
