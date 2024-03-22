@@ -21,14 +21,14 @@ jest.mock('../../../../plugins/datasource');
 
 const repository = AppDataSource.getRepository(ItemGeolocation);
 
-const saveGeoloc = async (
+export const saveGeolocation = async (
   args: Partial<PackedItemGeolocation> & Pick<PackedItemGeolocation, 'item'>,
 ) => {
   const geoloc = await repository.save(args);
   return { geoloc, packed: { ...geoloc, item: args.item } };
 };
 
-const expectItemGeolocations = (
+export const expectItemGeolocations = (
   results: PackedItemGeolocation[],
   expected: PackedItemGeolocation[],
 ) => {
@@ -158,21 +158,21 @@ describe('Item Geolocation', () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
         const item1 = await savePublicItem({ actor: member });
-        const { packed: geoloc1 } = await saveGeoloc({
+        const { packed: geoloc1 } = await saveGeolocation({
           item: { ...item1, permission: null },
           lat: 1,
           lng: 2,
           country: 'de',
         });
         const item2 = await savePublicItem({ actor: member });
-        const { packed: geoloc2 } = await saveGeoloc({
+        const { packed: geoloc2 } = await saveGeolocation({
           item: { ...item2, permission: null },
           lat: 1,
           lng: 2,
           country: 'de',
         });
         const item3 = await savePublicItem({ actor: member });
-        const { packed: geoloc3 } = await saveGeoloc({
+        const { packed: geoloc3 } = await saveGeolocation({
           item: { ...item3, permission: null },
           lat: 1,
           lng: 2,
@@ -223,21 +223,21 @@ describe('Item Geolocation', () => {
 
       it('Get item geolocations', async () => {
         const { packedItem: item1 } = await saveItemAndMembership({ member: actor });
-        const { packed: geoloc1 } = await saveGeoloc({
+        const { packed: geoloc1 } = await saveGeolocation({
           item: item1,
           lat: 1,
           lng: 2,
           country: 'de',
         });
         const { packedItem: item2 } = await saveItemAndMembership({ member: actor });
-        const { packed: geoloc2 } = await saveGeoloc({
+        const { packed: geoloc2 } = await saveGeolocation({
           item: item2,
           lat: 1,
           lng: 2,
           country: 'de',
         });
         const { packedItem: item3 } = await saveItemAndMembership({ member: actor });
-        const { packed: geoloc3 } = await saveGeoloc({
+        const { packed: geoloc3 } = await saveGeolocation({
           item: item3,
           lat: 1,
           lng: 2,
@@ -258,7 +258,7 @@ describe('Item Geolocation', () => {
           item: { name: 'hello bye' },
           member: actor,
         });
-        const { packed: geoloc1 } = await saveGeoloc({
+        const { packed: geoloc1 } = await saveGeolocation({
           item: item1,
           lat: 1,
           lng: 2,
@@ -268,7 +268,7 @@ describe('Item Geolocation', () => {
           item: { description: 'hello bye' },
           member: actor,
         });
-        const { packed: geoloc2 } = await saveGeoloc({
+        const { packed: geoloc2 } = await saveGeolocation({
           item: item2,
           lat: 1,
           lng: 2,
@@ -278,7 +278,7 @@ describe('Item Geolocation', () => {
           item: { name: 'bye hello' },
           member: actor,
         });
-        const { packed: geoloc3 } = await saveGeoloc({
+        const { packed: geoloc3 } = await saveGeolocation({
           item: item3,
           lat: 1,
           lng: 2,
@@ -301,7 +301,7 @@ describe('Item Geolocation', () => {
           member: actor,
           parentItem,
         });
-        const { packed: geoloc1 } = await saveGeoloc({
+        const { packed: geoloc1 } = await saveGeolocation({
           item: item1,
           lat: 1,
           lng: 2,
@@ -312,7 +312,7 @@ describe('Item Geolocation', () => {
           member: actor,
           parentItem,
         });
-        const { packed: geoloc2 } = await saveGeoloc({
+        const { packed: geoloc2 } = await saveGeolocation({
           item: item2,
           lat: 1,
           lng: 2,
@@ -322,7 +322,7 @@ describe('Item Geolocation', () => {
           item: { name: 'bye hello' },
           member: actor,
         });
-        await saveGeoloc({ item: item3, lat: 1, lng: 2, country: 'de' });
+        await saveGeolocation({ item: item3, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
           method: HttpMethod.Get,

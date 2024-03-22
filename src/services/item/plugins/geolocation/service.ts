@@ -56,7 +56,7 @@ export class ItemGeolocationService {
       lng2?: ItemGeolocation['lng'];
       keywords?: string[];
     },
-  ) {
+  ): Promise<PackedItemGeolocation[]> {
     const { itemGeolocationRepository } = repositories;
 
     let parentItem: Item | undefined;
@@ -86,7 +86,7 @@ export class ItemGeolocationService {
         }
         return null;
       })
-      .filter(Boolean);
+      .filter(Boolean) as PackedItemGeolocation[];
   }
 
   async put(

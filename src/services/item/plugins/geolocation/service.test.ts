@@ -11,6 +11,7 @@ import { saveMember } from '../../../member/test/fixtures/members';
 import ItemService from '../../service';
 import { savePublicItem } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
+import { expectItemGeolocations, saveGeolocation } from './index.test';
 import { ItemGeolocationService } from './service';
 
 // mock datasource
@@ -110,16 +111,15 @@ describe('ItemGeolocationService', () => {
   describe('getByItem', () => {
     it('get successfully with read permission', async () => {
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { packedItem: item } = await saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
       });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-      await rawRepository.save(geoloc);
+      const { packed: geoloc } = await saveGeolocation({ lat: 1, lng: 2, item, country: 'de' });
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
-      expect(res).toMatchObject({ lat: geoloc.lat, lng: geoloc.lng, country: geoloc.country });
+      expectItemGeolocations([res!], [geoloc]);
     });
 
     it('get successfully for public item', async () => {
@@ -127,11 +127,15 @@ describe('ItemGeolocationService', () => {
       const item = await savePublicItem({
         actor: member,
       });
-      const geoloc = { lat: 1, lng: 2, item, country: 'de' };
-      await rawRepository.save(geoloc);
+      const { packed: geoloc } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: { ...item, permission: null },
+        country: 'de',
+      });
 
       const res = await service.getByItem(actor, buildRepositories(), item.id);
-      expect(res).toMatchObject({ lat: geoloc.lat, lng: geoloc.lng, country: geoloc.country });
+      expectItemGeolocations([res!], [geoloc]);
     });
 
     it('return null if does not have geolocation', async () => {
@@ -160,29 +164,36 @@ describe('ItemGeolocationService', () => {
   describe('getIn', () => {
     it('get successfully with read permission', async () => {
       const member = await saveMember();
-      const { item: item1 } = await saveItemAndMembership({
+      const { packedItem: item1 } = await saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
       });
-      const geoloc1 = { lat: 1, lng: 2, item: item1, country: 'de' };
-      await rawRepository.save(geoloc1);
-      const { item: item2 } = await saveItemAndMembership({
+      const { packed: geoloc1 } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: item1,
+        country: 'de',
+      });
+      const { packedItem: item2 } = await saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
       });
-      const geoloc2 = { lat: 1, lng: 2, item: item2, country: 'de' };
-      await rawRepository.save(geoloc2);
+      const { packed: geoloc2 } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: item2,
+        country: 'de',
+      });
 
       // noise
-      const { item: item3 } = await saveItemAndMembership({
+      const { packedItem: item3 } = await saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
       });
-      const geoloc3 = { lat: 1, lng: 6, item: item3, country: 'de' };
-      await rawRepository.save(geoloc3);
+      await saveGeolocation({ lat: 1, lng: 6, item: item3, country: 'de' });
 
       const res = await service.getIn(actor, buildRepositories(), {
         lat1: 0,
@@ -191,31 +202,42 @@ describe('ItemGeolocationService', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(2);
-      expect(res).toContainEqual(geoloc1);
-      expect(res).toContainEqual(geoloc2);
+      expectItemGeolocations(res, [geoloc1, geoloc2]);
     });
 
     it('get successfully for public item', async () => {
       const member = await saveMember();
-      const { item: item1 } = await saveItemAndMembership({
+      const { packedItem: item1 } = await saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
       });
-      const geoloc1 = { lat: 1, lng: 2, item: item1, country: 'de' };
-      await rawRepository.save(geoloc1);
+      const { packed: geoloc1 } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: item1,
+        country: 'de',
+      });
       const publicItem = await savePublicItem({
         actor: member,
       });
-      const geoloc2 = { lat: 1, lng: 2, item: publicItem, country: 'de' };
-      await rawRepository.save(geoloc2);
+      const { packed: geoloc2 } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: { ...publicItem, permission: null },
+        country: 'de',
+      });
 
       // noise
       const publicItem1 = await savePublicItem({
         actor: member,
       });
-      const geoloc3 = { lat: 1, lng: 6, item: publicItem1, country: 'de' };
-      await rawRepository.save(geoloc3);
+      await saveGeolocation({
+        lat: 1,
+        lng: 6,
+        item: { ...publicItem1, permission: null },
+        country: 'de',
+      });
 
       const res = await service.getIn(actor, buildRepositories(), {
         lat1: 0,
@@ -224,8 +246,7 @@ describe('ItemGeolocationService', () => {
         lng2: 4,
       });
       expect(res).toHaveLength(2);
-      expect(res).toContainEqual(geoloc1);
-      expect(res).toContainEqual(geoloc2);
+      expectItemGeolocations(res, [geoloc1, geoloc2]);
     });
 
     it('return empty for nothing in box', async () => {
