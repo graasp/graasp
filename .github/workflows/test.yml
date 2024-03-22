@@ -221,3 +221,4 @@ jobs:
           MEILISEARCH_MASTER_KEY: fake
           JOB_SCHEDULING: false
           GEOLOCATION_API_KEY: geolocation-key
+          GEOLOCATION_API_HOST: http://localhost:12345
