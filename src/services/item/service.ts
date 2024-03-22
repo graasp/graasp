@@ -154,7 +154,7 @@ export class ItemService {
     const item = await repositories.itemRepository.get(id);
 
     await validatePermission(repositories, permission, actor, item);
-
+    console.log(item);
     return item;
   }
 
