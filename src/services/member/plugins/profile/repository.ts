@@ -7,9 +7,6 @@ import { MemberNotFound } from '../../../../utils/errors';
 import { MemberProfile } from './entities/profile';
 import { IMemberProfile } from './types';
 
-interface ProfileFilter {
-  visibility: boolean;
-}
 const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).extend({
   async createOne(
     args: IMemberProfile & {
@@ -33,12 +30,17 @@ const MemberProfileRepository = AppDataSource.getRepository(MemberProfile).exten
     return memberProfile;
   },
 
-  async getByMemberId(memberId: string, filter?: ProfileFilter): Promise<MemberProfile | null> {
+  async getByMemberId(
+    memberId: string,
+    filter?: {
+      visibility?: boolean;
+    },
+  ): Promise<MemberProfile | null> {
     if (!memberId) {
       throw new MemberNotFound();
     }
     const memberProfile = await this.findOne({
-      where: { member: { id: memberId }, ...filter },
+      where: { member: { id: memberId }, visibility: filter?.visibility },
       relations: ['member'],
     });
 
