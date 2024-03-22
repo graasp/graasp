@@ -595,7 +595,25 @@ describe('Item Geolocation', () => {
         ({ app, actor } = await build());
       });
 
-      it('get adress from search', async () => {
+      it.only('get address from search', async () => {
+        (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return {
+            json: async () => ({
+              results: [
+                { formatted: 'address', country_code: 'country', place_id: 'id', lat: 45, lon: 23 },
+                {
+                  formatted: 'address1',
+                  country_code: 'country1',
+                  place_id: 'id1',
+                  lat: 23,
+                  lon: 12,
+                },
+              ],
+            }),
+          } as Response;
+        });
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/search`,
