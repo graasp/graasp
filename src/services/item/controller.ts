@@ -131,7 +131,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/children',
     { schema: getChildren, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { id }, query: { ordered, types } }) => {
-      return itemService.getChildren(member, buildRepositories(), id, { ordered, types });
+      return itemService.getPackedChildren(member, buildRepositories(), id, { ordered, types });
     },
   );
 
@@ -140,7 +140,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/descendants',
     { schema: getDescendants, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { id } }) => {
-      return itemService.getDescendants(member, buildRepositories(), id);
+      return itemService.getPackedDescendants(member, buildRepositories(), id);
     },
   );
 

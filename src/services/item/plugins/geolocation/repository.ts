@@ -28,7 +28,7 @@ export class ItemGeolocationRepository {
    * @param copy copied item
    */
   async copy(original: Item, copy: Item): Promise<void> {
-    const geoloc = await this.getByItem(original);
+    const geoloc = await this.getByItem(original.path);
     if (geoloc) {
       await this.repository.insert({
         item: { path: copy.path },
@@ -133,14 +133,14 @@ export class ItemGeolocationRepository {
   }
 
   /**
-   * @param item
+   * @param itemPath
    * @returns geolocation for this item
    */
-  async getByItem(item: Item): Promise<ItemGeolocation | null> {
+  async getByItem(itemPath: Item['path']): Promise<ItemGeolocation | null> {
     const geoloc = await this.repository
       .createQueryBuilder('geoloc')
       .leftJoinAndSelect('geoloc.item', 'item')
-      .where('item.path @> :path', { path: item.path })
+      .where('item.path @> :path', { path: itemPath })
       .orderBy('geoloc.item_path', 'DESC')
       .limit(1)
       .getOne();

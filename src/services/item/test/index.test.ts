@@ -36,12 +36,20 @@ import {
 } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
+import { PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
 import { ItemRepository } from '../repository';
 import { Ordering, SortBy } from '../types';
-import { expectItem, expectManyItems, saveItem, saveItems, savePublicItem } from './fixtures/items';
+import {
+  expectItem,
+  expectManyPackedItems,
+  expectPackedItem,
+  saveItem,
+  saveItems,
+  savePublicItem,
+} from './fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
@@ -467,15 +475,31 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { packedItem } = await saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${item.id}`,
+          url: `/items/${packedItem.id}`,
         });
 
         const returnedItem = response.json();
-        expectItem(returnedItem, item, actor);
+        expectPackedItem(returnedItem, packedItem, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it('Returns successfully with permission', async () => {
+        const { packedItem } = await saveItemAndMembership({
+          member: actor,
+          permission: PermissionLevel.Read,
+        });
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${packedItem.id}`,
+        });
+
+        const returnedItem = response.json();
+        expectPackedItem(returnedItem, packedItem, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
@@ -523,7 +547,21 @@ describe('Item routes tests', () => {
         });
 
         const returnedItem = response.json();
-        expectItem(returnedItem, item, actor);
+        expectPackedItem(returnedItem, { ...item, permission: null }, actor);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+      it('Returns successfully for write right', async () => {
+        ({ app, actor } = await build());
+        const item = await savePublicItem({ actor });
+        await saveMembership({ item, member: actor, permission: PermissionLevel.Write });
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${item.id}`,
+        });
+
+        const returnedItem = response.json();
+        expectPackedItem(returnedItem, { ...item, permission: PermissionLevel.Write }, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });
@@ -550,10 +588,10 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const items: Item[] = [];
+        const items: PackedItem[] = [];
         for (let i = 0; i < 3; i++) {
-          const { item } = await saveItemAndMembership({ member: actor });
-          items.push(item);
+          const { packedItem } = await saveItemAndMembership({ member: actor });
+          items.push(packedItem);
         }
 
         const response = await app.inject({
@@ -568,7 +606,7 @@ describe('Item routes tests', () => {
         const { data, errors } = response.json();
         expect(errors).toHaveLength(0);
         items.forEach(({ id }) => {
-          expectItem(
+          expectPackedItem(
             data[id],
             items.find(({ id: thisId }) => thisId === id),
           );
@@ -581,7 +619,10 @@ describe('Item routes tests', () => {
           url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
         });
 
-        expectItem(response.json().data[item.id], item);
+        expectPackedItem(response.json().data[item.id], {
+          ...item,
+          permission: PermissionLevel.Admin,
+        });
         expect(response.json().errors).toHaveLength(0);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -646,10 +687,10 @@ describe('Item routes tests', () => {
         const { data, errors } = response.json();
         expect(errors).toHaveLength(0);
         items.forEach(({ id }) => {
-          expectItem(
-            data[id],
-            items.find(({ id: thisId }) => thisId === id),
-          );
+          expectPackedItem(data[id], {
+            ...items.find(({ id: thisId }) => thisId === id),
+            permission: null,
+          });
         });
       });
     });
@@ -872,24 +913,29 @@ describe('Item routes tests', () => {
 
       it('Returns successfully owned and shared items', async () => {
         // owned items
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
-        const { item: item3 } = await saveItemAndMembership({ member: actor });
+        const { packedItem: item1, item: parentItem1 } = await saveItemAndMembership({
+          member: actor,
+        });
+        const { packedItem: item2 } = await saveItemAndMembership({ member: actor });
+        const { packedItem: item3 } = await saveItemAndMembership({ member: actor });
 
         // shared
         const bob = await saveMember();
-        const { item: item4 } = await saveItemAndMembership({ member: actor, creator: bob });
-        const { item: item5 } = await saveItemAndMembership({ member: bob });
-        const { item: item6 } = await saveItemAndMembership({
+        const { packedItem: item4, item: parentItem4 } = await saveItemAndMembership({
           member: actor,
           creator: bob,
-          parentItem: item5,
+        });
+        const { item: parentItem5 } = await saveItemAndMembership({ member: bob });
+        const { packedItem: item6 } = await saveItemAndMembership({
+          member: actor,
+          creator: bob,
+          parentItem: parentItem5,
         });
 
         // should not return these items
         await saveItemAndMembership({ member: bob });
-        await saveItemAndMembership({ member: actor, parentItem: item1 });
-        await saveItemAndMembership({ member: actor, parentItem: item4 });
+        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
+        await saveItemAndMembership({ member: actor, parentItem: parentItem4 });
 
         const items = [item1, item2, item3, item4, item6];
 
@@ -903,12 +949,8 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(items.length);
         expect(data).toHaveLength(items.length);
-        items.forEach(({ id }) => {
-          expectItem(
-            data.find(({ id: thisId }) => thisId === id),
-            items.find(({ id: thisId }) => thisId === id),
-          );
-        });
+
+        expectManyPackedItems(data, items);
       });
 
       it('Returns successfully items for member id', async () => {
@@ -917,8 +959,8 @@ describe('Item routes tests', () => {
         await saveItemAndMembership({ member: actor });
 
         const bob = await saveMember();
-        const { item: item1 } = await saveItemAndMembership({ member: actor, creator: bob });
-        const { item: item2 } = await saveItemAndMembership({ member: actor, creator: bob });
+        const { packedItem: item1 } = await saveItemAndMembership({ member: actor, creator: bob });
+        const { packedItem: item2 } = await saveItemAndMembership({ member: actor, creator: bob });
 
         const items = [item1, item2];
 
@@ -932,18 +974,22 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(items.length);
         expect(data).toHaveLength(items.length);
-        items.forEach(({ id }) => {
-          expectItem(
-            data.find(({ id: thisId }) => thisId === id),
-            items.find(({ id: thisId }) => thisId === id),
-          );
-        });
+        expectManyPackedItems(data, items);
       });
 
       it('Returns successfully sorted items by name asc', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor, item: { name: '2' } });
-        const { item: item2 } = await saveItemAndMembership({ member: actor, item: { name: '3' } });
-        const { item: item3 } = await saveItemAndMembership({ member: actor, item: { name: '1' } });
+        const { packedItem: item1 } = await saveItemAndMembership({
+          member: actor,
+          item: { name: '2' },
+        });
+        const { packedItem: item2 } = await saveItemAndMembership({
+          member: actor,
+          item: { name: '3' },
+        });
+        const { packedItem: item3 } = await saveItemAndMembership({
+          member: actor,
+          item: { name: '1' },
+        });
 
         const items = [item3, item1, item2];
 
@@ -957,21 +1003,19 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(items.length);
         expect(data).toHaveLength(items.length);
-        items.forEach((_, idx) => {
-          expectItem(data[idx], items[idx]);
-        });
+        expectManyPackedItems(data, items);
       });
 
       it('Returns successfully sorted items by type desc', async () => {
-        const { item: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
-        const { item: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await saveItemAndMembership({
           member: actor,
           item: { type: ItemType.FOLDER },
         });
-        const { item: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await saveItemAndMembership({
           member: actor,
           item: { type: ItemType.APP },
         });
@@ -988,26 +1032,24 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(items.length);
         expect(data).toHaveLength(items.length);
-        items.forEach((_, idx) => {
-          expectItem(data[idx], items[idx]);
-        });
+        expectManyPackedItems(data, items);
       });
 
       it('Returns successfully sorted items by creator name asc', async () => {
         const anna = await saveMember(MemberFactory({ name: 'anna' }));
         const bob = await saveMember(MemberFactory({ name: 'bob' }));
         const cedric = await saveMember(MemberFactory({ name: 'cedric' }));
-        const { item: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await saveItemAndMembership({
           member: actor,
           creator: bob,
           item: { type: ItemType.DOCUMENT },
         });
-        const { item: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await saveItemAndMembership({
           creator: anna,
           member: actor,
           item: { type: ItemType.FOLDER },
         });
-        const { item: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await saveItemAndMembership({
           member: actor,
           creator: cedric,
           item: { type: ItemType.APP },
@@ -1025,14 +1067,12 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(items.length);
         expect(data).toHaveLength(items.length);
-        items.forEach((_, idx) => {
-          expectItem(data[idx], items[idx]);
-        });
+        expectManyPackedItems(data, items);
       });
 
       it('Returns successfully items by read', async () => {
         const bob = await saveMember();
-        const { item: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Read,
@@ -1067,7 +1107,7 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(1);
         expect(data).toHaveLength(1);
-        expectItem(data[0], item1);
+        expectPackedItem(data[0], item1);
       });
 
       it('Returns successfully items by write and admin', async () => {
@@ -1079,13 +1119,13 @@ describe('Item routes tests', () => {
           permission: PermissionLevel.Read,
           item: { type: ItemType.DOCUMENT },
         });
-        const { item: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await saveItemAndMembership({
           member: actor,
           creator: anna,
           permission: PermissionLevel.Admin,
           item: { type: ItemType.FOLDER },
         });
-        const { item: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Write,
@@ -1108,24 +1148,22 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(items.length);
         expect(data).toHaveLength(items.length);
-        items.forEach((_, idx) => {
-          expectItem(data[idx], items[idx]);
-        });
+        expectManyPackedItems(data, items);
       });
 
       it('Returns successfully folder items', async () => {
         const bob = await saveMember();
-        const { item: itemFolder1 } = await saveItemAndMembership({
+        const { packedItem: itemFolder1 } = await saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Admin,
           item: { type: ItemType.FOLDER },
         });
-        const { item: itemFolder2 } = await saveItemAndMembership({
+        const { packedItem: itemFolder2 } = await saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Write,
           item: { type: ItemType.FOLDER },
         });
-        const { item: notAFolder } = await saveItemAndMembership({
+        const { packedItem: notAFolder } = await saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Write,
@@ -1151,8 +1189,8 @@ describe('Item routes tests', () => {
         expect(totalCount).toEqual(folders.length);
         expect(data).toHaveLength(folders.length);
         folders.forEach((folder, idx) => {
-          expectItem(sortedData[idx], folder);
-          expect(() => expectItem(sortedData[idx], notAFolder)).toThrow(Error);
+          expectPackedItem(sortedData[idx], folder);
+          expect(() => expectPackedItem(sortedData[idx], notAFolder)).toThrow(Error);
         });
       });
 
@@ -1236,7 +1274,7 @@ describe('Item routes tests', () => {
       it('Returns successfully paginated items', async () => {
         await saveItemAndMembership({ member: actor, item: { name: '2' } });
         await saveItemAndMembership({ member: actor, item: { name: '1' } });
-        const { item } = await saveItemAndMembership({ member: actor, item: { name: '3' } });
+        const { packedItem } = await saveItemAndMembership({ member: actor, item: { name: '3' } });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1249,7 +1287,7 @@ describe('Item routes tests', () => {
         const { data, totalCount } = response.json();
         expect(totalCount).toEqual(3);
         expect(data).toHaveLength(1);
-        expectItem(data[0], item);
+        expectPackedItem(data[0], packedItem);
       });
     });
   });
@@ -1274,27 +1312,27 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item: child1 } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        const { item: child2 } = await saveItemAndMembership({ member: actor, parentItem: parent });
+        const { item: parentItem } = await saveItemAndMembership({
+          member: actor,
+        });
+        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
+          member: actor,
+          parentItem,
+        });
+        const { packedItem: child2 } = await saveItemAndMembership({ member: actor, parentItem });
 
         const children = [child1, child2];
         // create child of child
-        await saveItemAndMembership({ member: actor, parentItem: child1 });
+        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
-          url: `/items/${parent.id}/children`,
+          url: `/items/${parentItem.id}/children`,
         });
 
         const data = response.json();
         expect(data).toHaveLength(children.length);
-        children.forEach(({ id }) => {
-          expectItem(
-            data.find(({ id: thisId }) => thisId === id),
-            children.find(({ id: thisId }) => thisId === id),
-          );
-        });
+        expectManyPackedItems(data, children);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
@@ -1311,12 +1349,12 @@ describe('Item routes tests', () => {
       });
       it('Returns ordered children', async () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item: child1 } = await saveItemAndMembership({
+        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
           item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
-        const { item: child2 } = await saveItemAndMembership({
+        const { packedItem: child2 } = await saveItemAndMembership({
           item: { name: 'child2' },
           member: actor,
           parentItem: parent,
@@ -1327,7 +1365,7 @@ describe('Item routes tests', () => {
 
         await ItemRepository.patch(parent.id, { extra: { [ItemType.FOLDER]: { childrenOrder } } });
         // create child of child
-        await saveItemAndMembership({ member: actor, parentItem: child1 });
+        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1339,18 +1377,18 @@ describe('Item routes tests', () => {
         // verify order and content
         data.forEach((item, idx) => {
           const child = children.find(({ id: thisId }) => thisId === childrenOrder[idx]);
-          expectItem(item, child);
+          expectPackedItem(item, child);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns ordered successfully even without order defined', async () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item: child1 } = await saveItemAndMembership({
+        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
           item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
-        const { item: child2 } = await saveItemAndMembership({
+        const { packedItem: child2 } = await saveItemAndMembership({
           item: { name: 'child2' },
           member: actor,
           parentItem: parent,
@@ -1359,7 +1397,7 @@ describe('Item routes tests', () => {
         const children = [child1, child2];
 
         // create child of child
-        await saveItemAndMembership({ member: actor, parentItem: child1 });
+        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1370,7 +1408,7 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(children.length);
         children.forEach(({ id }) => {
-          expectItem(
+          expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
             children.find(({ id: thisId }) => thisId === id),
           );
@@ -1410,9 +1448,13 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(children.length);
         children.forEach(({ id }) => {
-          expectItem(
+          expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
-            children.find(({ id: thisId }) => thisId === id),
+            // cannot use packed item because membership is saved on member != actor
+            {
+              ...children.find(({ id: thisId }) => thisId === id),
+              permission: PermissionLevel.Read,
+            },
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1445,11 +1487,15 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(children.length);
         children.forEach(({ id }, idx) => {
-          expectItem(
+          expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
-            children.find(({ id: thisId }) => thisId === id),
+            // cannot use packed item because member != actor
+            {
+              ...children.find(({ id: thisId }) => thisId === id),
+              permission: PermissionLevel.Read,
+            },
           );
-          expect(() => expectItem(data[idx], notAFolder)).toThrow(Error);
+          expect(() => expectPackedItem(data[idx], notAFolder)).toThrow(Error);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -1516,9 +1562,9 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(children.length);
         children.forEach(({ id }) => {
-          expectItem(
+          expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
-            children.find(({ id: thisId }) => thisId === id),
+            { ...children.find(({ id: thisId }) => thisId === id), permission: null },
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1548,20 +1594,20 @@ describe('Item routes tests', () => {
 
       it('Returns successfully', async () => {
         const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item: child1 } = await saveItemAndMembership({
+        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
           item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
-        const { item: child2 } = await saveItemAndMembership({
+        const { packedItem: child2 } = await saveItemAndMembership({
           item: { name: 'child2' },
           member: actor,
           parentItem: parent,
         });
 
-        const { item: childOfChild } = await saveItemAndMembership({
+        const { packedItem: childOfChild } = await saveItemAndMembership({
           member: actor,
-          parentItem: child1,
+          parentItem: parentItem1,
         });
         const descendants = [child1, child2, childOfChild];
 
@@ -1572,12 +1618,7 @@ describe('Item routes tests', () => {
 
         const data = response.json();
         expect(data).toHaveLength(descendants.length);
-        descendants.forEach(({ id }) => {
-          expectItem(
-            data.find(({ id: thisId }) => thisId === id),
-            descendants.find(({ id: thisId }) => thisId === id),
-          );
-        });
+        expectManyPackedItems(data, descendants);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Filter out hidden items for read rights', async () => {
@@ -1619,7 +1660,8 @@ describe('Item routes tests', () => {
         });
 
         const result = response.json();
-        expectManyItems(result, descendants);
+        // cannot use packed item because member != actor
+        expectPackedItem(result[0], { ...descendants[0], permission: PermissionLevel.Read });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns successfully empty descendants', async () => {
@@ -1715,9 +1757,9 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(descendants.length);
         descendants.forEach(({ id }) => {
-          expectItem(
+          expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
-            descendants.find(({ id: thisId }) => thisId === id),
+            { ...descendants.find(({ id: thisId }) => thisId === id), permission: null },
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1745,22 +1787,24 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully in order', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item: child1 } = await saveItemAndMembership({
+        const { packedItem: parent, item: parentItem } = await saveItemAndMembership({
+          member: actor,
+        });
+        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
           item: { name: 'child1' },
           member: actor,
-          parentItem: parent,
+          parentItem,
         });
         // noise
         await saveItemAndMembership({
           item: { name: 'child2' },
           member: actor,
-          parentItem: parent,
+          parentItem,
         });
 
         const { item: childOfChild } = await saveItemAndMembership({
           member: actor,
-          parentItem: child1,
+          parentItem: parentItem1,
         });
         const parents = [parent, child1];
 
@@ -1776,7 +1820,7 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(parents.length);
         data.forEach((p, idx) => {
-          expectItem(p, parents[idx]);
+          expectPackedItem(p, parents[idx]);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -1845,23 +1889,23 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const parent = await savePublicItem({ actor });
+        const parent = await savePublicItem({ actor: null });
         const child1 = await savePublicItem({
           item: { name: 'child1' },
-          actor,
+          actor: null,
           parentItem: parent,
         });
 
         const childOfChild = await savePublicItem({
           item: { name: 'child3' },
-          actor,
+          actor: null,
           parentItem: child1,
         });
 
         // noise
         await savePublicItem({
           item: { name: 'child2' },
-          actor,
+          actor: null,
           parentItem: parent,
         });
 
@@ -1875,7 +1919,7 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(parents.length);
         data.forEach((p, idx) => {
-          expectItem(p, parents[idx]);
+          expectPackedItem(p, { ...parents[idx], permission: null });
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

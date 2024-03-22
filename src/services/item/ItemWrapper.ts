@@ -20,8 +20,10 @@ type GraaspItem = Pick<
 >;
 
 // TODO: export in sdk??
-type ItemPacked = GraaspItem & {
-  permission?: ItemMembership['permission'];
+
+export type PackedItem = GraaspItem & {
+  // permission can be undefined because the item is public
+  permission: ItemMembership['permission'] | null;
 };
 
 export class ItemWrapper {
@@ -37,16 +39,33 @@ export class ItemWrapper {
    * merge items and their permission in a result of structure
    * @param items result of many items
    * @param memberships result memberships for many items
-   * @returns ResultOf<ItemPacked>
+   * @returns PackedItem[]
    */
-  static merge(
+  static merge(items: Item[], memberships: ResultOf<ItemMembership | null>): PackedItem[] {
+    const data: PackedItem[] = [];
+
+    for (const i of items) {
+      const { permission = null } = memberships.data[i.id] ?? {};
+      data.push({ ...i, permission });
+    }
+
+    return data;
+  }
+
+  /**
+   * merge items and their permission in a result of structure
+   * @param items result of many items
+   * @param memberships result memberships for many items
+   * @returns ResultOf<PackedItem>
+   */
+  static mergeResult(
     items: ResultOf<Item>,
     memberships: ResultOf<ItemMembership | null>,
-  ): ResultOf<ItemPacked> {
-    const data: ResultOf<ItemPacked>['data'] = {};
+  ): ResultOf<PackedItem> {
+    const data: ResultOf<PackedItem>['data'] = {};
 
     for (const i of Object.values(items.data)) {
-      const { permission } = memberships.data[i.id] ?? {};
+      const { permission = null } = memberships.data[i.id] ?? {};
       data[i.id] = { ...i, permission };
     }
 
@@ -57,7 +76,7 @@ export class ItemWrapper {
    * build item unit with complementary info, such as permission
    * @returns item unit with permission
    */
-  packed(): ItemPacked {
-    return { ...this.item, permission: this.actorHighestItemMembership?.permission };
+  packed(): PackedItem {
+    return { ...this.item, permission: this.actorHighestItemMembership?.permission ?? null };
   }
 }

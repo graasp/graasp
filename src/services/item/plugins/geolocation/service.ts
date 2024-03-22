@@ -5,7 +5,7 @@ import { validatePermissionMany } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
-import { ItemGeolocation } from './ItemGeolocation';
+import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationApiKey } from './errors';
 
 export class ItemGeolocationService {
@@ -26,15 +26,23 @@ export class ItemGeolocationService {
     return itemGeolocationRepository.delete(item);
   }
 
-  async getByItem(actor: Actor, repositories: Repositories, itemId: Item['id']) {
+  async getByItem(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: Item['id'],
+  ): Promise<PackedItemGeolocation | null> {
     const { itemGeolocationRepository } = repositories;
 
     // check item exists and actor has permission
-    const item = await this.itemService.get(actor, repositories, itemId);
+    const packedItem = await this.itemService.getPacked(actor, repositories, itemId);
 
-    const geoloc = await itemGeolocationRepository.getByItem(item);
+    const geoloc = await itemGeolocationRepository.getByItem(packedItem.path);
 
-    return geoloc;
+    if (geoloc) {
+      // add permission for item packed
+      return { ...geoloc, item: packedItem };
+    }
+    return null;
   }
 
   async getIn(
@@ -64,8 +72,21 @@ export class ItemGeolocationService {
       geoloc.map(({ item }) => item),
     );
 
+    // filter out items without permission
+    // and add permission for item packed
     // TODO optimize?
-    return geoloc.filter((g) => g.item.id in validatedItems.data);
+    const memberships = validatedItems.data;
+    return geoloc
+      .map((g) => {
+        if (g.item.id in validatedItems.data) {
+          return {
+            ...g,
+            item: { ...g.item, permission: memberships[g.item.id]?.permission ?? null },
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
   }
 
   async put(

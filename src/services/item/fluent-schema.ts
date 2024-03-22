@@ -61,7 +61,7 @@ export const item = S.object()
   .prop('createdAt', S.raw({}))
   .prop('updatedAt', S.raw({}));
 
-export const itemPacked = S.object()
+export const packedItem = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
@@ -161,7 +161,7 @@ export const create =
 
 export const getOne = {
   params: idParam,
-  response: { 200: itemPacked, '4xx': error },
+  response: { 200: packedItem, '4xx': error },
 };
 
 export const getAccessible = {
@@ -177,7 +177,7 @@ export const getAccessible = {
   response: {
     200: S.object()
       .additionalProperties(false)
-      .prop('data', S.array().items(item))
+      .prop('data', S.array().items(packedItem))
       .prop('totalCount', S.number()),
     '4xx': error,
   },
@@ -203,7 +203,7 @@ export const getChildren = {
     .prop('ordered', S.boolean())
     .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
-    200: S.array().items(item),
+    200: S.array().items(packedItem),
     '4xx': error,
   },
 };
@@ -211,7 +211,7 @@ export const getChildren = {
 export const getDescendants = {
   params: idParam,
   response: {
-    200: S.array().items(item),
+    200: S.array().items(packedItem),
     '4xx': error,
   },
 };
@@ -219,7 +219,7 @@ export const getDescendants = {
 export const getParents = {
   params: idParam,
   response: {
-    200: S.array().items(item),
+    200: S.array().items(packedItem),
     '4xx': error,
   },
 };
@@ -344,6 +344,30 @@ export default {
         creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
+      },
+    },
+    packedItem: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        name: { type: 'string' },
+        description: { type: ['string', 'null'] },
+        type: { type: 'string' },
+        path: { type: 'string' },
+        lang: { type: 'string' },
+        extra: {
+          type: 'object',
+          additionalProperties: true,
+        },
+        settings: {
+          type: 'object',
+          additionalProperties: true,
+        },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
+        createdAt: { type: 'string' },
+        updatedAt: { type: 'string' },
+        permission: { type: ['string', 'null'] },
       },
     },
   },

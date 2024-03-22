@@ -16,6 +16,7 @@ import {
   ItemMembershipNotFound,
   ModifyExisting,
 } from '../../utils/errors';
+import type { PackedItem } from '../item/ItemWrapper';
 import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
@@ -115,7 +116,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       types,
     }: ItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
-  ): Promise<Paginated<Item>> {
+  ): Promise<Paginated<PackedItem>> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
@@ -184,8 +185,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
-    const items = im.map(({ item }) => item);
-
+    const items = im.map(({ item, permission }) => ({ ...item, permission }));
     return { data: items, totalCount };
   },
 

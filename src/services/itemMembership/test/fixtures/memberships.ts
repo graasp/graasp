@@ -32,7 +32,11 @@ export const saveItemAndMembership = async (options: {
     parentItem,
   });
   const im = await saveMembership({ item: newItem, member, permission });
-  return { item: newItem, itemMembership: im };
+  return {
+    item: newItem,
+    itemMembership: im,
+    packedItem: { ...newItem, permission: im.permission },
+  };
 };
 
 export const expectMembership = (

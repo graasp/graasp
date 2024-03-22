@@ -13,6 +13,7 @@ import {
 } from '@graasp/sdk';
 
 import { Actor, Member } from '../../../member/entities/member';
+import { PackedItem } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemRepository } from '../../repository';
@@ -144,6 +145,20 @@ export const expectItem = (
   }
 };
 
+export const expectPackedItem = (
+  newItem: Partial<PackedItem> | undefined | null,
+  correctItem:
+    | Partial<Omit<PackedItem, 'createdAt' | 'updatedAt' | 'creator'>>
+    | undefined
+    | (null & Pick<PackedItem, 'permission'>),
+  creator?: Member,
+  parent?: Item,
+) => {
+  expectItem(newItem, correctItem, creator, parent);
+
+  expect(newItem!.permission).toEqual(correctItem?.permission);
+};
+
 export const expectManyItems = (
   items: Item[],
   correctItems: Partial<
@@ -158,5 +173,22 @@ export const expectManyItems = (
     const item = items.find(({ id: thisId }) => thisId === id);
     const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
     expectItem(item, correctItem, creator, parent);
+  });
+};
+
+export const expectManyPackedItems = (
+  items: PackedItem[],
+  correctItems: Partial<
+    Pick<PackedItem, 'id' | 'name' | 'description' | 'type' | 'extra' | 'settings' | 'permission'>
+  >[],
+  creator?: Member,
+  parent?: Item,
+) => {
+  expect(items).toHaveLength(correctItems.length);
+
+  items.forEach(({ id }) => {
+    const item = items.find(({ id: thisId }) => thisId === id);
+    const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
+    expectPackedItem(item, correctItem, creator, parent);
   });
 };
