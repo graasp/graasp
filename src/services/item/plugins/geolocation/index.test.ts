@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import nock from 'nock';
 import fetch, { type Response } from 'node-fetch';
 import { v4 } from 'uuid';
 
@@ -6,7 +7,7 @@ import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
-import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
+import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
 import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../member/test/fixtures/members';
@@ -596,10 +597,11 @@ describe('Item Geolocation', () => {
       });
 
       it.only('get address from search', async () => {
-        (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return {
-            json: async () => ({
+        if (GEOLOCATION_API_HOST) {
+          nock(GEOLOCATION_API_HOST)
+            .get('/search')
+            .query(true)
+            .reply(200, {
               results: [
                 { formatted: 'address', country_code: 'country', place_id: 'id', lat: 45, lon: 23 },
                 {
@@ -610,9 +612,8 @@ describe('Item Geolocation', () => {
                   lon: 12,
                 },
               ],
-            }),
-          } as Response;
-        });
+            });
+        }
 
         const res = await app.inject({
           method: HttpMethod.Get,
