@@ -49,6 +49,10 @@ export class SearchService {
     return stripHtml(s);
   }
 
+  async getHealth() {
+    return this.meilisearchClient.getHealth();
+  }
+
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(_actor: Actor, _repositories: Repositories, queries: MultiSearchParams) {
     const forcedFilter = 'isHidden = false';
