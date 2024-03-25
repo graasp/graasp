@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { v4 } from 'uuid';
 
+import { PackedItem } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 
 @Entity({ name: 'item_geolocation' })
@@ -45,3 +46,10 @@ export class ItemGeolocation extends BaseEntity {
   @CreateDateColumn({ name: 'updated_at', nullable: false })
   updatedAt: Date;
 }
+
+export type PackedItemGeolocation = Pick<
+  ItemGeolocation,
+  'id' | 'lat' | 'lng' | 'addressLabel' | 'country' | 'createdAt' | 'updatedAt'
+> & {
+  item: PackedItem;
+};

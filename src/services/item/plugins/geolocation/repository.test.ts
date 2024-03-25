@@ -114,7 +114,7 @@ describe('ItemGeolocationRepository', () => {
       const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'fr' };
       await rawRepository.save(geolocParent);
 
-      const res = await repository.getByItem(item);
+      const res = await repository.getByItem(item.path);
       expect(res).toMatchObject({
         lat: geoloc.lat,
         lng: geoloc.lng,
@@ -128,7 +128,7 @@ describe('ItemGeolocationRepository', () => {
       const geolocParent = { lat: 1, lng: 2, item: parentItem, country: 'de' };
       await rawRepository.save(geolocParent);
 
-      const res = await repository.getByItem(item);
+      const res = await repository.getByItem(item.path);
       expect(res).toMatchObject({
         lat: geolocParent.lat,
         lng: geolocParent.lng,
@@ -144,7 +144,7 @@ describe('ItemGeolocationRepository', () => {
       const geolocParent = { lat: 1, lng: 2, item: item1, country: 'fr' };
       await rawRepository.save(geolocParent);
 
-      const res = await repository.getByItem(item);
+      const res = await repository.getByItem(item.path);
       expect(res).toBeNull();
     });
   });

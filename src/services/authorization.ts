@@ -7,6 +7,7 @@ import {
   MemberCannotWriteItem,
 } from '../utils/errors';
 import { Repositories } from '../utils/repositories';
+import { PackedItem } from './item/ItemWrapper';
 import { Item } from './item/entities/Item';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
@@ -176,13 +177,13 @@ export const validatePermission = async (
 };
 
 /**
- * Filtering function that takes out limited items (eg. hidden children)
+ * Internal filtering function that takes out limited items (eg. hidden children)
  *  */
-export const filterOutItems = async (actor: Actor, repositories, items: Item[]) => {
+const _filterOutItems = async (actor: Actor, repositories, items: Item[]) => {
   const { itemMembershipRepository } = repositories;
 
   if (!items.length) {
-    return [];
+    return { items: [], memberships: [] };
   }
 
   // TODO: optimize with on query
@@ -192,19 +193,50 @@ export const filterOutItems = async (actor: Actor, repositories, items: Item[]) 
       })
     : { data: [] };
   const isHidden = await repositories.itemTagRepository.hasForMany(items, ItemTagType.Hidden);
-  return items
-    .filter((item) => {
-      // TODO: get best permission
-      const permission = PermissionLevelCompare.getHighest(
-        memberships[item.id]?.map(({ permission }) => permission),
-      );
-      // return item if has at least write permission or is not hidden
-      return (
-        (permission && PermissionLevelCompare.gte(permission, PermissionLevel.Write)) ||
-        !isHidden.data[item.id]
-      );
-    })
-    .filter(Boolean);
+  const filteredItems = items.filter((item) => {
+    // TODO: get best permission
+    const permission = PermissionLevelCompare.getHighest(
+      memberships[item.id]?.map(({ permission }) => permission),
+    );
+
+    // return item if has at least write permission or is not hidden
+    return (
+      (permission && PermissionLevelCompare.gte(permission, PermissionLevel.Write)) ||
+      !isHidden.data[item.id]
+    );
+  });
+
+  return { items: filteredItems, memberships };
+};
+
+/**
+ * Filtering function that takes out limited items (eg. hidden children)
+ *  */
+export const filterOutItems = async (
+  actor: Actor,
+  repositories,
+  items: Item[],
+): Promise<Item[]> => {
+  return (await _filterOutItems(actor, repositories, items)).items;
+};
+
+/**
+ * Filtering function that takes out limited items (eg. hidden children) and return packed items
+ *  */
+export const filterOutPackedItems = async (
+  actor: Actor,
+  repositories,
+  items: Item[],
+): Promise<PackedItem[]> => {
+  const { items: filteredItems, memberships } = await _filterOutItems(actor, repositories, items);
+
+  return filteredItems.map((item) => {
+    const permission = PermissionLevelCompare.getHighest(
+      memberships[item.id]?.map(({ permission }) => permission),
+    );
+    // return packed item
+    return { ...item, permission };
+  });
 };
 
 /**

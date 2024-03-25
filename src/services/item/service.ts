@@ -24,9 +24,15 @@ import {
 } from '../../utils/errors';
 import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
-import { filterOutItems, validatePermission, validatePermissionMany } from '../authorization';
+import {
+  filterOutItems,
+  filterOutPackedItems,
+  validatePermission,
+  validatePermissionMany,
+} from '../authorization';
 import { Actor, Member } from '../member/entities/member';
 import { mapById } from '../utils';
+import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
@@ -145,7 +151,15 @@ export class ItemService {
     return createdItem;
   }
 
-  async get(
+  /**
+   * internally get for an item
+   * @param actor
+   * @param repositories
+   * @param id
+   * @param permission
+   * @returns
+   */
+  async _get(
     actor: Actor,
     repositories: Repositories,
     id: string,
@@ -153,12 +167,57 @@ export class ItemService {
   ) {
     const item = await repositories.itemRepository.get(id);
 
-    await validatePermission(repositories, permission, actor, item);
+    const itemMembership = await validatePermission(repositories, permission, actor, item);
+
+    return { item, itemMembership };
+  }
+
+  /**
+   * get for an item
+   * @param actor
+   * @param repositories
+   * @param id
+   * @param permission
+   * @returns
+   */
+  async get(
+    actor: Actor,
+    repositories: Repositories,
+    id: string,
+    permission: PermissionLevel = PermissionLevel.Read,
+  ) {
+    const { item } = await this._get(actor, repositories, id, permission);
 
     return item;
   }
 
-  async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
+  /**
+   * get an item packed with complementary info
+   * @param actor
+   * @param repositories
+   * @param id
+   * @param permission
+   * @returns
+   */
+  async getPacked(
+    actor: Actor,
+    repositories: Repositories,
+    id: string,
+    permission: PermissionLevel = PermissionLevel.Read,
+  ) {
+    const { item, itemMembership } = await this._get(actor, repositories, id, permission);
+
+    return new ItemWrapper(item, itemMembership).packed();
+  }
+
+  /**
+   * internally get generic items
+   * @param actor
+   * @param repositories
+   * @param ids
+   * @returns result of items given ids
+   */
+  async _getMany(actor: Actor, repositories: Repositories, ids: string[]) {
     const { itemRepository } = repositories;
     const result = await itemRepository.getMany(ids);
 
@@ -178,7 +237,33 @@ export class ItemService {
       }
     }
 
-    return { data: result.data, errors: result.errors.concat(memberships?.errors ?? []) };
+    return { items: result, memberships };
+  }
+
+  /**
+   * get generic items
+   * @param actor
+   * @param repositories
+   * @param ids
+   * @returns
+   */
+  async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
+    const { items, memberships } = await this._getMany(actor, repositories, ids);
+
+    return { data: items.data, errors: items.errors.concat(memberships?.errors ?? []) };
+  }
+
+  /**
+   * get item packed with complementary items
+   * @param actor
+   * @param repositories
+   * @param ids
+   * @returns
+   */
+  async getManyPacked(actor: Actor, repositories: Repositories, ids: string[]) {
+    const { items, memberships } = await this._getMany(actor, repositories, ids);
+
+    return ItemWrapper.mergeResult(items, memberships);
   }
 
   async getAccessible(
@@ -186,7 +271,7 @@ export class ItemService {
     repositories: Repositories,
     params: ItemSearchParams,
     pagination: PaginationParams,
-  ): Promise<Paginated<Item>> {
+  ): Promise<Paginated<PackedItem>> {
     return repositories.itemMembershipRepository.getAccessibleItems(actor, params, pagination);
   }
 
@@ -207,7 +292,7 @@ export class ItemService {
     return filterOutItems(actor, repositories, items);
   }
 
-  async getChildren(
+  async _getChildren(
     actor: Actor,
     repositories: Repositories,
     itemId: string,
@@ -216,11 +301,34 @@ export class ItemService {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
-    // TODO optimize?
-    return filterOutItems(actor, repositories, await itemRepository.getChildren(item, params));
+    return itemRepository.getChildren(item, params);
   }
 
-  async getDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
+  async getChildren(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: string,
+    params?: ItemChildrenParams,
+  ) {
+    const children = await this._getChildren(actor, repositories, itemId, params);
+
+    // TODO optimize?
+    return filterOutItems(actor, repositories, children);
+  }
+
+  async getPackedChildren(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: string,
+    params?: ItemChildrenParams,
+  ) {
+    const children = await this._getChildren(actor, repositories, itemId, params);
+
+    // TODO optimize?
+    return filterOutPackedItems(actor, repositories, children);
+  }
+
+  async _getDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
@@ -228,8 +336,24 @@ export class ItemService {
       return [];
     }
 
+    return itemRepository.getDescendants(item);
+  }
+
+  async getDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
+    const descendants = await this._getDescendants(actor, repositories, itemId);
+    if (!descendants.length) {
+      return [];
+    }
     // TODO optimize?
-    return filterOutItems(actor, repositories, await itemRepository.getDescendants(item));
+    return filterOutItems(actor, repositories, descendants);
+  }
+
+  async getPackedDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
+    const descendants = await this._getDescendants(actor, repositories, itemId);
+    if (!descendants.length) {
+      return [];
+    }
+    return filterOutPackedItems(actor, repositories, descendants);
   }
 
   async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {
@@ -237,15 +361,16 @@ export class ItemService {
     const item = await this.get(actor, repositories, itemId);
 
     const parents = await itemRepository.getAncestors(item);
-    const { data: memberships } = await validatePermissionMany(
+    const memberships = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
       parents,
     );
-    // remove parents not in data
-    const parentsIds = Object.keys(memberships);
-    return parents.filter((p) => parentsIds.includes(p.id));
+    // remove parents actor does not have access
+    const parentsIds = Object.keys(memberships.data);
+    const items = parents.filter((p) => parentsIds.includes(p.id));
+    return ItemWrapper.merge(items, memberships);
   }
 
   async patch(actor: Actor, repositories: Repositories, itemId: UUID, body: Partial<Item>) {

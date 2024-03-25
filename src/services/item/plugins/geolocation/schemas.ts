@@ -18,10 +18,20 @@ const geolocation = {
   nullable: true,
 };
 
+const geolocationPacked = {
+  ...geolocation,
+  properties: {
+    ...geolocation.properties,
+    item: {
+      $ref: 'https://graasp.org/items/#/definitions/packedItem',
+    },
+  },
+};
+
 export const getByItem = {
   params: idParam,
   response: {
-    200: geolocation,
+    200: geolocationPacked,
   },
 };
 
@@ -53,7 +63,7 @@ export const getItemsInBox = {
   response: {
     200: {
       type: 'array',
-      items: geolocation,
+      items: geolocationPacked,
     },
   },
 };
