@@ -5995,9 +5995,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"geoip-lite@npm:1.4.7":
-  version: 1.4.7
-  resolution: "geoip-lite@npm:1.4.7"
+"geoip-lite@npm:1.4.10":
+  version: 1.4.10
+  resolution: "geoip-lite@npm:1.4.10"
   dependencies:
     async: "npm:2.1 - 2.6.4"
     chalk: "npm:4.1 - 4.1.2"
@@ -6006,7 +6006,7 @@ __metadata:
     lazy: "npm:1.0.11"
     rimraf: "npm:2.5.2 - 2.7.1"
     yauzl: "npm:2.9.2 - 2.10.0"
-  checksum: 10/78f5ca74b9cdc0becb7c8c79057db6b9eef753881f88df212ca3c13bf9694f429153f5154ca4581b15b58bff94e20e6ced38dc612a1c98d156d0d7d6ddd6e200
+  checksum: 10/8c11c966b5a6d784bb248585f8e4b467dd91d7a3e949789974eb56946a12e29f489c8799898970b0f02db3cbef4b1c079f551109e6850c39c7f71efc7772cd07
   languageName: node
   linkType: hard
 
@@ -6295,7 +6295,7 @@ __metadata:
     fluent-json-schema: "npm:4.1.2"
     form-data: "npm:4.0.0"
     french-badwords-list: "npm:1.0.7"
-    geoip-lite: "npm:1.4.7"
+    geoip-lite: "npm:1.4.10"
     h5p-standalone: "npm:3.6.0"
     http-status-codes: "npm:2.2.0"
     husky: "npm:8.0.3"
