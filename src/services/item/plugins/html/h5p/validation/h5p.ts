@@ -54,6 +54,7 @@ export namespace H5P {
     'xml',
     'md',
     'vtt',
+    'webm',
   ];
 
   /**
