@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 import nock from 'nock';
-import fetch, { type Response } from 'node-fetch';
 import { v4 } from 'uuid';
 
 import { HttpMethod } from '@graasp/sdk';
@@ -14,8 +13,6 @@ import { saveMember } from '../../../member/test/fixtures/members';
 import { PackedItem } from '../../ItemWrapper';
 import { expectPackedItem, savePublicItem } from '../../test/fixtures/items';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
-
-jest.mock('node-fetch');
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
@@ -489,15 +486,6 @@ describe('Item Geolocation', () => {
   });
 
   describe('GET /geolocation/reverse', () => {
-    beforeEach(() => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return {
-          json: async () => ({ results: [{ formatted: 'address', country: 'country' }] }),
-        } as Response;
-      });
-    });
-
     describe('Signed out', () => {
       it('Throw', async () => {
         ({ app } = await build({ member: null }));
@@ -520,6 +508,15 @@ describe('Item Geolocation', () => {
       });
 
       it('get adress from coordinates', async () => {
+        if (GEOLOCATION_API_HOST) {
+          nock(GEOLOCATION_API_HOST)
+            .get('/reverse')
+            .query(true)
+            .reply(200, {
+              results: [{ formatted: 'address', country: 'country' }],
+            });
+        }
+
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
@@ -556,26 +553,6 @@ describe('Item Geolocation', () => {
   });
 
   describe('GET /geolocation/search', () => {
-    beforeEach(() => {
-      (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return {
-          json: async () => ({
-            results: [
-              { formatted: 'address', country_code: 'country', place_id: 'id', lat: 45, lon: 23 },
-              {
-                formatted: 'address1',
-                country_code: 'country1',
-                place_id: 'id1',
-                lat: 23,
-                lon: 12,
-              },
-            ],
-          }),
-        } as Response;
-      });
-    });
-
     describe('Signed out', () => {
       it('Throw', async () => {
         ({ app } = await build({ member: null }));
