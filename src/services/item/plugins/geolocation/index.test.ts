@@ -596,7 +596,7 @@ describe('Item Geolocation', () => {
         ({ app, actor } = await build());
       });
 
-      it.only('get address from search', async () => {
+      it('get address from search', async () => {
         if (GEOLOCATION_API_HOST) {
           nock(GEOLOCATION_API_HOST)
             .get('/search')

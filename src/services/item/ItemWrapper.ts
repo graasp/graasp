@@ -19,8 +19,6 @@ type GraaspItem = Pick<
   | 'lang'
 >;
 
-// TODO: export in sdk??
-
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
   permission: ItemMembership['permission'] | null;

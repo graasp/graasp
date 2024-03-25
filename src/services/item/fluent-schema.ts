@@ -367,7 +367,7 @@ export default {
         creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
-        permission: { type: ['string', 'null'] },
+        permission: { type: ['string', 'null'], enum: Object.values(PermissionLevel) },
       },
     },
   },
