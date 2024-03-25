@@ -1,0 +1,18 @@
+meta {
+  name: -auth
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/m/auth
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+  	"t": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwM2Q0MjI4MS02YzE0LTQ4YjUtOWI5Yy00OWQ5NTQyNmQyYzUiLCJjaGFsbGVuZ2UiOiIyZGQwMGJkNzdlMDIyMmNlZDg4MjY2NTQ4MWE5YzFkOWY5MDczMDlkMTZlMDVlZDAwN2ExZWE2MzkyODQ3N2E5IiwiaWF0IjoxNjkyMDA0NDg3LCJleHAiOjE2OTIwMDYyODd9.X4Q3_bodomGLtoJz68TL1HXr8m6Gms_eCJY7JYEMK9g",
+      "verifier": "challenge" 
+  }
+}

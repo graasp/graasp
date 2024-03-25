@@ -13,7 +13,7 @@ export const buildInvitationLink = (invitation: Invitation) => {
 
 // to-do define the constant multipart
 // refactor to the constants
-export const MAX_FILE_SIZE = 1024 * 1024 * 50; // 50 MB
+export const MAX_FILE_SIZE = 1024 * 1024 * 200; // 200 MB
 export const MAX_NON_FILE_FIELDS = 0;
 export const MAX_FILES = 1;
 export const CSV_MIMETYPE = 'text/csv';
