@@ -1,4 +1,3 @@
-import { rejects } from 'assert';
 import fetch from 'node-fetch';
 import { EntityManager } from 'typeorm';
 
