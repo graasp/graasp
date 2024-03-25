@@ -1,0 +1,28 @@
+meta {
+  name: Sign In
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{user_email}}",
+    "captcha":"mock"
+  }
+}
+
+docs {
+  # Sign In with email
+  
+  This endpoint allows to sign into a user account, by providing the email of the account.
+  
+  The `captcha` key in the body is mandatory in order to verify the request was made from an authorized site.
+  
+  In development the captcha value is not checked, but it needs to be supplied. Any value will work.
+}

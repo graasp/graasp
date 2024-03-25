@@ -1,0 +1,20 @@
+meta {
+  name: -register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/m/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+  	"name": "kim",
+  	"email": "kim1@gmail.com",
+      "captcha": "mock",
+      "challenge":"2dd00bd77e0222ced882665481a9c1d9f907309d16e05ed007a1ea63928477a9"
+  }
+}

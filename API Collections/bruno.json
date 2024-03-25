@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Graasp API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -167,7 +167,8 @@ export class InvitationService {
   async handleCSVInvitations(
     actor: Actor,
     repositories: Repositories,
-    query: IdParam & { template_id: string },
+    parentId: string,
+    templateId: string,
     file: MultipartFile,
     itemMembershipService: ItemMembershipService,
   ): Promise<{
@@ -177,16 +178,14 @@ export class InvitationService {
     // verify file is CSV
     verifyCSVFileFormat(file);
 
-    // declare results
-
-    const { id: parentId, template_id } = query;
-
     // get parentItem
     const parentItem = await repositories.itemRepository.get(parentId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, parentItem);
 
-    const stream = file.file;
-    const { rows, header } = await getCSV(stream);
+    // parse CSV file
+    const { rows, header } = await getCSV(file.file);
+
+    // if the csv file includes a Group column we will create a structure, so the parent item needs to be a folder
     const hasGrpCol = header.includes(GRP_COL_NAME);
     if (parentItem.type !== ItemType.FOLDER && hasGrpCol) {
       throw new Error(`Group folder service can only be used with
@@ -247,19 +246,19 @@ export class InvitationService {
 
       // Get selected folder from items itemService.copyMany
       let itemsAtFirstLevel: string[] = [];
-      if (template_id) {
+      if (templateId) {
         // Get all items from folder_id and copy its content to group folders
         const itemsInTemplate = await this.itemService.getDescendants(
           actor,
           repositories,
-          template_id,
+          templateId,
         );
 
         // Because the function itemService.copyMany need only items at the first level
         // of the folder to execute a deep copy, it is necessary to exclude all
         // non first level items from the itemService.getDescendants call
         const regex = regexGenFirstLevelItems(
-          (await this.itemService.get(actor, repositories, template_id)).path,
+          (await this.itemService.get(actor, repositories, templateId)).path,
         );
 
         itemsAtFirstLevel = itemsInTemplate
