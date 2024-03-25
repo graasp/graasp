@@ -1430,13 +1430,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/bearer-auth@npm:9.3.0":
-  version: 9.3.0
-  resolution: "@fastify/bearer-auth@npm:9.3.0"
+"@fastify/bearer-auth@npm:9.4.0":
+  version: 9.4.0
+  resolution: "@fastify/bearer-auth@npm:9.4.0"
   dependencies:
     "@fastify/error": "npm:^3.4.1"
     fastify-plugin: "npm:^4.0.0"
-  checksum: 10/7427da3649f77aa3144ed526992e2b1e253c82cd114d6156cb026c0f5d9ef905cc9c17280c61cb6b91d29800e9ab5654076443ac90f64b2c913540754a963cc6
+  checksum: 10/4d9641ae1ba23f5774e6b3cc256459027a073a0d36314866e83ab7a003fe0bdfc619c37982e1f7dd2f1c89d0ecef53aa7cb74722581999934141a64481a1b111
   languageName: node
   linkType: hard
 
@@ -6238,7 +6238,7 @@ __metadata:
     "@commitlint/cli": "npm:17.8.1"
     "@commitlint/config-conventional": "npm:17.8.1"
     "@fastify/auth": "npm:4.6.1"
-    "@fastify/bearer-auth": "npm:9.3.0"
+    "@fastify/bearer-auth": "npm:9.4.0"
     "@fastify/cors": "npm:8.5.0"
     "@fastify/forwarded": "npm:2.2.0"
     "@fastify/helmet": "npm:10.1.1"
