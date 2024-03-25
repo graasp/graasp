@@ -65,7 +65,7 @@ class UnHealthyStatus extends ServiceStatus {
 }
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  fastify.get('/status', async () => {
+  fastify.get('/status', async (_, reply) => {
     const {
       db,
       search: { service: searchService },
@@ -75,6 +75,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     const etherpad = (await getEtherpadStatusCheck()).format();
     const meilisearch = (await getSearchStatusCheck(searchService)).format();
     const iframely = (await getIframelyStatusCheck()).format();
+
+    // allow request cross origin
+    reply.header('Access-Control-Allow-Origin', '*');
     return {
       api,
       database,
