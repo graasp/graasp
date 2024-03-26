@@ -35,6 +35,8 @@ export class ItemGeolocationRepository {
         lat: geoloc.lat,
         lng: geoloc.lng,
         country: geoloc.country,
+        addressLabel: geoloc.addressLabel,
+        helperLabel: geoloc.helperLabel,
       });
     }
   }
@@ -157,7 +159,7 @@ export class ItemGeolocationRepository {
   async put(
     itemPath: Item['path'],
     geolocation: Pick<ItemGeolocation, 'lat' | 'lng'> &
-      Pick<Partial<ItemGeolocation>, 'addressLabel'>,
+      Pick<Partial<ItemGeolocation>, 'addressLabel' | 'helperLabel'>,
   ): Promise<void> {
     // country might not exist because the point is outside borders
     const country = iso1A2Code([geolocation.lng, geolocation.lat]);
@@ -169,6 +171,7 @@ export class ItemGeolocationRepository {
           lat: geolocation.lat,
           lng: geolocation.lng,
           addressLabel: geolocation.addressLabel,
+          helperLabel: geolocation.helperLabel,
           country,
         },
       ],
