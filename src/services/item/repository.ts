@@ -419,13 +419,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     const old2New = new Map<string, { copy: Item; original: Item }>();
 
     // copy target parent
-    const { name, description, type, extra, settings } = originalParent;
     const copiedItem = this.createOne({
-      name,
-      description,
-      type,
-      extra,
-      settings,
+      ...originalParent,
       creator,
       parent: parentItem,
     });
@@ -433,7 +428,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
     for (let i = 0; i < descendants.length; i++) {
       const original = descendants[i];
-      const { id, name, description, type, path, extra, settings } = original;
+      const { id, path } = original;
 
       // process to get copy of direct parent
       const pathSplit = path.split('.');
@@ -455,11 +450,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       }
 
       const copiedItem = this.createOne({
-        name,
-        description,
-        type,
-        extra,
-        settings,
+        ...original,
         creator,
         parent: oldParentObject.copy,
       });
