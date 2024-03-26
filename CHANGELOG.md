@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.25.1](https://github.com/graasp/graasp/compare/v1.25.0...v1.25.1) (2024-03-26)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/secure-session to v6.2.0 ([#898](https://github.com/graasp/graasp/issues/898)) ([793f87a](https://github.com/graasp/graasp/commit/793f87aa0acca33240773065d5f1a1ae490f2669))
+
 ## [1.25.0](https://github.com/graasp/graasp/compare/v1.24.1...v1.25.0) (2024-03-26)
 
 
