@@ -72,10 +72,10 @@ export class LocalFileRepository implements FileRepository {
     return fs.createReadStream(this.buildFullPath(filepath));
   }
 
-  async getUrl({ filepath, id }) {
+  async getUrl({ filepath, id, usePublicHost = true }) {
     await this._validateFile({ filepath, id });
-
-    const localUrl = new URL(filepath, this.options.localFilesHost);
+    const host = usePublicHost ? this.options.publicFilesHost : this.options.localFilesHost;
+    const localUrl = new URL(filepath, host);
     return localUrl.toString();
   }
 
