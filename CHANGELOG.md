@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.25.0](https://github.com/graasp/graasp/compare/v1.24.1...v1.25.0) (2024-03-26)
+
+
+### Features
+
+* add helper label for geoloc ([#877](https://github.com/graasp/graasp/issues/877)) ([eea9b2d](https://github.com/graasp/graasp/commit/eea9b2d3525573f1ffbe6b7a563ee62e2786055a))
+* add more status reports on `/status` ([#887](https://github.com/graasp/graasp/issues/887)) ([b09a89d](https://github.com/graasp/graasp/commit/b09a89d077c2de541d952156fe948c11f8544848))
+* return permission alongside item ([#871](https://github.com/graasp/graasp/issues/871)) ([94e1848](https://github.com/graasp/graasp/commit/94e1848091e386edaf8913f595e28c414244b44d))
+
+
+### Bug Fixes
+
+* add CORS on status endpoint ([#897](https://github.com/graasp/graasp/issues/897)) ([6ae3570](https://github.com/graasp/graasp/commit/6ae3570d8a7cd7293de4fafdf511ee424360e3a7))
+* **deps:** update dependency @fastify/bearer-auth to v9.4.0 ([#896](https://github.com/graasp/graasp/issues/896)) ([1fd17c5](https://github.com/graasp/graasp/commit/1fd17c5dc567a588b03f26bca69a0897b20459ea))
+* **deps:** update dependency @fastify/static to v6.12.0 ([#899](https://github.com/graasp/graasp/issues/899)) ([08adc4e](https://github.com/graasp/graasp/commit/08adc4e884d6603cee023bc7e28973d3c8428d8c))
+* **deps:** update dependency geoip-lite to v1.4.10 ([#712](https://github.com/graasp/graasp/issues/712)) ([6007e31](https://github.com/graasp/graasp/commit/6007e312d648c150cb96afe870e75d08049c81e7))
+* do not expose port 1025 to the local machine ([#903](https://github.com/graasp/graasp/issues/903)) ([6d81802](https://github.com/graasp/graasp/commit/6d818023ee8f28e0e25603277dcdc67a30f329c5))
+* keep lang on copy ([#906](https://github.com/graasp/graasp/issues/906)) ([925528a](https://github.com/graasp/graasp/commit/925528af3f50e16085cbebecccde7df6b5490e55))
+* update sytax for set-output ([#890](https://github.com/graasp/graasp/issues/890)) ([d5c09a0](https://github.com/graasp/graasp/commit/d5c09a001ed9b75a66571d2b3fc82bdf6d2d854e))
+
 ## [1.24.1](https://github.com/graasp/graasp/compare/v1.24.0...v1.24.1) (2024-03-20)
 
 
