@@ -74,16 +74,18 @@ const saveNbOfItems = async ({
   actor,
   parentItem,
   member,
+  item: itemData = {},
 }: {
   member?: Member;
   nb: number;
   actor: Member;
   parentItem?: Item;
+  item?: Partial<Item>;
 }) => {
   const items: Item[] = [];
   for (let i = 0; i < nb; i++) {
     const { item } = await saveItemAndMembership({
-      item: { name: 'item ' + i },
+      item: { name: 'item ' + i, ...itemData },
       member: member ?? actor,
       parentItem,
       creator: actor,
@@ -2729,7 +2731,8 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully from root to root', async () => {
-        const items = await saveNbOfItems({ nb: 3, actor });
+        const settings = { hasThumbnail: false, isResizable: true, isCollapsible: true };
+        const items = await saveNbOfItems({ nb: 3, actor, item: { lang: 'fr', settings } });
         const initialCount = await ItemRepository.count();
         const initialCountMembership = await ItemMembershipRepository.count();
 
@@ -2752,6 +2755,13 @@ describe('Item routes tests', () => {
           for (const { name } of items) {
             const itemsInDb = await ItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(2);
+
+            // expect copied data
+            expect(itemsInDb[0].type).toEqual(itemsInDb[1].type);
+            expect(itemsInDb[0].description).toEqual(itemsInDb[1].description);
+            expect(itemsInDb[0].settings).toEqual(settings);
+            expect(itemsInDb[1].settings).toEqual(settings);
+            expect(itemsInDb[0].lang).toEqual(itemsInDb[1].lang);
           }
 
           // check it created a new membership per item
