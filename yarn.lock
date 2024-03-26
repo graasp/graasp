@@ -1574,22 +1574,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/static@npm:6.10.2":
-  version: 6.10.2
-  resolution: "@fastify/static@npm:6.10.2"
-  dependencies:
-    "@fastify/accept-negotiator": "npm:^1.0.0"
-    "@fastify/send": "npm:^2.0.0"
-    content-disposition: "npm:^0.5.3"
-    fastify-plugin: "npm:^4.0.0"
-    glob: "npm:^8.0.1"
-    p-limit: "npm:^3.1.0"
-    readable-stream: "npm:^4.0.0"
-  checksum: 10/d5e32a328eb2dc2c45c37ffbfbe95c1b0abeca819d8d8fe7039ee91ec338632228f74224868e83e2aec76894d2f9cc15abf74ceef7719e9c2c1fddd1c4a1e2f3
-  languageName: node
-  linkType: hard
-
-"@fastify/static@npm:^6.0.0":
+"@fastify/static@npm:6.12.0, @fastify/static@npm:^6.0.0":
   version: 6.12.0
   resolution: "@fastify/static@npm:6.12.0"
   dependencies:
@@ -6245,7 +6230,7 @@ __metadata:
     "@fastify/jwt": "npm:6.7.1"
     "@fastify/multipart": "npm:7.7.3"
     "@fastify/secure-session": "npm:6.0.0"
-    "@fastify/static": "npm:6.10.2"
+    "@fastify/static": "npm:6.12.0"
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
