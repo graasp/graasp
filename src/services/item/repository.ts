@@ -415,12 +415,13 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
    * @param tree Item and all descendants to copy
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
-  _copy(originalParent: Item, descendants: Item[], parentItem?: Item) {
+  _copy(originalParent: Item, descendants: Item[], creator: Member, parentItem?: Item) {
     const old2New = new Map<string, { copy: Item; original: Item }>();
 
     // copy target parent
     const copiedItem = this.createOne({
       ...originalParent,
+      creator,
       parent: parentItem,
     });
     old2New.set(originalParent.id, { copy: copiedItem, original: originalParent });
@@ -450,6 +451,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
       const copiedItem = this.createOne({
         ...original,
+        creator,
         parent: oldParentObject.copy,
       });
 

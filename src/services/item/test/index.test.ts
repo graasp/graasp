@@ -2732,7 +2732,13 @@ describe('Item routes tests', () => {
 
       it('Copy successfully from root to root', async () => {
         const settings = { hasThumbnail: false, isResizable: true, isCollapsible: true };
-        const items = await saveNbOfItems({ nb: 3, actor, item: { lang: 'fr', settings } });
+        const creator = await saveMember();
+        const items = await saveNbOfItems({
+          nb: 3,
+          actor: creator,
+          item: { lang: 'fr', settings },
+          member: actor,
+        });
         const initialCount = await ItemRepository.count();
         const initialCountMembership = await ItemMembershipRepository.count();
 
@@ -2753,7 +2759,10 @@ describe('Item routes tests', () => {
           const newCount = await ItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await ItemRepository.findBy({ name });
+            const itemsInDb = await ItemRepository.find({
+              where: { name },
+              relations: { creator: true },
+            });
             expect(itemsInDb).toHaveLength(2);
 
             // expect copied data
@@ -2762,6 +2771,13 @@ describe('Item routes tests', () => {
             expect(itemsInDb[0].settings).toEqual(settings);
             expect(itemsInDb[1].settings).toEqual(settings);
             expect(itemsInDb[0].lang).toEqual(itemsInDb[1].lang);
+            // creator is different
+            expect(itemsInDb[0].creator).not.toEqual(itemsInDb[1].creator);
+            expect([creator.id, actor.id]).toContain(itemsInDb[0].creator!.id);
+            expect([creator.id, actor.id]).toContain(itemsInDb[1].creator!.id);
+            // id and path are different
+            expect(itemsInDb[0].id).not.toEqual(itemsInDb[1].id);
+            expect(itemsInDb[0].path).not.toEqual(itemsInDb[1].path);
           }
 
           // check it created a new membership per item
