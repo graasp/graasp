@@ -1,0 +1,17 @@
+meta {
+  name: Logout
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{host}}/logout
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+  	"memberId": "89baefb4-84c9-4fa5-a081-debbe51f5636"
+  }
+}

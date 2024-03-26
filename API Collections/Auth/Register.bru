@@ -1,0 +1,23 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/register?lang=fr
+  body: json
+  auth: none
+}
+
+query {
+  lang: fr
+}
+
+body:json {
+  {
+    "name": "alice",
+    "email": "{{user_email}}",
+    "captcha": "mock"
+  }
+}

@@ -1,11 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
 
+import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { IdParam } from '../../types';
 import { Repositories, buildRepositories } from '../../utils/repositories';
 import { Actor, Member } from '../member/entities/member';
+import { MAX_FILES, MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
+import { NoFileProvidedForInvitations } from './errors';
 import { Invitation } from './invitation';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
 import { InvitationService } from './service';
@@ -19,7 +22,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.addSchema(definitions);
 
-  const iS = new InvitationService(log, mailer, items.service);
+  const iS = new InvitationService(log, mailer, items.service, members.service);
 
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
@@ -30,7 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   members.service.hooks.setPostHook('create', hook);
 
   // get an invitation by id
-  // do not require authentication
+  // does not require authentication
   fastify.get<{ Params: IdParam }>(
     '/invitations/:id',
     { schema: getById, preHandler: fastify.attemptVerifyAuthentication },
@@ -53,6 +56,47 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
+
+  // register upload endpoint separately so the multipart otptions only apply to that specific endpoint
+  fastify.register(async (fastify) => {
+    fastify.register(fastifyMultipart, {
+      limits: {
+        fields: MAX_NON_FILE_FIELDS, // Max number of non-file fields (Default: Infinity).
+        fileSize: MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+        files: MAX_FILES, // Max number of file fields (Default: Infinity).
+      },
+    });
+
+    // post invitations from a csv file
+    fastify.post<{ Querystring: IdParam & { templateId: string } }>(
+      '/:id/invitations/upload-csv',
+      { preHandler: fastify.verifyAuthentication },
+      async ({ member, query, file }) => {
+        // We need to get the membership service here because it is defined after the invitation service
+        const { memberships } = fastify;
+        // get uploaded file
+        const uploadedFile = await file();
+
+        if (!uploadedFile) {
+          throw new NoFileProvidedForInvitations();
+        }
+
+        // destructure query params
+        const { id: parentId, templateId } = query;
+
+        return await db.transaction(async (manager) =>
+          iS.handleCSVInvitations(
+            member,
+            buildRepositories(manager),
+            parentId,
+            templateId,
+            uploadedFile,
+            memberships.service,
+          ),
+        );
+      },
+    );
+  });
 
   // get all invitations for an item
   fastify.get<{ Params: IdParam }>(
