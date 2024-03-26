@@ -125,6 +125,12 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   @Column({ nullable: false, default: 'en' })
   lang: string;
 
+  @Column({ name: 'is_public', nullable: false, default: false })
+  isPublic: boolean;
+
+  @Column({ name: 'is_hidden', nullable: false, default: false })
+  isHidden: boolean;
+
   @Column({
     type: 'tsvector',
     generatedType: 'STORED',
