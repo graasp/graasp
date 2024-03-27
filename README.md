@@ -201,8 +201,8 @@ ACCOUNT_CLIENT_HOST=http://localhost:3114
 ANALYTICS_CLIENT_HOST=http://localhost:3113
 GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 
-# validation containers
-IMAGE_CLASSIFIER_API=<url>
+# This is already set in the docker-compose file, un-comment below if you want to override it
+# IMAGE_CLASSIFIER_API=<url>
 
 # get a recaptcha secret access key for your hostname at http://www.google.com/recaptcha/admin
 RECAPTCHA_SECRET_ACCESS_KEY=<google-recaptcha-key>

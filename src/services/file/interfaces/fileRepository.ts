@@ -27,6 +27,8 @@ export interface FileRepository {
       expiration?: number;
       // used by local to log
       id?: string;
+      // if the public host should be used (default true)
+      usePublicHost?: boolean;
     },
     log?: FastifyBaseLogger,
   ): Promise<string>;
