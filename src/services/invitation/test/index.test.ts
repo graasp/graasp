@@ -532,8 +532,8 @@ describe('Invitation Plugin', () => {
       await new Promise((done) => {
         setTimeout(async () => {
           // all invitations and memberships should exist
-          expect(await InvitationRepository.count()).toHaveLength(allInvitationsCount);
-          expect(await ItemMembershipRepository.count()).toHaveLength(allMembershipsCount);
+          expect(await InvitationRepository.count()).toEqual(allInvitationsCount);
+          expect(await ItemMembershipRepository.count()).toEqual(allMembershipsCount);
 
           done(true);
         }, 1000);

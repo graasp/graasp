@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 
 import {
+  FolderItemExtra,
   ItemType,
   LocalFileItemFactory,
   MAX_TREE_LEVELS,
@@ -266,21 +267,21 @@ describe('ItemRepository', () => {
         parentItem: parent,
       });
 
-      const childrenOrder = [child2.id, child1.id];
+      const childrenInOrder = [child2, child1];
       const children = [child1, child2];
 
-      await itemRepository.patch(parent.id, {
-        extra: { [ItemType.FOLDER]: { childrenOrder } },
+      const patchedParent = await itemRepository.patch(parent.id, {
+        extra: { [ItemType.FOLDER]: { childrenOrder: childrenInOrder.map(({ id }) => id) } },
       });
+
       // create child of child
       await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-
-      const data = await itemRepository.getChildren(parent, { ordered: true });
+      const data = await itemRepository.getChildren(patchedParent, { ordered: true });
       expect(data).toHaveLength(children.length);
       // verify order and content
-      data.forEach((item, idx) => {
-        const child = children.find(({ id: thisId }) => thisId === childrenOrder[idx]);
-        expectItem(item, child);
+      childrenInOrder.forEach((child, idx) => {
+        const resultChild = data[idx];
+        expectItem(resultChild, child);
       });
     });
     it('Returns ordered successfully even without order defined', async () => {
