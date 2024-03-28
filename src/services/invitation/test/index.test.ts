@@ -519,8 +519,8 @@ describe('Invitation Plugin', () => {
 
     it('does not throw if no invitation found', async () => {
       const email = 'random@email.org';
-      const allInvitations = await InvitationRepository.find();
-      const allMemberships = await ItemMembershipRepository.find();
+      const allInvitationsCount = await InvitationRepository.count();
+      const allMembershipsCount = await ItemMembershipRepository.count();
 
       // register
       await app.inject({
@@ -532,8 +532,8 @@ describe('Invitation Plugin', () => {
       await new Promise((done) => {
         setTimeout(async () => {
           // all invitations and memberships should exist
-          expect(await InvitationRepository.find()).toHaveLength(allInvitations.length);
-          expect(await ItemMembershipRepository.find()).toHaveLength(allMemberships.length);
+          expect(await InvitationRepository.count()).toHaveLength(allInvitationsCount);
+          expect(await ItemMembershipRepository.count()).toHaveLength(allMembershipsCount);
 
           done(true);
         }, 1000);

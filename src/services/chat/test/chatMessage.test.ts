@@ -168,7 +168,7 @@ describe('Chat Message tests', () => {
 
       it('Post successfully', async () => {
         const payload = { body: 'hello' };
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -179,7 +179,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount + 1);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount + 1);
       });
 
       it('Post successfully with mentions', async () => {
@@ -187,7 +187,7 @@ describe('Chat Message tests', () => {
 
         const members = await MemberRepository.find();
         const payload = { body: 'hello', mentions: members.map(({ id }) => id) };
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -197,11 +197,11 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount + 1);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount + 1);
 
         // check mentions and send email
-        const mentions = await adminChatMentionRepository.find();
-        expect(mentions).toHaveLength(members.length);
+        const nbMentions = await adminChatMentionRepository.count();
+        expect(nbMentions).toEqual(members.length);
 
         expect(mock).toHaveBeenCalledTimes(members.length);
       });
@@ -286,7 +286,7 @@ describe('Chat Message tests', () => {
           creator: actor,
           body: 'body',
         });
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -296,7 +296,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount);
       });
 
       it('Throws if item id is incorrect', async () => {
@@ -416,7 +416,7 @@ describe('Chat Message tests', () => {
           creator: actor,
           body: 'body',
         });
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -425,7 +425,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(chatMessage.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount - 1);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount - 1);
         expect(await ChatMessageRepository.get(chatMessage.id)).toBeNull();
       });
 
@@ -535,7 +535,7 @@ describe('Chat Message tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(otherMessages.length);
+        expect(await ChatMessageRepository.count()).toEqual(otherMessages.length);
       });
 
       it('Throws if item id is incorrect', async () => {

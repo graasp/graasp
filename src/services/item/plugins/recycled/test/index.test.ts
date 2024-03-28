@@ -257,7 +257,7 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Successfully restore multiple items', async () => {
-          const nonRecycledItems = await testUtils.rawItemRepository.find();
+          const nonRecycledItemsCount = await testUtils.rawItemRepository.count();
           const response = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
@@ -269,8 +269,8 @@ describe('Recycle Bin Tests', () => {
           expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
           await new Promise((res) => {
             setTimeout(async () => {
-              const allItems = await testUtils.rawItemRepository.find();
-              expect(allItems).toHaveLength(nonRecycledItems.length + items.length);
+              const allItemsCount = await testUtils.rawItemRepository.count();
+              expect(allItemsCount).toEqual(nonRecycledItemsCount + items.length);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
@@ -320,8 +320,8 @@ describe('Recycle Bin Tests', () => {
             creator: member,
             permission: PermissionLevel.Write,
           });
-          const initialCount = await testUtils.rawItemRepository.find();
-          const initialCountRecycled = await RecycledItemDataRepository.find();
+          const initialCount = await testUtils.rawItemRepository.count();
+          const initialCountRecycled = await RecycledItemDataRepository.count();
 
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -335,19 +335,17 @@ describe('Recycle Bin Tests', () => {
           // did not restore any items
           await new Promise((res) => {
             setTimeout(async () => {
-              const allItems = await testUtils.rawItemRepository.find();
-              expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemDataRepository.find()).toHaveLength(
-                initialCountRecycled.length,
-              );
+              const allItemsCount = await testUtils.rawItemRepository.count();
+              expect(allItemsCount).toEqual(initialCount);
+              expect(await RecycledItemDataRepository.count()).toEqual(initialCountRecycled);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
         });
 
         it('Throws if one item does not exist', async () => {
-          const initialCount = await testUtils.rawItemRepository.find();
-          const initialCountRecycled = await RecycledItemDataRepository.find();
+          const initialCount = await testUtils.rawItemRepository.count();
+          const initialCountRecycled = await RecycledItemDataRepository.count();
 
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -361,11 +359,9 @@ describe('Recycle Bin Tests', () => {
           // did not restore any items
           await new Promise((res) => {
             setTimeout(async () => {
-              const allItems = await testUtils.rawItemRepository.find();
-              expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemDataRepository.find()).toHaveLength(
-                initialCountRecycled.length,
-              );
+              const allItemsCount = await testUtils.rawItemRepository.count();
+              expect(allItemsCount).toEqual(initialCount);
+              expect(await RecycledItemDataRepository.count()).toEqual(initialCountRecycled);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });

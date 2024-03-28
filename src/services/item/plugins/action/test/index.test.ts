@@ -87,7 +87,7 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-        expect(await rawActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.count()).toEqual(0);
       });
     });
     describe('Public', () => {
@@ -180,7 +180,7 @@ describe('Action Plugin Tests', () => {
           },
         });
         expect(response.json().message).toEqual(new CannotPostAction().message);
-        expect(await rawActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.count()).toEqual(0);
       });
 
       it('Throw for missing type', async () => {
@@ -194,7 +194,7 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        expect(await rawActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.count()).toEqual(0);
       });
     });
   });

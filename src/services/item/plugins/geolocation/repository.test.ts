@@ -74,8 +74,8 @@ describe('ItemGeolocationRepository', () => {
 
       await repository.copy(originalItem, copyItem);
 
-      const allGeoloc = await rawRepository.find();
-      expect(allGeoloc).toHaveLength(1);
+      const allGeoloc = await rawRepository.count();
+      expect(allGeoloc).toEqual(1);
     });
   });
   describe('delete', () => {
@@ -91,8 +91,8 @@ describe('ItemGeolocationRepository', () => {
 
       await repository.delete(item);
 
-      const allGeoloc = await rawRepository.find();
-      expect(allGeoloc).toHaveLength(1);
+      const allGeoloc = await rawRepository.count();
+      expect(allGeoloc).toEqual(1);
     });
     it('do nothing if no geolocation attached', async () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
@@ -104,8 +104,8 @@ describe('ItemGeolocationRepository', () => {
 
       await repository.delete(item);
 
-      const allGeoloc = await rawRepository.find();
-      expect(allGeoloc).toHaveLength(1);
+      const allGeoloc = await rawRepository.count();
+      expect(allGeoloc).toEqual(1);
     });
   });
 
@@ -710,8 +710,8 @@ describe('ItemGeolocationRepository', () => {
       await repository.put(item.path, { lat, lng });
       const geoloc = await rawRepository.findOneBy({ lat, lng });
       expect(geoloc).toMatchObject({ lat, lng, country: 'CH' });
-      const allGeoloc = await rawRepository.find();
-      expect(allGeoloc).toHaveLength(1);
+      const allGeoloc = await rawRepository.count();
+      expect(allGeoloc).toEqual(1);
     });
   });
 });

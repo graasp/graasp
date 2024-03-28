@@ -236,7 +236,7 @@ describe('Item Login Tests', () => {
           it('Successfully create item login with username', async () => {
             const payload = USERNAME_LOGIN;
             await saveItemLogin({ item });
-            expect(await ItemLoginRepository.find()).toHaveLength(0);
+            expect(await ItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -288,7 +288,7 @@ describe('Item Login Tests', () => {
           it('Successfully create item login with member id', async () => {
             await saveItemLogin({ item });
             const pseudonymizedMember = await savePseudonymizedMember('pseudonymized');
-            expect(await ItemLoginRepository.find()).toHaveLength(0);
+            expect(await ItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -305,7 +305,7 @@ describe('Item Login Tests', () => {
             const m = await savePseudonymizedMember('pseudonymized');
             const payload = { memberId: m.id };
             await saveItemLogin({ item, member: m });
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -315,7 +315,7 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             expectItemLogin(res.json(), m);
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
           });
 
           it('Successfully reuse item login with member id from child', async () => {
@@ -324,7 +324,7 @@ describe('Item Login Tests', () => {
             const payload = { memberId: m.id };
             await saveItemLogin({ item, member: m });
             const child = await testUtils.saveItem({ parentItem: item });
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -334,7 +334,7 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             expectItemLogin(res.json(), m);
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
           });
 
           it('Successfully reuse user to create new item login', async () => {
@@ -343,7 +343,7 @@ describe('Item Login Tests', () => {
 
             const payload = { memberId: m.id };
             await saveItemLogin({ item, member: m });
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
 
             // set up second item
             const newItem = await testUtils.saveItem({ actor: member });
@@ -357,7 +357,7 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             expectItemLogin(res.json(), m);
-            expect(await ItemLoginRepository.find()).toHaveLength(2);
+            expect(await ItemLoginRepository.count()).toEqual(2);
           });
 
           it('Throws if member id is invalid', async () => {
@@ -419,7 +419,7 @@ describe('Item Login Tests', () => {
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
-            expect(await ItemLoginRepository.find()).toHaveLength(0);
+            expect(await ItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -457,7 +457,7 @@ describe('Item Login Tests', () => {
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
-            expect(await ItemLoginRepository.find()).toHaveLength(0);
+            expect(await ItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -474,7 +474,7 @@ describe('Item Login Tests', () => {
           it('Successfully create item login with member id and password', async () => {
             await saveItemLogin({ item, type: ItemLoginSchemaType.UsernameAndPassword });
             const pseudonymizedMember = await savePseudonymizedMember('pseudonymized');
-            expect(await ItemLoginRepository.find()).toHaveLength(0);
+            expect(await ItemLoginRepository.count()).toEqual(0);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -496,7 +496,7 @@ describe('Item Login Tests', () => {
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -506,7 +506,7 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             expectItemLogin(res.json(), m);
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
           });
 
           it('Fail to item login with member id if password is wrong', async () => {
@@ -519,7 +519,7 @@ describe('Item Login Tests', () => {
               type: ItemLoginSchemaType.UsernameAndPassword,
               password: payload.password,
             });
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -529,7 +529,7 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             expectItemLogin(res.json(), m);
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
           });
 
           it('Successfully reuse user to create new item login', async () => {
@@ -542,7 +542,7 @@ describe('Item Login Tests', () => {
               member: m,
               type: ItemLoginSchemaType.UsernameAndPassword,
             });
-            expect(await ItemLoginRepository.find()).toHaveLength(1);
+            expect(await ItemLoginRepository.count()).toEqual(1);
 
             // set up second item
             const newItem = await testUtils.saveItem({ actor: member });
@@ -556,7 +556,7 @@ describe('Item Login Tests', () => {
 
             expect(res.statusCode).toBe(StatusCodes.OK);
             expectItemLogin(res.json(), m);
-            expect(await ItemLoginRepository.find()).toHaveLength(2);
+            expect(await ItemLoginRepository.count()).toEqual(2);
           });
 
           it('Throws if member id is invalid', async () => {

@@ -43,7 +43,7 @@ describe('ItemGeolocationService', () => {
 
       await service.delete(actor, buildRepositories(), item.id);
 
-      expect(await rawRepository.find()).toHaveLength(0);
+      expect(await rawRepository.count()).toEqual(0);
     });
     it('delete successfully with write permission', async () => {
       const member = await saveMember();
@@ -57,7 +57,7 @@ describe('ItemGeolocationService', () => {
 
       await service.delete(actor, buildRepositories(), item.id);
 
-      expect(await rawRepository.find()).toHaveLength(0);
+      expect(await rawRepository.count()).toEqual(0);
     });
     it('cannot delete with read permission', async () => {
       const member = await saveMember();
@@ -78,7 +78,7 @@ describe('ItemGeolocationService', () => {
           expect(e).toMatchObject(new MemberCannotWriteItem(expect.anything()));
         });
 
-      expect(await rawRepository.find()).toHaveLength(1);
+      expect(await rawRepository.count()).toEqual(1);
     });
     it('cannot delete without permission', async () => {
       const member = await saveMember();
@@ -93,7 +93,7 @@ describe('ItemGeolocationService', () => {
         expect(e).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
 
-      expect(await rawRepository.find()).toHaveLength(1);
+      expect(await rawRepository.count()).toEqual(1);
     });
 
     it('throws if item not found', async () => {

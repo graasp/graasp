@@ -231,7 +231,7 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(1);
+        expect(await AppDataSource.getRepository(ItemGeolocation).count()).toEqual(1);
       });
 
       it('Create successfully with language', async () => {
@@ -297,8 +297,8 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await testUtils.rawItemRepository.find()).toHaveLength(0);
-        expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
+        expect(await testUtils.rawItemRepository.count()).toEqual(0);
+        expect(await AppDataSource.getRepository(ItemGeolocation).count()).toEqual(0);
 
         const response1 = await app.inject({
           method: HttpMethod.Post,
@@ -308,8 +308,8 @@ describe('Item routes tests', () => {
 
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await testUtils.rawItemRepository.find()).toHaveLength(0);
-        expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
+        expect(await testUtils.rawItemRepository.count()).toEqual(0);
+        expect(await AppDataSource.getRepository(ItemGeolocation).count()).toEqual(0);
       });
 
       it('Bad request if name is invalid', async () => {
@@ -2248,10 +2248,10 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual(items.map(({ id }) => id));
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await testUtils.rawItemRepository.find();
-          expect(remaining).toHaveLength(0);
-          const memberships = await ItemMembershipRepository.find();
-          expect(memberships).toHaveLength(0);
+          const remaining = await testUtils.rawItemRepository.count();
+          expect(remaining).toEqual(0);
+          const memberships = await ItemMembershipRepository.count();
+          expect(memberships).toEqual(0);
           const { errors } = await testUtils.itemRepository.getMany(items.map(({ id }) => id));
           expect(errors).toHaveLength(items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -2267,10 +2267,10 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual([item1.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          expect(await testUtils.rawItemRepository.count()).toHaveLength(0);
+          expect(await testUtils.rawItemRepository.count()).toEqual(0);
 
-          const memberships = await ItemMembershipRepository.find();
-          expect(memberships).toHaveLength(0);
+          const memberships = await ItemMembershipRepository.count();
+          expect(memberships).toEqual(0);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Delete successfully one item in parent, with children and memberships', async () => {
@@ -2294,13 +2294,13 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual([parent.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await testUtils.rawItemRepository.find();
+          const remaining = await testUtils.rawItemRepository.count();
           // should keep root
-          expect(remaining).toHaveLength(1);
+          expect(remaining).toEqual(1);
 
-          const memberships = await ItemMembershipRepository.find();
+          const memberships = await ItemMembershipRepository.count();
           // should keep root membership for actor and member
-          expect(memberships).toHaveLength(2);
+          expect(memberships).toEqual(2);
 
           // ws should not fail
         }, MULTIPLE_ITEMS_LOADING_TIME);
@@ -2962,8 +2962,8 @@ describe('Item routes tests', () => {
 
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
-          const results = await itemGeolocationRepository.find();
-          expect(results).toHaveLength(2);
+          const results = await itemGeolocationRepository.count();
+          expect(results).toEqual(2);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
     });

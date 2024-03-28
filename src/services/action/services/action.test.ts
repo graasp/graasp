@@ -43,7 +43,7 @@ describe('ActionService', () => {
       const request = MOCK_REQUEST;
       await service.postMany(actor, buildRepositories(), request, actions);
 
-      expect(await rawRepository.find()).toHaveLength(actions.length);
+      expect(await rawRepository.count()).toEqual(actions.length);
     });
 
     it('does not post actions if member disable analytics', async () => {
@@ -54,7 +54,7 @@ describe('ActionService', () => {
       const request = MOCK_REQUEST;
       await service.postMany(actor, buildRepositories(), request, actions);
 
-      expect(await rawRepository.find()).toHaveLength(0);
+      expect(await rawRepository.count()).toEqual(0);
     });
   });
 });

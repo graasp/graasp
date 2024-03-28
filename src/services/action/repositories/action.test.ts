@@ -58,7 +58,7 @@ describe('Action Repository', () => {
 
       await r.postMany(actions);
 
-      expect(await rawRepository.find()).toHaveLength(actions.length);
+      expect(await rawRepository.count()).toEqual(actions.length);
     });
   });
 
@@ -78,7 +78,7 @@ describe('Action Repository', () => {
 
       await r.deleteAllForMember(member.id);
 
-      expect(await rawRepository.find()).toHaveLength(1);
+      expect(await rawRepository.count()).toEqual(1);
     });
   });
 

@@ -618,7 +618,7 @@ describe('File Item routes tests', () => {
           },
           member: actor,
         });
-        const itemCount = await testUtils.rawItemRepository.find();
+        const itemCount = await testUtils.rawItemRepository.count();
 
         await app.inject({
           method: HttpMethod.Post,
@@ -632,7 +632,7 @@ describe('File Item routes tests', () => {
           setTimeout(async () => {
             await expect(copyObjectMock).not.toHaveBeenCalled();
             // did not copy
-            expect(await testUtils.rawItemRepository.find()).toHaveLength(itemCount.length);
+            expect(await testUtils.rawItemRepository.count()).toHaveLength(itemCount);
             done(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);
         });

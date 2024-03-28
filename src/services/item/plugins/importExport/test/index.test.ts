@@ -155,8 +155,8 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await testUtils.rawItemRepository.find();
-        expect(items).toHaveLength(1);
+        const items = await testUtils.rawItemRepository.count();
+        expect(items).toEqual(1);
       }, 1000);
     });
     it('Import and sanitize html, txt and description', async () => {

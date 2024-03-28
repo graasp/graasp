@@ -327,7 +327,7 @@ describe('Membership routes tests', () => {
         // check item membership repository contains two memberships
         // the parent one and the new one
 
-        expect(await ItemMembershipRepository.find()).toHaveLength(4);
+        expect(await ItemMembershipRepository.count()).toEqual(4);
         // previous membership is deleted
         expect(await ItemMembershipRepository.findOneBy({ id: membership.id })).toBeFalsy();
 
@@ -349,7 +349,7 @@ describe('Membership routes tests', () => {
           item,
           member,
         });
-        const initialCount = await ItemMembershipRepository.find();
+        const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -363,7 +363,7 @@ describe('Membership routes tests', () => {
 
         // check item membership repository contains one membership
         expect(response.json()).toEqual(new ModifyExisting(membership.id));
-        const newCount = await ItemMembershipRepository.find();
+        const newCount = await ItemMembershipRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
@@ -376,7 +376,7 @@ describe('Membership routes tests', () => {
           parentItem: parent,
         });
         await testUtils.saveMembership({ permission: PermissionLevel.Write, item: parent, member });
-        const initialCount = await ItemMembershipRepository.find();
+        const initialCount = await ItemMembershipRepository.count();
 
         const newMembership = {
           permission: PermissionLevel.Read,
@@ -391,7 +391,7 @@ describe('Membership routes tests', () => {
         });
 
         // check item membership repository contains one membership
-        const newCount = await ItemMembershipRepository.find();
+        const newCount = await ItemMembershipRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.json()).toEqual(new InvalidMembership(newMembership));
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -400,7 +400,7 @@ describe('Membership routes tests', () => {
       it('Bad Request for invalid id', async () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
-        const initialCount = await ItemMembershipRepository.find();
+        const initialCount = await ItemMembershipRepository.count();
 
         const id = 'invalid-id';
         const response = await app.inject({
@@ -413,7 +413,7 @@ describe('Membership routes tests', () => {
           },
         });
 
-        const newCount = await ItemMembershipRepository.find();
+        const newCount = await ItemMembershipRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -422,7 +422,7 @@ describe('Membership routes tests', () => {
       it('Bad Request for invalid payload', async () => {
         const member = await saveMember();
         const { item } = await testUtils.saveItemAndMembership({ member: actor });
-        const initialCount = await ItemMembershipRepository.find();
+        const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -433,7 +433,7 @@ describe('Membership routes tests', () => {
           },
         });
 
-        const newCount = await ItemMembershipRepository.find();
+        const newCount = await ItemMembershipRepository.count();
         expect(newCount).toEqual(initialCount);
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
