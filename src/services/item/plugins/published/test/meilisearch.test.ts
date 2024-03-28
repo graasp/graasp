@@ -144,7 +144,7 @@ describe('MeilisearchWrapper', () => {
       const item = testUtils.createItem();
 
       // Given
-      jest.spyOn(itemRepositoryMock, 'getManyDescendants').mockResolvedValue([]);
+      jest.spyOn(testUtils.itemRepository, 'getManyDescendants').mockResolvedValue([]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
@@ -173,7 +173,7 @@ describe('MeilisearchWrapper', () => {
       const descendant2 = testUtils.createItem();
       // Given
       jest
-        .spyOn(itemRepositoryMock, 'getManyDescendants')
+        .spyOn(testUtils.itemRepository, 'getManyDescendants')
         .mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
@@ -232,7 +232,7 @@ describe('MeilisearchWrapper', () => {
       } satisfies Record<string, Item[]>;
 
       // Given
-      jest.spyOn(itemRepositoryMock, 'getManyDescendants').mockImplementation((items) => {
+      jest.spyOn(testUtils.itemRepository, 'getManyDescendants').mockImplementation((items) => {
         const result: Item[] = [];
         for (const i of items) {
           result.push(...descendants[i.id]);
@@ -305,7 +305,7 @@ describe('MeilisearchWrapper', () => {
       } satisfies Record<string, ItemPublished>;
 
       jest
-        .spyOn(itemRepositoryMock, 'getManyDescendants')
+        .spyOn(testUtils.itemRepository, 'getManyDescendants')
         .mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockImplementation((i) =>
         Promise.resolve(categories[i.id]),
@@ -371,7 +371,7 @@ describe('MeilisearchWrapper', () => {
       // Given
 
       jest
-        .spyOn(itemRepositoryMock, 'getManyDescendants')
+        .spyOn(testUtils.itemRepository, 'getManyDescendants')
         .mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
@@ -412,7 +412,9 @@ describe('MeilisearchWrapper', () => {
       const descendant = testUtils.createItem();
       const descendant2 = testUtils.createItem();
 
-      jest.spyOn(itemRepositoryMock, 'getDescendants').mockResolvedValue([descendant, descendant2]);
+      jest
+        .spyOn(testUtils.itemRepository, 'getDescendants')
+        .mockResolvedValue([descendant, descendant2]);
 
       const deleteSpy = jest.spyOn(mockIndex, 'deleteDocuments');
 
@@ -435,7 +437,7 @@ describe('MeilisearchWrapper', () => {
       jest.spyOn(repositoriesModule, 'buildRepositories').mockReturnValue(repositories);
 
       // prevent finding any PDFs to store because this part is temporary
-      jest.spyOn(itemRepositoryMock, 'findAndCount').mockResolvedValue([[], 0]);
+      jest.spyOn(testUtils.itemRepository, 'findAndCount').mockResolvedValue([[], 0]);
 
       datasourceManager.withRepository.mockReturnValue(repositories.itemPublishedRepository);
 
