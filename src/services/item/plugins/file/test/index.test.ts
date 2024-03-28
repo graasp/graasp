@@ -632,7 +632,7 @@ describe('File Item routes tests', () => {
           setTimeout(async () => {
             await expect(copyObjectMock).not.toHaveBeenCalled();
             // did not copy
-            expect(await testUtils.rawItemRepository.count()).toHaveLength(itemCount);
+            expect(await testUtils.rawItemRepository.count()).toEqual(itemCount);
             done(true);
           }, MULTIPLE_ITEMS_LOADING_TIME);
         });
