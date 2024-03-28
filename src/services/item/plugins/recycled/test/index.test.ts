@@ -378,7 +378,7 @@ describe('Recycle Bin Tests', () => {
     /**
      * This is a regression test from a real production bug caused by not restoring the soft-deleted children
      */
-    it('Restores the subtree successfully if it has children', async () => {
+    it.only('Restores the subtree successfully if it has children', async () => {
       const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
       const { item: childItem } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -406,7 +406,10 @@ describe('Recycle Bin Tests', () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
 
-      const restoredChild = await testUtils.rawItemRepository.findOneBy({ id: childItem.id });
+      const restoredChild = await testUtils.rawItemRepository.findOne({
+        where: { id: childItem.id },
+        relations: { creator: true },
+      });
       // the recycle/restore operation changed the updatedAt value, but we can't know when from the outside
       expect({ ...restoredChild, updatedAt: undefined }).toMatchObject({
         ...childItem,

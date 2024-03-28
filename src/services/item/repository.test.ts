@@ -1,7 +1,6 @@
 import { v4 } from 'uuid';
 
 import {
-  FolderItemExtra,
   ItemType,
   LocalFileItemFactory,
   MAX_TREE_LEVELS,

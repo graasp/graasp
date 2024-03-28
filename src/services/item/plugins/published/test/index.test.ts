@@ -13,7 +13,6 @@ import { saveMember, saveMembers } from '../../../../member/test/fixtures/member
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { CategoryRepository } from '../../itemCategory/repositories/category';
-import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
 import { ItemLike } from '../../itemLike/itemLike';
 import { saveItemLikes } from '../../itemLike/test/utils';
@@ -50,13 +49,10 @@ describe('Item Published', () => {
   describe('GET /collections', () => {
     describe('Signed Out', () => {
       let member;
-      let collections: Item[];
-      let categories;
 
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        collections = await testUtils.saveCollections(member);
       });
 
       it('Get publish info of child item returns root published item', async () => {
