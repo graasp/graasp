@@ -18,7 +18,6 @@ import * as repositoriesModule from '../../../../../utils/repositories';
 import FileService from '../../../../file/service';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { Item } from '../../../entities/Item';
-import { ItemRepository } from '../../../repository';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemCategory } from '../../itemCategory/entities/ItemCategory';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
@@ -99,15 +98,6 @@ describe('MeilisearchWrapper', () => {
 
   const meilisearch = new MeiliSearchWrapper(datasource, fakeClient, fileService, logger);
 
-  // const itemRepositoryMock = new ({
-  //   getManyDescendants: jest.fn(),
-  //   getDescendants: jest.fn(),
-  //   find: jest.fn(),
-  //   findAndCount: jest.fn(),
-  // } as unknown as jest.Mocked<typeof ItemRepository>)();
-
-  const itemRepositoryMock = new ItemRepository();
-
   const itemTagRepositoryMock = {
     hasForMany: jest.fn(),
   } as unknown as jest.Mocked<typeof ItemTagRepository>;
@@ -126,7 +116,7 @@ describe('MeilisearchWrapper', () => {
       getInherited: jest.fn(() => ({ permission: 'anything' })),
     } as unknown as jest.Mocked<typeof ItemMembershipRepository>,
     itemTagRepository: itemTagRepositoryMock,
-    itemRepository: itemRepositoryMock,
+    itemRepository: testUtils.itemRepository,
     itemPublishedRepository: itemPublishedRepositoryMock,
     itemCategoryRepository: itemCategoryRepositoryMock,
   } as unknown as jest.Mocked<repositoriesModule.Repositories>;

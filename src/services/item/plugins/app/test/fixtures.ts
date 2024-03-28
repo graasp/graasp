@@ -79,14 +79,13 @@ export class AppTestUtils extends ItemTestUtils {
     });
   };
 
-  saveAppList = async () => {
-    const ddd = await Promise.all(
+  saveAppList = () => {
+    return Promise.all(
       MOCK_APPS.map(async (app) => {
         await PublisherRepository.save(app.publisher);
         return AppRepository.save(app);
       }),
     );
-    return ddd;
   };
 
   // save apps, app settings, and get token

@@ -354,9 +354,6 @@ export class ItemRepository {
         [item.type]: Object.assign({}, item.extra[item.type], extraForType),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
-      // if (Object.keys(newData.extra as any).length === 0) {
-      //   delete newData.extra;
-      // }
     }
 
     if (newData.settings) {

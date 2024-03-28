@@ -6,13 +6,11 @@ import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { ItemRepository } from '../../repository';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
-const itemRepository = new ItemRepository();
 
 const extra = {
   [ItemType.DOCUMENT]: {
@@ -66,7 +64,7 @@ describe('Document Item tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check item exists in db
-        const item = await itemRepository.get(newItem.id);
+        const item = await testUtils.itemRepository.get(newItem.id);
         expectItem(item, payload);
 
         // a membership is created for this item
@@ -280,7 +278,7 @@ describe('Document Item tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await new Promise((res) => {
           setTimeout(async () => {
-            const savedItem = await itemRepository.get(item.id);
+            const savedItem = await testUtils.itemRepository.get(item.id);
             // this test a bit how we deal with extra: it replaces existing keys
             expectItem(savedItem, {
               ...item,

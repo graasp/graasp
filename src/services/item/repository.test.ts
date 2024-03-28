@@ -647,7 +647,6 @@ describe('ItemRepository', () => {
       const copy = result.copyRoot;
       expect(copy.name).toEqual(item.name);
       expect(copy.id).not.toEqual(item.id);
-      console.log(result.treeCopyMap);
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
     });
@@ -657,7 +656,6 @@ describe('ItemRepository', () => {
       const item = await testUtils.saveItem({ actor, parentItem: originalParentItem });
       const result = await itemRepository.copy(item, actor, parentItem);
       const copy = result.copyRoot;
-      console.log(copy);
       expect(copy.name).toEqual(item.name);
       expect(copy.id).not.toEqual(item.id);
       expect(copy.path).toContain(parentItem.path);
