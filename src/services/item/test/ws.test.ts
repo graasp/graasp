@@ -16,6 +16,7 @@ import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
 import { FolderItem, Item } from '../entities/Item';
+import { ItemRepository } from '../repository';
 import {
   AccessibleItemsEvent,
   ChildItemEvent,
@@ -576,7 +577,7 @@ describe('Item websocket hooks', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(testUtils.itemRepository, 'patch').mockImplementation(() => {
+      jest.spyOn(ItemRepository.prototype, 'patch').mockImplementation(() => {
         throw new Error('mock error');
       });
 
@@ -589,6 +590,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(() => {
+        console.log(memberUpdates);
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('update', [item.id], { error: new Error('mock error') }),
@@ -622,7 +624,7 @@ describe('Item websocket hooks', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(testUtils.itemRepository, 'deleteMany').mockImplementation(() => {
+      jest.spyOn(ItemRepository.prototype, 'deleteMany').mockImplementation(() => {
         throw new Error('mock error');
       });
 
@@ -673,7 +675,7 @@ describe('Item websocket hooks', () => {
       const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(testUtils.itemRepository, 'move').mockImplementation(async () => {
+      jest.spyOn(ItemRepository.prototype, 'move').mockImplementation(async () => {
         throw new Error('mock error');
       });
 
@@ -723,7 +725,7 @@ describe('Item websocket hooks', () => {
       const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(testUtils.itemRepository, 'copy').mockImplementation(async () => {
+      jest.spyOn(ItemRepository.prototype, 'copy').mockImplementation(async () => {
         throw new Error('mock error');
       });
 
