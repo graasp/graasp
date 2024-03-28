@@ -15,13 +15,15 @@ import {
   ModifyExisting,
 } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
-import { saveItem } from '../../item/test/fixtures/items';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ItemMembershipRepository } from '../repository';
-import { expectMembership, saveItemAndMembership, saveMembership } from './fixtures/memberships';
+import { expectMembership } from './fixtures/memberships';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+
+const testUtils = new ItemTestUtils();
 
 describe('Membership routes tests', () => {
   let app;
@@ -38,7 +40,7 @@ describe('Membership routes tests', () => {
     it('Returns error if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -54,10 +56,10 @@ describe('Membership routes tests', () => {
         ({ app, actor } = await build());
       });
       it('Returns successfully for one id', async () => {
-        const { item, itemMembership } = await saveItemAndMembership({ member: actor });
+        const { item, itemMembership } = await testUtils.saveItemAndMembership({ member: actor });
 
         const member = await saveMember();
-        const membership = await saveMembership({ item, member });
+        const membership = await testUtils.saveMembership({ item, member });
 
         const memberships = [itemMembership, membership];
 
@@ -76,12 +78,16 @@ describe('Membership routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns successfully for two ids', async () => {
-        const { item: item1, itemMembership: im1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2, itemMembership: im2 } = await saveItemAndMembership({ member: actor });
+        const { item: item1, itemMembership: im1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        const { item: item2, itemMembership: im2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
 
         const member = await saveMember();
-        const membership1 = await saveMembership({ item: item1, member });
-        const membership2 = await saveMembership({ item: item2, member });
+        const membership1 = await testUtils.saveMembership({ item: item1, member });
+        const membership2 = await testUtils.saveMembership({ item: item2, member });
 
         const memberships1 = [im1, membership1];
         const memberships2 = [im2, membership2];
@@ -111,28 +117,28 @@ describe('Membership routes tests', () => {
         //         |-> D
         //             |-> E (Membership)
         const member = await saveMember();
-        const { item: itemA, itemMembership: im1 } = await saveItemAndMembership({
+        const { item: itemA, itemMembership: im1 } = await testUtils.saveItemAndMembership({
           member: member,
         });
-        const { item: item2 } = await saveItemAndMembership({
+        const { item: item2 } = await testUtils.saveItemAndMembership({
           member: member,
         });
-        const itemB = await saveItem({ parentItem: itemA, actor: member });
-        const itemC = await saveItem({ parentItem: itemB, actor: member });
-        const itemD = await saveItem({ parentItem: itemC, actor: member });
-        const itemE = await saveItem({ parentItem: itemD, actor: member });
+        const itemB = await testUtils.saveItem({ parentItem: itemA, actor: member });
+        const itemC = await testUtils.saveItem({ parentItem: itemB, actor: member });
+        const itemD = await testUtils.saveItem({ parentItem: itemC, actor: member });
+        const itemE = await testUtils.saveItem({ parentItem: itemD, actor: member });
 
-        const membership1 = await saveMembership({
+        const membership1 = await testUtils.saveMembership({
           item: itemA,
           member: actor,
           permission: PermissionLevel.Read,
         });
-        const membership2 = await saveMembership({
+        const membership2 = await testUtils.saveMembership({
           item: itemC,
           member: actor,
           permission: PermissionLevel.Write,
         });
-        const membership3 = await saveMembership({
+        const membership3 = await testUtils.saveMembership({
           item: itemE,
           member: actor,
           permission: PermissionLevel.Admin,
@@ -179,7 +185,7 @@ describe('Membership routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Returns error if one item is not found', async () => {
-        await saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor });
         const itemId = v4();
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -193,7 +199,7 @@ describe('Membership routes tests', () => {
 
       it('Returns error if user has no membership', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -210,11 +216,11 @@ describe('Membership routes tests', () => {
       });
       it('Returns successfully for one id', async () => {
         const member = await saveMember();
-        const { item, itemMembership } = await saveItemAndMembership({ member });
+        const { item, itemMembership } = await testUtils.saveItemAndMembership({ member });
         await setItemPublic(item, member);
 
         const member1 = await saveMember();
-        const membership = await saveMembership({ item, member: member1 });
+        const membership = await testUtils.saveMembership({ item, member: member1 });
 
         const memberships = [itemMembership, membership];
 
@@ -239,7 +245,7 @@ describe('Membership routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const creator = await saveMember();
-      const { item } = await saveItemAndMembership({ member: creator });
+      const { item } = await testUtils.saveItemAndMembership({ member: creator });
       const member = await saveMember();
 
       const payload = {
@@ -264,7 +270,7 @@ describe('Membership routes tests', () => {
       it('Create new membership successfully', async () => {
         const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
 
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
 
         const payload = {
@@ -291,14 +297,17 @@ describe('Membership routes tests', () => {
 
       it('Delete successfully memberships lower in the tree ', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        const membership = await saveMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parent,
+        });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Write,
           item,
           member,
         });
-        const { itemMembership: anotherMembership } = await saveItemAndMembership({
+        const { itemMembership: anotherMembership } = await testUtils.saveItemAndMembership({
           member: actor,
         });
 
@@ -330,9 +339,12 @@ describe('Membership routes tests', () => {
 
       it('Cannot add new membership at same item for same member', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        const membership = await saveMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parent,
+        });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Write,
           item,
           member,
@@ -358,9 +370,12 @@ describe('Membership routes tests', () => {
 
       it('Cannot set lower permission than inherited permission', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        await saveMembership({ permission: PermissionLevel.Write, item: parent, member });
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parent,
+        });
+        await testUtils.saveMembership({ permission: PermissionLevel.Write, item: parent, member });
         const initialCount = await ItemMembershipRepository.find();
 
         const newMembership = {
@@ -384,7 +399,7 @@ describe('Membership routes tests', () => {
 
       it('Bad Request for invalid id', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const initialCount = await ItemMembershipRepository.find();
 
         const id = 'invalid-id';
@@ -406,7 +421,7 @@ describe('Membership routes tests', () => {
 
       it('Bad Request for invalid payload', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const initialCount = await ItemMembershipRepository.find();
 
         const response = await app.inject({
@@ -430,7 +445,7 @@ describe('Membership routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const creator = await saveMember();
-      const { item } = await saveItemAndMembership({ member: creator });
+      const { item } = await testUtils.saveItemAndMembership({ member: creator });
       const member = await saveMember();
 
       const payload = {
@@ -455,7 +470,7 @@ describe('Membership routes tests', () => {
 
       it('Create new memberships successfully', async () => {
         const notificationMock = jest.spyOn(app.mailer, 'sendEmail');
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const member1 = await saveMember();
         const member2 = await saveMember();
         const members = [member1, member2];
@@ -513,7 +528,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Return error array for invalid payload', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
 
         const response = await app.inject({
@@ -540,7 +555,7 @@ describe('Membership routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const creator = await saveMember();
-      const { itemMembership } = await saveItemAndMembership({ member: creator });
+      const { itemMembership } = await testUtils.saveItemAndMembership({ member: creator });
 
       const payload = {
         permission: PermissionLevel.Write,
@@ -562,15 +577,18 @@ describe('Membership routes tests', () => {
 
       it('Downgrading permission deletes the membership if has corresponding inherited permission', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const inheritedMembership = await saveMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        const inheritedMembership = await testUtils.saveMembership({
           member,
           item: parent,
           permission: PermissionLevel.Read,
         });
 
-        const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        const membership = await saveMembership({
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parent,
+        });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Write,
           item,
           member,
@@ -600,8 +618,8 @@ describe('Membership routes tests', () => {
 
       it('Upgrade successfully', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member: actor });
-        const membership = await saveMembership({
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Write,
           item,
           member,
@@ -633,14 +651,17 @@ describe('Membership routes tests', () => {
 
       it('Delete successfully memberships lower in the tree', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        const inheritedMembership = await saveMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parent,
+        });
+        const inheritedMembership = await testUtils.saveMembership({
           permission: PermissionLevel.Read,
           item: parent,
           member,
         });
-        const membership = await saveMembership({
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Write,
           item,
           member,
@@ -695,10 +716,13 @@ describe('Membership routes tests', () => {
 
       it('Cannot set lower permission than inherited permission', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { item } = await saveItemAndMembership({ member: actor, parentItem: parent });
-        await saveMembership({ permission: PermissionLevel.Write, item: parent, member });
-        const membership = await saveMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: parent,
+        });
+        await testUtils.saveMembership({ permission: PermissionLevel.Write, item: parent, member });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Admin,
           item,
           member,
@@ -725,7 +749,7 @@ describe('Membership routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const creator = await saveMember();
-      const { itemMembership } = await saveItemAndMembership({ member: creator });
+      const { itemMembership } = await testUtils.saveItemAndMembership({ member: creator });
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/item-memberships/${itemMembership.id}`,
@@ -741,14 +765,17 @@ describe('Membership routes tests', () => {
 
       it('Delete successfully', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member: actor });
-        const { item: child } = await saveItemAndMembership({ member: actor, parentItem: item });
-        const membership = await saveMembership({
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: child } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: item,
+        });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Admin,
           item,
           member,
         });
-        await saveMembership({ permission: PermissionLevel.Admin, item: child, member });
+        await testUtils.saveMembership({ permission: PermissionLevel.Admin, item: child, member });
         const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
@@ -765,14 +792,17 @@ describe('Membership routes tests', () => {
 
       it('Delete successfully with purgeBelow=true', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member: actor });
-        const { item: child } = await saveItemAndMembership({ member: actor, parentItem: item });
-        const membership = await saveMembership({
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: child } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: item,
+        });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Admin,
           item,
           member,
         });
-        await saveMembership({ permission: PermissionLevel.Admin, item: child, member });
+        await testUtils.saveMembership({ permission: PermissionLevel.Admin, item: child, member });
         const initialCount = await ItemMembershipRepository.count();
 
         const response = await app.inject({
@@ -798,7 +828,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot delete membership if does not exist', async () => {
-        await saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor });
         const initialCount = await ItemMembershipRepository.count();
 
         const id = v4();
@@ -814,8 +844,8 @@ describe('Membership routes tests', () => {
 
       it('Cannot delete membership if can only read', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
-        const membership = await saveMembership({
+        const { item } = await testUtils.saveItemAndMembership({ member });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Read,
           item,
           member: actor,
@@ -835,8 +865,8 @@ describe('Membership routes tests', () => {
 
       it('Cannot delete membership if can only write', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
-        const membership = await saveMembership({
+        const { item } = await testUtils.saveItemAndMembership({ member });
+        const membership = await testUtils.saveMembership({
           permission: PermissionLevel.Write,
           item,
           member: actor,
@@ -855,7 +885,7 @@ describe('Membership routes tests', () => {
       });
 
       it('Cannot delete last admin membership', async () => {
-        const { itemMembership } = await saveItemAndMembership({ member: actor });
+        const { itemMembership } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Delete,

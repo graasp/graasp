@@ -7,12 +7,13 @@ import build, { clearDatabase } from '../../../../test/app';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import MemberRepository from '../repository';
 import { saveMember, saveMembers } from './fixtures/members';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 describe('Member routes tests', () => {
   let app;
@@ -61,7 +62,7 @@ describe('Member routes tests', () => {
 
       // fill db with files
       const member = await saveMember();
-      const { item: item1 } = await saveItemAndMembership({
+      const { item: item1 } = await testUtils.saveItemAndMembership({
         item: {
           type: ItemType.S3_FILE,
           extra: {
@@ -76,7 +77,7 @@ describe('Member routes tests', () => {
         },
         member: actor,
       });
-      const { item: item2 } = await saveItemAndMembership({
+      const { item: item2 } = await testUtils.saveItemAndMembership({
         item: {
           type: ItemType.S3_FILE,
           extra: {
@@ -92,7 +93,7 @@ describe('Member routes tests', () => {
         member: actor,
       });
 
-      const { item: item3 } = await saveItemAndMembership({
+      const { item: item3 } = await testUtils.saveItemAndMembership({
         item: {
           type: ItemType.S3_FILE,
           extra: {
@@ -108,7 +109,7 @@ describe('Member routes tests', () => {
         member: actor,
       });
       // noise data
-      await saveItemAndMembership({ member });
+      await testUtils.saveItemAndMembership({ member });
 
       const totalStorage =
         item1.extra[fileServiceType].size +
@@ -130,7 +131,7 @@ describe('Member routes tests', () => {
 
       // fill db with noise data
       const member = await saveMember();
-      await saveItemAndMembership({
+      await testUtils.saveItemAndMembership({
         item: {
           type: ItemType.S3_FILE,
           extra: {

@@ -11,10 +11,9 @@ import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
-import { saveItemAndMembership } from '../../../../../itemMembership/test/fixtures/memberships';
 import { Actor } from '../../../../../member/entities/member';
 import { Item, ItemTypeEnumKeys } from '../../../../entities/Item';
-import { ItemRepository } from '../../../../repository';
+import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { HtmlImportError } from '../../errors';
 import { H5P_FILE_DOT_EXTENSION } from '../constants';
 import { H5PInvalidManifestError } from '../errors';
@@ -25,6 +24,7 @@ const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const H5P_TMP_FOLDER = path.join(TMP_FOLDER, 'html-packages', H5P_PATH_PREFIX || '');
 
@@ -50,7 +50,7 @@ describe('Service plugin', () => {
     if (!member) {
       throw new Error('Test member not defined');
     }
-    ({ item: parent } = await saveItemAndMembership({ member }));
+    ({ item: parent } = await testUtils.saveItemAndMembership({ member }));
     res = await injectH5PImport(app, { parentId: parent.id });
     item = res.json();
   });
@@ -146,7 +146,7 @@ describe('Service plugin', () => {
       let h5pFolders;
       let itemsInDb;
       await waitForExpect(async () => {
-        itemsInDb = await ItemRepository.find({
+        itemsInDb = await testUtils.rawItemRepository.find({
           where: {
             type: item.type as ItemTypeEnumKeys,
           },

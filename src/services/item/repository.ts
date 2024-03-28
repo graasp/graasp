@@ -1,19 +1,17 @@
-import { Brackets, In } from 'typeorm';
+import { Brackets, EntityManager, FindManyOptions, In, Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { v4 } from 'uuid';
 
 import {
-  DiscriminatedItem,
   FileItemType,
   ItemType,
   MAX_TREE_LEVELS,
   PermissionLevel,
-  ResultOf,
-  UUID,
-  UnionOfConst,
   buildPathFromIds,
   getChildFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
+import { ItemSettings } from '@graasp/sdk/types/item/itemSettings';
 
 import { AppDataSource } from '../../plugins/datasource';
 import {
@@ -30,13 +28,21 @@ import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
-type ItemSettings = DiscriminatedItem['settings'];
-
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
 };
 
-export const ItemRepository = AppDataSource.getRepository(Item).extend({
+export class ItemRepository {
+  private repository: Repository<Item>;
+
+  constructor(manager?: EntityManager) {
+    if (manager) {
+      this.repository = manager.getRepository(Item);
+    } else {
+      this.repository = AppDataSource.getRepository(Item);
+    }
+  }
+
   checkHierarchyDepth(item: Item, additionalNbLevel = 1) {
     // check if hierarchy it too deep
     // adds nb of items to be created
@@ -44,30 +50,35 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     if (itemDepth + additionalNbLevel > MAX_TREE_LEVELS) {
       throw new HierarchyTooDeep();
     }
-  },
+  }
 
   async checkNumberOfDescendants(item: Item, maximum: number) {
     // check how "big the tree is" below the item
-    const numberOfDescendants = await this.getNumberOfDescendants(item.path);
+
+    const numberOfDescendants = await this.repository
+      .createQueryBuilder('item')
+      .where('item.path <@ :path', { path: item.path })
+      .getCount();
+
     if (numberOfDescendants > maximum) {
       throw new TooManyDescendants(item.id);
     }
-  },
+  }
 
   /**
    * build item based on propeties
    * does not save it
    */
   createOne(args: {
-    name: string;
-    description?: string;
-    type?: UnionOfConst<typeof ItemType>;
-    extra: ItemExtraUnion;
-    settings?: ItemSettings;
-    creator: Member;
-    lang?: string;
+    name: Item['name'];
+    description?: Item['description'];
+    type?: Item['type'];
+    extra?: Item['extra'];
+    settings?: Item['settings'];
+    creator: Item['creator'];
+    lang?: Item['lang'];
     parent?: Item;
-  }): Item {
+  }) {
     const {
       name,
       description = null,
@@ -93,7 +104,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       parsedExtra = { folder: { childrenOrder: [] } };
     }
 
-    const item = this.create({
+    const item = this.repository.create({
       id,
       name,
       description,
@@ -104,25 +115,24 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
         ...settings,
       },
       // set lang from user lang
-      lang: lang ?? creator.lang ?? 'en',
+      lang: lang ?? creator?.lang ?? 'en',
       creator,
     });
     item.path = parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id);
 
     return item;
-  },
+  }
 
-  async deleteMany(ids: string[]): Promise<UUID[]> {
-    await this.delete(ids);
-    return ids;
-  },
+  async deleteMany(ids: string[]): Promise<void> {
+    await this.repository.delete(ids);
+  }
 
   async get(id: string, options = { withDeleted: false }): Promise<Item> {
     // additional check that id is not null
     // o/w empty parameter to findOneBy return the first entry
     // TODO: improve
 
-    const item = await this.findOne({
+    const item = await this.repository.findOne({
       where: { id },
       relations: {
         creator: true,
@@ -135,7 +145,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
 
     return item;
-  },
+  }
 
   /**
    * options.includeCreator {boolean} if true, return full creator
@@ -146,13 +156,14 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       return [];
     }
 
-    return this.createQueryBuilder('item')
+    return this.repository
+      .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path @> :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id })
       .orderBy('path', 'ASC')
       .getMany();
-  },
+  }
 
   async getChildren(parent: Item, params?: ItemChildrenParams): Promise<Item[]> {
     if (!isItemType(parent, ItemType.FOLDER)) {
@@ -160,7 +171,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
 
     // CHECK SQL
-    const query = await this.createQueryBuilder('item')
+    const query = await this.repository
+      .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('path ~ :path', { path: `${parent.path}.*{1}` });
 
@@ -178,7 +190,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       children.sort(compareFn);
     }
     return children;
-  },
+  }
 
   /**
    * Return tree below item
@@ -190,7 +202,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     // TODO: LEVEL depth
     const { ordered = true } = options ?? {};
 
-    const query = this.createQueryBuilder('item')
+    const query = this.repository
+      .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path <@ :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id });
@@ -203,7 +216,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     const descendants = await query.getMany();
 
     return sortChildrenForTreeWith(descendants, item);
-  },
+  }
 
   async getManyDescendants(
     items: Item[],
@@ -213,7 +226,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     if (items.length === 0) {
       return [];
     }
-    const query = this.createQueryBuilder('item');
+    const query = this.repository.createQueryBuilder('item');
 
     if (withDeleted) {
       query.withDeleted();
@@ -233,14 +246,15 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     );
 
     return query.getMany();
-  },
+  }
 
-  async getMany(
-    ids: string[],
-    args: { throwOnError?: boolean; withDeleted?: boolean } = {},
-  ): Promise<ResultOf<Item>> {
+  async getMany(ids: string[], args: { throwOnError?: boolean; withDeleted?: boolean } = {}) {
+    if (!ids.length) {
+      return { data: {}, errors: [] };
+    }
+
     const { throwOnError = false } = args;
-    const items = await this.find({
+    const items = await this.repository.find({
       where: { id: In(ids) },
       relations: { creator: true },
       withDeleted: Boolean(args.withDeleted),
@@ -256,31 +270,23 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
 
     return result;
-  },
+  }
 
-  async getNumberOfDescendants(path: string): Promise<number> {
-    const result = await this.createQueryBuilder('item')
-      .where('item.path @> :path', { path })
-      .addSelect('COUNT(*)', 'count')
-      .groupBy('item.id')
-      .getRawOne();
-
-    return result?.count;
-  },
-
-  // TODO: check result value
-  async getNumberOfLevelsToFarthestChild(item: Item): Promise<number | undefined> {
-    return this.createQueryBuilder('item')
+  async getNumberOfLevelsToFarthestChild(item: Item): Promise<number> {
+    const farthestItem = await this.repository
+      .createQueryBuilder('item')
       .addSelect(`nlevel(path) - nlevel('${item.path}')`)
       .where('item.path <@ :path', { path: item.path })
       .andWhere('id != :id', { id: item.id })
       .orderBy('nlevel(path)', 'DESC')
       .limit(1)
-      .getRawOne();
-  },
+      .getOne();
+    return farthestItem?.path?.split('.')?.length ?? 0;
+  }
 
   async getOwn(memberId: string): Promise<Item[]> {
-    return this.createQueryBuilder('item')
+    return this.repository
+      .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .where('creator.id = :id', { id: memberId })
@@ -288,7 +294,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       .andWhere('nlevel(item.path) = 1')
       .orderBy('item.updatedAt', 'DESC')
       .getMany();
-  },
+  }
 
   async move(item: Item, parentItem?: Item): Promise<Item> {
     if (parentItem) {
@@ -324,7 +330,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       ? `'${parentItem.path}' || subpath(path, nlevel('${item.path}') - 1)`
       : `subpath(path, nlevel('${item.path}') - 1)`;
 
-    await this.createQueryBuilder('item')
+    await this.repository
+      .createQueryBuilder('item')
       .update()
       .set({ path: () => pathSql })
       .where('item.path <@ :path', { path: item.path })
@@ -332,48 +339,61 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
 
     // TODO: is there a better way?
     return this.get(item.id);
-  },
+  }
 
   async patch(id: string, data: Partial<Item>): Promise<Item> {
     // TODO: extra + settings
     const item = await this.get(id);
 
-    const { extra: extraChanges, settings: settingsChanges } = data;
-
     // only allow for item type specific changes in extra
-    const extraForType = extraChanges?.[item.type];
-    if (extraForType && Object.keys(extraChanges).length === 1) {
-      extraChanges[item.type] = Object.assign({}, item.extra[item.type], extraForType);
-    } else {
-      delete data.extra;
+    const newData = data;
+
+    const extraForType = data.extra?.[item.type];
+    if (newData.extra && extraForType) {
+      newData.extra = {
+        [item.type]: Object.assign({}, item.extra[item.type], extraForType),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      // if (Object.keys(newData.extra as any).length === 0) {
+      //   delete newData.extra;
+      // }
     }
 
-    if (settingsChanges) {
-      data.settings = Object.assign({}, item.settings, settingsChanges);
-    } else {
-      delete data.settings;
+    if (newData.settings) {
+      newData.settings = Object.assign({}, item.settings, data.settings);
+      if (Object.keys(newData.settings).length === 0) {
+        delete newData.settings;
+      }
     }
 
     // TODO: check schema
 
     // update only if data is not empty
     if (Object.keys(data).length) {
-      await this.update(id, data);
+      await this.repository.update(id, newData as QueryDeepPartialEntity<Item>);
     }
 
     // TODO: optimize
     return this.get(id);
-  },
+  }
 
-  async post(item: Partial<Item>, creator: Member, parentItem?: Item): Promise<Item> {
-    const newItem = this.createOne({ ...item, creator, parent: parentItem });
+  async post(
+    item: Partial<Item> & Pick<Item, 'name' | 'type'>,
+    creator: Member,
+    parentItem?: Item,
+  ): Promise<Item> {
+    const newItem = this.createOne({
+      ...item,
+      creator,
+      parent: parentItem,
+    });
 
-    const createdItem = await this.insert(newItem);
+    const createdItem = await this.repository.insert(newItem as QueryDeepPartialEntity<Item>);
 
     // TODO: better solution?
     // query builder returns creator as id and extra as string
     return this.get(createdItem.identifiers[0].id);
-  },
+  }
 
   /////// -------- COPY
   async copy(
@@ -386,27 +406,25 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
       throw new ItemNotFolder(parentItem.id);
     }
 
-    const descendants = await this.getDescendants(item, { ordered: true });
+    const descendants = await this.getDescendants(item as FolderItem, { ordered: true });
     // copy (memberships from origin are not copied/kept)
     const treeItemsCopy = this._copy(item, descendants, creator, parentItem);
 
     _fixChildrenOrder(treeItemsCopy);
     // return copy item + all descendants
-    const createdOp = await this.insert([...treeItemsCopy.values()].map(({ copy }) => copy));
+    const newItems = [...treeItemsCopy.values()].map(({ copy }) => copy);
+    const createdOp = await this.repository.insert(newItems as QueryDeepPartialEntity<Item>);
 
     const newItemRef = createdOp?.identifiers?.[0];
     if (!newItemRef) {
       throw new UnexpectedError({ operation: 'copy', itemId: item.id });
     }
 
-    // TODO: copy item + all descendants
     return {
       copyRoot: await this.get(newItemRef.id),
       treeCopyMap: treeItemsCopy,
     };
-  },
-
-  // UTILS
+  }
 
   /**
    * Copy whole tree with new paths and same member as creator
@@ -415,7 +433,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
    * @param tree Item and all descendants to copy
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
-  _copy(originalParent: Item, descendants: Item[], creator: Member, parentItem?: Item) {
+  private _copy(originalParent: Item, descendants: Item[], creator: Member, parentItem?: Item) {
     const old2New = new Map<string, { copy: Item; original: Item }>();
 
     // copy target parent
@@ -459,7 +477,7 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
     }
 
     return old2New;
-  },
+  }
 
   /**
    * @param memberId member to get the storage for
@@ -469,60 +487,25 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
   async getItemSumSize(memberId: string, itemType: FileItemType): Promise<number> {
     return parseInt(
       (
-        await this.createQueryBuilder('item')
+        await this.repository
+          .createQueryBuilder('item')
           .select(`SUM(((item.extra::jsonb->'${itemType}')::jsonb->'size')::bigint)`, 'total')
           .where('item.creator.id = :memberId', { memberId })
           .andWhere('item.type = :type', { type: itemType })
           .getRawOne()
       ).total ?? 0,
     );
-  },
+  }
 
   async getAllPublishedItems(): Promise<Item[]> {
-    const publishedRows = await this.createQueryBuilder('item')
+    const publishedRows = await this.repository
+      .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
       .getMany();
 
     return publishedRows;
-  },
-
-  /**
-   * get intersection of category ids and published
-   *
-   * ['A1,A2'] -> the item should have either A1 or A2 as category
-   * ['B1', 'B2'] -> the item should have both categories
-   * Return all if no ids is defined
-   * @param ids category ids - in the form of ['A1,A2', 'B1', 'C1,C2,C3']
-   * @returns object { id } of items with given categories
-   */
-  async getByCategories(categoryIds: string[]): Promise<Item[]> {
-    const query = this.createQueryBuilder('item')
-      .innerJoin('item_published', 'ip', 'ip.item_path = item.path')
-      .innerJoin('item_category', 'ic', 'ic.item_path @> item.path')
-      .innerJoinAndSelect('item.creator', 'member')
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      .groupBy(['item.id', 'member.id']);
-
-    categoryIds.forEach((idString, idx) => {
-      // split categories
-      const categoryIdList = idString.split(',');
-      // dynamic key to avoid overlapping
-      const key = `id${idx}`;
-      if (idx === 0) {
-        // item should at least have one category with the category group
-        query.having(`array_agg(DISTINCT ic.category_id) && ARRAY[:...${key}]::uuid[]`, {
-          [key]: categoryIdList,
-        });
-      } else {
-        query.andHaving(`array_agg(DISTINCT ic.category_id) && ARRAY[:...${key}]::uuid[]`, {
-          [key]: categoryIdList,
-        });
-      }
-    });
-    return query.getMany();
-  },
+  }
 
   /**
    * Return published items for given member
@@ -531,7 +514,8 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
    */
   async getPublishedItemsForMember(memberId: string) {
     // get for membership write and admin -> createquerybuilder
-    return this.createQueryBuilder('item')
+    return this.repository
+      .createQueryBuilder('item')
       .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
       .innerJoinAndSelect('item.creator', 'member')
@@ -540,5 +524,15 @@ export const ItemRepository = AppDataSource.getRepository(Item).extend({
         permissions: [PermissionLevel.Admin, PermissionLevel.Write],
       })
       .getMany();
-  },
-});
+  }
+
+  async findAndCount(args: FindManyOptions<Item>) {
+    return this.repository.findAndCount(args);
+  }
+  async softRemove(args: Item[]) {
+    return this.repository.softRemove(args);
+  }
+  async recover(args: Item[]) {
+    return this.repository.recover(args);
+  }
+}

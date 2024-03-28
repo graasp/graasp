@@ -1,43 +1,5 @@
-import { PermissionLevel } from '@graasp/sdk';
-
-import { Item } from '../../../item/entities/Item';
-import { saveItem } from '../../../item/test/fixtures/items';
 import { Member } from '../../../member/entities/member';
 import { ItemMembership } from '../../entities/ItemMembership';
-import { ItemMembershipRepository } from '../../repository';
-
-export const saveMembership = ({
-  item,
-  member,
-  permission = PermissionLevel.Admin,
-}: {
-  item: Item;
-  member: Member;
-  permission?: PermissionLevel;
-}) => {
-  return ItemMembershipRepository.save({ item, member, permission });
-};
-
-export const saveItemAndMembership = async (options: {
-  member: Member;
-  item?: Partial<Item>;
-  permission?: PermissionLevel;
-  creator?: Member;
-  parentItem?: Item;
-}) => {
-  const { item, member, permission, creator, parentItem } = options;
-  const newItem = await saveItem({
-    item,
-    actor: creator ?? member,
-    parentItem,
-  });
-  const im = await saveMembership({ item: newItem, member, permission });
-  return {
-    item: newItem,
-    itemMembership: im,
-    packedItem: { ...newItem, permission: im.permission },
-  };
-};
 
 export const expectMembership = (
   newMembership:

@@ -5,11 +5,9 @@ import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MemberCannotAccess } from '../../../../../utils/errors';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemRepository } from '../../../repository';
-import { expectManyItems } from '../../../test/fixtures/items';
+import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { ItemLikeNotFound } from '../errors';
 import { ItemLike } from '../itemLike';
@@ -18,6 +16,7 @@ import { saveItemLikes } from './utils';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 export const expectItemLike = (newLike: ItemLike, correctLike: ItemLike, creator?: Member) => {
   expect(newLike.item.id).toEqual(correctLike.item.id);
@@ -75,8 +74,8 @@ describe('Item Like', () => {
       });
 
       it('Get item likes of a user', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const items = [item1, item2];
         await saveItemLikes(items, actor);
 
@@ -96,12 +95,12 @@ describe('Item Like', () => {
       });
 
       it('Get item likes of a user without trashed items', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const items = [item1, item2];
         await saveItemLikes(items, actor);
         // mimic putting an item in the trash by softRemoving it
-        await ItemRepository.softDelete(item1.id);
+        await testUtils.rawItemRepository.softDelete(item1.id);
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -129,7 +128,7 @@ describe('Item Like', () => {
       });
 
       it('Throws if signed out', async () => {
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
@@ -147,7 +146,7 @@ describe('Item Like', () => {
       });
 
       it('Get like entries for public item', async () => {
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         await setItemPublic(item, member);
         const likes = await saveItemLikes([item], member);
         const res = await app.inject({
@@ -161,11 +160,11 @@ describe('Item Like', () => {
       });
 
       it('Get like entries for public item in the trash', async () => {
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         await setItemPublic(item, member);
         await saveItemLikes([item], member);
         // mimic putting an item in the trash by softDeleting it
-        await ItemRepository.softDelete(item.id);
+        await testUtils.rawItemRepository.softDelete(item.id);
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item.id}/likes`,
@@ -180,8 +179,8 @@ describe('Item Like', () => {
       });
 
       it('Get like entries for item', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const items = [item1, item2];
         const likes = await saveItemLikes(items, actor);
         const res = await app.inject({
@@ -196,7 +195,7 @@ describe('Item Like', () => {
 
       it('Cannot get like item if does not have rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         await saveItemLikes([item], member);
 
         const res = await app.inject({
@@ -208,7 +207,7 @@ describe('Item Like', () => {
 
       it('Get like entries for public item', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         await setItemPublic(item, member);
         const likes = await saveItemLikes([item], member);
         const res = await app.inject({
@@ -236,7 +235,7 @@ describe('Item Like', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -252,7 +251,7 @@ describe('Item Like', () => {
       });
 
       it('Create like record', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -270,7 +269,7 @@ describe('Item Like', () => {
 
       it('Cannot like item if does not have rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -293,7 +292,7 @@ describe('Item Like', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Delete,
@@ -309,7 +308,7 @@ describe('Item Like', () => {
       });
 
       it('Delete item like', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const [itemLike] = await saveItemLikes([item], actor);
 
         const res = await app.inject({
@@ -323,7 +322,7 @@ describe('Item Like', () => {
       it('Cannot dislike if have no rights on item', async () => {
         const member = await saveMember();
 
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         const [itemLike] = await saveItemLikes([item], member);
 
         const res = await app.inject({
@@ -338,7 +337,7 @@ describe('Item Like', () => {
       });
 
       it('Cannot delete item like if did not like', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
           method: HttpMethod.Delete,

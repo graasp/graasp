@@ -9,9 +9,8 @@ import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX, THUMBNAILS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess } from '../../../../../utils/errors';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemRepository } from '../../../repository';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { UploadFileNotImageError } from '../utils/errors';
 
@@ -20,6 +19,7 @@ const textPath = path.resolve(__dirname, './fixtures/emptyFile');
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
 const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
@@ -69,7 +69,7 @@ describe('Thumbnail Plugin Tests', () => {
     it('Throws if item is private', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -85,7 +85,7 @@ describe('Thumbnail Plugin Tests', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         await setItemPublic(item, member);
       });
 
@@ -106,7 +106,7 @@ describe('Thumbnail Plugin Tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
       it('Successfully redirect to thumbnails of all different sizes', async () => {
@@ -134,7 +134,7 @@ describe('Thumbnail Plugin Tests', () => {
 
       it('Cannot download without rights', async () => {
         const member = await saveMember();
-        const { item: someItem } = await saveItemAndMembership({
+        const { item: someItem } = await testUtils.saveItemAndMembership({
           member,
         });
 
@@ -158,7 +158,7 @@ describe('Thumbnail Plugin Tests', () => {
 
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -175,7 +175,7 @@ describe('Thumbnail Plugin Tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
       it('Successfully upload thumbnail', async () => {
@@ -192,7 +192,7 @@ describe('Thumbnail Plugin Tests', () => {
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
         expect(uploadDoneMock).toHaveBeenCalledTimes(Object.values(ThumbnailSize).length);
 
-        const savedItem = await ItemRepository.findOneBy({ id: item.id });
+        const savedItem = await testUtils.rawItemRepository.findOneBy({ id: item.id });
         expect(savedItem!.settings.hasThumbnail).toBeTruthy();
       });
 
@@ -202,7 +202,7 @@ describe('Thumbnail Plugin Tests', () => {
         form3.append('file', fileStream4);
 
         const member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -211,7 +211,7 @@ describe('Thumbnail Plugin Tests', () => {
           headers: form3.getHeaders(),
         });
         expect(response.json()).toMatchObject(new MemberCannotAccess(expect.anything()));
-        const savedItem = await ItemRepository.findOneBy({ id: item.id });
+        const savedItem = await testUtils.rawItemRepository.findOneBy({ id: item.id });
         expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
       });
 
@@ -229,7 +229,7 @@ describe('Thumbnail Plugin Tests', () => {
 
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
         expect(res.json()).toEqual(new UploadFileNotImageError());
-        const savedItem = await ItemRepository.findOneBy({ id: item.id });
+        const savedItem = await testUtils.rawItemRepository.findOneBy({ id: item.id });
         expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
       });
     });

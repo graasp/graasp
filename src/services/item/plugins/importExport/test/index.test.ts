@@ -9,8 +9,7 @@ import { HttpMethod, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { LocalFileRepository } from '../../../../file/repositories/local';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { ItemRepository } from '../../../repository';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import * as ARCHIVE_CONTENT from './fixtures/archive';
 
 // we need a different form data for each test
@@ -25,6 +24,7 @@ jest.mock('node-fetch');
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
@@ -102,7 +102,7 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await ItemRepository.find({ relations: { creator: true } });
+        const items = await testUtils.rawItemRepository.find({ relations: { creator: true } });
         expect(items).toHaveLength(8);
 
         for (const file of ARCHIVE_CONTENT.archive) {
@@ -131,10 +131,10 @@ describe('ZIP routes tests', () => {
           }
         }
 
-        const child = await ItemRepository.findOne({
+        const child = await testUtils.rawItemRepository.findOne({
           where: { name: ARCHIVE_CONTENT.childContent.name },
         });
-        const folderItem = await ItemRepository.findOne({
+        const folderItem = await testUtils.rawItemRepository.findOne({
           where: { name: ARCHIVE_CONTENT.folder.name },
         });
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -155,7 +155,7 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await ItemRepository.find();
+        const items = await testUtils.rawItemRepository.find();
         expect(items).toHaveLength(1);
       }, 1000);
     });
@@ -173,7 +173,7 @@ describe('ZIP routes tests', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        const items = await ItemRepository.find();
+        const items = await testUtils.rawItemRepository.find();
         expect(items).toHaveLength(2);
 
         for (const item of items) {
@@ -225,7 +225,10 @@ describe('ZIP routes tests', () => {
   describe('POST /zip-export', () => {
     it('Export successfully if signed in', async () => {
       ({ app, actor } = await build());
-      const { item } = await saveItemAndMembership({ member: actor, item: { name: 'itemname' } });
+      const { item } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name: 'itemname' },
+      });
 
       const response = await app.inject({
         method: HttpMethod.Get,

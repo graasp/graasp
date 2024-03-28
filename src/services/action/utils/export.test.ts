@@ -10,8 +10,7 @@ import { TMP_FOLDER } from '../../../utils/config';
 import { ChatMessage } from '../../chat/chatMessage';
 import { ChatMessageRepository } from '../../chat/repository';
 import { BaseAnalytics } from '../../item/plugins/action/base-analytics';
-import { createItem } from '../../item/test/fixtures/items';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
 import { Action } from '../entities/action';
@@ -19,6 +18,7 @@ import { exportActionsInArchive } from './export';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const rawActionRepository = AppDataSource.getRepository(Action);
 
@@ -36,7 +36,7 @@ const createDummyAction = async ({ item, member, view }): Promise<Action> => {
 const setUpActions = async (app, member: Member) => {
   const itemId = v4();
   const views = Object.values(Context);
-  const { item, itemMembership } = await saveItemAndMembership({
+  const { item, itemMembership } = await testUtils.saveItemAndMembership({
     item: { id: itemId, name: 'item-name' },
     member,
   });
@@ -58,7 +58,7 @@ const setUpActions = async (app, member: Member) => {
     members: [member],
     itemMemberships: [itemMembership],
     item,
-    descendants: [createItem()],
+    descendants: [testUtils.createItem()],
     chatMessages,
     metadata: { numActionsRetrieved: 5, requestedSampleSize: 5 },
     apps: {},

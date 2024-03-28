@@ -15,18 +15,19 @@ import { v4 } from 'uuid';
 
 import {
   AppItemExtra,
-  DiscriminatedItem,
   DocumentItemExtra,
   EtherpadItemExtra,
   FolderItemExtra,
   H5PItemExtra,
   ItemType,
   LinkItemExtra,
+  LinkItemSettings,
   LocalFileItemExtra,
   MAX_ITEM_NAME_LENGTH,
   S3FileItemExtra,
   ShortcutItemExtra,
 } from '@graasp/sdk';
+import { ItemSettings } from '@graasp/sdk/types/item/itemSettings';
 
 import { Member } from '../../member/entities/member';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
@@ -42,6 +43,19 @@ export type ItemExtraMap = {
   [ItemType.LOCAL_FILE]: LocalFileItemExtra;
   [ItemType.S3_FILE]: S3FileItemExtra;
   [ItemType.SHORTCUT]: ShortcutItemExtra;
+};
+
+// Map of the item types to their item extra
+export type ItemSettingsMap = {
+  [ItemType.APP]: ItemSettings;
+  [ItemType.DOCUMENT]: ItemSettings;
+  [ItemType.ETHERPAD]: ItemSettings;
+  [ItemType.FOLDER]: ItemSettings;
+  [ItemType.H5P]: ItemSettings;
+  [ItemType.LINK]: LinkItemSettings;
+  [ItemType.LOCAL_FILE]: ItemSettings;
+  [ItemType.S3_FILE]: ItemSettings;
+  [ItemType.SHORTCUT]: ItemSettings;
 };
 
 // utility type to describe the union of the potential item extras before the `type` of an item is known or checked using a typeguard
@@ -105,7 +119,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   // cosmetic settings
   // do not set default value because it gets serialize as a string in map.values()
   @Column('simple-json', { nullable: false })
-  settings: DiscriminatedItem['settings'];
+  settings: ItemSettingsMap[T];
 
   @Column('ltree', { unique: true, nullable: false })
   path: string;

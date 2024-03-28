@@ -5,13 +5,14 @@ import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@gra
 import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
-import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
-import { expectItem } from '../../test/fixtures/items';
+import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
+const itemRepository = new ItemRepository();
 
 const extra = {
   [ItemType.DOCUMENT]: {
@@ -65,7 +66,7 @@ describe('Document Item tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check item exists in db
-        const item = await ItemRepository.get(newItem.id);
+        const item = await itemRepository.get(newItem.id);
         expectItem(item, payload);
 
         // a membership is created for this item
@@ -129,7 +130,7 @@ describe('Document Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -146,7 +147,7 @@ describe('Document Item tests', () => {
       });
 
       it('Update successfully', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           item: {
             type: ItemType.DOCUMENT,
             extra: {
@@ -191,7 +192,7 @@ describe('Document Item tests', () => {
       });
 
       it('Bad Request if extra is invalid', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           item: {
             type: ItemType.DOCUMENT,
             extra: {
@@ -230,7 +231,7 @@ describe('Document Item tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -247,7 +248,7 @@ describe('Document Item tests', () => {
       });
 
       it('Update successfully', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           item: {
             type: ItemType.DOCUMENT,
             extra: {
@@ -279,7 +280,7 @@ describe('Document Item tests', () => {
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await new Promise((res) => {
           setTimeout(async () => {
-            const savedItem = await ItemRepository.get(item.id);
+            const savedItem = await itemRepository.get(item.id);
             // this test a bit how we deal with extra: it replaces existing keys
             expectItem(savedItem, {
               ...item,
@@ -292,7 +293,7 @@ describe('Document Item tests', () => {
       });
 
       it('Bad Request if extra is invalid', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           item: {
             type: ItemType.DOCUMENT,
             extra: {

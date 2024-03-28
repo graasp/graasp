@@ -19,7 +19,7 @@ import FileService from '../../../../file/service';
 import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { Item } from '../../../entities/Item';
 import { ItemRepository } from '../../../repository';
-import { createItem } from '../../../test/fixtures/items';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemCategory } from '../../itemCategory/entities/ItemCategory';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { ItemTagRepository } from '../../itemTag/repository';
@@ -28,6 +28,10 @@ import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 jest.unmock('../plugins/search/meilisearch');
+
+// mock datasource
+jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 describe('MeilisearchWrapper', () => {
   afterEach(() => {
@@ -95,12 +99,14 @@ describe('MeilisearchWrapper', () => {
 
   const meilisearch = new MeiliSearchWrapper(datasource, fakeClient, fileService, logger);
 
-  const itemRepositoryMock = {
-    getManyDescendants: jest.fn(),
-    getDescendants: jest.fn(),
-    find: jest.fn(),
-    findAndCount: jest.fn(),
-  } as unknown as jest.Mocked<typeof ItemRepository>;
+  // const itemRepositoryMock = new ({
+  //   getManyDescendants: jest.fn(),
+  //   getDescendants: jest.fn(),
+  //   find: jest.fn(),
+  //   findAndCount: jest.fn(),
+  // } as unknown as jest.Mocked<typeof ItemRepository>)();
+
+  const itemRepositoryMock = new ItemRepository();
 
   const itemTagRepositoryMock = {
     hasForMany: jest.fn(),
@@ -145,10 +151,10 @@ describe('MeilisearchWrapper', () => {
 
   describe('index', () => {
     it('uses the sdk to index', async () => {
-      const item = createItem();
+      const item = testUtils.createItem();
 
       // Given
-      itemRepositoryMock.getManyDescendants.mockResolvedValue([]);
+      jest.spyOn(itemRepositoryMock, 'getManyDescendants').mockResolvedValue([]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
@@ -172,11 +178,13 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('index descendants', async () => {
-      const item = createItem();
-      const descendant = createItem();
-      const descendant2 = createItem();
+      const item = testUtils.createItem();
+      const descendant = testUtils.createItem();
+      const descendant2 = testUtils.createItem();
       // Given
-      itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
+      jest
+        .spyOn(itemRepositoryMock, 'getManyDescendants')
+        .mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
@@ -222,11 +230,11 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('can index multiple items', async () => {
-      const item = createItem();
-      const descendant = createItem();
-      const descendant2 = createItem();
-      const item2 = createItem();
-      const descendant3 = createItem();
+      const item = testUtils.createItem();
+      const descendant = testUtils.createItem();
+      const descendant2 = testUtils.createItem();
+      const item2 = testUtils.createItem();
+      const descendant3 = testUtils.createItem();
 
       const descendants = {
         [item.id]: [descendant, descendant2],
@@ -276,9 +284,9 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('index correct categories and published state', async () => {
-      const item = createItem();
-      const descendant = createItem();
-      const descendant2 = createItem();
+      const item = testUtils.createItem();
+      const descendant = testUtils.createItem();
+      const descendant2 = testUtils.createItem();
       // Given
       const mockItemCategory = (id) => {
         return {
@@ -306,7 +314,9 @@ describe('MeilisearchWrapper', () => {
         [descendant2.id]: mockItemPublished(descendant2.id),
       } satisfies Record<string, ItemPublished>;
 
-      itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
+      jest
+        .spyOn(itemRepositoryMock, 'getManyDescendants')
+        .mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockImplementation((i) =>
         Promise.resolve(categories[i.id]),
       );
@@ -354,23 +364,25 @@ describe('MeilisearchWrapper', () => {
     });
 
     it('content is indexed', async () => {
-      const item = createItem();
+      const item = testUtils.createItem();
       const extraS3 = {
         [ItemType.S3_FILE]: {
           mimetype: MimeTypes.PDF,
           content: 's3 content',
         },
       } as S3FileItemExtra;
-      const descendant = createItem({ type: ItemType.S3_FILE, extra: extraS3 });
+      const descendant = testUtils.createItem({ type: ItemType.S3_FILE, extra: extraS3 });
       const extra = {
         [ItemType.DOCUMENT]: {
           content: 'my text is here',
         },
       };
-      const descendant2 = createItem({ type: ItemType.DOCUMENT, extra });
+      const descendant2 = testUtils.createItem({ type: ItemType.DOCUMENT, extra });
       // Given
 
-      itemRepositoryMock.getManyDescendants.mockResolvedValue([descendant, descendant2]);
+      jest
+        .spyOn(itemRepositoryMock, 'getManyDescendants')
+        .mockResolvedValue([descendant, descendant2]);
       itemCategoryRepositoryMock.getForItemOrParent.mockResolvedValue([]);
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
@@ -406,11 +418,11 @@ describe('MeilisearchWrapper', () => {
 
   describe('delete', () => {
     it('uses the sdk to delete with descendants', async () => {
-      const item = createItem();
-      const descendant = createItem();
-      const descendant2 = createItem();
+      const item = testUtils.createItem();
+      const descendant = testUtils.createItem();
+      const descendant2 = testUtils.createItem();
 
-      itemRepositoryMock.getDescendants.mockResolvedValue([descendant, descendant2]);
+      jest.spyOn(itemRepositoryMock, 'getDescendants').mockResolvedValue([descendant, descendant2]);
 
       const deleteSpy = jest.spyOn(mockIndex, 'deleteDocuments');
 
@@ -433,7 +445,7 @@ describe('MeilisearchWrapper', () => {
       jest.spyOn(repositoriesModule, 'buildRepositories').mockReturnValue(repositories);
 
       // prevent finding any PDFs to store because this part is temporary
-      itemRepositoryMock.findAndCount.mockResolvedValue([[], 0]);
+      jest.spyOn(itemRepositoryMock, 'findAndCount').mockResolvedValue([[], 0]);
 
       datasourceManager.withRepository.mockReturnValue(repositories.itemPublishedRepository);
 

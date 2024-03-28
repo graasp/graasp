@@ -5,9 +5,8 @@ import { HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemRepository } from '../../../repository';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError } from '../errors';
 import { FavoriteRepository } from '../repositories/favorite';
@@ -16,6 +15,7 @@ import { FavoriteRepository } from '../repositories/favorite';
 jest.mock('../../../../../plugins/datasource');
 
 const rawRepository = AppDataSource.getRepository(ItemFavorite);
+const testUtils = new ItemTestUtils();
 
 describe('Favorite', () => {
   let app;
@@ -38,8 +38,8 @@ describe('Favorite', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        const { item } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor }); // Unused second item
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor }); // Unused second item
 
         favorite = await rawRepository.save({ item, member: actor });
       });
@@ -61,7 +61,7 @@ describe('Favorite', () => {
       });
 
       it('Get favorite with trashed favorite item', async () => {
-        await ItemRepository.softDelete(favorite.item.id);
+        await testUtils.rawItemRepository.softDelete(favorite.item.id);
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/favorite`,
@@ -78,7 +78,7 @@ describe('Favorite', () => {
         ({ app } = await build({ member: null }));
 
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
       });
 
       it('Throws', async () => {
@@ -93,7 +93,7 @@ describe('Favorite', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
       it('Post a new favorite', async () => {
@@ -143,7 +143,7 @@ describe('Favorite', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
           member = await saveMember();
-          ({ item } = await saveItemAndMembership({ member }));
+          ({ item } = await testUtils.saveItemAndMembership({ member }));
         });
 
         it('Throws if not authenticated', async () => {
@@ -159,7 +159,7 @@ describe('Favorite', () => {
       describe('Signed in', () => {
         beforeEach(async () => {
           ({ app, actor } = await build());
-          ({ item } = await saveItemAndMembership({ member: actor }));
+          ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
           favorite = await new FavoriteRepository().post(item.id, actor.id);
         });
 

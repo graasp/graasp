@@ -5,15 +5,16 @@ import { HttpMethod } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../../ws/events';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { saveItemValidation } from './utils';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 describe('asynchronous feedback', () => {
   let app, actor, address;
@@ -33,7 +34,7 @@ describe('asynchronous feedback', () => {
   });
 
   it('member that initated the validate operation receives success feedback', async () => {
-    const { item } = await saveItemAndMembership({ member: actor });
+    const { item } = await testUtils.saveItemAndMembership({ member: actor });
     await saveItemValidation({ item });
 
     const memberUpdates = await ws.subscribe<ItemEvent>({
@@ -60,7 +61,7 @@ describe('asynchronous feedback', () => {
   });
 
   it('member that initated the validate operation receives failure feedback', async () => {
-    const { item } = await saveItemAndMembership({ member: actor });
+    const { item } = await testUtils.saveItemAndMembership({ member: actor });
     await saveItemValidation({ item });
 
     const memberUpdates = await ws.subscribe<ItemEvent>({

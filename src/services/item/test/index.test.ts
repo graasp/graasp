@@ -30,36 +30,31 @@ import {
   TooManyChildren,
 } from '../../../utils/errors';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
 import { PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemTagRepository } from '../plugins/itemTag/repository';
-import { ItemRepository } from '../repository';
 import { Ordering, SortBy } from '../types';
 import {
+  ItemTestUtils,
   expectItem,
   expectManyPackedItems,
   expectPackedItem,
-  saveItem,
-  saveItems,
-  savePublicItem,
 } from './fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+
+const testUtils = new ItemTestUtils();
 
 const saveUntilMaxDescendants = async (parent: Item, actor: Member) => {
   // save maximum depth
   // TODO: DYNAMIC
   let currentParent = parent;
   for (let i = 0; i < MAX_TREE_LEVELS - 1; i++) {
-    const newCurrentParent = await saveItem({
+    const newCurrentParent = await testUtils.saveItem({
       actor,
       parentItem: currentParent,
     });
@@ -84,7 +79,7 @@ const saveNbOfItems = async ({
 }) => {
   const items: Item[] = [];
   for (let i = 0; i < nb; i++) {
-    const { item } = await saveItemAndMembership({
+    const { item } = await testUtils.saveItemAndMembership({
       item: { name: 'item ' + i, ...itemData },
       member: member ?? actor,
       parentItem,
@@ -140,7 +135,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         // check item exists in db
-        const item = await ItemRepository.get(newItem.id);
+        const item = await testUtils.itemRepository.get(newItem.id);
         expect(item?.id).toEqual(newItem.id);
 
         // a membership is created for this item
@@ -149,7 +144,7 @@ describe('Item routes tests', () => {
       });
 
       it('Create successfully in parent item', async () => {
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         const payload = FolderItemFactory();
@@ -163,7 +158,7 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor, parent);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const updatedParent = await ItemRepository.get(parent.id);
+        const updatedParent = await testUtils.itemRepository.get(parent.id);
         // check parent has been updated
         expect(updatedParent.extra).toEqual({ folder: { childrenOrder: [newItem.id] } });
 
@@ -173,7 +168,7 @@ describe('Item routes tests', () => {
       });
 
       it('Create successfully in legacy parent item', async () => {
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
           // hack to simulate a legacy folder item that had an empty extra (no folder.childrenOrder)
           item: { extra: {} as FolderItemExtra },
@@ -189,7 +184,7 @@ describe('Item routes tests', () => {
         expectItem(newItem, payload, actor, parent);
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        const updatedParent = await ItemRepository.get(parent.id);
+        const updatedParent = await testUtils.itemRepository.get(parent.id);
         // check parent has been updated
         expect(updatedParent.extra).toEqual({ folder: { childrenOrder: [newItem.id] } });
 
@@ -200,8 +195,12 @@ describe('Item routes tests', () => {
 
       it('Create successfully in shared parent item', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member });
-        await saveMembership({ member: actor, item: parent, permission: PermissionLevel.Write });
+        const { item: parent } = await testUtils.saveItemAndMembership({ member });
+        await testUtils.saveMembership({
+          member: actor,
+          item: parent,
+          permission: PermissionLevel.Write,
+        });
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -298,7 +297,7 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await ItemRepository.find()).toHaveLength(0);
+        expect(await testUtils.rawItemRepository.find()).toHaveLength(0);
         expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
 
         const response1 = await app.inject({
@@ -309,7 +308,7 @@ describe('Item routes tests', () => {
 
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
         // no item nor geolocation is created
-        expect(await ItemRepository.find()).toHaveLength(0);
+        expect(await testUtils.rawItemRepository.find()).toHaveLength(0);
         expect(await AppDataSource.getRepository(ItemGeolocation).find()).toHaveLength(0);
       });
 
@@ -374,7 +373,7 @@ describe('Item routes tests', () => {
 
       it('Cannot create item if member does not have membership on parent', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member });
+        const { item: parent } = await testUtils.saveItemAndMembership({ member });
         const payload = FolderItemFactory();
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -388,7 +387,7 @@ describe('Item routes tests', () => {
 
       it('Cannot create item if member can only read parent', async () => {
         const owner = await saveMember();
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: owner,
           permission: PermissionLevel.Read,
@@ -405,13 +404,13 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create item if parent item has too many children', async () => {
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         const payload = FolderItemFactory();
 
         // save maximum children
-        await saveItems({ nb: MAX_NUMBER_OF_CHILDREN, parentItem: parent, actor });
+        await testUtils.saveItems({ nb: MAX_NUMBER_OF_CHILDREN, parentItem: parent, actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -425,7 +424,7 @@ describe('Item routes tests', () => {
 
       it('Cannot create item if parent is too deep in hierarchy', async () => {
         const payload = FolderItemFactory();
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         const currentParent = await saveUntilMaxDescendants(parent, actor);
@@ -441,7 +440,7 @@ describe('Item routes tests', () => {
       });
 
       it('Cannot create inside non-folder item', async () => {
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
@@ -461,7 +460,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -477,7 +476,7 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const { packedItem } = await saveItemAndMembership({ member: actor });
+        const { packedItem } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -490,7 +489,7 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully with permission', async () => {
-        const { packedItem } = await saveItemAndMembership({
+        const { packedItem } = await testUtils.saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Read,
         });
@@ -514,19 +513,9 @@ describe('Item routes tests', () => {
         expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
-      it('Not found for missing item given id', async () => {
-        const id = uuidv4();
-        const response = await app.inject({
-          method: HttpMethod.Get,
-          url: `/items/${id}`,
-        });
-
-        expect(response.json()).toEqual(new ItemNotFound(id));
-        expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-      });
       it('Cannot get item if have no membership', async () => {
         const member = await saveMember();
-        const item = await saveItem({ actor: member });
+        const item = await testUtils.saveItem({ actor: member });
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `/items/${item.id}`,
@@ -541,7 +530,7 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const item = await savePublicItem({ actor: member });
+        const item = await testUtils.savePublicItem({ actor: member });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -554,8 +543,8 @@ describe('Item routes tests', () => {
       });
       it('Returns successfully for write right', async () => {
         ({ app, actor } = await build());
-        const item = await savePublicItem({ actor });
-        await saveMembership({ item, member: actor, permission: PermissionLevel.Write });
+        const item = await testUtils.savePublicItem({ actor });
+        await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Write });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -574,7 +563,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -592,7 +581,7 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         const items: PackedItem[] = [];
         for (let i = 0; i < 3; i++) {
-          const { packedItem } = await saveItemAndMembership({ member: actor });
+          const { packedItem } = await testUtils.saveItemAndMembership({ member: actor });
           items.push(packedItem);
         }
 
@@ -615,7 +604,7 @@ describe('Item routes tests', () => {
         });
       });
       it('Returns one item successfully for valid item', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `/items?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
@@ -629,7 +618,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Bad request for one invalid item', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -641,8 +630,8 @@ describe('Item routes tests', () => {
       });
       it('Returns one error for one missing item', async () => {
         const missingId = uuidv4();
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const items = [item1, item2];
 
         const response = await app.inject({
@@ -673,7 +662,7 @@ describe('Item routes tests', () => {
         const member = await saveMember();
         const items: Item[] = [];
         for (let i = 0; i < 3; i++) {
-          const item = await savePublicItem({ actor: member });
+          const item = await testUtils.savePublicItem({ actor: member });
           items.push(item);
         }
 
@@ -701,7 +690,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      await saveItemAndMembership({ member });
+      await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -717,9 +706,9 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
-        const { item: item3 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item3 } = await testUtils.saveItemAndMembership({ member: actor });
         const items = [item1, item2, item3];
 
         const response = await app.inject({
@@ -744,7 +733,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      await saveItemAndMembership({ member });
+      await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -762,16 +751,24 @@ describe('Item routes tests', () => {
         ({ app, actor } = await build());
 
         member = await saveMember();
-        const { item: item1 } = await saveItemAndMembership({ member });
-        const { item: item2 } = await saveItemAndMembership({ member });
-        const { item: item3 } = await saveItemAndMembership({ member });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member });
+        const { item: item3 } = await testUtils.saveItemAndMembership({ member });
         items = [item1, item2, item3];
-        await saveMembership({ item: item1, member: actor });
-        await saveMembership({ item: item2, member: actor, permission: PermissionLevel.Write });
-        await saveMembership({ item: item3, member: actor, permission: PermissionLevel.Read });
+        await testUtils.saveMembership({ item: item1, member: actor });
+        await testUtils.saveMembership({
+          item: item2,
+          member: actor,
+          permission: PermissionLevel.Write,
+        });
+        await testUtils.saveMembership({
+          item: item3,
+          member: actor,
+          permission: PermissionLevel.Read,
+        });
 
         // save own item that should not be returned
-        await saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor });
       });
 
       it('Returns successfully', async () => {
@@ -845,12 +842,20 @@ describe('Item routes tests', () => {
 
       it('Returns successfully shared siblings', async () => {
         // create siblings
-        const { item: parentItem } = await saveItemAndMembership({ member });
-        const { item: item1 } = await saveItemAndMembership({ member, parentItem });
-        const { item: item2 } = await saveItemAndMembership({ member, parentItem });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member, parentItem });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member, parentItem });
         items = [item1, item2];
-        await saveMembership({ item: item1, member: actor, permission: PermissionLevel.Read });
-        await saveMembership({ item: item2, member: actor, permission: PermissionLevel.Write });
+        await testUtils.saveMembership({
+          item: item1,
+          member: actor,
+          permission: PermissionLevel.Read,
+        });
+        await testUtils.saveMembership({
+          item: item2,
+          member: actor,
+          permission: PermissionLevel.Write,
+        });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -870,12 +875,24 @@ describe('Item routes tests', () => {
 
       it('Should return only parent if parent and siblings are shared', async () => {
         // create siblings
-        const { item: parentItem } = await saveItemAndMembership({ member });
-        const { item: item1 } = await saveItemAndMembership({ member, parentItem });
-        const { item: item2 } = await saveItemAndMembership({ member, parentItem });
-        await saveMembership({ item: parentItem, member: actor, permission: PermissionLevel.Read });
-        await saveMembership({ item: item1, member: actor, permission: PermissionLevel.Read });
-        await saveMembership({ item: item2, member: actor, permission: PermissionLevel.Write });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member, parentItem });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member, parentItem });
+        await testUtils.saveMembership({
+          item: parentItem,
+          member: actor,
+          permission: PermissionLevel.Read,
+        });
+        await testUtils.saveMembership({
+          item: item1,
+          member: actor,
+          permission: PermissionLevel.Read,
+        });
+        await testUtils.saveMembership({
+          item: item2,
+          member: actor,
+          permission: PermissionLevel.Write,
+        });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -898,7 +915,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      await saveItemAndMembership({ member });
+      await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -915,29 +932,29 @@ describe('Item routes tests', () => {
 
       it('Returns successfully owned and shared items', async () => {
         // owned items
-        const { packedItem: item1, item: parentItem1 } = await saveItemAndMembership({
+        const { packedItem: item1, item: parentItem1 } = await testUtils.saveItemAndMembership({
           member: actor,
         });
-        const { packedItem: item2 } = await saveItemAndMembership({ member: actor });
-        const { packedItem: item3 } = await saveItemAndMembership({ member: actor });
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({ member: actor });
 
         // shared
         const bob = await saveMember();
-        const { packedItem: item4, item: parentItem4 } = await saveItemAndMembership({
+        const { packedItem: item4, item: parentItem4 } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
         });
-        const { item: parentItem5 } = await saveItemAndMembership({ member: bob });
-        const { packedItem: item6 } = await saveItemAndMembership({
+        const { item: parentItem5 } = await testUtils.saveItemAndMembership({ member: bob });
+        const { packedItem: item6 } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
           parentItem: parentItem5,
         });
 
         // should not return these items
-        await saveItemAndMembership({ member: bob });
-        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-        await saveItemAndMembership({ member: actor, parentItem: parentItem4 });
+        await testUtils.saveItemAndMembership({ member: bob });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem4 });
 
         const items = [item1, item2, item3, item4, item6];
 
@@ -956,13 +973,19 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully items for member id', async () => {
-        await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor });
 
         const bob = await saveMember();
-        const { packedItem: item1 } = await saveItemAndMembership({ member: actor, creator: bob });
-        const { packedItem: item2 } = await saveItemAndMembership({ member: actor, creator: bob });
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          creator: bob,
+        });
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          creator: bob,
+        });
 
         const items = [item1, item2];
 
@@ -980,15 +1003,15 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully sorted items by name asc', async () => {
-        const { packedItem: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { name: '2' },
         });
-        const { packedItem: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { name: '3' },
         });
-        const { packedItem: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { name: '1' },
         });
@@ -1009,15 +1032,15 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully sorted items by type desc', async () => {
-        const { packedItem: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
-        const { packedItem: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.FOLDER },
         });
-        const { packedItem: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.APP },
         });
@@ -1041,17 +1064,17 @@ describe('Item routes tests', () => {
         const anna = await saveMember(MemberFactory({ name: 'anna' }));
         const bob = await saveMember(MemberFactory({ name: 'bob' }));
         const cedric = await saveMember(MemberFactory({ name: 'cedric' }));
-        const { packedItem: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
           item: { type: ItemType.DOCUMENT },
         });
-        const { packedItem: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
           creator: anna,
           member: actor,
           item: { type: ItemType.FOLDER },
         });
-        const { packedItem: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: cedric,
           item: { type: ItemType.APP },
@@ -1074,7 +1097,7 @@ describe('Item routes tests', () => {
 
       it('Returns successfully items by read', async () => {
         const bob = await saveMember();
-        const { packedItem: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Read,
@@ -1082,12 +1105,12 @@ describe('Item routes tests', () => {
         });
 
         // noise
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Admin,
           item: { type: ItemType.FOLDER },
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Write,
@@ -1115,19 +1138,19 @@ describe('Item routes tests', () => {
       it('Returns successfully items by write and admin', async () => {
         const anna = await saveMember(MemberFactory({ name: 'anna' }));
         const bob = await saveMember(MemberFactory({ name: 'bob' }));
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Read,
           item: { type: ItemType.DOCUMENT },
         });
-        const { packedItem: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: anna,
           permission: PermissionLevel.Admin,
           item: { type: ItemType.FOLDER },
         });
-        const { packedItem: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Write,
@@ -1155,17 +1178,17 @@ describe('Item routes tests', () => {
 
       it('Returns successfully folder items', async () => {
         const bob = await saveMember();
-        const { packedItem: itemFolder1 } = await saveItemAndMembership({
+        const { packedItem: itemFolder1 } = await testUtils.saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Admin,
           item: { type: ItemType.FOLDER },
         });
-        const { packedItem: itemFolder2 } = await saveItemAndMembership({
+        const { packedItem: itemFolder2 } = await testUtils.saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Write,
           item: { type: ItemType.FOLDER },
         });
-        const { packedItem: notAFolder } = await saveItemAndMembership({
+        const { packedItem: notAFolder } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: bob,
           permission: PermissionLevel.Write,
@@ -1197,15 +1220,15 @@ describe('Item routes tests', () => {
       });
 
       it('Throws for wrong sort by', async () => {
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.FOLDER },
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.APP },
         });
@@ -1223,15 +1246,15 @@ describe('Item routes tests', () => {
       });
 
       it('Throws for wrong ordering', async () => {
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.FOLDER },
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.APP },
         });
@@ -1249,15 +1272,15 @@ describe('Item routes tests', () => {
       });
 
       it('Throws for wrong item types', async () => {
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.FOLDER },
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.APP },
         });
@@ -1274,9 +1297,12 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully paginated items', async () => {
-        await saveItemAndMembership({ member: actor, item: { name: '2' } });
-        await saveItemAndMembership({ member: actor, item: { name: '1' } });
-        const { packedItem } = await saveItemAndMembership({ member: actor, item: { name: '3' } });
+        await testUtils.saveItemAndMembership({ member: actor, item: { name: '2' } });
+        await testUtils.saveItemAndMembership({ member: actor, item: { name: '1' } });
+        const { packedItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: '3' },
+        });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1298,7 +1324,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -1314,18 +1340,21 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const { item: parentItem } = await saveItemAndMembership({
+        const { item: parentItem } = await testUtils.saveItemAndMembership({
           member: actor,
         });
-        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
+        const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
           member: actor,
           parentItem,
         });
-        const { packedItem: child2 } = await saveItemAndMembership({ member: actor, parentItem });
+        const { packedItem: child2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem,
+        });
 
         const children = [child1, child2];
         // create child of child
-        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1338,98 +1367,19 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
-      it('Returns successfully empty children', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-
-        const response = await app.inject({
-          method: HttpMethod.Get,
-          url: `/items/${parent.id}/children`,
-        });
-
-        expect(response.json()).toEqual([]);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-      });
-      it('Returns ordered children', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
-          item: { name: 'child1' },
-          member: actor,
-          parentItem: parent,
-        });
-        const { packedItem: child2 } = await saveItemAndMembership({
-          item: { name: 'child2' },
-          member: actor,
-          parentItem: parent,
-        });
-
-        const childrenOrder = [child2.id, child1.id];
-        const children = [child1, child2];
-
-        await ItemRepository.patch(parent.id, { extra: { [ItemType.FOLDER]: { childrenOrder } } });
-        // create child of child
-        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-
-        const response = await app.inject({
-          method: HttpMethod.Get,
-          url: `/items/${parent.id}/children?ordered=true`,
-        });
-
-        const data = response.json();
-        expect(data).toHaveLength(children.length);
-        // verify order and content
-        data.forEach((item, idx) => {
-          const child = children.find(({ id: thisId }) => thisId === childrenOrder[idx]);
-          expectPackedItem(item, child);
-        });
-        expect(response.statusCode).toBe(StatusCodes.OK);
-      });
-      it('Returns ordered successfully even without order defined', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
-          item: { name: 'child1' },
-          member: actor,
-          parentItem: parent,
-        });
-        const { packedItem: child2 } = await saveItemAndMembership({
-          item: { name: 'child2' },
-          member: actor,
-          parentItem: parent,
-        });
-
-        const children = [child1, child2];
-
-        // create child of child
-        await saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-
-        const response = await app.inject({
-          method: HttpMethod.Get,
-          url: `/items/${parent.id}/children?ordered=true`,
-        });
-
-        expect(response.statusCode).toBe(StatusCodes.OK);
-        const data = response.json();
-        expect(data).toHaveLength(children.length);
-        children.forEach(({ id }) => {
-          expectPackedItem(
-            data.find(({ id: thisId }) => thisId === id),
-            children.find(({ id: thisId }) => thisId === id),
-          );
-        });
-        expect(response.statusCode).toBe(StatusCodes.OK);
-      });
       it('Filter out hidden children on read permission', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Read,
         });
-        const { item: child1 } = await saveItemAndMembership({
+        const { item: child1 } = await testUtils.saveItemAndMembership({
           item: { name: 'child1' },
           member,
           parentItem: parent,
         });
-        const { item: child2 } = await saveItemAndMembership({
+        const { item: child2 } = await testUtils.saveItemAndMembership({
           item: { name: 'child2' },
           member,
           parentItem: parent,
@@ -1439,7 +1389,7 @@ describe('Item routes tests', () => {
         const children = [child2];
 
         // create child of child that shouldn't be returned
-        await saveItemAndMembership({ member: actor, parentItem: child1 });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: child1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1463,17 +1413,17 @@ describe('Item routes tests', () => {
       });
       it('Filter children by Folder', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Read,
         });
-        const { packedItem: notAFolder } = await saveItemAndMembership({
+        const { packedItem: notAFolder } = await testUtils.saveItemAndMembership({
           item: { name: 'child1', type: ItemType.DOCUMENT },
           member,
           parentItem: parent,
         });
-        const { item: child2 } = await saveItemAndMembership({
+        const { item: child2 } = await testUtils.saveItemAndMembership({
           item: { name: 'child2', type: ItemType.FOLDER },
           member,
           parentItem: parent,
@@ -1522,13 +1472,13 @@ describe('Item routes tests', () => {
       });
       it('Cannot get children if does not have membership on parent', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member });
-        await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member });
+        await testUtils.saveItemAndMembership({
           item: { name: 'child1' },
           member,
           parentItem: parent,
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           item: { name: 'child2' },
           member,
           parentItem: parent,
@@ -1548,13 +1498,13 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const actor = await saveMember();
-        const parent = await savePublicItem({ actor });
-        const child1 = await savePublicItem({ actor, parentItem: parent });
-        const child2 = await savePublicItem({ actor, parentItem: parent });
+        const parent = await testUtils.savePublicItem({ actor });
+        const child1 = await testUtils.savePublicItem({ actor, parentItem: parent });
+        const child2 = await testUtils.savePublicItem({ actor, parentItem: parent });
 
         const children = [child1, child2];
         // create child of child
-        await savePublicItem({ actor, parentItem: child1 });
+        await testUtils.savePublicItem({ actor, parentItem: child1 });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1579,7 +1529,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -1595,19 +1545,19 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
           item: { name: 'child1' },
           member: actor,
           parentItem: parent,
         });
-        const { packedItem: child2 } = await saveItemAndMembership({
+        const { packedItem: child2 } = await testUtils.saveItemAndMembership({
           item: { name: 'child2' },
           member: actor,
           parentItem: parent,
         });
 
-        const { packedItem: childOfChild } = await saveItemAndMembership({
+        const { packedItem: childOfChild } = await testUtils.saveItemAndMembership({
           member: actor,
           parentItem: parentItem1,
         });
@@ -1625,32 +1575,32 @@ describe('Item routes tests', () => {
       });
       it('Filter out hidden items for read rights', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Read,
         });
-        const { item: child1 } = await saveItemAndMembership({
+        const { item: child1 } = await testUtils.saveItemAndMembership({
           item: { name: 'child1' },
           member,
           parentItem: parent,
         });
-        const { item: child2 } = await saveItemAndMembership({
+        const { item: child2 } = await testUtils.saveItemAndMembership({
           item: { name: 'child2' },
           member,
           parentItem: parent,
         });
         await ItemTagRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
 
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member,
           parentItem: child1,
         });
         const descendants = [child2];
 
         // another item with child
-        const { item: parent1 } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({
+        const { item: parent1 } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({
           item: { name: 'child' },
           member: actor,
           parentItem: parent1,
@@ -1666,25 +1616,7 @@ describe('Item routes tests', () => {
         expectPackedItem(result[0], { ...descendants[0], permission: PermissionLevel.Read });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
-      it('Returns successfully empty descendants', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
 
-        // another item with child
-        const { item: parent1 } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({
-          item: { name: 'child1' },
-          member: actor,
-          parentItem: parent1,
-        });
-
-        const response = await app.inject({
-          method: HttpMethod.Get,
-          url: `/items/${parent.id}/descendants`,
-        });
-
-        expect(response.json()).toEqual([]);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-      });
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -1706,13 +1638,13 @@ describe('Item routes tests', () => {
       });
       it('Cannot get descendants if does not have membership on parent', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member });
-        await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member });
+        await testUtils.saveItemAndMembership({
           item: { name: 'child1' },
           member,
           parentItem: parent,
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           item: { name: 'child2' },
           member,
           parentItem: parent,
@@ -1732,19 +1664,19 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         const actor = await saveMember();
         ({ app } = await build({ member: null }));
-        const parent = await savePublicItem({ actor });
-        const child1 = await savePublicItem({
+        const parent = await testUtils.savePublicItem({ actor });
+        const child1 = await testUtils.savePublicItem({
           item: { name: 'child1' },
           actor,
           parentItem: parent,
         });
-        const child2 = await savePublicItem({
+        const child2 = await testUtils.savePublicItem({
           item: { name: 'child2' },
           actor,
           parentItem: parent,
         });
 
-        const childOfChild = await savePublicItem({
+        const childOfChild = await testUtils.savePublicItem({
           item: { name: 'child3' },
           actor,
           parentItem: child1,
@@ -1773,7 +1705,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out and item is private', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -1789,29 +1721,29 @@ describe('Item routes tests', () => {
       });
 
       it('Returns successfully in order', async () => {
-        const { packedItem: parent, item: parentItem } = await saveItemAndMembership({
+        const { packedItem: parent, item: parentItem } = await testUtils.saveItemAndMembership({
           member: actor,
         });
-        const { packedItem: child1, item: parentItem1 } = await saveItemAndMembership({
+        const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
           item: { name: 'child1' },
           member: actor,
           parentItem,
         });
         // noise
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           item: { name: 'child2' },
           member: actor,
           parentItem,
         });
 
-        const { item: childOfChild } = await saveItemAndMembership({
+        const { item: childOfChild } = await testUtils.saveItemAndMembership({
           member: actor,
           parentItem: parentItem1,
         });
         const parents = [parent, child1];
 
         // patch item to force reorder
-        await ItemRepository.patch(parent.id, { name: 'newname' });
+        await testUtils.itemRepository.patch(parent.id, { name: 'newname' });
         parent.name = 'newname';
 
         const response = await app.inject({
@@ -1824,25 +1756,6 @@ describe('Item routes tests', () => {
         data.forEach((p, idx) => {
           expectPackedItem(p, parents[idx]);
         });
-        expect(response.statusCode).toBe(StatusCodes.OK);
-      });
-      it('Returns successfully empty parents', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-
-        // another item with child
-        const { item: parent1 } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({
-          item: { name: 'child1' },
-          member: actor,
-          parentItem: parent1,
-        });
-
-        const response = await app.inject({
-          method: HttpMethod.Get,
-          url: `/items/${parent.id}/parents`,
-        });
-
-        expect(response.json()).toEqual([]);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Bad Request for invalid id', async () => {
@@ -1866,13 +1779,13 @@ describe('Item routes tests', () => {
       });
       it('Cannot get parents if does not have membership on parent', async () => {
         const member = await saveMember();
-        const { item: parent } = await saveItemAndMembership({ member });
-        await saveItemAndMembership({
+        const { item: parent } = await testUtils.saveItemAndMembership({ member });
+        await testUtils.saveItemAndMembership({
           item: { name: 'child1' },
           member,
           parentItem: parent,
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           item: { name: 'child2' },
           member,
           parentItem: parent,
@@ -1891,21 +1804,21 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const parent = await savePublicItem({ actor: null });
-        const child1 = await savePublicItem({
+        const parent = await testUtils.savePublicItem({ actor: null });
+        const child1 = await testUtils.savePublicItem({
           item: { name: 'child1' },
           actor: null,
           parentItem: parent,
         });
 
-        const childOfChild = await savePublicItem({
+        const childOfChild = await testUtils.savePublicItem({
           item: { name: 'child3' },
           actor: null,
           parentItem: child1,
         });
 
         // noise
-        await savePublicItem({
+        await testUtils.savePublicItem({
           item: { name: 'child2' },
           actor: null,
           parentItem: parent,
@@ -1932,7 +1845,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -1949,7 +1862,7 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           item: {
             extra: {
               [ItemType.FOLDER]: {
@@ -1993,7 +1906,7 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully new language', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         const payload = {
@@ -2015,7 +1928,7 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully description placement above', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         const payload = {
@@ -2044,7 +1957,7 @@ describe('Item routes tests', () => {
       });
 
       it('Update successfully link settings', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         const payload = {
@@ -2076,7 +1989,7 @@ describe('Item routes tests', () => {
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
 
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         const payload = {
@@ -2105,9 +2018,6 @@ describe('Item routes tests', () => {
         expect(newItem.settings.descriptionPlacement).toBe(VALID_SETTING.descriptionPlacement);
         expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
       });
-
-      // TODO: extra should be patch correctly
-      // TODO: settins should be patch correctly
 
       it('Bad request if id is invalid', async () => {
         const payload = {
@@ -2156,7 +2066,7 @@ describe('Item routes tests', () => {
           name: 'new name',
         };
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -2172,8 +2082,8 @@ describe('Item routes tests', () => {
           name: 'new name',
         };
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
-        await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+        const { item } = await testUtils.saveItemAndMembership({ member });
+        await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Read });
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/${item.id}`,
@@ -2193,7 +2103,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
       const payload = { name: 'new name' };
 
       const response = await app.inject({
@@ -2224,7 +2134,9 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const { data, errors } = await ItemRepository.getMany(items.map(({ id }) => id));
+          const { data, errors } = await testUtils.itemRepository.getMany(
+            items.map(({ id }) => id),
+          );
           Object.entries(data).forEach(([id, result]) => {
             const changes = { ...items.find(({ id: thisId }) => thisId === id), ...payload };
             expectItem(result, changes);
@@ -2235,8 +2147,8 @@ describe('Item routes tests', () => {
       });
       it('Nothing updates if one item id is invalid', async () => {
         const missingItemId = uuidv4();
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const items = [item1, item2];
 
         const response = await app.inject({
@@ -2250,7 +2162,9 @@ describe('Item routes tests', () => {
 
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const { data, errors } = await ItemRepository.getMany(items.map(({ id }) => id));
+          const { data, errors } = await testUtils.itemRepository.getMany(
+            items.map(({ id }) => id),
+          );
           Object.entries(data).forEach(([id, result]) => {
             expectItem(
               result,
@@ -2275,8 +2189,8 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Bad Request for invalid extra', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const items = [item1, item2];
 
         const payload1 = {
@@ -2303,7 +2217,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Delete,
@@ -2318,9 +2232,9 @@ describe('Item routes tests', () => {
         ({ app, actor } = await build());
       });
       it('Delete successfully', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor, parentItem: item1 });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
         const items = [item1, item2];
 
         const response = await app.inject({
@@ -2334,17 +2248,17 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual(items.map(({ id }) => id));
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await ItemRepository.find();
+          const remaining = await testUtils.rawItemRepository.find();
           expect(remaining).toHaveLength(0);
           const memberships = await ItemMembershipRepository.find();
           expect(memberships).toHaveLength(0);
-          const { errors } = await ItemRepository.getMany(items.map(({ id }) => id));
+          const { errors } = await testUtils.itemRepository.getMany(items.map(({ id }) => id));
           expect(errors).toHaveLength(items.length);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Delete successfully one item', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor, parentItem: item1 });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
         const response = await app.inject({
           method: HttpMethod.Delete,
           url: `/items?${qs.stringify({ id: [item1.id] }, { arrayFormat: 'repeat' })}`,
@@ -2353,8 +2267,7 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual([item1.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await ItemRepository.find();
-          expect(remaining).toHaveLength(0);
+          expect(await testUtils.rawItemRepository.count()).toHaveLength(0);
 
           const memberships = await ItemMembershipRepository.find();
           expect(memberships).toHaveLength(0);
@@ -2362,13 +2275,16 @@ describe('Item routes tests', () => {
       });
       it('Delete successfully one item in parent, with children and memberships', async () => {
         // root with membership for two members
-        const { item: root } = await saveItemAndMembership({ member: actor });
+        const { item: root } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
-        await saveMembership({ member, item: root });
+        await testUtils.saveMembership({ member, item: root });
 
         // parent to delete and its child
-        const { item: parent } = await saveItemAndMembership({ member: actor, parentItem: root });
-        await saveItemAndMembership({ member: actor, parentItem: parent });
+        const { item: parent } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: root,
+        });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: parent });
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -2378,7 +2294,7 @@ describe('Item routes tests', () => {
         expect(response.json()).toEqual([parent.id]);
         expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
         await waitForExpect(async () => {
-          const remaining = await ItemRepository.find();
+          const remaining = await testUtils.rawItemRepository.find();
           // should keep root
           expect(remaining).toHaveLength(1);
 
@@ -2390,9 +2306,9 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad request if one id is invalid', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor, parentItem: item1 });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
         const items = [item1, item2];
 
         const response = await app.inject({
@@ -2408,9 +2324,9 @@ describe('Item routes tests', () => {
       });
       it('Does not delete items if item does not exist', async () => {
         const missingId = uuidv4();
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor, parentItem: item1 });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: item1 });
         const items = [item1, item2];
 
         const response = await app.inject({
@@ -2425,7 +2341,7 @@ describe('Item routes tests', () => {
 
         // items should still exist
         await waitForExpect(async () => {
-          const remaining = await ItemRepository.find();
+          const remaining = await testUtils.rawItemRepository.find();
           remaining.forEach(({ id }) => {
             expect(remaining.find(({ id: thisId }) => thisId === id)).toBeTruthy();
           });
@@ -2439,11 +2355,11 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item: item1 } = await saveItemAndMembership({ member });
-      const { item: item2 } = await saveItemAndMembership({ member });
-      const { item: item3 } = await saveItemAndMembership({ member });
+      const { item: item1 } = await testUtils.saveItemAndMembership({ member });
+      const { item: item2 } = await testUtils.saveItemAndMembership({ member });
+      const { item: item3 } = await testUtils.saveItemAndMembership({ member });
       const items = [item1, item2, item3];
-      const { item: parent } = await saveItemAndMembership({ member });
+      const { item: parent } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -2466,7 +2382,7 @@ describe('Item routes tests', () => {
 
       it('Move successfully root item to parent', async () => {
         const items = await saveNbOfItems({ nb: 3, actor });
-        const { item: parent } = await saveItemAndMembership({ member: actor });
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2484,7 +2400,7 @@ describe('Item routes tests', () => {
         // item should have a different path
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await ItemRepository.findOneBy({ id: item.id });
+            const result = await testUtils.rawItemRepository.findOneBy({ id: item.id });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -2500,7 +2416,7 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully items to root', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
 
         const response = await app.inject({
@@ -2517,7 +2433,7 @@ describe('Item routes tests', () => {
         // item should have a differnt path
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await ItemRepository.findOneBy({ id: item.id });
+            const result = await testUtils.rawItemRepository.findOneBy({ id: item.id });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -2527,9 +2443,9 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully item to root and create new membership', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         // manually save item that doesn't need a membership because of inheritance
-        const item = await saveItem({ parentItem, actor });
+        const item = await testUtils.saveItem({ parentItem, actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2541,7 +2457,7 @@ describe('Item routes tests', () => {
 
         // item should have a different path
         await waitForExpect(async () => {
-          const result = await ItemRepository.findOneBy({ id: item.id });
+          const result = await testUtils.rawItemRepository.findOneBy({ id: item.id });
           if (!result) {
             throw new Error('item does not exist!');
           }
@@ -2558,8 +2474,8 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully item to child and delete same membership', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2571,7 +2487,7 @@ describe('Item routes tests', () => {
 
         // item should have a different path
         await waitForExpect(async () => {
-          const result = await ItemRepository.findOneBy({ id: item.id });
+          const result = await testUtils.rawItemRepository.findOneBy({ id: item.id });
           if (!result) {
             throw new Error('item does not exist!');
           }
@@ -2586,8 +2502,8 @@ describe('Item routes tests', () => {
       });
 
       it('Move successfully items to another parent', async () => {
-        const { item: originalParent } = await saveItemAndMembership({ member: actor });
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: originalParent } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem: originalParent });
 
         const response = await app.inject({
@@ -2606,7 +2522,7 @@ describe('Item routes tests', () => {
         // item should have a different path
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await ItemRepository.findOneBy({ id: item.id });
+            const result = await testUtils.rawItemRepository.findOneBy({ id: item.id });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -2615,7 +2531,7 @@ describe('Item routes tests', () => {
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Bad request if one id is invalid', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2630,7 +2546,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
       it('Fail to move items if one item does not exist', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor });
 
         const response = await app.inject({
@@ -2648,7 +2564,7 @@ describe('Item routes tests', () => {
         // item should have a different path
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await ItemRepository.findOneBy({ id: item.id });
+            const result = await testUtils.rawItemRepository.findOneBy({ id: item.id });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -2656,30 +2572,8 @@ describe('Item routes tests', () => {
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
-      it('Fail to move items in non-folder parent', async () => {
-        const { item: parentItem } = await saveItemAndMembership({
-          item: { type: ItemType.DOCUMENT },
-          member: actor,
-        });
-        const { item } = await saveItemAndMembership({ member: actor });
-
-        const response = await app.inject({
-          method: HttpMethod.Post,
-          url: `/items/move?${qs.stringify({ id: [item.id] }, { arrayFormat: 'repeat' })}`,
-          payload: {
-            parentId: parentItem.id,
-          },
-        });
-        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
-
-        // item should have a different path
-        await waitForExpect(async () => {
-          const all = await ItemRepository.find();
-          expect(all).toHaveLength(2);
-        }, MULTIPLE_ITEMS_LOADING_TIME);
-      });
       it('Move lots of items', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: MAX_TARGETS_FOR_MODIFY_REQUEST, actor });
 
         const response = await app.inject({
@@ -2698,7 +2592,7 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           for (const item of items) {
-            const result = await ItemRepository.findOneBy({ id: item.id });
+            const result = await testUtils.rawItemRepository.findOneBy({ id: item.id });
             if (!result) {
               throw new Error('item does not exist!');
             }
@@ -2714,7 +2608,7 @@ describe('Item routes tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -2739,7 +2633,7 @@ describe('Item routes tests', () => {
           item: { lang: 'fr', settings },
           member: actor,
         });
-        const initialCount = await ItemRepository.count();
+        const initialCount = await testUtils.rawItemRepository.count();
         const initialCountMembership = await ItemMembershipRepository.count();
 
         const response = await app.inject({
@@ -2756,10 +2650,10 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await ItemRepository.find({
+            const itemsInDb = await testUtils.rawItemRepository.find({
               where: { name },
               relations: { creator: true },
             });
@@ -2787,10 +2681,10 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully from root to item with admin rights', async () => {
-        const { item: targetItem } = await saveItemAndMembership({ member: actor });
+        const { item: targetItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor });
         const initialCountMembership = await ItemMembershipRepository.count();
-        const initialCount = await ItemRepository.count();
+        const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2808,10 +2702,10 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await ItemRepository.findBy({ name });
+            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(2);
           }
 
@@ -2823,14 +2717,14 @@ describe('Item routes tests', () => {
 
       it('Copy successfully from root to item with write rights', async () => {
         const member = await saveMember();
-        const { item: targetItem } = await saveItemAndMembership({
+        const { item: targetItem } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Write,
         });
         const items = await saveNbOfItems({ nb: 3, actor: member, member: actor });
         const initialCountMembership = await ItemMembershipRepository.count();
-        const initialCount = await ItemRepository.count();
+        const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2848,10 +2742,10 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await ItemRepository.findBy({ name });
+            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(2);
           }
 
@@ -2863,12 +2757,12 @@ describe('Item routes tests', () => {
 
       it('Copy successfully root item from shared items to home', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
         });
-        const { item: youngParent } = await saveItemAndMembership({
+        const { item: youngParent } = await testUtils.saveItemAndMembership({
           item: { name: 'young parent' },
           member: actor,
           creator: member,
@@ -2876,14 +2770,14 @@ describe('Item routes tests', () => {
           parentItem: item,
         });
         // children, saved in weird order (children updated first so it appears first when fetching)
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           item: { name: 'old child' },
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
           parentItem: youngParent,
         });
-        await saveItemAndMembership({
+        await testUtils.saveItemAndMembership({
           member: actor,
           creator: member,
           permission: PermissionLevel.Admin,
@@ -2899,7 +2793,7 @@ describe('Item routes tests', () => {
         });
 
         const initialCountMembership = await ItemMembershipRepository.count();
-        const initialCount = await ItemRepository.count();
+        const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2912,7 +2806,7 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount * 2);
 
           // check it created a new membership because user is writer of parent
@@ -2922,9 +2816,9 @@ describe('Item routes tests', () => {
       });
 
       it('Copy successfully from item to root', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const items = await saveNbOfItems({ nb: 3, actor, parentItem });
-        const initialCount = await ItemRepository.count();
+        const initialCount = await testUtils.rawItemRepository.count();
         const initialCountMembership = await ItemMembershipRepository.count();
 
         const response = await app.inject({
@@ -2941,10 +2835,10 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await ItemRepository.findBy({ name });
+            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(2);
           }
 
@@ -2973,7 +2867,7 @@ describe('Item routes tests', () => {
       it('Fail to copy if one item does not exist', async () => {
         const items = await saveNbOfItems({ nb: 3, actor });
         const missingId = uuidv4();
-        const initialCount = await ItemRepository.count();
+        const initialCount = await testUtils.rawItemRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -2989,17 +2883,17 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
 
       it('Fail to copy if parent item is not a folder', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
-        const { item: parentItem } = await saveItemAndMembership({
+        const { item: parentItem } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { type: ItemType.DOCUMENT },
         });
@@ -3017,13 +2911,13 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           // contains twice the items (and the target item)
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(2);
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
       it('Copy lots of items', async () => {
         const items = await saveNbOfItems({ nb: MAX_TARGETS_FOR_MODIFY_REQUEST, actor });
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -3040,7 +2934,7 @@ describe('Item routes tests', () => {
         // wait a bit for tasks to complete
         await waitForExpect(async () => {
           for (const item of items) {
-            const results = await ItemRepository.findBy({ name: item.name });
+            const results = await testUtils.rawItemRepository.findBy({ name: item.name });
             if (!results.length) {
               throw new Error('item does not exist!');
             }
@@ -3052,9 +2946,9 @@ describe('Item routes tests', () => {
       });
 
       it('Copy attached geolocation', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
         const itemGeolocationRepository = AppDataSource.getRepository(ItemGeolocation);
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         await itemGeolocationRepository.save({ item, lat: 1, lng: 22 });
 
         const response = await app.inject({

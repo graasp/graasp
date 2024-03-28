@@ -9,14 +9,9 @@ import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
-import { ItemRepository } from '../../../repository';
-import { expectItem, expectManyItems } from '../../../test/fixtures/items';
+import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { CategoryRepository } from '../../itemCategory/repositories/category';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
 import { saveCategories } from '../../itemCategory/test/index.test';
@@ -29,20 +24,12 @@ import { ItemPublishedNotFound } from '../errors';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
 
+const testUtils = new ItemTestUtils();
+
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 
 jest.mock('../plugins/search/meilisearch');
-
-const saveCollections = async (member) => {
-  const items: Item[] = [];
-  for (let i = 0; i < 3; i++) {
-    const { item } = await saveItemAndMembership({ member });
-    items.push(item);
-    await ItemPublishedRepository.save({ item, creator: member });
-  }
-  return items;
-};
 
 const expectPublishedEntry = (value, expectedValue) => {
   expect(value.item.id).toEqual(expectedValue.item.id);
@@ -69,11 +56,11 @@ describe('Item Published', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        collections = await saveCollections(member);
+        collections = await testUtils.saveCollections(member);
         categories = await saveCategories();
 
         // add category to a non-published item
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         await ItemCategoryRepository.save({ item, category: categories[0] });
       });
 
@@ -87,7 +74,7 @@ describe('Item Published', () => {
       });
 
       it('Get all published collections even when items are trashed', async () => {
-        await ItemRepository.softRemove(collections[0]);
+        await testUtils.rawItemRepository.softRemove(collections[0]);
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections`,
@@ -183,9 +170,9 @@ describe('Item Published', () => {
         // set categories to parent item
         // and publish child
         const category = categories[2];
-        const { item: parentItem } = await saveItemAndMembership({ member });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
         await ItemCategoryRepository.save({ item: parentItem, category });
-        const { item } = await saveItemAndMembership({ member, parentItem });
+        const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
         await ItemPublishedRepository.save({ item, creator: member });
 
         const res = await app.inject({
@@ -199,8 +186,8 @@ describe('Item Published', () => {
         expectManyItems(res.json(), [item]);
       });
       it('Get publish info of child item returns root published item', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member });
-        const { item } = await saveItemAndMembership({ member, parentItem });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
         await ItemTagRepository.post(member, parentItem, ItemTagType.Public);
         // publish parent
         await ItemPublishedRepository.save({ item: parentItem, creator: member });
@@ -213,9 +200,9 @@ describe('Item Published', () => {
         expectItem(res.json()?.item, parentItem);
       });
       it('Get publish info of multiple childs returns root published items', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member });
-        const { item: otherParentItem } = await saveItemAndMembership({ member });
-        const { item } = await saveItemAndMembership({ member, parentItem });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member });
+        const { item: otherParentItem } = await testUtils.saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
         await ItemTagRepository.post(member, parentItem, ItemTagType.Public);
         await ItemTagRepository.post(member, otherParentItem, ItemTagType.Public);
 
@@ -237,7 +224,7 @@ describe('Item Published', () => {
       });
       it('Get publish info of non public item returns forbidden', async () => {
         // simple item not public and not published
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
@@ -245,7 +232,7 @@ describe('Item Published', () => {
         expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
       });
       it('Get publish info of public item that is not published yet returns null', async () => {
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
         // make item public
         await ItemTagRepository.post(member, item, ItemTagType.Public);
 
@@ -277,7 +264,7 @@ describe('Item Published', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        collections = await saveCollections(member);
+        collections = await testUtils.saveCollections(member);
       });
 
       it('Get 2 most recent collections', async () => {
@@ -320,7 +307,7 @@ describe('Item Published', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         members = await saveMembers();
-        collections = await saveCollections(members[0]);
+        collections = await testUtils.saveCollections(members[0]);
 
         // add idx x likes
         for (const [idx, c] of collections.entries()) {
@@ -370,7 +357,7 @@ describe('Item Published', () => {
       it('Returns published collections for member', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const items = await saveCollections(member);
+        const items = await testUtils.saveCollections(member);
         await saveCategories();
 
         const res = await app.inject({
@@ -387,13 +374,13 @@ describe('Item Published', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        await saveCollections(actor);
+        await testUtils.saveCollections(actor);
       });
 
       it('Get published collections for member', async () => {
         // add other collections
         const member = await saveMember();
-        const items = await saveCollections(member);
+        const items = await testUtils.saveCollections(member);
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -410,7 +397,7 @@ describe('Item Published', () => {
       it('Throw if signed out', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -429,7 +416,7 @@ describe('Item Published', () => {
 
       it('Publish item with admin rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
@@ -454,19 +441,19 @@ describe('Item Published', () => {
         const sendEmailMock = jest.spyOn(app.mailer, 'sendEmail');
 
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
         });
         const anna = await saveMember();
-        await saveMembership({
+        await testUtils.saveMembership({
           item,
           member: anna,
           permission: PermissionLevel.Admin,
         });
         const cedric = await saveMember();
-        await saveMembership({
+        await testUtils.saveMembership({
           item,
           member: cedric,
           permission: PermissionLevel.Admin,
@@ -501,7 +488,7 @@ describe('Item Published', () => {
 
       it('Cannot publish private item', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
@@ -517,7 +504,7 @@ describe('Item Published', () => {
 
       it('Cannot publish item with write rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Write,
@@ -533,7 +520,7 @@ describe('Item Published', () => {
 
       it('Cannot publish item with read rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Read,
@@ -570,7 +557,7 @@ describe('Item Published', () => {
       it('Throw if signed out', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -589,7 +576,7 @@ describe('Item Published', () => {
 
       it('Unpublish item with admin rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
@@ -611,7 +598,7 @@ describe('Item Published', () => {
 
       it('Throws when unpublish non-published item', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Admin,
@@ -628,7 +615,7 @@ describe('Item Published', () => {
 
       it('Cannot publish item with write rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Write,
@@ -645,7 +632,7 @@ describe('Item Published', () => {
 
       it('Cannot publish item with read rights', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Read,
@@ -793,7 +780,7 @@ describe('Item Published', () => {
             content: 'my text is here',
           },
         };
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           item: { type: ItemType.DOCUMENT, extra },
           creator: actor,
           member: actor,
@@ -802,7 +789,7 @@ describe('Item Published', () => {
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: actor });
         await ItemPublishedRepository.save({ item, creator: actor });
 
-        const { item: publishedFolder } = await saveItemAndMembership({ member: actor });
+        const { item: publishedFolder } = await testUtils.saveItemAndMembership({ member: actor });
         await ItemTagRepository.save({
           item: publishedFolder,
           type: ItemTagType.Public,
@@ -833,14 +820,16 @@ describe('Item Published', () => {
 
         // Testing move usecase
         const moveDone = (id: string, dest: Item) => async () => {
-          const result = await ItemRepository.findOneBy({ id: id });
+          const result = await testUtils.rawItemRepository.findOneBy({ id: id });
           if (!result) {
             throw new Error('item does not exist!');
           }
           expect(result.path.startsWith(dest.path)).toBeTruthy();
         };
         // Move published into unpublished should be indexed
-        const { item: unpublishedFolder } = await saveItemAndMembership({ member: actor });
+        const { item: unpublishedFolder } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
 
         const move1 = await app.inject({
           method: HttpMethod.Post,
@@ -874,7 +863,7 @@ describe('Item Published', () => {
         expect(indexSpy.mock.calls[2][0].id).toEqual(item.id);
 
         // Move unpublished into published folder should be indexed
-        const { item: unpublishedItem } = await saveItemAndMembership({
+        const { item: unpublishedItem } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { name: 'unpublishedItem' },
         });
@@ -907,7 +896,7 @@ describe('Item Published', () => {
         expect(deleteSpy.mock.calls[0][0].id).toEqual(unpublishedItem.id);
 
         // Testing copy usecase
-        const initialCount = await ItemRepository.count();
+        const initialCount = await testUtils.rawItemRepository.count();
         const copy = await app.inject({
           method: HttpMethod.Post,
           url: `/items/copy?${qs.stringify({ id: unpublishedItem.id }, { arrayFormat: 'repeat' })}`,
@@ -919,7 +908,7 @@ describe('Item Published', () => {
         expect(copy.statusCode).toBe(StatusCodes.ACCEPTED);
 
         await waitForExpect(async () => {
-          const newCount = await ItemRepository.count();
+          const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + 1);
         }, 300);
 
@@ -929,7 +918,7 @@ describe('Item Published', () => {
         expect(indexSpy.mock.calls[4][0].name).toEqual('unpublishedItem');
 
         // Testing category usecase
-        const { item: categoryItem } = await saveItemAndMembership({
+        const { item: categoryItem } = await testUtils.saveItemAndMembership({
           member: actor,
           parentItem: publishedFolder,
         });

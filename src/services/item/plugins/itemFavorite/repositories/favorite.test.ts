@@ -3,13 +3,14 @@ import { v4 } from 'uuid';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { saveItem } from '../../../test/fixtures/items';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
 import { FavoriteRepository } from './favorite';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 describe('FavoriteRepository', () => {
   let app;
@@ -20,8 +21,8 @@ describe('FavoriteRepository', () => {
     ({ app, actor } = await build());
     const r = new FavoriteRepository();
     const rawRepository = AppDataSource.getRepository(ItemFavorite);
-    const item1 = await saveItem({ actor });
-    const item2 = await saveItem({ actor });
+    const item1 = await testUtils.saveItem({ actor });
+    const item2 = await testUtils.saveItem({ actor });
     favorites = [
       await rawRepository.save({ item: item1, member: actor }),
       await rawRepository.save({ item: item2, member: actor }),
@@ -93,7 +94,7 @@ describe('FavoriteRepository', () => {
   describe('post', () => {
     it('save and return favorite', async () => {
       const r = new FavoriteRepository();
-      const item = await saveItem({ actor });
+      const item = await testUtils.saveItem({ actor });
 
       // returned value
       const result = await r.post(item.id, actor.id);
@@ -133,7 +134,7 @@ describe('FavoriteRepository', () => {
 
     it('do nothing if no favorite exists', async () => {
       const r = new FavoriteRepository();
-      const item = await saveItem({ actor });
+      const item = await testUtils.saveItem({ actor });
 
       // returned value
       const result = await r.deleteOne(item.id, actor.id);

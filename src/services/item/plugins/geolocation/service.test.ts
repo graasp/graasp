@@ -6,16 +6,16 @@ import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
-import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../member/test/fixtures/members';
 import ItemService from '../../service';
-import { savePublicItem } from '../../test/fixtures/items';
+import { ItemTestUtils } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { expectItemGeolocations, saveGeolocation } from './index.test';
 import { ItemGeolocationService } from './service';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const service = new ItemGeolocationService(new ItemService(), 'geolocation-key');
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
@@ -37,7 +37,7 @@ describe('ItemGeolocationService', () => {
 
   describe('delete', () => {
     it('delete successfully with admin permission', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const geoloc = { lat: 1, lng: 2, item, country: 'de' };
       await rawRepository.save(geoloc);
 
@@ -47,7 +47,7 @@ describe('ItemGeolocationService', () => {
     });
     it('delete successfully with write permission', async () => {
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         permission: PermissionLevel.Write,
         creator: member,
@@ -61,7 +61,7 @@ describe('ItemGeolocationService', () => {
     });
     it('cannot delete with read permission', async () => {
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         permission: PermissionLevel.Read,
         creator: member,
@@ -82,7 +82,7 @@ describe('ItemGeolocationService', () => {
     });
     it('cannot delete without permission', async () => {
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member,
         permission: PermissionLevel.Read,
       });
@@ -111,7 +111,7 @@ describe('ItemGeolocationService', () => {
   describe('getByItem', () => {
     it('get successfully with read permission', async () => {
       const member = await saveMember();
-      const { packedItem: item } = await saveItemAndMembership({
+      const { packedItem: item } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
@@ -124,7 +124,7 @@ describe('ItemGeolocationService', () => {
 
     it('get successfully for public item', async () => {
       const member = await saveMember();
-      const item = await savePublicItem({
+      const item = await testUtils.savePublicItem({
         actor: member,
       });
       const { packed: geoloc } = await saveGeolocation({
@@ -139,7 +139,7 @@ describe('ItemGeolocationService', () => {
     });
 
     it('return null if does not have geolocation', async () => {
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         permission: PermissionLevel.Read,
       });
@@ -164,7 +164,7 @@ describe('ItemGeolocationService', () => {
   describe('getIn', () => {
     it('get successfully with read permission', async () => {
       const member = await saveMember();
-      const { packedItem: item1 } = await saveItemAndMembership({
+      const { packedItem: item1 } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
@@ -175,7 +175,7 @@ describe('ItemGeolocationService', () => {
         item: item1,
         country: 'de',
       });
-      const { packedItem: item2 } = await saveItemAndMembership({
+      const { packedItem: item2 } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
@@ -188,7 +188,7 @@ describe('ItemGeolocationService', () => {
       });
 
       // noise
-      const { packedItem: item3 } = await saveItemAndMembership({
+      const { packedItem: item3 } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
@@ -207,7 +207,7 @@ describe('ItemGeolocationService', () => {
 
     it('get successfully for public item', async () => {
       const member = await saveMember();
-      const { packedItem: item1 } = await saveItemAndMembership({
+      const { packedItem: item1 } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
@@ -218,7 +218,7 @@ describe('ItemGeolocationService', () => {
         item: item1,
         country: 'de',
       });
-      const publicItem = await savePublicItem({
+      const publicItem = await testUtils.savePublicItem({
         actor: member,
       });
       const { packed: geoloc2 } = await saveGeolocation({
@@ -229,7 +229,7 @@ describe('ItemGeolocationService', () => {
       });
 
       // noise
-      const publicItem1 = await savePublicItem({
+      const publicItem1 = await testUtils.savePublicItem({
         actor: member,
       });
       await saveGeolocation({
@@ -252,7 +252,7 @@ describe('ItemGeolocationService', () => {
     it('return empty for nothing in box', async () => {
       // noise
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,
@@ -272,7 +272,7 @@ describe('ItemGeolocationService', () => {
 
   describe('put', () => {
     it('save successfully for admin permission', async () => {
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });
 
@@ -284,7 +284,7 @@ describe('ItemGeolocationService', () => {
 
     it('save successfully for write permission', async () => {
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Write,
@@ -298,7 +298,7 @@ describe('ItemGeolocationService', () => {
 
     it('throws for read permission', async () => {
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
         creator: member,
         permission: PermissionLevel.Read,

@@ -8,11 +8,12 @@ import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
-import { setUp } from '../../test/fixtures';
+import { AppTestUtils } from '../../test/fixtures';
 import { AppActionRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
+const testUtils = new AppTestUtils();
 
 const expectAppAction = (values, expected) => {
   for (const expectValue of expected) {
@@ -37,7 +38,7 @@ const setUpForAppActions = async (
   creator: Member,
   permission?: PermissionLevel,
 ) => {
-  const values = await setUp(app, actor, creator, permission);
+  const values = await testUtils.setUp(app, actor, creator, permission);
   const appActions = await saveAppActions({ item: values.item, member: actor });
   return { ...values, appActions };
 };

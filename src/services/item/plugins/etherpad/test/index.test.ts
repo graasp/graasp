@@ -10,14 +10,10 @@ import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../../itemMembership/test/fixtures/memberships';
 import { Actor, Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
-import { ItemRepository } from '../../../repository';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { MAX_SESSIONS_IN_COOKIE } from '../constants';
 import { ItemMissingExtraError } from '../errors';
 import { EtherpadItemService } from '../service';
@@ -25,6 +21,7 @@ import { setUpApi } from './api';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const MOCK_GROUP_ID = 'g.s8oes9dhwrvt0zif';
 const MOCK_PAD_READ_ONLY_ID = 'r.s8oes9dhwrvt0zif';
@@ -255,7 +252,7 @@ describe('Etherpad service API', () => {
 
     it('views a pad in write mode returns a read-only pad ID if user has read permission only', async () => {
       const bob = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: bob,
         item: {
           name: "bob's test etherpad item",
@@ -266,7 +263,7 @@ describe('Etherpad service API', () => {
           }),
         },
       });
-      await saveMembership({ item, member, permission: PermissionLevel.Read });
+      await testUtils.saveMembership({ item, member, permission: PermissionLevel.Read });
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -585,7 +582,7 @@ describe('Etherpad service API', () => {
         ],
       });
 
-      const { item: bogusItem } = await saveItemAndMembership({ member });
+      const { item: bogusItem } = await testUtils.saveItemAndMembership({ member });
 
       const res = await app.inject(payloadView(mode, bogusItem.id));
 
@@ -595,7 +592,7 @@ describe('Etherpad service API', () => {
 
     it.each(MODES)('returns error if member does not have %p permission', async (mode) => {
       const bob = await saveMember();
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: bob,
         item: {
           name: "bob's test etherpad item",
@@ -700,7 +697,10 @@ describe('Etherpad service API', () => {
     });
 
     it('copies pad when item is copied', async () => {
-      const parent = await saveItemAndMembership({ member, item: { name: 'test parent' } });
+      const parent = await testUtils.saveItemAndMembership({
+        member,
+        item: { name: 'test parent' },
+      });
 
       const reqsParams = setUpApi({
         createGroupIfNotExistsFor: [
@@ -723,10 +723,10 @@ describe('Etherpad service API', () => {
 
       // wait until the copy is in the db
       await waitForExpect(async () => {
-        expect(await ItemRepository.count()).toEqual(3);
+        expect(await testUtils.rawItemRepository.count()).toEqual(3);
       });
 
-      const copy = (await ItemRepository.findOneBy({
+      const copy = (await testUtils.rawItemRepository.findOneBy({
         id: And(Not(item.id), Not(parent.item.id)),
       })) as Item<typeof ItemType.ETHERPAD>;
       expect(copy).not.toBeNull();
@@ -741,8 +741,8 @@ describe('Etherpad service API', () => {
     });
 
     it('throws if pad ID is not defined on copy', async () => {
-      const { item: parent } = await saveItemAndMembership({ member });
-      const { item: bogusItem } = await saveItemAndMembership({ member });
+      const { item: parent } = await testUtils.saveItemAndMembership({ member });
+      const { item: bogusItem } = await testUtils.saveItemAndMembership({ member });
 
       setUpApi({
         createGroupIfNotExistsFor: [

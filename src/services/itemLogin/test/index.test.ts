@@ -6,11 +6,7 @@ import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MemberCannotAdminItem } from '../../../utils/errors';
 import { Item } from '../../item/entities/Item';
-import { saveItem } from '../../item/test/fixtures/items';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../itemMembership/test/fixtures/memberships';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../member/test/fixtures/members';
 import { ItemLogin } from '../entities/itemLogin';
@@ -22,6 +18,7 @@ import { USERNAME_LOGIN } from './fixtures';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const saveItemLogin = async ({
   item,
@@ -75,7 +72,7 @@ describe('Item Login Tests', () => {
     it('Get item login if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await saveItemAndMembership({ member }));
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLogin({ item });
 
       const res = await app.inject({
@@ -90,9 +87,9 @@ describe('Item Login Tests', () => {
     it('Get item login if signed out for child', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await saveItemAndMembership({ member }));
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
       const { itemLoginSchema } = await saveItemLogin({ item });
-      const child = await saveItem({ parentItem: item });
+      const child = await testUtils.saveItem({ parentItem: item });
 
       const res = await app.inject({
         method: HttpMethod.Get,
@@ -108,7 +105,7 @@ describe('Item Login Tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await saveItemAndMembership({ member }));
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
       await saveItemLogin({ item });
 
       const res = await app.inject({
@@ -125,12 +122,12 @@ describe('Item Login Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         const member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         ({ itemLoginSchema } = await saveItemLogin({ item }));
       });
 
       it('Successfully get item login', async () => {
-        await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
+        await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
@@ -144,8 +141,8 @@ describe('Item Login Tests', () => {
       });
 
       it('Successfully get item login defined in parent when calling from child for child ', async () => {
-        await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
-        const child = await saveItem({ parentItem: item, actor });
+        await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
+        const child = await testUtils.saveItem({ parentItem: item, actor });
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${child.id}/login-schema`,
@@ -159,7 +156,7 @@ describe('Item Login Tests', () => {
       });
 
       it('Throws if has Write permission', async () => {
-        await saveMembership({ item, member: actor, permission: PermissionLevel.Write });
+        await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Write });
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/login-schema`,
@@ -186,7 +183,7 @@ describe('Item Login Tests', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
         const member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         await saveItemLogin({ item });
       });
 
@@ -205,7 +202,7 @@ describe('Item Login Tests', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
           member = await saveMember();
-          ({ item } = await saveItemAndMembership({ member }));
+          ({ item } = await testUtils.saveItemAndMembership({ member }));
         });
 
         // TODO
@@ -273,7 +270,7 @@ describe('Item Login Tests', () => {
             // pre-create pseudonymized data
             const m = await savePseudonymizedMember(payload.username);
             await saveItemLogin({ item, member: m });
-            const child = await saveItem({ parentItem: item });
+            const child = await testUtils.saveItem({ parentItem: item });
 
             const res = await app.inject({
               method: HttpMethod.Post,
@@ -326,7 +323,7 @@ describe('Item Login Tests', () => {
             const m = await savePseudonymizedMember('pseudonymized');
             const payload = { memberId: m.id };
             await saveItemLogin({ item, member: m });
-            const child = await saveItem({ parentItem: item });
+            const child = await testUtils.saveItem({ parentItem: item });
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             const res = await app.inject({
@@ -349,7 +346,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             // set up second item
-            const newItem = await saveItem({ actor: member });
+            const newItem = await testUtils.saveItem({ actor: member });
             await saveItemLogin({ item: newItem });
 
             const res = await app.inject({
@@ -385,7 +382,7 @@ describe('Item Login Tests', () => {
         beforeEach(async () => {
           ({ app } = await build({ member: null }));
           member = await saveMember();
-          ({ item } = await saveItemAndMembership({ member }));
+          ({ item } = await testUtils.saveItemAndMembership({ member }));
         });
 
         // TODO
@@ -548,7 +545,7 @@ describe('Item Login Tests', () => {
             expect(await ItemLoginRepository.find()).toHaveLength(1);
 
             // set up second item
-            const newItem = await saveItem({ actor: member });
+            const newItem = await testUtils.saveItem({ actor: member });
             await saveItemLogin({ item: newItem, type: ItemLoginSchemaType.UsernameAndPassword });
 
             const res = await app.inject({
@@ -586,7 +583,7 @@ describe('Item Login Tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      ({ item } = await saveItemAndMembership({ member }));
+      ({ item } = await testUtils.saveItemAndMembership({ member }));
 
       const res = await app.inject({
         method: HttpMethod.Put,
@@ -600,7 +597,7 @@ describe('Item Login Tests', () => {
     describe('Signed In', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         await saveItemLogin({ item });
       });
 
@@ -617,7 +614,7 @@ describe('Item Login Tests', () => {
 
       it('Cannot change item login schema if have write permission', async () => {
         // save new item with wanted memberships
-        const { item: item1 } = await saveItemAndMembership({
+        const { item: item1 } = await testUtils.saveItemAndMembership({
           member: actor,
           permission: PermissionLevel.Write,
         });
@@ -635,7 +632,7 @@ describe('Item Login Tests', () => {
 
       it('Cannot put item login schema if is inherited', async () => {
         // save new item with wanted memberships
-        const child = await saveItem({ parentItem: item, actor });
+        const child = await testUtils.saveItem({ parentItem: item, actor });
 
         const res = await app.inject({
           method: HttpMethod.Put,

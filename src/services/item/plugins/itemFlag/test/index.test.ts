@@ -6,12 +6,13 @@ import { FlagType, HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound } from '../../../../../utils/errors';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemFlagRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const expectItemFlag = (flag, correctFlag) => {
   expect(flag.id).toEqual(correctFlag.id);
@@ -65,7 +66,7 @@ describe('Item Flag Tests', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
       const member = await saveMember();
-      const { item } = await saveItemAndMembership({ member });
+      const { item } = await testUtils.saveItemAndMembership({ member });
 
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -81,7 +82,7 @@ describe('Item Flag Tests', () => {
         ({ app, actor } = await build());
       });
       it('Successfully post item flag', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -117,7 +118,7 @@ describe('Item Flag Tests', () => {
       });
 
       it('Bad request if payload is not valid', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,

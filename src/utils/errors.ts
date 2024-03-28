@@ -385,6 +385,32 @@ export class CannotDeleteOnlyAdmin extends CoreError {
   }
 }
 
+export class MissingNameOrTypeForItemError extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR031',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Name and type should be defined',
+      },
+      data,
+    );
+  }
+}
+
+export class InvalidItemError extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR032',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'path should be defined',
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);

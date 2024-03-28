@@ -8,12 +8,13 @@ import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Actor, Member } from '../../../../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
 import { Item } from '../../../../entities/Item';
-import { setUp } from '../../test/fixtures';
+import { AppTestUtils } from '../../test/fixtures';
 import { PreventUpdateAppDataFile } from '../errors';
 import { AppDataRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
+const testUtils = new AppTestUtils();
 
 const expectAppData = (values, expected) => {
   for (const expectValue of expected) {
@@ -75,7 +76,7 @@ const setUpForAppData = async (
   permission?: PermissionLevel,
   setPublic?: boolean,
 ) => {
-  const values = await setUp(app, actor, creator, permission, setPublic);
+  const values = await testUtils.setUp(app, actor, creator, permission, setPublic);
   const appData = await saveAppData({
     item: values.item,
     creator: creator ?? actor,

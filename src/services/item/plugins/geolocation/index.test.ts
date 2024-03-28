@@ -8,14 +8,14 @@ import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
-import { saveItemAndMembership } from '../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { PackedItem } from '../../ItemWrapper';
-import { expectPackedItem, savePublicItem } from '../../test/fixtures/items';
+import { ItemTestUtils, expectPackedItem } from '../../test/fixtures/items';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const repository = AppDataSource.getRepository(ItemGeolocation);
 
@@ -68,7 +68,7 @@ describe('Item Geolocation', () => {
       it('Get geolocation for public item', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        item = await savePublicItem({ actor: member });
+        item = await testUtils.savePublicItem({ actor: member });
         const geoloc = await repository.save({ item, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
@@ -83,7 +83,7 @@ describe('Item Geolocation', () => {
       it('Throws for non public item', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         await repository.save({ item, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
@@ -97,7 +97,7 @@ describe('Item Geolocation', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ packedItem, item } = await saveItemAndMembership({ member: actor }));
+        ({ packedItem, item } = await testUtils.saveItemAndMembership({ member: actor }));
       });
 
       it('Get geolocation', async () => {
@@ -155,21 +155,21 @@ describe('Item Geolocation', () => {
       it('Get public item geolocations', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const item1 = await savePublicItem({ actor: member });
+        const item1 = await testUtils.savePublicItem({ actor: member });
         const { packed: geoloc1 } = await saveGeolocation({
           item: { ...item1, permission: null },
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const item2 = await savePublicItem({ actor: member });
+        const item2 = await testUtils.savePublicItem({ actor: member });
         const { packed: geoloc2 } = await saveGeolocation({
           item: { ...item2, permission: null },
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const item3 = await savePublicItem({ actor: member });
+        const item3 = await testUtils.savePublicItem({ actor: member });
         const { packed: geoloc3 } = await saveGeolocation({
           item: { ...item3, permission: null },
           lat: 1,
@@ -220,21 +220,21 @@ describe('Item Geolocation', () => {
       });
 
       it('Get item geolocations', async () => {
-        const { packedItem: item1 } = await saveItemAndMembership({ member: actor });
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({ member: actor });
         const { packed: geoloc1 } = await saveGeolocation({
           item: item1,
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item2 } = await saveItemAndMembership({ member: actor });
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const { packed: geoloc2 } = await saveGeolocation({
           item: item2,
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item3 } = await saveItemAndMembership({ member: actor });
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({ member: actor });
         const { packed: geoloc3 } = await saveGeolocation({
           item: item3,
           lat: 1,
@@ -252,7 +252,7 @@ describe('Item Geolocation', () => {
       });
 
       it('Get item geolocations with search strings', async () => {
-        const { packedItem: item1 } = await saveItemAndMembership({
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
           item: { name: 'hello bye' },
           member: actor,
         });
@@ -262,7 +262,7 @@ describe('Item Geolocation', () => {
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
           item: { description: 'hello bye' },
           member: actor,
         });
@@ -272,7 +272,7 @@ describe('Item Geolocation', () => {
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({
           item: { name: 'bye hello' },
           member: actor,
         });
@@ -293,8 +293,8 @@ describe('Item Geolocation', () => {
       });
 
       it('Get item geolocations within parent item', async () => {
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
-        const { packedItem: item1 } = await saveItemAndMembership({
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        const { packedItem: item1 } = await testUtils.saveItemAndMembership({
           item: { name: 'hello bye' },
           member: actor,
           parentItem,
@@ -305,7 +305,7 @@ describe('Item Geolocation', () => {
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item2 } = await saveItemAndMembership({
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
           item: { description: 'hello bye' },
           member: actor,
           parentItem,
@@ -316,7 +316,7 @@ describe('Item Geolocation', () => {
           lng: 2,
           country: 'de',
         });
-        const { packedItem: item3 } = await saveItemAndMembership({
+        const { packedItem: item3 } = await testUtils.saveItemAndMembership({
           item: { name: 'bye hello' },
           member: actor,
         });
@@ -433,7 +433,7 @@ describe('Item Geolocation', () => {
       });
 
       it('save successfully', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const res = await app.inject({
           method: HttpMethod.Put,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
@@ -474,7 +474,7 @@ describe('Item Geolocation', () => {
       });
 
       it('delete successfully', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         await repository.save({ item, lat: 1, lng: 1 });
         const res = await app.inject({
           method: HttpMethod.Delete,

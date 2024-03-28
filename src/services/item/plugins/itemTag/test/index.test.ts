@@ -7,14 +7,15 @@ import { HttpMethod, ItemTagType } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemTag } from '../ItemTag';
 import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
 import { ItemTagRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const saveTagsForItem = async ({ item, creator }) => {
   const itemTags: ItemTag[] = [];
@@ -50,7 +51,7 @@ describe('Tags', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
       });
 
       it('Throws if item is private', async () => {
@@ -85,7 +86,7 @@ describe('Tags', () => {
       });
 
       it('Get tags of an item', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const itemTags = await saveTagsForItem({ item, creator: actor });
 
         const res = await app.inject({
@@ -121,7 +122,7 @@ describe('Tags', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
       });
 
       it('Throws if item is private', async () => {
@@ -157,7 +158,7 @@ describe('Tags', () => {
         ({ app, actor } = await build());
       });
       it('Get tags for a single item', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const itemTags = await saveTagsForItem({ item, creator: actor });
 
         const res = await app.inject({
@@ -169,9 +170,9 @@ describe('Tags', () => {
       });
 
       it('Get tags for multiple items', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
         const itemTags1 = await saveTagsForItem({ item: item1, creator: actor });
-        const { item: item2 } = await saveItemAndMembership({ member: actor });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
         const itemTags2 = await saveTagsForItem({ item: item2, creator: actor });
 
         const res = await app.inject({
@@ -199,7 +200,7 @@ describe('Tags', () => {
       });
 
       it('Returns error if one item does not exist', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const tags = await saveTagsForItem({ item, creator: actor });
         const ids = [item.id, v4()];
         const res = await app.inject({
@@ -211,9 +212,9 @@ describe('Tags', () => {
       });
 
       it('Return errors if does not have rights on one item', async () => {
-        const { item: item1 } = await saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
         const member = await saveMember();
-        const { item: item2 } = await saveItemAndMembership({ member });
+        const { item: item2 } = await testUtils.saveItemAndMembership({ member });
         await saveTagsForItem({ item: item2, creator: member });
         const ids = [item1.id, item2.id];
 
@@ -237,7 +238,7 @@ describe('Tags', () => {
       it('Throws if item is private', async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -254,7 +255,7 @@ describe('Tags', () => {
       });
 
       it('Create a tag for an item', async () => {
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -265,7 +266,7 @@ describe('Tags', () => {
       });
 
       it('Cannot create tag if exists for item', async () => {
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         await ItemTagRepository.save({ item, type, creator: actor });
 
         const res = await app.inject({
@@ -276,8 +277,8 @@ describe('Tags', () => {
       });
 
       it('Cannot create tag if exists on parent', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        ({ item } = await saveItemAndMembership({ member: actor, parentItem: parent }));
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor, parentItem: parent }));
         await ItemTagRepository.save({ item: parent, type, creator: actor });
 
         const res = await app.inject({
@@ -323,7 +324,7 @@ describe('Tags', () => {
       it('Throws if item is private', async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -339,13 +340,16 @@ describe('Tags', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         itemTags = await saveTagsForItem({ item, creator: actor });
         toDelete = itemTags[0];
       });
 
       it('Delete a tag of an item (and descendants)', async () => {
-        const { item: child } = await saveItemAndMembership({ member: actor, parentItem: item });
+        const { item: child } = await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem: item,
+        });
         const childTags = await saveTagsForItem({ item: child, creator: actor });
         const descendantToDelete = childTags.find(({ type }) => type === toDelete.type);
 
@@ -362,8 +366,8 @@ describe('Tags', () => {
         expect(childItemTag).toBeNull();
       });
       it('Cannot delete inherited tag', async () => {
-        const { item: parent } = await saveItemAndMembership({ member: actor });
-        ({ item } = await saveItemAndMembership({ member: actor, parentItem: parent }));
+        const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor, parentItem: parent }));
         const tag = await ItemTagRepository.save({ item: parent, type, creator: actor });
 
         const res = await app.inject({
@@ -373,7 +377,7 @@ describe('Tags', () => {
         expect(res.json()).toMatchObject(new CannotModifyParentTag(expect.anything()));
       });
       it('Throws if tag does not exist', async () => {
-        const { item: itemWithoutTag } = await saveItemAndMembership({ member: actor });
+        const { item: itemWithoutTag } = await testUtils.saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
           method: HttpMethod.Delete,

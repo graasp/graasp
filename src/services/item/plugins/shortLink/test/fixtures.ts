@@ -1,10 +1,7 @@
 import { ClientHostManager, Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../member/entities/member';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { SHORT_LINKS_FULL_PREFIX, SHORT_LINKS_LIST_ROUTE } from '../service';
 
@@ -17,39 +14,41 @@ type MemberWithPermission = {
   permission: PermissionLevel;
 };
 
-/**
- * Insert a new mocked item and optionaly give permissions to a given member.
- *
- * @param itemCreator the Member who creates the item.
- * @param memberWithPermission optional Member and permission to give access to item.
- * @param permission the permission to give to the member if not null.
- * @param setPublic if true, set the item as public.
- * @returns
- */
-export const mockItemAndMemberships = async ({
-  itemCreator,
-  memberWithPermission,
-  setPublic = false,
-}: {
-  itemCreator: Member;
-  memberWithPermission?: MemberWithPermission;
-  setPublic?: boolean;
-}) => {
-  const { item } = await saveItemAndMembership({
-    member: itemCreator,
-  });
+export class ShortLinkTestUtils extends ItemTestUtils {
+  /**
+   * Insert a new mocked item and optionaly give permissions to a given member.
+   *
+   * @param itemCreator the Member who creates the item.
+   * @param memberWithPermission optional Member and permission to give access to item.
+   * @param permission the permission to give to the member if not null.
+   * @param setPublic if true, set the item as public.
+   * @returns
+   */
+  mockItemAndMemberships = async ({
+    itemCreator,
+    memberWithPermission,
+    setPublic = false,
+  }: {
+    itemCreator: Member;
+    memberWithPermission?: MemberWithPermission;
+    setPublic?: boolean;
+  }) => {
+    const { item } = await this.saveItemAndMembership({
+      member: itemCreator,
+    });
 
-  if (memberWithPermission) {
-    const { member, permission } = memberWithPermission;
-    await saveMembership({ item, member, permission });
-  }
+    if (memberWithPermission) {
+      const { member, permission } = memberWithPermission;
+      await this.saveMembership({ item, member, permission });
+    }
 
-  if (setPublic) {
-    await setItemPublic(item, itemCreator);
-  }
+    if (setPublic) {
+      await setItemPublic(item, itemCreator);
+    }
 
-  return { item };
-};
+    return { item };
+  };
+}
 
 const shortLinkUrl = (alias) => {
   return `${SHORT_LINKS_FULL_PREFIX}/${alias}`;
