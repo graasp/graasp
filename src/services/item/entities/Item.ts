@@ -85,7 +85,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   @Column({
     name: 'display_name',
     length: MAX_ITEM_NAME_LENGTH,
-    nullable: true,
+    nullable: false,
   })
   displayName: string;
 

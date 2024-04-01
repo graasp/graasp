@@ -6,6 +6,7 @@ export class Migrations1711101133700 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "item" ADD "display_name" character varying(500)`);
     await queryRunner.query(`UPDATE "item" SET "display_name" = "name"`);
+    await queryRunner.query(`ALTER TABLE "item" ALTER COLUMN "display_name" SET NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
