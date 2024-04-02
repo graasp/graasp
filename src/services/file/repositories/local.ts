@@ -74,7 +74,6 @@ export class LocalFileRepository implements FileRepository {
 
   async getUrl({ filepath, id }) {
     await this._validateFile({ filepath, id });
-
     const localUrl = new URL(filepath, this.options.localFilesHost);
     return localUrl.toString();
   }
