@@ -181,7 +181,6 @@ export class ItemValidationService {
               const url = await this.fileService.getUrl(actor, {
                 id: item?.id,
                 path: filepath,
-                usePublicHost: false,
               });
               const isSafe = await classifyImage(this.imageClassifierApi, url);
               status = isSafe ? ItemValidationStatus.Success : ItemValidationStatus.Failure;

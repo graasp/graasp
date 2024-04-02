@@ -15,5 +15,4 @@ export interface S3FileConfiguration {
 export interface LocalFileConfiguration {
   storageRootPath: string;
   localFilesHost?: string;
-  publicFilesHost?: string;
 }

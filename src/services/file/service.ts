@@ -118,10 +118,9 @@ class FileService {
       expiration?: number;
       id?: string;
       path?: string;
-      usePublicHost?: boolean;
     },
   ): Promise<string> {
-    const { expiration, id, path: filepath, usePublicHost } = data;
+    const { expiration, id, path: filepath } = data;
     if (!filepath || !id) {
       throw new DownloadFileInvalidParameterError({
         filepath,
@@ -134,7 +133,6 @@ class FileService {
         expiration,
         filepath,
         id,
-        usePublicHost,
       },
       this.logger,
     );
