@@ -83,7 +83,7 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
 
   async post(data: Partial<Member> & Pick<Member, 'email'>): Promise<Member> {
     const email = data.email.toLowerCase();
-    const createdMember = await this.insert({ ...data, email });
+    const createdMember = await this.insert({ ...data, email, userAgreements: new Date() });
 
     // TODO: better solution?
     // query builder returns creator as id and extra as string

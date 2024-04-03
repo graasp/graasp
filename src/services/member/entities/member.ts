@@ -40,6 +40,12 @@ export class Member extends BaseEntity {
   @Column('simple-json', { nullable: false, default: '{}' })
   extra: CompleteMember['extra'];
 
+  @Column({
+    nullable: true,
+    name: 'user_agreements',
+  })
+  userAgreements: Date;
+
   @CreateDateColumn({
     update: false,
     name: 'created_at',
