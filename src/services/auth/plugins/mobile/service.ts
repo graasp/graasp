@@ -7,7 +7,7 @@ import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { JWT_SECRET } from '../../../../utils/config';
+import { AUTH_TOKEN_JWT_SECRET, JWT_SECRET } from '../../../../utils/config';
 import {
   ChallengeFailed,
   InvalidToken,
@@ -94,7 +94,30 @@ export class MobileService {
       await repositories.memberRepository.get(memberId);
 
       // TODO: should we fetch/test the member from the DB?
-      return this.fastify.generateAuthTokensPair(memberId);
+      return { memberId, ...this.fastify.generateAuthTokensPair(memberId) };
+    } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        // return a custom error when the token expired
+        // helps the client know when to request a refreshed token
+        if (error instanceof TokenExpiredError) {
+          throw new TokenExpired();
+        }
+        throw new InvalidToken();
+      }
+      throw error;
+    }
+  }
+
+  async getMemberIdFromAuthToken(actor: Actor, repositories: Repositories, token: string) {
+    try {
+      const { sub: memberId } = await promisifiedJwtVerify(token, AUTH_TOKEN_JWT_SECRET, {});
+
+      // pre test the user existence to avoid providing a key
+      // throws if member does not exist
+      await repositories.memberRepository.get(memberId);
+
+      // TODO: should we fetch/test the member from the DB?
+      return memberId;
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         // return a custom error when the token expired

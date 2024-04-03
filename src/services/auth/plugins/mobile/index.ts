@@ -7,8 +7,9 @@ import { DEFAULT_LANG } from '@graasp/translations';
 
 import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { getRedirectionUrl } from '../../utils';
 import { MemberPasswordService } from '../password/service';
-import { mPasswordLogin, mauth, mlogin, mregister } from './schemas';
+import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
@@ -113,6 +114,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get('/auth/refresh', { preHandler: fastify.verifyBearerAuth }, async ({ memberId }) =>
     generateAuthTokensPair(memberId),
+  );
+
+  // from user token, set corresponding cookie
+  fastify.get<{ Querystring: { t: string; url: string } }>(
+    '/auth/web',
+    { schema: authWeb },
+    async ({ query, session }, reply) => {
+      const memberId = await mobileService.getMemberIdFromAuthToken(
+        undefined,
+        buildRepositories(),
+        query.t,
+      );
+
+      session.set('member', memberId);
+
+      const redirectionUrl = getRedirectionUrl(
+        log,
+        query.url ? decodeURIComponent(query.url) : undefined,
+      );
+      reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+    },
   );
 };
 

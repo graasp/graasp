@@ -2,11 +2,13 @@ import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import fetch, { type Response } from 'node-fetch';
+import { v4 } from 'uuid';
 
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import {
+  AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
   MOBILE_DEEP_LINK_PROTOCOL,
   REFRESH_TOKEN_JWT_SECRET,
@@ -459,6 +461,51 @@ describe('Mobile Endpoints', () => {
           authorization: `Bearer ${t}`,
         },
       });
+      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+    });
+  });
+  describe('GET /m/auth/web', () => {
+    it('set cookie for valid token', async () => {
+      const member = await saveMember();
+      const t = jwt.sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: '/m/auth/web',
+        query: { t },
+      });
+      expect(response.statusCode).toEqual(StatusCodes.SEE_OTHER);
+      expect(response.headers).toHaveProperty('set-cookie');
+    });
+    it('Throw if token contains undefined member id', async () => {
+      const t = jwt.sign({ sub: undefined }, AUTH_TOKEN_JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: '/m/auth/web',
+        query: { t },
+      });
+      expect(response.headers).not.toHaveProperty('set-cookie');
+      expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+    });
+    it('Throw if token contains non-existent member', async () => {
+      const memberId = v4();
+      const t = jwt.sign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET);
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: '/m/auth/web',
+        query: { t },
+      });
+      expect(response.headers).not.toHaveProperty('set-cookie');
+      expect(response.json()).toMatchObject(new MemberNotFound(memberId));
+    });
+    it('Fail if token is invalid', async () => {
+      const member = await saveMember();
+      const t = jwt.sign({ sub: member.id }, 'AUTH_TOKEN_JWT_SECRET');
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: '/m/auth/web',
+        query: { t },
+      });
+      expect(response.headers).not.toHaveProperty('set-cookie');
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
     });
   });

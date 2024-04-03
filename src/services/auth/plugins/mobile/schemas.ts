@@ -64,3 +64,15 @@ export const mauth = {
     additionalProperties: false,
   },
 };
+
+export const authWeb = {
+  querystring: {
+    type: 'object',
+    required: ['t'],
+    properties: {
+      t: { type: 'string' },
+      url: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+};
