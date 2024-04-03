@@ -21,6 +21,8 @@ services:
       FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
       # the localfile config host points to the static file server defined below
       FILE_STORAGE_HOST: http://localhost:1081
+      # enpoint of the nudenet model
+      IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
       # the DB config is set by the "db" service below
       DB_NAME: docker
       DB_USERNAME: docker
@@ -117,8 +119,9 @@ services:
     container_name: graasp-postgres-etherpad
     image: postgres:15
     restart: on-failure
-    ports:
-      - 5433:5432
+    # not strictly necessary to expose these ports outside the container
+    # ports:
+    #   - 5433:5432
     volumes:
       - postgres-data-etherpad:/var/lib/postgresql/data
     environment:
@@ -135,8 +138,10 @@ services:
       - MEILI_NO_ANALYTICS=true
       - MEILI_ENV=development
       - MEILI_LOG_LEVEL
-    ports:
-      - 7700:7700
+    # uncomment below to develop on the meilisearch interface from your local machine
+    # by default ports do not need to be exposed as all queries are proxied by the backend
+    # ports:
+    #   - 7700:7700
     volumes:
       - ./meilisearch_data:/meili_data
 
@@ -157,6 +162,7 @@ services:
       - 4566-4583:4566-4583
 
   localfile:
+    container_name: localfile
     image: joseluisq/static-web-server:2
     environment:
       # Note: those envs are customizable but also optional
@@ -174,18 +180,21 @@ services:
     image: graasp/iframely:latest
     environment:
       NODE_ENV: staging # why "staging" ??
-    ports:
-      - 8061:8061
+    # exposing these ports is not necessary
+    # ports:
+    #   - 8061:8061
 
   # necessary for validation
   nudenet:
     container_name: graasp-nudenet
     image: notaitech/nudenet:classifier
-    ports:
-      - 8080:8080
+    # sxposing these ports is not necessary
+    # ports:
+    #   - 8080:8080
 
   # a mock mailbox on port 1025 (web UI at http://localhost:1080)
   mailer:
+    container_name: mailer
     image: schickling/mailcatcher
     ports:
       - "1080:1080"
