@@ -1,11 +1,11 @@
-import * as Papa from 'papaparse';
+import { Readable } from 'node:stream';
+import Papa from 'papaparse';
 
-import { BusboyFileStream } from '@fastify/busboy';
 import { MultipartFile } from '@fastify/multipart';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { CSV_MIMETYPE } from './constants';
+import { CSV_MIMETYPE, EMAIL_COLUMN_NAME } from './constants';
 
 export type CSVInvite = {
   email: string;
@@ -14,17 +14,24 @@ export type CSVInvite = {
   permission?: PermissionLevel;
 };
 
-export const getCSV = (
-  stream: BusboyFileStream,
-): Promise<{ rows: CSVInvite[]; header: string[] }> => {
+export const parseCSV = (stream: Readable): Promise<{ rows: CSVInvite[]; header: string[] }> => {
   return new Promise((resolve, reject) => {
-    Papa.parse(stream, {
+    Papa.parse<CSVInvite>(stream, {
       header: true,
       dynamicTyping: false,
+      transformHeader(header) {
+        return header.trim().toLowerCase();
+      },
+      transform(value, header) {
+        if (header === EMAIL_COLUMN_NAME) {
+          return value.trim().toLowerCase();
+        }
+        return value.trim();
+      },
       complete(results) {
         resolve({
-          rows: results.data as CSVInvite[],
-          header: results.meta.fields,
+          rows: results.data,
+          header: results.meta.fields ?? [],
         });
       },
       error(err) {

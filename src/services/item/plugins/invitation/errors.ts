@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
 
-import { PLUGIN_NAME } from './constants';
+import { EMAIL_COLUMN_NAME, PLUGIN_NAME } from './constants';
 
 export const GraaspInvitationsError = ErrorFactory(PLUGIN_NAME);
 
@@ -55,13 +55,23 @@ export class NoDataFoundForInvitations extends GraaspInvitationsError {
   }
 }
 
-export class NoEmailFoundForInvitations extends GraaspInvitationsError {
+export class MissingEmailColumnInCSVError extends GraaspInvitationsError {
+  constructor() {
+    super({
+      code: 'GPINVERR005',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: `The required "${EMAIL_COLUMN_NAME}" column was not provided`,
+    });
+  }
+}
+
+export class MissingEmailInRowError extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR005',
+        code: 'GPINVERR006',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Email was not detected for rows',
+        message: `A row is missing the required "${EMAIL_COLUMN_NAME}" value`,
       },
       data,
     );
@@ -71,7 +81,7 @@ export class NoEmailFoundForInvitations extends GraaspInvitationsError {
 export class NoGroupNamesFoundForInvitations extends GraaspInvitationsError {
   constructor() {
     super({
-      code: 'GPINVERR006',
+      code: 'GPINVERR007',
       statusCode: StatusCodes.BAD_REQUEST,
       message: 'Group column has been defined in CSV, but no group names were detected',
     });
@@ -82,7 +92,7 @@ export class NoGroupFoundForInvitations extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR007',
+        code: 'GPINVERR008',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'Group column has been defined in CSV, but rows with missing groups exist',
       },
@@ -95,9 +105,22 @@ export class NoFileProvidedForInvitations extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR008',
+        code: 'GPINVERR009',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'No file was provided. Please provide a file for creating bulk invitations',
+      },
+      data,
+    );
+  }
+}
+
+export class NoDataInFile extends GraaspInvitationsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPINVERR010',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'No data was found in teh file. Please send a file with valid data.',
       },
       data,
     );

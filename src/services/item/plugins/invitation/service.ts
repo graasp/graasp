@@ -15,15 +15,18 @@ import { ItemMembership } from '../../../itemMembership/entities/ItemMembership'
 import ItemMembershipService from '../../../itemMembership/service';
 import { Actor, Member } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
-import { GRP_COL_NAME, buildInvitationLink } from './constants';
+import { EMAIL_COLUMN_NAME, GRP_COL_NAME, buildInvitationLink } from './constants';
 import {
+  MissingEmailColumnInCSVError,
+  MissingEmailInRowError,
   NoDataFoundForInvitations,
+  NoDataInFile,
   NoEmailFoundForInvitations,
   NoGroupFoundForInvitations,
   NoGroupNamesFoundForInvitations,
 } from './errors';
 import { Invitation } from './invitation';
-import { CSVInvite, getCSV, regexGenFirstLevelItems, verifyCSVFileFormat } from './utils';
+import { CSVInvite, parseCSV, regexGenFirstLevelItems, verifyCSVFileFormat } from './utils';
 
 export class InvitationService {
   log: FastifyBaseLogger;
@@ -95,7 +98,7 @@ export class InvitationService {
     repositories: Repositories,
     itemId: string,
     invitations: Partial<Invitation>[],
-  ) {
+  ): Promise<Invitation[]> {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
@@ -105,7 +108,7 @@ export class InvitationService {
     const completeInvitations = await invitationRepository.postMany(invitations, item.path, actor);
 
     // this.log.debug('send invitation mails');
-    Object.values(completeInvitations.data).forEach((invitation: Invitation) => {
+    completeInvitations.forEach((invitation: Invitation) => {
       // send mail without awaiting
 
       this.sendInvitationEmail({ actor, invitation });
@@ -163,6 +166,98 @@ export class InvitationService {
     await itemMembershipRepository.createMany(memberships);
   }
 
+  async _partitionExistingUsersAndNewUsers(
+    actor: Actor,
+    repositories: Repositories,
+    emailList: string[],
+  ): Promise<{ existingAccounts: Member[]; newAccounts: string[] }> {
+    const { data: accounts } = await this.memberService.getManyByEmail(
+      actor,
+      repositories,
+      emailList,
+    );
+    const existingAccounts = Object.values(accounts);
+    const existingAccountsEmails = Object.keys(accounts);
+    const newAccounts = emailList.filter((email) => !existingAccountsEmails.includes(email));
+    return { existingAccounts, newAccounts };
+  }
+
+  async importUsersWithCSV(
+    actor: Member,
+    repositories: Repositories,
+    itemId: Item['id'],
+    file: MultipartFile,
+    itemMembershipService: ItemMembershipService,
+  ): Promise<{ memberships: ItemMembership[]; invitations: Invitation[] }> {
+    // verify file is CSV
+    verifyCSVFileFormat(file);
+
+    // get parentItem
+    const item = await repositories.itemRepository.get(itemId);
+    console.log('item', item);
+    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+
+    // parse CSV file
+    const { rows, header } = await parseCSV(file.file);
+
+    // check that file has data
+    if (rows.length === 0) {
+      throw new NoDataInFile();
+    }
+
+    // check that the email column has been detected
+    if (!header.includes(EMAIL_COLUMN_NAME)) {
+      throw new MissingEmailColumnInCSVError();
+    }
+
+    // check that all rows have an email set
+    if (rows.some((r) => !Boolean(r.email))) {
+      throw new MissingEmailInRowError();
+    }
+
+    const { existingAccounts, newAccounts } = await this._partitionExistingUsersAndNewUsers(
+      actor,
+      repositories,
+      rows.map((r) => r.email),
+    );
+
+    const membershipsToCreate = existingAccounts.map((account) => {
+      const permission =
+        // get the permission from the data, if it is not found or if it is an empty string, default to read
+        rows.find((r) => r.email === account.email)?.permission || PermissionLevel.Read;
+      return { permission, memberId: account.id };
+    });
+    this.log.debug(membershipsToCreate, 'memberships to create');
+
+    // create memberships for accounts that already exist
+    const memberships = await itemMembershipService.postMany(
+      actor,
+      repositories,
+      membershipsToCreate,
+      itemId,
+    );
+
+    const invitationsToCreate = newAccounts.map((email) => {
+      const permission = rows.find((r) => r.email === email)?.permission || PermissionLevel.Read;
+      return { email, permission };
+    });
+    this.log.debug(invitationsToCreate, 'invitations to create');
+
+    // get the invitations repository
+    const { invitationRepository } = repositories;
+    // create invitations for accounts that do not exist yet
+    const invitations = await invitationRepository.postMany(invitationsToCreate, item.path, actor);
+    invitations.forEach((invitation) => {
+      // send mail without awaiting
+      this.sendInvitationEmail({ actor, invitation });
+    });
+
+    return {
+      memberships,
+      invitations,
+    };
+  }
+
   async handleCSVInvitations(
     actor: Actor,
     repositories: Repositories,
@@ -182,7 +277,7 @@ export class InvitationService {
     await validatePermission(repositories, PermissionLevel.Admin, actor, parentItem);
 
     // parse CSV file
-    const { rows, header } = await getCSV(file.file);
+    const { rows, header } = await parseCSV(file.file);
 
     // if the csv file includes a Group column we will create a structure, so the parent item needs to be a folder
     const hasGrpCol = header.includes(GRP_COL_NAME);

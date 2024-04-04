@@ -17,7 +17,6 @@ import {
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../utils/config';
 import graaspChatbox from '../chat';
-import graaspInvitationsPlugin from '../invitation';
 import graaspItemLogin from '../itemLogin';
 import itemController from './controller';
 import itemSchema, {
@@ -37,6 +36,7 @@ import graaspFileItem from './plugins/file';
 import itemGeolocationPlugin from './plugins/geolocation/index';
 import graaspH5PPlugin from './plugins/html/h5p';
 import graaspZipPlugin from './plugins/importExport';
+import graaspInvitationsPlugin from './plugins/invitation';
 import graaspCategoryPlugin from './plugins/itemCategory';
 import graaspFavoritePlugin from './plugins/itemFavorite';
 import graaspItemFlags from './plugins/itemFlag';

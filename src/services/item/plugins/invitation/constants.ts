@@ -18,3 +18,4 @@ export const MAX_NON_FILE_FIELDS = 0;
 export const MAX_FILES = 1;
 export const CSV_MIMETYPE = 'text/csv';
 export const GRP_COL_NAME = 'group_name';
+export const EMAIL_COLUMN_NAME = 'email';

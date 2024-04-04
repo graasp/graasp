@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { IdParam } from '../../../../types';
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
 import { MAX_FILES, MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
@@ -68,11 +69,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     });
 
     // post invitations from a csv file
-    fastify.post<{ Querystring: IdParam & { templateId: string } }>(
+    fastify.post<{ Params: IdParam; Querystring: { templateId: string } }>(
       '/:id/invitations/upload-csv',
       { preHandler: fastify.verifyAuthentication },
       async (request) => {
-        const { member, query } = request;
+        const { member, query, params } = request;
+        // this is needed to assert the type of the member to be a Member and not an Actor.
+        // verifyAuthentication preHandler should throw if there is no member, but the type can not be narrowed automatically
+        if (!member) {
+          throw new UnauthorizedMember(member);
+        }
+
         // We need to get the membership service here because it is defined after the invitation service
         const { memberships } = fastify;
         // get uploaded file
@@ -83,18 +90,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }
 
         // destructure query params
-        const { id: parentId, templateId } = query;
+        const { id: itemId } = params;
+        const { templateId } = query;
 
-        return await db.transaction(async (manager) =>
-          iS.handleCSVInvitations(
-            member,
-            buildRepositories(manager),
-            parentId,
-            templateId,
-            uploadedFile,
-            memberships.service,
-          ),
-        );
+        if (templateId) {
+          return await db.transaction(async (manager) =>
+            iS.handleCSVInvitations(
+              member,
+              buildRepositories(manager),
+              itemId,
+              templateId,
+              uploadedFile,
+              memberships.service,
+            ),
+          );
+        } else {
+          return await db.transaction(async (manager) =>
+            iS.importUsersWithCSV(
+              member,
+              buildRepositories(manager),
+              itemId,
+              uploadedFile,
+              memberships.service,
+            ),
+          );
+        }
       },
     );
   });

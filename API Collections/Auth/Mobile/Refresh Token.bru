@@ -1,0 +1,20 @@
+meta {
+  name: Refresh Token
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{host}}/m/auth/refresh
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{refreshToken}}
+}
+
+vars:post-response {
+  authToken: res("authToken")
+  refreshToken: res("refreshToken")
+}

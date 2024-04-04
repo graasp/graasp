@@ -62,19 +62,22 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
   },
 
   /**
-   * Create invitation and return it.
-   * @param invitation Invitation to create
+   * Create many invitations and return them.
+   * @param partialInvitations array of data to create the invitations
+   * @param itemPath path of the item to use ot create the invitations
+   * @param creator user responsible for the creation of invitations
    */
   async postMany(
     partialInvitations: Partial<Invitation>[],
     itemPath: string,
     creator: Member,
-  ): Promise<ResultOf<Invitation>> {
+  ): Promise<Invitation[]> {
     const invitations = partialInvitations.map((inv) => ({
       ...inv,
       // this normalisation is necessary because we match emails 1:1 and they are expeted to be in lowercase
       email: inv.email?.toLowerCase(),
     }));
+    // get invitations for the item and its parents
     const existingEntries = await this.createQueryBuilder('invitation')
       .leftJoinAndSelect('invitation.item', 'item')
       .where('item.path @> :path', { path: itemPath })
@@ -84,7 +87,8 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
       invitations
         .filter(
           (i) =>
-            !existingEntries.find(({ email, item }) => email === i.email && item.id === itemPath),
+            // exclude duplicate item-email combinations that are already invited
+            !existingEntries.find(({ email, item }) => email === i.email && item.path === itemPath),
         )
         .map((invitations) => ({
           ...invitations,
@@ -92,8 +96,18 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
           creator,
         })),
     );
-    // TODO: optimize
-    return this.getMany(insertResult.identifiers.map(({ id }) => id));
+
+    const ids = insertResult.identifiers.map(({ id }) => id);
+    console.log(ids);
+    if (ids.length) {
+      // get the created invitations
+      return this.createQueryBuilder('invitation')
+        .innerJoinAndSelect('invitation.item', 'item')
+        .innerJoinAndSelect('invitation.creator', 'creator')
+        .where('invitation.id IN (:...ids)', { ids })
+        .getMany();
+    }
+    return [];
   },
 
   /**
