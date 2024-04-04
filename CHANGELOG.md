@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.26.0](https://github.com/graasp/graasp/compare/v1.25.0...v1.26.0) (2024-04-04)
+
+
+### Features
+
+* increase pool size ([#916](https://github.com/graasp/graasp/issues/916)) ([5a884fc](https://github.com/graasp/graasp/commit/5a884fc08c18aa44e3338f92e160f223419c7f52))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fastify/secure-session to v6.2.0 ([#898](https://github.com/graasp/graasp/issues/898)) ([793f87a](https://github.com/graasp/graasp/commit/793f87aa0acca33240773065d5f1a1ae490f2669))
+* do not expose ports that are not necessary ([#911](https://github.com/graasp/graasp/issues/911)) ([930b7d4](https://github.com/graasp/graasp/commit/930b7d4099836fb6467eefca3be37c71e9b07443))
+
 ## [1.25.0](https://github.com/graasp/graasp/compare/v1.24.1...v1.25.0) (2024-03-26)
 
 
