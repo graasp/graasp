@@ -57,7 +57,10 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     });
   },
 
-  async patch(id: UUID, body: Partial<Pick<Member, 'extra' | 'email' | 'name'>>) {
+  async patch(
+    id: UUID,
+    body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
+  ) {
     const newData: Partial<Member> = {};
 
     if (body.name) {
@@ -70,6 +73,10 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
 
     if (body.extra) {
       newData.extra = Object.assign({}, body?.extra, body.extra);
+    }
+
+    if (body.enableSaveActions === true || body.enableSaveActions === false) {
+      newData.enableSaveActions = body.enableSaveActions;
     }
 
     // TODO: throw if newData is empty

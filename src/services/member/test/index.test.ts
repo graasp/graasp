@@ -480,6 +480,48 @@ describe('Member routes tests', () => {
         // todo: test whether extra is correctly modified (extra is not returned)
       });
 
+      it('Enable save actions successfully', async () => {
+        const enableSaveActions = true;
+        const memberBeforePatch = await MemberRepository.findOneBy({ id: actor.id });
+        expect(memberBeforePatch?.enableSaveActions).toBe(false);
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/members/${actor.id}`,
+          payload: { enableSaveActions },
+        });
+
+        const m = await MemberRepository.findOneBy({ id: actor.id });
+        expect(m?.enableSaveActions).toEqual(enableSaveActions);
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.json().enableSaveActions).toEqual(enableSaveActions);
+      });
+
+      it('Disable save actions successfully', async () => {
+        // Start by enabling save actions
+        await app.inject({
+          method: HttpMethod.Patch,
+          url: `/members/${actor.id}`,
+          payload: { enableSaveActions: true },
+        });
+        const memberBeforePatch = await MemberRepository.findOneBy({ id: actor.id });
+        expect(memberBeforePatch?.enableSaveActions).toBe(true);
+
+        const enableSaveActions = false;
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/members/${actor.id}`,
+          payload: { enableSaveActions },
+        });
+
+        const m = await MemberRepository.findOneBy({ id: actor.id });
+        expect(m?.enableSaveActions).toEqual(enableSaveActions);
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.json().enableSaveActions).toEqual(enableSaveActions);
+      });
+
       it('Current member cannot modify another member', async () => {
         const member = await saveMember();
         const newName = 'new name';

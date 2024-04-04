@@ -104,6 +104,41 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
+    it('Save actions is disabled by default', async () => {
+      const email = 'someemail@email.com';
+      const name = 'anna';
+
+      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/m/register',
+        payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
+      });
+
+      const m = await MemberRepository.findOneBy({ email });
+      expectMember(m, { email, name, enableSaveActions: false });
+      expect(mockSendEmail).toHaveBeenCalled();
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+    });
+
+    it('Enable save actions when explicitly asked', async () => {
+      const email = 'someemail@email.com';
+      const name = 'anna';
+      const enableSaveActions = true;
+
+      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/m/register',
+        payload: { email, name, challenge, enableSaveActions, captcha: MOCK_CAPTCHA },
+      });
+
+      const m = await MemberRepository.findOneBy({ email });
+      expectMember(m, { email, name, enableSaveActions });
+      expect(mockSendEmail).toHaveBeenCalled();
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+    });
+
     it('Sign Up fallback to login for already register member', async () => {
       const member = await saveMember();
 
