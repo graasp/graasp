@@ -1,0 +1,15 @@
+meta {
+  name: Accessible
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/items/accessible
+  body: none
+  auth: none
+}
+
+vars:post-response {
+  item_id: res("data.[0].id")
+}

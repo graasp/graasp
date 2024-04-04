@@ -1,4 +1,4 @@
-import { UUID_REGEX } from '../../schemas/global';
+import { UUID_REGEX } from '../../../../schemas/global';
 
 export default {
   $id: 'https://graasp.org/invitations/',

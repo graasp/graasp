@@ -4,9 +4,9 @@ import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { IdParam } from '../../types';
-import { Repositories, buildRepositories } from '../../utils/repositories';
-import { Actor, Member } from '../member/entities/member';
+import { IdParam } from '../../../../types';
+import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { Actor, Member } from '../../../member/entities/member';
 import { MAX_FILES, MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
 import { NoFileProvidedForInvitations } from './errors';
 import { Invitation } from './invitation';
@@ -71,11 +71,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.post<{ Querystring: IdParam & { templateId: string } }>(
       '/:id/invitations/upload-csv',
       { preHandler: fastify.verifyAuthentication },
-      async ({ member, query, file }) => {
+      async (request) => {
+        const { member, query } = request;
         // We need to get the membership service here because it is defined after the invitation service
         const { memberships } = fastify;
         // get uploaded file
-        const uploadedFile = await file();
+        const uploadedFile = await request.file();
 
         if (!uploadedFile) {
           throw new NoFileProvidedForInvitations();

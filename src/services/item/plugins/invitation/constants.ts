@@ -1,4 +1,4 @@
-import { AUTH_CLIENT_HOST, PLAYER_HOST } from '../../utils/config';
+import { AUTH_CLIENT_HOST, PLAYER_HOST } from '../../../../utils/config';
 import { Invitation } from './invitation';
 
 export const PLUGIN_NAME = 'graasp-plugin-invitations';

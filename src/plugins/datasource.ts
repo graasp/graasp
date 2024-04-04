@@ -4,7 +4,6 @@ import { Action } from '../services/action/entities/action';
 import { MemberPassword } from '../services/auth/plugins/password/entities/password';
 import { ChatMessage } from '../services/chat/chatMessage';
 import { ChatMention } from '../services/chat/plugins/mentions/chatMention';
-import { Invitation } from '../services/invitation/invitation';
 import { Item } from '../services/item/entities/Item';
 import { ActionRequestExport } from '../services/item/plugins/action/requestExport/requestExport';
 import { AppAction } from '../services/item/plugins/app/appAction/appAction';
@@ -13,6 +12,7 @@ import { AppSetting } from '../services/item/plugins/app/appSetting/appSettings'
 import { App } from '../services/item/plugins/app/entities/app';
 import { Publisher } from '../services/item/plugins/app/entities/publisher';
 import { ItemGeolocation } from '../services/item/plugins/geolocation/ItemGeolocation';
+import { Invitation } from '../services/item/plugins/invitation/invitation';
 import { Category } from '../services/item/plugins/itemCategory/entities/Category';
 import { ItemCategory } from '../services/item/plugins/itemCategory/entities/ItemCategory';
 import { ItemFavorite } from '../services/item/plugins/itemFavorite/entities/ItemFavorite';

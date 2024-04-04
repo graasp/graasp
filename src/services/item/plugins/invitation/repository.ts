@@ -1,8 +1,8 @@
 import { ResultOf } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
-import { Member } from '../member/entities/member';
-import { mapById } from '../utils';
+import { AppDataSource } from '../../../../plugins/datasource';
+import { Member } from '../../../member/entities/member';
+import { mapById } from '../../../utils';
 import { InvitationNotFound } from './errors';
 import { Invitation } from './invitation';
 

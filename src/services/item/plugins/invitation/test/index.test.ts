@@ -5,15 +5,15 @@ import { In } from 'typeorm';
 
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
-import { Item } from '../../item/entities/Item';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { generateRandomEmail } from '../../itemLogin/utils';
-import { ItemMembershipRepository } from '../../itemMembership/repository';
-import { Member } from '../../member/entities/member';
-import { saveMember } from '../../member/test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
+import { Item } from '../../../../item/entities/Item';
+import { generateRandomEmail } from '../../../../itemLogin/utils';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { Member } from '../../../../member/entities/member';
+import { saveMember } from '../../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { Invitation } from '../invitation';
 import { InvitationRepository } from '../repository';
 
