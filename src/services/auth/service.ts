@@ -66,11 +66,10 @@ export class AuthService {
     ${this.mailer.buildButton(link, translated(MAIL.SIGN_UP_BUTTON_TEXT))}
     ${this.mailer.buildText(
       translated(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
-        SIGN_UP_BUTTON_TEXT: translated(MAIL.SIGN_UP_BUTTON_TEXT),
-        GRAASP_LANDING_PAGE_ORIGIN: GRAASP_LANDING_PAGE_ORIGIN,
+        signUpButtonText: translated(MAIL.SIGN_UP_BUTTON_TEXT),
+        graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
       }),
       // Add margin top of -15px to remove 15px margin bottom of the button.
-      // TODO: If the margin bottom of the button can be removed in "layout.ts", remove the style here.
       { 'text-align': 'center', 'font-size': '10px', 'margin-top': '-15px' },
     )}
     ${this.mailer.buildText(translated(MAIL.SIGN_UP_NOT_REQUESTED))}`;

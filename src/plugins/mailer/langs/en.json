@@ -25,5 +25,5 @@
   "SHARE_ITEM_TITLE": "{{creatorName}} has shared {{itemName}} with you on Graasp",
   "FOOTER": "You are receiving this email because of your account on <a href=\"https://graasp.org\">Graasp</a>",
   "POWERED_BY": "Powered by <a href=\"https://graasp.org\">Graasp</a>.",
-  "USER_AGREEMENTS_MAIL_TEXT": "* By clicking on <strong>{{SIGN_UP_BUTTON_TEXT}}</strong>, you agree to the <a href=\"{{GRAASP_LANDING_PAGE_ORIGIN}}/terms\">terms of service</a> and the <a href=\"{{GRAASP_LANDING_PAGE_ORIGIN}}/privacy\">privacy policy</a>."
+  "USER_AGREEMENTS_MAIL_TEXT": "* By clicking on <strong>{{signUpButtonText}}</strong>, you agree to the <a href=\"{{graaspLandingPageOrigin}}/terms\">terms of service</a> and the <a href=\"{{graaspLandingPageOrigin}}/privacy\">privacy policy</a>."
 }
