@@ -6,11 +6,10 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { MemberCannotAdminItem } from '../../../../../../utils/errors';
-import { saveItemAndMembership } from '../../../../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { setItemPublic } from '../../../itemTag/test/fixtures';
-import { setUp } from '../../test/fixtures';
+import { AppTestUtils } from '../../test/fixtures';
 import { AppSettingRepository } from '../repository';
 
 /**
@@ -29,6 +28,7 @@ const expectAppSettings = (values, expected) => {
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
+const testUtils = new AppTestUtils();
 
 export const saveAppSettings = async ({ item, creator }) => {
   const defaultData = { name: 'setting-name', data: { setting: 'value' } };
@@ -50,7 +50,7 @@ const setUpForAppSettings = async (
   creator: Member,
   permission?: PermissionLevel,
 ) => {
-  const values = await setUp(app, actor, creator, permission);
+  const values = await testUtils.setUp(app, actor, creator, permission);
   const appSettings = await saveAppSettings({ item: values.item, creator: creator ?? actor });
   return { ...values, appSettings };
 };
@@ -421,7 +421,7 @@ describe('Apps Settings Tests', () => {
       it('Delete app setting without member and token throws', async () => {
         ({ app, actor } = await build({ member: null }));
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Delete,

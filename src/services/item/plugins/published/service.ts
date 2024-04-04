@@ -166,17 +166,6 @@ export class ItemPublishedService {
     return filterOutHiddenItems(repositories, items);
   }
 
-  // filter out by categories, not defined will return all items
-  async getItemsByCategories(actor: Actor, repositories: Repositories, categoryIds?: string[]) {
-    const { itemRepository } = repositories;
-
-    const items = categoryIds?.length
-      ? await itemRepository.getByCategories(categoryIds)
-      : await itemRepository.getAllPublishedItems();
-
-    return filterOutHiddenItems(repositories, items);
-  }
-
   async getRecentItems(actor: Actor, repositories: Repositories, limit?: number) {
     const { itemPublishedRepository } = repositories;
 

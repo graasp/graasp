@@ -7,8 +7,8 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Item } from '../../../../item/entities/Item';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
@@ -18,6 +18,7 @@ import { ItemCategoryRepository } from '../repositories/itemCategory';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 export const expectItemCategory = (newItemCategory, correctItemCategory) => {
   expect(newItemCategory.category).toEqual(correctItemCategory.category);
@@ -92,7 +93,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         ({ itemCategories, categories } = await setUp({ item }));
       });
 
@@ -170,7 +171,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         ({ itemCategories, categories } = await setUp({ item }));
       });
 
@@ -187,7 +188,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         await setItemPublic(item, member);
         ({ itemCategories, categories } = await setUp({ item }));
       });
@@ -207,7 +208,7 @@ describe('Categories', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         ({ itemCategories, categories } = await setUp({ item }));
       });
 
@@ -259,7 +260,7 @@ describe('Categories', () => {
       });
 
       it('Post category for an item', async () => {
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         const itemCategory = ItemCategoryRepository.create({ item, category: categories[0] });
 
         const res = await app.inject({
@@ -277,7 +278,7 @@ describe('Categories', () => {
       });
 
       it('Post same category for an item throws', async () => {
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         const itemCategory = ItemCategoryRepository.create({ item, category: categories[0] });
         // pre save item category
         await ItemCategoryRepository.save(itemCategory);
@@ -321,7 +322,7 @@ describe('Categories', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        ({ item } = await saveItemAndMembership({ member }));
+        ({ item } = await testUtils.saveItemAndMembership({ member }));
         ({ itemCategories, categories } = await setUp({ item }));
       });
 
@@ -338,7 +339,7 @@ describe('Categories', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({ member: actor }));
+        ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
         ({ itemCategories, categories } = await setUp({ item }));
       });
 

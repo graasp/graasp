@@ -3,12 +3,9 @@ import { v4 } from 'uuid';
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../../itemMembership/test/fixtures/memberships';
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { PublisherRepository } from '../publisherRepository';
 import { AppRepository } from '../repository';
@@ -73,97 +70,90 @@ export const MOCK_APPS = [
   },
 ];
 
-export const saveApp = ({
-  url,
-  member,
-  parentItem,
-}: {
-  url: string;
-  member: Member;
-  parentItem?: Item;
-}) => {
-  return saveItemAndMembership({
-    item: { type: ItemType.APP, extra: { [ItemType.APP]: { url } } },
-    member,
-    parentItem,
-  });
-};
+export class AppTestUtils extends ItemTestUtils {
+  saveApp = ({ url, member, parentItem }: { url: string; member: Member; parentItem?: Item }) => {
+    return this.saveItemAndMembership({
+      item: { type: ItemType.APP, extra: { [ItemType.APP]: { url } } },
+      member,
+      parentItem,
+    });
+  };
 
-export const saveAppList = async () => {
-  const ddd = await Promise.all(
-    MOCK_APPS.map(async (app) => {
-      await PublisherRepository.save(app.publisher);
-      return AppRepository.save(app);
-    }),
-  );
-  return ddd;
-};
+  saveAppList = () => {
+    return Promise.all(
+      MOCK_APPS.map(async (app) => {
+        await PublisherRepository.save(app.publisher);
+        return AppRepository.save(app);
+      }),
+    );
+  };
 
-// save apps, app settings, and get token
-export const setUp = async (
-  app,
-  actor: Actor | null,
-  creator: Member,
-  permission?: PermissionLevel,
-  setPublic?: boolean,
-  parentItem?: Item,
-) => {
-  const apps = await saveAppList();
-  const chosenApp = apps[0];
-  const { item } = await saveApp({ url: chosenApp.url, member: creator, parentItem });
-  if (setPublic) {
-    await setItemPublic(item, creator);
-  }
-  const appDetails = { origin: chosenApp.publisher.origins[0], key: chosenApp.key };
+  // save apps, app settings, and get token
+  setUp = async (
+    app,
+    actor: Actor | null,
+    creator: Member,
+    permission?: PermissionLevel,
+    setPublic?: boolean,
+    parentItem?: Item,
+  ) => {
+    const apps = await this.saveAppList();
+    const chosenApp = apps[0];
+    const { item } = await this.saveApp({ url: chosenApp.url, member: creator, parentItem });
+    if (setPublic) {
+      await setItemPublic(item, creator);
+    }
+    const appDetails = { origin: chosenApp.publisher.origins[0], key: chosenApp.key };
 
-  // if specified, we have a complex case where actor did not create the items
-  // and data, so we need to add a membership
-  if (permission && actor && creator && actor !== creator) {
-    await saveMembership({ item, member: actor, permission });
-  }
-  const response = await app.inject({
-    method: HttpMethod.Post,
-    url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
-    payload: appDetails,
-  });
-  const { token } = response.json();
-  return { token, item };
-};
+    // if specified, we have a complex case where actor did not create the items
+    // and data, so we need to add a membership
+    if (permission && actor && creator && actor !== creator) {
+      await this.saveMembership({ item, member: actor, permission });
+    }
+    const response = await app.inject({
+      method: HttpMethod.Post,
+      url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
+      payload: appDetails,
+    });
+    const { token } = response.json();
+    return { token, item };
+  };
 
-// Check that a user can't access to the app of another user using its JWT token
-export const setUpForbidden = async (app, actor: Member, unauthorized: Member) => {
-  const apps = await saveAppList();
-  const graaspApp = apps[0];
-  const unauthorizedApp = apps[1];
-  const { item } = await saveApp({ url: graaspApp.url, member: actor });
-  // set a read permission for the unauthorized member to check that
-  // this user can't use a token generated for its app in the graaspApp
-  await saveMembership({ item, member: unauthorized, permission: PermissionLevel.Read });
+  // Check that a user can't access to the app of another user using its JWT token
+  setUpForbidden = async (app, actor: Member, unauthorized: Member) => {
+    const apps = await this.saveAppList();
+    const graaspApp = apps[0];
+    const unauthorizedApp = apps[1];
+    const { item } = await this.saveApp({ url: graaspApp.url, member: actor });
+    // set a read permission for the unauthorized member to check that
+    // this user can't use a token generated for its app in the graaspApp
+    await this.saveMembership({ item, member: unauthorized, permission: PermissionLevel.Read });
 
-  await app.inject({
-    method: HttpMethod.Get,
-    url: '/logout',
-  });
+    await app.inject({
+      method: HttpMethod.Get,
+      url: '/logout',
+    });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-    request.member = unauthorized;
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
-    request.session.set('member', unauthorized.id);
-    request.member = unauthorized;
-  });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
+      request.member = unauthorized;
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
+      request.session.set('member', unauthorized.id);
+      request.member = unauthorized;
+    });
 
-  const { item: item2 } = await saveApp({ url: unauthorizedApp.url, member: unauthorized });
-  const appDetails = { origin: unauthorizedApp.publisher.origins[0], key: unauthorizedApp.key };
+    const { item: item2 } = await this.saveApp({ url: unauthorizedApp.url, member: unauthorized });
+    const appDetails = { origin: unauthorizedApp.publisher.origins[0], key: unauthorizedApp.key };
 
-  const response = await app.inject({
-    method: HttpMethod.Post,
-    url: `${APP_ITEMS_PREFIX}/${item2.id}/api-access-token`,
-    payload: appDetails,
-  });
+    const response = await app.inject({
+      method: HttpMethod.Post,
+      url: `${APP_ITEMS_PREFIX}/${item2.id}/api-access-token`,
+      payload: appDetails,
+    });
 
-  const token = response.json().token;
-  return { token, item };
-};
+    const token = response.json().token;
+    return { token, item };
+  };
+}

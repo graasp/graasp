@@ -16,14 +16,10 @@ import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { MOCK_REQUEST } from '../../../action/services/action.test';
 import { saveActions } from '../../../action/test/fixtures/actions';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../itemMembership/test/fixtures/memberships';
 import { MemberService } from '../../../member/service';
 import { saveMember } from '../../../member/test/fixtures/members';
 import ItemService from '../../service';
-import { saveItems } from '../../test/fixtures/items';
+import { ItemTestUtils } from '../../test/fixtures/items';
 import { ActionItemService } from './service';
 import { ItemActionType } from './utils';
 
@@ -37,6 +33,7 @@ const service = new ActionItemService(
   memberService,
 );
 const rawRepository = AppDataSource.getRepository(Action);
+const testUtils = new ItemTestUtils();
 
 describe('ActionItemService', () => {
   let app;
@@ -54,7 +51,7 @@ describe('ActionItemService', () => {
     it('throw for signed out user', async () => {
       ({ app } = await build({ member: null }));
       const bob = await saveMember();
-      const { item } = await saveItemAndMembership({ member: bob });
+      const { item } = await testUtils.saveItemAndMembership({ member: bob });
       // todo: update when testing memberships
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const itemAny = item as any;
@@ -71,7 +68,7 @@ describe('ActionItemService', () => {
     describe('Signed in', () => {
       beforeEach(async () => {
         ({ app, actor } = await build());
-        const { item: i } = await saveItemAndMembership({ member: actor });
+        const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
         // todo: update when testing memberships
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         item = i as any;
@@ -104,7 +101,7 @@ describe('ActionItemService', () => {
           { item, member: bob, view: Context.Builder },
         ]);
         // noise
-        const { item: i } = await saveItemAndMembership({ member: actor });
+        const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
         await saveActions(rawRepository, [
           { item, member: actor, view: Context.Player },
           { item, member: actor, view: Context.Library },
@@ -119,13 +116,13 @@ describe('ActionItemService', () => {
 
       it('get only own actions for when writer', async () => {
         const bob = await saveMember();
-        await saveMembership({ item, member: bob, permission: PermissionLevel.Write });
+        await testUtils.saveMembership({ item, member: bob, permission: PermissionLevel.Write });
         const actions = await saveActions(rawRepository, [
           { item, member: bob, view: Context.Builder },
           { item, member: bob, view: Context.Builder },
         ]);
         // noise
-        const { item: i } = await saveItemAndMembership({ member: actor });
+        const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
         await saveActions(rawRepository, [
           { item, member: actor, view: Context.Builder },
           { item, member: actor, view: Context.Player },
@@ -188,14 +185,14 @@ describe('ActionItemService', () => {
   describe('getAnalyticsAggregation', () => {
     beforeEach(async () => {
       ({ app, actor } = await build());
-      const { item: i } = await saveItemAndMembership({ member: actor });
+      const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
       // todo: update when testing memberships
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       item = i as any;
     });
     it('throw if no access to item', async () => {
       const bob = await saveMember();
-      const { item: itemNoMembership } = await saveItemAndMembership({ member: bob });
+      const { item: itemNoMembership } = await testUtils.saveItemAndMembership({ member: bob });
       // todo: update when testing memberships
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const itemAny = itemNoMembership as any;
@@ -241,14 +238,14 @@ describe('ActionItemService', () => {
   describe('getBaseAnalyticsForItem', () => {
     beforeEach(async () => {
       ({ app, actor } = await build());
-      const { item: i } = await saveItemAndMembership({ member: actor });
+      const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
       // todo: update when testing memberships
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       item = i as any;
     });
     it('throw if no access to item', async () => {
       const bob = await saveMember();
-      const { item: itemNoMembership } = await saveItemAndMembership({ member: bob });
+      const { item: itemNoMembership } = await testUtils.saveItemAndMembership({ member: bob });
       // todo: update when testing memberships
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const itemAny = itemNoMembership as any;
@@ -269,8 +266,8 @@ describe('ActionItemService', () => {
     it('get only own analytics', async () => {
       const sampleSize = 5;
       const bob = await saveMember();
-      await saveMembership({ member: bob, item, permission: PermissionLevel.Write });
-      const { item: itemNoMembership } = await saveItemAndMembership({
+      await testUtils.saveMembership({ member: bob, item, permission: PermissionLevel.Write });
+      const { item: itemNoMembership } = await testUtils.saveItemAndMembership({
         member: bob,
         creator: actor,
       });
@@ -292,7 +289,7 @@ describe('ActionItemService', () => {
       ]);
 
       // descendants
-      await saveItems({ nb: 3, parentItem: item, actor: bob });
+      await testUtils.saveItems({ nb: 3, parentItem: item, actor: bob });
 
       const baseAnalytics = await service.getBaseAnalyticsForItem(bob, buildRepositories(), {
         itemId: item.id,
@@ -314,7 +311,7 @@ describe('ActionItemService', () => {
   describe('post actions', () => {
     beforeEach(async () => {
       ({ app, actor } = await build());
-      const { item: i } = await saveItemAndMembership({ member: actor });
+      const { item: i } = await testUtils.saveItemAndMembership({ member: actor });
       // todo: update when testing memberships
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       item = i as any;

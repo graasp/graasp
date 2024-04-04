@@ -15,27 +15,14 @@ import {
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
-import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { Item } from '../../../entities/Item';
-import { ItemRepository } from '../../../repository';
-import { expectManyItems, saveItem } from '../../../test/fixtures/items';
+import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
 import { expectManyRecycledItems } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
-
-export const saveRecycledItem = async (member: Member, defaultItem?: Item) => {
-  let item = defaultItem;
-  if (!item) {
-    ({ item } = await saveItemAndMembership({ member }));
-  }
-  await RecycledItemDataRepository.recycleOne(item, member);
-  await ItemRepository.softRemove(item);
-  return item;
-};
+const testUtils = new ItemTestUtils();
 
 describe('Recycle Bin Tests', () => {
   let app;
@@ -67,12 +54,12 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Successfully get recycled items', async () => {
-          const item0 = await saveRecycledItem(actor);
-          const item1 = await saveRecycledItem(actor);
+          const item0 = await testUtils.saveRecycledItem(actor);
+          const item1 = await testUtils.saveRecycledItem(actor);
 
           // actor does not have access
           const member = await saveMember();
-          await saveRecycledItem(member);
+          await testUtils.saveRecycledItem(member);
 
           // we should not get item2
           const recycled = [item0, item1];
@@ -85,7 +72,7 @@ describe('Recycle Bin Tests', () => {
           const response = res.json();
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          const dbDeletedItems = await ItemRepository.find({
+          const dbDeletedItems = await testUtils.rawItemRepository.find({
             where: { creator: { id: actor.id } },
             withDeleted: true,
           });
@@ -96,18 +83,18 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Successfully get subitems recycled items', async () => {
-          const item0 = await saveRecycledItem(actor);
-          const { item: parentItem } = await saveItemAndMembership({ member: actor });
-          const deletedChild = await saveItem({
+          const item0 = await testUtils.saveRecycledItem(actor);
+          const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+          const deletedChild = await testUtils.saveItem({
             item: { name: 'child' },
             parentItem,
             actor,
           });
-          await saveRecycledItem(actor, deletedChild);
+          await testUtils.saveRecycledItem(actor, deletedChild);
 
           // actor does not have access
           const member = await saveMember();
-          await saveRecycledItem(member);
+          await testUtils.saveRecycledItem(member);
 
           // we should not get item2
           const recycled = [item0, deletedChild];
@@ -133,7 +120,7 @@ describe('Recycle Bin Tests', () => {
       it('Throws if signed out', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({ member });
+        const { item } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -148,9 +135,9 @@ describe('Recycle Bin Tests', () => {
         let itemIds;
         beforeEach(async () => {
           ({ app, actor } = await build());
-          const { item: item1 } = await saveItemAndMembership({ member: actor });
-          const { item: item2 } = await saveItemAndMembership({ member: actor });
-          const { item: item3 } = await saveItemAndMembership({ member: actor });
+          const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+          const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+          const { item: item3 } = await testUtils.saveItemAndMembership({ member: actor });
           items = [item1, item2, item3];
           itemIds = items.map(({ id }) => id);
         });
@@ -165,12 +152,14 @@ describe('Recycle Bin Tests', () => {
           await new Promise((res) => {
             setTimeout(async () => {
               // check items are soft deleted
-              const saved = await ItemRepository.find({
+              const saved = await testUtils.rawItemRepository.find({
                 withDeleted: true,
                 where: { id: In(itemIds) },
               });
               expectManyItems(saved, items);
-              const savedNotDeleted = await ItemRepository.find({ where: { id: In(itemIds) } });
+              const savedNotDeleted = await testUtils.rawItemRepository.find({
+                where: { id: In(itemIds) },
+              });
               expect(savedNotDeleted).toHaveLength(0);
 
               // check recycle item entries
@@ -185,7 +174,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Returns error in array if does not have rights on one item', async () => {
           const member = await saveMember();
-          const errorItem = await saveRecycledItem(member);
+          const errorItem = await testUtils.saveRecycledItem(member);
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `/items/recycle?${qs.stringify(
@@ -199,7 +188,9 @@ describe('Recycle Bin Tests', () => {
           await new Promise((res) => {
             setTimeout(async () => {
               // check items are NOT soft deleted
-              const savedNotDeleted = await ItemRepository.find({ where: { id: In(itemIds) } });
+              const savedNotDeleted = await testUtils.rawItemRepository.find({
+                where: { id: In(itemIds) },
+              });
               expect(savedNotDeleted).toHaveLength(items.length);
 
               // check NO recycle item entries
@@ -258,15 +249,15 @@ describe('Recycle Bin Tests', () => {
         let items, itemIds;
         beforeEach(async () => {
           ({ app, actor } = await build());
-          const item1 = await saveRecycledItem(actor);
-          const item2 = await saveRecycledItem(actor);
-          const item3 = await saveRecycledItem(actor);
+          const item1 = await testUtils.saveRecycledItem(actor);
+          const item2 = await testUtils.saveRecycledItem(actor);
+          const item3 = await testUtils.saveRecycledItem(actor);
           items = [item1, item2, item3];
           itemIds = items.map(({ id }) => id);
         });
 
         it('Successfully restore multiple items', async () => {
-          const nonRecycledItems = await ItemRepository.find();
+          const nonRecycledItemsCount = await testUtils.rawItemRepository.count();
           const response = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/restore?${qs.stringify(
@@ -278,8 +269,8 @@ describe('Recycle Bin Tests', () => {
           expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
           await new Promise((res) => {
             setTimeout(async () => {
-              const allItems = await ItemRepository.find();
-              expect(allItems).toHaveLength(nonRecycledItems.length + items.length);
+              const allItemsCount = await testUtils.rawItemRepository.count();
+              expect(allItemsCount).toEqual(nonRecycledItemsCount + items.length);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
@@ -324,13 +315,13 @@ describe('Recycle Bin Tests', () => {
 
         it('Throws if has no admin rights on one item', async () => {
           const member = await saveMember();
-          const { item } = await saveItemAndMembership({
+          const { item } = await testUtils.saveItemAndMembership({
             member: actor,
             creator: member,
             permission: PermissionLevel.Write,
           });
-          const initialCount = await ItemRepository.find();
-          const initialCountRecycled = await RecycledItemDataRepository.find();
+          const initialCount = await testUtils.rawItemRepository.count();
+          const initialCountRecycled = await RecycledItemDataRepository.count();
 
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -344,19 +335,17 @@ describe('Recycle Bin Tests', () => {
           // did not restore any items
           await new Promise((res) => {
             setTimeout(async () => {
-              const allItems = await ItemRepository.find();
-              expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemDataRepository.find()).toHaveLength(
-                initialCountRecycled.length,
-              );
+              const allItemsCount = await testUtils.rawItemRepository.count();
+              expect(allItemsCount).toEqual(initialCount);
+              expect(await RecycledItemDataRepository.count()).toEqual(initialCountRecycled);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
         });
 
         it('Throws if one item does not exist', async () => {
-          const initialCount = await ItemRepository.find();
-          const initialCountRecycled = await RecycledItemDataRepository.find();
+          const initialCount = await testUtils.rawItemRepository.count();
+          const initialCountRecycled = await RecycledItemDataRepository.count();
 
           const res = await app.inject({
             method: HttpMethod.Post,
@@ -370,11 +359,9 @@ describe('Recycle Bin Tests', () => {
           // did not restore any items
           await new Promise((res) => {
             setTimeout(async () => {
-              const allItems = await ItemRepository.find();
-              expect(allItems).toHaveLength(initialCount.length);
-              expect(await RecycledItemDataRepository.find()).toHaveLength(
-                initialCountRecycled.length,
-              );
+              const allItemsCount = await testUtils.rawItemRepository.count();
+              expect(allItemsCount).toEqual(initialCount);
+              expect(await RecycledItemDataRepository.count()).toEqual(initialCountRecycled);
               res(true);
             }, MULTIPLE_ITEMS_LOADING_TIME);
           });
@@ -391,9 +378,12 @@ describe('Recycle Bin Tests', () => {
     /**
      * This is a regression test from a real production bug caused by not restoring the soft-deleted children
      */
-    it('Restores the subtree successfully if it has children', async () => {
-      const { item: parentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+    it.only('Restores the subtree successfully if it has children', async () => {
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
 
       const recycle = await app.inject({
         method: HttpMethod.Post,
@@ -404,7 +394,7 @@ describe('Recycle Bin Tests', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      expect(await ItemRepository.findOneBy({ id: childItem.id })).toBe(null);
+      expect(await testUtils.rawItemRepository.findOneBy({ id: childItem.id })).toBe(null);
 
       const restore = await app.inject({
         method: HttpMethod.Post,
@@ -416,7 +406,10 @@ describe('Recycle Bin Tests', () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
 
-      const restoredChild = await ItemRepository.get(childItem.id);
+      const restoredChild = await testUtils.rawItemRepository.findOne({
+        where: { id: childItem.id },
+        relations: { creator: true },
+      });
       // the recycle/restore operation changed the updatedAt value, but we can't know when from the outside
       expect({ ...restoredChild, updatedAt: undefined }).toMatchObject({
         ...childItem,

@@ -4,14 +4,15 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemOpFeedbackEvent, memberItemsTopic } from '../../../ws/events';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
@@ -63,7 +64,7 @@ describe('asynchronous feedback', () => {
   });
 
   it('member that initated the export operation receives success feedback', async () => {
-    const { item } = await saveItemAndMembership({ member: actor });
+    const { item } = await testUtils.saveItemAndMembership({ member: actor });
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
     const response = await app.inject({
@@ -81,7 +82,7 @@ describe('asynchronous feedback', () => {
   });
 
   it('member that initated the export operation receives failure feedback', async () => {
-    const { item } = await saveItemAndMembership({ member: actor });
+    const { item } = await testUtils.saveItemAndMembership({ member: actor });
     const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
     jest.spyOn(ActionRequestExportRepository, 'getLast').mockImplementation(async () => {

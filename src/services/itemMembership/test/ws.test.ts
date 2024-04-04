@@ -5,6 +5,7 @@ import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graa
 
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import {
   AccessibleItemsEvent,
   ItemEvent,
@@ -16,10 +17,10 @@ import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
 import { ItemMembership } from '../entities/ItemMembership';
 import { ItemMembershipEvent, MembershipEvent, itemMembershipsTopic } from '../ws/events';
-import { saveItemAndMembership, saveMembership } from './fixtures/memberships';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 describe('Item websocket hooks', () => {
   let app, actor, address;
@@ -40,7 +41,7 @@ describe('Item websocket hooks', () => {
 
   describe('Subscribe to membership', () => {
     it('subscribes to item memberships successfully', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const request = {
         realm: Websocket.Realms.Notif,
@@ -60,7 +61,7 @@ describe('Item websocket hooks', () => {
 
     it('cannot subscribe to item memberships with no membership', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
       const request = {
         realm: Websocket.Realms.Notif,
         topic: itemMembershipsTopic,
@@ -82,7 +83,7 @@ describe('Item websocket hooks', () => {
   describe('on create membership', () => {
     it('member receives shared item create event', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
 
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
@@ -112,8 +113,8 @@ describe('Item websocket hooks', () => {
     it('receives item membership create event', async () => {
       const anna = await saveMember();
       const bob = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({
         item,
         member: actor,
         permission: PermissionLevel.Read,
@@ -149,8 +150,8 @@ describe('Item websocket hooks', () => {
   describe('on update membership', () => {
     it('receives item membership update event', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      const membership = await saveMembership({
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      const membership = await testUtils.saveMembership({
         item,
         member: actor,
         permission: PermissionLevel.Read,
@@ -186,8 +187,8 @@ describe('Item websocket hooks', () => {
   describe('on delete membership', () => {
     it('member receives shared items delete event', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      const membership = await saveMembership({
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      const membership = await testUtils.saveMembership({
         item,
         member: actor,
         permission: PermissionLevel.Read,
@@ -220,8 +221,8 @@ describe('Item websocket hooks', () => {
 
     it('receives item membership delete event', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      const membership = await saveMembership({
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      const membership = await testUtils.saveMembership({
         item,
         member: actor,
         permission: PermissionLevel.Read,

@@ -49,7 +49,7 @@ export type Repositories = {
   itemLoginSchemaRepository: typeof ItemLoginSchemaRepository;
   itemMembershipRepository: typeof ItemMembershipRepository;
   itemPublishedRepository: typeof ItemPublishedRepository;
-  itemRepository: typeof ItemRepository;
+  itemRepository: ItemRepository;
   itemTagRepository: typeof ItemTagRepository;
   itemValidationGroupRepository: typeof ItemValidationGroupRepository;
   itemValidationRepository: typeof ItemValidationRepository;
@@ -66,7 +66,7 @@ export type Repositories = {
 // public: exists in item tag
 
 export const buildRepositories = (manager?: EntityManager): Repositories => ({
-  itemRepository: manager ? manager.withRepository(ItemRepository) : ItemRepository,
+  itemRepository: new ItemRepository(manager),
   itemMembershipRepository: manager
     ? manager.withRepository(ItemMembershipRepository)
     : ItemMembershipRepository,

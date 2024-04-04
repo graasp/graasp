@@ -8,12 +8,8 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { Action } from '../../../../action/entities/action';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
-import { savePublicItem } from '../../../test/fixtures/items';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { saveAppActions } from '../../app/appAction/test/index.test';
 import { saveAppData } from '../../app/appData/test/index.test';
 import { saveAppSettings } from '../../app/appSetting/test/index.test';
@@ -26,6 +22,7 @@ import { saveActions } from './fixtures/actions';
 jest.mock('../../../../../plugins/datasource');
 
 const rawActionRepository = AppDataSource.getRepository(Action);
+const testUtils = new ItemTestUtils();
 
 const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
 const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
@@ -75,7 +72,7 @@ describe('Action Plugin Tests', () => {
       it('Cannot post action when signed out', async () => {
         ({ app, actor } = await build({ member: null }));
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member,
         });
         const response = await app.inject({
@@ -90,14 +87,14 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
-        expect(await rawActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.count()).toEqual(0);
       });
     });
     describe('Public', () => {
       it('Post action for public item', async () => {
         ({ app, actor } = await build({ member: null }));
         const member = await saveMember();
-        const item = await savePublicItem({ actor: member });
+        const item = await testUtils.savePublicItem({ actor: member });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
@@ -123,7 +120,7 @@ describe('Action Plugin Tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        ({ item } = await saveItemAndMembership({
+        ({ item } = await testUtils.saveItemAndMembership({
           member: actor,
         }));
       });
@@ -183,7 +180,7 @@ describe('Action Plugin Tests', () => {
           },
         });
         expect(response.json().message).toEqual(new CannotPostAction().message);
-        expect(await rawActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.count()).toEqual(0);
       });
 
       it('Throw for missing type', async () => {
@@ -197,7 +194,7 @@ describe('Action Plugin Tests', () => {
         });
 
         expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
-        expect(await rawActionRepository.find()).toHaveLength(0);
+        expect(await rawActionRepository.count()).toEqual(0);
       });
     });
   });
@@ -207,7 +204,7 @@ describe('Action Plugin Tests', () => {
       ({ app, actor } = await build());
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });
 
@@ -228,10 +225,10 @@ describe('Action Plugin Tests', () => {
       ({ app, actor } = await build());
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });
-      const { item: appItem } = await saveItemAndMembership({
+      const { item: appItem } = await testUtils.saveItemAndMembership({
         item: { type: ItemType.APP },
         parentItem: item,
         member: actor,
@@ -257,7 +254,7 @@ describe('Action Plugin Tests', () => {
       ({ app, actor } = await build());
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });
 
@@ -268,7 +265,7 @@ describe('Action Plugin Tests', () => {
       });
 
       // another item to add noise
-      const { item: otherItem } = await saveItemAndMembership({
+      const { item: otherItem } = await testUtils.saveItemAndMembership({
         member: actor,
       });
       await ActionRequestExportRepository.save({
@@ -293,7 +290,7 @@ describe('Action Plugin Tests', () => {
       ({ app, actor } = await build());
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
 
-      const { item } = await saveItemAndMembership({
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });
 
@@ -323,7 +320,7 @@ describe('Action Plugin Tests', () => {
 
     it('Unauthorized if the user does not have any permission', async () => {
       const members = await saveMembers();
-      const { item } = await saveItemAndMembership({ member: members[0] });
+      const { item } = await testUtils.saveItemAndMembership({ member: members[0] });
 
       const parameters = {
         requestedSampleSize: 5000,
@@ -344,8 +341,8 @@ describe('Action Plugin Tests', () => {
 
     it('Succeed if the user has READ permission', async () => {
       const members = await saveMembers();
-      const { item } = await saveItemAndMembership({ member: members[0] });
-      await saveMembership({
+      const { item } = await testUtils.saveItemAndMembership({ member: members[0] });
+      await testUtils.saveMembership({
         item,
         member: actor,
         permission: PermissionLevel.Read,
@@ -370,7 +367,7 @@ describe('Action Plugin Tests', () => {
 
     it('Successfully get the average action count aggregated by the createdDay and the actionType', async () => {
       const members = await saveMembers();
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 
       const parameters = {
@@ -400,7 +397,7 @@ describe('Action Plugin Tests', () => {
 
     it('Successfully get the number of active user by day', async () => {
       const members = await saveMembers();
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 
       const parameters = {
@@ -428,7 +425,7 @@ describe('Action Plugin Tests', () => {
 
     it('Successfully get the total action count aggregated by the actionType', async () => {
       const members = await saveMembers();
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 
       const parameters = {
@@ -456,7 +453,7 @@ describe('Action Plugin Tests', () => {
 
     it('Successfully get the total action count aggregated by time of day', async () => {
       const members = await saveMembers();
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       await saveActions(item, members);
 
       const parameters = {
@@ -483,7 +480,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Bad request if query parameters are invalid (aggregated by user)', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const parameters = {
         requestedSampleSize: 5000,
@@ -503,7 +500,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Bad request if query parameters are invalid (parameters mismatch)', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const parameters = {
         requestedSampleSize: 5000,
@@ -523,7 +520,7 @@ describe('Action Plugin Tests', () => {
     });
 
     it('Bad request if query parameters are invalid (perform numeric function on a non numeric expression)', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const parameters = {
         requestedSampleSize: 5000,

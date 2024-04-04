@@ -8,8 +8,7 @@ import { AppDataSource } from '../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
-import { saveItem } from '../../item/test/fixtures/items';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
 import MemberRepository from '../../member/repository';
 import { saveMember } from '../../member/test/fixtures/members';
@@ -20,11 +19,12 @@ import { ChatMessageRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const adminChatMentionRepository = AppDataSource.getRepository(ChatMention);
 
 export const saveItemWithChatMessages = async (creator) => {
-  const { item } = await saveItemAndMembership({ member: creator });
+  const { item } = await testUtils.saveItemAndMembership({ member: creator });
   const chatMessages: ChatMessage[] = [];
   const members: Member[] = [];
   for (let i = 0; i < 3; i++) {
@@ -60,7 +60,7 @@ describe('Chat Message tests', () => {
       ({ app } = await build({ member: null }));
 
       const member = await saveMember();
-      const item = await saveItem({ actor: member });
+      const item = await testUtils.saveItem({ actor: member });
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -168,7 +168,7 @@ describe('Chat Message tests', () => {
 
       it('Post successfully', async () => {
         const payload = { body: 'hello' };
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -179,7 +179,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount + 1);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount + 1);
       });
 
       it('Post successfully with mentions', async () => {
@@ -187,7 +187,7 @@ describe('Chat Message tests', () => {
 
         const members = await MemberRepository.find();
         const payload = { body: 'hello', mentions: members.map(({ id }) => id) };
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -197,11 +197,11 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount + 1);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount + 1);
 
         // check mentions and send email
-        const mentions = await adminChatMentionRepository.find();
-        expect(mentions).toHaveLength(members.length);
+        const nbMentions = await adminChatMentionRepository.count();
+        expect(nbMentions).toEqual(members.length);
 
         expect(mock).toHaveBeenCalledTimes(members.length);
       });
@@ -242,7 +242,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -286,7 +286,7 @@ describe('Chat Message tests', () => {
           creator: actor,
           body: 'body',
         });
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -296,7 +296,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(payload.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount);
       });
 
       it('Throws if item id is incorrect', async () => {
@@ -358,7 +358,7 @@ describe('Chat Message tests', () => {
         const payload = { body: 'hello' };
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Patch,
@@ -416,7 +416,7 @@ describe('Chat Message tests', () => {
           creator: actor,
           body: 'body',
         });
-        const initialCount = (await ChatMessageRepository.find()).length;
+        const initialCount = await ChatMessageRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -425,7 +425,7 @@ describe('Chat Message tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(chatMessage.body);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(initialCount - 1);
+        expect(await ChatMessageRepository.count()).toEqual(initialCount - 1);
         expect(await ChatMessageRepository.get(chatMessage.id)).toBeNull();
       });
 
@@ -466,7 +466,7 @@ describe('Chat Message tests', () => {
       it('Throws if member does not have access to item', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -517,7 +517,7 @@ describe('Chat Message tests', () => {
 
       it('Delete all successfully', async () => {
         // more messages
-        const { item: anotherItem } = await saveItemAndMembership({ member: actor });
+        const { item: anotherItem } = await testUtils.saveItemAndMembership({ member: actor });
         const otherMessages: ChatMessage[] = [];
         otherMessages.push(
           await ChatMessageRepository.save({ item: anotherItem, creator: actor, body: 'dd' }),
@@ -535,7 +535,7 @@ describe('Chat Message tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
 
-        expect(await ChatMessageRepository.find()).toHaveLength(otherMessages.length);
+        expect(await ChatMessageRepository.count()).toEqual(otherMessages.length);
       });
 
       it('Throws if item id is incorrect', async () => {
@@ -558,7 +558,7 @@ describe('Chat Message tests', () => {
       it('Throws if member does not have access to item', async () => {
         // create brand new user because fixtures are used for chatmessages and will already exists
         const member = await saveMember();
-        const { item: otherItem } = await saveItemAndMembership({ member });
+        const { item: otherItem } = await testUtils.saveItemAndMembership({ member });
 
         const response = await app.inject({
           method: HttpMethod.Delete,

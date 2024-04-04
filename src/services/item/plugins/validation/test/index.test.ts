@@ -6,8 +6,8 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemValidationGroupNotFound } from '../errors';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { saveItemValidation } from './utils';
@@ -16,6 +16,7 @@ const VALIDATION_LOADING_TIME = 2000;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 const expectItemValidation = (iv, correctIV) => {
   expect(iv.id).toEqual(correctIV.id);
@@ -52,7 +53,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Get latest item validation', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const { itemValidationGroup } = await saveItemValidation({ item });
 
         const res = await app.inject({
@@ -65,7 +66,7 @@ describe('Item Validation Tests', () => {
 
       it('Throws if has read permission', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Read,
@@ -82,7 +83,7 @@ describe('Item Validation Tests', () => {
 
       it('Throws if has write permission', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Write,
@@ -133,7 +134,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Get item validation groups', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const { itemValidationGroup } = await saveItemValidation({ item });
         // save another item validation
         await saveItemValidation({ item });
@@ -148,7 +149,7 @@ describe('Item Validation Tests', () => {
 
       it('Throws if has read permission', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Read,
@@ -165,7 +166,7 @@ describe('Item Validation Tests', () => {
 
       it('Throws if has write permission', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Write,
@@ -205,7 +206,7 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if validation group does not exist', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -233,9 +234,9 @@ describe('Item Validation Tests', () => {
         ({ app, actor } = await build());
       });
       it('create validation', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.find();
+        const count = await ItemValidationGroupRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -247,7 +248,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length - 1);
+            expect(count).toEqual((await ItemValidationGroupRepository.count()) - 1);
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -255,13 +256,13 @@ describe('Item Validation Tests', () => {
 
       it('Throws if has read permission', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Read,
         });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.find();
+        const count = await ItemValidationGroupRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -272,7 +273,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length);
+            expect(count).toEqual(await ItemValidationGroupRepository.count());
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -280,13 +281,13 @@ describe('Item Validation Tests', () => {
 
       it('Throws if has write permission', async () => {
         const member = await saveMember();
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           creator: member,
           member: actor,
           permission: PermissionLevel.Write,
         });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.find();
+        const count = await ItemValidationGroupRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -297,7 +298,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length);
+            expect(count).toEqual(await ItemValidationGroupRepository.count());
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
@@ -312,11 +313,11 @@ describe('Item Validation Tests', () => {
       });
 
       it('Throws if item does not exist', async () => {
-        const { item } = await saveItemAndMembership({
+        const { item } = await testUtils.saveItemAndMembership({
           member: actor,
         });
         await saveItemValidation({ item });
-        const count = await ItemValidationGroupRepository.find();
+        const count = await ItemValidationGroupRepository.count();
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -327,7 +328,7 @@ describe('Item Validation Tests', () => {
         await new Promise((res) => {
           setTimeout(async () => {
             // check no created entries
-            expect(count).toHaveLength((await ItemValidationGroupRepository.find()).length);
+            expect(count).toEqual(await ItemValidationGroupRepository.count());
             res(true);
           }, VALIDATION_LOADING_TIME);
         });

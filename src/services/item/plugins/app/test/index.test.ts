@@ -5,16 +5,17 @@ import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../utils/config';
-import { saveItemAndMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { Actor, Member } from '../../../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
 import { expectItem } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
-import { MOCK_APP_ORIGIN, saveApp, saveAppList, setUp } from './fixtures';
+import { AppTestUtils, MOCK_APP_ORIGIN } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+
+const testUtils = new AppTestUtils();
 
 const setUpForAppContext = async (
   app,
@@ -24,8 +25,8 @@ const setUpForAppContext = async (
   setPublic?: boolean,
   parentItem?: Item,
 ) => {
-  const values = await setUp(app, actor, creator, permission, setPublic, parentItem);
-  const appList = await saveAppList();
+  const values = await testUtils.setUp(app, actor, creator, permission, setPublic, parentItem);
+  const appList = await testUtils.saveAppList();
   return { ...values, appList };
 };
 
@@ -43,7 +44,7 @@ describe('Apps Plugin Tests', () => {
   describe('GET /list', () => {
     it('Get apps list', async () => {
       ({ app } = await build({ member: null }));
-      const apps = await saveAppList();
+      const apps = await testUtils.saveAppList();
 
       const response = await app.inject({
         method: HttpMethod.Get,
@@ -63,9 +64,9 @@ describe('Apps Plugin Tests', () => {
       it('Unauthenticated member throws error', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        apps = await saveAppList();
+        apps = await testUtils.saveAppList();
         const chosenApp = apps[0];
-        const { item } = await saveApp({ url: chosenApp.url, member });
+        const { item } = await testUtils.saveApp({ url: chosenApp.url, member });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -82,9 +83,9 @@ describe('Apps Plugin Tests', () => {
       it('Successfully request api access', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        apps = await saveAppList();
+        apps = await testUtils.saveAppList();
         const chosenApp = apps[0];
-        const { item } = await saveApp({ url: chosenApp.url, member });
+        const { item } = await testUtils.saveApp({ url: chosenApp.url, member });
         await setItemPublic(item, member);
 
         const response = await app.inject({
@@ -101,7 +102,7 @@ describe('Apps Plugin Tests', () => {
 
       beforeEach(async () => {
         ({ app, actor } = await build());
-        apps = await saveAppList();
+        apps = await testUtils.saveAppList();
         chosenApp = apps[0];
       });
 
@@ -109,7 +110,7 @@ describe('Apps Plugin Tests', () => {
         if (!actor) {
           throw new Error('actor is not defined');
         }
-        const { item } = await saveApp({ url: chosenApp.url, member: actor });
+        const { item } = await testUtils.saveApp({ url: chosenApp.url, member: actor });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -148,7 +149,7 @@ describe('Apps Plugin Tests', () => {
 
       it('Unauthorized if actor does not have membership on the app item', async () => {
         const member = await saveMember();
-        const { item } = await saveApp({ url: chosenApp.url, member });
+        const { item } = await testUtils.saveApp({ url: chosenApp.url, member });
 
         const response = await app.inject({
           method: HttpMethod.Post,
@@ -231,8 +232,8 @@ describe('Apps Plugin Tests', () => {
           throw new Error('actor is undefined');
         }
         const member = await saveMember();
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor, parentItem });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem });
         ({ item, token } = await setUpForAppContext(
           app,
           actor,
@@ -267,8 +268,8 @@ describe('Apps Plugin Tests', () => {
           throw new Error('actor is undefined');
         }
         const member = await saveMember();
-        const { item: parentItem } = await saveItemAndMembership({ member: actor });
-        await saveItemAndMembership({ member: actor, parentItem });
+        const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+        await testUtils.saveItemAndMembership({ member: actor, parentItem });
         await setItemPublic(parentItem, actor);
 
         ({ item, token } = await setUpForAppContext(

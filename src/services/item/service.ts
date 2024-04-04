@@ -18,6 +18,7 @@ import {
   InvalidMembership,
   ItemNotFolder,
   MemberCannotWriteItem,
+  MissingNameOrTypeForItemError,
   TooManyChildren,
   TooManyDescendants,
   UnauthorizedMember,
@@ -66,7 +67,7 @@ export class ItemService {
     actor: Actor,
     repositories: Repositories,
     args: {
-      item: Partial<Item>;
+      item: Partial<Item> & Pick<Item, 'name' | 'type'>;
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
     },
@@ -79,6 +80,11 @@ export class ItemService {
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
     const { item, parentId, geolocation } = args;
+
+    // name and type should exist
+    if (!item.name || !item.type) {
+      throw new MissingNameOrTypeForItemError(item);
+    }
 
     // lat and lng should exist together
     const { lat, lng } = geolocation || {};

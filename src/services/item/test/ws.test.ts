@@ -12,10 +12,6 @@ import {
 
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
@@ -32,10 +28,11 @@ import {
   itemTopic,
   memberItemsTopic,
 } from '../ws/events';
-import { expectItem } from './fixtures/items';
+import { ItemTestUtils, expectItem } from './fixtures/items';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 describe('Item websocket hooks', () => {
   let app, actor, address;
@@ -56,7 +53,7 @@ describe('Item websocket hooks', () => {
 
   describe('Subscribe to item', () => {
     it('subscribes to own item successfully', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const request = {
         realm: Websocket.Realms.Notif,
         topic: itemTopic,
@@ -75,8 +72,8 @@ describe('Item websocket hooks', () => {
 
     it('subscribes to item with membership successfully', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({ item, member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({ item, member: actor });
       const request = {
         realm: Websocket.Realms.Notif,
         topic: itemTopic,
@@ -95,7 +92,7 @@ describe('Item websocket hooks', () => {
 
     it('cannot subscribe to item with no membership', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
       const request = {
         realm: Websocket.Realms.Notif,
         topic: itemTopic,
@@ -116,7 +113,7 @@ describe('Item websocket hooks', () => {
 
   describe('on create item', () => {
     it('parent item receives child item create update', async () => {
-      const { item: parent } = await saveItemAndMembership({ member: actor });
+      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
 
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: parent.id });
 
@@ -161,7 +158,7 @@ describe('Item websocket hooks', () => {
 
   describe('on update item', () => {
     it('receives update on item itself', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item.id });
 
       const payload = { name: 'new name' };
@@ -181,8 +178,11 @@ describe('Item websocket hooks', () => {
     });
 
     it('parent receives child item update', async () => {
-      const { item: parentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
 
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: parentItem.id });
 
@@ -203,7 +203,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('creator receives own items update', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const payload = { name: 'new name' };
@@ -227,8 +227,8 @@ describe('Item websocket hooks', () => {
 
     it('member with membership on item receives shared items update', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Read });
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       // send recycle request as admin Anna
@@ -260,7 +260,7 @@ describe('Item websocket hooks', () => {
 
   describe('on delete item', () => {
     it('receives deletion update on item itself', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item.id });
 
       const response = await app.inject({
@@ -270,7 +270,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await ItemRepository.findOneBy({ id: item.id })).toEqual(null);
+        expect(await testUtils.rawItemRepository.findOneBy({ id: item.id })).toEqual(null);
       });
 
       await waitForExpect(() => {
@@ -280,8 +280,11 @@ describe('Item websocket hooks', () => {
     });
 
     it('parent receives child deletion update', async () => {
-      const { item: parentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
 
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: parentItem.id });
 
@@ -292,7 +295,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await ItemRepository.findOneBy({ id: childItem.id })).toEqual(null);
+        expect(await testUtils.rawItemRepository.findOneBy({ id: childItem.id })).toEqual(null);
       });
 
       await waitForExpect(() => {
@@ -304,7 +307,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('creator receives own items delete update', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
@@ -314,7 +317,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await ItemRepository.findOneBy({ id: item.id })).toEqual(null);
+        expect(await testUtils.rawItemRepository.findOneBy({ id: item.id })).toEqual(null);
       });
 
       await waitForExpect(() => {
@@ -328,8 +331,8 @@ describe('Item websocket hooks', () => {
 
     it('member with membership on item receives shared items delete update', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Read });
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       // send recycle request as admin Anna
@@ -344,7 +347,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await ItemRepository.findOneBy({ id: item.id })).toEqual(null);
+        expect(await testUtils.rawItemRepository.findOneBy({ id: item.id })).toEqual(null);
       });
 
       await waitForExpect(() => {
@@ -361,8 +364,8 @@ describe('Item websocket hooks', () => {
 
   describe('on copy item', () => {
     it('parent item receives child create update', async () => {
-      const { item: item1 } = await saveItemAndMembership({ member: actor });
-      const { item: item2 } = await saveItemAndMembership({ member: actor });
+      const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
 
       const itemUpdates = await ws.subscribe({ topic: itemTopic, channel: item1.id });
 
@@ -374,10 +377,10 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await ItemRepository.count()).toBeGreaterThan(2);
+        expect(await testUtils.rawItemRepository.count()).toBeGreaterThan(2);
       });
 
-      const copy = (await ItemRepository.getDescendants(item1 as FolderItem))[0];
+      const copy = (await testUtils.itemRepository.getDescendants(item1 as FolderItem))[0];
 
       await waitForExpect(() => {
         const [childCreate] = itemUpdates;
@@ -388,7 +391,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('creator receives own items create update when destination is root', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const itemUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
@@ -400,10 +403,10 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await ItemRepository.count()).toBeGreaterThan(1);
+        expect(await testUtils.rawItemRepository.count()).toBeGreaterThan(1);
       });
 
-      const copy = await ItemRepository.findOne({ where: { id: Not(item.id) } });
+      const copy = await testUtils.rawItemRepository.findOne({ where: { id: Not(item.id) } });
 
       await waitForExpect(() => {
         const [childCreate, accessibleCreate] = itemUpdates;
@@ -417,9 +420,9 @@ describe('Item websocket hooks', () => {
 
   describe('on move item', () => {
     it('parent of old location receives child deletion update', async () => {
-      const { item: oldParentItem } = await saveItemAndMembership({ member: actor });
-      const { item: newParentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({
+      const { item: oldParentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: newParentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
         member: actor,
         parentItem: oldParentItem,
       });
@@ -434,7 +437,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+        expect((await testUtils.rawItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
           newParentItem.path,
         );
       });
@@ -448,9 +451,9 @@ describe('Item websocket hooks', () => {
     });
 
     it('parent of new location receives child creation update', async () => {
-      const { item: oldParentItem } = await saveItemAndMembership({ member: actor });
-      const { item: newParentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({
+      const { item: oldParentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: newParentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
         member: actor,
         parentItem: oldParentItem,
       });
@@ -465,12 +468,12 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
+        expect((await testUtils.rawItemRepository.findOneBy({ id: childItem.id }))?.path).toContain(
           newParentItem.path,
         );
       });
 
-      const moved = await ItemRepository.findOneBy({ id: childItem.id });
+      const moved = await testUtils.rawItemRepository.findOneBy({ id: childItem.id });
 
       await waitForExpect(() => {
         const [childCreate] = itemUpdates;
@@ -481,8 +484,8 @@ describe('Item websocket hooks', () => {
     });
 
     it('creator receives own items delete update if old location was root of creator', async () => {
-      const { item: newParentItem } = await saveItemAndMembership({ member: actor });
-      const { item } = await saveItemAndMembership({
+      const { item: newParentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({
         member: actor,
       });
 
@@ -496,7 +499,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: item.id }))?.path).toContain(
+        expect((await testUtils.rawItemRepository.findOneBy({ id: item.id }))?.path).toContain(
           newParentItem.path,
         );
       });
@@ -511,8 +514,8 @@ describe('Item websocket hooks', () => {
     });
 
     it('creator receives own items create update if new location is root of creator', async () => {
-      const { item: oldParentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({
+      const { item: oldParentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
         member: actor,
         parentItem: oldParentItem,
       });
@@ -527,12 +530,12 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect((await ItemRepository.findOneBy({ id: childItem.id }))?.path).not.toContain(
-          oldParentItem.path,
-        );
+        expect(
+          (await testUtils.rawItemRepository.findOneBy({ id: childItem.id }))?.path,
+        ).not.toContain(oldParentItem.path);
       });
 
-      const moved = await ItemRepository.findOneBy({ id: childItem.id });
+      const moved = await testUtils.rawItemRepository.findOneBy({ id: childItem.id });
 
       await waitForExpect(() => {
         const [ownCreate] = itemUpdates;
@@ -543,7 +546,7 @@ describe('Item websocket hooks', () => {
 
   describe('asynchronous feedback', () => {
     it('member that initiated the updateMany operation receives success feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const payload = { name: 'new name' };
@@ -556,7 +559,7 @@ describe('Item websocket hooks', () => {
 
       let updated;
       await waitForExpect(async () => {
-        updated = await ItemRepository.findOneBy(payload);
+        updated = await testUtils.rawItemRepository.findOneBy(payload);
         expect(updated).not.toBe(null);
       });
 
@@ -571,10 +574,10 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the updateMany operation receives failure feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(ItemRepository, 'patch').mockImplementation(() => {
+      jest.spyOn(ItemRepository.prototype, 'patch').mockImplementation(() => {
         throw new Error('mock error');
       });
 
@@ -587,6 +590,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(() => {
+        console.log(memberUpdates);
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('update', [item.id], { error: new Error('mock error') }),
@@ -595,7 +599,7 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the deleteMany operation receives success feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
@@ -605,7 +609,7 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(async () => {
-        expect(await ItemRepository.findOneBy({ id: item.id })).toBe(null);
+        expect(await testUtils.rawItemRepository.findOneBy({ id: item.id })).toBe(null);
       });
 
       await waitForExpect(() => {
@@ -617,10 +621,10 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the deleteMany operation receives failure feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(ItemRepository, 'deleteMany').mockImplementation(() => {
+      jest.spyOn(ItemRepository.prototype, 'deleteMany').mockImplementation(() => {
         throw new Error('mock error');
       });
 
@@ -639,8 +643,8 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the move operation receives success feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
-      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -655,7 +659,7 @@ describe('Item websocket hooks', () => {
 
       let moved;
       await waitForExpect(async () => {
-        moved = await ItemRepository.findOneBy({ id: item.id });
+        moved = await testUtils.rawItemRepository.findOneBy({ id: item.id });
         expect(moved?.path).toContain(newParent.path);
       });
 
@@ -667,11 +671,11 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the move operation receives failure feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
-      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(ItemRepository, 'move').mockImplementation(async () => {
+      jest.spyOn(ItemRepository.prototype, 'move').mockImplementation(async () => {
         throw new Error('mock error');
       });
 
@@ -691,8 +695,8 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the copy operation receives success feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
-      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
       const response = await app.inject({
@@ -704,7 +708,7 @@ describe('Item websocket hooks', () => {
 
       let copied;
       await waitForExpect(async () => {
-        [copied] = await ItemRepository.getDescendants(newParent as FolderItem);
+        [copied] = await testUtils.itemRepository.getDescendants(newParent as FolderItem);
         expect(copied).toBeDefined();
       });
 
@@ -717,11 +721,11 @@ describe('Item websocket hooks', () => {
     });
 
     it('member that initiated the copy operation receives failure feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
-      const { item: newParent } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: newParent } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
 
-      jest.spyOn(ItemRepository, 'copy').mockImplementation(async () => {
+      jest.spyOn(ItemRepository.prototype, 'copy').mockImplementation(async () => {
         throw new Error('mock error');
       });
 

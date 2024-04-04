@@ -213,7 +213,7 @@ describe('Chat Mention tests', () => {
       });
 
       it('Delete successfully', async () => {
-        const initialCount = (await adminRepository.find()).length;
+        const initialCount = await adminRepository.count();
 
         const response = await app.inject({
           method: HttpMethod.Delete,
@@ -222,7 +222,7 @@ describe('Chat Mention tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().body).toEqual(chatMentions[0].body);
 
-        expect(await adminRepository.find()).toHaveLength(initialCount - 1);
+        expect(await adminRepository.count()).toEqual(initialCount - 1);
         expect(await adminRepository.findOneBy({ id: chatMentions[0].id })).toBeNull();
       });
 
@@ -293,7 +293,7 @@ describe('Chat Mention tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
-        expect(await adminRepository.find()).toHaveLength(otherMessages.length);
+        expect(await adminRepository.count()).toEqual(otherMessages.length);
       });
     });
   });

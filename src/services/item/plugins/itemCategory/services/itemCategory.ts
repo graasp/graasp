@@ -60,20 +60,4 @@ export class ItemCategoryService {
 
     return result;
   }
-
-  // async getItemsByCategories(actor, repositories: Repositories, categoryIds: string[]) {
-  //   const { itemCategoryRepository, itemTagRepository } = repositories;
-  //   const itemsByCategories = await itemCategoryRepository.getItemsByCategories(categoryIds);
-  //   // items should be PUBLIC
-  //   const publicItemsValues = await itemTagRepository.hasManyForMany(itemsByCategories, [
-  //     ItemTagType.PUBLIC,
-  //   ]);
-  //   const publicItems = itemsByCategories
-  //     .filter((item) => {
-  //       return publicItemsValues.data[item.path] ? item : null;
-  //     })
-  //     .filter(Boolean);
-
-  //   return publicItems;
-  // }
 }

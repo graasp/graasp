@@ -9,10 +9,9 @@ import build, { clearDatabase } from '../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
 import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
 import { Item } from '../../item/entities/Item';
-import { ItemRepository } from '../../item/repository';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { generateRandomEmail } from '../../itemLogin/utils';
 import { ItemMembershipRepository } from '../../itemMembership/repository';
-import { saveItemAndMembership } from '../../itemMembership/test/fixtures/memberships';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
 import { Invitation } from '../invitation';
@@ -20,6 +19,8 @@ import { InvitationRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+
+const testUtils = new ItemTestUtils();
 
 // mock captcha
 // bug: cannot reuse mockCaptchaValidation
@@ -47,7 +48,7 @@ const expectInvitations = (invitations: Invitation[], correctInvitations: Invita
 };
 
 const createInvitations = async ({ member, parentItem }: { member: Member; parentItem?: Item }) => {
-  const { item } = await saveItemAndMembership({ member, parentItem });
+  const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
   const invitations = Array.from({ length: 3 }, () =>
     InvitationRepository.create({
       item,
@@ -126,7 +127,7 @@ describe('Invitation Plugin', () => {
       });
 
       it('normalise emails before saving', async () => {
-        const { item } = await saveItemAndMembership({ member: actor });
+        const { item } = await testUtils.saveItemAndMembership({ member: actor });
         const invitation = {
           email: 'TestCase@graap.org',
           permission: PermissionLevel.Read,
@@ -225,7 +226,7 @@ describe('Invitation Plugin', () => {
       });
 
       it('throw if item with invitations has been trashed', async () => {
-        await ItemRepository.softDelete(item.id);
+        await testUtils.rawItemRepository.softDelete(item.id);
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/invitations`,
@@ -281,7 +282,7 @@ describe('Invitation Plugin', () => {
       });
 
       it("don't return an invitation for a trashed item", async () => {
-        await ItemRepository.softDelete(invitations[0].item.id);
+        await testUtils.rawItemRepository.softDelete(invitations[0].item.id);
         const response = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/invitations/${invitations[0].id}`,
@@ -518,8 +519,8 @@ describe('Invitation Plugin', () => {
 
     it('does not throw if no invitation found', async () => {
       const email = 'random@email.org';
-      const allInvitations = await InvitationRepository.find();
-      const allMemberships = await ItemMembershipRepository.find();
+      const allInvitationsCount = await InvitationRepository.count();
+      const allMembershipsCount = await ItemMembershipRepository.count();
 
       // register
       await app.inject({
@@ -531,8 +532,8 @@ describe('Invitation Plugin', () => {
       await new Promise((done) => {
         setTimeout(async () => {
           // all invitations and memberships should exist
-          expect(await InvitationRepository.find()).toHaveLength(allInvitations.length);
-          expect(await ItemMembershipRepository.find()).toHaveLength(allMemberships.length);
+          expect(await InvitationRepository.count()).toEqual(allInvitationsCount);
+          expect(await ItemMembershipRepository.count()).toEqual(allMembershipsCount);
 
           done(true);
         }, 1000);

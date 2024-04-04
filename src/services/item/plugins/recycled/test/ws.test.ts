@@ -4,14 +4,10 @@ import waitForExpect from 'wait-for-expect';
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
-import {
-  saveItemAndMembership,
-  saveMembership,
-} from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
-import { ItemRepository } from '../../../repository';
+import { ItemTestUtils } from '../../../test/fixtures/items';
 import {
   AccessibleItemsEvent,
   ChildItemEvent,
@@ -25,10 +21,10 @@ import {
 } from '../../../ws/events';
 import { RecycledItemDataRepository } from '../repository';
 import { RecycleBinEvent } from '../ws/events';
-import { saveRecycledItem } from './index.test';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ItemTestUtils();
 
 describe('Recycle websocket hooks', () => {
   let app, actor, address;
@@ -49,7 +45,7 @@ describe('Recycle websocket hooks', () => {
 
   describe('on recycle', () => {
     it('receives deletion update when item is recycled', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const itemUpdates = await ws.subscribe<ItemEvent>({ topic: itemTopic, channel: item.id });
 
       const res = await app.inject({
@@ -61,7 +57,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
         withDeleted: true,
       });
@@ -74,8 +70,11 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('item in the recycled subtree receives deletion update when top item is recycled', async () => {
-      const { item: parentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
       const itemUpdates = await ws.subscribe<ItemEvent>({
         topic: itemTopic,
         channel: childItem.id,
@@ -90,7 +89,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: childItem.id },
         withDeleted: true,
       });
@@ -103,8 +102,11 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('parent item receives child deletion update when child item is recycled', async () => {
-      const { item: parentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({ parentItem, member: actor });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        parentItem,
+        member: actor,
+      });
       const itemUpdates = await ws.subscribe<ItemEvent>({
         topic: itemTopic,
         channel: parentItem.id,
@@ -119,7 +121,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: childItem.id },
         withDeleted: true,
       });
@@ -132,12 +134,15 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('parent in the recycled subtree receives deletion update of child when top item is recycled', async () => {
-      const { item: topItem } = await saveItemAndMembership({ member: actor });
-      const { item: parentItem } = await saveItemAndMembership({
+      const { item: topItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({
         member: actor,
         parentItem: topItem,
       });
-      const { item: childItem } = await saveItemAndMembership({ parentItem, member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        parentItem,
+        member: actor,
+      });
       const itemUpdates = await ws.subscribe<ItemEvent>({
         topic: itemTopic,
         channel: parentItem.id,
@@ -152,12 +157,12 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedChild = await ItemRepository.findOne({
+      const updatedChild = await testUtils.rawItemRepository.findOne({
         where: { id: childItem.id },
         withDeleted: true,
       });
       if (!updatedChild) throw new Error('item should be found in test');
-      const updatedParent = await ItemRepository.findOne({
+      const updatedParent = await testUtils.rawItemRepository.findOne({
         where: { id: parentItem.id },
         withDeleted: true,
       });
@@ -174,7 +179,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('creator receives own items deletion update when item is recycled', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberItemsUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -189,7 +194,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
         withDeleted: true,
       });
@@ -204,8 +209,8 @@ describe('Recycle websocket hooks', () => {
 
     it('members with memberships receive shared items delete update when item is recycled', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({ item, member: actor, permission: PermissionLevel.Read });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Read });
       const memberItemsUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -225,7 +230,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
         withDeleted: true,
       });
@@ -239,9 +244,16 @@ describe('Recycle websocket hooks', () => {
 
     it('members with memberships on item in the recycled subtree receive shared items delete update when top item is recycled', async () => {
       const anna = await saveMember();
-      const { item: parentItem } = await saveItemAndMembership({ member: anna });
-      const { item: childItem } = await saveItemAndMembership({ member: anna, parentItem });
-      await saveMembership({ item: childItem, member: actor, permission: PermissionLevel.Read });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: anna });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: anna,
+        parentItem,
+      });
+      await testUtils.saveMembership({
+        item: childItem,
+        member: actor,
+        permission: PermissionLevel.Read,
+      });
       const memberItemsUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -261,7 +273,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: childItem.id },
         withDeleted: true,
       });
@@ -275,14 +287,25 @@ describe('Recycle websocket hooks', () => {
 
     it('members with multiple memberships on related items in the recycled subtree receive shared items delete update on topmost shared item only when top item is recycled', async () => {
       const anna = await saveMember();
-      const { item: topItem } = await saveItemAndMembership({ member: anna });
-      const { item: parentItem } = await saveItemAndMembership({
+      const { item: topItem } = await testUtils.saveItemAndMembership({ member: anna });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({
         member: anna,
         parentItem: topItem,
       });
-      const { item: childItem } = await saveItemAndMembership({ member: anna, parentItem });
-      await saveMembership({ item: parentItem, member: actor, permission: PermissionLevel.Read });
-      await saveMembership({ item: childItem, member: actor, permission: PermissionLevel.Admin });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: anna,
+        parentItem,
+      });
+      await testUtils.saveMembership({
+        item: parentItem,
+        member: actor,
+        permission: PermissionLevel.Read,
+      });
+      await testUtils.saveMembership({
+        item: childItem,
+        member: actor,
+        permission: PermissionLevel.Admin,
+      });
 
       const memberItemsUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
@@ -303,7 +326,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: parentItem.id },
         withDeleted: true,
       });
@@ -317,8 +340,8 @@ describe('Recycle websocket hooks', () => {
 
     it('admins receive recycle bin create update when item is recycled', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
       const memberItemsUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -333,7 +356,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
         withDeleted: true,
       });
@@ -352,8 +375,11 @@ describe('Recycle websocket hooks', () => {
 
   describe('on restore', () => {
     it('parent item receives creation update when item is restored', async () => {
-      const { item: parentItem } = await saveItemAndMembership({ member: actor });
-      const { item: childItem } = await saveItemAndMembership({ member: actor, parentItem });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: actor,
+        parentItem,
+      });
 
       const recycle = await app.inject({
         method: HttpMethod.Post,
@@ -379,7 +405,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: childItem.id },
       });
       if (!updatedItem) throw new Error('item should be found in test');
@@ -391,7 +417,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('creator receives own items creation update when item is restored', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const recycle = await app.inject({
         method: HttpMethod.Post,
@@ -417,7 +443,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
       });
       if (!updatedItem) throw new Error('item should be found in test');
@@ -431,8 +457,8 @@ describe('Recycle websocket hooks', () => {
 
     it('members with memberships receive shared items create update when item is restored', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({ member: actor, item, permission: PermissionLevel.Read });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({ member: actor, item, permission: PermissionLevel.Read });
 
       // send recycle request as admin Anna
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -473,7 +499,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
       });
       if (!updatedItem) throw new Error('item should be found in test');
@@ -487,9 +513,16 @@ describe('Recycle websocket hooks', () => {
 
     it('members with memberships on item in the recycled subtree receive shared items create update when top item is restored', async () => {
       const anna = await saveMember();
-      const { item: parentItem } = await saveItemAndMembership({ member: anna });
-      const { item: childItem } = await saveItemAndMembership({ member: anna, parentItem });
-      await saveMembership({ member: actor, item: childItem, permission: PermissionLevel.Read });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({ member: anna });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: anna,
+        parentItem,
+      });
+      await testUtils.saveMembership({
+        member: actor,
+        item: childItem,
+        permission: PermissionLevel.Read,
+      });
 
       // send recycle request as admin Anna
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -530,7 +563,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: childItem.id },
       });
       if (!updatedItem) throw new Error('item should be found in test');
@@ -544,14 +577,25 @@ describe('Recycle websocket hooks', () => {
 
     it('members with multiple memberships on related items in the recycled subtree receive shared items create update on topmost shared item only when top item is recycled', async () => {
       const anna = await saveMember();
-      const { item: topItem } = await saveItemAndMembership({ member: anna });
-      const { item: parentItem } = await saveItemAndMembership({
+      const { item: topItem } = await testUtils.saveItemAndMembership({ member: anna });
+      const { item: parentItem } = await testUtils.saveItemAndMembership({
         member: anna,
         parentItem: topItem,
       });
-      const { item: childItem } = await saveItemAndMembership({ member: anna, parentItem });
-      await saveMembership({ member: actor, item: parentItem, permission: PermissionLevel.Read });
-      await saveMembership({ member: actor, item: childItem, permission: PermissionLevel.Admin });
+      const { item: childItem } = await testUtils.saveItemAndMembership({
+        member: anna,
+        parentItem,
+      });
+      await testUtils.saveMembership({
+        member: actor,
+        item: parentItem,
+        permission: PermissionLevel.Read,
+      });
+      await testUtils.saveMembership({
+        member: actor,
+        item: childItem,
+        permission: PermissionLevel.Admin,
+      });
 
       // send recycle request as admin Anna
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -592,7 +636,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: parentItem.id },
       });
       if (!updatedItem) throw new Error('item should be found in test');
@@ -606,8 +650,8 @@ describe('Recycle websocket hooks', () => {
 
     it('admins receive recycle bin delete update when item is recycled', async () => {
       const anna = await saveMember();
-      const { item } = await saveItemAndMembership({ member: anna });
-      await saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
+      const { item } = await testUtils.saveItemAndMembership({ member: anna });
+      await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Admin });
 
       // send recycle request as admin Anna
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -643,7 +687,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
       });
       if (!updatedItem) throw new Error('item should be found in test');
@@ -659,7 +703,7 @@ describe('Recycle websocket hooks', () => {
 
   describe('asynchronous feedback', () => {
     it('member that initated the recycle operation receives success feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -674,7 +718,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(1);
       });
-      const updatedItem = await ItemRepository.findOne({
+      const updatedItem = await testUtils.rawItemRepository.findOne({
         where: { id: item.id },
         withDeleted: true,
       });
@@ -691,7 +735,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('member that initated the recycle operation receives failure feedback', async () => {
-      const { item } = await saveItemAndMembership({ member: actor });
+      const { item } = await testUtils.saveItemAndMembership({ member: actor });
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
         channel: actor.id,
@@ -718,7 +762,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('member that initated the restore operation receives success feedback', async () => {
-      const item = await saveRecycledItem(actor);
+      const item = await testUtils.saveRecycledItem(actor);
 
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
@@ -734,7 +778,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(async () => {
         expect(await RecycledItemDataRepository.count()).toEqual(0);
       });
-      const restored = await ItemRepository.findOneBy({ id: item.id });
+      const restored = await testUtils.rawItemRepository.findOneBy({ id: item.id });
       if (!restored) {
         throw new Error('item should be restored in test ');
       }
@@ -751,7 +795,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('member that initated the restore operation receives failure feedback', async () => {
-      const item = await saveRecycledItem(actor);
+      const item = await testUtils.saveRecycledItem(actor);
 
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,

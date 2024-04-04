@@ -5,7 +5,6 @@ import { UUID } from '@graasp/sdk';
 import { buildRepositories } from '../../../../utils/repositories';
 import graaspSearchPlugin from './plugins/search';
 import {
-  getCollections,
   getCollectionsForMember,
   getInformations,
   getManyInformations,
@@ -19,21 +18,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, itemsPublished } = fastify;
 
   fastify.register(graaspSearchPlugin);
-
-  fastify.get<{ Querystring: { categoryId: string[] } }>(
-    '/collections',
-    {
-      schema: getCollections,
-      preHandler: fastify.attemptVerifyAuthentication,
-    },
-    async ({ query, member }) => {
-      return itemsPublished.service.getItemsByCategories(
-        member,
-        buildRepositories(),
-        query.categoryId,
-      );
-    },
-  );
 
   fastify.get<{ Params: { memberId: UUID } }>(
     '/collections/members/:memberId',

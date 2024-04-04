@@ -10,7 +10,7 @@ import {
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
-import { saveItem } from '../../item/test/fixtures/items';
+import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
@@ -21,6 +21,7 @@ import { ActionRepository } from './action';
 jest.mock('../../../plugins/datasource');
 
 const rawRepository = AppDataSource.getRepository(Action);
+const testUtils = new ItemTestUtils();
 
 describe('Action Repository', () => {
   let app;
@@ -32,7 +33,7 @@ describe('Action Repository', () => {
     ({ app, actor } = await build());
     member = await saveMember();
 
-    item = await saveItem({ actor });
+    item = await testUtils.saveItem({ actor });
   });
 
   afterEach(async () => {
@@ -57,7 +58,7 @@ describe('Action Repository', () => {
 
       await r.postMany(actions);
 
-      expect(await rawRepository.find()).toHaveLength(actions.length);
+      expect(await rawRepository.count()).toEqual(actions.length);
     });
   });
 
@@ -77,7 +78,7 @@ describe('Action Repository', () => {
 
       await r.deleteAllForMember(member.id);
 
-      expect(await rawRepository.find()).toHaveLength(1);
+      expect(await rawRepository.count()).toEqual(1);
     });
   });
 
@@ -198,7 +199,7 @@ describe('Action Repository', () => {
     });
 
     it('get all actions for item and its descendants', async () => {
-      const child = await saveItem({ actor: member, parentItem: item });
+      const child = await testUtils.saveItem({ actor: member, parentItem: item });
 
       const actions = await saveActions(rawRepository, [
         { item, member },
@@ -486,8 +487,8 @@ describe('Action Repository', () => {
       });
 
       it('returns action count with countGroupBy ItemId', async () => {
-        const child1 = await saveItem({ actor: member, parentItem: item });
-        const child2 = await saveItem({ actor: member, parentItem: item });
+        const child1 = await testUtils.saveItem({ actor: member, parentItem: item });
+        const child2 = await testUtils.saveItem({ actor: member, parentItem: item });
         const view = Context.Library;
         const sampleSize = 5;
         const countGroupBy = [CountGroupBy.ItemId];

@@ -38,7 +38,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Querystring: {
       parentId?: string;
     };
-    Body: Partial<Item> & Pick<ItemGeolocation, 'lat' | 'lng'>;
+    Body: Partial<Item> & Pick<Item, 'name' | 'type'> & Pick<ItemGeolocation, 'lat' | 'lng'>;
   }>(
     '/',
     {

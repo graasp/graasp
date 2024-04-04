@@ -5,13 +5,13 @@ import { Context, HttpMethod, PermissionLevel, ShortLinkPlatform } from '@graasp
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors';
-import { saveMembership } from '../../../../itemMembership/test/fixtures/memberships';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemPublishedNotFound } from '../../published/errors';
 import {
   MOCK_ALIAS,
   MOCK_ITEM_ID,
   MOCK_PLATFORM,
+  ShortLinkTestUtils,
   getRedirection,
   injectDelete,
   injectGet,
@@ -22,11 +22,11 @@ import {
   injectPost,
   logInAs,
   logOut,
-  mockItemAndMemberships,
 } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
+const testUtils = new ShortLinkTestUtils();
 
 function expectException(response, ex) {
   expect(response.json().code).toBe(ex.code);
@@ -61,7 +61,7 @@ describe('Short links routes tests', () => {
     let shortLinkPayload;
 
     beforeEach(async () => {
-      ({ item } = await mockItemAndMemberships({ itemCreator: actor }));
+      ({ item } = await testUtils.mockItemAndMemberships({ itemCreator: actor }));
       shortLinkPayload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
 
       const response = await injectPost(app, shortLinkPayload);
@@ -144,7 +144,7 @@ describe('Short links routes tests', () => {
           expect(check.statusCode).toEqual(StatusCodes.NOT_FOUND);
         });
         it('Forbidden if post short links with unauthorized member', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: bob });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: bob });
 
           const response = await injectPost(app, {
             itemId: item.id,
@@ -154,7 +154,7 @@ describe('Short links routes tests', () => {
           expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
         });
         it('Forbidden if post short links with write permission', async () => {
-          const { item } = await mockItemAndMemberships({
+          const { item } = await testUtils.mockItemAndMemberships({
             itemCreator: bob,
             memberWithPermission: {
               member: actor,
@@ -169,7 +169,7 @@ describe('Short links routes tests', () => {
           expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
         });
         it('Forbidden if post short links without permission on public', async () => {
-          const { item } = await mockItemAndMemberships({
+          const { item } = await testUtils.mockItemAndMemberships({
             itemCreator: bob,
             setPublic: true,
           });
@@ -190,7 +190,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if post short links with alias < 6 chars', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
 
           const response = await injectPost(app, {
             itemId: item.id,
@@ -200,7 +200,7 @@ describe('Short links routes tests', () => {
           expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
         });
         it('Bad request if post short links with invalid alias chars', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
 
           const response = await injectPost(app, {
             itemId: item.id,
@@ -223,8 +223,8 @@ describe('Short links routes tests', () => {
 
       describe('Conflicts', () => {
         it('Conflict if post short links with already exist alias', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
-          const { item: item2 } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
+          const { item: item2 } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
 
           await injectPost(app, { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM });
 
@@ -237,7 +237,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Conflict if post short links with already exist platform (limit of one link per platform per item)', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
 
           await injectPost(app, { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM });
 
@@ -252,7 +252,7 @@ describe('Short links routes tests', () => {
 
       describe('Library short link', () => {
         it('Error if post short links with library platform on unpublished item', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
 
           const response = await injectPost(app, {
             itemId: item.id,
@@ -263,7 +263,10 @@ describe('Short links routes tests', () => {
         });
 
         it('Succeed if post short links with library platform on published item with admin permission', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor, setPublic: true });
+          const { item } = await testUtils.mockItemAndMemberships({
+            itemCreator: actor,
+            setPublic: true,
+          });
           const publishRes = await app.inject({
             method: HttpMethod.Post,
             url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
@@ -307,7 +310,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Success if post short links with admin permission', async () => {
-          const { item } = await mockItemAndMemberships({
+          const { item } = await testUtils.mockItemAndMemberships({
             itemCreator: bob,
             memberWithPermission: {
               member: actor,
@@ -330,7 +333,7 @@ describe('Short links routes tests', () => {
         expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
       });
       it('Success even if no permission', async () => {
-        const { item } = await mockItemAndMemberships({ itemCreator: actor });
+        const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
         const payload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
         const post = await injectPost(app, payload);
         expect(post.statusCode).toEqual(StatusCodes.OK);
@@ -342,7 +345,7 @@ describe('Short links routes tests', () => {
         expect(response.headers.location).toEqual(getRedirection(payload.itemId, payload.platform));
       });
       it('Success when admin', async () => {
-        const { item } = await mockItemAndMemberships({
+        const { item } = await testUtils.mockItemAndMemberships({
           itemCreator: bob,
           memberWithPermission: {
             member: actor,
@@ -367,7 +370,7 @@ describe('Short links routes tests', () => {
       });
 
       it('Success even if no permission', async () => {
-        const { item } = await mockItemAndMemberships({ itemCreator: actor });
+        const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
         const payload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
         const post = await injectPost(app, payload);
         expect(post.statusCode).toEqual(StatusCodes.OK);
@@ -386,7 +389,7 @@ describe('Short links routes tests', () => {
       });
 
       it('Success when admin', async () => {
-        const { item } = await mockItemAndMemberships({
+        const { item } = await testUtils.mockItemAndMemberships({
           itemCreator: bob,
           memberWithPermission: {
             member: actor,
@@ -418,7 +421,7 @@ describe('Short links routes tests', () => {
       });
       describe('Forbidden', () => {
         it('Forbidden if patch short links with write permission', async () => {
-          const { item } = await mockItemAndMemberships({
+          const { item } = await testUtils.mockItemAndMemberships({
             itemCreator: actor,
             memberWithPermission: {
               member: bob,
@@ -442,7 +445,7 @@ describe('Short links routes tests', () => {
 
       describe('Success', () => {
         it('Success if patch short links with admin permission', async () => {
-          const { item } = await mockItemAndMemberships({
+          const { item } = await testUtils.mockItemAndMemberships({
             itemCreator: actor,
             memberWithPermission: {
               member: bob,
@@ -465,7 +468,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Success if patch full short links with admin permission', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -481,7 +484,7 @@ describe('Short links routes tests', () => {
 
       describe('Conflict and bad request', () => {
         it('Conflict if patch short links alias with existing one', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           let post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -500,7 +503,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if patch short links alias < 6 chars', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -513,7 +516,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if patch short links alias invalid chars', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -526,7 +529,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if patch short links with empty body', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -539,7 +542,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if patch short links without body', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -552,7 +555,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if patch short links with missing attributes in body', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -565,7 +568,7 @@ describe('Short links routes tests', () => {
         });
 
         it('Bad request if patch short links to change item', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const post = await injectPost(app, {
             itemId: item.id,
             alias: MOCK_ALIAS,
@@ -591,7 +594,7 @@ describe('Short links routes tests', () => {
           expect(check.statusCode).toEqual(StatusCodes.MOVED_TEMPORARILY);
         });
         it('Forbidden if delete when non admin user', async () => {
-          const { item } = await mockItemAndMemberships({
+          const { item } = await testUtils.mockItemAndMemberships({
             itemCreator: actor,
             memberWithPermission: {
               member: bob,
@@ -617,7 +620,7 @@ describe('Short links routes tests', () => {
           expect(check.statusCode).toEqual(StatusCodes.NOT_FOUND);
         });
         it('Success when admin', async () => {
-          const { item } = await mockItemAndMemberships({
+          const { item } = await testUtils.mockItemAndMemberships({
             itemCreator: bob,
             memberWithPermission: {
               member: actor,
@@ -646,7 +649,7 @@ describe('Short links routes tests', () => {
       });
 
       it('Unavailable if exists', async () => {
-        const { item } = await mockItemAndMemberships({ itemCreator: actor });
+        const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
         const payload = { itemId: item.id, alias: MOCK_ALIAS, platform: MOCK_PLATFORM };
         const post = await injectPost(app, payload);
         expect(post.statusCode).toEqual(StatusCodes.OK);
@@ -664,7 +667,7 @@ describe('Short links routes tests', () => {
         cedric = await saveMember();
         anna = await saveMember();
 
-        ({ item } = await mockItemAndMemberships({
+        ({ item } = await testUtils.mockItemAndMemberships({
           itemCreator: actor,
           memberWithPermission: {
             member: bob,
@@ -672,7 +675,7 @@ describe('Short links routes tests', () => {
           },
         }));
 
-        await saveMembership({ item, member: anna, permission: PermissionLevel.Write });
+        await testUtils.saveMembership({ item, member: anna, permission: PermissionLevel.Write });
 
         for (let i = 0; i < platformLinks.length; i++) {
           const platform = platformLinks[i];
@@ -701,7 +704,7 @@ describe('Short links routes tests', () => {
 
       describe('Success', () => {
         it('Success if item exist', async () => {
-          const { item } = await mockItemAndMemberships({ itemCreator: actor });
+          const { item } = await testUtils.mockItemAndMemberships({ itemCreator: actor });
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.OK);
           expect(response.json()).toEqual([]);
