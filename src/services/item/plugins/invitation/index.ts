@@ -8,7 +8,7 @@ import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
-import { MAX_FILES, MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
+import { MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
 import { Invitation } from './entity';
 import { NoFileProvidedForInvitations } from './errors';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';
@@ -59,19 +59,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           params.id,
           body.invitations,
         );
-        console.log(res);
         return res;
       });
     },
   );
 
-  // register upload endpoint separately so the multipart otptions only apply to that specific endpoint
+  // register upload endpoint separately so the multipart options only apply to that specific endpoint
   fastify.register(async (fastify) => {
     fastify.register(fastifyMultipart, {
       limits: {
-        fields: MAX_NON_FILE_FIELDS, // Max number of non-file fields (Default: Infinity).
+        fields: 0, // Max number of non-file fields (Default: Infinity).
         fileSize: MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
-        files: MAX_FILES, // Max number of file fields (Default: Infinity).
+        files: 1, // Max number of file fields (Default: Infinity).
       },
     });
 
@@ -111,17 +110,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
               memberships.service,
             ),
           );
-        } else {
-          return await db.transaction(async (manager) =>
-            iS.importUsersWithCSV(
-              member,
-              buildRepositories(manager),
-              itemId,
-              uploadedFile,
-              memberships.service,
-            ),
-          );
         }
+        return await db.transaction(async (manager) =>
+          iS.importUsersWithCSV(
+            member,
+            buildRepositories(manager),
+            itemId,
+            uploadedFile,
+            memberships.service,
+          ),
+        );
       },
     );
   });

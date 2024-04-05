@@ -35,20 +35,12 @@ export class InvitationService {
   mailer: MailerDecoration;
   itemService: ItemService;
   memberService: MemberService;
-  // itemMembershipService: ItemMembershipService;
 
-  constructor(
-    log,
-    mailer,
-    itemService: ItemService,
-    // itemMembershipService: ItemMembershipService,
-    memberService: MemberService,
-  ) {
+  constructor(log, mailer, itemService: ItemService, memberService: MemberService) {
     this.log = log;
     this.mailer = mailer;
     this.itemService = itemService;
     this.memberService = memberService;
-    // this.itemMembershipService = itemMembershipService;
   }
 
   async sendInvitationEmail({ actor, invitation }: { actor: Actor; invitation: Invitation }) {
@@ -115,7 +107,6 @@ export class InvitationService {
       this.sendInvitationEmail({ actor, invitation });
     });
 
-    console.log(completeInvitations);
     return completeInvitations;
   }
 

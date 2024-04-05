@@ -79,7 +79,7 @@ export class MissingEmailInRowError extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR006',
+        code: 'GPINVERR007',
         statusCode: StatusCodes.BAD_REQUEST,
         message: `A row is missing the required "${EMAIL_COLUMN_NAME}" value`,
       },
@@ -92,7 +92,7 @@ export class MissingGroupInRowError extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR006',
+        code: 'GPINVERR008',
         statusCode: StatusCodes.BAD_REQUEST,
         message: `A row is missing the required "${GROUP_COL_NAME}" value`,
       },
@@ -104,7 +104,7 @@ export class MissingGroupInRowError extends GraaspInvitationsError {
 export class NoGroupNamesFoundForInvitations extends GraaspInvitationsError {
   constructor() {
     super({
-      code: 'GPINVERR007',
+      code: 'GPINVERR009',
       statusCode: StatusCodes.BAD_REQUEST,
       message: 'Group column has been defined in CSV, but no group names were detected',
     });
@@ -115,7 +115,7 @@ export class NoGroupFoundForInvitations extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR008',
+        code: 'GPINVERR010',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'Group column has been defined in CSV, but rows with missing groups exist',
       },
@@ -128,7 +128,7 @@ export class NoFileProvidedForInvitations extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR009',
+        code: 'GPINVERR011',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'No file was provided. Please provide a file for creating bulk invitations',
       },
@@ -141,9 +141,9 @@ export class NoDataInFile extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR010',
+        code: 'GPINVERR012',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'No data was found in teh file. Please send a file with valid data.',
+        message: 'No data was found in the file. Please send a file with valid data.',
       },
       data,
     );
@@ -154,10 +154,10 @@ export class CantCreateStructureInNoFolderItem extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR011',
+        code: 'GPINVERR013',
         statusCode: StatusCodes.BAD_REQUEST,
         message:
-          'Provided item is not a folder. A structure can not be created inside an item that is not a folder.',
+          'Provided item is not a folder. A structure cannot be created inside an item that is not a folder.',
       },
       data,
     );
@@ -168,7 +168,7 @@ export class TemplateItemDoesNotExist extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
       {
-        code: 'GPINVERR012',
+        code: 'GPINVERR014',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'The template item does not exist.',
       },

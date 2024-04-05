@@ -10,7 +10,6 @@ describe('Test utils', () => {
         path.resolve(__dirname, './test/fixtures/single-user.csv'),
       );
       const { rows } = await parseCSV(fileStream);
-      console.log('in test', rows);
       expect(rows).toEqual([{ name: 'Alice', email: 'alice@graasp.org', permission: 'read' }]);
     });
   });

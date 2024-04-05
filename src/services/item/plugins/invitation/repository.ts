@@ -105,7 +105,6 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
         .innerJoinAndSelect('invitation.creator', 'creator')
         .where('invitation.id IN (:...ids)', { ids })
         .getMany();
-      console.log(res);
       return res;
     }
     return [];

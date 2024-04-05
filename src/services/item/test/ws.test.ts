@@ -593,7 +593,6 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(() => {
-        console.log(memberUpdates);
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('update', [item.id], { error: new Error('mock error') }),
