@@ -5,7 +5,11 @@ meta {
 }
 
 get {
-  url: {{host}}/item-memberships
+  url: {{host}}/item-memberships/?itemId={{item_id}}
   body: none
   auth: none
+}
+
+query {
+  itemId: {{item_id}}
 }

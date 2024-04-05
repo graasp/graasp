@@ -125,6 +125,7 @@
     "@types/geoip-lite": "1.4.4",
     "@types/jest": "29.5.12",
     "@types/jsonwebtoken": "9.0.6",
+    "@types/lodash.groupby": "4.6.9",
     "@types/mime": "3.0.4",
     "@types/mmmagic": "0.4.33",
     "@types/node": "18.15.13",

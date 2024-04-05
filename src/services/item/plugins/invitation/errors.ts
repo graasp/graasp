@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ErrorFactory } from '@graasp/sdk';
 
-import { EMAIL_COLUMN_NAME, PLUGIN_NAME } from './constants';
+import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, PLUGIN_NAME } from './constants';
 
 export const GraaspInvitationsError = ErrorFactory(PLUGIN_NAME);
 
@@ -65,6 +65,16 @@ export class MissingEmailColumnInCSVError extends GraaspInvitationsError {
   }
 }
 
+export class MissingGroupColumnInCSVError extends GraaspInvitationsError {
+  constructor() {
+    super({
+      code: 'GPINVERR006',
+      statusCode: StatusCodes.BAD_REQUEST,
+      message: `The required "${GROUP_COL_NAME}" column was not provided.`,
+    });
+  }
+}
+
 export class MissingEmailInRowError extends GraaspInvitationsError {
   constructor(data?: unknown) {
     super(
@@ -72,6 +82,19 @@ export class MissingEmailInRowError extends GraaspInvitationsError {
         code: 'GPINVERR006',
         statusCode: StatusCodes.BAD_REQUEST,
         message: `A row is missing the required "${EMAIL_COLUMN_NAME}" value`,
+      },
+      data,
+    );
+  }
+}
+
+export class MissingGroupInRowError extends GraaspInvitationsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPINVERR006',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: `A row is missing the required "${GROUP_COL_NAME}" value`,
       },
       data,
     );
@@ -121,6 +144,33 @@ export class NoDataInFile extends GraaspInvitationsError {
         code: 'GPINVERR010',
         statusCode: StatusCodes.BAD_REQUEST,
         message: 'No data was found in teh file. Please send a file with valid data.',
+      },
+      data,
+    );
+  }
+}
+
+export class CantCreateStructureInNoFolderItem extends GraaspInvitationsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPINVERR011',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message:
+          'Provided item is not a folder. A structure can not be created inside an item that is not a folder.',
+      },
+      data,
+    );
+  }
+}
+
+export class TemplateItemDoesNotExist extends GraaspInvitationsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GPINVERR012',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'The template item does not exist.',
       },
       data,
     );
