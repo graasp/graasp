@@ -117,14 +117,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // from user token, set corresponding cookie
-  fastify.get<{ Querystring: { t: string; url: string } }>(
+  fastify.get<{ Querystring: { token: string; url: string } }>(
     '/auth/web',
     { schema: authWeb },
     async ({ query, session }, reply) => {
       const memberId = await mobileService.getMemberIdFromAuthToken(
         undefined,
         buildRepositories(),
-        query.t,
+        query.token,
       );
 
       session.set('member', memberId);

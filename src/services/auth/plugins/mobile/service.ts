@@ -94,7 +94,7 @@ export class MobileService {
       await repositories.memberRepository.get(memberId);
 
       // TODO: should we fetch/test the member from the DB?
-      return { memberId, ...this.fastify.generateAuthTokensPair(memberId) };
+      return this.fastify.generateAuthTokensPair(memberId);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         // return a custom error when the token expired

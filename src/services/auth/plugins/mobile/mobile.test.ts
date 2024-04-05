@@ -453,7 +453,7 @@ describe('Mobile Endpoints', () => {
     });
     it('Fail if token is invalid', async () => {
       const member = await saveMember();
-      const t = jwt.sign({ sub: member.id }, 'REFRESH_TOKEN_JWT_SECRET');
+      const t = jwt.sign({ sub: member.id }, 'INVALID_SECRET');
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/refresh',
@@ -499,7 +499,7 @@ describe('Mobile Endpoints', () => {
     });
     it('Fail if token is invalid', async () => {
       const member = await saveMember();
-      const t = jwt.sign({ sub: member.id }, 'AUTH_TOKEN_JWT_SECRET');
+      const t = jwt.sign({ sub: member.id }, 'INVALID_SECRET');
       const response = await app.inject({
         method: HttpMethod.Get,
         url: '/m/auth/web',

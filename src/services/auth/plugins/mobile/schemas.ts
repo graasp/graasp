@@ -68,9 +68,9 @@ export const mauth = {
 export const authWeb = {
   querystring: {
     type: 'object',
-    required: ['t'],
+    required: ['token'],
     properties: {
-      t: { type: 'string' },
+      token: { type: 'string' },
       url: { type: 'string' },
     },
     additionalProperties: false,
