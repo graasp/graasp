@@ -123,10 +123,10 @@ export const folderItemCreate = S.object().prop('type', S.const('folder')).exten
 /**
  * for validation on update
  */
-
 export const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
+  .prop('displayName', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
   .prop('lang', S.string())
   .prop('settings', settings)
