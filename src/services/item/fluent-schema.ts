@@ -62,25 +62,10 @@ export const item = S.object()
   .prop('createdAt', S.raw({}))
   .prop('updatedAt', S.raw({}));
 
-export const packedItem = S.object()
-  .additionalProperties(false)
-  .prop('id', uuid)
-  .prop('name', S.string())
-  .prop('description', S.mixed(['string', 'null']))
-  .prop('type', S.string())
-  .prop('path', S.string())
-  .prop('extra', S.object().additionalProperties(true))
-  .prop('settings', settings)
-  .prop('lang', S.string())
-  // creator could have been deleted
-  .prop('creator', S.ifThenElse(S.null(), S.null(), partialMember))
-  /**
-   * for some reason setting these date fields as "type: 'string'"
-   * makes the serialization fail using the anyOf.
-   */
-  .prop('createdAt', S.raw({}))
-  .prop('updatedAt', S.raw({}))
-  .prop('permission', S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]));
+export const packedItem = item.prop(
+  'permission',
+  S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]),
+);
 /**
  * for validation on create
  */
@@ -334,6 +319,7 @@ export default {
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         name: { type: 'string' },
+        displayName: { type: 'string' },
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
         path: { type: 'string' },
@@ -357,6 +343,7 @@ export default {
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         name: { type: 'string' },
+        displayName: { type: 'string' },
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
         path: { type: 'string' },
