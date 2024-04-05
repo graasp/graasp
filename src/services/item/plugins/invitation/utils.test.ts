@@ -6,7 +6,9 @@ import { parseCSV } from './utils';
 describe('Test utils', () => {
   describe('parseCSV', () => {
     it('parse correct input', async () => {
-      const fileStream = fs.createReadStream(path.join(__dirname, './test/fixtures/users.csv'));
+      const fileStream = fs.createReadStream(
+        path.resolve(__dirname, './test/fixtures/single-user.csv'),
+      );
       const { rows } = await parseCSV(fileStream);
       console.log('in test', rows);
       expect(rows).toEqual([{ name: 'Alice', email: 'alice@graasp.org', permission: 'read' }]);
