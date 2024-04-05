@@ -14,7 +14,7 @@ import { ItemMembershipRepository } from '../../../../itemMembership/repository'
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { Invitation } from '../invitation';
+import { Invitation } from '../entity';
 import { InvitationRepository } from '../repository';
 
 // mock datasource

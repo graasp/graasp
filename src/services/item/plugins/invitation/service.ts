@@ -18,6 +18,7 @@ import ItemMembershipService from '../../../itemMembership/service';
 import { Actor, Member } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { EMAIL_COLUMN_NAME, GROUP_COL_NAME, buildInvitationLink } from './constants';
+import { Invitation } from './entity';
 import {
   CantCreateStructureInNoFolderItem,
   MissingEmailColumnInCSVError,
@@ -27,7 +28,6 @@ import {
   NoDataInFile,
   TemplateItemDoesNotExist,
 } from './errors';
-import { Invitation } from './invitation';
 import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
 
 export class InvitationService {
