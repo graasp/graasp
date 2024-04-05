@@ -95,7 +95,12 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     // The auth frontend only blocks the user to create an account without checking the boxes.
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
-    const createdMember = await this.insert({ ...data, email, userAgreementsDate: new Date() });
+    const userAgreements = new Date();
+    // enableSaveActions defaults to null in the database.
+    // This allows us to differentiate existing users who haven't explicitly agreed to saving actions
+    // from new users who explicitly accept (true) or deny (false).
+    const enableSaveActions = data.enableSaveActions ?? false;
+    const createdMember = await this.insert({ ...data, email, userAgreements, enableSaveActions });
 
     // TODO: better solution?
     // query builder returns creator as id and extra as string

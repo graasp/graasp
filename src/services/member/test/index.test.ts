@@ -482,9 +482,6 @@ describe('Member routes tests', () => {
 
       it('Enable save actions successfully', async () => {
         const enableSaveActions = true;
-        const memberBeforePatch = await MemberRepository.findOneBy({ id: actor.id });
-        expect(memberBeforePatch?.enableSaveActions).toBe(false);
-
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/members/${actor.id}`,
