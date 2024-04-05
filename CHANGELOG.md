@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.27.0](https://github.com/graasp/graasp/compare/v1.26.0...v1.27.0) (2024-04-05)
+
+
+### Features
+
+* add display name column ([#891](https://github.com/graasp/graasp/issues/891)) ([66b454d](https://github.com/graasp/graasp/commit/66b454da24a985dca9d5f1fb857a19fa3d69352c))
+
 ## [1.26.0](https://github.com/graasp/graasp/compare/v1.25.0...v1.26.0) (2024-04-04)
 
 
