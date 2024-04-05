@@ -100,6 +100,7 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     // This allows us to differentiate existing users who haven't explicitly agreed to saving actions
     // from new users who explicitly accept (true) or deny (false).
     const enableSaveActions = data.enableSaveActions ?? false;
+    console.log('creating new user with', data, enableSaveActions);
     const createdMember = await this.insert({ ...data, email, userAgreements, enableSaveActions });
 
     // TODO: better solution?

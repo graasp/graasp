@@ -116,7 +116,8 @@ describe('Mobile Endpoints', () => {
       });
 
       const m = await MemberRepository.findOneBy({ email });
-      expectMember(m, { email, name, enableSaveActions: false });
+      expectMember(m, { email, name });
+      expect(m?.enableSaveActions).toBe(false);
       expect(mockSendEmail).toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
@@ -134,7 +135,8 @@ describe('Mobile Endpoints', () => {
       });
 
       const m = await MemberRepository.findOneBy({ email });
-      expectMember(m, { email, name, enableSaveActions });
+      expectMember(m, { email, name });
+      expect(m?.enableSaveActions).toBe(enableSaveActions);
       expect(mockSendEmail).toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });

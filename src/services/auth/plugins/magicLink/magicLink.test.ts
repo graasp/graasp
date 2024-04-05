@@ -118,7 +118,8 @@ describe('Auth routes tests', () => {
         expect.anything(),
       );
       const m = await MemberRepository.findOneBy({ email, name });
-      expectMember(m, { name, email, enableSaveActions: false });
+      expectMember(m, { name, email });
+      expect(m?.enableSaveActions).toBe(false);
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreements).toBeDefined();
       expect(m?.userAgreements).toBeInstanceOf(Date);
@@ -145,7 +146,8 @@ describe('Auth routes tests', () => {
         expect.anything(),
       );
       const m = await MemberRepository.findOneBy({ email, name });
-      expectMember(m, { name, email, enableSaveActions });
+      expectMember(m, { name, email });
+      expect(m?.enableSaveActions).toBe(enableSaveActions);
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreements).toBeDefined();
       expect(m?.userAgreements).toBeInstanceOf(Date);

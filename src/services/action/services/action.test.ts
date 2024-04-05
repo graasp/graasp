@@ -46,6 +46,7 @@ describe('ActionService', () => {
       expect(await rawRepository.count()).toEqual(actions.length);
     });
 
+    // TODO: check if this enableSaveActions is used or not.
     it('does not post actions if member disable analytics', async () => {
       ({ app, actor } = await build({
         member: MemberFactory({ extra: { enableSaveActions: false } }),

@@ -7,6 +7,7 @@ export const mregister = {
       email: { type: 'string', format: 'email' },
       challenge: { type: 'string' },
       captcha: { type: 'string' },
+      enableSaveActions: { type: 'boolean' },
     },
     additionalProperties: false,
   },
