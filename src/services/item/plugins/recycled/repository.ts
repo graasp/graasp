@@ -5,11 +5,11 @@ import { PermissionLevel } from '@graasp/sdk';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
-import { RecycledItemData } from './RecycledItemData';
+import { PackedRecycledItemData, RecycledItemData } from './RecycledItemData';
 import { CannotRestoreNonDeletedItem } from './errors';
 
 export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledItemData).extend({
-  async getOwnRecycledItemDatas(member: Member) {
+  async getOwnRecycledItemDatas(member: Member): Promise<PackedRecycledItemData[]> {
     // get only with admin membership
     const recycledItemEntries = await this.createQueryBuilder('recycledItem')
       .withDeleted()
@@ -26,7 +26,10 @@ export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledIt
       )
       .getMany();
 
-    return recycledItemEntries;
+    return recycledItemEntries.map((r) => ({
+      ...r,
+      item: { ...r.item, permission: PermissionLevel.Admin },
+    }));
   },
 
   // warning: this call insert in the table

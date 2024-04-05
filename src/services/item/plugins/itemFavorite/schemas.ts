@@ -14,6 +14,19 @@ export default {
       },
       additionalProperties: false,
     },
+    packedFavorite: {
+      type: 'object',
+      properties: {
+        id: {
+          $ref: 'https://graasp.org/#/definitions/uuid',
+        },
+        item: {
+          $ref: 'https://graasp.org/items/#/definitions/packedItem',
+        },
+        createdAt: { type: 'string' },
+      },
+      additionalProperties: false,
+    },
   },
 };
 
@@ -29,7 +42,7 @@ export const getFavorite = {
     200: {
       type: 'array',
       items: {
-        $ref: 'https://graasp.org/favorite/#/definitions/favorite',
+        $ref: 'https://graasp.org/favorite/#/definitions/packedFavorite',
       },
     },
   },

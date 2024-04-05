@@ -15,35 +15,34 @@ export default {
       },
       additionalProperties: false,
     },
-  },
-};
-
-// schema for getting recycled items
-const getRecycledItemDatas = {
-  response: {
-    200: {
-      type: 'array',
-      items: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
+    packedRecycledItem: {
+      type: 'object',
+      required: ['id', 'item'],
+      properties: {
+        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+        item: {
+          $ref: 'https://graasp.org/items/#/definitions/packedItem',
+        },
+        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
+        createdAt: { type: 'string' },
+      },
+      additionalProperties: false,
     },
   },
 };
 
-// schema for recycling one item
-const recycleOne = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
+// schema for getting recycled items
+export const getRecycledItemDatas = {
   response: {
-    200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
+    200: {
+      type: 'array',
+      items: { $ref: 'https://graasp.org/recycle-bin/#/definitions/packedRecycledItem' },
+    },
   },
 };
-// schema for restoring one item
-const restoreOne = {
-  params: { $ref: 'https://graasp.org/#/definitions/idParam' },
-  response: {
-    200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
-  },
-};
+
 // schema for deleting one item
-const deleteOne = {
+export const deleteOne = {
   params: { $ref: 'https://graasp.org/#/definitions/idParam' },
   response: {
     200: { $ref: 'https://graasp.org/recycle-bin/#/definitions/recycledItem' },
@@ -52,7 +51,7 @@ const deleteOne = {
 
 // schema for recycling >1 items
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const recycleMany = (maxItems: number) => ({
+export const recycleMany = (maxItems: number) => ({
   querystring: {
     allOf: [
       { $ref: 'https://graasp.org/#/definitions/idsQuery' },
@@ -69,7 +68,7 @@ const recycleMany = (maxItems: number) => ({
 });
 // schema for restoring>1 items
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const restoreMany = (maxItems: number) => ({
+export const restoreMany = (maxItems: number) => ({
   querystring: {
     allOf: [
       { $ref: 'https://graasp.org/#/definitions/idsQuery' },
@@ -86,7 +85,7 @@ const restoreMany = (maxItems: number) => ({
 });
 // schema for restoring>1 items
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const deleteMany = (maxItems: number) => ({
+export const deleteMany = (maxItems: number) => ({
   querystring: {
     allOf: [
       { $ref: 'https://graasp.org/#/definitions/idsQuery' },
@@ -101,13 +100,3 @@ const deleteMany = (maxItems: number) => ({
     },
   },
 });
-
-export {
-  getRecycledItemDatas,
-  recycleOne,
-  recycleMany,
-  restoreOne,
-  restoreMany,
-  deleteMany,
-  deleteOne,
-};

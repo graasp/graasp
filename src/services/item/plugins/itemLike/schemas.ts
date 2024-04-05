@@ -18,6 +18,23 @@ export default {
       },
       additionalProperties: false,
     },
+    packedIemLike: {
+      type: 'object',
+      properties: {
+        id: {
+          $ref: 'https://graasp.org/#/definitions/uuid',
+        },
+        item: {
+          $ref: 'https://graasp.org/items/#/definitions/packedItem',
+        },
+        // warning: do not include for privacy for now
+        // member: {
+        //   $ref: 'https://graasp.org/#/definitions/uuid',
+        // },
+        createdAt: {},
+      },
+      additionalProperties: false,
+    },
     likeCount: {
       type: 'number',
       additionalProperties: false,
@@ -37,7 +54,7 @@ export const getLikesForMember = {
     200: {
       type: 'array',
       items: {
-        $ref: 'https://graasp.org/itemlikes/#/definitions/itemLike',
+        $ref: 'https://graasp.org/itemlikes/#/definitions/packedIemLike',
       },
     },
   },

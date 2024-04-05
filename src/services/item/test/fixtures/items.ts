@@ -16,6 +16,7 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
+import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Actor, Member } from '../../../member/entities/member';
 import { PackedItem } from '../../ItemWrapper';
@@ -149,7 +150,11 @@ export class ItemTestUtils {
     permission?: PermissionLevel;
     creator?: Member;
     parentItem?: Item;
-  }) => {
+  }): Promise<{
+    item: Item;
+    itemMembership: ItemMembership;
+    packedItem: PackedItem;
+  }> => {
     const { item, member, permission, creator, parentItem } = options;
     const newItem = await this.saveItem({
       item,
@@ -166,22 +171,25 @@ export class ItemTestUtils {
 
   saveRecycledItem = async (member: Member, defaultItem?: Item) => {
     let item = defaultItem;
+    let packedItem;
     if (!item) {
-      ({ item } = await this.saveItemAndMembership({ member }));
+      ({ item, packedItem } = await this.saveItemAndMembership({ member }));
     }
     await this.recycledItemDataRepository.recycleOne(item, member);
     await this.rawItemRepository.softRemove(item);
-    return item;
+    return { item, packedItem };
   };
 
   saveCollections = async (member) => {
     const items: Item[] = [];
+    const packedItems: PackedItem[] = [];
     for (let i = 0; i < 3; i++) {
-      const { item } = await this.saveItemAndMembership({ member });
+      const { item, packedItem } = await this.saveItemAndMembership({ member });
       items.push(item);
+      packedItems.push(packedItem);
       await this.rawItemPublishedRepository.save({ item, creator: member });
     }
-    return items;
+    return { items, packedItems };
   };
 }
 export const expectItem = (

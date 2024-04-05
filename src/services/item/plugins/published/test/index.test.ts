@@ -14,7 +14,12 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { Item } from '../../../entities/Item';
-import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
+import {
+  ItemTestUtils,
+  expectItem,
+  expectManyItems,
+  expectManyPackedItems,
+} from '../../../test/fixtures/items';
 import { CategoryRepository } from '../../itemCategory/repositories/category';
 import { saveCategories } from '../../itemCategory/test/fixtures';
 import { ItemLike } from '../../itemLike/itemLike';
@@ -137,7 +142,7 @@ describe('Item Published', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         member = await saveMember();
-        collections = await testUtils.saveCollections(member);
+        ({ items: collections } = await testUtils.saveCollections(member));
       });
 
       it('Get 2 most recent collections', async () => {
@@ -180,7 +185,7 @@ describe('Item Published', () => {
       beforeEach(async () => {
         ({ app } = await build({ member: null }));
         members = await saveMembers();
-        collections = await testUtils.saveCollections(members[0]);
+        ({ items: collections } = await testUtils.saveCollections(members[0]));
 
         // add idx x likes
         for (const [idx, c] of collections.entries()) {
@@ -230,7 +235,7 @@ describe('Item Published', () => {
       it('Returns published collections for member', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const items = await testUtils.saveCollections(member);
+        const { packedItems: items } = await testUtils.saveCollections(member);
         await saveCategories();
 
         const res = await app.inject({
@@ -238,7 +243,7 @@ describe('Item Published', () => {
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyItems(res.json(), items);
+        expectManyPackedItems(res.json(), items);
       });
     });
 
@@ -253,14 +258,14 @@ describe('Item Published', () => {
       it('Get published collections for member', async () => {
         // add other collections
         const member = await saveMember();
-        const items = await testUtils.saveCollections(member);
+        const { packedItems: items } = await testUtils.saveCollections(member);
 
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/members/${member.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectManyItems(res.json(), items);
+        expectManyPackedItems(res.json(), items);
       });
     });
   });

@@ -12,6 +12,7 @@ import {
 import { v4 } from 'uuid';
 
 import { Member } from '../../../../member/entities/member';
+import { PackedItem } from '../../../ItemWrapper';
 import { Item } from '../../../entities/Item';
 
 @Entity()
@@ -39,3 +40,7 @@ export class ItemPublished extends BaseEntity {
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;
 }
+
+export type PackedItemPublished = ItemPublished & {
+  item: PackedItem;
+};

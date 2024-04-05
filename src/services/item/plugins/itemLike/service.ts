@@ -1,5 +1,6 @@
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import { filterOutPackedItems } from '../../../authorization';
 import ItemService from '../../../item/service';
 import { Actor } from '../../../member/entities/member';
 
@@ -19,7 +20,18 @@ export class ItemLikeService {
     // only own items
     // TODO: allow to get other's like?
 
-    return itemLikeRepository.getForMember(actor.id);
+    const likes = await itemLikeRepository.getForMember(actor.id);
+    // filter out items user might not have access to
+    // and packed item
+    const filteredItems = await filterOutPackedItems(
+      actor,
+      repositories,
+      likes.map(({ item }) => item),
+    );
+    return filteredItems.map((item) => {
+      const like = likes.find(({ item: i }) => i.id === item.id);
+      return { ...like, item };
+    });
   }
 
   async getForItem(actor: Actor, repositories: Repositories, itemId: string) {

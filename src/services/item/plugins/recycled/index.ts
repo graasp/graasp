@@ -51,18 +51,6 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
     },
   );
 
-  // TO RECYCLE: restore one item could restore a whole tree
-  // recycle item
-  // fastify.post<{ Params: IdParam }>(
-  //   '/:id/recycle',
-  //   { schema: recycleOne },
-  //   async ({ member, params: { id: itemId }, log }) => {
-  //     return db.transaction(async (manager) => {
-  //       return recycleBinService.recycle(member, buildRepositories(manager), itemId);
-  //     });
-  //   },
-  // );
-
   // recycle multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
@@ -98,19 +86,6 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
       return ids;
     },
   );
-
-  // TO REMOVE: restore one item could restore a whole tree
-  // restore one item
-  // fastify.post<{ Params: IdParam }>(
-  //   '/:id/restore',
-  //   { schema: restoreOne },
-  //   async ({ member, params: { id }, log }) => {
-  //     log.info(`Restore item '${id}'`);
-  //     return db.transaction(async (manager) => {
-  //       return recycleBinService.restoreOne(member, buildRepositories(manager), id);
-  //     });
-  //   },
-  // );
 
   // restore multiple items
   fastify.post<{ Querystring: IdsParams }>(

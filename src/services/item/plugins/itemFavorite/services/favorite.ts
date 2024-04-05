@@ -2,9 +2,10 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
-import { validatePermission } from '../../../../authorization';
+import { filterOutPackedItems } from '../../../../authorization';
 import { Actor } from '../../../../member/entities/member';
 import ItemService from '../../../service';
+import { PackedItemFavorite } from '../entities/ItemFavorite';
 
 export class FavoriteService {
   private itemService: ItemService;
@@ -13,20 +14,32 @@ export class FavoriteService {
     this.itemService = itemService;
   }
 
-  async getOwn(actor: Actor, repositories: Repositories) {
+  async getOwn(actor: Actor, repositories: Repositories): Promise<PackedItemFavorite[]> {
     const { itemFavoriteRepository } = repositories;
 
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
 
-    // Really unoptimal of checking the permissions, but we currently need to do this as the user might lose the permission for an Item.
-    return (await itemFavoriteRepository.getFavoriteForMember(actor.id)).filter(
-      async (f) =>
-        (await validatePermission(repositories, PermissionLevel.Read, actor, f.item).catch(
-          () => null,
-        )) !== null,
+    const favorites = await itemFavoriteRepository.getFavoriteForMember(actor.id);
+
+    // filter out items user might not have access to
+    // and packed item
+    const filteredItems = await filterOutPackedItems(
+      actor,
+      repositories,
+      favorites.map(({ item }) => item),
     );
+
+    // insert back packed item inside favorite entities
+    return filteredItems.map((item) => {
+      const fav = favorites.find(({ item: i }) => i.id === item.id);
+      // should never pass here
+      if (!fav) {
+        throw new Error(`favorite should be defined`);
+      }
+      return { ...fav, item };
+    });
   }
 
   async post(actor: Actor, repositories: Repositories, itemId: string) {
