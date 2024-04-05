@@ -8,7 +8,7 @@ import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
-import { MAX_FILE_SIZE, MAX_NON_FILE_FIELDS } from './constants';
+import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
 import { NoFileProvidedForInvitations } from './errors';
 import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne } from './schema';

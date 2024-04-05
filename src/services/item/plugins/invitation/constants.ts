@@ -14,7 +14,6 @@ export const buildInvitationLink = (invitation: Invitation) => {
 // to-do define the constant multipart
 // refactor to the constants
 export const MAX_FILE_SIZE = 1024 * 1024 * 200; // 200 MB
-export const MAX_NON_FILE_FIELDS = 0;
 export const CSV_MIMETYPE = 'text/csv';
 export const GROUP_COL_NAME = 'group_name';
 export const EMAIL_COLUMN_NAME = 'email';
