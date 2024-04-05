@@ -68,8 +68,8 @@ describe('Mobile Endpoints', () => {
       expectMember(m, { email, name });
 
       // ensure that the user agreements are set for new registration
-      expect(m?.userAgreements).toBeDefined();
-      expect(m?.userAgreements).toBeInstanceOf(Date);
+      expect(m?.userAgreementsDate).toBeDefined();
+      expect(m?.userAgreementsDate).toBeInstanceOf(Date);
 
       expect(mockSendEmail).toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
@@ -99,8 +99,8 @@ describe('Mobile Endpoints', () => {
       const m = await MemberRepository.findOneBy({ email });
       expectMember(m, member);
       // ensure that the user agreements are set for new registration
-      expect(m?.userAgreements).toBeDefined();
-      expect(m?.userAgreements).toBeInstanceOf(Date);
+      expect(m?.userAgreementsDate).toBeDefined();
+      expect(m?.userAgreementsDate).toBeInstanceOf(Date);
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 

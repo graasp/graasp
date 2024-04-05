@@ -42,9 +42,9 @@ export class Member extends BaseEntity {
 
   @Column({
     nullable: true,
-    name: 'user_agreements',
+    name: 'user_agreements_date',
   })
-  userAgreements: Date;
+  userAgreementsDate: Date;
 
   @CreateDateColumn({
     update: false,

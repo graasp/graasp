@@ -88,7 +88,7 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     // The auth frontend only block the user to create an account without checking the boxes.
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
-    const createdMember = await this.insert({ ...data, email, userAgreements: new Date() });
+    const createdMember = await this.insert({ ...data, email, userAgreementsDate: new Date() });
 
     // TODO: better solution?
     // query builder returns creator as id and extra as string

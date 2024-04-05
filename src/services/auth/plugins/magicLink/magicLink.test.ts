@@ -58,8 +58,8 @@ describe('Auth routes tests', () => {
       expectMember(m, { name, email });
 
       // ensure that the user agreements are set for new registration
-      expect(m?.userAgreements).toBeDefined();
-      expect(m?.userAgreements).toBeInstanceOf(Date);
+      expect(m?.userAgreementsDate).toBeDefined();
+      expect(m?.userAgreementsDate).toBeInstanceOf(Date);
 
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -93,8 +93,8 @@ describe('Auth routes tests', () => {
       const m = await MemberRepository.findOneBy({ email, name });
       expectMember(m, { name, email, extra: { lang } });
       // ensure that the user agreements are set for new registration
-      expect(m?.userAgreements).toBeDefined();
-      expect(m?.userAgreements).toBeInstanceOf(Date);
+      expect(m?.userAgreementsDate).toBeDefined();
+      expect(m?.userAgreementsDate).toBeInstanceOf(Date);
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
