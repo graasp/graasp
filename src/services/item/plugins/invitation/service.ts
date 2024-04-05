@@ -1,10 +1,9 @@
 import groupby from 'lodash.groupby';
-import { stringify } from 'node:querystring';
 
 import { MultipartFile } from '@fastify/multipart';
 import { FastifyBaseLogger } from 'fastify';
 
-import { PermissionLevel, partitionArray } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 import { ItemType } from '@graasp/sdk';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
@@ -25,14 +24,11 @@ import {
   MissingEmailInRowError,
   MissingGroupColumnInCSVError,
   MissingGroupInRowError,
-  NoDataFoundForInvitations,
   NoDataInFile,
-  NoGroupFoundForInvitations,
-  NoGroupNamesFoundForInvitations,
   TemplateItemDoesNotExist,
 } from './errors';
 import { Invitation } from './invitation';
-import { CSVInvite, parseCSV, regexGenFirstLevelItems, verifyCSVFileFormat } from './utils';
+import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
 
 export class InvitationService {
   log: FastifyBaseLogger;
