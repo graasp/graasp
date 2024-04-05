@@ -378,7 +378,7 @@ describe('Recycle Bin Tests', () => {
     /**
      * This is a regression test from a real production bug caused by not restoring the soft-deleted children
      */
-    it.only('Restores the subtree successfully if it has children', async () => {
+    it('Restores the subtree successfully if it has children', async () => {
       const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
       const { item: childItem } = await testUtils.saveItemAndMembership({
         member: actor,
