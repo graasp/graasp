@@ -98,14 +98,15 @@ export const InvitationRepository = AppDataSource.getRepository(Invitation).exte
     );
 
     const ids = insertResult.identifiers.map(({ id }) => id);
-    console.log(ids);
     if (ids.length) {
       // get the created invitations
-      return this.createQueryBuilder('invitation')
+      const res = await this.createQueryBuilder('invitation')
         .innerJoinAndSelect('invitation.item', 'item')
         .innerJoinAndSelect('invitation.creator', 'creator')
         .where('invitation.id IN (:...ids)', { ids })
         .getMany();
+      console.log(res);
+      return res;
     }
     return [];
   },

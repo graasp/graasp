@@ -18,7 +18,7 @@ import { Invitation } from '../entity';
 import { InvitationRepository } from '../repository';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 const testUtils = new ItemTestUtils();
 
@@ -115,7 +115,7 @@ describe('Invitation Plugin', () => {
           where: { email: In(invitations.map(({ email }) => email)) },
         });
         const result = await response.json();
-        expectInvitations(Object.values(result.data), completeInvitations);
+        expectInvitations(result, completeInvitations);
 
         // check email got sent
         await new Promise((done) => {
@@ -144,7 +144,7 @@ describe('Invitation Plugin', () => {
           where: { email: invitation.email.toLowerCase() },
         });
         const result = await response.json();
-        expectInvitations(Object.values(result.data), completeInvitations);
+        expectInvitations(result, completeInvitations);
       });
 
       it('throws if one invitation is malformed', async () => {

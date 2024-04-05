@@ -115,6 +115,7 @@ export class InvitationService {
       this.sendInvitationEmail({ actor, invitation });
     });
 
+    console.log(completeInvitations);
     return completeInvitations;
   }
 

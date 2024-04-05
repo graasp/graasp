@@ -53,7 +53,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ member, body, params }) => {
       return db.transaction(async (manager) => {
-        return iS.postManyForItem(member, buildRepositories(manager), params.id, body.invitations);
+        const res = await iS.postManyForItem(
+          member,
+          buildRepositories(manager),
+          params.id,
+          body.invitations,
+        );
+        console.log(res);
+        return res;
       });
     },
   );
