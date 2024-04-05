@@ -17,11 +17,15 @@ export type CSVInvite = {
 export const parseCSV = (stream: Readable): Promise<{ rows: CSVInvite[]; header: string[] }> => {
   return new Promise((resolve, reject) => {
     Papa.parse<CSVInvite>(stream, {
+      // get the headers from the file
       header: true,
+      // do not try to convert the values to other types (everything will be a string)
       dynamicTyping: false,
+      // needed in order to support spaes in the header
       transformHeader(header) {
         return header.trim().toLowerCase();
       },
+      // trim each value, and additionaly lowercase the email column
       transform(value, header) {
         if (header === EMAIL_COLUMN_NAME) {
           return value.trim().toLowerCase();
@@ -41,16 +45,11 @@ export const parseCSV = (stream: Readable): Promise<{ rows: CSVInvite[]; header:
   });
 };
 
-export const regexGenFirstLevelItems = (firstLvlPath: string) => {
-  return RegExp(`${firstLvlPath}\.[a-zA-Z0-9_]+$`);
-};
-
 export const verifyCSVFileFormat = (file: MultipartFile) => {
   // is this check sufficient ? the mimetype coud be forged...
   if (file.mimetype != CSV_MIMETYPE) {
-    throw new Error(`
-        An incorrect type of file has been uploaded,
-        Please upload a file with .csv extension
-      `);
+    throw new Error(
+      'An incorrect type of file has been uploaded. Please upload a file with .csv extension.',
+    );
   }
 };
