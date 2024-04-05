@@ -1836,9 +1836,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.3.1":
-  version: 4.3.1
-  resolution: "@graasp/sdk@npm:4.3.1"
+"@graasp/sdk@npm:4.6.0":
+  version: 4.6.0
+  resolution: "@graasp/sdk@npm:4.6.0"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     js-cookie: "npm:3.0.5"
@@ -1846,7 +1846,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9
-  checksum: 10/d2715dde95901fbe67eb788f324d212f556c9ea607cb2041e6d7f9a12e41dc21d25a867ca92add5cd3cf8407daf2efa7e5c1f08f2e95f8db956018ff44275a33
+  checksum: 10/85456a68c8498375b298c7677db1aa221deb9c73406204b84bf15da6a699cee4f992600c0fd2b2280b71aff442c2afe7c5bfa92dbea2e4863e6edca70e49e9e3
   languageName: node
   linkType: hard
 
@@ -6496,7 +6496,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.3.1"
+    "@graasp/sdk": "npm:4.6.0"
     "@graasp/translations": "npm:1.23.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"

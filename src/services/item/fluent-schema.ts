@@ -46,6 +46,7 @@ export const item = S.object()
   .additionalProperties(false)
   .prop('id', uuid)
   .prop('name', S.string())
+  .prop('displayName', S.string())
   .prop('description', S.mixed(['string', 'null']))
   .prop('type', S.string())
   .prop('path', S.string())
@@ -61,25 +62,10 @@ export const item = S.object()
   .prop('createdAt', S.raw({}))
   .prop('updatedAt', S.raw({}));
 
-export const packedItem = S.object()
-  .additionalProperties(false)
-  .prop('id', uuid)
-  .prop('name', S.string())
-  .prop('description', S.mixed(['string', 'null']))
-  .prop('type', S.string())
-  .prop('path', S.string())
-  .prop('extra', S.object().additionalProperties(true))
-  .prop('settings', settings)
-  .prop('lang', S.string())
-  // creator could have been deleted
-  .prop('creator', S.ifThenElse(S.null(), S.null(), partialMember))
-  /**
-   * for some reason setting these date fields as "type: 'string'"
-   * makes the serialization fail using the anyOf.
-   */
-  .prop('createdAt', S.raw({}))
-  .prop('updatedAt', S.raw({}))
-  .prop('permission', S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]));
+export const packedItem = item.prop(
+  'permission',
+  S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]),
+);
 /**
  * for validation on create
  */
@@ -88,6 +74,10 @@ export const packedItem = S.object()
 export const baseItemCreate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'))
+  .prop(
+    'displayName',
+    S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'),
+  )
   .prop('description', S.string())
   .prop('type', S.const('base'))
   .prop('extra', S.object().additionalProperties(false))
@@ -133,10 +123,10 @@ export const folderItemCreate = S.object().prop('type', S.const('folder')).exten
 /**
  * for validation on update
  */
-
 export const itemUpdate = S.object()
   .additionalProperties(false)
   .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
+  .prop('displayName', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
   .prop('description', S.string())
   .prop('lang', S.string())
   .prop('settings', settings)
@@ -329,6 +319,7 @@ export default {
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         name: { type: 'string' },
+        displayName: { type: 'string' },
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
         path: { type: 'string' },
@@ -352,6 +343,7 @@ export default {
       properties: {
         id: { $ref: 'https://graasp.org/#/definitions/uuid' },
         name: { type: 'string' },
+        displayName: { type: 'string' },
         description: { type: ['string', 'null'] },
         type: { type: 'string' },
         path: { type: 'string' },

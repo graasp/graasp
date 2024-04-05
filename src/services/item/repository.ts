@@ -71,6 +71,7 @@ export class ItemRepository {
    */
   createOne(args: {
     name: Item['name'];
+    displayName?: Item['displayName'];
     description?: Item['description'];
     type?: Item['type'];
     extra?: Item['extra'];
@@ -81,6 +82,7 @@ export class ItemRepository {
   }) {
     const {
       name,
+      displayName,
       description = null,
       parent,
       type = ItemType.FOLDER,
@@ -107,6 +109,7 @@ export class ItemRepository {
     const item = this.repository.create({
       id,
       name,
+      displayName: displayName ?? name,
       description,
       type,
       extra: parsedExtra,
