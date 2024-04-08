@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.28.0](https://github.com/graasp/graasp/compare/v1.27.0...v1.28.0) (2024-04-08)
+
+
+### Features
+
+* add auth from mobile to web ([#921](https://github.com/graasp/graasp/issues/921)) ([dfbde8e](https://github.com/graasp/graasp/commit/dfbde8e7f8b935e2cc64a283f911504c974e5ccd))
+* import users with CSV and create file structure based on groups in CSV ([#700](https://github.com/graasp/graasp/issues/700)) ([410dbd8](https://github.com/graasp/graasp/commit/410dbd8f7805a01c8fec83313c80b399be30fbb3))
+
+
+### Bug Fixes
+
+* flacky websockets test ([#927](https://github.com/graasp/graasp/issues/927)) ([f83537f](https://github.com/graasp/graasp/commit/f83537fab69d2238e8eda8539a514eb71b07d880))
+* update deploy workflows to use the tag instead of main when checkout ([#926](https://github.com/graasp/graasp/issues/926)) ([93d8790](https://github.com/graasp/graasp/commit/93d879045568220ac57580591b6617002b3b7c04))
+
 ## [1.27.0](https://github.com/graasp/graasp/compare/v1.26.0...v1.27.0) (2024-04-05)
 
 
