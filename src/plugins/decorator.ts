@@ -9,6 +9,7 @@ import { ItemCategoryService } from '../services/item/plugins/itemCategory/servi
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { ItemPublishedService } from '../services/item/plugins/published/service';
 import ItemService from '../services/item/service';
+import ItemMembershipService from '../services/itemMembership/service';
 import { StorageService } from '../services/member/plugins/storage/service';
 import { MemberService } from '../services/member/service';
 import { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } from '../utils/config';
@@ -37,6 +38,10 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('items', {
     service: new ItemService(),
+  });
+
+  fastify.decorate('memberships', {
+    service: new ItemMembershipService(fastify.items.service, fastify.mailer),
   });
 
   fastify.decorate('actions', {

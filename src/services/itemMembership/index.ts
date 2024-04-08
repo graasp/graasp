@@ -9,15 +9,15 @@ import { IdParam } from '../../types';
 import { buildRepositories } from '../../utils/repositories';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
-import ItemMembershipService from './service';
 import { membershipWsHooks } from './ws/hooks';
 
 const ROUTES_PREFIX = '/item-memberships';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items, mailer } = fastify;
-  const itemMembershipService = new ItemMembershipService(items.service, mailer);
-  fastify.decorate('memberships', { service: itemMembershipService });
+  const {
+    db,
+    memberships: { service: itemMembershipService },
+  } = fastify;
 
   // schemas
   fastify.addSchema(common);

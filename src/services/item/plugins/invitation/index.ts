@@ -15,7 +15,14 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, db, log, members, items } = fastify;
+  const {
+    mailer,
+    db,
+    log,
+    members,
+    items,
+    memberships: { service: itemMembershipService },
+  } = fastify;
 
   if (!mailer) {
     throw new Error('Mailer plugin is not defined');
@@ -78,8 +85,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         throw new UnauthorizedMember(member);
       }
 
-      // We need to get the membership service here because it is defined after the invitation service
-      const { memberships } = fastify;
       // get uploaded file
       const uploadedFile = await request.file({
         limits: {
@@ -105,7 +110,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             itemId,
             templateId,
             uploadedFile,
-            memberships.service,
+            itemMembershipService,
           ),
         );
       }
@@ -115,7 +120,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           buildRepositories(manager),
           itemId,
           uploadedFile,
-          memberships.service,
+          itemMembershipService,
         ),
       );
     },
