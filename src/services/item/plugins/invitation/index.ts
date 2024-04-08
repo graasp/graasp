@@ -101,7 +101,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         if (templateId) {
           return await db.transaction(async (manager) =>
-            iS.handleCSVInvitations(
+            iS.createStructureForCSVAndTemplate(
               member,
               buildRepositories(manager),
               itemId,

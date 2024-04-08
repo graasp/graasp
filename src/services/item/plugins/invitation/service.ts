@@ -101,7 +101,7 @@ export class InvitationService {
 
     const completeInvitations = await invitationRepository.postMany(invitations, item.path, actor);
 
-    // this.log.debug('send invitation mails');
+    this.log.debug('send invitation mails');
     completeInvitations.forEach((invitation: Invitation) => {
       // send mail without awaiting
       this.sendInvitationEmail({ actor, invitation });
@@ -235,9 +235,8 @@ export class InvitationService {
     // verify file is CSV
     verifyCSVFileFormat(file);
 
-    // get parentItem
-    const item = await repositories.itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, item);
+    // get the item, verify user has Admin access
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     // parse CSV file
     const { rows, header } = await parseCSV(file.file);
@@ -266,7 +265,7 @@ export class InvitationService {
     );
   }
 
-  async handleCSVInvitations(
+  async createStructureForCSVAndTemplate(
     actor: Member,
     repositories: Repositories,
     parentId: string,
@@ -284,11 +283,15 @@ export class InvitationService {
     verifyCSVFileFormat(file);
 
     // get parentItem
-    const parentItem = await repositories.itemRepository.get(parentId);
-    await validatePermission(repositories, PermissionLevel.Admin, actor, parentItem);
+    const parentItem = await this.itemService.get(
+      actor,
+      repositories,
+      parentId,
+      PermissionLevel.Admin,
+    );
 
     // check that the template exists
-    const templateItem = await repositories.itemRepository.get(templateId);
+    const templateItem = await this.itemService.get(actor, repositories, templateId);
     if (!templateItem.id) {
       throw new TemplateItemDoesNotExist();
     }
