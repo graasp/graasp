@@ -24,9 +24,11 @@ jobs:
     environment: production
 
     steps:
-      # Check-out repository under $GITHUB_WORKSPACE, so the job can access it
+      # Check-out the tag specified in the payload
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.tag }}
 
       # Configure AWS credential and region environment variables for use in next steps
       - name: Configure AWS Credentials
