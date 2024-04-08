@@ -547,7 +547,10 @@ describe('Item websocket hooks', () => {
   describe('asynchronous feedback', () => {
     it('member that initiated the updateMany operation receives success feedback', async () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
-      const memberUpdates = await ws.subscribe({ topic: memberItemsTopic, channel: actor.id });
+      const memberUpdates = await ws.subscribe<ItemEvent>({
+        topic: memberItemsTopic,
+        channel: actor.id,
+      });
 
       const payload = { name: 'new name' };
       const response = await app.inject({
@@ -566,7 +569,7 @@ describe('Item websocket hooks', () => {
       expectItem(updated, { ...item, ...payload }, actor);
 
       await waitForExpect(() => {
-        const [_ownUpdate, _accessibleUpdate, feedbackUpdate] = memberUpdates;
+        const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('update', [item.id], { data: { [item.id]: updated }, errors: [] }),
         );
