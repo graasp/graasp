@@ -67,7 +67,17 @@ email, permission, name
 alice@example.com,, Alice
 ```
 
-#### Handling duplicates
+#### Handling Errors
+
+The endpoint either performs all the requested memberships and invitations, or fails with an error.
+
+Errors reasons might be related to:
+- invalid file format
+- empty file
+- missing required emails in file
+- missing access rights on items
+- modification of existing persmissions on an item
+- addition of an invitation on an item where an invitation for the same email already exists
 
 #### Memberships
 
