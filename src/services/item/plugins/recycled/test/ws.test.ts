@@ -813,7 +813,7 @@ describe('Recycle websocket hooks', () => {
       expect(restore.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(() => {
-        const [feedbackUpdate] = memberUpdates;
+        const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('restore', [item.id], {
             error: new Error('mock error'),
