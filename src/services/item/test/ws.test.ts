@@ -571,7 +571,7 @@ describe('Item websocket hooks', () => {
       let feedbackUpdate;
       // this ffedback seems flacky, this might be because the websocket is sent from inside the transaction ?
       await waitForExpect(() => {
-        const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
+        feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
         expect(feedbackUpdate).toBeDefined();
       }, 8000);
 
