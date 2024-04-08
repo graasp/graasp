@@ -7,21 +7,22 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, ItemTagType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemTag } from '../ItemTag';
 import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from '../errors';
-import { ItemTagRepository } from '../repository';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
+const rawItemTagRepository = AppDataSource.getRepository(ItemTag);
 
 export const saveTagsForItem = async ({ item, creator }) => {
   const itemTags: ItemTag[] = [];
-  itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.Hidden }));
+  itemTags.push(await rawItemTagRepository.save({ item, creator, type: ItemTagType.Hidden }));
 
   return itemTags;
 };
@@ -66,7 +67,7 @@ describe('Tags', () => {
       });
 
       it('Returns successfully if item is public', async () => {
-        const itemTag = await ItemTagRepository.save({
+        const itemTag = await rawItemTagRepository.save({
           item,
           creator: member,
           type: ItemTagType.Public,
@@ -137,7 +138,7 @@ describe('Tags', () => {
       });
 
       it('Returns successfully if item is public', async () => {
-        const itemTag = await ItemTagRepository.save({
+        const itemTag = await rawItemTagRepository.save({
           item,
           creator: member,
           type: ItemTagType.Public,
@@ -269,7 +270,7 @@ describe('Tags', () => {
 
       it('Cannot create tag if exists for item', async () => {
         ({ item } = await testUtils.saveItemAndMembership({ member: actor }));
-        await ItemTagRepository.save({ item, type, creator: actor });
+        await rawItemTagRepository.save({ item, type, creator: actor });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -281,7 +282,7 @@ describe('Tags', () => {
       it('Cannot create tag if exists on parent', async () => {
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
         ({ item } = await testUtils.saveItemAndMembership({ member: actor, parentItem: parent }));
-        await ItemTagRepository.save({ item: parent, type, creator: actor });
+        await rawItemTagRepository.save({ item: parent, type, creator: actor });
 
         const res = await app.inject({
           method: HttpMethod.Post,
@@ -361,16 +362,16 @@ describe('Tags', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
-        const itemTag = await ItemTagRepository.findOneBy({ id: toDelete.id });
+        const itemTag = await rawItemTagRepository.findOneBy({ id: toDelete.id });
         expect(itemTag).toBeNull();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const childItemTag = await ItemTagRepository.findOneBy({ id: descendantToDelete!.id });
+        const childItemTag = await rawItemTagRepository.findOneBy({ id: descendantToDelete!.id });
         expect(childItemTag).toBeNull();
       });
       it('Cannot delete inherited tag', async () => {
         const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
         ({ item } = await testUtils.saveItemAndMembership({ member: actor, parentItem: parent }));
-        const tag = await ItemTagRepository.save({ item: parent, type, creator: actor });
+        const tag = await rawItemTagRepository.save({ item: parent, type, creator: actor });
 
         const res = await app.inject({
           method: HttpMethod.Delete,

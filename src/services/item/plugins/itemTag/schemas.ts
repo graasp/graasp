@@ -1,6 +1,7 @@
-import { ItemTagType, MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { UUID_REGEX } from '../../../../schemas/global';
+import { itemTag, itemTagType } from '../../fluent-schema';
 
 export default {
   $id: 'https://graasp.org/item-tags/',
@@ -22,25 +23,10 @@ export default {
     },
 
     // item tag properties to be returned to the client
-    itemTagType: {
-      type: 'string',
-      enum: Object.values(ItemTagType),
-    },
+    itemTagType,
 
     // item tag properties to be returned to the client
-    itemTag: {
-      type: 'object',
-      properties: {
-        id: { $ref: 'https://graasp.org/#/definitions/uuid' },
-        type: { $ref: 'https://graasp.org/item-tags/#/definitions/itemTagType' },
-        item: {
-          $ref: 'https://graasp.org/items/#/definitions/item',
-        },
-        creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
-        createdAt: { type: 'string' },
-      },
-      additionalProperties: false,
-    },
+    itemTag,
 
     // item tag properties required at creation
     createPartialItemTag: {

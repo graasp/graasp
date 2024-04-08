@@ -179,7 +179,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Returns error in array if does not have rights on one item', async () => {
           const member = await saveMember();
-          const errorItem = await testUtils.saveRecycledItem(member);
+          const { item: errorItem } = await testUtils.saveRecycledItem(member);
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `/items/recycle?${qs.stringify(
@@ -254,9 +254,9 @@ describe('Recycle Bin Tests', () => {
         let items, itemIds;
         beforeEach(async () => {
           ({ app, actor } = await build());
-          const item1 = await testUtils.saveRecycledItem(actor);
-          const item2 = await testUtils.saveRecycledItem(actor);
-          const item3 = await testUtils.saveRecycledItem(actor);
+          const { item: item1 } = await testUtils.saveRecycledItem(actor);
+          const { item: item2 } = await testUtils.saveRecycledItem(actor);
+          const { item: item3 } = await testUtils.saveRecycledItem(actor);
           items = [item1, item2, item3];
           itemIds = items.map(({ id }) => id);
         });

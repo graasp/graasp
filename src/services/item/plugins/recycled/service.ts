@@ -5,6 +5,7 @@ import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor } from '../../../member/entities/member';
+import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 
 export class RecycledBinService {
@@ -26,7 +27,24 @@ export class RecycledBinService {
       throw new UnauthorizedMember(actor);
     }
 
-    return recycledItemRepository.getOwnRecycledItemDatas(actor);
+    const recycled = await recycledItemRepository.getOwnRecycledItemDatas(actor);
+    const packedItems = await ItemWrapper.createPackedItems(
+      actor,
+      repositories,
+      recycled.map((r) => r.item),
+      undefined,
+      { withDeleted: true },
+    );
+
+    // insert back packed item inside recycled entities
+    return recycled.map((r) => {
+      const item = packedItems.find((i) => i.id === r.item.id);
+      // should never pass here
+      if (!item) {
+        throw new Error(`item should be defined`);
+      }
+      return { ...r, item };
+    });
   }
 
   async recycleMany(actor: Actor, repositories: Repositories, itemIds: string[]) {

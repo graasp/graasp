@@ -762,7 +762,7 @@ describe('Recycle websocket hooks', () => {
     });
 
     it('member that initated the restore operation receives success feedback', async () => {
-      const item = await testUtils.saveRecycledItem(actor);
+      const { item } = await testUtils.saveRecycledItem(actor);
 
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,
@@ -796,7 +796,7 @@ describe('Recycle websocket hooks', () => {
 
     // flacky test is disabed for the moment
     it.skip('member that initated the restore operation receives failure feedback', async () => {
-      const item = await testUtils.saveRecycledItem(actor);
+      const { item } = await testUtils.saveRecycledItem(actor);
 
       const memberUpdates = await ws.subscribe<ItemEvent>({
         topic: memberItemsTopic,

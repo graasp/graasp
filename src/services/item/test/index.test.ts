@@ -40,7 +40,7 @@ import { saveMember } from '../../member/test/fixtures/members';
 import { PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
-import { ItemTagRepository } from '../plugins/itemTag/repository';
+import { ItemTag } from '../plugins/itemTag/ItemTag';
 import { Ordering, SortBy } from '../types';
 import {
   ItemTestUtils,
@@ -51,6 +51,8 @@ import {
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
+
+const rawRepository = AppDataSource.getRepository(ItemTag);
 
 const testUtils = new ItemTestUtils();
 
@@ -634,7 +636,7 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const item = await testUtils.savePublicItem({ actor: member });
+        const { item, publicTag } = await testUtils.savePublicItem({ actor: member });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -642,12 +644,14 @@ describe('Item routes tests', () => {
         });
 
         const returnedItem = response.json();
-        expectPackedItem(returnedItem, { ...item, permission: null }, actor);
+        expectPackedItem(returnedItem, { ...item, permission: null }, actor, undefined, [
+          publicTag,
+        ]);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns successfully for write right', async () => {
         ({ app, actor } = await build());
-        const item = await testUtils.savePublicItem({ actor });
+        const { item, publicTag } = await testUtils.savePublicItem({ actor });
         await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Write });
 
         const response = await app.inject({
@@ -656,7 +660,13 @@ describe('Item routes tests', () => {
         });
 
         const returnedItem = response.json();
-        expectPackedItem(returnedItem, { ...item, permission: PermissionLevel.Write }, actor);
+        expectPackedItem(
+          returnedItem,
+          { ...item, permission: PermissionLevel.Write },
+          actor,
+          undefined,
+          [publicTag],
+        );
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });
@@ -765,9 +775,11 @@ describe('Item routes tests', () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
         const items: Item[] = [];
+        const publicTags: ItemTag[] = [];
         for (let i = 0; i < 3; i++) {
-          const item = await testUtils.savePublicItem({ actor: member });
+          const { item, publicTag } = await testUtils.savePublicItem({ actor: member });
           items.push(item);
+          publicTags.push(publicTag);
         }
 
         const response = await app.inject({
@@ -781,11 +793,17 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         const { data, errors } = response.json();
         expect(errors).toHaveLength(0);
-        items.forEach(({ id }) => {
-          expectPackedItem(data[id], {
-            ...items.find(({ id: thisId }) => thisId === id),
-            permission: null,
-          });
+        items.forEach(({ id }, idx) => {
+          expectPackedItem(
+            data[id],
+            {
+              ...items.find(({ id: thisId }) => thisId === id),
+              permission: null,
+            },
+            member,
+            undefined,
+            [publicTags[idx]],
+          );
         });
       });
     });
@@ -1488,7 +1506,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
+        await rawRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
 
         const children = [child2];
 
@@ -1602,9 +1620,15 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const actor = await saveMember();
-        const parent = await testUtils.savePublicItem({ actor });
-        const child1 = await testUtils.savePublicItem({ actor, parentItem: parent });
-        const child2 = await testUtils.savePublicItem({ actor, parentItem: parent });
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor });
+        const { item: child1 } = await testUtils.savePublicItem({
+          actor,
+          parentItem: parent,
+        });
+        const { item: child2 } = await testUtils.savePublicItem({
+          actor,
+          parentItem: parent,
+        });
 
         const children = [child1, child2];
         // create child of child
@@ -1621,6 +1645,10 @@ describe('Item routes tests', () => {
           expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
             { ...children.find(({ id: thisId }) => thisId === id), permission: null },
+            actor,
+            undefined,
+            // inheritance
+            [publicTag],
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1694,7 +1722,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
+        await rawRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
 
         await testUtils.saveItemAndMembership({
           member,
@@ -1766,21 +1794,21 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        const actor = await saveMember();
         ({ app } = await build({ member: null }));
-        const parent = await testUtils.savePublicItem({ actor });
-        const child1 = await testUtils.savePublicItem({
+        const actor = await saveMember();
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor });
+        const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
           actor,
           parentItem: parent,
         });
-        const child2 = await testUtils.savePublicItem({
+        const { item: child2 } = await testUtils.savePublicItem({
           item: { name: 'child2' },
           actor,
           parentItem: parent,
         });
 
-        const childOfChild = await testUtils.savePublicItem({
+        const { item: childOfChild } = await testUtils.savePublicItem({
           item: { name: 'child3' },
           actor,
           parentItem: child1,
@@ -1798,6 +1826,10 @@ describe('Item routes tests', () => {
           expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
             { ...descendants.find(({ id: thisId }) => thisId === id), permission: null },
+            actor,
+            undefined,
+            // inheritance
+            [publicTag],
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1908,14 +1940,14 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const parent = await testUtils.savePublicItem({ actor: null });
-        const child1 = await testUtils.savePublicItem({
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor: null });
+        const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
           actor: null,
           parentItem: parent,
         });
 
-        const childOfChild = await testUtils.savePublicItem({
+        const { item: childOfChild } = await testUtils.savePublicItem({
           item: { name: 'child3' },
           actor: null,
           parentItem: child1,
@@ -1938,7 +1970,9 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(parents.length);
         data.forEach((p, idx) => {
-          expectPackedItem(p, { ...parents[idx], permission: null });
+          expectPackedItem(p, { ...parents[idx], permission: null }, undefined, undefined, [
+            publicTag,
+          ]);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });

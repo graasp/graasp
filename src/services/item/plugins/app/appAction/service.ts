@@ -51,8 +51,13 @@ export class AppActionService {
     const item = await itemRepository.get(itemId);
 
     // posting an app action is allowed to readers
-    const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
-    const permission = membership?.permission;
+    const { itemMembership } = await validatePermission(
+      repositories,
+      PermissionLevel.Read,
+      member,
+      item,
+    );
+    const permission = itemMembership?.permission;
     let { memberId: fMemberId } = filters;
 
     // can read only own app action if not admin
@@ -82,8 +87,13 @@ export class AppActionService {
     const item = await itemRepository.get(itemIds[0]);
 
     // posting an app action is allowed to readers
-    const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
-    const permission = membership?.permission;
+    const { itemMembership } = await validatePermission(
+      repositories,
+      PermissionLevel.Read,
+      member,
+      item,
+    );
+    const permission = itemMembership?.permission;
     let { memberId: fMemberId } = filters;
 
     // can read only own app action if not admin

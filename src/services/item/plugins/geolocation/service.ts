@@ -3,6 +3,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermissionMany } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
+import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
@@ -65,7 +66,7 @@ export class ItemGeolocationService {
     }
 
     const geoloc = await itemGeolocationRepository.getItemsIn(actor, query, parentItem);
-    const validatedItems = await validatePermissionMany(
+    const { itemMemberships, tags } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
@@ -75,13 +76,16 @@ export class ItemGeolocationService {
     // filter out items without permission
     // and add permission for item packed
     // TODO optimize?
-    const memberships = validatedItems.data;
     return geoloc
       .map((g) => {
-        if (g.item.id in validatedItems.data) {
+        if (g.item.id in itemMemberships.data) {
           return {
             ...g,
-            item: { ...g.item, permission: memberships[g.item.id]?.permission ?? null },
+            item: new ItemWrapper(
+              g.item,
+              itemMemberships.data[g.item.id],
+              tags.data[g.item.id],
+            ).packed(),
           };
         }
         return null;

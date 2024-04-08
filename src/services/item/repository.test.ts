@@ -24,12 +24,7 @@ import {
 import { saveMember } from '../member/test/fixtures/members';
 import { FolderItem, Item } from './entities/Item';
 import { ItemRepository } from './repository';
-import {
-  ItemTestUtils,
-  expectItem,
-  expectManyItems,
-  expectManyPackedItems,
-} from './test/fixtures/items';
+import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
 
 // mock datasource
 jest.mock('../../plugins/datasource');
@@ -758,13 +753,13 @@ describe('ItemRepository', () => {
   });
   describe('getPublishedItemsForMember', () => {
     it('get published items for member', async () => {
-      const { packedItems: items } = await testUtils.saveCollections(actor);
+      const { items } = await testUtils.saveCollections(actor);
       // noise
       const member = await saveMember();
       await testUtils.saveCollections(member);
 
       const result = await itemRepository.getPublishedItemsForMember(actor.id);
-      expectManyPackedItems(result, items);
+      expectManyItems(result, items);
     });
   });
 });

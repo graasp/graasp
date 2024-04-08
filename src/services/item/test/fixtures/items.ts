@@ -6,6 +6,7 @@ import {
   EtherpadItemFactory,
   FolderItemFactory,
   H5PItemFactory,
+  ItemTagType,
   ItemType,
   LinkItemFactory,
   LocalFileItemFactory,
@@ -19,8 +20,10 @@ import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemMembership } from '../../../itemMembership/entities/ItemMembership';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Actor, Member } from '../../../member/entities/member';
-import { PackedItem } from '../../ItemWrapper';
+import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { Item, ItemExtraMap } from '../../entities/Item';
+import { ItemTag } from '../../plugins/itemTag/ItemTag';
+import { ItemTagRepository } from '../../plugins/itemTag/repository';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemPublished } from '../../plugins/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
@@ -28,12 +31,14 @@ import { ItemRepository } from '../../repository';
 
 export class ItemTestUtils {
   public itemRepository: ItemRepository;
+  public itemTagRepository: ItemTagRepository;
   public rawItemRepository: Repository<Item<keyof ItemExtraMap>>;
   recycledItemDataRepository: typeof RecycledItemDataRepository;
   rawItemPublishedRepository: Repository<ItemPublished>;
 
   constructor() {
     this.itemRepository = new ItemRepository();
+    this.itemTagRepository = new ItemTagRepository();
     this.rawItemRepository = AppDataSource.getRepository(Item);
     this.recycledItemDataRepository = RecycledItemDataRepository;
     this.rawItemPublishedRepository = AppDataSource.getRepository(ItemPublished);
@@ -114,8 +119,12 @@ export class ItemTestUtils {
   }) => {
     const value = this.createItem({ ...item, creator: actor, parentItem });
     const newItem = await this.rawItemRepository.save(value);
-    await setItemPublic(newItem, actor);
-    return newItem;
+    const publicTag = await setItemPublic(newItem, actor);
+    return {
+      item: newItem,
+      packedItem: new ItemWrapper(newItem, undefined, [publicTag]).packed(),
+      publicTag,
+    };
   };
 
   saveItems = async ({
@@ -165,7 +174,7 @@ export class ItemTestUtils {
     return {
       item: newItem,
       itemMembership: im,
-      packedItem: { ...newItem, permission: im.permission },
+      packedItem: new ItemWrapper(newItem as Item, im).packed(),
     };
   };
 
@@ -183,13 +192,16 @@ export class ItemTestUtils {
   saveCollections = async (member) => {
     const items: Item[] = [];
     const packedItems: PackedItem[] = [];
+    const tags: ItemTag[] = [];
     for (let i = 0; i < 3; i++) {
-      const { item, packedItem } = await this.saveItemAndMembership({ member });
+      const { item, itemMembership } = await this.saveItemAndMembership({ member });
       items.push(item);
-      packedItems.push(packedItem);
+      const publicTag = await setItemPublic(item, member);
+      packedItems.push(new ItemWrapper(item, itemMembership, [publicTag]).packed());
+      tags.push(publicTag);
       await this.rawItemPublishedRepository.save({ item, creator: member });
     }
-    return { items, packedItems };
+    return { items, packedItems, tags };
   };
 }
 export const expectItem = (
@@ -236,10 +248,24 @@ export const expectPackedItem = (
     | null,
   creator?: Member,
   parent?: Item,
+  tags?: ItemTag[],
 ) => {
   expectItem(newItem, correctItem, creator, parent);
 
   expect(newItem!.permission).toEqual(correctItem?.permission);
+
+  const pTag = tags?.find((t) => t.type === ItemTagType.Public);
+  if (pTag) {
+    expect(newItem!.public!.type).toEqual(pTag.type);
+    expect(newItem!.public!.id).toEqual(pTag.id);
+    expect(newItem!.public!.item!.id).toEqual(pTag.item.id);
+  }
+  const hTag = tags?.find((t) => t.type === ItemTagType.Hidden);
+  if (hTag) {
+    expect(newItem!.hidden!.type).toEqual(hTag.type);
+    expect(newItem!.hidden!.id).toEqual(hTag.id);
+    expect(newItem!.hidden!.item!.id).toEqual(hTag.item.id);
+  }
 };
 
 export const expectManyItems = (
@@ -267,12 +293,14 @@ export const expectManyPackedItems = (
     Pick<PackedItem, 'permission'>)[],
   creator?: Member,
   parent?: Item,
+  tags?: ItemTag[],
 ) => {
   expect(items).toHaveLength(correctItems.length);
 
   items.forEach(({ id }) => {
     const item = items.find(({ id: thisId }) => thisId === id);
     const correctItem = correctItems.find(({ id: thisId }) => thisId === id);
-    expectPackedItem(item, correctItem, creator, parent);
+    const tTags = tags?.filter((t) => t.item.id === id);
+    expectPackedItem(item, correctItem, creator, parent, tTags);
   });
 };

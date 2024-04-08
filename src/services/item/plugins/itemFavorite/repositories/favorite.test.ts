@@ -2,8 +2,6 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
-
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -81,7 +79,6 @@ describe('FavoriteRepository', () => {
             item: expect.objectContaining({
               id: f.item.id,
               creator: expect.objectContaining({ id: f.item?.creator?.id }),
-              permission: PermissionLevel.Admin,
             }),
           }),
         );

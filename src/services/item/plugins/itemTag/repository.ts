@@ -1,4 +1,4 @@
-import { Brackets } from 'typeorm';
+import { Brackets, EntityManager, Repository } from 'typeorm';
 
 import { ItemTagType, ResultOf, getChildFromPath } from '@graasp/sdk';
 
@@ -12,9 +12,20 @@ import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound }
 /**
  * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)
  */
-export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
+export class ItemTagRepository {
+  private repository: Repository<ItemTag>;
+
+  constructor(manager?: EntityManager) {
+    if (manager) {
+      this.repository = manager.getRepository(ItemTag);
+    } else {
+      this.repository = AppDataSource.getRepository(ItemTag);
+    }
+  }
+
   async getType(item: Item, tagType: ItemTagType, { shouldThrow = false } = {}) {
-    const hasTag = await this.createQueryBuilder('itemTag')
+    const hasTag = await this.repository
+      .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item')
       .where('item.path @> :path', { path: item.path })
       .andWhere('itemTag.type = :type', { type: tagType })
@@ -26,7 +37,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     }
 
     return hasTag;
-  },
+  }
 
   /**
    * return whether item has item tag types
@@ -35,7 +46,8 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
    * @returns map type => whether item has this tag type
    */
   async hasMany(item: Item, tagTypes: ItemTagType[]) {
-    const hasTags = await this.createQueryBuilder('itemTag')
+    const hasTags = await this.repository
+      .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item')
       .where('itemTag.item @> :path', { path: item.path })
       .andWhere('itemTag.type IN (:...types)', { types: tagTypes })
@@ -45,10 +57,12 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
       keys: tagTypes,
       findElement: (type) => Boolean(hasTags.find(({ type: thisType }) => type === thisType)),
     });
-  },
+  }
 
-  async hasManyForMany(items: Item[], tagTypes: ItemTagType[]): Promise<ResultOf<ItemTagType[]>> {
-    const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
+  private async getManyTagsForTypes(items: Item[], tagTypes: ItemTagType[]): Promise<ItemTag[]> {
+    const query = this.repository
+      .createQueryBuilder('itemTag')
+      .leftJoinAndSelect('itemTag.item', 'item');
 
     query.where(
       new Brackets((qb) => {
@@ -63,10 +77,32 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
       .andWhere('itemTag.type IN (:...types)', { types: tagTypes })
       .getMany();
 
+    return hasTags;
+  }
+
+  async hasManyForMany(items: Item[], tagTypes: ItemTagType[]): Promise<ResultOf<ItemTagType[]>> {
+    const tags = await this.getManyTagsForTypes(items, tagTypes);
+
     const mapByPath = mapById({
       keys: items.map(({ path }) => path),
       findElement: (path) =>
-        hasTags.filter((itemTag) => path.includes(itemTag.item.path)).map((t) => t.type),
+        tags.filter((itemTag) => path.includes(itemTag.item.path)).map((t) => t.type),
+    });
+
+    // use id as key
+    const idToItemTagTypes = Object.fromEntries(
+      Object.entries(mapByPath.data).map(([key, value]) => [getChildFromPath(key), value]),
+    );
+
+    return { data: idToItemTagTypes, errors: mapByPath.errors };
+  }
+
+  async getManyForMany(items: Item[], tagTypes: ItemTagType[]): Promise<ResultOf<ItemTag[]>> {
+    const tags = await this.getManyTagsForTypes(items, tagTypes);
+
+    const mapByPath = mapById({
+      keys: items.map(({ path }) => path),
+      findElement: (path) => tags.filter((itemTag) => path.includes(itemTag.item.path)),
     });
 
     // use id as key
@@ -75,10 +111,12 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     );
 
     return { data: idToItemTags, errors: mapByPath.errors };
-  },
+  }
 
   async hasForMany(items: Item[], tagType: ItemTagType): Promise<ResultOf<boolean>> {
-    const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
+    const query = this.repository
+      .createQueryBuilder('itemTag')
+      .leftJoinAndSelect('itemTag.item', 'item');
 
     query.where(
       new Brackets((qb) => {
@@ -102,7 +140,8 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     );
 
     return { data: idToItemTags, errors: mapByPath.errors };
-  },
+  }
+
   /**
    * Save an item tag for item with given type
    * Throws if a  tag already exists for parent
@@ -116,10 +155,11 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
       throw new ConflictingTagsInTheHierarchy({ item, type });
     }
 
-    const entry = this.create({ item, type, creator });
-    await this.insert(entry);
-    return entry;
-  },
+    const entry = { item: { path: item.path }, type, creator };
+    const created = await this.repository.insert(entry);
+    return this.repository.findOneBy({ id: created.identifiers[0].id });
+  }
+
   /**
    * Delete one tag item given the item and type
    * @param  {Item} item
@@ -133,7 +173,8 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     // we delete descendants tags, they happen on copy, move, or if you had on ancestor
     // but does not change the behavior
     // cannot use leftJoinAndSelect for delete, so we select first
-    const itemTags = await this.createQueryBuilder('itemTag')
+    const itemTags = await this.repository
+      .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item')
       .where('item.path <@ :path', { path: item.path })
       .andWhere('itemTag.type = :type', { type })
@@ -144,22 +185,22 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     }
 
     const ids = itemTags.map(({ id }) => id);
-    await this.delete(ids);
-  },
+    await this.repository.delete(ids);
+  }
 
   async isNotInherited(item: Item, type: ItemTagType, { shouldThrow = true } = {}) {
     const entry = await this.getType(item, type);
     if (entry && entry.item.path !== item.path && shouldThrow) {
       throw new CannotModifyParentTag(entry);
     }
-  },
+  }
 
   // /**
   //  * Get all items with given tag type
   //  * @param  {ItemTagType} tagType
   //  */
   // async getItemsBy(tagType: ItemTagType) {
-  //   const itemTag = await this.find({ where: { type: tagType }, relations: { item: true } });
+  //   const itemTag = await this.repository.find({ where: { type: tagType }, relations: { item: true } });
   //   return itemTag.map(({ item }) => item);
   // },
 
@@ -168,18 +209,21 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
    * @param  {Item} item
    */
   async getForItem(item: Item) {
-    return this.createQueryBuilder('itemTag')
+    return this.repository
+      .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item')
       .where('item.path @> :path', { path: item.path })
       .getMany();
-  },
+  }
 
   /**
    * Get all tags for given items
    * @param  {Item[]} items
    */
-  async getForManyItems(items: Item[]) {
-    const query = this.createQueryBuilder('itemTag').leftJoinAndSelect('itemTag.item', 'item');
+  async getForManyItems(items: Item[], { withDeleted = false }: { withDeleted?: boolean } = {}) {
+    const query = this.repository
+      .createQueryBuilder('itemTag')
+      .leftJoinAndSelect('itemTag.item', 'item');
 
     items.forEach(({ path }, idx) => {
       if (idx === 0) {
@@ -188,6 +232,10 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
         query.orWhere(`item.path @> :path_${path}`, { [`path_${path}`]: path });
       }
     });
+
+    if (withDeleted) {
+      query.withDeleted();
+    }
 
     const tags = await query.getMany();
 
@@ -201,7 +249,7 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     );
 
     return { data: idToItemTags, errors: mapByPath.errors };
-  },
+  }
 
   /**
    * Copy all item tags from original to copy
@@ -214,11 +262,11 @@ export const ItemTagRepository = AppDataSource.getRepository(ItemTag).extend({
     // delete from parent only
     const itemTags = await this.getForItem(original);
     if (itemTags) {
-      await this.insert(
+      await this.repository.insert(
         itemTags
           .filter((tag) => !excludeTypes?.includes(tag.type))
-          .map(({ type }) => ({ item: copy, type, creator })),
+          .map(({ type }) => ({ item: { id: copy.id }, type, creator })),
       );
     }
-  },
-});
+  }
+}

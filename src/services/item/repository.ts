@@ -28,7 +28,6 @@ import { Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
-import { PackedItem } from './ItemWrapper';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
@@ -579,9 +578,9 @@ export class ItemRepository {
    * @param memberId
    * @returns published items for given member
    */
-  async getPublishedItemsForMember(memberId: string): Promise<PackedItem[]> {
+  async getPublishedItemsForMember(memberId: string): Promise<Item[]> {
     // get for membership write and admin -> createquerybuilder
-    const { raw, entities } = await this.repository
+    const result = await this.repository
       .createQueryBuilder('item')
       .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
       .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
@@ -590,14 +589,9 @@ export class ItemRepository {
       .andWhere('im.permission IN (:...permissions)', {
         permissions: [PermissionLevel.Admin, PermissionLevel.Write],
       })
-      .addSelect('im.permission', 'permission')
-      .getRawAndEntities();
+      .getMany();
 
-    // merge raw in entity to obtain a packed item
-    return entities.map((i) => {
-      const permission = raw.find(({ item_id }) => item_id === i.id);
-      return { ...i, permission };
-    });
+    return result;
   }
 
   async findAndCount(args: FindManyOptions<Item>) {

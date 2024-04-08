@@ -4,6 +4,7 @@ import { ItemMembershipRepository } from '../services/itemMembership/repository'
 import { MemberCannotAccess, MemberCannotAdminItem, MemberCannotWriteItem } from '../utils/errors';
 import { validatePermission, validatePermissionMany } from './authorization';
 import { Item } from './item/entities/Item';
+import { ItemTag } from './item/plugins/itemTag/ItemTag';
 import { ItemTagRepository } from './item/plugins/itemTag/repository';
 import { ItemMembership } from './itemMembership/entities/ItemMembership';
 import { Member } from './member/entities/member';
@@ -16,20 +17,35 @@ const ownerMembership = { member: OWNER, permission: PermissionLevel.Admin } as 
 const buildSharedMembership = (permission: PermissionLevel, item: Item = ITEM) =>
   ({ member: SHARED_MEMBER, permission, item } as ItemMembership);
 
+jest.mock('./item/plugins/itemTag/repository');
+
+const itemTagRepository = new ItemTagRepository();
+const getManyForManyMock = jest.spyOn(itemTagRepository, 'getManyForMany');
+
+const MOCK_ITEM_TAG_PUBLIC = { type: ItemTagType.Public } as ItemTag;
+const MOCK_ITEM_TAG_HIDDEN = { type: ItemTagType.Hidden } as ItemTag;
+
 describe('Authorization', () => {
+  let repositories;
+
+  beforeEach(() => {
+    getManyForManyMock.mockClear();
+  });
+
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.restoreAllMocks();
+    getManyForManyMock.mockClear();
   });
 
   describe('validatePermission', () => {
     it('Invalid saved membership', async () => {
+      jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(async () => []);
+
       const repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn(() => ({ permission: 'anything' })),
         } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(() => ({ data: {}, errors: [] })),
-        } as unknown as typeof ItemTagRepository,
+        itemTagRepository,
       };
 
       // any other member shouldn't access
@@ -39,20 +55,26 @@ describe('Authorization', () => {
     });
 
     describe('Private item', () => {
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn((item, member) =>
-            member.id === OWNER.id ? ownerMembership : null,
-          ),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(() => ({ data: {}, errors: [] })),
-        } as unknown as typeof ItemTagRepository,
-      };
+      beforeEach(() => {
+        jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(async () => []);
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn((item, member) =>
+              member.id === OWNER.id ? ownerMembership : null,
+            ),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -63,7 +85,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -73,7 +100,12 @@ describe('Authorization', () => {
       });
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -85,6 +117,8 @@ describe('Authorization', () => {
 
     describe('Shared item with Read permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Read);
+
+      jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(async () => []);
       const repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn((item, member) => {
@@ -98,18 +132,21 @@ describe('Authorization', () => {
             }
           }),
         } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(() => ({ data: {}, errors: [] })),
-        } as unknown as typeof ItemTagRepository,
+        itemTagRepository,
       };
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -125,7 +162,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -141,7 +183,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -158,6 +205,8 @@ describe('Authorization', () => {
 
     describe('Shared item with Write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
+
+      jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(async () => []);
       const repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn((item, member) => {
@@ -171,18 +220,21 @@ describe('Authorization', () => {
             }
           }),
         } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(() => ({ data: {}, errors: [] })),
-        } as unknown as typeof ItemTagRepository,
+        itemTagRepository,
       };
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -198,11 +250,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can write
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -218,7 +275,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -235,6 +297,8 @@ describe('Authorization', () => {
 
     describe('Shared item with Admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
+
+      jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(async () => []);
       const repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn((item, member) => {
@@ -248,18 +312,21 @@ describe('Authorization', () => {
             }
           }),
         } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(() => ({ data: {}, errors: [] })),
-        } as unknown as typeof ItemTagRepository,
+        itemTagRepository,
       };
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -275,11 +342,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can write
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -295,11 +367,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can admin
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Admin,
           SHARED_MEMBER,
@@ -315,32 +392,37 @@ describe('Authorization', () => {
     });
 
     describe('Public item', () => {
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // other member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           OTHER_MEMBER,
@@ -351,7 +433,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -362,7 +449,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -374,34 +466,40 @@ describe('Authorization', () => {
 
     describe('Public item with shared read permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Read);
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              case SHARED_MEMBER.id:
-                return sharedMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                case SHARED_MEMBER.id:
+                  return sharedMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -410,7 +508,7 @@ describe('Authorization', () => {
         expect(result1).toEqual(sharedMembership);
 
         // other member can read
-        const result2 = await validatePermission(
+        const { itemMembership: result2 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           OTHER_MEMBER,
@@ -421,7 +519,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't write
@@ -437,7 +540,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't admin
@@ -454,34 +562,40 @@ describe('Authorization', () => {
 
     describe('Public item with shared write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              case SHARED_MEMBER.id:
-                return sharedMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                case SHARED_MEMBER.id:
+                  return sharedMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -490,7 +604,7 @@ describe('Authorization', () => {
         expect(result1).toEqual(sharedMembership);
 
         // other member can read
-        const result2 = await validatePermission(
+        const { itemMembership: result2 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           OTHER_MEMBER,
@@ -501,11 +615,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can write
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -521,7 +640,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't admin
@@ -538,34 +662,41 @@ describe('Authorization', () => {
 
     describe('Public item with shared admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              case SHARED_MEMBER.id:
-                return sharedMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_PUBLIC]);
+
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                case SHARED_MEMBER.id:
+                  return sharedMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -574,7 +705,7 @@ describe('Authorization', () => {
         expect(result1).toEqual(sharedMembership);
 
         // other member can read
-        const result2 = await validatePermission(
+        const { itemMembership: result2 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           OTHER_MEMBER,
@@ -585,11 +716,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can write
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -605,11 +741,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can admin
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Admin,
           SHARED_MEMBER,
@@ -626,30 +767,37 @@ describe('Authorization', () => {
 
     describe('Hidden item with shared read permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Read);
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              case SHARED_MEMBER.id:
-                return sharedMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Hidden]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
+
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                case SHARED_MEMBER.id:
+                  return sharedMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member cannot read
@@ -665,7 +813,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member cannot read
@@ -681,7 +834,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member cannot read
@@ -698,34 +856,39 @@ describe('Authorization', () => {
 
     describe('Hidden item with shared with write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              case SHARED_MEMBER.id:
-                return sharedMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Hidden]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
 
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                case SHARED_MEMBER.id:
+                  return sharedMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -741,11 +904,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can write
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -761,7 +929,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't admin
@@ -778,34 +951,41 @@ describe('Authorization', () => {
 
     describe('Hidden item with shared with admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              case SHARED_MEMBER.id:
-                return sharedMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Hidden]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN]);
+
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                case SHARED_MEMBER.id:
+                  return sharedMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can read
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -820,11 +1000,16 @@ describe('Authorization', () => {
       });
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can write
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -840,11 +1025,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member can admin
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Admin,
           SHARED_MEMBER,
@@ -860,28 +1050,34 @@ describe('Authorization', () => {
     });
 
     describe('Public & Hidden item', () => {
-      const repositories = {
-        itemMembershipRepository: {
-          getInherited: jest.fn(async (item, member) => {
-            switch (member.id) {
-              case OWNER.id:
-                return ownerMembership;
-              default:
-                return null;
-            }
-          }),
-        } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true, [ItemTagType.Hidden]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
-      };
+      beforeEach(() => {
+        jest
+          .spyOn(itemTagRepository, 'getForItem')
+          .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
+
+        repositories = {
+          itemMembershipRepository: {
+            getInherited: jest.fn(async (item, member) => {
+              switch (member.id) {
+                case OWNER.id:
+                  return ownerMembership;
+                default:
+                  return null;
+              }
+            }),
+          } as unknown as typeof ItemMembershipRepository,
+          itemTagRepository,
+        };
+      });
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -892,7 +1088,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -903,7 +1104,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // any other member shouldn't access
@@ -915,6 +1121,10 @@ describe('Authorization', () => {
 
     describe('Public & Hidden item with shared read permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Read);
+
+      jest
+        .spyOn(itemTagRepository, 'getForItem')
+        .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
       const repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn(async (item, member) => {
@@ -928,17 +1138,17 @@ describe('Authorization', () => {
             }
           }),
         } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true, [ItemTagType.Hidden]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
+        itemTagRepository,
       };
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't access
@@ -954,7 +1164,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't access
@@ -970,7 +1185,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't access
@@ -987,6 +1207,10 @@ describe('Authorization', () => {
 
     describe('Public & Hidden item with shared write permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Write);
+
+      jest
+        .spyOn(itemTagRepository, 'getForItem')
+        .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
       const repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn(async (item, member) => {
@@ -1000,21 +1224,21 @@ describe('Authorization', () => {
             }
           }),
         } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true, [ItemTagType.Hidden]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
+        itemTagRepository,
       };
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member should pass
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -1030,11 +1254,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member should pass
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -1050,7 +1279,12 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member shouldn't access
@@ -1067,6 +1301,10 @@ describe('Authorization', () => {
 
     describe('Public & Hidden item with shared admin permission', () => {
       const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
+
+      jest
+        .spyOn(itemTagRepository, 'getForItem')
+        .mockImplementation(async () => [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC]);
       const repositories = {
         itemMembershipRepository: {
           getInherited: jest.fn(async (item, member) => {
@@ -1080,21 +1318,21 @@ describe('Authorization', () => {
             }
           }),
         } as unknown as typeof ItemMembershipRepository,
-        itemTagRepository: {
-          hasMany: jest.fn(async () => ({
-            data: { [ItemTagType.Public]: true, [ItemTagType.Hidden]: true },
-            errors: [],
-          })),
-        } as unknown as typeof ItemTagRepository,
+        itemTagRepository,
       };
 
       it(PermissionLevel.Read, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Read, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Read,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member should pass
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Read,
           SHARED_MEMBER,
@@ -1110,11 +1348,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Write, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Write, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Write,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member should pass
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Write,
           SHARED_MEMBER,
@@ -1130,11 +1373,16 @@ describe('Authorization', () => {
 
       it(PermissionLevel.Admin, async () => {
         // owner should pass
-        const result = await validatePermission(repositories, PermissionLevel.Admin, OWNER, ITEM);
+        const { itemMembership: result } = await validatePermission(
+          repositories,
+          PermissionLevel.Admin,
+          OWNER,
+          ITEM,
+        );
         expect(result).toEqual(ownerMembership);
 
         // shared member should pass
-        const result1 = await validatePermission(
+        const { itemMembership: result1 } = await validatePermission(
           repositories,
           PermissionLevel.Admin,
           SHARED_MEMBER,
@@ -1153,13 +1401,12 @@ describe('Authorization', () => {
   describe('validatePermissionMany', () => {
     describe('one item', () => {
       it('Invalid saved membership', async () => {
+        jest.spyOn(itemTagRepository, 'getForItem').mockImplementation(async () => []);
         const repositories = {
           itemMembershipRepository: {
             getInheritedMany: jest.fn(() => ({ permission: 'anything' })),
           } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({ data: {}, errors: [] })),
-          } as unknown as typeof ItemTagRepository,
+          itemTagRepository,
         };
 
         // any other member shouldn't access
@@ -1169,36 +1416,42 @@ describe('Authorization', () => {
       });
 
       describe('Private item', () => {
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({ data: { [ITEM.id]: [] }, errors: [] })),
-          } as unknown as typeof ItemTagRepository,
-        };
-
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
-          expect(result.data[ITEM.id]).toEqual(ownerMembership);
+          const { itemMemberships } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
+          expect(itemMemberships.data[ITEM.id]).toEqual(ownerMembership);
 
           // any other member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1209,13 +1462,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // any other member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1226,13 +1482,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // any other member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1244,39 +1503,47 @@ describe('Authorization', () => {
 
       describe('Shared item with Read permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Read);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [] },
+            errors: [],
+          }));
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({ data: { [ITEM.id]: [] }, errors: [] })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
+
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member should pass
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -1285,7 +1552,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1296,13 +1563,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -1311,7 +1581,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotWriteItem);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1322,13 +1592,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -1337,7 +1610,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1349,39 +1622,46 @@ describe('Authorization', () => {
 
       describe('Shared item with Write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({ data: { [ITEM.id]: [] }, errors: [] })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member should pass
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -1390,7 +1670,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1401,13 +1681,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member should pass
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -1416,7 +1699,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1427,13 +1710,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -1442,7 +1728,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1454,39 +1740,46 @@ describe('Authorization', () => {
 
       describe('Shared item with Admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({ data: { [ITEM.id]: [] }, errors: [] })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -1495,7 +1788,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1506,13 +1799,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -1521,7 +1817,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1532,13 +1828,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -1547,7 +1846,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1558,39 +1857,43 @@ describe('Authorization', () => {
       });
 
       describe('Public item', () => {
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Public] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // other member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1601,13 +1904,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // any other member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1618,13 +1924,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // any other member shouldn't access
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1636,42 +1945,46 @@ describe('Authorization', () => {
 
       describe('Public item with shared read permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Read);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+            errors: [],
+          }));
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Public] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
 
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -1680,7 +1993,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member can read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1691,13 +2004,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -1706,7 +2022,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotWriteItem);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1717,13 +2033,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -1732,7 +2051,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1744,6 +2063,12 @@ describe('Authorization', () => {
 
       describe('Public item with shared write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
+
+        getManyForManyMock.mockImplementation(async () => ({
+          data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+          errors: [],
+        }));
+
         const repositories = {
           itemMembershipRepository: {
             getInheritedMany: jest.fn((items, member) => {
@@ -1763,23 +2088,21 @@ describe('Authorization', () => {
               return { data: { [ITEM.id]: im }, errors: [] };
             }),
           } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Public] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
+          itemTagRepository,
         };
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -1788,7 +2111,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member can read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1799,13 +2122,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -1814,7 +2140,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1825,13 +2151,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -1840,7 +2169,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1852,6 +2181,15 @@ describe('Authorization', () => {
 
       describe('Public item with shared admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
+
+        getManyForManyMock.mockImplementation(async () => {
+          console.log('weofijwek');
+          return {
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
+            errors: [],
+          };
+        });
+
         const repositories = {
           itemMembershipRepository: {
             getInheritedMany: jest.fn((items, member) => {
@@ -1871,23 +2209,21 @@ describe('Authorization', () => {
               return { data: { [ITEM.id]: im }, errors: [] };
             }),
           } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Public] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
+          itemTagRepository,
         };
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -1896,7 +2232,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member can read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -1907,13 +2243,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -1922,7 +2261,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -1933,13 +2272,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member shouldn't admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -1948,7 +2290,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // any other member shouldn't access
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -1960,42 +2302,47 @@ describe('Authorization', () => {
 
       describe('Hidden item with shared read permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Read);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+            errors: [],
+          }));
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Hidden] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
+
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -2004,7 +2351,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
 
           // other member cannot read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -2015,13 +2362,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -2030,7 +2380,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
 
           // other member cannot write
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -2041,13 +2391,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -2056,7 +2409,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
 
           // other member cannot admin
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -2068,42 +2421,48 @@ describe('Authorization', () => {
 
       describe('Hidden item with shared with write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+            errors: [],
+          }));
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Hidden] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
+
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
+
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -2112,7 +2471,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -2123,13 +2482,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -2138,7 +2500,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot write
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -2149,13 +2511,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -2164,7 +2529,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
 
           // other member cannot admin
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -2176,42 +2541,47 @@ describe('Authorization', () => {
 
       describe('Hidden item with shared with admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+            errors: [],
+          }));
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Hidden] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
+
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -2220,7 +2590,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -2231,13 +2601,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -2246,7 +2619,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot write
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -2257,13 +2630,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -2272,7 +2648,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot admin
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -2283,39 +2659,43 @@ describe('Authorization', () => {
       });
 
       describe('Public & Hidden item', () => {
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN, MOCK_ITEM_TAG_PUBLIC] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Hidden, ItemTagType.Public] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // other member cannot read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -2326,13 +2706,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // other member cannot write
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -2343,13 +2726,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // other member cannot admin
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -2361,42 +2747,46 @@ describe('Authorization', () => {
 
       describe('Public & Hidden item with shared read permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Read);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Hidden] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -2405,7 +2795,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
 
           // other member cannot read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -2416,13 +2806,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -2431,7 +2824,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
 
           // other member cannot write
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -2442,13 +2835,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -2457,7 +2853,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
 
           // other member cannot admin
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -2469,42 +2865,46 @@ describe('Authorization', () => {
 
       describe('Public & Hidden item with shared write permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Write);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Hidden] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -2513,7 +2913,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -2524,13 +2924,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -2539,7 +2942,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot write
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -2550,13 +2953,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -2565,7 +2971,7 @@ describe('Authorization', () => {
           expect(result1.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
 
           // other member cannot admin
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -2577,42 +2983,46 @@ describe('Authorization', () => {
 
       describe('Public & Hidden item with shared admin permission', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn((items, member) => {
-              let im;
+        beforeEach(() => {
+          getManyForManyMock.mockImplementation(async () => ({
+            data: { [ITEM.id]: [MOCK_ITEM_TAG_HIDDEN] },
+            errors: [],
+          }));
+          repositories = {
+            itemMembershipRepository: {
+              getInheritedMany: jest.fn((items, member) => {
+                let im;
 
-              switch (member.id) {
-                case OWNER.id:
-                  im = ownerMembership;
-                  break;
-                case SHARED_MEMBER.id:
-                  im = sharedMembership;
-                  break;
+                switch (member.id) {
+                  case OWNER.id:
+                    im = ownerMembership;
+                    break;
+                  case SHARED_MEMBER.id:
+                    im = sharedMembership;
+                    break;
 
-                default:
-                  break;
-              }
-              return { data: { [ITEM.id]: im }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [ITEM.id]: [ItemTagType.Hidden] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+                  default:
+                    break;
+                }
+                return { data: { [ITEM.id]: im }, errors: [] };
+              }),
+            } as unknown as typeof ItemMembershipRepository,
+            itemTagRepository,
+          };
+        });
 
         it(PermissionLevel.Read, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Read, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Read,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member can read
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             SHARED_MEMBER,
@@ -2621,7 +3031,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot read
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Read,
             OTHER_MEMBER,
@@ -2631,13 +3041,16 @@ describe('Authorization', () => {
         });
         it(PermissionLevel.Write, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Write, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Write,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot write
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             SHARED_MEMBER,
@@ -2646,7 +3059,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot write
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Write,
             OTHER_MEMBER,
@@ -2657,13 +3070,16 @@ describe('Authorization', () => {
 
         it(PermissionLevel.Admin, async () => {
           // owner should pass
-          const result = await validatePermissionMany(repositories, PermissionLevel.Admin, OWNER, [
-            ITEM,
-          ]);
+          const { itemMemberships: result } = await validatePermissionMany(
+            repositories,
+            PermissionLevel.Admin,
+            OWNER,
+            [ITEM],
+          );
           expect(result.data[ITEM.id]).toEqual(ownerMembership);
 
           // shared member cannot admin
-          const result1 = await validatePermissionMany(
+          const { itemMemberships: result1 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             SHARED_MEMBER,
@@ -2672,7 +3088,7 @@ describe('Authorization', () => {
           expect(result1.data[ITEM.id]).toEqual(sharedMembership);
 
           // other member cannot admin
-          const result2 = await validatePermissionMany(
+          const { itemMemberships: result2 } = await validatePermissionMany(
             repositories,
             PermissionLevel.Admin,
             OTHER_MEMBER,
@@ -2682,59 +3098,57 @@ describe('Authorization', () => {
         });
       });
     });
+  });
 
-    describe('many items', () => {
-      const SHARED_ITEM = { id: 'shared-item' } as Item;
-      const PUBLIC_ITEM = { id: 'public-item' } as Item;
+  describe('many items', () => {
+    const SHARED_ITEM = { id: 'shared-item' } as Item;
+    const PUBLIC_ITEM = { id: 'public-item' } as Item;
 
-      it('Public item & Shared write item', async () => {
-        const sharedMembership = buildSharedMembership(PermissionLevel.Write, SHARED_ITEM);
-        const repositories = {
-          itemMembershipRepository: {
-            getInheritedMany: jest.fn(() => {
-              return { data: { [SHARED_ITEM.id]: sharedMembership }, errors: [] };
-            }),
-          } as unknown as typeof ItemMembershipRepository,
-          itemTagRepository: {
-            hasManyForMany: jest.fn(() => ({
-              data: { [PUBLIC_ITEM.id]: [ItemTagType.Public], [SHARED_ITEM.id]: [] },
-              errors: [],
-            })),
-          } as unknown as typeof ItemTagRepository,
-        };
+    it('Public item & Shared write item', async () => {
+      const sharedMembership = buildSharedMembership(PermissionLevel.Write, SHARED_ITEM);
+      getManyForManyMock.mockImplementation(async () => ({
+        data: { [PUBLIC_ITEM.id]: [MOCK_ITEM_TAG_PUBLIC], [SHARED_ITEM.id]: [] },
+        errors: [],
+      }));
+      repositories = {
+        itemMembershipRepository: {
+          getInheritedMany: jest.fn(() => {
+            return { data: { [SHARED_ITEM.id]: sharedMembership }, errors: [] };
+          }),
+        } as unknown as typeof ItemMembershipRepository,
+        itemTagRepository,
+      };
+      // shared member can read both items
+      const { itemMemberships: result } = await validatePermissionMany(
+        repositories,
+        PermissionLevel.Read,
+        SHARED_MEMBER,
+        [SHARED_ITEM, PUBLIC_ITEM],
+      );
+      expect(result.data[SHARED_ITEM.id]).toEqual(sharedMembership);
+      expect(result.data[PUBLIC_ITEM.id]).toEqual(null);
 
-        // shared member can read both items
-        const result = await validatePermissionMany(
-          repositories,
-          PermissionLevel.Read,
-          SHARED_MEMBER,
-          [SHARED_ITEM, PUBLIC_ITEM],
-        );
-        expect(result.data[SHARED_ITEM.id]).toEqual(sharedMembership);
-        expect(result.data[PUBLIC_ITEM.id]).toEqual(null);
+      // shared member cannot write public item
+      const { itemMemberships: result1 } = await validatePermissionMany(
+        repositories,
+        PermissionLevel.Write,
+        SHARED_MEMBER,
+        [SHARED_ITEM, PUBLIC_ITEM],
+      );
+      expect(result1.data[SHARED_ITEM.id]).toEqual(sharedMembership);
+      expect(result1.data[PUBLIC_ITEM.id]).toBeUndefined();
+      expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
 
-        // shared member cannot write public item
-        const result1 = await validatePermissionMany(
-          repositories,
-          PermissionLevel.Write,
-          SHARED_MEMBER,
-          [SHARED_ITEM, PUBLIC_ITEM],
-        );
-        expect(result1.data[SHARED_ITEM.id]).toEqual(sharedMembership);
-        expect(result1.data[PUBLIC_ITEM.id]).toBeUndefined();
-        expect(result1.errors[0]).toBeInstanceOf(MemberCannotAccess);
-
-        // shared member cannot admin
-        const result2 = await validatePermissionMany(
-          repositories,
-          PermissionLevel.Admin,
-          SHARED_MEMBER,
-          [SHARED_ITEM, PUBLIC_ITEM],
-        );
-        expect(result2.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
-        expect(result2.data[PUBLIC_ITEM.id]).toBeUndefined();
-        expect(result2.errors[1]).toBeInstanceOf(MemberCannotAccess);
-      });
+      // shared member cannot admin
+      const { itemMemberships: result2 } = await validatePermissionMany(
+        repositories,
+        PermissionLevel.Admin,
+        SHARED_MEMBER,
+        [SHARED_ITEM, PUBLIC_ITEM],
+      );
+      expect(result2.errors[0]).toBeInstanceOf(MemberCannotAdminItem);
+      expect(result2.data[PUBLIC_ITEM.id]).toBeUndefined();
+      expect(result2.errors[1]).toBeInstanceOf(MemberCannotAccess);
     });
   });
 });

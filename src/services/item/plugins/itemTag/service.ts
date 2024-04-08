@@ -39,7 +39,6 @@ export class ItemTagService {
 
     const { itemTagRepository } = repositories;
     const item = await this.itemService.get(actor, repositories, id, PermissionLevel.Admin);
-
     return itemTagRepository.post(actor, item, tagType);
   }
 
