@@ -34,12 +34,20 @@ export class InvitationService {
   mailer: MailerDecoration;
   itemService: ItemService;
   memberService: MemberService;
+  itemMembershipService: ItemMembershipService;
 
-  constructor(log, mailer, itemService: ItemService, memberService: MemberService) {
+  constructor(
+    log,
+    mailer,
+    itemService: ItemService,
+    memberService: MemberService,
+    itemMembershipService: ItemMembershipService,
+  ) {
     this.log = log;
     this.mailer = mailer;
     this.itemService = itemService;
     this.memberService = memberService;
+    this.itemMembershipService = itemMembershipService;
   }
 
   async sendInvitationEmail({ actor, invitation }: { actor: Actor; invitation: Invitation }) {
@@ -179,7 +187,6 @@ export class InvitationService {
     repositories: Repositories,
     rows: CSVInvite[],
     itemId: Item['id'],
-    itemMembershipService: ItemMembershipService,
   ) {
     // partition between emails that are already accounts and emails without accounts
     const { existingAccounts, newAccounts } = await this._partitionExistingUsersAndNewUsers(
@@ -198,7 +205,7 @@ export class InvitationService {
     this.log.debug(membershipsToCreate, 'memberships to create');
 
     // create memberships for accounts that already exist
-    const memberships = await itemMembershipService.postMany(
+    const memberships = await this.itemMembershipService.postMany(
       actor,
       repositories,
       membershipsToCreate,
@@ -229,7 +236,6 @@ export class InvitationService {
     repositories: Repositories,
     itemId: Item['id'],
     file: MultipartFile,
-    itemMembershipService: ItemMembershipService,
   ): Promise<{ memberships: ItemMembership[]; invitations: Invitation[] }> {
     // verify file is CSV
     verifyCSVFileFormat(file);
@@ -255,13 +261,7 @@ export class InvitationService {
       throw new MissingEmailInRowError();
     }
 
-    return this._createMembershipsAndInvitationsForUserList(
-      actor,
-      repositories,
-      rows,
-      itemId,
-      itemMembershipService,
-    );
+    return this._createMembershipsAndInvitationsForUserList(actor, repositories, rows, itemId);
   }
 
   async createStructureForCSVAndTemplate(
@@ -270,7 +270,6 @@ export class InvitationService {
     parentId: string,
     templateId: string,
     file: MultipartFile,
-    itemMembershipService: ItemMembershipService,
   ): Promise<
     {
       groupName: string;
@@ -343,7 +342,6 @@ export class InvitationService {
         repositories,
         users,
         newItem.id,
-        itemMembershipService,
       );
       res.push({ groupName, memberships, invitations });
     }

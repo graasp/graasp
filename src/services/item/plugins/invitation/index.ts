@@ -15,14 +15,7 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    mailer,
-    db,
-    log,
-    members,
-    items,
-    memberships: { service: itemMembershipService },
-  } = fastify;
+  const { mailer, db, log, members, items, memberships } = fastify;
 
   if (!mailer) {
     throw new Error('Mailer plugin is not defined');
@@ -32,7 +25,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // register multipart plugin for use in the invitations API
   fastify.register(fastifyMultipart);
 
-  const iS = new InvitationService(log, mailer, items.service, members.service);
+  const iS = new InvitationService(
+    log,
+    mailer,
+    items.service,
+    members.service,
+    memberships.service,
+  );
 
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
@@ -110,18 +109,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             itemId,
             templateId,
             uploadedFile,
-            itemMembershipService,
           ),
         );
       }
       return await db.transaction(async (manager) =>
-        iS.importUsersWithCSV(
-          member,
-          buildRepositories(manager),
-          itemId,
-          uploadedFile,
-          itemMembershipService,
-        ),
+        iS.importUsersWithCSV(member, buildRepositories(manager), itemId, uploadedFile),
       );
     },
   );
