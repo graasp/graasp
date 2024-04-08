@@ -38,7 +38,7 @@ export const parseCSV = (stream: Readable): Promise<{ rows: CSVInvite[]; header:
           header: results.meta.fields ?? [],
         });
       },
-      error(err) {
+      error(err: Error) {
         reject(err);
       },
     });

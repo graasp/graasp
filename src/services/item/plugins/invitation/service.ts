@@ -3,8 +3,7 @@ import groupby from 'lodash.groupby';
 import { MultipartFile } from '@fastify/multipart';
 import { FastifyBaseLogger } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
-import { ItemType } from '@graasp/sdk';
+import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
@@ -252,7 +251,7 @@ export class InvitationService {
     }
 
     // check that all rows have an email set
-    if (rows.some((r) => !Boolean(r.email))) {
+    if (rows.some((r) => !r.email)) {
       throw new MissingEmailInRowError();
     }
 
@@ -314,12 +313,12 @@ export class InvitationService {
     }
 
     // check that all rows have an email set
-    if (rows.some((r) => !Boolean(r.email))) {
+    if (rows.some((r) => !r.email)) {
       throw new MissingEmailInRowError();
     }
 
     // check that all rows have a group set
-    if (rows.some((r) => !Boolean(r.group_name))) {
+    if (rows.some((r) => !r.group_name)) {
       throw new MissingGroupInRowError();
     }
 
