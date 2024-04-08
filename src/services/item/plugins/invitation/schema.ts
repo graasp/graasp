@@ -1,5 +1,3 @@
-import { UUID_REGEX } from '../../schemas/global';
-
 export default {
   $id: 'https://graasp.org/invitations/',
   definitions: {
@@ -71,20 +69,9 @@ export const invite = {
   },
   response: {
     200: {
-      type: 'object',
-      properties: {
-        data: {
-          type: 'object',
-          patternProperties: {
-            [UUID_REGEX]: { $ref: 'https://graasp.org/invitations/#/definitions/invitation' },
-          },
-        },
-        errors: {
-          type: 'array',
-          items: {
-            $ref: 'https://graasp.org/#/definitions/error',
-          },
-        },
+      type: 'array',
+      items: {
+        $ref: 'https://graasp.org/invitations/#/definitions/invitation',
       },
     },
   },

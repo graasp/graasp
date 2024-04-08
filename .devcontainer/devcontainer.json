@@ -46,7 +46,11 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "mtxr.sqltools",
-        "mtxr.sqltools-driver-pg"
+        "mtxr.sqltools-driver-pg",
+        "bruno-api-client.bruno",
+        "mhutchie.git-graph",
+        "waderyan.gitblame",
+        "firsttris.vscode-jest-runner"
       ]
     }
   }

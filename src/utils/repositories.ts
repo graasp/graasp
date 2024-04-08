@@ -4,7 +4,6 @@ import { ActionRepository } from '../services/action/repositories/action';
 import { MemberPasswordRepository } from '../services/auth/plugins/password/repository';
 import { ChatMentionRepository } from '../services/chat/plugins/mentions/repository';
 import { ChatMessageRepository } from '../services/chat/repository';
-import { InvitationRepository } from '../services/invitation/repository';
 import { ActionRequestExportRepository } from '../services/item/plugins/action/requestExport/repository';
 import { AppActionRepository } from '../services/item/plugins/app/appAction/repository';
 import { AppDataRepository } from '../services/item/plugins/app/appData/repository';
@@ -12,6 +11,7 @@ import { AppSettingRepository } from '../services/item/plugins/app/appSetting/re
 import { PublisherRepository } from '../services/item/plugins/app/publisherRepository';
 import { AppRepository } from '../services/item/plugins/app/repository';
 import { ItemGeolocationRepository } from '../services/item/plugins/geolocation/repository';
+import { InvitationRepository } from '../services/item/plugins/invitation/repository';
 import { CategoryRepository } from '../services/item/plugins/itemCategory/repositories/category';
 import { ItemCategoryRepository } from '../services/item/plugins/itemCategory/repositories/itemCategory';
 import { FavoriteRepository } from '../services/item/plugins/itemFavorite/repositories/favorite';

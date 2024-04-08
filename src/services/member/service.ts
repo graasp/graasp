@@ -17,8 +17,8 @@ export class MemberService {
     return memberRepository.getMany(ids);
   }
 
-  async getManyByEmail(actor: Actor, { memberRepository }: Repositories, ids: string[]) {
-    return memberRepository.getManyByEmail(ids);
+  async getManyByEmail(actor: Actor, { memberRepository }: Repositories, emails: string[]) {
+    return memberRepository.getManyByEmail(emails.map((email) => email.trim().toLowerCase()));
   }
 
   async post(

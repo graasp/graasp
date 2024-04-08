@@ -1,0 +1,15 @@
+meta {
+  name: Get Item memberships
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{host}}/item-memberships/?itemId={{item_id}}
+  body: none
+  auth: none
+}
+
+query {
+  itemId: {{item_id}}
+}

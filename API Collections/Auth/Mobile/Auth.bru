@@ -1,0 +1,23 @@
+meta {
+  name: Auth
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/m/auth
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "t": "{{temp_magic_token}}",
+    "verifier": "{{verifier}}"
+  }
+}
+
+vars:post-response {
+  authToken: res("authToken")
+  refreshToken: res("refreshToken")
+}

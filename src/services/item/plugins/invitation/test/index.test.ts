@@ -5,20 +5,20 @@ import { In } from 'typeorm';
 
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
-import build, { clearDatabase } from '../../../../test/app';
-import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';
-import { MOCK_CAPTCHA } from '../../auth/plugins/captcha/test/utils';
-import { Item } from '../../item/entities/Item';
-import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { generateRandomEmail } from '../../itemLogin/utils';
-import { ItemMembershipRepository } from '../../itemMembership/repository';
-import { Member } from '../../member/entities/member';
-import { saveMember } from '../../member/test/fixtures/members';
-import { Invitation } from '../invitation';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
+import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';
+import { Item } from '../../../../item/entities/Item';
+import { generateRandomEmail } from '../../../../itemLogin/utils';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository';
+import { Member } from '../../../../member/entities/member';
+import { saveMember } from '../../../../member/test/fixtures/members';
+import { ItemTestUtils } from '../../../test/fixtures/items';
+import { Invitation } from '../entity';
 import { InvitationRepository } from '../repository';
 
 // mock datasource
-jest.mock('../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 const testUtils = new ItemTestUtils();
 
@@ -115,7 +115,7 @@ describe('Invitation Plugin', () => {
           where: { email: In(invitations.map(({ email }) => email)) },
         });
         const result = await response.json();
-        expectInvitations(Object.values(result.data), completeInvitations);
+        expectInvitations(result, completeInvitations);
 
         // check email got sent
         await new Promise((done) => {
@@ -144,7 +144,7 @@ describe('Invitation Plugin', () => {
           where: { email: invitation.email.toLowerCase() },
         });
         const result = await response.json();
-        expectInvitations(Object.values(result.data), completeInvitations);
+        expectInvitations(result, completeInvitations);
       });
 
       it('throws if one invitation is malformed', async () => {

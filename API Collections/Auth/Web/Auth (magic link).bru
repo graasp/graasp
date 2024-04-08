@@ -1,0 +1,15 @@
+meta {
+  name: Auth (magic link)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{host}}/auth?t=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMGJmZGZiNC1iZjZjLTQ3ZDUtOGRlMi01MjRhNTliNDQ1MTkiLCJpYXQiOjE3MDI0NTcwNjcsImV4cCI6MTcwMjQ1ODg2N30.Gb-6vKFY3feVL7_DBmVHQuptFAxZqrmwpNnZrTxoFw8
+  body: json
+  auth: none
+}
+
+query {
+  t: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMGJmZGZiNC1iZjZjLTQ3ZDUtOGRlMi01MjRhNTliNDQ1MTkiLCJpYXQiOjE3MDI0NTcwNjcsImV4cCI6MTcwMjQ1ODg2N30.Gb-6vKFY3feVL7_DBmVHQuptFAxZqrmwpNnZrTxoFw8
+}

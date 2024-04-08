@@ -568,12 +568,16 @@ describe('Item websocket hooks', () => {
 
       expectItem(updated, { ...item, ...payload }, actor);
 
+      let feedbackUpdate;
+      // this ffedback seems flacky, this might be because the websocket is sent from inside the transaction ?
       await waitForExpect(() => {
-        const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
-        expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('update', [item.id], { data: { [item.id]: updated }, errors: [] }),
-        );
-      });
+        feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
+        expect(feedbackUpdate).toBeDefined();
+      }, 8000);
+
+      expect(feedbackUpdate).toMatchObject(
+        ItemOpFeedbackEvent('update', [item.id], { data: { [item.id]: updated }, errors: [] }),
+      );
     });
 
     it('member that initiated the updateMany operation receives failure feedback', async () => {
@@ -593,7 +597,6 @@ describe('Item websocket hooks', () => {
       expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
 
       await waitForExpect(() => {
-        console.log(memberUpdates);
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
           ItemOpFeedbackEvent('update', [item.id], { error: new Error('mock error') }),

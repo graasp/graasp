@@ -1,0 +1,15 @@
+meta {
+  name: Upload Template users csv
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{host}}/items/{{item_id}}/invitations/upload-csv
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  : @file(../src/services/item/plugins/invitation/test/fixtures/users-groups.csv)
+}
