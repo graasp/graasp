@@ -70,6 +70,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.tag }}
 
       # Configure AWS credential and region environment variables for use in next steps
       - name: Configure AWS credentials
