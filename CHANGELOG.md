@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.28.1](https://github.com/graasp/graasp/compare/v1.28.0...v1.28.1) (2024-04-09)
+
+
+### Bug Fixes
+
+* add poolsize in env ([#931](https://github.com/graasp/graasp/issues/931)) ([45e1a80](https://github.com/graasp/graasp/commit/45e1a805e676360194bdd954dd4274fc8e14a55e))
+
 ## [1.28.0](https://github.com/graasp/graasp/compare/v1.27.0...v1.28.0) (2024-04-08)
 
 
