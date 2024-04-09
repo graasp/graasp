@@ -287,6 +287,14 @@ export class ItemRepository {
     return farthestItem?.path?.split('.')?.length ?? 0;
   }
 
+  async getCreatedBy(memberId: string): Promise<Item[]> {
+    return this.repository
+      .createQueryBuilder('item')
+      .where('item.creator_id = :id', { id: memberId })
+      .orderBy('item.updatedAt', 'DESC')
+      .getMany();
+  }
+
   async getOwn(memberId: string): Promise<Item[]> {
     return this.repository
       .createQueryBuilder('item')

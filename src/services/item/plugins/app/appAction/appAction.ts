@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
 } from 'typeorm';
 import { v4 } from 'uuid';
 
@@ -24,12 +25,20 @@ export class AppAction extends BaseEntity {
   @JoinColumn({ name: 'item_id' })
   item: Item;
 
+  // TODO: check if wanted
+  @RelationId((appAction: AppAction) => appAction.item)
+  itemId: string;
+
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'CASCADE',
     nullable: false,
   })
   @JoinColumn({ name: 'member_id' })
   member: Member;
+
+  // TODO: check if wanted
+  @RelationId((appAction: AppAction) => appAction.member)
+  memberId: string;
 
   @Column({
     nullable: false,

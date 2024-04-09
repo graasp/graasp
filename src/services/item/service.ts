@@ -288,6 +288,21 @@ export class ItemService {
     return itemRepository.getOwn(actor.id);
   }
 
+  /**
+   * Return all the items where the creator is the given actor.
+   * // TODO: check if it is wanted !
+   * It even returns the item if the actor is the creator but without permissions on it !
+   *
+   * @param actor The creator of the items.
+   * @returns an array of items created by the actor.
+   */
+  async getCreatedBy(actor: Actor, { itemRepository }: Repositories) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+    return itemRepository.getCreatedBy(actor.id);
+  }
+
   async getShared(actor: Actor, repositories: Repositories, permission?: PermissionLevel) {
     if (!actor) {
       throw new UnauthorizedMember(actor);

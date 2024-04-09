@@ -2,6 +2,7 @@ import { ItemType } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ItemNotFound } from '../../../../../utils/errors';
+import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
 import { AppSetting } from './appSettings';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { InputAppSetting } from './interfaces/app-setting';
@@ -58,6 +59,16 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
       throw new AppSettingNotFound(id);
     }
     return this.findOne({ where: { id }, relations: { creator: true, item: true } });
+  },
+
+  async getForMember(memberId: string): Promise<AppSetting> {
+    if (!memberId) {
+      throw new MemberIdentifierNotFound(memberId);
+    }
+    return this.find({
+      where: { creator: { id: memberId } },
+      relations: { creator: false, item: false },
+    });
   },
 
   getForItem(itemId: string, name?: string): Promise<AppSetting[]> {

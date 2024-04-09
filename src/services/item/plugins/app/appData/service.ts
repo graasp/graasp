@@ -255,6 +255,14 @@ export class AppDataService {
     return appDataRepository.getForItem(itemId, { memberId, type }, membership?.permission);
   }
 
+  async getForMember(actor: Actor | undefined, repositories: Repositories) {
+    const { appDataRepository } = repositories;
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+    return appDataRepository.getForMember(actor.id);
+  }
+
   // TODO: check for many items
   async getForManyItems(
     memberId: string | undefined,

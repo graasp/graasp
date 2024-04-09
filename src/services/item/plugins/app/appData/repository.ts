@@ -58,6 +58,13 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     return appData;
   },
 
+  async getForMember(memberId: string): Promise<AppData[]> {
+    return this.createQueryBuilder('appData')
+      .where('appData.member = :memberId', { memberId })
+      .orderBy('appData.updatedAt', 'DESC')
+      .getMany();
+  },
+
   async getForItem(
     itemId: string,
     filters: Filters = {},

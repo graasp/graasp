@@ -41,6 +41,14 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
     });
   },
 
+  getForMember(memberId: string): Promise<AppAction[]> {
+    return this.find({
+      where: { member: { id: memberId } },
+      // Find a way to return the data without a join !
+      relations: { member: false },
+    });
+  },
+
   async getForManyItems(
     itemIds: string[],
     filters: ManyItemsGetFilter,

@@ -1,8 +1,10 @@
 import { PermissionLevel } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
+import { Actor } from '../../../../member/entities/member';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppAction } from './appAction';
 import { AppActionNotAccessible } from './errors';
@@ -65,6 +67,16 @@ export class AppActionService {
     }
 
     return appActionRepository.getForItem(itemId, { memberId: fMemberId });
+  }
+
+  async getForMember(actor: Actor, repositories: Repositories) {
+    const { appActionRepository } = repositories;
+
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
+    return appActionRepository.getForMember(actor.id);
   }
 
   async getForManyItems(

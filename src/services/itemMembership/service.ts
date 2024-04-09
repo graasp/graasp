@@ -102,6 +102,20 @@ export class ItemMembershipService {
     return { data: result.data, errors: [...items.errors, ...result.errors] };
   }
 
+  async getForMember(actor: Actor, repositories: Repositories) {
+    const { itemMembershipRepository } = repositories;
+
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
+    const itemMemberShips = await itemMembershipRepository.getForMember(actor.id);
+    // TODO: anonymize none member data !
+    const filtered = itemMemberShips.map((im) => im);
+
+    return filtered;
+  }
+
   async _post(
     actor: Member,
     repositories: Repositories,
