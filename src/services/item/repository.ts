@@ -298,8 +298,8 @@ export class ItemRepository {
   async getCreatedBy(memberId: string): Promise<Item[]> {
     return this.repository
       .createQueryBuilder('item')
-      .where('item.creator_id = :id', { id: memberId })
-      .orderBy('item.updatedAt', 'DESC')
+      .where('item.creator_id = :memberId', { memberId })
+      .orderBy('item.updated_at', 'DESC')
       .getMany();
   }
 

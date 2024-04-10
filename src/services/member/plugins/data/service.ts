@@ -2,6 +2,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
+import { anonymizeResults } from './data.utils';
 
 export class DataMemberService {
   async getActions(member: Actor, { actionRepository }: Repositories) {
@@ -24,7 +25,13 @@ export class DataMemberService {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
-    return appDataRepository.getForMember(member.id);
+
+    const appData = await appDataRepository.getForMember(member.id);
+    return anonymizeResults({
+      results: appData,
+      exportingActorId: member.id,
+      memberIdKey: ['memberId', 'creatorId'],
+    });
   }
 
   async getAppSettings(member: Actor, { appSettingRepository }: Repositories) {

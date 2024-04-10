@@ -50,14 +50,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // TODO: short_link
 
       return {
-        // actions,
-        // appActions,
-        // appData,
+        actions,
+        appActions,
+        appData,
         appSettings,
-        // bookMarks,
-        // itemLikes,
-        // itemMemberShips,
-        // items: ownItems,
+        bookMarks,
+        itemLikes,
+        itemMemberShips,
+        items: ownItems,
       };
     },
   );

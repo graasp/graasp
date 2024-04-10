@@ -42,11 +42,10 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
   },
 
   getForMember(memberId: string): Promise<AppAction[]> {
-    return this.find({
-      where: { member: { id: memberId } },
-      // Find a way to return the data without a join !
-      relations: { member: false },
-    });
+    return this.createQueryBuilder('app_action')
+      .where('app_action.member_id = :memberId', { memberId })
+      .orderBy('app_action.created_at', 'DESC')
+      .getMany();
   },
 
   async getForManyItems(

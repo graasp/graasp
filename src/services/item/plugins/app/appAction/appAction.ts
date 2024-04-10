@@ -25,7 +25,8 @@ export class AppAction extends BaseEntity {
   @JoinColumn({ name: 'item_id' })
   item: Item;
 
-  // TODO: check if wanted
+  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
+  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
   @RelationId((appAction: AppAction) => appAction.item)
   itemId: string;
 
@@ -36,7 +37,8 @@ export class AppAction extends BaseEntity {
   @JoinColumn({ name: 'member_id' })
   member: Member;
 
-  // TODO: check if wanted
+  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
+  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
   @RelationId((appAction: AppAction) => appAction.member)
   memberId: string;
 
