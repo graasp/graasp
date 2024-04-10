@@ -1,91 +1,80 @@
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { ActionService } from '../../../action/services/action';
 import { Item } from '../../../item/entities/Item';
-import { AppActionService } from '../../../item/plugins/app/appAction/service';
-import { AppDataService } from '../../../item/plugins/app/appData/service';
-import { AppSettingService } from '../../../item/plugins/app/appSetting/service';
-import { FavoriteService } from '../../../item/plugins/itemFavorite/services/favorite';
-import { ItemLikeService } from '../../../item/plugins/itemLike/service';
-import ItemService from '../../../item/service';
-import ItemMembershipService from '../../../itemMembership/service';
 import { Actor } from '../../entities/member';
 
-type DataMemberServiceProps = {
-  actionService: ActionService;
-  appDataService: AppDataService;
-  appActionService: AppActionService;
-  appSettingService: AppSettingService;
-  favoriteService: FavoriteService;
-  itemLikeService: ItemLikeService;
-  itemMembershipService: ItemMembershipService;
-  itemService: ItemService;
-};
-
 export class DataMemberService {
-  private actionService: ActionService;
-  private appDataService: AppDataService;
-  private appActionService: AppActionService;
-  private appSettingService: AppSettingService;
-  private favoriteService: FavoriteService;
-  private itemLikeService: ItemLikeService;
-  private itemMembershipService: ItemMembershipService;
-  private itemService: ItemService;
+  async getActions(member: Actor, { actionRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
 
-  constructor({
-    actionService,
-    appDataService,
-    appActionService,
-    appSettingService,
-    favoriteService,
-    itemLikeService,
-    itemMembershipService,
-    itemService,
-  }: DataMemberServiceProps) {
-    this.actionService = actionService;
-    this.appDataService = appDataService;
-    this.appActionService = appActionService;
-    this.appSettingService = appSettingService;
-    this.favoriteService = favoriteService;
-    this.itemLikeService = itemLikeService;
-    this.itemMembershipService = itemMembershipService;
-    this.itemService = itemService;
+    return await actionRepository.getForMember(member.id);
   }
 
-  async getActions(member: Actor, repositories: Repositories) {
-    return await this.actionService.getForMember(member, repositories);
+  async getAppActions(member: Actor, { appActionRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    return appActionRepository.getForMember(member.id);
   }
 
-  async getAppActions(member: Actor, repositories: Repositories) {
-    return await this.appActionService.getForMember(member, repositories);
+  async getAppData(member: Actor, { appDataRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+    return appDataRepository.getForMember(member.id);
   }
 
-  async getAppData(member: Actor, repositories: Repositories) {
-    return await this.appDataService.getForMember(member, repositories);
+  async getAppSettings(member: Actor, { appSettingRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    return appSettingRepository.getForMember(member.id);
   }
 
-  async getAppSettings(member: Actor, repositories: Repositories) {
-    return await this.appSettingService.getForMember(member, repositories);
-  }
-
-  async getBookMarks(member: Actor, repositories: Repositories) {
+  async getBookMarks(member: Actor, { itemFavoriteRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
     // TODO: limit by foreign key id ?
-    return await this.favoriteService.getOwn(member, repositories);
+    return await itemFavoriteRepository.getFavoriteForMember(member.id);
   }
 
-  async getItemLikes(member: Actor, repositories: Repositories) {
-    return await this.itemLikeService.getForMember(member, repositories);
+  async getItemLikes(member: Actor, { itemLikeRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    // only own items
+    // TODO: allow to get other's like?
+    // TODO: remove joins !
+    return itemLikeRepository.getForMember(member.id);
   }
 
-  async getItemsMemberShips(member: Actor, repositories: Repositories) {
+  async getItemsMemberShips(member: Actor, { itemMembershipRepository }: Repositories) {
     // TODO: check if items are required in memberships
-    return await this.itemMembershipService.getForMember(member, repositories);
+
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    const itemMemberShips = await itemMembershipRepository.getForMember(member.id);
+    // TODO: anonymize none member data !
+    const filtered = itemMemberShips.map((im) => im);
+    return filtered;
   }
 
   getOwnItemIds(memberItemsOwner: Item[]) {
     return memberItemsOwner.map((item) => item.id);
   }
 
-  async getOwnItems(member: Actor, repositories: Repositories) {
-    return await this.itemService.getCreatedBy(member, repositories);
+  async getOwnItems(member: Actor, { itemRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+    return itemRepository.getCreatedBy(member.id);
   }
 }

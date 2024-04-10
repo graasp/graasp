@@ -135,16 +135,6 @@ export class AppSettingService {
     return appSettingRepository.get(appSettingId);
   }
 
-  async getForMember(actor: Actor, repositories: Repositories) {
-    const { appSettingRepository } = repositories;
-
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
-    return appSettingRepository.getForMember(actor.id);
-  }
-
   async getForItem(
     memberId: string | undefined,
     repositories: Repositories,

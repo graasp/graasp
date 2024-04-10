@@ -1,7 +1,6 @@
 import forwarded from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
-import { UnauthorizedMember } from '../../../utils/errors';
 import { Repositories } from '../../../utils/repositories';
 import ItemService from '../../item/service';
 import { Actor } from '../../member/entities/member';
@@ -52,13 +51,5 @@ export class ActionService {
     }));
 
     await repositories.actionRepository.postMany(completeActions);
-  }
-
-  async getForMember(actor: Actor, repositories: Repositories): Promise<Action[]> {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
-
-    return await repositories.actionRepository.getForMember(actor.id);
   }
 }

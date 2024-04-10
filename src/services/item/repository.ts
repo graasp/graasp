@@ -287,6 +287,14 @@ export class ItemRepository {
     return farthestItem?.path?.split('.')?.length ?? 0;
   }
 
+  /**
+   * Return all the items where the creator is the given actor.
+   * // TODO: check if it is wanted !
+   * It even returns the item if the actor is the creator but without permissions on it !
+   *
+   * @param memberId The creator of the items.
+   * @returns an array of items created by the actor.
+   */
   async getCreatedBy(memberId: string): Promise<Item[]> {
     return this.repository
       .createQueryBuilder('item')
