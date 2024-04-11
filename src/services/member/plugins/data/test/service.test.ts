@@ -1,14 +1,14 @@
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { buildRepositories } from '../../../../utils/repositories';
-import { Action } from '../../../action/entities/action';
-import { ActionRepository } from '../../../action/repositories/action';
-import { saveActions } from '../../../action/test/fixtures/actions';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
-import { saveMember } from '../../test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
+import { buildRepositories } from '../../../../../utils/repositories';
+import { Action } from '../../../../action/entities/action';
+import { ActionRepository } from '../../../../action/repositories/action';
+import { saveActions } from '../../../../action/test/fixtures/actions';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import { saveMember } from '../../../test/fixtures/members';
+import { DataMemberService } from '../service';
 import { expectNotLeakMemberId } from './fixtures/data';
 import { saveAppActions, saveAppData } from './fixtures/temp';
-import { DataMemberService } from './service';
 
 const itemTestUtils = new ItemTestUtils();
 

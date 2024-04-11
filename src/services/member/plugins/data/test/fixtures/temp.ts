@@ -1,9 +1,9 @@
 import { AppDataVisibility } from '@graasp/sdk';
 
-import { Item } from '../../../../item/entities/Item';
-import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository';
-import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
-import { Member } from '../../../entities/member';
+import { Item } from '../../../../../item/entities/Item';
+import { AppActionRepository } from '../../../../../item/plugins/app/appAction/repository';
+import { AppDataRepository } from '../../../../../item/plugins/app/appData/repository';
+import { Member } from '../../../../entities/member';
 
 // TODO: move the originals fixture in a fixture file in the correct folder
 // It is necessary to avoid to run the entire tests when importing the utils function from test files:

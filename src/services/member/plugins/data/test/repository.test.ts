@@ -1,14 +1,14 @@
-import build, { clearDatabase } from '../../../../../test/app';
-import { AppDataSource } from '../../../../plugins/datasource';
-import { Action } from '../../../action/entities/action';
-import { ActionRepository } from '../../../action/repositories/action';
-import { saveActions } from '../../../action/test/fixtures/actions';
-import { AppAction } from '../../../item/plugins/app/appAction/appAction';
-import { AppActionRepository } from '../../../item/plugins/app/appAction/repository';
-import { AppData } from '../../../item/plugins/app/appData/appData';
-import { AppDataRepository } from '../../../item/plugins/app/appData/repository';
-import { ItemTestUtils } from '../../../item/test/fixtures/items';
-import { saveMember } from '../../test/fixtures/members';
+import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
+import { Action } from '../../../../action/entities/action';
+import { ActionRepository } from '../../../../action/repositories/action';
+import { saveActions } from '../../../../action/test/fixtures/actions';
+import { AppAction } from '../../../../item/plugins/app/appAction/appAction';
+import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository';
+import { AppData } from '../../../../item/plugins/app/appData/appData';
+import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
+import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import { saveMember } from '../../../test/fixtures/members';
 import { expectObjects } from './fixtures/data';
 import { saveAppActions, saveAppData } from './fixtures/temp';
 
