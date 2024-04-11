@@ -85,7 +85,7 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     const email = data.email.toLowerCase();
 
     // The backend assumes user agrees to terms by creating an account.
-    // The auth frontend only block the user to create an account without checking the boxes.
+    // The auth frontend only blocks the user to create an account without checking the boxes.
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
     const createdMember = await this.insert({ ...data, email, userAgreementsDate: new Date() });
