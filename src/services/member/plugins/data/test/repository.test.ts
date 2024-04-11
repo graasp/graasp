@@ -5,16 +5,17 @@ import { ActionRepository } from '../../../../action/repositories/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
 import { AppAction } from '../../../../item/plugins/app/appAction/appAction';
 import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository';
+import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { AppData } from '../../../../item/plugins/app/appData/appData';
 import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { expectObjects } from './fixtures/data';
-import { saveAppActions, saveAppData } from './fixtures/temp';
+import { saveAppData } from './fixtures/temp';
 
 const itemTestUtils = new ItemTestUtils();
 
-jest.mock('../../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 describe('DataMember Export', () => {
   let app;

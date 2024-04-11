@@ -1,7 +1,6 @@
 import { AppDataVisibility } from '@graasp/sdk';
 
 import { Item } from '../../../../../item/entities/Item';
-import { AppActionRepository } from '../../../../../item/plugins/app/appAction/repository';
 import { AppDataRepository } from '../../../../../item/plugins/app/appData/repository';
 import { Member } from '../../../../entities/member';
 
@@ -9,14 +8,6 @@ import { Member } from '../../../../entities/member';
 // It is necessary to avoid to run the entire tests when importing the utils function from test files:
 // /workspace/src/services/item/plugins/app/appAction/test/index.test.ts
 // /workspace/src/services/item/plugins/app/appData/test/index.test.ts
-
-export const saveAppActions = async ({ item, member }: { item: Item; member?: Member }) => {
-  const defaultData = { type: 'some-type', data: { some: 'data' } };
-  const s1 = await AppActionRepository.save({ item, member, ...defaultData });
-  const s2 = await AppActionRepository.save({ item, member, ...defaultData });
-  const s3 = await AppActionRepository.save({ item, member, ...defaultData });
-  return [s1, s2, s3];
-};
 
 export const saveAppData = async ({
   item,

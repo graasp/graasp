@@ -4,15 +4,16 @@ import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
 import { ActionRepository } from '../../../../action/repositories/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
+import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { DataMemberService } from '../service';
 import { expectNotLeakMemberId } from './fixtures/data';
-import { saveAppActions, saveAppData } from './fixtures/temp';
+import { saveAppData } from './fixtures/temp';
 
 const itemTestUtils = new ItemTestUtils();
 
-jest.mock('../../../../plugins/datasource');
+jest.mock('../../../../../plugins/datasource');
 
 const service = new DataMemberService();
 

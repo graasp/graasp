@@ -10,7 +10,7 @@ import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { Action } from '../../../../action/entities/action';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { saveAppActions } from '../../app/appAction/test/index.test';
+import { saveAppActions } from '../../app/appAction/test/fixtures';
 import { saveAppData } from '../../app/appData/test/index.test';
 import { saveAppSettings } from '../../app/appSetting/test/index.test';
 import { CannotPostAction } from '../errors';
