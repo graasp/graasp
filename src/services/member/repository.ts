@@ -75,7 +75,7 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
       newData.extra = Object.assign({}, body?.extra, body.extra);
     }
 
-    if (body.enableSaveActions === true || body.enableSaveActions === false) {
+    if (typeof body.enableSaveActions === 'boolean') {
       newData.enableSaveActions = body.enableSaveActions;
     }
 
