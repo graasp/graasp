@@ -26,9 +26,7 @@ export class ActionService {
     const { headers } = request;
 
     // prevent saving if member disabled
-    const enableMemberSaving = member?.enableSaveActions ?? true;
-    if (!enableMemberSaving) {
-      // TODO: should we throw something here?
+    if (!member?.enableSaveActions) {
       return;
     }
 

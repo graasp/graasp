@@ -47,8 +47,9 @@ export class Member extends BaseEntity {
   userAgreementsDate: Date;
 
   @Column({
-    nullable: true,
+    nullable: false,
     name: 'enable_save_actions',
+    default: true,
   })
   enableSaveActions: boolean;
 

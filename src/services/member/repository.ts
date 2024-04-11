@@ -96,15 +96,10 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
     const userAgreementsDate = new Date();
-    // enableSaveActions defaults to null in the database.
-    // This allows us to differentiate existing users who haven't explicitly agreed to saving actions
-    // from new users who explicitly accept (true) or deny (false).
-    const enableSaveActions = data.enableSaveActions ?? false;
     const createdMember = await this.insert({
       ...data,
       email,
       userAgreementsDate,
-      enableSaveActions,
     });
 
     // TODO: better solution?
