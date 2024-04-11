@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.28.2](https://github.com/graasp/graasp/compare/v1.28.1...v1.28.2) (2024-04-09)
+
+
+### Bug Fixes
+
+* workflows again ([#930](https://github.com/graasp/graasp/issues/930)) ([5dee519](https://github.com/graasp/graasp/commit/5dee5191e65033d3067cda26fb02d94c26633963))
+
 ## [1.28.1](https://github.com/graasp/graasp/compare/v1.28.0...v1.28.1) (2024-04-09)
 
 
