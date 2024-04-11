@@ -2,14 +2,14 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
-import { ActionRepository } from '../../../../action/repositories/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
+import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { DataMemberService } from '../service';
-import { expectNotLeakMemberId } from './fixtures/data';
+import { expectNotLeakMemberId } from './fixtures';
 
 const itemTestUtils = new ItemTestUtils();
 
@@ -64,14 +64,14 @@ describe('DataMember Export', () => {
     });
 
     it('member id is not leak', async () => {
-      const result = await new ActionRepository().getForMember(exportingActor.id);
+      const result = await service.getActions(exportingActor, buildRepositories());
+      expect(result.length).toBeGreaterThan(0);
 
-      result.forEach((a) => {
+      result.forEach((resource) => {
         expectNotLeakMemberId({
-          resource: a,
-          memberId: exportingActor.id,
+          resource,
           exportActorId: exportingActor.id,
-          memberIdKey: ['memberId'],
+          memberId: randomUser.id,
         });
       });
     });
@@ -90,14 +90,14 @@ describe('DataMember Export', () => {
     });
 
     it('member id is not leak', async () => {
-      const result = await new ActionRepository().getForMember(exportingActor.id);
+      const result = await service.getAppActions(exportingActor, buildRepositories());
+      expect(result.length).toBeGreaterThan(0);
 
-      result.forEach((a) => {
+      result.forEach((resource) => {
         expectNotLeakMemberId({
-          resource: a,
+          resource,
           exportActorId: exportingActor.id,
-          memberId: exportingActor.id,
-          memberIdKey: ['memberId'],
+          memberId: randomUser.id,
         });
       });
     });
@@ -132,7 +132,30 @@ describe('DataMember Export', () => {
           resource,
           exportActorId: exportingActor.id,
           memberId: randomUser.id,
-          memberIdKey: ['memberId', 'creatorId'],
+        });
+      });
+    });
+  });
+
+  describe('AppSettings', () => {
+    beforeEach(async () => {
+      // save regular app data
+      await saveAppSettings({ item, creator: exportingActor });
+      // noise: save app data where the creator is a random user
+      await saveAppSettings({
+        item: itemOfRandomUser,
+        creator: randomUser,
+      });
+    });
+
+    it('member id is not leak', async () => {
+      const result = await service.getAppSettings(exportingActor, buildRepositories());
+      expect(result.length).toBeGreaterThan(0);
+      result.forEach((resource) => {
+        expectNotLeakMemberId({
+          resource,
+          exportActorId: exportingActor.id,
+          memberId: randomUser.id,
         });
       });
     });

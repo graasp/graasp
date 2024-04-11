@@ -8,7 +8,7 @@ import { saveMembers } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
 import { saveAppActions } from '../app/appAction/test/fixtures';
 import { saveAppData } from '../app/appData/test/fixtures';
-import { saveAppSettings } from '../app/appSetting/test/index.test';
+import { saveAppSettings } from '../app/appSetting/test/fixtures';
 import { BaseAnalytics } from './base-analytics';
 
 const rawItemRepository = AppDataSource.getRepository(Item);

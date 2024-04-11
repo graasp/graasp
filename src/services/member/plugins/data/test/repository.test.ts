@@ -9,9 +9,12 @@ import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixt
 import { AppData } from '../../../../item/plugins/app/appData/appData';
 import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
+import { AppSetting } from '../../../../item/plugins/app/appSetting/appSettings';
+import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/repository';
+import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
-import { expectObjects } from './fixtures/data';
+import { expectObjects } from './fixtures';
 
 const itemTestUtils = new ItemTestUtils();
 
@@ -80,7 +83,7 @@ describe('DataMember Export', () => {
           'memberId',
           'itemId',
         ],
-        unwantedProps: ['member', 'item'],
+        // unwantedProps: ['member', 'item'],
         typeName: 'Action',
       });
     });
@@ -107,7 +110,7 @@ describe('DataMember Export', () => {
         results: result,
         expectations: [...appActions, ...otherActions],
         wantedProps: ['id', 'memberId', 'itemId', 'data', 'type', 'createdAt'],
-        unwantedProps: ['member', 'item'],
+        // unwantedProps: ['member', 'item'],
         typeName: 'AppAction',
       });
     });
@@ -147,11 +150,37 @@ describe('DataMember Export', () => {
           'itemId',
           'data',
           'type',
+          'visibility',
           'creatorId',
           'createdAt',
           'updatedAt',
         ],
-        unwantedProps: ['member', 'item', 'creator'],
+        // unwantedProps: ['member', 'item', 'creator'],
+        typeName: 'AppData',
+      });
+    });
+  });
+
+  describe('AppSettings', () => {
+    let appSettings: AppSetting[];
+
+    beforeEach(async () => {
+      appSettings = await saveAppSettings({ item, creator: exportingActor });
+      // noise: for a random member
+      await saveAppSettings({
+        item: itemOfRandomUser,
+        creator: randomUser,
+      });
+    });
+
+    it('get all AppSettings for the member', async () => {
+      const result = await AppSettingRepository.getForMember(exportingActor.id);
+
+      expectObjects({
+        results: result,
+        expectations: appSettings,
+        wantedProps: ['id', 'itemId', 'data', 'name', 'creatorId', 'createdAt', 'updatedAt'],
+        // unwantedProps: ['item', 'creator'],
         typeName: 'AppData',
       });
     });

@@ -12,7 +12,7 @@ import { saveMember, saveMembers } from '../../../../member/test/fixtures/member
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { saveAppActions } from '../../app/appAction/test/fixtures';
 import { saveAppData } from '../../app/appData/test/fixtures';
-import { saveAppSettings } from '../../app/appSetting/test/index.test';
+import { saveAppSettings } from '../../app/appSetting/test/fixtures';
 import { CannotPostAction } from '../errors';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
