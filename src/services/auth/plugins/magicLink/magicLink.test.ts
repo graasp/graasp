@@ -99,15 +99,16 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
-    it('Save actions is disabled by default', async () => {
+    it('Save actions is disabled when explicitly asked', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
+      const enableSaveActions = false;
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/register`,
-        payload: { email, name, captcha: MOCK_CAPTCHA },
+        payload: { email, name, captcha: MOCK_CAPTCHA, enableSaveActions },
       });
 
       expect(mockSendEmail).toHaveBeenCalledWith(
@@ -119,7 +120,7 @@ describe('Auth routes tests', () => {
       );
       const m = await MemberRepository.findOneBy({ email, name });
       expectMember(m, { name, email });
-      expect(m?.enableSaveActions).toBe(false);
+      expect(m?.enableSaveActions).toBe(enableSaveActions);
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreementsDate).toBeDefined();
       expect(m?.userAgreementsDate).toBeInstanceOf(Date);

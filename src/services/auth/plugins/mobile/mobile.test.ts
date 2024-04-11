@@ -104,20 +104,21 @@ describe('Mobile Endpoints', () => {
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
-    it('Save actions is disabled by default', async () => {
+    it('Save actions is disabled when explicitly asked', async () => {
       const email = 'someemail@email.com';
       const name = 'anna';
+      const enableSaveActions = false;
 
       const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
-        payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
+        payload: { email, name, challenge, captcha: MOCK_CAPTCHA, enableSaveActions },
       });
 
       const m = await MemberRepository.findOneBy({ email });
       expectMember(m, { email, name });
-      expect(m?.enableSaveActions).toBe(false);
+      expect(m?.enableSaveActions).toBe(enableSaveActions);
       expect(mockSendEmail).toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
