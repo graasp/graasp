@@ -5,11 +5,11 @@ import { Action } from '../../../../action/entities/action';
 import { ActionRepository } from '../../../../action/repositories/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
+import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { DataMemberService } from '../service';
 import { expectNotLeakMemberId } from './fixtures/data';
-import { saveAppData } from './fixtures/temp';
 
 const itemTestUtils = new ItemTestUtils();
 

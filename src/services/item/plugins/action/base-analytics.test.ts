@@ -7,7 +7,7 @@ import { Member } from '../../../member/entities/member';
 import { saveMembers } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
 import { saveAppActions } from '../app/appAction/test/fixtures';
-import { saveAppData } from '../app/appData/test/index.test';
+import { saveAppData } from '../app/appData/test/fixtures';
 import { saveAppSettings } from '../app/appSetting/test/index.test';
 import { BaseAnalytics } from './base-analytics';
 

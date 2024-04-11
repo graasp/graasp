@@ -8,10 +8,10 @@ import { AppActionRepository } from '../../../../item/plugins/app/appAction/repo
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { AppData } from '../../../../item/plugins/app/appData/appData';
 import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
+import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { expectObjects } from './fixtures/data';
-import { saveAppData } from './fixtures/temp';
 
 const itemTestUtils = new ItemTestUtils();
 

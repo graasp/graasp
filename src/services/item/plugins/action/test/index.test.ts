@@ -11,7 +11,7 @@ import { Action } from '../../../../action/entities/action';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { saveAppActions } from '../../app/appAction/test/fixtures';
-import { saveAppData } from '../../app/appData/test/index.test';
+import { saveAppData } from '../../app/appData/test/fixtures';
 import { saveAppSettings } from '../../app/appSetting/test/index.test';
 import { CannotPostAction } from '../errors';
 import { ActionRequestExportRepository } from '../requestExport/repository';
