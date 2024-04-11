@@ -12,6 +12,7 @@ import {
   PUBLIC_URL,
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
 } from '../../utils/config';
+import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants';
 import { Member } from '../member/entities/member';
 import { getRedirectionUrl } from './utils';
 
@@ -59,10 +60,18 @@ export class AuthService {
 
     const translated = this.mailer.translate(lang);
     const subject = translated(MAIL.SIGN_UP_TITLE);
+    const greetingsAndSignupText = `${translated(MAIL.GREETINGS)} ${translated(MAIL.SIGN_UP_TEXT)}`;
     const html = `
-    ${this.mailer.buildText(translated(MAIL.GREETINGS))}
-    ${this.mailer.buildText(translated(MAIL.SIGN_UP_TEXT))}
+    ${this.mailer.buildText(greetingsAndSignupText)}
     ${this.mailer.buildButton(link, translated(MAIL.SIGN_UP_BUTTON_TEXT))}
+    ${this.mailer.buildText(
+      translated(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
+        signUpButtonText: translated(MAIL.SIGN_UP_BUTTON_TEXT),
+        graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
+      }),
+      // Add margin top of -15px to remove 15px margin bottom of the button.
+      { 'text-align': 'center', 'font-size': '10px', 'margin-top': '-15px' },
+    )}
     ${this.mailer.buildText(translated(MAIL.SIGN_UP_NOT_REQUESTED))}`;
 
     const footer = this.mailer.buildFooter(lang);

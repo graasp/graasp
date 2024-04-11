@@ -27,6 +27,7 @@ export default {
         type: { type: 'string' },
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
+        userAgreementsDate: { type: 'string' },
         extra: { type: 'object', additionalProperties: true },
       },
       additionalProperties: false,

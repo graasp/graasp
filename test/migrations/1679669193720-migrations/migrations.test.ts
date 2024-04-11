@@ -12,7 +12,7 @@ describe('migrations1679669193720', () => {
 
   beforeEach(async () => {
     // init db empty, it is sync by default
-    ({ app } = await build());
+    ({ app } = await build({ member: null }));
     await app.db.dropDatabase();
 
     // should contain no table

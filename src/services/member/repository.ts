@@ -83,7 +83,12 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
 
   async post(data: Partial<Member> & Pick<Member, 'email'>): Promise<Member> {
     const email = data.email.toLowerCase();
-    const createdMember = await this.insert({ ...data, email });
+
+    // The backend assumes user agrees to terms by creating an account.
+    // The auth frontend only blocks the user to create an account without checking the boxes.
+    // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
+    // The agreements links are included in the registration email as a reminder.
+    const createdMember = await this.insert({ ...data, email, userAgreementsDate: new Date() });
 
     // TODO: better solution?
     // query builder returns creator as id and extra as string

@@ -20,9 +20,11 @@ export interface MailerOptions {
   fromEmail: string;
 }
 
+type CssStyles = { [key: string]: string };
+
 export interface MailerDecoration {
   buildButton: (link: string, text: string) => string;
-  buildText: (str: string) => string;
+  buildText: (str: string, cssStyles?: CssStyles) => string;
   sendEmail: (
     subject: string,
     to: string,
@@ -110,7 +112,17 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   `;
   };
 
-  const buildText = (text: string) => `<p>${text}</p>`;
+  const buildStyles = (styles?: CssStyles) => {
+    if (styles) {
+      const strStyles = Object.keys(styles).map((key: string) => `${key}: ${styles[key]}`);
+      return `style="${strStyles.join('; ')}"`;
+    }
+    return '';
+  };
+
+  const buildText = (text: string, styles?: CssStyles) => {
+    return `<p ${buildStyles(styles)}>${text}</p>`;
+  };
 
   const translate = (lang: string = DEFAULT_LANG) => {
     i18next.changeLanguage(lang);
