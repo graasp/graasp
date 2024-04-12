@@ -60,7 +60,7 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
     return this.findOne({ where: { id }, relations: { creator: true, item: true } });
   },
 
-  async getForMember(memberId: string): Promise<AppSetting[]> {
+  async getForMemberExport(memberId: string): Promise<AppSetting[]> {
     return this.createQueryBuilder('app_setting')
       .where('app_setting.creator_id = :id', { id: memberId })
       .orderBy('app_setting.updated_at', 'DESC')

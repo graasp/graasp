@@ -72,7 +72,7 @@ describe('DataMember Export', () => {
     });
 
     it('get all Actions for the member', async () => {
-      const result = await new ActionRepository().getForMember(exportingActor.id);
+      const result = await new ActionRepository().getForMemberExport(exportingActor.id);
 
       console.log(result);
 
@@ -110,7 +110,7 @@ describe('DataMember Export', () => {
     });
 
     it('get all AppActions for the member', async () => {
-      const result = await AppActionRepository.getForMember(exportingActor.id);
+      const result = await AppActionRepository.getForMemberExport(exportingActor.id);
 
       expectObjects({
         results: result,
@@ -145,7 +145,7 @@ describe('DataMember Export', () => {
     });
 
     it('get all AppData for the member', async () => {
-      const result = await AppDataRepository.getForMember(exportingActor.id);
+      const result = await AppDataRepository.getForMemberExport(exportingActor.id);
 
       expectObjects({
         results: result,
@@ -180,7 +180,7 @@ describe('DataMember Export', () => {
     });
 
     it('get all AppSettings for the member', async () => {
-      const result = await AppSettingRepository.getForMember(exportingActor.id);
+      const result = await AppSettingRepository.getForMemberExport(exportingActor.id);
 
       expectObjects({
         results: result,

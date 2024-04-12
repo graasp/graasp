@@ -295,7 +295,7 @@ export class ItemRepository {
    * @param memberId The creator of the items.
    * @returns an array of items created by the actor.
    */
-  async getCreatedBy(memberId: string): Promise<Item[]> {
+  async getForMemberExport(memberId: string): Promise<Item[]> {
     return this.repository
       .createQueryBuilder('item')
       .where('item.creator_id = :memberId', { memberId })

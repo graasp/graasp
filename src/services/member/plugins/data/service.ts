@@ -10,7 +10,7 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    return await actionRepository.getForMember(member.id);
+    return await actionRepository.getForMemberExport(member.id);
   }
 
   async getAppActions(member: Actor, { appActionRepository }: Repositories) {
@@ -18,7 +18,7 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    return appActionRepository.getForMember(member.id);
+    return appActionRepository.getForMemberExport(member.id);
   }
 
   async getAppData(member: Actor, { appDataRepository }: Repositories) {
@@ -26,7 +26,7 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    const appData = await appDataRepository.getForMember(member.id);
+    const appData = await appDataRepository.getForMemberExport(member.id);
     return anonymizeResults({
       results: appData,
       exportingActorId: member.id,
@@ -39,7 +39,7 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    return appSettingRepository.getForMember(member.id);
+    return appSettingRepository.getForMemberExport(member.id);
   }
 
   async getChatMentions(member: Actor, { mentionRepository }: Repositories) {
@@ -85,7 +85,7 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    const itemMemberShips = await itemMembershipRepository.getForMember(member.id);
+    const itemMemberShips = await itemMembershipRepository.getForMemberExport(member.id);
     // TODO: anonymize none member data !
     const filtered = itemMemberShips.map((im) => im);
     return filtered;
@@ -99,6 +99,6 @@ export class DataMemberService {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
-    return itemRepository.getCreatedBy(member.id);
+    return itemRepository.getForMemberExport(member.id);
   }
 }

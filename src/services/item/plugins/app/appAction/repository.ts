@@ -41,7 +41,7 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
     });
   },
 
-  getForMember(memberId: string): Promise<AppAction[]> {
+  getForMemberExport(memberId: string): Promise<AppAction[]> {
     return this.createQueryBuilder('app_action')
       .where('app_action.member_id = :memberId', { memberId })
       .orderBy('app_action.created_at', 'DESC')
