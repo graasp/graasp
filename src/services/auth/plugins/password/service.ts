@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import { FastifyBaseLogger } from 'fastify';
 
 import { JWT_SECRET, LOGIN_TOKEN_EXPIRATION_IN_MINUTES } from '../../../../utils/config';
-import { MemberWithoutPassword } from '../../../../utils/errors';
+import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 
@@ -55,12 +55,17 @@ export class MemberPasswordService {
     challenge?: string,
   ) {
     const { memberRepository, memberPasswordRepository } = repositories;
+    const { email } = body;
 
-    const member = await memberRepository.getByEmail(body.email, { shouldExist: true });
+    const member = await memberRepository.getByEmail(email);
+    if (!member) {
+      this.log.warn(`Login attempt with non-existent email '${email}'`);
+      throw new MemberNotSignedUp({ email });
+    }
 
     const memberPassword = await memberPasswordRepository.getForMemberId(member.id);
     if (!memberPassword) {
-      throw new MemberWithoutPassword({ email: body.email });
+      throw new MemberWithoutPassword({ email });
     }
 
     // validate credentials to build token
