@@ -1,6 +1,7 @@
 import { QueryFailedError } from 'typeorm';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { MemberNotFound } from '../../../../../utils/errors';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
 import { Item } from '../../../entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
@@ -36,6 +37,21 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
         itemPath: item.path,
       })
       .getMany();
+  },
+
+  /**
+   * Get itemCategory for a given member.
+   * @param id item's id
+   */
+  async getForMemberExport(memberId: string): Promise<ItemCategory[]> {
+    if (!memberId) {
+      throw new MemberNotFound();
+    }
+
+    return this.find({
+      where: { creator: { id: memberId } },
+      relations: { category: true },
+    });
   },
 
   async post(itemPath: string, categoryId: string): Promise<ItemCategory> {

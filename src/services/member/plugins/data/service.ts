@@ -59,25 +59,6 @@ export class DataMemberService {
     return anonymizeMessage({ results, exportingActorId: member.id });
   }
 
-  async getBookMarks(member: Actor, { itemFavoriteRepository }: Repositories) {
-    if (!member) {
-      throw new UnauthorizedMember(member);
-    }
-    // TODO: limit by foreign key id ?
-    return await itemFavoriteRepository.getFavoriteForMember(member.id);
-  }
-
-  async getItemLikes(member: Actor, { itemLikeRepository }: Repositories) {
-    if (!member) {
-      throw new UnauthorizedMember(member);
-    }
-
-    // only own items
-    // TODO: allow to get other's like?
-    // TODO: remove joins !
-    return itemLikeRepository.getForMember(member.id);
-  }
-
   async getItemsMemberShips(member: Actor, { itemMembershipRepository }: Repositories) {
     // TODO: check if items are required in memberships
 
@@ -95,10 +76,36 @@ export class DataMemberService {
     return memberItemsOwner.map((item) => item.id);
   }
 
-  async getOwnItems(member: Actor, { itemRepository }: Repositories) {
+  async getItems(member: Actor, { itemRepository }: Repositories) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
     return itemRepository.getForMemberExport(member.id);
+  }
+
+  async getItemCategories(member: Actor, { itemCategoryRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+    return itemCategoryRepository.getForMemberExport(member.id);
+  }
+
+  async getItemFavorites(member: Actor, { itemFavoriteRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    return await itemFavoriteRepository.getForMemberExport(member.id);
+  }
+
+  async getItemLikes(member: Actor, { itemLikeRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    // TODO: check if we should also export the likes created by another member on its items
+    // In this case, don't forget to anonymize the id of the other member ?
+    // Or should we put the username of the other member who liked the item ?
+    return itemLikeRepository.getForMemberExport(member.id);
   }
 }

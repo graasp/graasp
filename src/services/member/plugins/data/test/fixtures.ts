@@ -3,6 +3,7 @@ import { ChatMessage } from '../../../../chat/chatMessage';
 import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
 import { ChatMessageRepository } from '../../../../chat/repository';
 import { Item } from '../../../../item/entities/Item';
+import { ItemFavorite } from '../../../../item/plugins/itemFavorite/entities/ItemFavorite';
 import { Member } from '../../../entities/member';
 
 /**
@@ -20,11 +21,13 @@ export const expectObjects = <T extends { id: string }, K extends keyof T = keyo
   expectations,
   wantedProps,
   typeName = 'object',
+  verbose = false,
 }: {
   results: T[];
   expectations: T[];
   wantedProps: K[];
   typeName?: string;
+  verbose?: boolean;
 }) => {
   console.log(`Testing ${typeName}.`);
   expect(results).toHaveLength(expectations.length);
@@ -50,7 +53,14 @@ export const expectObjects = <T extends { id: string }, K extends keyof T = keyo
       }).not.toThrow();
     }
 
-    wantedProps.forEach((prop) => expect(result[prop]).toEqual(expected[prop]));
+    wantedProps.forEach((prop) => {
+      if (verbose) {
+        console.log(
+          `Expecting "${expected[prop]}" for "${result[prop]}" where key is "${String(prop)}".`,
+        );
+      }
+      expect(result[prop]).toEqual(expected[prop]);
+    });
   }
 };
 
@@ -107,4 +117,16 @@ export const saveChatMessages = async ({
     chatMentions.push(await chatMentionRepo.save({ member: mentionMember, message }));
   }
   return { chatMessages, chatMentions, mentionedMember: mentionMember };
+};
+
+export const saveItemFavorites = async ({ items, member }: { items: Item[]; member: Member }) => {
+  const repository = AppDataSource.getRepository(ItemFavorite);
+  const favorites: ItemFavorite[] = [];
+
+  for (const item of items) {
+    const favorite = await repository.save({ item, member });
+    favorites.push(favorite);
+  }
+
+  return favorites;
 };

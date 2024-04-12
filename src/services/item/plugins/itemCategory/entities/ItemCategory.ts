@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   Unique,
 } from 'typeorm';
 import { v4 } from 'uuid';
@@ -34,6 +35,11 @@ export class ItemCategory extends BaseEntity {
   @JoinColumn({ name: 'creator_id' })
   creator: Member | null;
 
+  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
+  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
+  @RelationId((itemCategory: ItemCategory) => itemCategory.creator)
+  creatorId: string;
+
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;
 
@@ -44,4 +50,9 @@ export class ItemCategory extends BaseEntity {
   })
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;
+
+  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
+  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
+  @RelationId((itemCategory: ItemCategory) => itemCategory.item)
+  itemPath: string;
 }

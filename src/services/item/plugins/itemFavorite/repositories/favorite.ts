@@ -48,6 +48,13 @@ export class FavoriteRepository {
     return favorites;
   }
 
+  async getForMemberExport(memberId: string): Promise<ItemFavorite[]> {
+    return await this.repository
+      .createQueryBuilder('favorite')
+      .where('favorite.member = :memberId', { memberId })
+      .getMany();
+  }
+
   async post(itemId: string, memberId: string): Promise<ItemFavorite> {
     try {
       const created = await this.repository.insert({
