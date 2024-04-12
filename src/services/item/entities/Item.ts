@@ -9,6 +9,7 @@ import {
   ManyToOne,
   OneToOne,
   PrimaryColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 } from 'uuid';
@@ -109,6 +110,11 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   })
   @JoinColumn({ name: 'creator_id' })
   creator: Member | null;
+
+  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
+  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
+  @RelationId((item: Item) => item.creator)
+  creatorId: string;
 
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;

@@ -1,3 +1,10 @@
+import { AppDataSource } from '../../../../../plugins/datasource';
+import { ChatMessage } from '../../../../chat/chatMessage';
+import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
+import { ChatMessageRepository } from '../../../../chat/repository';
+import { Item } from '../../../../item/entities/Item';
+import { Member } from '../../../entities/member';
+
 /**
  * Check that only the wanted props are present and the value are as expected.
  * Wanted and unwanted props must be mutual exlusive.
@@ -76,4 +83,28 @@ export const expectNotLeakMemberId = <T>({
       }).not.toThrow();
     }
   }
+};
+
+export const saveChatMessages = async ({
+  creator,
+  item,
+  mentionMember,
+}: {
+  creator: Member;
+  item: Item;
+  mentionMember?: Member;
+}) => {
+  const chatMentionRepo = AppDataSource.getRepository(ChatMention);
+  const chatMessages: ChatMessage[] = [];
+  const chatMentions: ChatMention[] = [];
+  // mock the mention format of react-mention used in the chat-box
+  const mentionMessage = mentionMember ? `<!@${mentionMember.id}>[${mentionMember.name}]` : null;
+
+  for (let i = 0; i < 3; i++) {
+    const body = `${mentionMessage} some-text-${i} <!@${creator.id}>[${creator.name}]`;
+    const message = await ChatMessageRepository.save({ item, creator, body });
+    chatMessages.push(message);
+    chatMentions.push(await chatMentionRepo.save({ member: mentionMember, message }));
+  }
+  return { chatMessages, chatMentions, mentionedMember: mentionMember };
 };

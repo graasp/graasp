@@ -2,7 +2,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
-import { anonymizeResults } from './data.utils';
+import { anonymizeMessage, anonymizeResults } from './data.utils';
 
 export class DataMemberService {
   async getActions(member: Actor, { actionRepository }: Repositories) {
@@ -40,6 +40,23 @@ export class DataMemberService {
     }
 
     return appSettingRepository.getForMember(member.id);
+  }
+
+  async getChatMentions(member: Actor, { mentionRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    return mentionRepository.getForMemberExport(member.id);
+  }
+
+  async getChatMessages(member: Actor, { chatMessageRepository }: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    const results = await chatMessageRepository.getForMemberExport(member.id);
+    return anonymizeMessage({ results, exportingActorId: member.id });
   }
 
   async getBookMarks(member: Actor, { itemFavoriteRepository }: Repositories) {

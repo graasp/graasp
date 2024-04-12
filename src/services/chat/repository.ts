@@ -3,6 +3,7 @@ import { In } from 'typeorm';
 import { ResultOf } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
 import { mapById } from '../utils';
 import { ChatMessage } from './chatMessage';
@@ -33,6 +34,21 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
     return mapById({
       keys: itemIds,
       findElement: (id) => messages.filter(({ item }) => item.id === id),
+    });
+  },
+
+  /**
+   * Retrieves all the messages related to the given member
+   * @param memberId Id of item to retrieve messages for
+   */
+  async getForMemberExport(memberId: string): Promise<ChatMessage[]> {
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.find({
+      where: { creator: { id: memberId } },
+      order: { createdAt: 'DESC' },
     });
   },
 

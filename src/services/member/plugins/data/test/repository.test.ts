@@ -3,6 +3,10 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { Action } from '../../../../action/entities/action';
 import { ActionRepository } from '../../../../action/repositories/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
+import { ChatMessage } from '../../../../chat/chatMessage';
+import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
+import { ChatMentionRepository } from '../../../../chat/plugins/mentions/repository';
+import { ChatMessageRepository } from '../../../../chat/repository';
 import { AppAction } from '../../../../item/plugins/app/appAction/appAction';
 import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
@@ -14,7 +18,7 @@ import { AppSettingRepository } from '../../../../item/plugins/app/appSetting/re
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
-import { expectObjects } from './fixtures';
+import { expectObjects, saveChatMessages } from './fixtures';
 
 const itemTestUtils = new ItemTestUtils();
 
@@ -69,6 +73,8 @@ describe('DataMember Export', () => {
 
     it('get all Actions for the member', async () => {
       const result = await new ActionRepository().getForMember(exportingActor.id);
+
+      console.log(result);
 
       expectObjects({
         results: result,
@@ -181,7 +187,55 @@ describe('DataMember Export', () => {
         expectations: appSettings,
         wantedProps: ['id', 'itemId', 'data', 'name', 'creatorId', 'createdAt', 'updatedAt'],
         // unwantedProps: ['item', 'creator'],
-        typeName: 'AppData',
+        typeName: 'AppSetting',
+      });
+    });
+  });
+
+  describe('ChatMention', () => {
+    let chatMessages: ChatMessage[];
+    let chatMentions: ChatMention[];
+
+    beforeEach(async () => {
+      // exporting member mentions another user, so this mention data is for the random user only.
+      ({ chatMessages } = await saveChatMessages({
+        item,
+        creator: exportingActor,
+        mentionMember: randomUser,
+      }));
+
+      ({ chatMentions } = await saveChatMessages({
+        item: itemOfRandomUser,
+        creator: randomUser,
+        mentionMember: exportingActor,
+      }));
+    });
+
+    describe('ChatMentions', () => {
+      it('get all ChatMentions for the member', async () => {
+        const result = await new ChatMentionRepository().getForMemberExport(exportingActor.id);
+
+        expectObjects({
+          results: result,
+          expectations: chatMentions,
+          wantedProps: ['id', 'messageId', 'memberId', 'createdAt', 'updatedAt', 'status'],
+          // unwantedProps: ['message', 'member'],
+          typeName: 'ChatMention',
+        });
+      });
+    });
+
+    describe('ChatMessages', () => {
+      it('get all Messages for the member', async () => {
+        const result = await ChatMessageRepository.getForMemberExport(exportingActor.id);
+
+        expectObjects({
+          results: result,
+          expectations: chatMessages,
+          wantedProps: ['id', 'itemId', 'creatorId', 'createdAt', 'updatedAt', 'body'],
+          // unwantedProps: ['item', 'creator'],
+          typeName: 'ChatMessage',
+        });
       });
     });
   });

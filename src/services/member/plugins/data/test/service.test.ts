@@ -7,15 +7,36 @@ import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixt
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import { Member } from '../../../entities/member';
 import { saveMember } from '../../../test/fixtures/members';
 import { DataMemberService } from '../service';
-import { expectNotLeakMemberId } from './fixtures';
+import { expectNotLeakMemberId, saveChatMessages } from './fixtures';
 
 const itemTestUtils = new ItemTestUtils();
 
 jest.mock('../../../../../plugins/datasource');
 
 const service = new DataMemberService();
+
+const checkNoMemberIdLeaks = <T>({
+  result,
+  exportingActor,
+  randomUser,
+}: {
+  result: T[];
+  exportingActor: Member;
+  randomUser: Member;
+}) => {
+  expect(result.length).toBeGreaterThan(0);
+
+  result.forEach((resource) => {
+    expectNotLeakMemberId({
+      resource,
+      exportActorId: exportingActor.id,
+      memberId: randomUser.id,
+    });
+  });
+};
 
 describe('DataMember Export', () => {
   let app;
@@ -65,15 +86,7 @@ describe('DataMember Export', () => {
 
     it('member id is not leak', async () => {
       const result = await service.getActions(exportingActor, buildRepositories());
-      expect(result.length).toBeGreaterThan(0);
-
-      result.forEach((resource) => {
-        expectNotLeakMemberId({
-          resource,
-          exportActorId: exportingActor.id,
-          memberId: randomUser.id,
-        });
-      });
+      checkNoMemberIdLeaks({ result, exportingActor, randomUser });
     });
   });
 
@@ -91,15 +104,7 @@ describe('DataMember Export', () => {
 
     it('member id is not leak', async () => {
       const result = await service.getAppActions(exportingActor, buildRepositories());
-      expect(result.length).toBeGreaterThan(0);
-
-      result.forEach((resource) => {
-        expectNotLeakMemberId({
-          resource,
-          exportActorId: exportingActor.id,
-          memberId: randomUser.id,
-        });
-      });
+      checkNoMemberIdLeaks({ result, exportingActor, randomUser });
     });
   });
 
@@ -126,22 +131,14 @@ describe('DataMember Export', () => {
 
     it('member id is not leak', async () => {
       const result = await service.getAppData(exportingActor, buildRepositories());
-      expect(result.length).toBeGreaterThan(0);
-      result.forEach((resource) => {
-        expectNotLeakMemberId({
-          resource,
-          exportActorId: exportingActor.id,
-          memberId: randomUser.id,
-        });
-      });
+      checkNoMemberIdLeaks({ result, exportingActor, randomUser });
     });
   });
 
   describe('AppSettings', () => {
     beforeEach(async () => {
-      // save regular app data
       await saveAppSettings({ item, creator: exportingActor });
-      // noise: save app data where the creator is a random user
+      // noise: the creator is a random user
       await saveAppSettings({
         item: itemOfRandomUser,
         creator: randomUser,
@@ -150,13 +147,30 @@ describe('DataMember Export', () => {
 
     it('member id is not leak', async () => {
       const result = await service.getAppSettings(exportingActor, buildRepositories());
-      expect(result.length).toBeGreaterThan(0);
-      result.forEach((resource) => {
-        expectNotLeakMemberId({
-          resource,
-          exportActorId: exportingActor.id,
-          memberId: randomUser.id,
-        });
+      checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+    });
+  });
+
+  describe('Chat', () => {
+    beforeEach(async () => {
+      await saveChatMessages({ item, creator: exportingActor, mentionMember: randomUser });
+      await saveChatMessages({
+        item: itemOfRandomUser,
+        creator: randomUser,
+        mentionMember: exportingActor,
+      });
+    });
+    describe('ChatMentions', () => {
+      it('member id is not leak', async () => {
+        const result = await service.getChatMentions(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+      });
+    });
+
+    describe('ChatMessages', () => {
+      it('member id is not leak', async () => {
+        const result = await service.getChatMessages(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ result, exportingActor, randomUser });
       });
     });
   });

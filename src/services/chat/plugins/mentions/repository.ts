@@ -38,6 +38,20 @@ export class ChatMentionRepository {
   }
 
   /**
+   * Retrieves all the mentions for the given memberId
+   * @param memberId Id of the member to retrieve
+   */
+  async getForMemberExport(memberId: string): Promise<ChatMention[]> {
+    if (!memberId) {
+      throw new NoChatMentionForMember({ memberId });
+    }
+
+    return this.repository.find({
+      where: { member: { id: memberId } },
+    });
+  }
+
+  /**
    * Retrieves a mention given the mention id
    * @param mentionId Id of the mention to retrieve
    */

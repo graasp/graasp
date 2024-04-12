@@ -30,7 +30,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const appActions = await dataMemberService.getAppActions(member, repositories);
       const appData = await dataMemberService.getAppData(member, repositories);
       const appSettings = await dataMemberService.getAppSettings(member, repositories);
-      // TODO: chat_mention
+      const chatMentions = await dataMemberService.getChatMentions(member, repositories);
+      const chatMessages = await dataMemberService.getChatMessages(member, repositories);
       // TODO: chat_message
       // TODO: invitation ?
       // TODO: item_category
@@ -54,6 +55,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         appActions,
         appData,
         appSettings,
+        chatMentions,
+        chatMessages,
+
         bookMarks,
         itemLikes,
         itemMemberShips,
