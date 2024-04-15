@@ -6,6 +6,114 @@ import { Item } from '../../../../item/entities/Item';
 import { ItemFavorite } from '../../../../item/plugins/itemFavorite/entities/ItemFavorite';
 import { Member } from '../../../entities/member';
 
+// TODO: maybe move it to SDK ?
+// Nested more than 1 deep is not working yet because of circular dep.
+// That means doing message.member.name is not working yet. Use Any the time to solve that.
+// https://stackoverflow.com/questions/71934070/how-do-i-get-a-deep-keyof-with-dot-access-paths-that-allow-circular-referencing
+type StringOrNumKeys<T> = keyof T & (string | number);
+type OneLevelNestedKeyOf<T> =
+  // | any
+  | {
+      [Key in StringOrNumKeys<T>]: NonNullable<T[Key]> extends object
+        ? `${Key}` | `${Key}.${StringOrNumKeys<NonNullable<T[Key]>>}`
+        : `${Key}`;
+    }[StringOrNumKeys<T>];
+
+const getKeysAndFirstNestedKeys = <T extends object>(obj: T) => {
+  const keys: string[] = [];
+  for (const key in obj) {
+    keys.push(key);
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      const nestedObject = obj[key] as object;
+      const nestedKeys = Object.keys(nestedObject) as (string | number)[];
+      keys.push(...nestedKeys.map((nestedKey) => `${key}.${nestedKey}`));
+    }
+  }
+  return keys;
+};
+
+const computeFirstNestedKeys = <T extends object>(
+  result: T,
+  wantedProps: OneLevelNestedKeyOf<T>[],
+) => {
+  // include parent prop of nested props
+  const wantedSet = new Set<string>();
+  for (const key of wantedProps) {
+    const stringKey = String(key);
+    const nestedKeys = result[stringKey];
+
+    if (nestedKeys && typeof nestedKeys === 'object') {
+      Object.keys(nestedKeys)
+        .map((k) => `${stringKey}.${k}`)
+        .forEach(wantedSet.add, wantedSet);
+    }
+
+    wantedSet.add(stringKey);
+    if (stringKey.includes('.')) {
+      wantedSet.add(stringKey.split('.')[0]);
+    }
+  }
+  return wantedSet;
+};
+
+const expectNoLeakedColumn = <T extends object>(
+  result: T,
+  allProps: string[],
+  wantedProps: OneLevelNestedKeyOf<T>[],
+) => {
+  const wantedSet = computeFirstNestedKeys(result, wantedProps);
+  const missingWantedProps = allProps.filter((e) => !wantedSet.has(e));
+
+  if (missingWantedProps.length) {
+    expect(() => {
+      throw new Error(
+        `The props "${missingWantedProps.join(
+          ', ',
+        )}" are in the results but not in the wanted props.
+       This can lead to an unwanted leak ! If it is wanted, please update the wanted array.`,
+      );
+    }).not.toThrow();
+  }
+};
+
+const expectValuesEquals = <T extends object>({
+  wantedProps,
+  expected,
+  result,
+  verbose,
+}: {
+  result: T;
+  expected: T;
+  wantedProps: OneLevelNestedKeyOf<T>[];
+  verbose?: boolean;
+}) => {
+  if (verbose) {
+    console.log(`Comparing ${JSON.stringify(expected)} with received ${JSON.stringify(result)}.`);
+  }
+
+  wantedProps.forEach((prop) => {
+    const splitedProp = String(prop).split('.');
+    const rootProp = splitedProp[0];
+    const nestedProp = splitedProp[1];
+
+    if (!result[rootProp]) {
+      throw new Error(`The prop "${rootProp}" is not present in ${JSON.stringify(result)}.`);
+    }
+
+    const expectedValue = nestedProp ? expected[rootProp][nestedProp] : expected[rootProp];
+    const resValue = nestedProp ? result[rootProp][nestedProp] : result[rootProp];
+
+    if (verbose) {
+      console.log(
+        `Expecting ${JSON.stringify(expectedValue)} to be ${JSON.stringify(
+          resValue,
+        )} for key "${String(prop)}".`,
+      );
+    }
+    expect(resValue).toEqual(expectedValue);
+  });
+};
+
 /**
  * Check that only the wanted props are present and the value are as expected.
  * Wanted and unwanted props must be mutual exlusive.
@@ -16,7 +124,7 @@ import { Member } from '../../../entities/member';
  * @param unwantedProps: The unvalid props that results should not have.
  * @param mustContainsAllProps: If true, all the props must be dispatched in wanted or unwanted.
  */
-export const expectObjects = <T extends { id: string }, K extends keyof T = keyof T>({
+export const expectObjects = <T extends object & { id: string }>({
   results,
   expectations,
   wantedProps,
@@ -25,14 +133,14 @@ export const expectObjects = <T extends { id: string }, K extends keyof T = keyo
 }: {
   results: T[];
   expectations: T[];
-  wantedProps: K[];
+  wantedProps: OneLevelNestedKeyOf<T>[];
   typeName?: string;
   verbose?: boolean;
 }) => {
   console.log(`Testing ${typeName}.`);
   expect(results).toHaveLength(expectations.length);
 
-  const allProps = Object.keys(results[0]);
+  const allProps = getKeysAndFirstNestedKeys(results[0]);
 
   for (const expected of expectations) {
     const result = results.find((a) => a.id === expected.id);
@@ -40,27 +148,8 @@ export const expectObjects = <T extends { id: string }, K extends keyof T = keyo
       throw new Error(`${typeName} should exist`);
     }
 
-    const missingWantedProps = allProps.filter((e) => !wantedProps.includes(e as K));
-
-    if (missingWantedProps.length) {
-      expect(() => {
-        throw new Error(
-          `The props "${missingWantedProps.join(
-            ', ',
-          )}" are in the results but not in the wanted props.
-         This can lead to an unwanted leak ! If it is wanted, please update the wanted array.`,
-        );
-      }).not.toThrow();
-    }
-
-    wantedProps.forEach((prop) => {
-      if (verbose) {
-        console.log(
-          `Expecting "${expected[prop]}" for "${result[prop]}" where key is "${String(prop)}".`,
-        );
-      }
-      expect(result[prop]).toEqual(expected[prop]);
-    });
+    expectNoLeakedColumn(result, allProps, wantedProps);
+    expectValuesEquals({ result, expected, wantedProps, verbose });
   }
 };
 

@@ -35,11 +35,6 @@ export class AppData extends BaseEntity {
   @JoinColumn({ name: 'item_id' })
   item: Item;
 
-  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
-  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
-  @RelationId((appData: AppData) => appData.item)
-  itemId: string;
-
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'SET NULL',
   })

@@ -47,7 +47,26 @@ export class ChatMentionRepository {
     }
 
     return this.repository.find({
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        message: {
+          // Be careful, if the ID is not selected, the returned message have an ID field but with the wrong UUID.
+          id: true,
+          creator: { name: true },
+          body: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
       where: { member: { id: memberId } },
+      relations: {
+        message: {
+          creator: true,
+        },
+      },
     });
   }
 

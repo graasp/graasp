@@ -31,6 +31,7 @@ import { expectObjects, saveChatMessages, saveItemFavorites } from './fixtures';
  */
 
 const itemTestUtils = new ItemTestUtils();
+const wantedExportItemProps = ['item.id', 'item.name', 'item.displayName'] as const;
 
 jest.mock('../../../../../plugins/datasource');
 
@@ -91,8 +92,7 @@ describe('DataMember Export', () => {
           'extra',
           'geolocation',
           'createdAt',
-          'memberId',
-          'itemId',
+          ...wantedExportItemProps,
         ],
         // unwantedProps: ['member', 'item'],
         typeName: 'Action',
@@ -116,7 +116,7 @@ describe('DataMember Export', () => {
       expectObjects({
         results: result,
         expectations: [...appActions, ...otherActions],
-        wantedProps: ['id', 'memberId', 'itemId', 'data', 'type', 'createdAt'],
+        wantedProps: ['id', 'data', 'type', 'createdAt', ...wantedExportItemProps],
         // unwantedProps: ['member', 'item'],
         typeName: 'AppAction',
       });
@@ -148,13 +148,13 @@ describe('DataMember Export', () => {
         wantedProps: [
           'id',
           'memberId',
-          'itemId',
           'data',
           'type',
           'visibility',
           'creatorId',
           'createdAt',
           'updatedAt',
+          ...wantedExportItemProps,
         ],
         // unwantedProps: ['member', 'item', 'creator'],
         typeName: 'AppData',
@@ -176,7 +176,7 @@ describe('DataMember Export', () => {
       expectObjects({
         results: result,
         expectations: appSettings,
-        wantedProps: ['id', 'itemId', 'data', 'name', 'creatorId', 'createdAt', 'updatedAt'],
+        wantedProps: ['id', 'data', 'name', 'createdAt', 'updatedAt', ...wantedExportItemProps],
         // unwantedProps: ['item', 'creator'],
         typeName: 'AppSetting',
       });
@@ -209,9 +209,21 @@ describe('DataMember Export', () => {
         expectObjects({
           results: result,
           expectations: chatMentions,
-          wantedProps: ['id', 'messageId', 'memberId', 'createdAt', 'updatedAt', 'status'],
+          wantedProps: [
+            'id',
+            'createdAt',
+            'updatedAt',
+            'status',
+            'message.id',
+            // TODO: update fixture to allow deep of 2xw
+            // 'message.creator.name',
+            'message.body',
+            'message.createdAt',
+            'message.updatedAt',
+          ],
           // unwantedProps: ['message', 'member'],
           typeName: 'ChatMention',
+          verbose: true,
         });
       });
     });

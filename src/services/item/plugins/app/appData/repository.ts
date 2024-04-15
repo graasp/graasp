@@ -60,6 +60,10 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
 
   async getForMemberExport(memberId: string): Promise<AppData[]> {
     return this.createQueryBuilder('app_data')
+      .leftJoin('app_data.item', 'item')
+      .addSelect('item.id')
+      .addSelect('item.name')
+      .addSelect('item.displayName')
       .where('app_data.member_id = :memberId or app_data.creator_id = :memberId', { memberId })
       .orderBy('app_data.updated_at', 'DESC')
       .getMany();
