@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
@@ -210,6 +211,20 @@ describe('Auth routes tests', () => {
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
+    });
+
+    it('Bad request for non registered email', async () => {
+      // email is not registered
+      const email = 'tim@graasp.org';
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: '/login',
+        payload: { email, captcha: MOCK_CAPTCHA },
+      });
+
+      // ensure the message is `member not signed up`
+      expect(response.json().message).toEqual(FAILURE_MESSAGES.MEMBER_NOT_SIGNED_UP);
+      expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
     });
   });
 
