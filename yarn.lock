@@ -1826,13 +1826,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/cookie@npm:^8.0.0":
-  version: 8.3.0
-  resolution: "@fastify/cookie@npm:8.3.0"
+"@fastify/cookie@npm:^9.0.4":
+  version: 9.3.1
+  resolution: "@fastify/cookie@npm:9.3.1"
   dependencies:
-    cookie: "npm:^0.5.0"
+    cookie-signature: "npm:^1.1.0"
     fastify-plugin: "npm:^4.0.0"
-  checksum: 10/abcf55efc79abb013f54c83d5e3ea46b09c77af0ba35be5aebfc863117f7cdbbc20c0d91a586c89c533b1588031867230bfe2050064c0d251b6ac1bb302e9b62
+  checksum: 10/b3ae999316a775c9167900b73bf02125504fedc7b3121c3a766c827caf18e10959f060d22495f6d7247cfc7b375c9761765af615c67691cb39afcc5d3677e9fb
   languageName: node
   linkType: hard
 
@@ -1925,16 +1925,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/secure-session@npm:6.2.0":
-  version: 6.2.0
-  resolution: "@fastify/secure-session@npm:6.2.0"
+"@fastify/secure-session@npm:7.3.0":
+  version: 7.3.0
+  resolution: "@fastify/secure-session@npm:7.3.0"
   dependencies:
-    "@fastify/cookie": "npm:^8.0.0"
+    "@fastify/cookie": "npm:^9.0.4"
     fastify-plugin: "npm:^4.0.0"
     sodium-native: "npm:^4.0.0"
   bin:
     secure-session: genkey.js
-  checksum: 10/fd492b800df6bd0baaa1dbdbd14878b6c3785848838066945ba9f9189b05873ab0fd7a75f9b35c9633d73b62de9cf824c8f416b4b2c6f1584e09124879bc154c
+  checksum: 10/2b98d7f23f9fcdf9c785130b65528c7a24306efe68830fa991524cf3ea29725304b226f59d128d0b0ed6f9e4bd3efca183b85843e6f240318c73bfe31e5d9830
   languageName: node
   linkType: hard
 
@@ -5164,17 +5164,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie-signature@npm:^1.1.0":
+  version: 1.2.1
+  resolution: "cookie-signature@npm:1.2.1"
+  checksum: 10/b871138a81382173d51dde5c1c56e8b313bc4b9e5f2f67d0d63be50fd43b92a25cb9bd72c2fc2935c0c6cb6cce834e7e2fd12830d7ec289ccac5bdec19dd14eb
+  languageName: node
+  linkType: hard
+
 "cookie@npm:^0.4.1":
   version: 0.4.2
   resolution: "cookie@npm:0.4.2"
   checksum: 10/2e1de9fdedca54881eab3c0477aeb067f281f3155d9cfee9d28dfb252210d09e85e9d175c0a60689661feb9e35e588515352f2456bc1f8e8db4267e05fd70137
-  languageName: node
-  linkType: hard
-
-"cookie@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "cookie@npm:0.5.0"
-  checksum: 10/aae7911ddc5f444a9025fbd979ad1b5d60191011339bce48e555cb83343d0f98b865ff5c4d71fecdfb8555a5cafdc65632f6fce172f32aaf6936830a883a0380
   languageName: node
   linkType: hard
 
@@ -6704,7 +6704,7 @@ __metadata:
     "@fastify/helmet": "npm:10.1.1"
     "@fastify/jwt": "npm:6.7.1"
     "@fastify/multipart": "npm:7.7.3"
-    "@fastify/secure-session": "npm:6.2.0"
+    "@fastify/secure-session": "npm:7.3.0"
     "@fastify/static": "npm:6.12.0"
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
