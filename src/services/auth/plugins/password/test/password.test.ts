@@ -2,6 +2,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch, { type Response } from 'node-fetch';
 
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -139,6 +140,7 @@ describe('Password routes tests', () => {
       });
 
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
+      expect(response.json().message).toEqual(FAILURE_MESSAGES.MEMBER_NOT_SIGNED_UP);
       expect(response.statusMessage).toEqual(ReasonPhrases.NOT_FOUND);
     });
 
