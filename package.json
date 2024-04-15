@@ -78,7 +78,7 @@
     "bullmq": "4.4.0",
     "content-disposition": "0.5.4",
     "dotenv": "16.0.3",
-    "eta": "2.0.1",
+    "eta": "2.2.0",
     "extract-zip": "2.0.1",
     "fastify": "4.15.0",
     "fastify-nodemailer": "5.0.0",
