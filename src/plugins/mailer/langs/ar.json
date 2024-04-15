@@ -1,7 +1,7 @@
 {
   "GREETINGS": "شكرا لك على التسجيل في منصتنا.",
   "SIGN_UP_VERIFY_EMAIL": "يرجى التحقق من بريدك الإلكتروني بالضغط على الزر التالي.",
-  "SIGN_UP_TEXT": "أكمل التسجيل وتسجيل الدخول",
+  "SIGN_UP_TEXT": "أكمل التسجيل وتسجيل الدخول.",
   "SIGN_UP_NOT_REQUESTED": "إذا كنت لا تتذكر الاشتراك في Graasp، فيمكنك فقط تجاهل هذا البريد الإلكتروني.",
   "SIGN_IN_BUTTON_TEXT": "تسجيل الدخول",
   "SIGN_UP_BUTTON_TEXT": "يسجل",
@@ -24,5 +24,6 @@
   "SHARE_ITEM_BUTTON": "عرض العنصر",
   "SHARE_ITEM_TITLE": "قام {{creatorName}} بمشاركة {{itemName}} معك على Graasp",
   "FOOTER": "أنت تتلقى هذا البريد الإلكتروني بسبب حسابك على <a href=\"https://graasp.org\">Graasp</a>",
-  "POWERED_BY": "مدعوم من <a href=\"https://graasp.org\">Graasp</a>."
+  "POWERED_BY": "مدعوم من <a href=\"https://graasp.org\">Graasp</a>.",
+  "USER_AGREEMENTS_MAIL_TEXT": "* بالنقر على <strong>{{signUpButtonText}}</strong>، فإنك توافق على <a href=\"{{graaspLandingPageOrigin}}/terms\">شروط الخدمة</a> و<a href=\"{ {graaspLandingPageOrigin}}/privacy\">سياسة الخصوصية</a>."
 }
