@@ -125,3 +125,9 @@ declare module 'fastify' {
     authTokenSubject?: AuthTokenSubject;
   }
 }
+
+declare module '@fastify/secure-session' {
+  interface SessionData {
+    member: string;
+  }
+}
