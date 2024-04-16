@@ -131,7 +131,7 @@
     "@types/node": "18.15.13",
     "@types/node-fetch": "2",
     "@types/papaparse": "5.3.14",
-    "@types/qs": "6.9.14",
+    "@types/qs": "6.9.15",
     "@types/sanitize-html": "2.11.0",
     "@types/striptags": "3.1.1",
     "@types/uuid": "9.0.8",
