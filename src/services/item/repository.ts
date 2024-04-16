@@ -298,6 +298,8 @@ export class ItemRepository {
   async getForMemberExport(memberId: string): Promise<Item[]> {
     return this.repository
       .createQueryBuilder('item')
+      .addSelect('creator.name')
+      .leftJoin('item.creator', 'creator')
       .where('item.creator_id = :memberId', { memberId })
       .orderBy('item.updated_at', 'DESC')
       .getMany();

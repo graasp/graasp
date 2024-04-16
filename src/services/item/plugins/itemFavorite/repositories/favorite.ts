@@ -51,6 +51,8 @@ export class FavoriteRepository {
   async getForMemberExport(memberId: string): Promise<ItemFavorite[]> {
     return await this.repository
       .createQueryBuilder('favorite')
+      .select(['favorite.id', 'favorite.createdAt', 'item.id', 'item.name', 'item.displayName'])
+      .leftJoin('favorite.item', 'item')
       .where('favorite.member = :memberId', { memberId })
       .getMany();
   }

@@ -34,10 +34,17 @@ export class ActionRepository {
   async getForMemberExport(memberId: string): Promise<Action[]> {
     return await this.repository
       .createQueryBuilder('action')
+      .select([
+        'action.id',
+        'action.view',
+        'action.type',
+        'action.extra',
+        'action.createdAt',
+        'item.id',
+        'item.name',
+        'item.displayName',
+      ])
       .leftJoin('action.item', 'item')
-      .addSelect('item.id')
-      .addSelect('item.name')
-      .addSelect('item.displayName')
       .where('action.member_id = :memberId', { memberId })
       .orderBy('action.created_at', 'DESC')
       .getMany();

@@ -23,17 +23,17 @@ jest.mock('../../../../../plugins/datasource');
 const service = new DataMemberService();
 
 const checkNoMemberIdLeaks = <T>({
-  result,
+  results,
   exportingActor,
   randomUser,
 }: {
-  result: T[];
+  results: T[];
   exportingActor: Member;
   randomUser: Member;
 }) => {
-  expect(result.length).toBeGreaterThan(0);
+  expect(results.length).toBeGreaterThan(0);
 
-  result.forEach((resource) => {
+  results.forEach((resource) => {
     expectNotLeakMemberId({
       resource,
       exportActorId: exportingActor.id,
@@ -86,8 +86,8 @@ describe('DataMember Export', () => {
       // noise: for a random member
       await saveAppData({ item: itemOfRandomUser, creator: randomUser });
 
-      const result = await service.getAppData(exportingActor, buildRepositories());
-      checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+      const results = await service.getAppData(exportingActor, buildRepositories());
+      checkNoMemberIdLeaks({ results, exportingActor, randomUser });
     });
   });
 
@@ -102,8 +102,8 @@ describe('DataMember Export', () => {
     });
     describe('ChatMentions', () => {
       it('member id is not leak', async () => {
-        const result = await service.getChatMentions(exportingActor, buildRepositories());
-        checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+        const results = await service.getChatMentions(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
   });
@@ -117,8 +117,8 @@ describe('DataMember Export', () => {
         await itemTestUtils.saveItem({ actor: randomUser });
         await itemTestUtils.saveItem({ actor: randomUser });
 
-        const result = await service.getItems(exportingActor, buildRepositories());
-        checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+        const results = await service.getItems(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
 
@@ -130,8 +130,8 @@ describe('DataMember Export', () => {
           creator: exportingActor,
         });
 
-        const result = await service.getItemCategories(exportingActor, buildRepositories());
-        checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+        const results = await service.getItemCategories(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
 
@@ -152,8 +152,8 @@ describe('DataMember Export', () => {
           member: randomUser,
         });
 
-        const result = await service.getItemFavorites(exportingActor, buildRepositories());
-        checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+        const results = await service.getItemFavorites(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
 
@@ -169,8 +169,8 @@ describe('DataMember Export', () => {
         // noise:
         await saveItemLikes(items, randomUser);
 
-        const result = await service.getItemLikes(exportingActor, buildRepositories());
-        checkNoMemberIdLeaks({ result, exportingActor, randomUser });
+        const results = await service.getItemLikes(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
   });

@@ -49,8 +49,23 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
     }
 
     return this.find({
+      select: {
+        id: true,
+        createdAt: true,
+        item: {
+          id: true,
+          name: true,
+          displayName: true,
+        },
+        category: {
+          // even when not select, category has an id...
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
       where: { creator: { id: memberId } },
-      relations: { category: true },
+      relations: { category: true, item: true },
     });
   },
 

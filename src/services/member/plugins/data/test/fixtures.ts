@@ -25,11 +25,7 @@ const expectNoLeakedColumns = <T>(results: T[], schema: Schema | JSONSchemaType<
   results.forEach((res) => {
     if (!validate(res) && validate.errors) {
       expect(() => {
-        throw new Error(
-          `The results are not valid. Check the correct shape of the results!
-          Additional props can lead to an unwanted leak ! If it is wanted, please update the wanted array.
-          Validation errors: ${JSON.stringify(validate.errors)}.`,
-        );
+        throw new Error(`Validation errors: ${JSON.stringify(validate.errors)}.`);
       }).not.toThrow();
     }
   });

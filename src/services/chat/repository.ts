@@ -47,8 +47,23 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
     }
 
     return this.find({
+      select: {
+        id: true,
+        body: true,
+        createdAt: true,
+        updatedAt: true,
+        // TODO: export itemSelection to reuse in other repo
+        item: {
+          id: true,
+          name: true,
+          displayName: true,
+        },
+      },
       where: { creator: { id: memberId } },
       order: { createdAt: 'DESC' },
+      relations: {
+        item: true,
+      },
     });
   },
 

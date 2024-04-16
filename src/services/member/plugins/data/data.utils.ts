@@ -1,4 +1,5 @@
 import { ChatMessage } from '../../../chat/chatMessage';
+import { ChatMention } from '../../../chat/plugins/mentions/chatMention';
 
 const ANONYMIZED_ID = 'anonymous-id';
 
@@ -31,7 +32,26 @@ const replaceNoneActorId = (message: string, exportingActorId: string) => {
   return messageWithoutActorUUID.replace(regex, ANONYMIZED_ID).replace(actorId, exportingActorId);
 };
 
-export const anonymizeMessage = ({
+export const anonymizeMentionsMessage = ({
+  results,
+  exportingActorId,
+}: {
+  results: ChatMention[];
+  exportingActorId: string;
+}) => {
+  return results.map((r) => {
+    const anoynmizedMessage = r.message
+      ? anonymizeMessages({ results: [r.message], exportingActorId })[0]
+      : undefined;
+
+    return {
+      ...r,
+      message: anoynmizedMessage,
+    };
+  });
+};
+
+export const anonymizeMessages = ({
   results,
   exportingActorId,
 }: {

@@ -1,4 +1,10 @@
-import { DATE_TYPE, OBJECT_TYPE, STRING_TYPE, buildRequireExactlyObjectSchema } from './utils';
+import {
+  DATE_TYPE,
+  OBJECT_TYPE,
+  ONE_OF,
+  STRING_TYPE,
+  buildRequireExactlyObjectSchema,
+} from './utils';
 
 export const externalItemSchema = buildRequireExactlyObjectSchema({
   id: STRING_TYPE,
@@ -11,7 +17,6 @@ export const actionSchema = buildRequireExactlyObjectSchema({
   view: STRING_TYPE, // TODO: ADAPT,
   type: STRING_TYPE, // TODO: ADAPT,
   extra: OBJECT_TYPE,
-  geolocation: OBJECT_TYPE, // TODO: adapt
   createdAt: DATE_TYPE,
   item: externalItemSchema,
 });
@@ -86,17 +91,17 @@ export const itemSchema = buildRequireExactlyObjectSchema({
   displayName: STRING_TYPE,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
-  deletedAt: DATE_TYPE,
+  deletedAt: ONE_OF([...DATE_TYPE.oneOf, { type: 'null' }]),
 });
 
 const categorySchema = buildRequireExactlyObjectSchema({
+  id: STRING_TYPE,
   name: STRING_TYPE,
   type: STRING_TYPE,
 });
 
 export const itemCategorySchema = buildRequireExactlyObjectSchema({
   id: STRING_TYPE,
-  creator: externalMemberSchema,
   item: externalItemSchema,
   category: categorySchema,
   createdAt: DATE_TYPE,

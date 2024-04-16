@@ -204,15 +204,11 @@ describe('DataMember Export', () => {
 
     it('get all Item Categories for the member', async () => {
       const categories = await saveCategories();
-      // When using .save on ICategoryRepository, itemPath seems to be the itemId.
-      // It is an fix just to compare with the getForMemberExport method who get itemPath correctly.
-      const itemCategories = (
-        await saveItemCategories({
-          item,
-          categories,
-          creator: exportingActor,
-        })
-      ).map((iC) => ({ ...iC, itemPath: iC.item.path }));
+      const itemCategories = await saveItemCategories({
+        item,
+        categories,
+        creator: exportingActor,
+      });
 
       // noise
       await saveItemCategories({ item: itemOfRandomUser, categories, creator: randomUser });
