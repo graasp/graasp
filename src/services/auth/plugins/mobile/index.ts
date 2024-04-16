@@ -40,7 +40,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('memberId', null);
 
   fastify.post<{
-    Body: { name: string; email: string; challenge: string; captcha: string };
+    Body: {
+      name: string;
+      email: string;
+      challenge: string;
+      captcha: string;
+      enableSaveActions?: boolean;
+    };
     Querystring: { lang?: string };
   }>('/register', { schema: mregister }, async (request, reply) => {
     const {

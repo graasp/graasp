@@ -48,7 +48,7 @@ describe('ActionService', () => {
 
     it('does not post actions if member disable analytics', async () => {
       ({ app, actor } = await build({
-        member: MemberFactory({ extra: { enableSaveActions: false } }),
+        member: MemberFactory({ enableSaveActions: false }),
       }));
       const actions = [ActionFactory(), ActionFactory(), ActionFactory()] as unknown as Action[];
       const request = MOCK_REQUEST;

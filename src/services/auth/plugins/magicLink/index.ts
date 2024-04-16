@@ -25,7 +25,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(async function (fastify) {
     // register
     fastify.post<{
-      Body: { name: string; email: string; captcha: string; url?: string };
+      Body: {
+        name: string;
+        email: string;
+        captcha: string;
+        url?: string;
+        enableSaveActions?: boolean;
+      };
       Querystring: { lang?: string };
     }>('/register', { schema: register }, async (request, reply) => {
       const {

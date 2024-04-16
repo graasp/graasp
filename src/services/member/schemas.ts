@@ -28,6 +28,7 @@ export default {
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
         userAgreementsDate: { type: 'string' },
+        enableSaveActions: { type: 'boolean' },
         extra: { type: 'object', additionalProperties: true },
       },
       additionalProperties: false,
@@ -39,6 +40,7 @@ export default {
       properties: {
         name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
         extra: { type: 'object', additionalProperties: true },
+        enableSaveActions: { type: 'boolean' },
       },
       additionalProperties: false,
     },
@@ -51,6 +53,7 @@ export default {
           anyOf: [
             { type: 'object', required: ['name'] },
             { type: 'object', required: ['extra'] },
+            { type: 'object', required: ['enableSaveActions'] },
           ],
         },
       ],

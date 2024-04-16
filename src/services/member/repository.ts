@@ -57,7 +57,10 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     });
   },
 
-  async patch(id: UUID, body: Partial<Pick<Member, 'extra' | 'email' | 'name'>>) {
+  async patch(
+    id: UUID,
+    body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
+  ) {
     const newData: Partial<Member> = {};
 
     if (body.name) {
@@ -70,6 +73,10 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
 
     if (body.extra) {
       newData.extra = Object.assign({}, body?.extra, body.extra);
+    }
+
+    if (typeof body.enableSaveActions === 'boolean') {
+      newData.enableSaveActions = body.enableSaveActions;
     }
 
     // TODO: throw if newData is empty
@@ -88,7 +95,12 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     // The auth frontend only blocks the user to create an account without checking the boxes.
     // The frontend avoids sending agreement data to prevent manipulation of the agreement date.
     // The agreements links are included in the registration email as a reminder.
-    const createdMember = await this.insert({ ...data, email, userAgreementsDate: new Date() });
+    const userAgreementsDate = new Date();
+    const createdMember = await this.insert({
+      ...data,
+      email,
+      userAgreementsDate,
+    });
 
     // TODO: better solution?
     // query builder returns creator as id and extra as string

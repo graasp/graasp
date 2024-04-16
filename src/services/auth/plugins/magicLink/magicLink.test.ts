@@ -99,6 +99,62 @@ describe('Auth routes tests', () => {
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
     });
 
+    it('Save actions is disabled when explicitly asked', async () => {
+      const email = 'someemail@email.com';
+      const name = 'anna';
+      const enableSaveActions = false;
+
+      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/register`,
+        payload: { email, name, captcha: MOCK_CAPTCHA, enableSaveActions },
+      });
+
+      expect(mockSendEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        email,
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+      );
+      const m = await MemberRepository.findOneBy({ email, name });
+      expectMember(m, { name, email });
+      expect(m?.enableSaveActions).toBe(enableSaveActions);
+      // ensure that the user agreements are set for new registration
+      expect(m?.userAgreementsDate).toBeDefined();
+      expect(m?.userAgreementsDate).toBeInstanceOf(Date);
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+    });
+
+    it('Enable save actions when explicitly asked', async () => {
+      const email = 'someemail@email.com';
+      const name = 'anna';
+      const enableSaveActions = true;
+
+      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/register`,
+        payload: { email, name, enableSaveActions, captcha: MOCK_CAPTCHA },
+      });
+
+      expect(mockSendEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        email,
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+      );
+      const m = await MemberRepository.findOneBy({ email, name });
+      expectMember(m, { name, email });
+      expect(m?.enableSaveActions).toBe(enableSaveActions);
+      // ensure that the user agreements are set for new registration
+      expect(m?.userAgreementsDate).toBeDefined();
+      expect(m?.userAgreementsDate).toBeInstanceOf(Date);
+      expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+    });
+
     it('Sign Up fallback to login for already register member', async () => {
       // register already existing member
       const member = await saveMember();

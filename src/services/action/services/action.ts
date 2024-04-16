@@ -25,9 +25,8 @@ export class ActionService {
   ): Promise<void> {
     const { headers } = request;
 
-    // prevent saving if member disabled
-    const enableMemberSaving = member?.extra?.enableSaveActions ?? true;
-    if (!enableMemberSaving) {
+    // prevent saving if member is defined and has disabled saveActions
+    if (member?.enableSaveActions === false) {
       return;
     }
 

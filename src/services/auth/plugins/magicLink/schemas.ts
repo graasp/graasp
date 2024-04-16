@@ -10,6 +10,7 @@ export const register = {
         type: 'string',
         format: 'uri',
       },
+      enableSaveActions: { type: 'boolean' },
     },
     additionalProperties: false,
   },

@@ -62,7 +62,7 @@ export class MemberService {
     actor: Actor,
     { memberRepository }: Repositories,
     id: UUID,
-    body: Partial<Pick<Member, 'extra' | 'email' | 'name'>>,
+    body: Partial<Pick<Member, 'extra' | 'email' | 'name' | 'enableSaveActions'>>,
   ) {
     if (!actor || actor.id !== id) {
       throw new CannotModifyOtherMembers(id);
@@ -71,7 +71,12 @@ export class MemberService {
     const m = await memberRepository.get(id);
     const extra = Object.assign({}, m.extra, body?.extra);
 
-    return memberRepository.patch(id, { name: body.name, email: body.email, extra });
+    return memberRepository.patch(id, {
+      name: body.name,
+      email: body.email,
+      extra,
+      enableSaveActions: body.enableSaveActions,
+    });
   }
 
   async deleteOne(actor: Actor, { memberRepository }: Repositories, id: UUID) {

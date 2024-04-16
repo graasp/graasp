@@ -46,6 +46,13 @@ export class Member extends BaseEntity {
   })
   userAgreementsDate: Date;
 
+  @Column({
+    nullable: false,
+    name: 'enable_save_actions',
+    default: true,
+  })
+  enableSaveActions: boolean;
+
   @CreateDateColumn({
     update: false,
     name: 'created_at',

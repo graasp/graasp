@@ -37,7 +37,12 @@ export class MobileService {
   async register(
     actor: Actor,
     repositories: Repositories,
-    { name, email, challenge }: { name: string; email: string; challenge: string },
+    {
+      name,
+      email,
+      challenge,
+      enableSaveActions,
+    }: { name: string; email: string; challenge: string; enableSaveActions?: boolean },
     lang = DEFAULT_LANG,
   ) {
     const { memberRepository } = repositories;
@@ -50,6 +55,7 @@ export class MobileService {
         name,
         email,
         extra: { lang },
+        enableSaveActions,
       };
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
