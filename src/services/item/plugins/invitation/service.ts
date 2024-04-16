@@ -7,6 +7,7 @@ import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -69,6 +70,14 @@ export class InvitationService {
     const html = `
       ${this.mailer.buildText(text)}
       ${this.mailer.buildButton(link, t(MAIL.SIGN_UP_BUTTON_TEXT))}
+      ${this.mailer.buildText(
+        t(MAIL.USER_AGREEMENTS_MAIL_TEXT, {
+          signUpButtonText: t(MAIL.SIGN_UP_BUTTON_TEXT),
+          graaspLandingPageOrigin: GRAASP_LANDING_PAGE_ORIGIN,
+        }),
+        // Add margin top of -15px to remove 15px margin bottom of the button.
+        { 'text-align': 'center', 'font-size': '10px', 'margin-top': '-15px' },
+      )}
     `;
     const title = t(MAIL.INVITATION_TITLE, {
       itemName: item.name,
