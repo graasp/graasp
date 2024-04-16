@@ -2,6 +2,7 @@ import { ChatMessage } from '../../../chat/chatMessage';
 import { ChatMention } from '../../../chat/plugins/mentions/chatMention';
 
 const ANONYMIZED_ID = 'anonymous-id';
+const CURRENT_ACTOR_ID = 'you';
 
 export const anonymizeResults = <T, K extends keyof T, V extends T[K]>({
   results,
@@ -29,7 +30,7 @@ const replaceNoneActorId = (message: string, exportingActorId: string) => {
   const uuidRegex = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
   const messageWithoutActorUUID = message.replace(exportingActorId, actorId);
   const regex = new RegExp(`${uuidRegex}`, 'gi');
-  return messageWithoutActorUUID.replace(regex, ANONYMIZED_ID).replace(actorId, exportingActorId);
+  return messageWithoutActorUUID.replace(regex, ANONYMIZED_ID).replace(actorId, CURRENT_ACTOR_ID);
 };
 
 export const anonymizeMentionsMessage = ({

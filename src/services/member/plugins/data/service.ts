@@ -1,8 +1,28 @@
+import fastJson from 'fast-json-stringify';
+
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
 import { anonymizeMentionsMessage, anonymizeMessages, anonymizeResults } from './data.utils';
+import {
+  actionArraySchema,
+  appActionArraySchema,
+  appDataArraySchema,
+  appSettingArraySchema,
+  itemArraySchema,
+  itemCategoryArraySchema,
+  itemFavoriteArraySchema,
+  itemLikeArraySchema,
+  itemMembershipArraySchema,
+  messageArraySchema,
+  messageMentionArraySchema,
+} from './schemas/schemas';
+
+const getFilteredData = <T>(data: T[], schema: object) => {
+  const stringify = fastJson(schema);
+  return JSON.parse(stringify(data));
+};
 
 export class DataMemberService {
   async getActions(member: Actor, { actionRepository }: Repositories) {
@@ -10,7 +30,8 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    return await actionRepository.getForMemberExport(member.id);
+    const results = await actionRepository.getForMemberExport(member.id);
+    return getFilteredData(results, actionArraySchema);
   }
 
   async getAppActions(member: Actor, { appActionRepository }: Repositories) {
@@ -18,7 +39,8 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    return appActionRepository.getForMemberExport(member.id);
+    const results = await appActionRepository.getForMemberExport(member.id);
+    return getFilteredData(results, appActionArraySchema);
   }
 
   async getAppData(member: Actor, { appDataRepository }: Repositories) {
@@ -27,11 +49,12 @@ export class DataMemberService {
     }
 
     const appData = await appDataRepository.getForMemberExport(member.id);
-    return anonymizeResults({
+    const anonymized = anonymizeResults({
       results: appData,
       exportingActorId: member.id,
       memberIdKey: ['memberId', 'creatorId'],
     });
+    return getFilteredData(anonymized, appDataArraySchema);
   }
 
   async getAppSettings(member: Actor, { appSettingRepository }: Repositories) {
@@ -39,7 +62,8 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    return appSettingRepository.getForMemberExport(member.id);
+    const results = await appSettingRepository.getForMemberExport(member.id);
+    return getFilteredData(results, appSettingArraySchema);
   }
 
   async getChatMentions(member: Actor, { mentionRepository }: Repositories) {
@@ -48,7 +72,8 @@ export class DataMemberService {
     }
 
     const results = await mentionRepository.getForMemberExport(member.id);
-    return anonymizeMentionsMessage({ results, exportingActorId: member.id });
+    const anonymized = anonymizeMentionsMessage({ results, exportingActorId: member.id });
+    return getFilteredData(anonymized, messageMentionArraySchema);
   }
 
   async getChatMessages(member: Actor, { chatMessageRepository }: Repositories) {
@@ -57,20 +82,17 @@ export class DataMemberService {
     }
 
     const results = await chatMessageRepository.getForMemberExport(member.id);
-    return anonymizeMessages({ results, exportingActorId: member.id });
+    const anonymized = anonymizeMessages({ results, exportingActorId: member.id });
+    return getFilteredData(anonymized, messageArraySchema);
   }
 
   async getItemsMemberShips(member: Actor, { itemMembershipRepository }: Repositories) {
-    // TODO: check if items are required in memberships
-
     if (!member) {
       throw new UnauthorizedMember(member);
     }
 
     const itemMemberShips = await itemMembershipRepository.getForMemberExport(member.id);
-    // TODO: anonymize none member data !
-    const filtered = itemMemberShips.map((im) => im);
-    return filtered;
+    return getFilteredData(itemMemberShips, itemMembershipArraySchema);
   }
 
   getOwnItemIds(memberItemsOwner: Item[]) {
@@ -81,14 +103,16 @@ export class DataMemberService {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
-    return itemRepository.getForMemberExport(member.id);
+    const results = await itemRepository.getForMemberExport(member.id);
+    return getFilteredData(results, itemArraySchema);
   }
 
   async getItemCategories(member: Actor, { itemCategoryRepository }: Repositories) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
-    return itemCategoryRepository.getForMemberExport(member.id);
+    const results = await itemCategoryRepository.getForMemberExport(member.id);
+    return getFilteredData(results, itemCategoryArraySchema);
   }
 
   async getItemFavorites(member: Actor, { itemFavoriteRepository }: Repositories) {
@@ -96,7 +120,8 @@ export class DataMemberService {
       throw new UnauthorizedMember(member);
     }
 
-    return await itemFavoriteRepository.getForMemberExport(member.id);
+    const results = await itemFavoriteRepository.getForMemberExport(member.id);
+    return getFilteredData(results, itemFavoriteArraySchema);
   }
 
   async getItemLikes(member: Actor, { itemLikeRepository }: Repositories) {
@@ -107,6 +132,7 @@ export class DataMemberService {
     // TODO: check if we should also export the likes created by another member on its items
     // In this case, don't forget to anonymize the id of the other member ?
     // Or should we put the username of the other member who liked the item ?
-    return itemLikeRepository.getForMemberExport(member.id);
+    const results = await itemLikeRepository.getForMemberExport(member.id);
+    return getFilteredData(results, itemLikeArraySchema);
   }
 }

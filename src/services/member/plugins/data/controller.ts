@@ -10,7 +10,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { memberId: string } }>(
     '/:memberId',
     {
-      // schema: getProfileForMember,
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member }) => {

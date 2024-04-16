@@ -10,27 +10,32 @@ export const ONE_OF = (types: object[]) => ({
 
 type BuildSchemaOptions = { nullable?: boolean; requiredProps?: string[] };
 
-// TODO: allow nullable ?
-export const buildRequireExactlySchema = (
+const buildSchema = (
   schema: object,
   { nullable, requiredProps }: BuildSchemaOptions = { nullable: false },
 ) => ({
   get required() {
-    return requiredProps ?? Object.keys(this.properties);
+    return requiredProps ?? Object.keys(this.properties ?? {});
   },
   additionalProperties: false,
   nullable,
   ...schema,
 });
 
-export const buildRequireExactlyObjectSchema = (
-  properties: object,
-  options: BuildSchemaOptions = {},
-) =>
-  buildRequireExactlySchema(
+export const buildObjectSchema = (properties: object, options: BuildSchemaOptions = {}) =>
+  buildSchema(
     {
       type: 'object',
       properties,
+    },
+    options,
+  );
+
+export const buildArraySchema = (childrenSchema: object, options: BuildSchemaOptions = {}) =>
+  buildSchema(
+    {
+      type: 'array',
+      items: childrenSchema,
     },
     options,
   );
