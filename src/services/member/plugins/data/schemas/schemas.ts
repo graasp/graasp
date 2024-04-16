@@ -118,3 +118,11 @@ export const itemLikeSchema = buildRequireExactlyObjectSchema({
   item: externalItemSchema,
   createdAt: DATE_TYPE,
 });
+
+export const itemMembership = buildRequireExactlyObjectSchema({
+  id: STRING_TYPE,
+  permission: STRING_TYPE,
+  item: externalItemSchema,
+  createdAt: DATE_TYPE,
+  updatedAt: DATE_TYPE,
+});

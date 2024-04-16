@@ -29,17 +29,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // anonymize none user data (if it as access to an item who it is not the owner)
 
       const actions = await dataMemberService.getActions(member, repositories);
-      // TODO: action_request_export
-      // TODO: publisher -> no ?
-      // TODO: apps, need publisher id... -> no ?
       const appActions = await dataMemberService.getAppActions(member, repositories);
       const appData = await dataMemberService.getAppData(member, repositories);
       const appSettings = await dataMemberService.getAppSettings(member, repositories);
       const chatMentions = await dataMemberService.getChatMentions(member, repositories);
       const chatMessages = await dataMemberService.getChatMessages(member, repositories);
-      // TODO: invitation is not usefull ?
-
-      // TODO: item_category is not usefull ?
       // TODO: item_flag
       // TODO: item_geolocation
       // TODO: item_login ? and login schema
@@ -57,18 +51,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // TODO: short_link
 
       return {
-        // actions,
-        // appActions,
-        // appData,
-        // appSettings,
+        actions,
+        appActions,
+        appData,
+        appSettings,
         chatMentions,
-        // chatMessages,
-        // items,
-        // itemCategories,
-        // itemFavorites,
-        // itemLikes,
+        chatMessages,
+        items,
+        itemCategories,
+        itemFavorites,
+        itemLikes,
 
-        // itemMemberShips,
+        itemMemberShips,
       };
     },
   );

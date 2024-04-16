@@ -1,3 +1,5 @@
+import { PermissionLevel } from '@graasp/sdk';
+
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { buildRepositories } from '../../../../../utils/repositories';
@@ -12,6 +14,7 @@ import {
 } from '../../../../item/plugins/itemCategory/test/fixtures';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../entities/member';
 import { saveMember } from '../../../test/fixtures/members';
 import { DataMemberService } from '../service';
@@ -237,6 +240,53 @@ describe('DataMember Export', () => {
         await saveItemLikes(items, randomUser);
 
         const results = await service.getItemLikes(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
+      });
+    });
+
+    describe('ItemMembership', () => {
+      it('member id is not leak', async () => {
+        // TODO: mabye insert beforeEach the items...
+        const actorItems = [
+          await itemTestUtils.saveItem({ actor: exportingActor }),
+          await itemTestUtils.saveItem({ actor: exportingActor }),
+          await itemTestUtils.saveItem({ actor: exportingActor }),
+        ];
+        const randomItems = [
+          await itemTestUtils.saveItem({ actor: randomUser }),
+          await itemTestUtils.saveItem({ actor: randomUser }),
+        ];
+
+        const memberships: ItemMembership[] = [];
+
+        for (const item of actorItems) {
+          const membership = await itemTestUtils.saveMembership({
+            item,
+            member: exportingActor,
+            permission: PermissionLevel.Admin,
+          });
+          memberships.push(membership);
+        }
+
+        for (const item of randomItems) {
+          const membership = await itemTestUtils.saveMembership({
+            item,
+            member: exportingActor,
+            permission: PermissionLevel.Read,
+          });
+          memberships.push(membership);
+        }
+
+        // noise
+        await itemTestUtils.saveItemAndMembership({ creator: exportingActor, member: randomUser });
+        await itemTestUtils.saveItemAndMembership({ creator: exportingActor, member: randomUser });
+        await itemTestUtils.saveItemAndMembership({
+          creator: exportingActor,
+          member: randomUser,
+          permission: PermissionLevel.Read,
+        });
+
+        const results = await service.getItemsMemberShips(exportingActor, buildRepositories());
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });

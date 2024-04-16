@@ -191,6 +191,16 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
 
   async getForMemberExport(memberId: string): Promise<ItemMembership[]> {
     return this.createQueryBuilder('item_membership')
+      .select([
+        'item_membership.id',
+        'item_membership.permission',
+        'item_membership.createdAt',
+        'item_membership.updatedAt',
+        'item.id',
+        'item.name',
+        'item.displayName',
+      ])
+      .leftJoin('item_membership.item', 'item')
       .where('member_id = :memberId', { memberId })
       .orderBy('item_membership.updated_at', 'DESC')
       .getMany();

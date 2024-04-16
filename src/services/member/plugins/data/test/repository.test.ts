@@ -1,3 +1,5 @@
+import { PermissionLevel } from '@graasp/sdk';
+
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { Action } from '../../../../action/entities/action';
@@ -23,6 +25,8 @@ import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemRepository } from '../../../../item/repository';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
+import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository';
 import { saveMember } from '../../../test/fixtures/members';
 import {
   actionSchema,
@@ -32,6 +36,7 @@ import {
   itemCategorySchema,
   itemFavoriteSchema,
   itemLikeSchema,
+  itemMembership,
   itemSchema,
   messageMentionSchema,
   messageSchema,
@@ -250,6 +255,51 @@ describe('DataMember Export', () => {
 
       const results = await ItemLikeRepository.getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, likes, itemLikeSchema);
+    });
+
+    it('get all Item Memberships for the member', async () => {
+      // TODO: maybe insert beforeEach...
+      const actorItems = [
+        await itemTestUtils.saveItem({ actor: exportingActor }),
+        await itemTestUtils.saveItem({ actor: exportingActor }),
+        await itemTestUtils.saveItem({ actor: exportingActor }),
+      ];
+      const randomItems = [
+        await itemTestUtils.saveItem({ actor: randomUser }),
+        await itemTestUtils.saveItem({ actor: randomUser }),
+      ];
+
+      const memberships: ItemMembership[] = [];
+
+      for (const item of actorItems) {
+        const membership = await itemTestUtils.saveMembership({
+          item,
+          member: exportingActor,
+          permission: PermissionLevel.Admin,
+        });
+        memberships.push(membership);
+      }
+
+      for (const item of randomItems) {
+        const membership = await itemTestUtils.saveMembership({
+          item,
+          member: exportingActor,
+          permission: PermissionLevel.Read,
+        });
+        memberships.push(membership);
+      }
+
+      // noise
+      await itemTestUtils.saveItemAndMembership({ creator: exportingActor, member: randomUser });
+      await itemTestUtils.saveItemAndMembership({ creator: exportingActor, member: randomUser });
+      await itemTestUtils.saveItemAndMembership({
+        creator: exportingActor,
+        member: randomUser,
+        permission: PermissionLevel.Read,
+      });
+
+      const results = await ItemMembershipRepository.getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, memberships, itemMembership);
     });
   });
 });
