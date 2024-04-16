@@ -1,6 +1,11 @@
 import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { buildRepositories } from '../../../../../utils/repositories';
+import { Action } from '../../../../action/entities/action';
+import { saveActions } from '../../../../action/test/fixtures/actions';
+import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
+import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
 import {
   saveCategories,
   saveItemCategories,
@@ -66,6 +71,48 @@ describe('DataMember Export', () => {
     app.close();
   });
 
+  describe('Actions', () => {
+    const rawActionRepository = AppDataSource.getRepository(Action);
+
+    it('member id is not leak', async () => {
+      // save for exporting actor
+      await saveActions(rawActionRepository, [
+        { item, member: exportingActor },
+        { item, member: exportingActor },
+        { item, member: exportingActor },
+      ]);
+      // on item of random user
+      await saveActions(rawActionRepository, [
+        { item: itemOfRandomUser, member: exportingActor },
+        { item: itemOfRandomUser, member: exportingActor },
+        { item: itemOfRandomUser, member: exportingActor },
+      ]);
+
+      // noise: save for a random user
+      await saveActions(rawActionRepository, [{ item, member: randomUser }]);
+      await saveActions(rawActionRepository, [{ item: itemOfRandomUser, member: randomUser }]);
+
+      const results = await service.getActions(exportingActor, buildRepositories());
+      checkNoMemberIdLeaks({ results, exportingActor, randomUser });
+    });
+  });
+
+  describe('AppActions', () => {
+    it('member id is not leak', async () => {
+      // save for exporting actor
+      await saveAppActions({ item, member: exportingActor });
+      // on item of random user
+      await saveAppActions({ item: itemOfRandomUser, member: exportingActor });
+
+      // noise: for a random member
+      await saveAppActions({ item, member: randomUser });
+      await saveAppActions({ item: itemOfRandomUser, member: randomUser });
+
+      const results = await service.getAppActions(exportingActor, buildRepositories());
+      checkNoMemberIdLeaks({ results, exportingActor, randomUser });
+    });
+  });
+
   describe('AppData', () => {
     it('member id is not leak', async () => {
       // save regular app data
@@ -91,6 +138,20 @@ describe('DataMember Export', () => {
     });
   });
 
+  describe('AppSettings', () => {
+    it('member id is not leak', async () => {
+      await saveAppSettings({ item, creator: exportingActor });
+      // noise: the creator is a random user
+      await saveAppSettings({
+        item: itemOfRandomUser,
+        creator: randomUser,
+      });
+
+      const results = await service.getAppSettings(exportingActor, buildRepositories());
+      checkNoMemberIdLeaks({ results, exportingActor, randomUser });
+    });
+  });
+
   describe('Chat', () => {
     beforeEach(async () => {
       await saveChatMessages({ item, creator: exportingActor, mentionMember: randomUser });
@@ -103,6 +164,12 @@ describe('DataMember Export', () => {
     describe('ChatMentions', () => {
       it('member id is not leak', async () => {
         const results = await service.getChatMentions(exportingActor, buildRepositories());
+        checkNoMemberIdLeaks({ results, exportingActor, randomUser });
+      });
+    });
+    describe('ChatMessages', () => {
+      it('member id is not leak', async () => {
+        const results = await service.getChatMessages(exportingActor, buildRepositories());
         checkNoMemberIdLeaks({ results, exportingActor, randomUser });
       });
     });
