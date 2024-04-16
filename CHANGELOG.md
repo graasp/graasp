@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.29.0](https://github.com/graasp/graasp/compare/v1.28.2...v1.29.0) (2024-04-16)
+
+
+### Features
+
+* save user agreements on create and update registration mail ([#917](https://github.com/graasp/graasp/issues/917)) ([e44d641](https://github.com/graasp/graasp/commit/e44d64110d3cc6aaf996b36678deade7a3181241))
+
+
+### Bug Fixes
+
+* **arabic:** update translations ([#945](https://github.com/graasp/graasp/issues/945)) ([ec2d06e](https://github.com/graasp/graasp/commit/ec2d06e3938e460b9539fee4e217d96bc703ace1))
+* **deps:** update aws-sdk-js-v3 monorepo to v3.554.0 ([#949](https://github.com/graasp/graasp/issues/949)) ([da60e92](https://github.com/graasp/graasp/commit/da60e92c9b5a82133572d506c9657797e175c789))
+* **deps:** update dependency @fastify/secure-session to v7 [security] ([#936](https://github.com/graasp/graasp/issues/936)) ([5c7a1af](https://github.com/graasp/graasp/commit/5c7a1af6ac12f5ed412b425adf0cee05ef4ed70e))
+* **deps:** update dependency bullmq to v4.17.0 ([#908](https://github.com/graasp/graasp/issues/908)) ([f8edb78](https://github.com/graasp/graasp/commit/f8edb781a641786b6d80485e5d4fd0459b9f23a4))
+* **deps:** update dependency dotenv to v16.4.5 ([#909](https://github.com/graasp/graasp/issues/909)) ([963b371](https://github.com/graasp/graasp/commit/963b3711670f857f7142518e89be70bf659317b9))
+* **deps:** update dependency eta to v2.2.0 ([#910](https://github.com/graasp/graasp/issues/910)) ([2dc9df8](https://github.com/graasp/graasp/commit/2dc9df8b5b5d679cc875412694ffc018720dd6ac))
+* **deps:** update dependency fluent-json-schema to v4.2.1 ([#913](https://github.com/graasp/graasp/issues/913)) ([7dcc54f](https://github.com/graasp/graasp/commit/7dcc54f1469c4c063624148d224b9202f16051b8))
+* **de:** update email translations ([#942](https://github.com/graasp/graasp/issues/942)) ([66bc24c](https://github.com/graasp/graasp/commit/66bc24c090e13ba33fa1dd56c8c3784ab1607653))
+* password login should return `MemberNotSignedUp` if email has no account ([#941](https://github.com/graasp/graasp/issues/941)) ([9ffc600](https://github.com/graasp/graasp/commit/9ffc6006b34fe992fe7df5c070b7c3805af62cf7))
+
 ## [1.28.2](https://github.com/graasp/graasp/compare/v1.28.1...v1.28.2) (2024-04-09)
 
 
