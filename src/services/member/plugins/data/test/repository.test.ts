@@ -24,14 +24,25 @@ import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemRepository } from '../../../../item/repository';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
-import { expectObjects, saveChatMessages, saveItemFavorites } from './fixtures';
+import {
+  actionSchema,
+  appActionSchema,
+  appDataSchema,
+  appSettingSchema,
+  itemCategorySchema,
+  itemFavoriteSchema,
+  itemLikeSchema,
+  itemSchema,
+  messageMentionSchema,
+  messageSchema,
+} from '../schemas/schemas';
+import { expectNoLeaksAndEquality, saveChatMessages, saveItemFavorites } from './fixtures';
 
 /**
  * The repository tests ensure that no unwanted columns are leaked during the export.
  */
 
 const itemTestUtils = new ItemTestUtils();
-const wantedExportItemProps = ['item.id', 'item.name', 'item.displayName'] as const;
 
 jest.mock('../../../../../plugins/datasource');
 
@@ -80,23 +91,8 @@ describe('DataMember Export', () => {
       await saveActions(rawActionRepository, [{ item, member: randomUser }]);
       await saveActions(rawActionRepository, [{ item: itemOfRandomUser, member: randomUser }]);
 
-      const result = await new ActionRepository().getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: [...actions, ...otherActions],
-        wantedProps: [
-          'id',
-          'view',
-          'type',
-          'extra',
-          'geolocation',
-          'createdAt',
-          ...wantedExportItemProps,
-        ],
-        // unwantedProps: ['member', 'item'],
-        typeName: 'Action',
-      });
+      const results = await new ActionRepository().getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, [...actions, ...otherActions], actionSchema);
     });
   });
 
@@ -111,15 +107,8 @@ describe('DataMember Export', () => {
       await saveAppActions({ item, member: randomUser });
       await saveAppActions({ item: itemOfRandomUser, member: randomUser });
 
-      const result = await AppActionRepository.getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: [...appActions, ...otherActions],
-        wantedProps: ['id', 'data', 'type', 'createdAt', ...wantedExportItemProps],
-        // unwantedProps: ['member', 'item'],
-        typeName: 'AppAction',
-      });
+      const results = await AppActionRepository.getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, [...appActions, ...otherActions], appActionSchema);
     });
   });
 
@@ -140,25 +129,12 @@ describe('DataMember Export', () => {
       // noise: for a random member
       await saveAppData({ item: itemOfRandomUser, creator: randomUser });
 
-      const result = await AppDataRepository.getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: [...appData, ...appDataWithActorAsMember, ...appDataWithOtherMember],
-        wantedProps: [
-          'id',
-          'memberId',
-          'data',
-          'type',
-          'visibility',
-          'creatorId',
-          'createdAt',
-          'updatedAt',
-          ...wantedExportItemProps,
-        ],
-        // unwantedProps: ['member', 'item', 'creator'],
-        typeName: 'AppData',
-      });
+      const results = await AppDataRepository.getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(
+        results,
+        [...appData, ...appDataWithActorAsMember, ...appDataWithOtherMember],
+        appDataSchema,
+      );
     });
   });
 
@@ -171,15 +147,8 @@ describe('DataMember Export', () => {
         creator: randomUser,
       });
 
-      const result = await AppSettingRepository.getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: appSettings,
-        wantedProps: ['id', 'data', 'name', 'createdAt', 'updatedAt', ...wantedExportItemProps],
-        // unwantedProps: ['item', 'creator'],
-        typeName: 'AppSetting',
-      });
+      const results = await AppSettingRepository.getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, appSettings, appSettingSchema);
     });
   });
 
@@ -204,41 +173,15 @@ describe('DataMember Export', () => {
 
     describe('ChatMentions', () => {
       it('get all ChatMentions for the member', async () => {
-        const result = await new ChatMentionRepository().getForMemberExport(exportingActor.id);
-
-        expectObjects({
-          results: result,
-          expectations: chatMentions,
-          wantedProps: [
-            'id',
-            'createdAt',
-            'updatedAt',
-            'status',
-            'message.id',
-            // TODO: update fixture to allow deep of 2xw
-            // 'message.creator.name',
-            'message.body',
-            'message.createdAt',
-            'message.updatedAt',
-          ],
-          // unwantedProps: ['message', 'member'],
-          typeName: 'ChatMention',
-          verbose: true,
-        });
+        const results = await new ChatMentionRepository().getForMemberExport(exportingActor.id);
+        expectNoLeaksAndEquality(results, chatMentions, messageMentionSchema);
       });
     });
 
     describe('ChatMessages', () => {
       it('get all Messages for the member', async () => {
-        const result = await ChatMessageRepository.getForMemberExport(exportingActor.id);
-
-        expectObjects({
-          results: result,
-          expectations: chatMessages,
-          wantedProps: ['id', 'itemId', 'creatorId', 'createdAt', 'updatedAt', 'body'],
-          // unwantedProps: ['item', 'creator'],
-          typeName: 'ChatMessage',
-        });
+        const results = await ChatMessageRepository.getForMemberExport(exportingActor.id);
+        expectNoLeaksAndEquality(results, chatMessages, messageSchema);
       });
     });
   });
@@ -255,30 +198,8 @@ describe('DataMember Export', () => {
       // noise
       await itemTestUtils.saveItem({ actor: randomUser });
 
-      const result = await new ItemRepository().getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: items,
-        wantedProps: [
-          'id',
-          'name',
-          'type',
-          'description',
-          'path',
-          'creatorId',
-          'extra',
-          'settings',
-          'createdAt',
-          'updatedAt',
-          'deletedAt',
-          'lang',
-          'search_document',
-          'displayName',
-        ],
-        // unwantedProps: ['creator'],
-        typeName: 'Item',
-      });
+      const results = await new ItemRepository().getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, items, itemSchema);
     });
 
     it('get all Item Categories for the member', async () => {
@@ -296,15 +217,8 @@ describe('DataMember Export', () => {
       // noise
       await saveItemCategories({ item: itemOfRandomUser, categories, creator: randomUser });
 
-      const result = await ItemCategoryRepository.getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: itemCategories,
-        wantedProps: ['id', 'creatorId', 'itemPath', 'category', 'createdAt'],
-        // unwantedProps: ['creator', 'item'],
-        typeName: 'ItemCategory',
-      });
+      const results = await ItemCategoryRepository.getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, itemCategories, itemCategorySchema);
     });
 
     it('get all Item Favorites for the member', async () => {
@@ -321,15 +235,8 @@ describe('DataMember Export', () => {
       // noise
       await saveItemFavorites({ items: [itemOfRandomUser], member: randomUser });
 
-      const result = await new FavoriteRepository().getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: favorites,
-        wantedProps: ['id', 'memberId', 'itemId', 'createdAt'],
-        // unwantedProps: ['creator', 'item'],
-        typeName: 'ItemFavorite',
-      });
+      const results = await new FavoriteRepository().getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, favorites, itemFavoriteSchema);
     });
 
     it('get all Item Likes for the member', async () => {
@@ -345,15 +252,8 @@ describe('DataMember Export', () => {
       await saveItemLikes([itemOfRandomUser], randomUser);
       await saveItemLikes(items, randomUser);
 
-      const result = await ItemLikeRepository.getForMemberExport(exportingActor.id);
-
-      expectObjects({
-        results: result,
-        expectations: likes,
-        wantedProps: ['id', 'creatorId', 'itemId', 'createdAt'],
-        // unwantedProps: ['creator', 'item'],
-        typeName: 'ItemLike',
-      });
+      const results = await ItemLikeRepository.getForMemberExport(exportingActor.id);
+      expectNoLeaksAndEquality(results, likes, itemLikeSchema);
     });
   });
 });
