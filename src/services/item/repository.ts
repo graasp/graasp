@@ -298,7 +298,23 @@ export class ItemRepository {
   async getForMemberExport(memberId: string): Promise<Item[]> {
     return this.repository
       .createQueryBuilder('item')
-      .addSelect('creator.name')
+      .select([
+        'item.id',
+        'item.name',
+        'item.type',
+        'item.description',
+        'item.path',
+        'item.extra',
+        'item.settings',
+        'item.lang',
+        'item.displayName',
+        'item.createdAt',
+        'item.updatedAt',
+        'item.deletedAt',
+        'item.id',
+        'item.name',
+        'creator.name',
+      ])
       .leftJoin('item.creator', 'creator')
       .where('item.creator_id = :memberId', { memberId })
       .orderBy('item.updated_at', 'DESC')

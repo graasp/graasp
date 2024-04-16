@@ -4,26 +4,6 @@ import { ChatMention } from '../../../chat/plugins/mentions/chatMention';
 const ANONYMIZED_ID = 'anonymous-id';
 const CURRENT_ACTOR_ID = 'you';
 
-export const anonymizeResults = <T, K extends keyof T, V extends T[K]>({
-  results,
-  exportingActorId,
-  memberIdKey,
-}: {
-  results: T[];
-  exportingActorId: string;
-  memberIdKey: K[];
-}) => {
-  return results.map((r) => {
-    memberIdKey.forEach((k) => {
-      if (r[k] !== exportingActorId) {
-        r[k] = ANONYMIZED_ID as V;
-      }
-    });
-
-    return r;
-  });
-};
-
 const replaceNoneActorId = (message: string, exportingActorId: string) => {
   // convert the actor uuid in none uuid format to prevent anonymizing it
   const actorId = exportingActorId.replace('-', '');

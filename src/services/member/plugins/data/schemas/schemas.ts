@@ -13,6 +13,10 @@ export const externalItemSchema = buildObjectSchema({
   displayName: STRING_TYPE,
 });
 
+export const externalMemberSchema = buildObjectSchema({
+  name: STRING_TYPE,
+});
+
 export const actionSchema = buildObjectSchema({
   id: STRING_TYPE,
   view: STRING_TYPE, // TODO: ADAPT,
@@ -34,11 +38,11 @@ export const appActionArraySchema = buildArraySchema(appActionSchema);
 
 export const appDataSchema = buildObjectSchema({
   id: STRING_TYPE,
-  memberId: STRING_TYPE,
+  member: externalMemberSchema,
   data: OBJECT_TYPE,
   type: STRING_TYPE,
   visibility: STRING_TYPE, // TODO: ADAPT,
-  creatorId: STRING_TYPE,
+  creator: externalMemberSchema,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
   item: externalItemSchema,
@@ -54,10 +58,6 @@ export const appSettingSchema = buildObjectSchema({
   item: externalItemSchema,
 });
 export const appSettingArraySchema = buildArraySchema(appSettingSchema);
-
-export const externalMemberSchema = buildObjectSchema({
-  name: STRING_TYPE,
-});
 
 export const messageSchema = buildObjectSchema({
   id: STRING_TYPE,

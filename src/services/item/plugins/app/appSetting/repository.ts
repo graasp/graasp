@@ -62,10 +62,17 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
 
   async getForMemberExport(memberId: string): Promise<AppSetting[]> {
     return this.createQueryBuilder('app_setting')
+      .select([
+        'app_setting.id',
+        'app_setting.data',
+        'app_setting.name',
+        'app_setting.createdAt',
+        'app_setting.updatedAt',
+        'item.id',
+        'item.name',
+        'item.displayName',
+      ])
       .leftJoin('app_setting.item', 'item')
-      .addSelect('item.id')
-      .addSelect('item.name')
-      .addSelect('item.displayName')
       .where('app_setting.creator_id = :id', { id: memberId })
       .orderBy('app_setting.updated_at', 'DESC')
       .getMany();

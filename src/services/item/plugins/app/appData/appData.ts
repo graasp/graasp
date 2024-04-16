@@ -7,7 +7,6 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 } from 'uuid';
@@ -41,22 +40,12 @@ export class AppData extends BaseEntity {
   @JoinColumn({ name: 'creator_id' })
   creator: Member | null;
 
-  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
-  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
-  @RelationId((appData: AppData) => appData.creator)
-  creatorId: string;
-
   @ManyToOne(() => Member, (member) => member.id, {
     onDelete: 'CASCADE',
     nullable: false,
   })
   @JoinColumn({ name: 'member_id' })
   member: Member;
-
-  // @RelationId is a decorator used at the entity level. It doesn't modify the database schema itself.
-  // It simply tells to fetch the related entity ID during data retrieval, allowing to keep the foreign key without join.
-  @RelationId((appData: AppData) => appData.member)
-  memberId: string;
 
   @Index()
   @Column({

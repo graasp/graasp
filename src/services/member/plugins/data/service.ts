@@ -4,7 +4,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Item } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
-import { anonymizeMentionsMessage, anonymizeMessages, anonymizeResults } from './data.utils';
+import { anonymizeMentionsMessage, anonymizeMessages } from './data.utils';
 import {
   actionArraySchema,
   appActionArraySchema,
@@ -49,12 +49,7 @@ export class DataMemberService {
     }
 
     const appData = await appDataRepository.getForMemberExport(member.id);
-    const anonymized = anonymizeResults({
-      results: appData,
-      exportingActorId: member.id,
-      memberIdKey: ['memberId', 'creatorId'],
-    });
-    return getFilteredData(anonymized, appDataArraySchema);
+    return getFilteredData(appData, appDataArraySchema);
   }
 
   async getAppSettings(member: Actor, { appSettingRepository }: Repositories) {

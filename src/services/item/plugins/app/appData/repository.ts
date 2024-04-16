@@ -60,10 +60,22 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
 
   async getForMemberExport(memberId: string): Promise<AppData[]> {
     return this.createQueryBuilder('app_data')
+      .select([
+        'app_data.id',
+        'app_data.data',
+        'app_data.type',
+        'app_data.visibility',
+        'app_data.createdAt',
+        'app_data.updatedAt',
+        'item.id',
+        'item.name',
+        'item.displayName',
+        'creator.name',
+        'member.name',
+      ])
       .leftJoin('app_data.item', 'item')
-      .addSelect('item.id')
-      .addSelect('item.name')
-      .addSelect('item.displayName')
+      .leftJoin('app_data.member', 'member')
+      .leftJoin('app_data.creator', 'creator')
       .where('app_data.member_id = :memberId or app_data.creator_id = :memberId', { memberId })
       .orderBy('app_data.updated_at', 'DESC')
       .getMany();
