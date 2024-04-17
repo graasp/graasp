@@ -204,20 +204,26 @@ export class RequestDataExportService {
   }
 
   // TODO: check if it not in another service ?
-  async requestExport(member: Member, dataToExport: DataToExport) {
+  async requestExport(
+    member: Member,
+    exportId: string,
+    dataRetriever: () => Promise<DataToExport>,
+  ) {
     // TODO: get last export entry within interval,
     // check if a previous request already created the file and send it back
     // ...
 
+    const dataToExport = await dataRetriever();
+
     // create tmp folder to temporaly save files
-    const tmpFolder = path.join(TMP_FOLDER, this.ROOT_EXPORT_FOLDER, member.id);
+    const tmpFolder = path.join(TMP_FOLDER, this.ROOT_EXPORT_FOLDER, exportId);
     fs.mkdirSync(tmpFolder, { recursive: true });
 
     // archives the data and upload it.
     const { archiveCreationTime } = await new ArchiveDataExporter().createAndUploadArchive({
       fileService: this.fileService,
       member,
-      exportId: member.id,
+      exportId,
       dataToExport,
       storageFolder: tmpFolder,
       uploadedRootFolder: this.ROOT_EXPORT_FOLDER,
@@ -237,7 +243,7 @@ export class RequestDataExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    this._sendExportLinkInMail(member, member.id, requestExport.createdAt);
+    this._sendExportLinkInMail(member, exportId, requestExport.createdAt);
     return requestExport;
   }
 }

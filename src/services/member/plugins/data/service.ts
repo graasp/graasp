@@ -25,7 +25,6 @@ import {
 import { RequestDataExportService } from './utils/export.utils';
 
 export class DataMemberService {
-  // TODO: check if it is not in the controller instead of here
   async requestDataExport({
     actor,
     repositories,
@@ -42,9 +41,9 @@ export class DataMemberService {
     }
 
     // get the data to export
-    const dataToExport = await this.getAllData(actor, repositories);
+    const dataRetriever = async () => await this.getAllData(actor, repositories);
     const requestExportService = new RequestDataExportService(fileService, mailer);
-    return await requestExportService.requestExport(actor, dataToExport);
+    return await requestExportService.requestExport(actor, actor.id, dataRetriever);
   }
 
   async getAllData(actor: Actor, repositories: Repositories) {
