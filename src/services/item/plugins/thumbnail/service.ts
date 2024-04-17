@@ -71,10 +71,9 @@ export class ItemThumbnailService {
     repositories: Repositories,
     { itemId }: { itemId: string },
   ) {
-    const item = await repositories.itemRepository.get(itemId);
-    await validatePermission(repositories, PermissionLevel.Write, actor, item);
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
     await Promise.all(
-      Object.entries(ThumbnailSizeFormat).map(async ([size]) => {
+      Object.keys(ThumbnailSizeFormat).map(async (size) => {
         this.thumbnailService.delete(actor, { id: itemId, size });
       }),
     );
