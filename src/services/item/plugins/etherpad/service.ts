@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { add, isAfter } from 'date-fns';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -175,11 +175,11 @@ export class EtherpadItemService {
     });
 
     // start session for user on the group
-    const expiration = DateTime.now().plus({ days: 1 });
+    const expiration = add(new Date(), { days: 1 });
     const sessionResult = await this.api.createSession({
       authorID,
       groupID,
-      validUntil: expiration.toUnixInteger(),
+      validUntil: expiration.getTime(),
     });
     if (!sessionResult) {
       throw new EtherpadServerError(
@@ -192,7 +192,7 @@ export class EtherpadItemService {
     const sessions = (await this.api.listSessionsOfAuthor({ authorID })) ?? {};
 
     // split valid from expired sessions
-    const now = DateTime.now();
+    const now = new Date();
     const { valid, expired } = Object.entries(sessions).reduce(
       ({ valid, expired }, [id, session]) => {
         const validUntil = session?.validUntil;
@@ -202,7 +202,7 @@ export class EtherpadItemService {
           expired.add(id);
         } else {
           // normal case: check if session is expired
-          const isExpired = DateTime.fromSeconds(validUntil) <= now;
+          const isExpired = isAfter(new Date(validUntil), now);
           isExpired ? expired.add(id) : valid.add(id);
         }
         return { valid, expired };
@@ -223,8 +223,8 @@ export class EtherpadItemService {
     if (valid.size > MAX_SESSIONS_IN_COOKIE) {
       const sortedRecent = Array.from(valid).sort((a, b) => {
         // we are guaranteed that a, b index valid sessions from above
-        const timeA = DateTime.fromSeconds((sessions[a] as AuthorSession).validUntil);
-        const timeB = DateTime.fromSeconds((sessions[b] as AuthorSession).validUntil);
+        const timeA = new Date((sessions[a] as AuthorSession).validUntil);
+        const timeB = new Date((sessions[b] as AuthorSession).validUntil);
         // return inversed for most recent
         if (timeA < timeB) {
           return 1;
@@ -264,7 +264,7 @@ export class EtherpadItemService {
       options: {
         domain: this.cookieDomain,
         path: '/',
-        expires: expiration.toJSDate(),
+        expires: expiration,
         signed: false,
         httpOnly: false, // cookie must be available to Etherpad's JS code for it to work!
       },
