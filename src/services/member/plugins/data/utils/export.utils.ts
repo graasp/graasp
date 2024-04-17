@@ -109,14 +109,20 @@ class DataArchiver {
   }
 }
 
-export class ArchiveDataExporter {
-  private buildFilePath(uploadedRootFolder: string, exportId: string, datetime: Date) {
-    return `${uploadedRootFolder}/${exportId}/${datetime.toISOString()}`;
-  }
+export function buildUploadedExportFilePath(
+  uploadedRootFolder: string,
+  exportId: string,
+  datetime: Date,
+) {
+  return `${uploadedRootFolder}/${exportId}/${datetime.toISOString()}`;
+}
 
+export class ArchiveDataExporter {
   /**
    * Archives the data and upload with the FileService
-   * @param param0
+   * @param uploadedRootFolder The root folder where the archive will be uploaded.
+   * @param storageFolder The folder where the archive will be created.
+   * @param exportId The ID who represent the export. It can be the member ID or item Id i.e.
    * @returns
    */
   async createAndUploadArchive({
@@ -140,7 +146,7 @@ export class ArchiveDataExporter {
       archiveFileName: exportId,
     }).archiveData();
 
-    const filePath = this.buildFilePath(uploadedRootFolder, exportId, archive.timestamp);
+    const filePath = buildUploadedExportFilePath(uploadedRootFolder, exportId, archive.timestamp);
 
     // upload file
     await fileService.upload(member, {
@@ -149,9 +155,6 @@ export class ArchiveDataExporter {
       mimetype: ZIP_MIMETYPE,
     });
 
-    // create request row
-    // TODO: save the request in the database and return it
-    // return requestExport;
-    return `archive uploaded successfully to ${filePath}`;
+    return { archiveCreationTime: new Date(archive.timestamp.getTime()) };
   }
 }
