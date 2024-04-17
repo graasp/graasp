@@ -234,4 +234,45 @@ describe('Thumbnail Plugin Tests', () => {
       });
     });
   });
+
+  describe('DELETE /:id/thumbnails', () => {
+    describe('Signed In', () => {
+      let item;
+
+      beforeEach(async () => {
+        ({ app, actor } = await build());
+      });
+
+      it('Successfully delete thumbnail', async () => {
+        ({ item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { settings: { hasThumbnail: true } },
+        }));
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+        const savedItem = await testUtils.rawItemRepository.findOneBy({ id: item.id });
+        expect(savedItem!.settings?.hasThumbnail).toBeFalsy();
+      });
+
+      it('Throw if try to delete thumbnail for item without permission', async () => {
+        const member = await saveMember();
+        ({ item } = await testUtils.saveItemAndMembership({
+          member,
+          item: { settings: { hasThumbnail: true } },
+        }));
+
+        const response = await app.inject({
+          method: HttpMethod.Delete,
+          url: `${ITEMS_ROUTE_PREFIX}/${item.id}${THUMBNAILS_ROUTE_PREFIX}`,
+        });
+
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+        const savedItem = await testUtils.rawItemRepository.findOneBy({ id: item.id });
+        expect(savedItem!.settings?.hasThumbnail).toBeTruthy();
+      });
+    });
+  });
 });

@@ -63,4 +63,9 @@ export class ThumbnailService {
 
     return result;
   }
+
+  async delete(actor: Member, { id, size }: { size: string; id: string }) {
+    const filePath = this.buildFilePath(id, size);
+    await this.fileService.delete(actor, filePath);
+  }
 }

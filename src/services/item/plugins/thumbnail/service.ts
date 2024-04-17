@@ -1,6 +1,6 @@
 import { Readable } from 'stream';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -63,5 +63,21 @@ export class ItemThumbnailService {
     });
 
     return result;
+  }
+
+  async deleteAllThumbnailSizes(
+    actor: Member,
+    repositories: Repositories,
+    { itemId }: { itemId: string },
+  ) {
+    await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
+    await Promise.all(
+      Object.values(ThumbnailSize).map(async (size) => {
+        this.thumbnailService.delete(actor, { id: itemId, size });
+      }),
+    );
+    await this.itemService.patch(actor, repositories, itemId, {
+      settings: { hasThumbnail: false },
+    });
   }
 }

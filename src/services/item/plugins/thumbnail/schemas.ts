@@ -38,4 +38,14 @@ const download = {
   },
 };
 
-export { upload, download };
+const deleteSchema = {
+  params: {
+    type: 'object',
+    properties: {
+      id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    },
+    additionalProperties: false,
+  },
+};
+
+export { upload, download, deleteSchema };
