@@ -12,7 +12,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // download all related data to the given user
   fastify.get<{ Params: { memberId: string } }>(
-    '/:memberId',
+    '/',
     {
       preHandler: fastify.verifyAuthentication,
     },
