@@ -60,22 +60,25 @@ export class ItemPublishedRepository {
   async getForMember(memberId: Member['id']): Promise<Item[]> {
     const itemPublished = await this.repository
       .createQueryBuilder('pi')
-      .innerJoin('item_membership', 'im', 'im.item_path @> pi.item_path')
+      // join with memberships that are at or above the item published
+      // add the condition that the membership needs to be admin or write
+      .innerJoin(
+        'item_membership',
+        'im',
+        'im.item_path @> pi.item_path and im.permission IN (:...permissions)',
+        { permissions: [PermissionLevel.Admin, PermissionLevel.Write] },
+      )
+      // add a condition to the join to keep only relations for the memberId we are interested in
+      // this removes the need for the memberId in the where condition
       .innerJoin('member', 'm', 'im.member_id = m.id and m.id = :memberId', {
         memberId,
       })
-      .innerJoinAndSelect('pi.item', 'item')
-      .innerJoinAndSelect('pi.creator', 'member')
-      .where('im.permission IN (:...permissions)', {
-        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
-      })
+      // these two joins are for typeorm to get the relation data
+      .innerJoinAndSelect('pi.item', 'item') // will ignore soft delted items
+      .innerJoinAndSelect('item.creator', 'member') // will ignore null creators (deleted accounts)
       .getMany();
 
-    return itemPublished.map(({ item, creator }) => {
-      // use creator of publish entry as the creator of the item
-      item.creator = creator;
-      return item;
-    });
+    return itemPublished.map(({ item }) => item);
   }
 
   // return public item entry? contains when it was published
