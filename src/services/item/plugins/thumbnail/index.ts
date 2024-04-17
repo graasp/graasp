@@ -11,7 +11,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
-import { download, upload } from './schemas';
+import { deleteSchema, download, upload } from './schemas';
 import { ItemThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
 
@@ -104,6 +104,22 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       const url = await thumbnailService.getUrl(member, buildRepositories(), { itemId, size });
 
       fileService.setHeaders({ reply, replyUrl, url, id: itemId });
+    },
+  );
+
+  fastify.delete<{ Params: IdParam }>(
+    `/:id${THUMBNAILS_ROUTE_PREFIX}`,
+    { schema: deleteSchema, preHandler: fastify.verifyAuthentication },
+    async (request, reply) => {
+      const {
+        member,
+        params: { id: itemId },
+      } = request;
+      if (!member) {
+        throw new UnauthorizedMember(member);
+      }
+      await thumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), { itemId });
+      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

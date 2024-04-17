@@ -6,6 +6,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Actor, Member } from '../../../member/entities/member';
+import { ThumbnailSizeFormat } from '../../../thumbnail/constants';
 import { ThumbnailService } from '../../../thumbnail/service';
 import ItemService from '../../service';
 
@@ -63,5 +64,22 @@ export class ItemThumbnailService {
     });
 
     return result;
+  }
+
+  async deleteAllThumbnailSizes(
+    actor: Member,
+    repositories: Repositories,
+    { itemId }: { itemId: string },
+  ) {
+    const item = await repositories.itemRepository.get(itemId);
+    await validatePermission(repositories, PermissionLevel.Write, actor, item);
+    await Promise.all(
+      Object.entries(ThumbnailSizeFormat).map(async ([size]) => {
+        this.thumbnailService.delete(actor, { id: itemId, size });
+      }),
+    );
+    await this.itemService.patch(actor, repositories, itemId, {
+      settings: { hasThumbnail: false },
+    });
   }
 }
