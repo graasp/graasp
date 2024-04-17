@@ -1,5 +1,7 @@
-import { ChatMessage } from '../../../chat/chatMessage';
-import { ChatMention } from '../../../chat/plugins/mentions/chatMention';
+import fastJson from 'fast-json-stringify';
+
+import { ChatMessage } from '../../../../chat/chatMessage';
+import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
 
 const ANONYMIZED_ID = 'anonymous-id';
 const CURRENT_ACTOR_ID = 'you';
@@ -43,4 +45,9 @@ export const anonymizeMessages = ({
     ...r,
     body: replaceNoneActorId(r.body, exportingActorId),
   }));
+};
+
+export const getFilteredData = <T>(data: T[], schema: object) => {
+  const stringify = fastJson(schema);
+  return JSON.parse(stringify(data));
 };

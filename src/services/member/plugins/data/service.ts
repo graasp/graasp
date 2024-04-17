@@ -1,10 +1,12 @@
-import fastJson from 'fast-json-stringify';
+import fs from 'fs';
+import path from 'path';
 
+import { TMP_FOLDER } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import FileService from '../../../file/service';
 import { Item } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
-import { anonymizeMentionsMessage, anonymizeMessages } from './data.utils';
 import {
   actionArraySchema,
   appActionArraySchema,
@@ -18,13 +20,105 @@ import {
   messageArraySchema,
   messageMentionArraySchema,
 } from './schemas/schemas';
-
-const getFilteredData = <T>(data: T[], schema: object) => {
-  const stringify = fastJson(schema);
-  return JSON.parse(stringify(data));
-};
+import {
+  anonymizeMentionsMessage,
+  anonymizeMessages,
+  getFilteredData,
+} from './utils/anonymize.utils';
+import { ArchiveDataExporter } from './utils/export.utils';
 
 export class DataMemberService {
+  private fileService: FileService;
+
+  constructor(fileService: FileService) {
+    this.fileService = fileService;
+  }
+
+  // TODO: check if it not in another service ?
+  async requestExport(member: Actor, repositories: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
+    // TODO: get last export entry within interval,
+    // check if a previous request already created the file and send it back
+    // ...
+
+    // create tmp folder to temporaly save files
+    const rootExportFolder = 'export';
+    const tmpFolder = path.join(TMP_FOLDER, rootExportFolder, member.id);
+    fs.mkdirSync(tmpFolder, { recursive: true });
+
+    // get the data to export
+    const dataToExport = await this.getAllData(member, repositories);
+
+    // archives the data and upload it.
+    await new ArchiveDataExporter().createAndUploadArchive({
+      fileService: this.fileService,
+      member,
+      exportId: member.id,
+      dataToExport,
+      storageFolder: tmpFolder,
+      uploadedRootFolder: rootExportFolder,
+    });
+
+    // TODO: save the request in the database
+    const requestExport = 'Done !';
+
+    // delete tmp folder
+    if (fs.existsSync(tmpFolder)) {
+      try {
+        fs.rmSync(tmpFolder, { recursive: true });
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      console.error(`${tmpFolder} was not found, and was not deleted`);
+    }
+
+    // TODO: _sendExportLinkInMail(member, item, requestExport.createdAt);
+    return requestExport;
+  }
+
+  async getAllData(member: Actor, repositories: Repositories) {
+    const actions = await this.getActions(member, repositories);
+    const appActions = await this.getAppActions(member, repositories);
+    const appData = await this.getAppData(member, repositories);
+    const appSettings = await this.getAppSettings(member, repositories);
+    const chatMentions = await this.getChatMentions(member, repositories);
+    const chatMessages = await this.getChatMessages(member, repositories);
+    // TODO: item_flag
+    // TODO: item_geolocation
+    // TODO: item_login ? and login schema
+    const items = await this.getItems(member, repositories);
+    const itemCategories = await this.getItemCategories(member, repositories);
+    const itemFavorites = await this.getItemFavorites(member, repositories);
+    const itemLikes = await this.getItemLikes(member, repositories);
+    const itemMemberShips = await this.getItemsMemberShips(member, repositories);
+    // TODO: item_published
+    // TODO: item_tag
+    // TODO: item_validation ?, validation_group and validation_review ?
+    // TODO: member
+    // TODO: member_profile
+    // TODO: recycled_item_data
+    // TODO: short_link
+
+    return {
+      actions,
+      appActions,
+      appData,
+      appSettings,
+      chatMentions,
+      chatMessages,
+      items,
+      itemCategories,
+      itemFavorites,
+      itemLikes,
+
+      itemMemberShips,
+    };
+  }
+
   async getActions(member: Actor, { actionRepository }: Repositories) {
     if (!member) {
       throw new UnauthorizedMember(member);

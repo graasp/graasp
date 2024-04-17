@@ -5,7 +5,7 @@ import {
   STRING_TYPE,
   buildArraySchema,
   buildObjectSchema,
-} from './utils';
+} from '../utils/schema.utils';
 
 export const externalItemSchema = buildObjectSchema({
   id: STRING_TYPE,
