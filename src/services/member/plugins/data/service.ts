@@ -1,17 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-
-import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
-
 import { MailerDecoration } from '../../../../plugins/mailer';
-import { MAIL } from '../../../../plugins/mailer/langs/constants';
-import { TMP_FOLDER } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { EXPORT_FILE_EXPIRATION } from '../../../action/constants/constants';
 import FileService from '../../../file/service';
 import { Item } from '../../../item/entities/Item';
-import { Actor, Member } from '../../entities/member';
+import { Actor } from '../../entities/member';
 import {
   actionArraySchema,
   appActionArraySchema,
@@ -30,93 +22,36 @@ import {
   anonymizeMessages,
   getFilteredData,
 } from './utils/anonymize.utils';
-import { ArchiveDataExporter, buildUploadedExportFilePath } from './utils/export.utils';
+import { RequestDataExportService } from './utils/export.utils';
 
 export class DataMemberService {
-  private fileService: FileService;
-  private mailer: MailerDecoration;
-
-  private readonly ROOT_EXPORT_FOLDER = 'export';
-
-  constructor(fileService: FileService, mailer: MailerDecoration) {
-    this.fileService = fileService;
-    this.mailer = mailer;
-  }
-
-  private async _sendExportLinkInMail(actor: Member, exportId: string, archiveDate: Date) {
-    const filepath = buildUploadedExportFilePath(this.ROOT_EXPORT_FOLDER, exportId, archiveDate);
-    const link = await this.fileService.getUrl(actor, {
-      id: exportId,
-      path: filepath,
-      expiration: EXPORT_FILE_EXPIRATION,
-    });
-
-    // factor out
-    const lang = actor.lang;
-    const t = this.mailer.translate(lang);
-
-    const text = t(MAIL.EXPORT_DATA_TEXT, {
-      days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
-    });
-    const html = `
-      ${this.mailer.buildText(text)}
-      ${this.mailer.buildButton(link, t(MAIL.EXPORT_DATA_BUTTON_TEXT))}
-    `;
-    const title = t(MAIL.EXPORT_DATA_TITLE);
-
-    const footer = this.mailer.buildFooter(lang);
-
-    this.mailer.sendEmail(title, actor.email, link, html, footer).catch((err) => {
-      console.debug(err, `mailer failed. export zip link: ${link}`);
-    });
-  }
-
-  // TODO: check if it not in another service ?
-  async requestExport(member: Actor, repositories: Repositories) {
+  // TODO: check if it is not in the controller instead of here
+  async requestDataExport({
+    member,
+    repositories,
+    fileService,
+    mailer,
+  }: {
+    member: Actor;
+    repositories: Repositories;
+    fileService: FileService;
+    mailer: MailerDecoration;
+  }) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
 
-    // TODO: get last export entry within interval,
-    // check if a previous request already created the file and send it back
-    // ...
-
-    // create tmp folder to temporaly save files
-    const tmpFolder = path.join(TMP_FOLDER, this.ROOT_EXPORT_FOLDER, member.id);
-    fs.mkdirSync(tmpFolder, { recursive: true });
-
     // get the data to export
     const dataToExport = await this.getAllData(member, repositories);
-
-    // archives the data and upload it.
-    const { archiveCreationTime } = await new ArchiveDataExporter().createAndUploadArchive({
-      fileService: this.fileService,
-      member,
-      exportId: member.id,
-      dataToExport,
-      storageFolder: tmpFolder,
-      uploadedRootFolder: this.ROOT_EXPORT_FOLDER,
-    });
-
-    // TODO: save the request in the database
-    const requestExport = { createdAt: archiveCreationTime };
-
-    // delete tmp folder
-    if (fs.existsSync(tmpFolder)) {
-      try {
-        fs.rmSync(tmpFolder, { recursive: true });
-      } catch (e) {
-        console.error(e);
-      }
-    } else {
-      console.error(`${tmpFolder} was not found, and was not deleted`);
-    }
-
-    this._sendExportLinkInMail(member, member.id, requestExport.createdAt);
-    return requestExport;
+    const requestExportService = new RequestDataExportService(fileService, mailer);
+    return await requestExportService.requestExport(member, dataToExport);
   }
 
   async getAllData(member: Actor, repositories: Repositories) {
+    if (!member) {
+      throw new UnauthorizedMember(member);
+    }
+
     const actions = await this.getActions(member, repositories);
     const appActions = await this.getAppActions(member, repositories);
     const appData = await this.getAppData(member, repositories);

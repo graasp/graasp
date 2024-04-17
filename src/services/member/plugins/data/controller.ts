@@ -8,7 +8,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     files: { service: fileService },
     mailer,
   } = fastify;
-  const dataMemberService = new DataMemberService(fileService, mailer);
+  const dataMemberService = new DataMemberService();
 
   // download all related data to the given user
   fastify.get<{ Params: { memberId: string } }>(
@@ -19,7 +19,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async ({ member }) => {
       const repositories = buildRepositories();
 
-      return dataMemberService.requestExport(member, repositories);
+      return dataMemberService.requestDataExport({ member, repositories, fileService, mailer });
     },
   );
 };
