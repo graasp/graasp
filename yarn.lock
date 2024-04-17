@@ -7580,7 +7580,6 @@ __metadata:
     lodash.groupby: "npm:4.6.0"
     lodash.partition: "npm:4.6.0"
     lodash.uniqby: "npm:4.7.0"
-    luxon: "npm:3.4.4"
     meilisearch: "npm:0.41.0"
     mime: "npm:3.0.0"
     mime-types: "npm:2.1.35"
@@ -9514,7 +9513,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:3.4.4, luxon@npm:^3.2.1":
+"luxon@npm:^3.2.1":
   version: 3.4.4
   resolution: "luxon@npm:3.4.4"
   checksum: 10/c14164bc338987349075a08e63ea3ff902866735f7f5553a355b27be22667919765ff96fde4d3413d0e9a0edc4ff9e2e74ebcb8f86eae0ce8b14b27330d87d6e
