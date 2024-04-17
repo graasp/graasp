@@ -19,7 +19,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async ({ member }) => {
       const repositories = buildRepositories();
 
-      return dataMemberService.requestDataExport({ member, repositories, fileService, mailer });
+      return dataMemberService.requestDataExport({
+        actor: member,
+        repositories,
+        fileService,
+        mailer,
+      });
     },
   );
 };
