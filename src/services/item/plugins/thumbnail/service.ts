@@ -1,12 +1,11 @@
 import { Readable } from 'stream';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Actor, Member } from '../../../member/entities/member';
-import { ThumbnailSizeFormat } from '../../../thumbnail/constants';
 import { ThumbnailService } from '../../../thumbnail/service';
 import ItemService from '../../service';
 
@@ -73,7 +72,7 @@ export class ItemThumbnailService {
   ) {
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
     await Promise.all(
-      Object.keys(ThumbnailSizeFormat).map(async (size) => {
+      Object.values(ThumbnailSize).map(async (size) => {
         this.thumbnailService.delete(actor, { id: itemId, size });
       }),
     );
