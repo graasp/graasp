@@ -1,4 +1,4 @@
-import { add, isAfter } from 'date-fns';
+import { add, isBefore } from 'date-fns';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -179,7 +179,7 @@ export class EtherpadItemService {
     const sessionResult = await this.api.createSession({
       authorID,
       groupID,
-      validUntil: expiration.getTime(),
+      validUntil: expiration.getTime() / 1000,
     });
     if (!sessionResult) {
       throw new EtherpadServerError(
@@ -202,7 +202,7 @@ export class EtherpadItemService {
           expired.add(id);
         } else {
           // normal case: check if session is expired
-          const isExpired = isAfter(new Date(validUntil), now);
+          const isExpired = isBefore(new Date(validUntil), now);
           isExpired ? expired.add(id) : valid.add(id);
         }
         return { valid, expired };
@@ -225,6 +225,7 @@ export class EtherpadItemService {
         // we are guaranteed that a, b index valid sessions from above
         const timeA = new Date((sessions[a] as AuthorSession).validUntil);
         const timeB = new Date((sessions[b] as AuthorSession).validUntil);
+        console.log(timeA, timeB);
         // return inversed for most recent
         if (timeA < timeB) {
           return 1;
