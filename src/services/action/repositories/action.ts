@@ -44,7 +44,7 @@ export class ActionRepository {
         'item.name',
         'item.displayName',
       ])
-      .leftJoin('action.item', 'item')
+      .innerJoin('action.item', 'item')
       .where('action.member_id = :memberId', { memberId })
       .orderBy('action.created_at', 'DESC')
       .getMany();

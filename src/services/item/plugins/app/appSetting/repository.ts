@@ -72,7 +72,7 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
         'item.name',
         'item.displayName',
       ])
-      .leftJoin('app_setting.item', 'item')
+      .innerJoin('app_setting.item', 'item')
       .where('app_setting.creator_id = :id', { id: memberId })
       .orderBy('app_setting.updated_at', 'DESC')
       .getMany();

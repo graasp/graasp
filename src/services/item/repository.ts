@@ -315,8 +315,7 @@ export class ItemRepository {
         'item.name',
         'creator.name',
       ])
-      .leftJoin('item.creator', 'creator')
-      .where('item.creator_id = :memberId', { memberId })
+      .innerJoin('item.creator', 'creator', 'creator.id = :memberId', { memberId })
       .orderBy('item.updated_at', 'DESC')
       .getMany();
   }

@@ -202,6 +202,8 @@ describe('DataMember Export', () => {
 
       // noise
       await itemTestUtils.saveItem({ actor: randomUser });
+      await itemTestUtils.saveItem({ actor: randomUser });
+      await itemTestUtils.saveItem({ actor: randomUser });
 
       const results = await new ItemRepository().getForMemberExport(exportingActor.id);
       expectNoLeaksAndEquality(results, items, itemSchema);

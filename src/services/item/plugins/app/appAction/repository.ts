@@ -52,7 +52,7 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
         'item.name',
         'item.displayName',
       ])
-      .leftJoin('app_action.item', 'item')
+      .innerJoin('app_action.item', 'item')
       .where('app_action.member_id = :memberId', { memberId })
       .orderBy('app_action.created_at', 'DESC')
       .getMany();

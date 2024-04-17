@@ -73,9 +73,9 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
         'creator.name',
         'member.name',
       ])
-      .leftJoin('app_data.item', 'item')
-      .leftJoin('app_data.member', 'member')
-      .leftJoin('app_data.creator', 'creator')
+      .innerJoin('app_data.item', 'item')
+      .innerJoin('app_data.member', 'member')
+      .innerJoin('app_data.creator', 'creator')
       .where('app_data.member_id = :memberId or app_data.creator_id = :memberId', { memberId })
       .orderBy('app_data.updated_at', 'DESC')
       .getMany();

@@ -200,7 +200,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         'item.name',
         'item.displayName',
       ])
-      .leftJoin('item_membership.item', 'item')
+      .innerJoin('item_membership.item', 'item')
       .where('member_id = :memberId', { memberId })
       .orderBy('item_membership.updated_at', 'DESC')
       .getMany();

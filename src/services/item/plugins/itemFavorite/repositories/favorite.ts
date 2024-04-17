@@ -52,7 +52,7 @@ export class FavoriteRepository {
     return await this.repository
       .createQueryBuilder('favorite')
       .select(['favorite.id', 'favorite.createdAt', 'item.id', 'item.name', 'item.displayName'])
-      .leftJoin('favorite.item', 'item')
+      .innerJoin('favorite.item', 'item')
       .where('favorite.member = :memberId', { memberId })
       .getMany();
   }
