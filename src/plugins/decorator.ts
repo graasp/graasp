@@ -38,7 +38,9 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('items', {
     service: new ItemService(),
-  });
+    // the casting is necessary as we are not instanciating the other keys of the object yet ..
+    // we might need to rethink our depencency order to remove the need for this cast
+  } as typeof fastify.items);
 
   fastify.decorate('memberships', {
     service: new ItemMembershipService(fastify.items.service, fastify.mailer),

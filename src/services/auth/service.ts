@@ -41,7 +41,7 @@ export class AuthService {
   generateRegisterLinkAndEmailIt = async (
     member: Member,
     options: { challenge?; url?: string } = {},
-  ) => {
+  ): Promise<void> => {
     const { challenge, url } = options;
 
     // generate token with member info and expiration
@@ -85,7 +85,7 @@ export class AuthService {
   generateLoginLinkAndEmailIt = async (
     member: Member,
     options: { challenge?: string; lang?: string; url?: string } = {},
-  ) => {
+  ): Promise<void> => {
     const { challenge, lang, url } = options;
 
     // generate token with member info and expiration
