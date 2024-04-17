@@ -155,9 +155,9 @@ export class ItemPublishedService {
     return result;
   }
 
-  async getItemsForMember(actor: Actor, repositories, memberId: UUID) {
-    const { itemRepository } = repositories;
-    return itemRepository.getPublishedItemsForMember(memberId);
+  async getItemsForMember(actor: Actor, repositories: Repositories, memberId: UUID) {
+    const { itemPublishedRepository } = repositories;
+    return itemPublishedRepository.getForMember(memberId);
   }
 
   async getLikedItems(actor: Actor, repositories: Repositories, limit?: number) {
@@ -168,7 +168,6 @@ export class ItemPublishedService {
 
   async getRecentItems(actor: Actor, repositories: Repositories, limit?: number) {
     const { itemPublishedRepository } = repositories;
-
     const items = await itemPublishedRepository.getRecentItems(limit);
 
     return filterOutHiddenItems(repositories, items);

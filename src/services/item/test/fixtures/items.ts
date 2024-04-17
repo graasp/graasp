@@ -21,7 +21,7 @@ import { Actor, Member } from '../../../member/entities/member';
 import { PackedItem } from '../../ItemWrapper';
 import { Item, ItemExtraMap } from '../../entities/Item';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
-import { ItemPublishedRepository } from '../../plugins/published/repositories/itemPublished';
+import { ItemPublished } from '../../plugins/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
 import { ItemRepository } from '../../repository';
 
@@ -29,13 +29,13 @@ export class ItemTestUtils {
   public itemRepository: ItemRepository;
   public rawItemRepository: Repository<Item<keyof ItemExtraMap>>;
   recycledItemDataRepository: typeof RecycledItemDataRepository;
-  rawItemPublishedRepository: typeof ItemPublishedRepository;
+  rawItemPublishedRepository: Repository<ItemPublished>;
 
   constructor() {
     this.itemRepository = new ItemRepository();
     this.rawItemRepository = AppDataSource.getRepository(Item);
     this.recycledItemDataRepository = RecycledItemDataRepository;
-    this.rawItemPublishedRepository = ItemPublishedRepository;
+    this.rawItemPublishedRepository = AppDataSource.getRepository(ItemPublished);
   }
 
   createItem(
