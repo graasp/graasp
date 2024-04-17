@@ -507,25 +507,6 @@ export class ItemRepository {
     return publishedRows;
   }
 
-  /**
-   * Return published items for given member
-   * @param memberId
-   * @returns published items for given member
-   */
-  async getPublishedItemsForMember(memberId: string) {
-    // get for membership write and admin -> createquerybuilder
-    return this.repository
-      .createQueryBuilder('item')
-      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
-      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
-      .innerJoinAndSelect('item.creator', 'member')
-      .where('im.member_id = :memberId', { memberId })
-      .andWhere('im.permission IN (:...permissions)', {
-        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
-      })
-      .getMany();
-  }
-
   async findAndCount(args: FindManyOptions<Item>) {
     return this.repository.findAndCount(args);
   }

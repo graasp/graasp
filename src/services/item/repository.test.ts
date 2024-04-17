@@ -709,15 +709,4 @@ describe('ItemRepository', () => {
       expectManyItems(result, items);
     });
   });
-  describe('getPublishedItemsForMember', () => {
-    it('get published items for member', async () => {
-      const items = await testUtils.saveCollections(actor);
-      // noise
-      const member = await saveMember();
-      await testUtils.saveCollections(member);
-
-      const result = await itemRepository.getPublishedItemsForMember(actor.id);
-      expectManyItems(result, items);
-    });
-  });
 });
