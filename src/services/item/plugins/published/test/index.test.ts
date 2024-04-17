@@ -7,6 +7,7 @@ import waitForExpect from 'wait-for-expect';
 import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
+import { AppDataSource } from '../../../../../plugins/datasource';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAdminItem } from '../../../../../utils/errors';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
@@ -21,7 +22,6 @@ import { ItemTagRepository } from '../../itemTag/repository';
 import { ItemPublished } from '../entities/itemPublished';
 import { ItemPublishedNotFound } from '../errors';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../repositories/itemPublished';
 
 const testUtils = new ItemTestUtils();
 
@@ -38,6 +38,7 @@ const expectPublishedEntry = (value, expectedValue) => {
 describe('Item Published', () => {
   let app;
   let actor;
+  const itemPublishedRawRepository = AppDataSource.getRepository(ItemPublished);
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -60,7 +61,7 @@ describe('Item Published', () => {
         const { item } = await testUtils.saveItemAndMembership({ member, parentItem });
         await ItemTagRepository.post(member, parentItem, ItemTagType.Public);
         // publish parent
-        await ItemPublishedRepository.save({ item: parentItem, creator: member });
+        await itemPublishedRawRepository.save({ item: parentItem, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -77,8 +78,8 @@ describe('Item Published', () => {
         await ItemTagRepository.post(member, otherParentItem, ItemTagType.Public);
 
         // publish parents
-        await ItemPublishedRepository.save({ item: parentItem, creator: member });
-        await ItemPublishedRepository.save({ item: otherParentItem, creator: member });
+        await itemPublishedRawRepository.save({ item: parentItem, creator: member });
+        await itemPublishedRawRepository.save({ item: otherParentItem, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.Get,
@@ -452,7 +453,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Admin,
         });
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
-        await ItemPublishedRepository.save({ item, creator: member });
+        await itemPublishedRawRepository.save({ item, creator: member });
 
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
 
@@ -491,7 +492,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Write,
         });
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
-        await ItemPublishedRepository.save({ item, creator: member });
+        await itemPublishedRawRepository.save({ item, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -508,7 +509,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Read,
         });
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: member });
-        await ItemPublishedRepository.save({ item, creator: member });
+        await itemPublishedRawRepository.save({ item, creator: member });
 
         const res = await app.inject({
           method: HttpMethod.Delete,
@@ -657,7 +658,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Admin,
         });
         await ItemTagRepository.save({ item, type: ItemTagType.Public, creator: actor });
-        await ItemPublishedRepository.save({ item, creator: actor });
+        await itemPublishedRawRepository.save({ item, creator: actor });
 
         const { item: publishedFolder } = await testUtils.saveItemAndMembership({ member: actor });
         await ItemTagRepository.save({
@@ -665,7 +666,7 @@ describe('Item Published', () => {
           type: ItemTagType.Public,
           creator: actor,
         });
-        await ItemPublishedRepository.save({ item: publishedFolder, creator: actor });
+        await itemPublishedRawRepository.save({ item: publishedFolder, creator: actor });
         const indexSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'indexOne');
         const deleteSpy = jest.spyOn(MeiliSearchWrapper.prototype, 'deleteOne');
 

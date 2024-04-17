@@ -38,7 +38,7 @@ describe('MeilisearchWrapper', () => {
   });
 
   const datasourceManager = {
-    withRepository: jest.fn(),
+    getRepository: jest.fn(),
   } as unknown as jest.Mocked<EntityManager>;
   const logger = {
     info: jest.fn(),
@@ -105,7 +105,7 @@ describe('MeilisearchWrapper', () => {
   const itemPublishedRepositoryMock = {
     getForItem: jest.fn(),
     getPaginatedItems: jest.fn(),
-  } as unknown as jest.Mocked<typeof ItemPublishedRepository>;
+  } as unknown as jest.Mocked<ItemPublishedRepository>;
 
   const itemCategoryRepositoryMock = {
     getForItemOrParent: jest.fn(),
@@ -438,8 +438,6 @@ describe('MeilisearchWrapper', () => {
 
       // prevent finding any PDFs to store because this part is temporary
       jest.spyOn(testUtils.itemRepository, 'findAndCount').mockResolvedValue([[], 0]);
-
-      datasourceManager.withRepository.mockReturnValue(repositories.itemPublishedRepository);
 
       // fake pagination
       itemPublishedRepositoryMock.getPaginatedItems.mockImplementation((page, _) => {
