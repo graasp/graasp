@@ -61,7 +61,7 @@ export class ItemPublishedRepository {
     const itemPublished = await this.repository
       .createQueryBuilder('pi')
       .innerJoin('item_membership', 'im', 'im.item_path @> pi.item_path')
-      .leftJoin('member', 'm', 'im.member_id = m.id and m.id = :memberId', {
+      .innerJoin('member', 'm', 'im.member_id = m.id and m.id = :memberId', {
         memberId,
       })
       .innerJoinAndSelect('pi.item', 'item')

@@ -27,7 +27,6 @@ import FileService from '../../../../../file/service';
 import { Item, isItemType } from '../../../../entities/Item';
 import { readPdfContent } from '../../../../utils';
 import { stripHtml } from '../../../validation/utils';
-import { ItemPublishedRepository } from '../../repositories/itemPublished';
 
 const ACTIVE_INDEX = INDEX_NAME;
 const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
@@ -368,7 +367,7 @@ export class MeiliSearchWrapper {
       const tasks: EnqueuedTask[] = [];
 
       // instanciate the itempublished repository to use the provided transaction manager
-      const itemPublishedRepository = new ItemPublishedRepository(manager);
+      const { itemPublishedRepository } = buildRepositories(manager);
       let currentPage = 1;
       let total = 0;
       while (currentPage === 1 || (currentPage - 1) * pageSize < total) {
