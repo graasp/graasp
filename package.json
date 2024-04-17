@@ -80,7 +80,7 @@
     "dotenv": "16.4.5",
     "eta": "2.2.0",
     "extract-zip": "2.0.1",
-    "fastify": "4.15.0",
+    "fastify": "4.26.2",
     "fastify-nodemailer": "5.0.0",
     "fastify-plugin": "4.5.1",
     "fluent-json-schema": "4.2.1",

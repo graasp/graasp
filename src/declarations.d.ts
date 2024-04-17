@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 
 import 'fastify';
+import { preHandlerHookHandler } from 'fastify';
 
 import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 
@@ -10,6 +11,7 @@ import { ActionService } from './services/action/services/action';
 import { MentionService } from './services/chat/plugins/mentions/service';
 import { ChatMessageService } from './services/chat/service';
 import FileService from './services/file/service';
+import { create, updateOne } from './services/item/fluent-schema';
 import { ActionItemService } from './services/item/plugins/action/service';
 import { EtherpadItemService } from './services/item/plugins/etherpad/service';
 import FileItemService from './services/item/plugins/file/service';
@@ -48,8 +50,8 @@ declare module 'fastify' {
       service: MentionService;
     };
     items: {
-      extendCreateSchema: any;
-      extendExtrasUpdateSchema: any;
+      extendCreateSchema: ReturnType<typeof create>;
+      extendExtrasUpdateSchema: ReturnType<typeof updateOne>;
       service: ItemService;
       files: {
         service: FileItemService;
@@ -83,14 +85,36 @@ declare module 'fastify' {
     etherpad: EtherpadItemService;
 
     corsPluginOptions: any;
-    verifyAuthentication: (request: FastifyRequest) => Promise<void>;
+    verifyAuthentication:
+      | preHandlerHookHandler<
+          RawServer,
+          RawRequest,
+          RawReply,
+          RouteGenericInterface,
+          ContextConfigDefault,
+          FastifySchema,
+          TypeProvider,
+          Logger
+        >
+      | ((request: FastifyRequest) => Promise<void>);
     validateCaptcha: (
       request: FastifyRequest,
       captcha: string,
       actionType: RecaptchaActionType,
       options?: { shouldFail?: boolean },
     ) => Promise<void>;
-    attemptVerifyAuthentication: (request: FastifyRequest) => Promise<void>;
+    attemptVerifyAuthentication:
+      | preHandlerHookHandler<
+          RawServer,
+          RawRequest,
+          RawReply,
+          RouteGenericInterface,
+          ContextConfigDefault,
+          FastifySchema,
+          TypeProvider,
+          Logger
+        >
+      | ((request: FastifyRequest) => Promise<void>);
     fetchMemberInSession: (request: FastifyRequest) => Promise<void>;
     generateAuthTokensPair: (memberId: string) => Promise<{
       authToken: string;
@@ -102,10 +126,7 @@ declare module 'fastify' {
         challenge?: string;
         url?: string;
       },
-    ) => Promise<{
-      authToken: string;
-      refreshToken: string;
-    }>;
+    ) => Promise<void>;
     generateLoginLinkAndEmailIt: (
       member: Member,
       options: {
@@ -113,10 +134,7 @@ declare module 'fastify' {
         lang?: string;
         url?: string;
       },
-    ) => Promise<{
-      authToken: string;
-      refreshToken: string;
-    }>;
+    ) => Promise<void>;
   }
 
   interface FastifyRequest {
