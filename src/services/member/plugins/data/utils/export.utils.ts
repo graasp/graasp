@@ -110,7 +110,7 @@ export class DataArchiver {
   public async archiveData() {
     const { archive, promise } = this.createArchive();
     this.addDataToArchive(archive);
-    archive.finalize();
+    await archive.finalize();
     return promise;
   }
 }
@@ -154,6 +154,16 @@ export class ArchiveDataExporter {
 
     const archivedFile = fs.createReadStream(archive.filepath);
 
+    // This promise is necessary to be sure to have close the stream before then end of the function.
+    // Because we are mocking S3 in tests, the stream is never read and so, never closed.
+    // Never closing the stream throws an error when trying to remove the ZIP folder in the tests.
+    const onArchiveClosed = new Promise<{ archiveCreationTime: Date }>((resolve, reject) => {
+      const res = { archiveCreationTime: new Date(archive.timestamp.getTime()) };
+
+      archivedFile.on('error', (err) => reject(err));
+      archivedFile.on('close', async () => resolve(res));
+    });
+
     // upload file
     await fileService.upload(member, {
       file: archivedFile,
@@ -161,7 +171,13 @@ export class ArchiveDataExporter {
       mimetype: ZIP_MIMETYPE,
     });
 
-    return { archiveCreationTime: new Date(archive.timestamp.getTime()) };
+    // If the archive is not closed automatically, explicitly ask to close the file.
+    if (!archivedFile.closed) {
+      console.warn(`Closing the archive file explicitly...`);
+      archivedFile.close();
+    }
+
+    return await onArchiveClosed;
   }
 }
 
