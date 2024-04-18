@@ -66,7 +66,7 @@ describe('archives data in ZIP', () => {
     const files = fs.readdirSync(storageFolder);
 
     // should have exactly to elements: the original folder and the ZIP
-    expect(files.length).toEqual(1);
+    expect(files.length).toEqual(2);
     // assume only 2 files exist in the folder
     const [folder, zip] = files;
 
