@@ -19,8 +19,8 @@ export const externalMemberSchema = buildObjectSchema({
 
 export const actionSchema = buildObjectSchema({
   id: STRING_TYPE,
-  view: STRING_TYPE, // TODO: ADAPT,
-  type: STRING_TYPE, // TODO: ADAPT,
+  view: STRING_TYPE,
+  type: STRING_TYPE,
   extra: OBJECT_TYPE,
   createdAt: DATE_TYPE,
   item: externalItemSchema,

@@ -31,11 +31,7 @@ export const buildObjectSchema = (properties: object, options: BuildSchemaOption
     options,
   );
 
-export const buildArraySchema = (childrenSchema: object, options: BuildSchemaOptions = {}) =>
-  buildSchema(
-    {
-      type: 'array',
-      items: childrenSchema,
-    },
-    options,
-  );
+export const buildArraySchema = (childrenSchema: object) => ({
+  type: 'array',
+  items: childrenSchema,
+});
