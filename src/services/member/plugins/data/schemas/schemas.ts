@@ -15,9 +15,13 @@ export const externalItemSchema = buildObjectSchema({
   displayName: STRING_TYPE,
 });
 
-export const externalMemberSchema = buildObjectSchema({
-  name: STRING_TYPE,
-});
+export const externalMemberSchema = (nullable: boolean = false) =>
+  buildObjectSchema(
+    {
+      name: STRING_TYPE,
+    },
+    { nullable },
+  );
 
 export const actionSchema = buildObjectSchema({
   id: STRING_TYPE,
@@ -40,11 +44,11 @@ export const appActionArraySchema = buildArraySchema(appActionSchema);
 
 export const appDataSchema = buildObjectSchema({
   id: STRING_TYPE,
-  member: externalMemberSchema,
+  member: externalMemberSchema(),
   data: OBJECT_TYPE,
   type: STRING_TYPE,
   visibility: STRING_TYPE,
-  creator: NULLABLE_TYPE(externalMemberSchema),
+  creator: externalMemberSchema(true),
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
   item: externalItemSchema,
@@ -75,7 +79,7 @@ export const externalMessageSchema = buildObjectSchema({
   body: STRING_TYPE,
   updatedAt: DATE_TYPE,
   createdAt: DATE_TYPE,
-  creator: NULLABLE_TYPE(externalMemberSchema),
+  creator: externalMemberSchema(true),
 });
 
 export const messageMentionSchema = buildObjectSchema({
@@ -93,7 +97,7 @@ export const itemSchema = buildObjectSchema({
   type: STRING_TYPE,
   description: NULLABLE_TYPE(STRING_TYPE),
   path: STRING_TYPE,
-  creator: NULLABLE_TYPE(externalMemberSchema),
+  creator: externalMemberSchema(true),
   extra: OBJECT_TYPE,
   settings: OBJECT_TYPE,
   lang: STRING_TYPE,
