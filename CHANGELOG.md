@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.31.0](https://github.com/graasp/graasp/compare/v1.30.0...v1.31.0) (2024-04-17)
+
+
+### Features
+
+* create delete thumbnail service and route ([#964](https://github.com/graasp/graasp/issues/964)) ([2edfccb](https://github.com/graasp/graasp/commit/2edfccbbe0ea7333019886f779f53a672ce4c261))
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-js-v3 monorepo to v3.556.0 ([#960](https://github.com/graasp/graasp/issues/960)) ([f748047](https://github.com/graasp/graasp/commit/f74804710fd66d003c7fc272f7a9d96766290a8f))
+* **deps:** update dependency @fastify/secure-session to v7.5.1 ([#950](https://github.com/graasp/graasp/issues/950)) ([a94f1dd](https://github.com/graasp/graasp/commit/a94f1dd74e738479f6b676d7b475e7dfd7a2e0fb))
+* **deps:** update dependency @graasp/sdk to v4.7.2 ([#956](https://github.com/graasp/graasp/issues/956)) ([d98e1ff](https://github.com/graasp/graasp/commit/d98e1ffba79c825a0c220e7c8f4086272bef2edb))
+* **deps:** update dependency fastify to v4.26.2 ([#491](https://github.com/graasp/graasp/issues/491)) ([e4bdf40](https://github.com/graasp/graasp/commit/e4bdf40b1b3183b979bf7a4f0160600efe8d746e))
+* **deps:** update dependency http-status-codes to v2.3.0 ([#953](https://github.com/graasp/graasp/issues/953)) ([61fdbcc](https://github.com/graasp/graasp/commit/61fdbcc08070ea69c91034ebab86337d9fa4f18e))
+* **deps:** update dependency ioredis to v5.4.0 ([#961](https://github.com/graasp/graasp/issues/961)) ([1f92252](https://github.com/graasp/graasp/commit/1f92252b34d326fef984fc847a9f32f8e2f27c5d))
+* optimize get published collections for member ([#959](https://github.com/graasp/graasp/issues/959)) ([c37ccc2](https://github.com/graasp/graasp/commit/c37ccc2a8ad705693781878c103580184f5f4ca8))
+
 ## [1.30.0](https://github.com/graasp/graasp/compare/v1.29.0...v1.30.0) (2024-04-16)
 
 
