@@ -1,13 +1,12 @@
-export const STRING_TYPE = { type: 'string' };
-export const OBJECT_TYPE = { type: 'object' };
-export const DATE_TYPE = {
-  // To works with AJV (object date) and fastJson (string date)
-  oneOf: [STRING_TYPE, OBJECT_TYPE],
-};
 export const ONE_OF = (types: object[]) => ({
   oneOf: types,
 });
-
+export const STRING_TYPE = { type: 'string' };
+export const OBJECT_TYPE = { type: 'object' };
+// To works with AJV (object date) and fastJson (string date)
+export const DATE_TYPE = ONE_OF([STRING_TYPE, OBJECT_TYPE]);
+export const NULL_TYPE = { type: 'null' };
+export const NULLABLE_TYPE = (type: object) => ONE_OF([type, NULL_TYPE]);
 type BuildSchemaOptions = { nullable?: boolean; requiredProps?: string[] };
 
 const buildSchema = (

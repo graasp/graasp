@@ -1,5 +1,7 @@
 import {
   DATE_TYPE,
+  NULLABLE_TYPE,
+  NULL_TYPE,
   OBJECT_TYPE,
   ONE_OF,
   STRING_TYPE,
@@ -41,8 +43,8 @@ export const appDataSchema = buildObjectSchema({
   member: externalMemberSchema,
   data: OBJECT_TYPE,
   type: STRING_TYPE,
-  visibility: STRING_TYPE, // TODO: ADAPT,
-  creator: externalMemberSchema,
+  visibility: STRING_TYPE,
+  creator: NULLABLE_TYPE(externalMemberSchema),
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
   item: externalItemSchema,
@@ -73,7 +75,7 @@ export const externalMessageSchema = buildObjectSchema({
   body: STRING_TYPE,
   updatedAt: DATE_TYPE,
   createdAt: DATE_TYPE,
-  creator: externalMemberSchema,
+  creator: NULLABLE_TYPE(externalMemberSchema),
 });
 
 export const messageMentionSchema = buildObjectSchema({
@@ -89,16 +91,16 @@ export const itemSchema = buildObjectSchema({
   id: STRING_TYPE,
   name: STRING_TYPE,
   type: STRING_TYPE,
-  description: STRING_TYPE,
+  description: NULLABLE_TYPE(STRING_TYPE),
   path: STRING_TYPE,
-  creator: externalMemberSchema,
+  creator: NULLABLE_TYPE(externalMemberSchema),
   extra: OBJECT_TYPE,
   settings: OBJECT_TYPE,
   lang: STRING_TYPE,
   displayName: STRING_TYPE,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
-  deletedAt: ONE_OF([...DATE_TYPE.oneOf, { type: 'null' }]),
+  deletedAt: ONE_OF([...DATE_TYPE.oneOf, NULL_TYPE]),
 });
 export const itemArraySchema = buildArraySchema(itemSchema);
 
