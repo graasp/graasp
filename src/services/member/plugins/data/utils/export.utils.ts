@@ -152,12 +152,12 @@ export class ArchiveDataExporter {
       archiveFileName: exportId,
     }).archiveData();
 
-    const filePath = buildUploadedExportFilePath(uploadedRootFolder, exportId, archive.timestamp);
+    const archivedFile = fs.createReadStream(archive.filepath);
 
     // upload file
     await fileService.upload(member, {
-      file: fs.createReadStream(archive.filepath),
-      filepath: filePath,
+      file: archivedFile,
+      filepath: buildUploadedExportFilePath(uploadedRootFolder, exportId, archive.timestamp),
       mimetype: ZIP_MIMETYPE,
     });
 
@@ -204,15 +204,12 @@ export class RequestDataExportService {
     });
   }
 
-  // TODO: check if it not in another service ?
   async requestExport(
     member: Member,
     exportId: string,
     dataRetriever: () => Promise<DataToExport>,
   ) {
-    // TODO: get last export entry within interval,
-    // check if a previous request already created the file and send it back
-    // ...
+    // For now, there is no check in the database for last export.
 
     const dataToExport = await dataRetriever();
 
@@ -230,9 +227,6 @@ export class RequestDataExportService {
       uploadedRootFolder: this.ROOT_EXPORT_FOLDER,
     });
 
-    // TODO: save the request in the database
-    const requestExport = { createdAt: archiveCreationTime };
-
     // delete tmp folder
     if (fs.existsSync(tmpFolder)) {
       try {
@@ -244,7 +238,6 @@ export class RequestDataExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    this._sendExportLinkInMail(member, exportId, requestExport.createdAt);
-    return requestExport;
+    this._sendExportLinkInMail(member, exportId, archiveCreationTime);
   }
 }

@@ -43,7 +43,7 @@ export class DataMemberService {
     // get the data to export
     const dataRetriever = async () => await this.getAllData(actor, repositories);
     const requestExportService = new RequestDataExportService(fileService, mailer);
-    return await requestExportService.requestExport(actor, actor.id, dataRetriever);
+    await requestExportService.requestExport(actor, actor.id, dataRetriever);
   }
 
   async getAllData(actor: Actor, repositories: Repositories) {
@@ -51,27 +51,19 @@ export class DataMemberService {
       throw new UnauthorizedMember(actor);
     }
 
+    // TODO: export more data
     const actions = await this.getActions(actor, repositories);
     const appActions = await this.getAppActions(actor, repositories);
     const appData = await this.getAppData(actor, repositories);
     const appSettings = await this.getAppSettings(actor, repositories);
     const chatMentions = await this.getChatMentions(actor, repositories);
     const chatMessages = await this.getChatMessages(actor, repositories);
-    // TODO: item_flag
-    // TODO: item_geolocation
-    // TODO: item_login ? and login schema
+
     const items = await this.getItems(actor, repositories);
     const itemCategories = await this.getItemCategories(actor, repositories);
     const itemFavorites = await this.getItemFavorites(actor, repositories);
     const itemLikes = await this.getItemLikes(actor, repositories);
     const itemMemberShips = await this.getItemsMemberShips(actor, repositories);
-    // TODO: item_published
-    // TODO: item_tag
-    // TODO: item_validation ?, validation_group and validation_review ?
-    // TODO: member
-    // TODO: member_profile
-    // TODO: recycled_item_data
-    // TODO: short_link
 
     return {
       actions,
@@ -84,7 +76,6 @@ export class DataMemberService {
       itemCategories,
       itemFavorites,
       itemLikes,
-
       itemMemberShips,
     };
   }

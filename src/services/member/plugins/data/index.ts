@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { MEMBER_DATA_ROUTE_PREFIX } from '../../../../utils/config';
+import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../utils/config';
 import memberDataController from './controller';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -8,7 +8,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async function (fastify) {
       fastify.register(memberDataController);
     },
-    { prefix: MEMBER_DATA_ROUTE_PREFIX },
+    { prefix: MEMBER_EXPORT_DATA_ROUTE_PREFIX },
   );
 };
 
