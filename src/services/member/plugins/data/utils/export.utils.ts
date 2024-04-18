@@ -24,7 +24,7 @@ type ExportDataInArchiveOutput = {
   filepath: string;
 };
 
-class DataArchiver {
+export class DataArchiver {
   private readonly dataToExport: DataToExport;
   private readonly storageFolder: string;
   private readonly timestamp: Date;
@@ -98,9 +98,10 @@ class DataArchiver {
 
   private addDataToArchive(archive: archiver.Archiver) {
     try {
-      const folderPath = this.createFolder(this.storageFolder, this.archiveDate);
+      const folderPath = this.createFolder(this.storageFolder, this.fileName);
       this.saveDataFiles(folderPath);
-      archive.directory(folderPath, this.fileName);
+      const rootFolderNameInArchive = this.fileName;
+      archive.directory(folderPath, rootFolderNameInArchive);
     } catch (e) {
       throw new CannotWriteFileError(e);
     }
