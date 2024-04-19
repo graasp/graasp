@@ -14,6 +14,9 @@ import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Ordering, SortBy } from './types';
 
+const NOT_START_WITH_SPACE = /^\S[ \S]*$/;
+const EMPTY_OR_NOT_START_WITH_SPACE = /^(?:\S[ \S]*|$)$/;
+
 /**
  * for serialization
  */
@@ -69,14 +72,16 @@ export const packedItem = item.prop(
 /**
  * for validation on create
  */
-
 // type 'base' (empty extra {})
 export const baseItemCreate = S.object()
   .additionalProperties(false)
-  .prop('name', S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'))
+  .prop(
+    'name',
+    S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern(NOT_START_WITH_SPACE),
+  )
   .prop(
     'displayName',
-    S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern('^\\S[ \\S]*$'),
+    S.string().maxLength(MAX_ITEM_NAME_LENGTH).pattern(EMPTY_OR_NOT_START_WITH_SPACE),
   )
   .prop('description', S.string())
   .prop('type', S.const('base'))
@@ -125,12 +130,13 @@ export const folderItemCreate = S.object().prop('type', S.const('folder')).exten
  */
 export const itemUpdate = S.object()
   .additionalProperties(false)
-  .prop('name', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
-  .prop('displayName', S.string().minLength(1).pattern('^\\S+( \\S+)*$'))
+  .prop('name', S.string().minLength(1).pattern(NOT_START_WITH_SPACE))
+  .prop('displayName', S.string().pattern(EMPTY_OR_NOT_START_WITH_SPACE))
   .prop('description', S.string())
   .prop('lang', S.string())
   .prop('settings', settings)
   .anyOf([
+    S.required(['displayName']),
     S.required(['name']),
     S.required(['description']),
     S.required(['settings']),
@@ -242,6 +248,7 @@ export const updateOne =
             .extend(
               itemUpdate.anyOf([
                 S.required(['name']),
+                S.required(['displayName']),
                 S.required(['description']),
                 S.required(['extra']),
                 S.required(['settings']),

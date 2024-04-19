@@ -82,7 +82,7 @@ export class ItemRepository {
   }) {
     const {
       name,
-      displayName,
+      displayName = '',
       description = null,
       parent,
       type = ItemType.FOLDER,
@@ -109,7 +109,7 @@ export class ItemRepository {
     const item = this.repository.create({
       id,
       name,
-      displayName: displayName ?? name,
+      displayName,
       description,
       type,
       extra: parsedExtra,
