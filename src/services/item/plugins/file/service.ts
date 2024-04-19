@@ -10,6 +10,7 @@ import {
   MAX_ITEM_NAME_LENGTH,
   MimeTypes,
   PermissionLevel,
+  getFileExtension,
 } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
@@ -30,9 +31,9 @@ class FileItemService {
   itemThumbnailService: ItemThumbnailService;
   shouldRedirectOnDownload: boolean;
 
-  buildFilePath() {
+  buildFilePath(extension?: string) {
     // TODO: CHANGE ??
-    const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}`;
+    const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
     return path.join('files', filepath);
   }
 
@@ -63,20 +64,12 @@ class FileItemService {
       description?: string;
       parentId?: string;
       filename;
-      mimetype;
+      mimetype: string;
       stream: Readable;
     },
   ) {
-    const filepath = this.buildFilePath(); // parentId, filename
-    // compute body data from file's fields
-    // if (fields) {
-    //   Object.fromEntries(
-    //     Object.keys(fields).map((key) => [
-    //       key,
-    //       (fields[key] as unknown as { value: string })?.value,
-    //     ]),
-    //   );
-    // }
+    const filepath = this.buildFilePath(getFileExtension(filename)); // parentId, filename
+
     // check member storage limit
     await this.storageService.checkRemainingStorage(actor, repositories);
 

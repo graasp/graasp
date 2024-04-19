@@ -32,6 +32,7 @@ import {
   validatePermissionMany,
 } from '../authorization';
 import { Actor, Member } from '../member/entities/member';
+import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
 import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { Item, isItemType } from './entities/Item';
@@ -40,6 +41,9 @@ import { PartialItemGeolocation } from './plugins/geolocation/errors';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
 export class ItemService {
+  private log: FastifyBaseLogger;
+  private thumbnailService: ThumbnailService;
+
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
     update: { pre: { item: Item }; post: { item: Item } };
@@ -63,6 +67,11 @@ export class ItemService {
     };
   }>();
 
+  constructor(thumbnailService: ThumbnailService, logger: FastifyBaseLogger) {
+    this.thumbnailService = thumbnailService;
+    this.log = logger;
+  }
+
   async post(
     actor: Actor,
     repositories: Repositories,
@@ -71,7 +80,6 @@ export class ItemService {
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
     },
-    log?: FastifyBaseLogger,
   ): Promise<Item> {
     if (!actor) {
       throw new UnauthorizedMember(actor);
@@ -92,15 +100,15 @@ export class ItemService {
       throw new PartialItemGeolocation({ lat, lng });
     }
 
-    log?.debug(`run prehook for ${item.name}`);
-    await this.hooks.runPreHooks('create', actor, repositories, { item }, log);
+    this.log.debug(`run prehook for ${item.name}`);
+    await this.hooks.runPreHooks('create', actor, repositories, { item }, this.log);
 
     let inheritedMembership;
     let parentItem: Item | undefined = undefined;
     // TODO: HOOK?
     // check permission over parent
     if (parentId) {
-      log?.debug(`verify parent ${parentId} exists and has permission over it`);
+      this.log.debug(`verify parent ${parentId} exists and has permission over it`);
       parentItem = await this.get(actor, repositories, parentId, PermissionLevel.Write);
       inheritedMembership = await itemMembershipRepository.getInherited(parentItem, actor, true);
 
@@ -118,16 +126,16 @@ export class ItemService {
       }
     }
 
-    log?.debug(`create item ${item.name}`);
+    this.log.debug(`create item ${item.name}`);
     const createdItem = await itemRepository.post(item, actor, parentItem);
-    log?.debug(`item ${item.name} is created: ${createdItem}`);
+    this.log.debug(`item ${item.name} is created: ${createdItem}`);
 
     // create membership if inherited is less than admin
     if (
       !inheritedMembership ||
       PermissionLevelCompare.lt(inheritedMembership?.permission, PermissionLevel.Admin)
     ) {
-      log?.debug(`create membership for ${createdItem.id}`);
+      this.log.debug(`create membership for ${createdItem.id}`);
       await itemMembershipRepository.post({
         item: createdItem,
         member: actor,
@@ -137,7 +145,7 @@ export class ItemService {
     }
 
     if (parentId && parentItem) {
-      log?.debug(`update parent ${parentId} children order with new child`);
+      this.log.debug(`update parent ${parentId} children order with new child`);
       // add new item id in parent extra.folder.childrenOrder
       // the optional on "folder" is present to support legacy data where the extra might be an empty object
       const newChildrenOrder = [...(parentItem.extra.folder?.childrenOrder ?? []), createdItem.id];
@@ -146,8 +154,8 @@ export class ItemService {
       });
     }
 
-    log?.debug(`run posthook for ${createdItem.id}`);
-    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem }, log);
+    this.log.debug(`run posthook for ${createdItem.id}`);
+    await this.hooks.runPostHooks('create', actor, repositories, { item: createdItem }, this.log);
 
     // geolocation
     if (geolocation) {
@@ -652,6 +660,12 @@ export class ItemService {
       await this.hooks.runPostHooks('copy', actor, repositories, { original, copy });
       // copy geolocation
       await itemGeolocationRepository.copy(original, copy);
+      try {
+        // copy thumbnails
+        await this.thumbnailService.copyFolder(actor, { originalId: original.id, newId: copy.id });
+      } catch {
+        this.log.error('thumbnail could not be found,');
+      }
     }
 
     return copyRoot;

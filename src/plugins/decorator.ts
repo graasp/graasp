@@ -8,10 +8,12 @@ import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { ItemPublishedService } from '../services/item/plugins/published/service';
+import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service';
 import ItemService from '../services/item/service';
 import ItemMembershipService from '../services/itemMembership/service';
 import { StorageService } from '../services/member/plugins/storage/service';
 import { MemberService } from '../services/member/service';
+import { ThumbnailService } from '../services/thumbnail/service';
 import { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } from '../utils/config';
 import { FILE_ITEM_TYPE } from '../utils/config';
 
@@ -36,8 +38,13 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('members', { service: new MemberService() });
 
+  const thumbnailService = new ThumbnailService(fastify.files.service, true, 'thumbnails');
+  fastify.decorate('thumbnails', { service: thumbnailService });
+
+  const itemService = new ItemService(thumbnailService, fastify.log);
   fastify.decorate('items', {
-    service: new ItemService(),
+    service: itemService,
+    thumbnails: { service: new ItemThumbnailService(itemService, thumbnailService) },
     // the casting is necessary as we are not instanciating the other keys of the object yet ..
     // we might need to rethink our depencency order to remove the need for this cast
   } as typeof fastify.items);
