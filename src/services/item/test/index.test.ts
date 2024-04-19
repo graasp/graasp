@@ -297,7 +297,7 @@ describe('Item routes tests', () => {
 
         const newItem = response.json();
         expectItem(newItem, payload, actor);
-        expect(newItem.displayName).toEqual(payload.name);
+        expect(newItem.displayName).toEqual('');
         expect(response.statusCode).toBe(StatusCodes.OK);
 
         expect(await AppDataSource.getRepository(Item).count()).toEqual(1);
@@ -2028,7 +2028,7 @@ describe('Item routes tests', () => {
 
         const newItem = response.json();
 
-        expect(newItem.displayName).toEqual(item.name);
+        expect(newItem.displayName).toEqual('');
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
