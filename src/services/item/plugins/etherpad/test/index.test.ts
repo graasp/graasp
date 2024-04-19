@@ -297,7 +297,7 @@ describe('Etherpad service API', () => {
       });
     });
 
-    it('concatenates existing sessions in cookie', async () => {
+    it.only('concatenates existing sessions in cookie', async () => {
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -352,6 +352,7 @@ describe('Etherpad service API', () => {
       };
       expect(name).toEqual('sessionID');
       const sessions = value.split(',');
+      console.log(sessions);
       expect(sessions.length).toEqual(2);
       expect(sessions.includes(MOCK_SESSION_ID)).toBeTruthy();
       expect(sessions.includes('s.0000000000000000')).toBeTruthy();

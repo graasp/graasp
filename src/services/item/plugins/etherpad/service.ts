@@ -223,9 +223,8 @@ export class EtherpadItemService {
     if (valid.size > MAX_SESSIONS_IN_COOKIE) {
       const sortedRecent = Array.from(valid).sort((a, b) => {
         // we are guaranteed that a, b index valid sessions from above
-        const timeA = new Date((sessions[a] as AuthorSession).validUntil);
-        const timeB = new Date((sessions[b] as AuthorSession).validUntil);
-        console.log(timeA, timeB);
+        const timeA = new Date((sessions[a] as AuthorSession).validUntil).getTime() / 1000;
+        const timeB = new Date((sessions[b] as AuthorSession).validUntil).getTime() / 1000;
         // return inversed for most recent
         if (timeA < timeB) {
           return 1;
