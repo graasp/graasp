@@ -109,7 +109,7 @@ export class ItemRepository {
     const item = this.repository.create({
       id,
       name,
-      displayName: displayName ?? name,
+      displayName: displayName || name,
       description,
       type,
       extra: parsedExtra,
@@ -364,6 +364,10 @@ export class ItemRepository {
       if (Object.keys(newData.settings).length === 0) {
         delete newData.settings;
       }
+    }
+
+    if (newData.displayName === '') {
+      newData.displayName = item.name;
     }
 
     // TODO: check schema
