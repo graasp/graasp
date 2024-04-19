@@ -660,11 +660,17 @@ export class ItemService {
       await this.hooks.runPostHooks('copy', actor, repositories, { original, copy });
       // copy geolocation
       await itemGeolocationRepository.copy(original, copy);
-      try {
-        // copy thumbnails
-        await this.thumbnailService.copyFolder(actor, { originalId: original.id, newId: copy.id });
-      } catch {
-        this.log.error('thumbnail could not be found,');
+      // copy thumbnails if original has setting to true
+      if (original.settings.hasThumbnail) {
+        try {
+          // try to copy thumbnails, this might fail, so we wrap in a try-catch
+          await this.thumbnailService.copyFolder(actor, {
+            originalId: original.id,
+            newId: copy.id,
+          });
+        } catch {
+          this.log.error(`On item copy, thumbnail for ${original.id} could not be found.`);
+        }
       }
     }
 
