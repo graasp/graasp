@@ -1,5 +1,7 @@
 import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from '@graasp/sdk';
 
+import { NAME_REGEX } from '../../../../schemas/global';
+
 export const register = {
   body: {
     type: 'object',
@@ -9,7 +11,7 @@ export const register = {
         type: 'string',
         minLength: MIN_USERNAME_LENGTH,
         maxLength: MAX_USERNAME_LENGTH,
-        pattern: '^\\S+( \\S+)*$',
+        pattern: NAME_REGEX,
       },
       email: { type: 'string', format: 'email' },
       captcha: { type: 'string' },
