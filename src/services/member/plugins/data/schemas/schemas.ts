@@ -136,11 +136,11 @@ export const itemLikeSchema = buildObjectSchema({
 });
 export const itemLikeArraySchema = buildArraySchema(itemLikeSchema);
 
-export const itemMembership = buildObjectSchema({
+export const itemMembershipSchema = buildObjectSchema({
   id: STRING_TYPE,
   permission: STRING_TYPE,
   item: externalItemSchema,
   createdAt: DATE_TYPE,
   updatedAt: DATE_TYPE,
 });
-export const itemMembershipArraySchema = buildArraySchema(itemMembership);
+export const itemMembershipArraySchema = buildArraySchema(itemMembershipSchema);

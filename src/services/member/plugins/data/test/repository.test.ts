@@ -36,7 +36,7 @@ import {
   itemCategorySchema,
   itemFavoriteSchema,
   itemLikeSchema,
-  itemMembership,
+  itemMembershipSchema,
   itemSchema,
   messageMentionSchema,
   messageSchema,
@@ -301,7 +301,7 @@ describe('DataMember Export', () => {
       });
 
       const results = await ItemMembershipRepository.getForMemberExport(exportingActor.id);
-      expectNoLeaksAndEquality(results, memberships, itemMembership);
+      expectNoLeaksAndEquality(results, memberships, itemMembershipSchema);
     });
   });
 });
