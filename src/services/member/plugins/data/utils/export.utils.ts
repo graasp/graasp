@@ -204,14 +204,14 @@ export class RequestDataExportService {
     const lang = actor.lang;
     const t = this.mailer.translate(lang);
 
-    const text = t(MAIL.EXPORT_DATA_TEXT, {
+    const text = t(MAIL.EXPORT_MEMBER_DATA_TEXT, {
       days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
     });
     const html = `
         ${this.mailer.buildText(text)}
-        ${this.mailer.buildButton(link, t(MAIL.EXPORT_DATA_BUTTON_TEXT))}
+        ${this.mailer.buildButton(link, t(MAIL.EXPORT_MEMBER_DATA_BUTTON_TEXT))}
       `;
-    const title = t(MAIL.EXPORT_DATA_TITLE);
+    const title = t(MAIL.EXPORT_MEMBER_DATA_TITLE);
 
     const footer = this.mailer.buildFooter(lang);
 

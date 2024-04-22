@@ -26,7 +26,7 @@
   "FOOTER": "You are receiving this email because of your account on <a href=\"https://graasp.org\">Graasp</a>",
   "POWERED_BY": "Powered by <a href=\"https://graasp.org\">Graasp</a>.",
   "USER_AGREEMENTS_MAIL_TEXT": "* By clicking on <strong>{{signUpButtonText}}</strong>, you agree to the <a href=\"{{graaspLandingPageOrigin}}/terms\">terms of service</a> and the <a href=\"{{graaspLandingPageOrigin}}/privacy\">privacy policy</a>.",
-  "EXPORT_DATA_TEXT": "You requested to download all your data, here is the link to download the files. It will be available for {{days}} days",
-  "EXPORT_DATA_TITLE": "Export Data Download Link",
-  "EXPORT_DATA_BUTTON_TEXT": "Download"
+  "EXPORT_MEMBER_DATA_TEXT": "You requested to download all your data, here is the link to download the archive. It will be available for {{days}} days",
+  "EXPORT_MEMBER_DATA_TITLE": "Download your data",
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Download"
 }

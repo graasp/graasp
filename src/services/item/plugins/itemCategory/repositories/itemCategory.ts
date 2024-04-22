@@ -3,6 +3,7 @@ import { QueryFailedError } from 'typeorm';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MemberNotFound } from '../../../../../utils/errors';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { selectItemCategories } from '../../../../member/plugins/data/schemas/selects';
 import { Item } from '../../../entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
@@ -41,7 +42,8 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
 
   /**
    * Get itemCategory for a given member.
-   * @param id item's id
+   * @param memberId the id of the member.
+   * @returns an array of the item categories.
    */
   async getForMemberExport(memberId: string): Promise<ItemCategory[]> {
     if (!memberId) {
@@ -49,21 +51,7 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
     }
 
     return this.find({
-      select: {
-        id: true,
-        createdAt: true,
-        item: {
-          id: true,
-          name: true,
-          displayName: true,
-        },
-        category: {
-          // even when not select, category has an id...
-          id: true,
-          name: true,
-          type: true,
-        },
-      },
+      select: selectItemCategories,
       where: { creator: { id: memberId } },
       relations: { category: true, item: true },
     });

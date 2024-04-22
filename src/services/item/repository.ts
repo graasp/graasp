@@ -22,7 +22,9 @@ import {
   TooManyDescendants,
   UnexpectedError,
 } from '../../utils/errors';
+import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
+import { selectItems } from '../member/plugins/data/schemas/selects';
 import { mapById } from '../utils';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
@@ -296,28 +298,18 @@ export class ItemRepository {
    * @returns an array of items created by the actor.
    */
   async getForMemberExport(memberId: string): Promise<Item[]> {
-    return this.repository
-      .createQueryBuilder('item')
-      .select([
-        'item.id',
-        'item.name',
-        'item.type',
-        'item.description',
-        'item.path',
-        'item.extra',
-        'item.settings',
-        'item.lang',
-        'item.displayName',
-        'item.createdAt',
-        'item.updatedAt',
-        'item.deletedAt',
-        'item.id',
-        'item.name',
-        'creator.name',
-      ])
-      .innerJoin('item.creator', 'creator', 'creator.id = :memberId', { memberId })
-      .orderBy('item.updated_at', 'DESC')
-      .getMany();
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.repository.find({
+      select: selectItems,
+      where: { creator: { id: memberId } },
+      order: { updatedAt: 'DESC' },
+      relations: {
+        creator: true,
+      },
+    });
   }
 
   async getOwn(memberId: string): Promise<Item[]> {

@@ -1,6 +1,8 @@
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Item } from '../../../item/entities/Item';
+import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 import { Member } from '../../../member/entities/member';
+import { selectItemLikes } from '../../../member/plugins/data/schemas/selects';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 
@@ -27,13 +29,24 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
     return itemLikes;
   },
 
+  /**
+   * Return all the likes created by the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of item likes.
+   */
   async getForMemberExport(memberId: string): Promise<ItemLike[]> {
-    const itemLikes = await this.createQueryBuilder('itemLike')
-      .select(['itemLike.id', 'itemLike.createdAt', 'item.id', 'item.name', 'item.displayName'])
-      .innerJoin('itemLike.item', 'item')
-      .where('itemLike.creator = :memberId', { memberId })
-      .getMany();
-    return itemLikes;
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.find({
+      select: selectItemLikes,
+      where: { creator: { id: memberId } },
+      order: { createdAt: 'DESC' },
+      relations: {
+        item: true,
+      },
+    });
   },
 
   /**

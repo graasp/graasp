@@ -20,7 +20,9 @@ import type { PackedItem } from '../item/ItemWrapper';
 import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
+import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
+import { selectItemMemberships } from '../member/plugins/data/schemas/selects';
 import { mapById } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
 import { getPermissionsAtItemSql } from './utils';
@@ -189,21 +191,24 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     return { data: items, totalCount };
   },
 
+  /**
+   * Return all the memberships related to the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of memberships.
+   */
   async getForMemberExport(memberId: string): Promise<ItemMembership[]> {
-    return this.createQueryBuilder('item_membership')
-      .select([
-        'item_membership.id',
-        'item_membership.permission',
-        'item_membership.createdAt',
-        'item_membership.updatedAt',
-        'item.id',
-        'item.name',
-        'item.displayName',
-      ])
-      .innerJoin('item_membership.item', 'item')
-      .where('member_id = :memberId', { memberId })
-      .orderBy('item_membership.updated_at', 'DESC')
-      .getMany();
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.find({
+      select: selectItemMemberships,
+      where: { member: { id: memberId } },
+      order: { updatedAt: 'DESC' },
+      relations: {
+        item: true,
+      },
+    });
   },
 
   async getForManyItems(

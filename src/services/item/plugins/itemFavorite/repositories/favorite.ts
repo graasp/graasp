@@ -2,6 +2,8 @@ import { EntityManager, Repository } from 'typeorm';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
+import { selectItemFavorites } from '../../../../member/plugins/data/schemas/selects';
 import { Item } from '../../../entities/Item';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
@@ -48,13 +50,24 @@ export class FavoriteRepository {
     return favorites;
   }
 
+  /**
+   * Return all the favorite items of the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of favorites.
+   */
   async getForMemberExport(memberId: string): Promise<ItemFavorite[]> {
-    return await this.repository
-      .createQueryBuilder('favorite')
-      .select(['favorite.id', 'favorite.createdAt', 'item.id', 'item.name', 'item.displayName'])
-      .innerJoin('favorite.item', 'item')
-      .where('favorite.member = :memberId', { memberId })
-      .getMany();
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.repository.find({
+      select: selectItemFavorites,
+      where: { member: { id: memberId } },
+      order: { createdAt: 'DESC' },
+      relations: {
+        item: true,
+      },
+    });
   }
 
   async post(itemId: string, memberId: string): Promise<ItemFavorite> {

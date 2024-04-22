@@ -4,6 +4,7 @@ import { MentionStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
+import { selectChatMentions } from '../../../member/plugins/data/schemas/selects';
 import { ChatMessage } from '../../chatMessage';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { ChatMention } from './chatMention';
@@ -38,8 +39,9 @@ export class ChatMentionRepository {
   }
 
   /**
-   * Retrieves all the mentions for the given memberId
-   * @param memberId Id of the member to retrieve
+   * Return all the chat mentions for the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of the chat mentions.
    */
   async getForMemberExport(memberId: string): Promise<ChatMention[]> {
     if (!memberId) {
@@ -47,21 +49,9 @@ export class ChatMentionRepository {
     }
 
     return this.repository.find({
-      select: {
-        id: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        message: {
-          // Be careful, if the ID is not selected, the returned message have an ID field but with the wrong UUID.
-          id: true,
-          creator: { name: true },
-          body: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
+      select: selectChatMentions,
       where: { member: { id: memberId } },
+      order: { createdAt: 'DESC' },
       relations: {
         message: {
           creator: true,
