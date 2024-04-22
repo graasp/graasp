@@ -21,6 +21,10 @@ export class ThumbnailService {
     return path.join(this.prefix, itemId, name);
   }
 
+  buildFolderPath(itemId: string) {
+    return path.join(this.prefix, itemId);
+  }
+
   async upload(actor: Member, id: string, file: Readable) {
     // upload all thumbnails in parallel
     await Promise.all(
@@ -67,5 +71,11 @@ export class ThumbnailService {
   async delete(actor: Member, { id, size }: { size: string; id: string }) {
     const filePath = this.buildFilePath(id, size);
     await this.fileService.delete(actor, filePath);
+  }
+
+  async copyFolder(actor: Member, { originalId, newId }: { originalId: string; newId: string }) {
+    const originalFolderPath = this.buildFolderPath(originalId);
+    const newFolderPath = this.buildFolderPath(newId);
+    await this.fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
   }
 }

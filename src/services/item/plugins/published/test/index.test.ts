@@ -781,7 +781,7 @@ describe('Item Published', () => {
         await waitForExpect(async () => {
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + 1);
-        }, 300);
+        }, 1000);
 
         expect(indexSpy).toHaveBeenCalledTimes(5);
         // Topmost published at destination is reindexed

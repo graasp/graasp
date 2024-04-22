@@ -1,12 +1,16 @@
 import { v4 } from 'uuid';
 
+import { FastifyBaseLogger } from 'fastify';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { ItemNotFound, MemberCannotAccess, MemberCannotWriteItem } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { Actor } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
+import { ThumbnailService } from '../../../thumbnail/service';
 import ItemService from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
@@ -17,12 +21,15 @@ import { ItemGeolocationService } from './service';
 jest.mock('../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
-const service = new ItemGeolocationService(new ItemService(), 'geolocation-key');
+const service = new ItemGeolocationService(
+  new ItemService({} as unknown as ThumbnailService, {} as unknown as FastifyBaseLogger),
+  'geolocation-key',
+);
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
 
 describe('ItemGeolocationService', () => {
   let app;
-  let actor;
+  let actor: Actor;
 
   beforeEach(async () => {
     ({ app, actor } = await build());
@@ -31,7 +38,7 @@ describe('ItemGeolocationService', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
+    actor = undefined;
     app.close();
   });
 
