@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import {
   DATE_TYPE,
   NULLABLE_TYPE,
@@ -8,6 +10,12 @@ import {
   buildArraySchema,
   buildObjectSchema,
 } from '../utils/schema.utils';
+
+export const exportMemberData = {
+  response: {
+    [StatusCodes.NO_CONTENT]: {},
+  },
+};
 
 export const externalItemSchema = buildObjectSchema({
   id: STRING_TYPE,

@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import { exportMemberData } from './schemas/schemas';
 import { DataMemberService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -17,6 +18,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post(
     '/',
     {
+      schema: exportMemberData,
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member }, reply) => {
@@ -29,8 +31,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           fileService,
           mailer,
         });
-
-        // TODO: no need to web sockets ?
       });
 
       // reply no content and let the server create the archive and send the mail
