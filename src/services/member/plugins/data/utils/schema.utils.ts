@@ -8,7 +8,7 @@ export type SchemaType = {
 type SchemaProperties = {
   [P in keyof SchemaType['properties']]: SchemaType['properties'][P];
 };
-type BuildSchemaOptions = { nullable?: boolean; requiredProps?: string[] };
+export type BuildSchemaOptions = { nullable?: boolean; requiredProps?: string[] };
 
 export const ONE_OF = (types: PropertyType[]) => ({
   oneOf: types,
@@ -28,11 +28,11 @@ const buildSchema = (
     return requiredProps ?? Object.keys(this.properties ?? {});
   },
   additionalProperties: false,
-  nullable,
+  nullable: nullable ?? false,
   ...schema,
 });
 
-export const buildObjectSchema = (properties: SchemaProperties, options: BuildSchemaOptions = {}) =>
+export const buildObjectSchema = (properties: SchemaProperties, options?: BuildSchemaOptions) =>
   buildSchema(
     {
       type: 'object',
