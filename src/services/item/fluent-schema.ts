@@ -14,8 +14,8 @@ import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Ordering, SortBy } from './types';
 
-const NOT_START_WITH_SPACE = /^\S[ \S]*$/;
-const EMPTY_OR_NOT_START_WITH_SPACE = /^(?:\S[ \S]*|$)$/;
+const NOT_START_WITH_SPACE = /^\S+( \S+)*$/;
+const EMPTY_OR_NOT_START_WITH_SPACE = /^(\S+( \S+)*)?$/;
 
 /**
  * for serialization
