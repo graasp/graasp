@@ -61,7 +61,7 @@
     "@fastify/view": "7.4.1",
     "@fastify/websocket": "7.2.0",
     "@graasp/etherpad-api": "2.1.1",
-    "@graasp/sdk": "github:graasp/graasp-sdk#493-add-gpt-enum",
+    "@graasp/sdk": "4.7.6",
     "@graasp/translations": "1.23.0",
     "@rapideditor/country-coder": "5.2.2",
     "@sentry/node": "7.64.0",

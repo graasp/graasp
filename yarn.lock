@@ -2024,9 +2024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk#493-add-gpt-enum":
-  version: 4.7.5
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=0e39fb2ecc2fa7ea5b30efc90426141e9c246159"
+"@graasp/sdk@npm:4.7.6":
+  version: 4.7.6
+  resolution: "@graasp/sdk@npm:4.7.6"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.1"
@@ -2035,7 +2035,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9
-  checksum: 10/3a96c50178228da1778a21163f10973ffda78b55b3386162d4ebb0071d26a27a37bf39abc9f2c4e5d8b0ca7fd3d4072d98d68d1c5b68f70f72a2464e4f36d806
+  checksum: 10/ac12c6438b0c71502b4b837f98b0dbc164c604a98c23064a5bc0ef233486be8012176fd4cbee3879db2cd468cefd5489678703709ae1b4e766f431ef3ac9f7b2
   languageName: node
   linkType: hard
 
@@ -6709,7 +6709,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "github:graasp/graasp-sdk#493-add-gpt-enum"
+    "@graasp/sdk": "npm:4.7.6"
     "@graasp/translations": "npm:1.23.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"
