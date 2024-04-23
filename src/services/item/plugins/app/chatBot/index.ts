@@ -8,7 +8,7 @@ import { create } from './schemas';
 import { ChatBotService } from './service';
 
 type QueryParameters = {
-  gptVersion: GPTVersion;
+  gptVersion?: GPTVersion;
 };
 
 const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
@@ -17,6 +17,7 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.register(async function (fastify) {
     fastify.post<{
       Params: { itemId: string };
+      app;
       Body: Array<ChatBotMessage>;
       Querystring: QueryParameters;
     }>(
@@ -28,7 +29,8 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
         { authTokenSubject: requestDetails, params: { itemId }, body: prompt, query },
         reply,
       ) => {
-        const gptVersion = query.gptVersion;
+        // default to 3.5 turbo as it is the cheapest model while still allowing a larger context window than gpt4
+        const gptVersion = query.gptVersion ?? GPTVersion.GPT_3_5_TURBO;
         const member = requestDetails?.memberId;
         const jwtItemId = requestDetails?.itemId;
         const repositories = buildRepositories();
