@@ -1,12 +1,11 @@
 import OpenAI from 'openai';
 
-import { ChatBotMessage } from '@graasp/sdk';
+import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
-import { OPENAI_API_KEY, OPENAI_GPT_VERSION, OPENAI_ORG_ID } from '../../../../../utils/config';
+import { OPENAI_API_KEY, OPENAI_ORG_ID } from '../../../../../utils/config';
 import { OpenAIBadVersion } from '../../../../../utils/errors';
-import { GPTVersion } from './interfaces/gptVersion';
 
-export const openAICompletion = async (body: Array<ChatBotMessage>, gptVersion?: GPTVersion) => {
+export const openAICompletion = async (body: Array<ChatBotMessage>, gptVersion: GPTVersion) => {
   validateGPTVersion(gptVersion);
   const openai = new OpenAI({
     apiKey: OPENAI_API_KEY,
@@ -15,7 +14,7 @@ export const openAICompletion = async (body: Array<ChatBotMessage>, gptVersion?:
 
   const completion = await openai.chat.completions.create({
     messages: body,
-    model: gptVersion ?? OPENAI_GPT_VERSION,
+    model: gptVersion,
   });
 
   return completion;

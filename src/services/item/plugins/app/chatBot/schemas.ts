@@ -1,6 +1,4 @@
-import { ChatbotRole } from '@graasp/sdk';
-
-import { GPTVersion } from './interfaces/gptVersion';
+import { ChatbotRole, GPTVersion } from '@graasp/sdk';
 
 const chatBotDefinition = {
   type: 'object',
