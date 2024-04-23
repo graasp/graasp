@@ -1,9 +1,8 @@
-import { ChatBotMessage, PermissionLevel } from '@graasp/sdk';
+import { ChatBotMessage, GPTVersion, PermissionLevel } from '@graasp/sdk';
 
 import { InvalidJWTItem, ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
-import { GPTVersion } from './interfaces/gptVersion';
 import { fetchOpenAI } from './utils';
 
 export class ChatBotService {
@@ -12,7 +11,7 @@ export class ChatBotService {
     repositories: Repositories,
     itemId: string,
     body: Array<ChatBotMessage>,
-    gptVersion?: GPTVersion,
+    gptVersion: GPTVersion,
   ) {
     const { memberRepository, itemRepository } = repositories;
 

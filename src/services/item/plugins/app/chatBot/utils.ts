@@ -1,6 +1,6 @@
 import { ChatCompletion } from 'openai/resources/chat';
 
-import { ChatBotMessage } from '@graasp/sdk';
+import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
 import {
   OpenAIBaseError,
@@ -9,10 +9,9 @@ import {
   OpenAIUnknownStopError,
 } from '../../../../../utils/errors';
 import { FinishReason } from './interfaces/finishReason';
-import { GPTVersion } from './interfaces/gptVersion';
 import { openAICompletion } from './openAICompletion';
 
-export const fetchOpenAI = async (body: ChatBotMessage[], gptVersion?: GPTVersion) => {
+export const fetchOpenAI = async (body: ChatBotMessage[], gptVersion: GPTVersion) => {
   try {
     const completion = await openAICompletion(body, gptVersion);
     const choice = completion.choices[0];

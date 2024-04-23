@@ -1,9 +1,9 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { ChatBotMessage } from '@graasp/sdk';
+import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
+import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
-import { GPTVersion } from './interfaces/gptVersion';
 import { create } from './schemas';
 import { ChatBotService } from './service';
 
@@ -29,8 +29,9 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
         { authTokenSubject: requestDetails, params: { itemId }, body: prompt, query },
         reply,
       ) => {
-        // default to 3.5 turbo as it is the cheapest model while still allowing a larger context window than gpt4
-        const gptVersion = query.gptVersion ?? GPTVersion.GPT_3_5_TURBO;
+        // default to 3.5 turbo / or the version specified in the env variable
+        // as it is the cheapest model while still allowing a larger context window than gpt4
+        const gptVersion = query.gptVersion ?? OPENAI_GPT_VERSION;
         const member = requestDetails?.memberId;
         const jwtItemId = requestDetails?.itemId;
         const repositories = buildRepositories();
