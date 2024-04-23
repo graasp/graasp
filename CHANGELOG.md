@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.32.0](https://github.com/graasp/graasp/compare/v1.31.0...v1.32.0) (2024-04-23)
+
+
+### Features
+
+* allow empty display name in POST or PATCH ([#974](https://github.com/graasp/graasp/issues/974)) ([e966d6f](https://github.com/graasp/graasp/commit/e966d6fced8fdd0a1f00760b53ee20e4b65e6c62))
+
+
+### Bug Fixes
+
+* apply user name limits ([#976](https://github.com/graasp/graasp/issues/976)) ([24ea66c](https://github.com/graasp/graasp/commit/24ea66cfb6bf083b54a93fbf5d32788c9d9a1d08))
+* copy item thumbnails ([#973](https://github.com/graasp/graasp/issues/973)) ([7e8894b](https://github.com/graasp/graasp/commit/7e8894b53f1f4e6c385b23bf07e30fbce6612c82))
+* use () instead of [] in spaces regex ([#978](https://github.com/graasp/graasp/issues/978)) ([b415e95](https://github.com/graasp/graasp/commit/b415e95e0346e50a9ec0e35eb29817047f3d20ab))
+
 ## [1.31.0](https://github.com/graasp/graasp/compare/v1.30.0...v1.31.0) (2024-04-17)
 
 
