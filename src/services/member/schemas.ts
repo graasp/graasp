@@ -1,6 +1,10 @@
-import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
+import {
+  MAX_TARGETS_FOR_READ_REQUEST,
+  MAX_USERNAME_LENGTH,
+  MIN_USERNAME_LENGTH,
+} from '@graasp/sdk';
 
-import { UUID_REGEX } from '../../schemas/global';
+import { NAME_REGEX, UUID_REGEX } from '../../schemas/global';
 
 const EMAIL_REGEX = '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$';
 
@@ -38,7 +42,12 @@ export default {
     partialMember: {
       type: 'object',
       properties: {
-        name: { type: 'string', minLength: 1, pattern: '^\\S+( \\S+)*$' },
+        name: {
+          type: 'string',
+          minLength: MIN_USERNAME_LENGTH,
+          maxLength: MAX_USERNAME_LENGTH,
+          pattern: NAME_REGEX,
+        },
         extra: { type: 'object', additionalProperties: true },
         enableSaveActions: { type: 'boolean' },
       },
