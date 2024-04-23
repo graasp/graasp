@@ -287,6 +287,22 @@ describe('Item routes tests', () => {
         expect(Object.keys(newItem.settings)).not.toContain(Object.keys(BAD_SETTING)[0]);
       });
 
+      it('Create successfully with empty display name', async () => {
+        const payload = FolderItemFactory({ displayName: '' });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: `/items`,
+          payload: { ...payload },
+        });
+
+        const newItem = response.json();
+        expectItem(newItem, payload, actor);
+        expect(newItem.displayName).toEqual('');
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        expect(await AppDataSource.getRepository(Item).count()).toEqual(1);
+      });
+
       it('Throw if geolocation is partial', async () => {
         const payload = FolderItemFactory();
         const response = await app.inject({
@@ -332,6 +348,17 @@ describe('Item routes tests', () => {
         });
         expect(response1.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
         expect(response1.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Bad request if display name is invalid', async () => {
+        const newItem = FolderItemFactory({ displayName: ' ' });
+        const response = await app.inject({
+          method: HttpMethod.Post,
+          url: '/items',
+          payload: newItem,
+        });
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
       it('Bad request if type is invalid', async () => {
@@ -1985,6 +2012,26 @@ describe('Item routes tests', () => {
         expect(newItem.settings.hasThumbnail).toBeFalsy();
       });
 
+      it('Update successfully with empty display name', async () => {
+        const { item } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { displayName: 'Not empty' },
+        });
+
+        const payload = { displayName: '' };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${item.id}`,
+          payload,
+        });
+
+        const newItem = response.json();
+
+        expect(newItem.displayName).toEqual('');
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
       it('Filter out bad setting when updating', async () => {
         const BAD_SETTING = { INVALID: 'Not a valid setting' };
         const VALID_SETTING = { descriptionPlacement: DescriptionPlacement.ABOVE };
@@ -2037,6 +2084,18 @@ describe('Item routes tests', () => {
           name: 'new name',
           extra: { key: 'false' },
         };
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${uuidv4()}`,
+          payload,
+        });
+
+        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('Bad Request if display name is invalid', async () => {
+        const payload = { displayName: ' ' };
         const response = await app.inject({
           method: HttpMethod.Patch,
           url: `/items/${uuidv4()}`,

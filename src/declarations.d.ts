@@ -25,6 +25,7 @@ import ItemMembershipService from './services/itemMembership/service';
 import { Actor, Member } from './services/member/entities/member';
 import { StorageService } from './services/member/plugins/storage/service';
 import { MemberService } from './services/member/service';
+import { ThumbnailService } from './services/thumbnail/service';
 import { WebsocketService } from './services/websockets/ws-service';
 
 declare module 'fastify' {
@@ -48,6 +49,9 @@ declare module 'fastify' {
     // should this be notifications?
     mentions: {
       service: MentionService;
+    };
+    thumbnails: {
+      service: ThumbnailService;
     };
     items: {
       extendCreateSchema: ReturnType<typeof create>;

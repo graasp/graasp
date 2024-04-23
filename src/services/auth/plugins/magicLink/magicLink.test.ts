@@ -3,7 +3,13 @@ import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
-import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
+import {
+  HttpMethod,
+  MAX_USERNAME_LENGTH,
+  MemberFactory,
+  RecaptchaAction,
+  RecaptchaActionType,
+} from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -97,6 +103,21 @@ describe('Auth routes tests', () => {
       expect(m?.userAgreementsDate).toBeDefined();
       expect(m?.userAgreementsDate).toBeInstanceOf(Date);
       expect(response.statusCode).toEqual(StatusCodes.NO_CONTENT);
+    });
+
+    it('Rejects if username is too long', async () => {
+      const email = 'some@email.com';
+      const name = Array(MAX_USERNAME_LENGTH + 1).fill(() => 'a');
+
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/register`,
+        payload: { email, name, captcha: MOCK_CAPTCHA },
+      });
+
+      const m = await MemberRepository.findOneBy({ email });
+      expect(m).toBeFalsy();
+      expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
 
     it('Save actions is disabled when explicitly asked', async () => {

@@ -117,7 +117,7 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   updatedAt: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
-  deletedAt: Date;
+  deletedAt: Date | null;
 
   // type dependent properties
   @Column('simple-json', { nullable: false })
