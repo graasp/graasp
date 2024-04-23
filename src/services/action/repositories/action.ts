@@ -4,8 +4,8 @@ import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } f
 
 import { AppDataSource } from '../../../plugins/datasource';
 import { MemberIdentifierNotFound } from '../../itemLogin/errors';
-import { actionSchema } from '../../member/plugins/data/schemas/schemas';
-import { schemaToSelectMapper } from '../../member/plugins/data/utils/selection.utils';
+import { actionSchema } from '../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../member/plugins/export-data/utils/selection.utils';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
 import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions';

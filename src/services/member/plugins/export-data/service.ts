@@ -24,7 +24,7 @@ import {
 } from './utils/anonymize.utils';
 import { RequestDataExportService } from './utils/export.utils';
 
-export class DataMemberService {
+export class ExportMemberDataService {
   async requestDataExport({
     actor,
     repositories,

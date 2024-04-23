@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
 import { exportMemberData } from './schemas/schemas';
-import { DataMemberService } from './service';
+import { ExportMemberDataService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
@@ -12,7 +12,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     mailer,
     db,
   } = fastify;
-  const dataMemberService = new DataMemberService();
+  const exportMemberDataService = new ExportMemberDataService();
 
   // download all related data to the given user
   fastify.post(
@@ -25,7 +25,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        await dataMemberService.requestDataExport({
+        await exportMemberDataService.requestDataExport({
           actor: member,
           repositories,
           fileService,

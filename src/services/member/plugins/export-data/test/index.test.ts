@@ -58,7 +58,7 @@ describe('Export Member Data Plugin Tests', () => {
     app.close();
   });
 
-  describe('POST /data-export', () => {
+  describe('POST /export-data', () => {
     it('Cannot post action when signed out', async () => {
       ({ app, actor } = await build({ member: null }));
 

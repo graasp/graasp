@@ -24,8 +24,8 @@ import {
 } from '../../utils/errors';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
-import { itemSchema } from '../member/plugins/data/schemas/schemas';
-import { schemaToSelectMapper } from '../member/plugins/data/utils/selection.utils';
+import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';

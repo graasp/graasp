@@ -4,8 +4,8 @@ import { AppDataVisibility, ItemType, Member, PermissionLevel, UUID } from '@gra
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { appDataSchema } from '../../../../member/plugins/data/schemas/schemas';
-import { schemaToSelectMapper } from '../../../../member/plugins/data/utils/selection.utils';
+import { appDataSchema } from '../../../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
 import { AppData, Filters } from './appData';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';

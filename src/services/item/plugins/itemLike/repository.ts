@@ -2,8 +2,8 @@ import { AppDataSource } from '../../../../plugins/datasource';
 import { Item } from '../../../item/entities/Item';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 import { Member } from '../../../member/entities/member';
-import { itemLikeSchema } from '../../../member/plugins/data/schemas/schemas';
-import { schemaToSelectMapper } from '../../../member/plugins/data/utils/selection.utils';
+import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 

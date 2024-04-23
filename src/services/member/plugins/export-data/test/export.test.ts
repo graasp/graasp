@@ -7,13 +7,13 @@ import { buildRepositories } from '../../../../../utils/repositories';
 import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
-import { DataMemberService } from '../service';
+import { ExportMemberDataService } from '../service';
 import { DataArchiver } from '../utils/export.utils';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
 const itemTestUtils = new ItemTestUtils();
-const dataMemberService = new DataMemberService();
+const exportMemberDataService = new ExportMemberDataService();
 
 const storageFolder = path.join(TMP_FOLDER, 'export-data');
 const archiveFileName = 'test-archiver';
@@ -55,7 +55,7 @@ describe('Export member data tests', () => {
   it('Create archive successfully', async () => {
     const writeFileSyncMock = jest.spyOn(fs, 'writeFileSync');
 
-    const dataToExport = await dataMemberService.getAllData(actor, buildRepositories());
+    const dataToExport = await exportMemberDataService.getAllData(actor, buildRepositories());
     const dataArchiver = new DataArchiver({ dataToExport, storageFolder, archiveFileName });
     const result = await dataArchiver.archiveData();
 

@@ -4,8 +4,8 @@ import { MentionStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
-import { messageMentionSchema } from '../../../member/plugins/data/schemas/schemas';
-import { schemaToSelectMapper } from '../../../member/plugins/data/utils/selection.utils';
+import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ChatMessage } from '../../chatMessage';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { ChatMention } from './chatMention';
