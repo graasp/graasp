@@ -4,7 +4,8 @@ import { AppDataVisibility, ItemType, Member, PermissionLevel, UUID } from '@gra
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { selectAppData } from '../../../../member/plugins/data/schemas/selects';
+import { appDataSchema } from '../../../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/data/utils/selection.utils';
 import { AppData, Filters } from './appData';
 import { AppDataNotFound, PreventUpdateAppDataFile } from './errors';
 import { InputAppData } from './interfaces/app-data';
@@ -71,7 +72,7 @@ export const AppDataRepository = AppDataSource.getRepository(AppData).extend({
     }
 
     return this.find({
-      select: selectAppData,
+      select: schemaToSelectMapper(appDataSchema),
       where: [{ member: { id: memberId } }, { creator: { id: memberId } }],
       order: { updatedAt: 'DESC' },
       relations: {

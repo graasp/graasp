@@ -3,7 +3,8 @@ import { EntityManager, Repository } from 'typeorm';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { selectItemFavorites } from '../../../../member/plugins/data/schemas/selects';
+import { itemFavoriteSchema } from '../../../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/data/utils/selection.utils';
 import { Item } from '../../../entities/Item';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
@@ -61,7 +62,7 @@ export class FavoriteRepository {
     }
 
     return this.repository.find({
-      select: selectItemFavorites,
+      select: schemaToSelectMapper(itemFavoriteSchema),
       where: { member: { id: memberId } },
       order: { createdAt: 'DESC' },
       relations: {

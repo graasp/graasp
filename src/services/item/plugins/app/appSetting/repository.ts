@@ -3,7 +3,8 @@ import { ItemType } from '@graasp/sdk';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { ItemNotFound } from '../../../../../utils/errors';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { selectAppSettings } from '../../../../member/plugins/data/schemas/selects';
+import { appSettingSchema } from '../../../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/data/utils/selection.utils';
 import { AppSetting } from './appSettings';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors';
 import { InputAppSetting } from './interfaces/app-setting';
@@ -73,7 +74,7 @@ export const AppSettingRepository = AppDataSource.getRepository(AppSetting).exte
     }
 
     return this.find({
-      select: selectAppSettings,
+      select: schemaToSelectMapper(appSettingSchema),
       where: { creator: { id: memberId } },
       order: { updatedAt: 'DESC' },
       relations: {

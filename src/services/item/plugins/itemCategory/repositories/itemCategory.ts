@@ -3,7 +3,8 @@ import { QueryFailedError } from 'typeorm';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MemberNotFound } from '../../../../../utils/errors';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
-import { selectItemCategories } from '../../../../member/plugins/data/schemas/selects';
+import { itemCategorySchema } from '../../../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/data/utils/selection.utils';
 import { Item } from '../../../entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
@@ -51,7 +52,7 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
     }
 
     return this.find({
-      select: selectItemCategories,
+      select: schemaToSelectMapper(itemCategorySchema),
       where: { creator: { id: memberId } },
       relations: { category: true, item: true },
     });

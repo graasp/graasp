@@ -24,7 +24,8 @@ import {
 } from '../../utils/errors';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
-import { selectItems } from '../member/plugins/data/schemas/selects';
+import { itemSchema } from '../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/data/utils/selection.utils';
 import { mapById } from '../utils';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
@@ -291,7 +292,6 @@ export class ItemRepository {
 
   /**
    * Return all the items where the creator is the given actor.
-   * // TODO: check if it is wanted !
    * It even returns the item if the actor is the creator but without permissions on it !
    *
    * @param memberId The creator of the items.
@@ -303,7 +303,7 @@ export class ItemRepository {
     }
 
     return this.repository.find({
-      select: selectItems,
+      select: schemaToSelectMapper(itemSchema),
       where: { creator: { id: memberId } },
       order: { updatedAt: 'DESC' },
       relations: {

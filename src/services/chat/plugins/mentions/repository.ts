@@ -4,7 +4,8 @@ import { MentionStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
-import { selectChatMentions } from '../../../member/plugins/data/schemas/selects';
+import { messageMentionSchema } from '../../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../member/plugins/data/utils/selection.utils';
 import { ChatMessage } from '../../chatMessage';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { ChatMention } from './chatMention';
@@ -49,7 +50,7 @@ export class ChatMentionRepository {
     }
 
     return this.repository.find({
-      select: selectChatMentions,
+      select: schemaToSelectMapper(messageMentionSchema),
       where: { member: { id: memberId } },
       order: { createdAt: 'DESC' },
       relations: {

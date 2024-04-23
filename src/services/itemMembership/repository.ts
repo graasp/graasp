@@ -22,7 +22,8 @@ import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
-import { selectItemMemberships } from '../member/plugins/data/schemas/selects';
+import { itemMembershipSchema } from '../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/data/utils/selection.utils';
 import { mapById } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
 import { getPermissionsAtItemSql } from './utils';
@@ -202,7 +203,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     }
 
     return this.find({
-      select: selectItemMemberships,
+      select: schemaToSelectMapper(itemMembershipSchema),
       where: { member: { id: memberId } },
       order: { updatedAt: 'DESC' },
       relations: {

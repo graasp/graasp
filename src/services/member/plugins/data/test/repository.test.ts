@@ -9,6 +9,7 @@ import { ChatMessage } from '../../../../chat/chatMessage';
 import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
 import { ChatMentionRepository } from '../../../../chat/plugins/mentions/repository';
 import { ChatMessageRepository } from '../../../../chat/repository';
+import { saveChatMessages } from '../../../../chat/test/fixtures';
 import { AppActionRepository } from '../../../../item/plugins/app/appAction/repository';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { AppDataRepository } from '../../../../item/plugins/app/appData/repository';
@@ -21,6 +22,7 @@ import {
   saveItemCategories,
 } from '../../../../item/plugins/itemCategory/test/fixtures';
 import { FavoriteRepository } from '../../../../item/plugins/itemFavorite/repositories/favorite';
+import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { ItemLikeRepository } from '../../../../item/plugins/itemLike/repository';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemRepository } from '../../../../item/repository';
@@ -41,7 +43,7 @@ import {
   messageMentionSchema,
   messageSchema,
 } from '../schemas/schemas';
-import { expectNoLeaksAndEquality, saveChatMessages, saveItemFavorites } from './fixtures';
+import { expectNoLeaksAndEquality } from './fixtures';
 
 /**
  * The repository tests ensure that no unwanted columns are leaked during the export.

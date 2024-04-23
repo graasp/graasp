@@ -5,7 +5,8 @@ import { ResultOf } from '@graasp/sdk';
 import { AppDataSource } from '../../plugins/datasource';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
-import { selectChatMessages } from '../member/plugins/data/schemas/selects';
+import { messageSchema } from '../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/data/utils/selection.utils';
 import { mapById } from '../utils';
 import { ChatMessage } from './chatMessage';
 import { ChatMessageNotFound } from './errors';
@@ -49,7 +50,7 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
     }
 
     return this.find({
-      select: selectChatMessages,
+      select: schemaToSelectMapper(messageSchema),
       where: { creator: { id: memberId } },
       order: { createdAt: 'DESC' },
       relations: {

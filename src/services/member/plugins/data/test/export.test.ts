@@ -4,11 +4,11 @@ import path from 'path';
 import build, { clearDatabase } from '../../../../../../test/app';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
+import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { saveMember } from '../../../test/fixtures/members';
 import { DataMemberService } from '../service';
 import { DataArchiver } from '../utils/export.utils';
-import { saveItemFavorites } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -25,7 +25,7 @@ const createOrReplaceFolder = (folder: string) => {
   fs.mkdirSync(folder, { recursive: true });
 };
 
-describe('archives data in ZIP', () => {
+describe('Export member data tests', () => {
   let app;
   let actor;
 

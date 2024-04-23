@@ -1,14 +1,6 @@
 import Ajv, { JSONSchemaType, Schema } from 'ajv';
 import fastJson from 'fast-json-stringify';
 
-import { AppDataSource } from '../../../../../plugins/datasource';
-import { ChatMessage } from '../../../../chat/chatMessage';
-import { ChatMention } from '../../../../chat/plugins/mentions/chatMention';
-import { ChatMessageRepository } from '../../../../chat/repository';
-import { Item } from '../../../../item/entities/Item';
-import { ItemFavorite } from '../../../../item/plugins/itemFavorite/entities/ItemFavorite';
-import { Member } from '../../../entities/member';
-
 export const expectNoLeaksAndEquality = <T extends object & { id: string }>(
   results: T[],
   expectations: T[],
@@ -54,7 +46,7 @@ const expectEquality = <T extends object & { id: string }>(
  * @param memberId The ID of the member ID who must be anonymized.
  * @param memberIdKey The prop name of the member ID of the given resource.
  */
-export const expectNotLeakMemberId = <T>({
+export const expectNoLeakMemberId = <T>({
   resource,
   exportActorId,
   memberId,
@@ -75,40 +67,4 @@ export const expectNotLeakMemberId = <T>({
       }).not.toThrow();
     }
   }
-};
-
-export const saveChatMessages = async ({
-  creator,
-  item,
-  mentionMember,
-}: {
-  creator: Member;
-  item: Item;
-  mentionMember?: Member;
-}) => {
-  const chatMentionRepo = AppDataSource.getRepository(ChatMention);
-  const chatMessages: ChatMessage[] = [];
-  const chatMentions: ChatMention[] = [];
-  // mock the mention format of react-mention used in the chat-box
-  const mentionMessage = mentionMember ? `<!@${mentionMember.id}>[${mentionMember.name}]` : null;
-
-  for (let i = 0; i < 3; i++) {
-    const body = `${mentionMessage} some-text-${i} <!@${creator.id}>[${creator.name}]`;
-    const message = await ChatMessageRepository.save({ item, creator, body });
-    chatMessages.push(message);
-    chatMentions.push(await chatMentionRepo.save({ member: mentionMember, message }));
-  }
-  return { chatMessages, chatMentions, mentionedMember: mentionMember };
-};
-
-export const saveItemFavorites = async ({ items, member }: { items: Item[]; member: Member }) => {
-  const repository = AppDataSource.getRepository(ItemFavorite);
-  const favorites: ItemFavorite[] = [];
-
-  for (const item of items) {
-    const favorite = await repository.save({ item, member });
-    favorites.push(favorite);
-  }
-
-  return favorites;
 };

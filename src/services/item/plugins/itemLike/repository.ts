@@ -2,7 +2,8 @@ import { AppDataSource } from '../../../../plugins/datasource';
 import { Item } from '../../../item/entities/Item';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 import { Member } from '../../../member/entities/member';
-import { selectItemLikes } from '../../../member/plugins/data/schemas/selects';
+import { itemLikeSchema } from '../../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../member/plugins/data/utils/selection.utils';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 
@@ -40,7 +41,7 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
     }
 
     return this.find({
-      select: selectItemLikes,
+      select: schemaToSelectMapper(itemLikeSchema),
       where: { creator: { id: memberId } },
       order: { createdAt: 'DESC' },
       relations: {

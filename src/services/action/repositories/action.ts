@@ -4,7 +4,8 @@ import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } f
 
 import { AppDataSource } from '../../../plugins/datasource';
 import { MemberIdentifierNotFound } from '../../itemLogin/errors';
-import { selectActions } from '../../member/plugins/data/schemas/selects';
+import { actionSchema } from '../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../member/plugins/data/utils/selection.utils';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
 import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions';
@@ -39,7 +40,7 @@ export class ActionRepository {
     }
 
     return this.repository.find({
-      select: selectActions,
+      select: schemaToSelectMapper(actionSchema),
       where: { member: { id: memberId } },
       order: { createdAt: 'DESC' },
       relations: {

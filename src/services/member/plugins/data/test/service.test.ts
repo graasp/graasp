@@ -5,6 +5,7 @@ import { AppDataSource } from '../../../../../plugins/datasource';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
 import { saveActions } from '../../../../action/test/fixtures/actions';
+import { saveChatMessages } from '../../../../chat/test/fixtures';
 import { saveAppActions } from '../../../../item/plugins/app/appAction/test/fixtures';
 import { saveAppData } from '../../../../item/plugins/app/appData/test/fixtures';
 import { saveAppSettings } from '../../../../item/plugins/app/appSetting/test/fixtures';
@@ -12,13 +13,14 @@ import {
   saveCategories,
   saveItemCategories,
 } from '../../../../item/plugins/itemCategory/test/fixtures';
+import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fixtures';
 import { saveItemLikes } from '../../../../item/plugins/itemLike/test/utils';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
 import { Member } from '../../../entities/member';
 import { saveMember } from '../../../test/fixtures/members';
 import { DataMemberService } from '../service';
-import { expectNotLeakMemberId, saveChatMessages, saveItemFavorites } from './fixtures';
+import { expectNoLeakMemberId } from './fixtures';
 
 /**
  * The service tests ensure that no member id of other members are leaked during the export.
@@ -42,7 +44,7 @@ const checkNoMemberIdLeaks = <T>({
   expect(results.length).toBeGreaterThan(0);
 
   results.forEach((resource) => {
-    expectNotLeakMemberId({
+    expectNoLeakMemberId({
       resource,
       exportActorId: exportingActor.id,
       memberId: randomUser.id,

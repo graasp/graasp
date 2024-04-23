@@ -4,7 +4,8 @@ import { ResultOf } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
-import { selectAppActions } from '../../../../member/plugins/data/schemas/selects';
+import { appActionSchema } from '../../../../member/plugins/data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/data/utils/selection.utils';
 import { mapById } from '../../../../utils';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppAction } from './appAction';
@@ -54,7 +55,7 @@ export const AppActionRepository = AppDataSource.getRepository(AppAction).extend
     }
 
     return this.find({
-      select: selectAppActions,
+      select: schemaToSelectMapper(appActionSchema),
       where: { member: { id: memberId } },
       order: { createdAt: 'DESC' },
       relations: {
