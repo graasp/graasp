@@ -39,7 +39,7 @@ export const exportActionsInArchive = async (args: {
   const archive = archiver('zip');
   archive.pipe(outputStream);
 
-  archive.directory(fileName);
+  archive.directory(fileName, false);
 
   try {
     const fileFolderPath = path.join(storageFolder, archiveDate);

@@ -14,7 +14,7 @@ import { saveMember, saveMembers } from '../../../../member/test/fixtures/member
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { CategoryRepository } from '../../itemCategory/repositories/category';
-import { saveCategories } from '../../itemCategory/test/index.test';
+import { saveCategories } from '../../itemCategory/test/fixtures';
 import { ItemLike } from '../../itemLike/itemLike';
 import { saveItemLikes } from '../../itemLike/test/utils';
 import { ItemTagNotFound } from '../../itemTag/errors';

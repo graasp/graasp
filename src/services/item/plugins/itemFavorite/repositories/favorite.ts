@@ -2,6 +2,9 @@ import { EntityManager, Repository } from 'typeorm';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { MemberIdentifierNotFound } from '../../../../itemLogin/errors';
+import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
 import { Item } from '../../../entities/Item';
 import { ItemFavorite } from '../entities/ItemFavorite';
 import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors';
@@ -46,6 +49,26 @@ export class FavoriteRepository {
       .where('favorite.member_id = :memberId', { memberId })
       .getMany();
     return favorites;
+  }
+
+  /**
+   * Return all the favorite items of the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of favorites.
+   */
+  async getForMemberExport(memberId: string): Promise<ItemFavorite[]> {
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.repository.find({
+      select: schemaToSelectMapper(itemFavoriteSchema),
+      where: { member: { id: memberId } },
+      order: { createdAt: 'DESC' },
+      relations: {
+        item: true,
+      },
+    });
   }
 
   async post(itemId: string, memberId: string): Promise<ItemFavorite> {
