@@ -6,6 +6,7 @@ import {
   ClientHostManager,
   Context,
   FileItemType,
+  GPTVersion,
   ItemType,
   LIBRARY_ITEMS_PREFIX,
   PLAYER_ITEMS_PREFIX,
@@ -15,7 +16,6 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
-import { GPTVersion } from '../services/item/plugins/app/chatBot/interfaces/gptVersion';
 
 enum Environment {
   production = 'production',
@@ -372,7 +372,14 @@ export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
   process.env.MEILISEARCH_STORE_LEGACY_PDF_CONTENT === 'true';
 
 // OpenAI
-export const OPENAI_GPT_VERSION = process.env.OPENAI_GPT_VERSION || GPTVersion.GPT_4;
+const getGptVersion = (): GPTVersion => {
+  const GPTVersionEnv = process.env.OPENAI_GPT_VERSION ?? '';
+  if ((Object.values(GPTVersion) as string[]).includes(GPTVersionEnv)) {
+    return GPTVersionEnv as GPTVersion;
+  }
+  return GPTVersion.GPT_3_5_TURBO;
+};
+export const OPENAI_GPT_VERSION = getGptVersion();
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;
 
