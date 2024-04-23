@@ -17,7 +17,7 @@ import { ItemTagRepository } from '../repository';
 jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
-const saveTagsForItem = async ({ item, creator }) => {
+export const saveTagsForItem = async ({ item, creator }) => {
   const itemTags: ItemTag[] = [];
   itemTags.push(await ItemTagRepository.save({ item, creator, type: ItemTagType.Hidden }));
 
