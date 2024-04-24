@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import memberController from './controller';
 import actionMemberPlugin from './plugins/action';
+import memberExportDataPlugin from './plugins/export-data';
 import memberProfilePlugin from './plugins/profile';
 import memberThumbnailPlugin from './plugins/thumbnail';
 import common from './schemas';
@@ -27,6 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.register(memberThumbnailPlugin);
       fastify.register(memberProfilePlugin);
+      fastify.register(memberExportDataPlugin);
     },
     { prefix: ROUTES_PREFIX },
   );

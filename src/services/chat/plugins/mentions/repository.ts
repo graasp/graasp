@@ -4,6 +4,8 @@ import { MentionStatus } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../../member/entities/member';
+import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ChatMessage } from '../../chatMessage';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors';
 import { ChatMention } from './chatMention';
@@ -33,6 +35,28 @@ export class ChatMentionRepository {
       relations: {
         message: { item: true, creator: true },
         member: true,
+      },
+    });
+  }
+
+  /**
+   * Return all the chat mentions for the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of the chat mentions.
+   */
+  async getForMemberExport(memberId: string): Promise<ChatMention[]> {
+    if (!memberId) {
+      throw new NoChatMentionForMember({ memberId });
+    }
+
+    return this.repository.find({
+      select: schemaToSelectMapper(messageMentionSchema),
+      where: { member: { id: memberId } },
+      order: { createdAt: 'DESC' },
+      relations: {
+        message: {
+          creator: true,
+        },
       },
     });
   }

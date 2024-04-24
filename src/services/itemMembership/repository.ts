@@ -20,7 +20,10 @@ import type { PackedItem } from '../item/ItemWrapper';
 import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
 import { ItemSearchParams, Ordering, SortBy } from '../item/types';
+import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
+import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { ItemMembership } from './entities/ItemMembership';
 import { getPermissionsAtItemSql } from './utils';
@@ -187,6 +190,26 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     const [im, totalCount] = await query.offset(skip).limit(limit).getManyAndCount();
     const items = im.map(({ item, permission }) => ({ ...item, permission }));
     return { data: items, totalCount };
+  },
+
+  /**
+   * Return all the memberships related to the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of memberships.
+   */
+  async getForMemberExport(memberId: string): Promise<ItemMembership[]> {
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.find({
+      select: schemaToSelectMapper(itemMembershipSchema),
+      where: { member: { id: memberId } },
+      order: { updatedAt: 'DESC' },
+      relations: {
+        item: true,
+      },
+    });
   },
 
   async getForManyItems(
