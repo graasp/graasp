@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.33.0](https://github.com/graasp/graasp/compare/v1.32.0...v1.33.0) (2024-04-24)
+
+
+### Features
+
+* export all user data ([#934](https://github.com/graasp/graasp/issues/934)) ([e1c818c](https://github.com/graasp/graasp/commit/e1c818cd7be025bc1ffcc1d2b67081cf7f44a643))
+
+
+### Bug Fixes
+
+* return hidden only for writer on export ([#984](https://github.com/graasp/graasp/issues/984)) ([b73c116](https://github.com/graasp/graasp/commit/b73c11605dc2268c91fbf5a08f2401a0ed2c95fc))
+* upgrade gpt versions ([#979](https://github.com/graasp/graasp/issues/979)) ([c7c5d53](https://github.com/graasp/graasp/commit/c7c5d5367f9a13cb5ba8efc88b5365f51f320029))
+
 ## [1.32.0](https://github.com/graasp/graasp/compare/v1.31.0...v1.32.0) (2024-04-23)
 
 
