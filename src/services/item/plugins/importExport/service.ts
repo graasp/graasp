@@ -321,7 +321,6 @@ export class ImportExportService {
       archiveRootPath: rootPath,
       archive,
     }).catch((error) => {
-      console.log(error);
       throw new UnexpectedExportError(error);
     });
 
