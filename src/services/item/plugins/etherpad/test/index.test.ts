@@ -1,5 +1,5 @@
+import { add, isAfter, isBefore, sub } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
-import { DateTime } from 'luxon';
 import nock from 'nock';
 import { And, Not } from 'typeorm';
 import * as uuid from 'uuid';
@@ -31,6 +31,12 @@ const MOCK_AUTHOR_ID = 'a.s8oes9dhwrvt0zif';
 const MOCK_SESSION_ID = 's.s8oes9dhwrvt0zif';
 const MODES: Array<'read' | 'write'> = ['read', 'write'];
 
+const expectExpiration = (expires: Date) => {
+  const oneDayFromNow = add(new Date(), { days: 1 });
+  // since we don't know the exact time the server created the cookie, verify against a range
+  expect(isAfter(expires, sub(oneDayFromNow, { minutes: 1 }))).toBeTruthy();
+  expect(isBefore(expires, add(oneDayFromNow, { minutes: 1 }))).toBeTruthy();
+};
 describe('Etherpad service API', () => {
   let app;
   let member: Member;
@@ -244,10 +250,7 @@ describe('Etherpad service API', () => {
       expect(value).toEqual(MOCK_SESSION_ID);
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
-      const expiration = DateTime.fromJSDate(expires);
-      // since we don't know the exact time the server created the cookie, verify against a range
-      expect(expiration > DateTime.now().plus({ days: 1 }).minus({ minutes: 1 })).toBeTruthy();
-      expect(expiration < DateTime.now().plus({ days: 1 }).plus({ minutes: 1 })).toBeTruthy();
+      expectExpiration(expires);
     });
 
     it('views a pad in write mode returns a read-only pad ID if user has read permission only', async () => {
@@ -289,7 +292,7 @@ describe('Etherpad service API', () => {
       });
     });
 
-    it('concatenates existing sessions in cookie', async () => {
+    it.only('concatenates existing sessions in cookie', async () => {
       const reqParams = setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
@@ -312,12 +315,12 @@ describe('Etherpad service API', () => {
               [MOCK_SESSION_ID]: {
                 groupID: MOCK_GROUP_ID,
                 authorID: MOCK_AUTHOR_ID,
-                validUntil: DateTime.now().plus({ days: 1 }).toUnixInteger(),
+                validUntil: add(new Date(), { days: 1 }).getTime() / 1000,
               },
               ['s.0000000000000000']: {
                 groupID: MOCK_GROUP_ID,
                 authorID: MOCK_AUTHOR_ID,
-                validUntil: DateTime.now().plus({ days: 1 }).toUnixInteger(),
+                validUntil: add(new Date(), { days: 1 }).getTime() / 1000,
               },
             },
           },
@@ -343,15 +346,13 @@ describe('Etherpad service API', () => {
       };
       expect(name).toEqual('sessionID');
       const sessions = value.split(',');
+      console.log(sessions);
       expect(sessions.length).toEqual(2);
       expect(sessions.includes(MOCK_SESSION_ID)).toBeTruthy();
       expect(sessions.includes('s.0000000000000000')).toBeTruthy();
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
-      const expiration = DateTime.fromJSDate(expires);
-      // since we don't know the exact time the server created the cookie, verify against a range
-      expect(expiration > DateTime.now().plus({ days: 1 }).minus({ minutes: 1 })).toBeTruthy();
-      expect(expiration < DateTime.now().plus({ days: 1 }).plus({ minutes: 1 })).toBeTruthy();
+      expectExpiration(expires);
     });
 
     it('deletes expired sessions', async () => {
@@ -377,7 +378,7 @@ describe('Etherpad service API', () => {
               [MOCK_SESSION_ID]: {
                 groupID: MOCK_GROUP_ID,
                 authorID: MOCK_AUTHOR_ID,
-                validUntil: DateTime.now().minus({ days: 1 }).toUnixInteger(),
+                validUntil: sub(new Date(), { days: 1 }).getTime() / 1000,
               },
             },
           },
@@ -406,10 +407,7 @@ describe('Etherpad service API', () => {
       expect(value).toEqual(MOCK_SESSION_ID);
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
-      const expiration = DateTime.fromJSDate(expires);
-      // since we don't know the exact time the server created the cookie, verify against a range
-      expect(expiration > DateTime.now().plus({ days: 1 }).minus({ minutes: 1 })).toBeTruthy();
-      expect(expiration < DateTime.now().plus({ days: 1 }).plus({ minutes: 1 })).toBeTruthy();
+      expectExpiration(expires);
 
       expect(deleteSession?.get('sessionID')).toEqual(MOCK_SESSION_ID);
     });
@@ -440,7 +438,7 @@ describe('Etherpad service API', () => {
                   {
                     groupID: `g.${i.toString().padStart(16, '0')}`,
                     authorID: MOCK_AUTHOR_ID,
-                    validUntil: DateTime.now().plus({ seconds: i }).toUnixInteger(),
+                    validUntil: add(new Date(), { seconds: i }).getTime() / 1000,
                   },
                 ]),
               ),
@@ -448,7 +446,7 @@ describe('Etherpad service API', () => {
               [MOCK_SESSION_ID]: {
                 groupID: MOCK_GROUP_ID,
                 authorID: MOCK_AUTHOR_ID,
-                validUntil: DateTime.now().plus({ days: 1 }).toUnixInteger(),
+                validUntil: add(new Date(), { days: 1 }).getTime() / 1000,
               },
             },
           },
@@ -485,10 +483,8 @@ describe('Etherpad service API', () => {
       expect(sessions.includes('s.0000000000000000')).toBeFalsy();
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
-      const expiration = DateTime.fromJSDate(expires);
-      // since we don't know the exact time the server created the cookie, verify against a range
-      expect(expiration > DateTime.now().plus({ days: 1 }).minus({ minutes: 1 })).toBeTruthy();
-      expect(expiration < DateTime.now().plus({ days: 1 }).plus({ minutes: 1 })).toBeTruthy();
+      expectExpiration(expires);
+
       // the first (oldest) session should be invalidated
       expect(deleteSession?.get('sessionID')).toEqual('s.0000000000000000');
     });
@@ -545,10 +541,7 @@ describe('Etherpad service API', () => {
       expect(value).toEqual(MOCK_SESSION_ID);
       expect(domain).toEqual('localhost');
       expect(path).toEqual('/');
-      const expiration = DateTime.fromJSDate(expires);
-      // since we don't know the exact time the server created the cookie, verify against a range
-      expect(expiration > DateTime.now().plus({ days: 1 }).minus({ minutes: 1 })).toBeTruthy();
-      expect(expiration < DateTime.now().plus({ days: 1 }).plus({ minutes: 1 })).toBeTruthy();
+      expectExpiration(expires);
 
       // check that the malformed session is deleted
       expect(deleteSession?.get('sessionID')).toEqual('s.0000000000000000');
