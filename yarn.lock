@@ -2024,9 +2024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.7.6":
+"@graasp/sdk@https://github.com/graasp/graasp-sdk.git#498-add-member-login-action-trigger":
   version: 4.7.6
-  resolution: "@graasp/sdk@npm:4.7.6"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=a601d40a09c061b8d68a0da696eca1f1e5328862"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.1"
@@ -2035,7 +2035,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9
-  checksum: 10/ac12c6438b0c71502b4b837f98b0dbc164c604a98c23064a5bc0ef233486be8012176fd4cbee3879db2cd468cefd5489678703709ae1b4e766f431ef3ac9f7b2
+  checksum: 10/9ea165ed7c41bfb364748403616655939bc8255a4721cb4ac27ea20c6d0c3e2e6b0e1464fba4680f81418e516da2fd16039afe5ad898939a9e29522a0cffc413
   languageName: node
   linkType: hard
 
@@ -6727,7 +6727,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.7.6"
+    "@graasp/sdk": "https://github.com/graasp/graasp-sdk.git#498-add-member-login-action-trigger"
     "@graasp/translations": "npm:1.23.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"

@@ -4,6 +4,7 @@ import { promisify } from 'util';
 
 import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
+import { ActionTriggers, Context } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { JWT_SECRET } from '../../../../utils/config';
@@ -37,12 +38,21 @@ export class MagicLinkService {
   }
 
   async login(actor: Actor, repositories: Repositories, body, lang = DEFAULT_LANG, url?: string) {
-    const { memberRepository } = repositories;
+    const { memberRepository, actionRepository } = repositories;
     const { email } = body;
     const member = await memberRepository.getByEmail(email);
 
     if (member) {
       await this.fastify.generateLoginLinkAndEmailIt(member, { lang, url });
+      const actions = [
+        {
+          member,
+          type: ActionTriggers.MemberLogin,
+          view: Context.Unknown,
+          extra: {},
+        },
+      ];
+      await actionRepository.postMany(actions);
     } else {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });
