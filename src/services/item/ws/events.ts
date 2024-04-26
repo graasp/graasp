@@ -9,6 +9,8 @@ import { Item } from '../entities/Item';
 export const itemTopic = 'item';
 // changes on items of given user
 export const memberItemsTopic = 'item/member';
+// changes on items of given user
+export const copyItemsTopic = 'item/copy';
 
 /**
  * All websocket events for items will have this shape
@@ -64,104 +66,35 @@ export const ChildItemEvent = (op: ChildItemEvent['op'], item: Item): ChildItemE
 });
 
 /**
- * Events that affect root items the user has access to
- */
-interface AccessibleItemsEvent extends ItemEvent {
-  kind: 'accessible';
-  op: 'create' | 'delete' | 'update';
-  item: Item;
-}
-/**
- * Factory of AccessibleItemsEvent
- * @param op operation of the event
- * @param item  value of the item for this event
- * @returns instance of accessible items event
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const AccessibleItemsEvent = (
-  op: OwnItemsEvent['op'],
-  item: Item,
-): AccessibleItemsEvent => ({
-  kind: 'accessible',
-  op,
-  item,
-});
-
-/**
- * Events that affect own items of given user
- */
-interface OwnItemsEvent extends ItemEvent {
-  kind: 'own';
-  op: 'create' | 'delete' | 'update';
-  item: Item;
-}
-/**
- * Factory of OwnItemsEvent
- * @param op operation of the event
- * @param item  value of the item for this event
- * @returns instance of own items event
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const OwnItemsEvent = (op: OwnItemsEvent['op'], item: Item): OwnItemsEvent => ({
-  kind: 'own',
-  op,
-  item,
-});
-
-/**
- * Events that affect shared items of given user
- */
-interface SharedItemsEvent extends ItemEvent {
-  kind: 'shared';
-  op: 'create' | 'delete' | 'update';
-  item: Item;
-}
-
-/**
- * Factory of SharedItemsEvent
- * @param op operation of the event
- * @param item  value of the item for this event
- * @returns instance of shared items event
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const SharedItemsEvent = (op: SharedItemsEvent['op'], item: Item): SharedItemsEvent => ({
-  kind: 'shared',
-  op,
-  item,
-});
-
-/**
  * Events from asynchronous background operations on given items
  */
 interface ItemOpFeedbackEvent {
   kind: 'feedback';
-  op: 'update' | 'delete' | 'move' | 'copy' | 'export' | 'recycle' | 'restore' | 'validate';
+  // op: 'update' | 'delete' | 'move' | 'export' | 'recycle' | 'restore' | 'validate';
   resource: Item['id'][];
+  // result:
+  //   | {
+  //       error: Error;
+  //     }
+  //   | ResultOf<Item>;
+}
+
+type CopyEvent = ItemOpFeedbackEvent & {
+  op: 'copy';
   result:
     | {
         error: Error;
       }
-    | ResultOf<Item>;
-}
+    | { items: Item[]; copies: Item[] };
+};
 
-/**
- * Factory of ItemOpFeedbackEvent
- * @param op operation of the event
- * @param resource original item ids on which the operation was performed
- * @param result result of the asynchronous operation
- * @returns
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const ItemOpFeedbackEvent = (
-  op: ItemOpFeedbackEvent['op'],
-  resource: ItemOpFeedbackEvent['resource'],
-  result: ItemOpFeedbackEvent['result'],
-): ItemOpFeedbackEvent => ({
-  kind: 'feedback',
-  op,
-  resource,
-  result: result['error']
-    ? // monkey patch because somehow JSON.stringify(e: Error) will always result in {}
-      { error: { name: result['error'].name, message: result['error'].message } }
-    : result,
-});
+type MoveEvent = ItemOpFeedbackEvent & {
+  op: 'move';
+  result:
+    | {
+        error: Error;
+      }
+    | { items: Item[]; moved: Item[] };
+};
+
+export type ItemOpFeedbackEventType = CopyEvent | MoveEvent;

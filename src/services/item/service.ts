@@ -588,7 +588,7 @@ export class ItemService {
       destination: result,
     });
 
-    return result;
+    return { item, moved: result };
   }
 
   // TODO: optimize
@@ -597,10 +597,10 @@ export class ItemService {
       throw new UnauthorizedMember(actor);
     }
 
-    const items = await Promise.all(
+    const results = await Promise.all(
       itemIds.map((id) => this.move(actor, repositories, id, toItemId)),
     );
-    return items;
+    return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
   }
 
   /**
@@ -710,7 +710,7 @@ export class ItemService {
       }
     }
 
-    return copyRoot;
+    return { item, copy: copyRoot };
   }
 
   // TODO: optimize
@@ -720,8 +720,10 @@ export class ItemService {
     itemIds: string[],
     args: { parentId?: UUID },
   ) {
-    const items = await Promise.all(itemIds.map((id) => this.copy(actor, repositories, id, args)));
-    return items;
+    const results = await Promise.all(
+      itemIds.map((id) => this.copy(actor, repositories, id, args)),
+    );
+    return { items: results.map(({ item }) => item), copies: results.map(({ item }) => item) };
   }
 }
 
