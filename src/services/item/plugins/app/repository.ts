@@ -12,11 +12,11 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
     return this.findBy({ publisher: { id: publisherId } });
   },
 
-  async getMostUsedApps(memberId: string) {
+  async getMostUsedApps(memberId: string): Promise<{ url: string; name: string; nbr: number }[]> {
     return this.createQueryBuilder('app')
       .leftJoin('item', "item.extra::json->>'app'->>'url' = app.url")
       .select('item.creator_id', memberId)
-      .addselect('app.url', 'url')
+      .addSelect('app.url', 'url')
       .addSelect('app.name', 'name')
       .addSelect('COUNT(item.id)', 'nbr')
       .groupBy('app.url')

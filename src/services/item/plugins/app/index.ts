@@ -117,14 +117,12 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         return aS.getAllApps(member, buildRepositories(), publisherId);
       });
 
-      fastify.get(
-        '/most-used',
-        { schema: getMany },
-        async ({ member, authTokenSubject: requestDetails }) => {
-          const memberId = member ? member.id : requestDetails?.memberId;
-          return aS.getMostUsedApps(member, buildRepositories(), memberId as string);
-        },
-      );
+      fastify.get('/most-used', { schema: getMany }, async ({ member }) => {
+        if (!member) {
+          throw new Error('The user is not authenticated.');
+        }
+        return aS.getMostUsedApps(member, buildRepositories());
+      });
 
       // generate api access token for member + (app-)item.
       fastify.post<{ Params: { itemId: string }; Body: { origin: string } & AppIdentification }>(
