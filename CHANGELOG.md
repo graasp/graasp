@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.34.0](https://github.com/graasp/graasp/compare/v1.33.0...v1.34.0) (2024-04-26)
+
+
+### Features
+
+* change mobile link ([#985](https://github.com/graasp/graasp/issues/985)) ([34692e8](https://github.com/graasp/graasp/commit/34692e8013709e4634d37ac4b1a265bf78c32222))
+
+
+### Bug Fixes
+
+* include maxwidth in settings schema ([#991](https://github.com/graasp/graasp/issues/991)) ([78352fb](https://github.com/graasp/graasp/commit/78352fbeeacb8ade52ad2bf48bfa23462cd16c82))
+
 ## [1.33.0](https://github.com/graasp/graasp/compare/v1.32.0...v1.33.0) (2024-04-24)
 
 
