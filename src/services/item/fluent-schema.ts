@@ -7,6 +7,7 @@ import {
   MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST,
+  MaxWidth,
   PermissionLevel,
 } from '@graasp/sdk';
 
@@ -35,7 +36,9 @@ const settings = S.object()
   .prop('enableSaveActions', S.boolean())
   // link settings
   .prop('showLinkIframe', S.boolean())
-  .prop('showLinkButton', S.boolean());
+  .prop('showLinkButton', S.boolean())
+  // file settings
+  .prop('maxWidth', S.enum(Object.values(MaxWidth)));
 
 export const partialMember = S.object()
   .additionalProperties(false)
