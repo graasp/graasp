@@ -723,7 +723,7 @@ export class ItemService {
     const results = await Promise.all(
       itemIds.map((id) => this.copy(actor, repositories, id, args)),
     );
-    return { items: results.map(({ item }) => item), copies: results.map(({ item }) => item) };
+    return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
   }
 }
 

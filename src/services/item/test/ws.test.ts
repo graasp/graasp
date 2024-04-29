@@ -220,7 +220,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('copy', [item.id], { items: [item], copies: [copied] }),
+          ItemOpFeedbackEvent('copy', [item.id], { copies: [copied], items: [item] }),
         );
       });
     });

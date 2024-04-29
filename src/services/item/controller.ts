@@ -381,10 +381,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const results = await itemService.copyMany(member, repositories, ids, {
+        return await itemService.copyMany(member, repositories, ids, {
           parentId,
         });
-        return results;
       })
         .then(({ items, copies }) => {
           if (member) {

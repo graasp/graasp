@@ -668,7 +668,7 @@ describe('Item Published', () => {
           permission: PermissionLevel.Admin,
         });
         await rawRepository.save({ item, type: ItemTagType.Public, creator: actor });
-        await new ItemPublishedRepository().post(member, item);
+        await new ItemPublishedRepository().post(actor, item);
 
         const { item: publishedFolder } = await testUtils.saveItemAndMembership({ member: actor });
         await rawRepository.save({

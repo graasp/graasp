@@ -341,7 +341,7 @@ export class InvitationService {
     }>();
     for await (const [groupName, users] of Object.entries(dataByGroupName)) {
       // Copy the template to the new location
-      const newItem = await this.itemService.copy(actor, repositories, templateId, {
+      const { copy: newItem } = await this.itemService.copy(actor, repositories, templateId, {
         parentId,
       });
       // edit name of parent element to match the name of the group
