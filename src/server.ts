@@ -1,10 +1,12 @@
+// sort-imports-ignore
+import { APP_VERSION, CORS_ORIGIN_REGEX, DEV, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
+
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 import registerAppPlugins from './app';
 import { initSentry } from './sentry';
 // import fastifyCompress from 'fastify-compress';
-import { APP_VERSION, CORS_ORIGIN_REGEX, DEV, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
 import { GREETING } from './utils/constants';
 
 const start = async () => {
