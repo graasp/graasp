@@ -31,6 +31,9 @@ import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
+const DEFAULT_COPY_SUFFIX = ' (2)';
+const IS_COPY_REGEX = /.*\s\(\d+\)/g;
+
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
 };
@@ -466,6 +469,7 @@ export class ItemRepository {
       ...originalParent,
       creator,
       parent: parentItem,
+      name: this._addCopySuffix(originalParent.name),
     });
     old2New.set(originalParent.id, { copy: copiedItem, original: originalParent });
 
@@ -502,6 +506,25 @@ export class ItemRepository {
     }
 
     return old2New;
+  }
+
+  /**
+   * Return a copy with a suffix of the string given in parameter.
+   * The suffix respect the format " (0)". "0" is a succint positive number starting at 2.
+   * If the string given in parameter already have a valid suffix, increase the number by 1.
+   * @param name string to copy.
+   * @returns a copy of the string given in parameter, with a suffix.
+   */
+  _addCopySuffix(name: string): string {
+    let result = name;
+    if (IS_COPY_REGEX.test(name)) {
+      const start = name.lastIndexOf('(') + 1;
+      const number = Number(name.substring(start, name.length - 1)) + 1;
+      result = name.substring(0, start) + number + ')';
+    } else {
+      result += DEFAULT_COPY_SUFFIX;
+    }
+    return result;
   }
 
   /**
