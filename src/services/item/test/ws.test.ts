@@ -8,7 +8,12 @@ import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
 import { FolderItem } from '../entities/Item';
 import { ItemRepository } from '../repository';
-import { ItemEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../ws/events';
+import {
+  ItemEvent,
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../ws/events';
 import { ItemTestUtils, expectItem } from './fixtures/items';
 
 // mock datasource
@@ -64,7 +69,7 @@ describe('Item websocket hooks', () => {
       }, 8000);
 
       expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('update', [item.id], { data: { [item.id]: updated }, errors: [] }),
+        ItemOpFeedbackEvent('update', [item.id], { [item.id]: updated }),
       );
     });
 
@@ -87,7 +92,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('update', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackErrorEvent('update', [item.id], new Error('mock error')),
         );
       });
     });
@@ -112,7 +117,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('delete', [item.id], { data: { [item.id]: item }, errors: [] }),
+          ItemOpFeedbackEvent('delete', [item.id], { [item.id]: item }),
         );
       });
     });
@@ -137,7 +142,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('delete', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackErrorEvent('delete', [item.id], new Error('mock error')),
         );
       });
     });
@@ -165,7 +170,7 @@ describe('Item websocket hooks', () => {
 
       await waitForExpect(() => {
         expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
-          ItemOpFeedbackEvent('move', [item.id], { data: { [item.id]: moved }, errors: [] }),
+          ItemOpFeedbackEvent('move', [item.id], { items: [item], moved: [moved] }),
         );
       });
     });
@@ -189,7 +194,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('move', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackErrorEvent('move', [item.id], new Error('mock error')),
         );
       });
     });
@@ -215,7 +220,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('copy', [item.id], { data: { [copied.id]: copied }, errors: [] }),
+          ItemOpFeedbackEvent('copy', [item.id], { items: [item], copies: [copied] }),
         );
       });
     });
@@ -239,7 +244,7 @@ describe('Item websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('copy', [item.id], { error: new Error('mock error') }),
+          ItemOpFeedbackErrorEvent('copy', [item.id], new Error('mock error')),
         );
       });
     });

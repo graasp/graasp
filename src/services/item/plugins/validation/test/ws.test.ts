@@ -8,7 +8,12 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../../ws/events';
+import {
+  ItemEvent,
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../../ws/events';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup';
 import { saveItemValidation } from './utils';
 
@@ -52,10 +57,7 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
       expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('validate', [item.id], {
-          data: { [item.id]: item },
-          errors: [],
-        }),
+        ItemOpFeedbackEvent('validate', [item.id], { [item.id]: item }),
       );
     });
   });
@@ -83,9 +85,7 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
       expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('validate', [item.id], {
-          error: new Error('mock error'),
-        }),
+        ItemOpFeedbackErrorEvent('validate', [item.id], new Error('mock error')),
       );
     });
   });

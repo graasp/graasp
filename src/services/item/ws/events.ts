@@ -1,7 +1,7 @@
 /**
  * Item websocket events are registered under these topics
  */
-import { ResultOf } from '@graasp/sdk';
+import { FeedBackOPType, ItemOpFeedbackEvent as ItemOpFeedbackEventType } from '@graasp/sdk';
 
 import { Item } from '../entities/Item';
 
@@ -66,35 +66,41 @@ export const ChildItemEvent = (op: ChildItemEvent['op'], item: Item): ChildItemE
 });
 
 /**
- * Events from asynchronous background operations on given items
+ * Factory of ItemOpFeedbackEvent
+ * @param op operation of the event
+ * @param resource original item ids on which the operation was performed
+ * @param result result of the asynchronous operation
+ * @returns
  */
-interface ItemOpFeedbackEvent {
-  kind: 'feedback';
-  // op: 'update' | 'delete' | 'move' | 'export' | 'recycle' | 'restore' | 'validate';
-  resource: Item['id'][];
-  // result:
-  //   | {
-  //       error: Error;
-  //     }
-  //   | ResultOf<Item>;
-}
+export const ItemOpFeedbackEvent = <T extends FeedBackOPType>(
+  op: T,
+  resource: ItemOpFeedbackEventType<Item, T>['resource'],
+  result: ItemOpFeedbackEventType<Item, T>['result'],
+  errors?: Error[],
+): ItemOpFeedbackEventType<Item, T> => ({
+  kind: 'feedback',
+  op,
+  resource,
+  result,
+  // monkey patch because somehow JSON.stringify(e: Error) will always result in {}
+  errors: errors ? errors.map((e) => ({ name: e.name, message: e.message })) : [],
+});
 
-type CopyEvent = ItemOpFeedbackEvent & {
-  op: 'copy';
-  result:
-    | {
-        error: Error;
-      }
-    | { items: Item[]; copies: Item[] };
-};
-
-type MoveEvent = ItemOpFeedbackEvent & {
-  op: 'move';
-  result:
-    | {
-        error: Error;
-      }
-    | { items: Item[]; moved: Item[] };
-};
-
-export type ItemOpFeedbackEventType = CopyEvent | MoveEvent;
+/**
+ * Factory of ItemOpFeedbackEvent for errors
+ * @param op operation of the event
+ * @param resource original item ids on which the operation was performed
+ * @param error error of the asynchronous operation
+ * @returns
+ */
+export const ItemOpFeedbackErrorEvent = <T extends FeedBackOPType>(
+  op: T,
+  resource: ItemOpFeedbackEventType<Item, T>['resource'],
+  error: Error,
+): ItemOpFeedbackEventType<Item, T> => ({
+  kind: 'feedback',
+  op,
+  resource,
+  // monkey patch because somehow JSON.stringify(e: Error) will always result in {}
+  errors: [{ name: error.name, message: error.message }],
+});

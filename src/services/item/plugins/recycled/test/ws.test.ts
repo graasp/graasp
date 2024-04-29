@@ -9,13 +9,11 @@ import { TestWsClient } from '../../../../websockets/test/test-websocket-client'
 import { setupWsApp } from '../../../../websockets/test/ws-app';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import {
-  AccessibleItemsEvent,
   ChildItemEvent,
   ItemEvent,
+  ItemOpFeedbackErrorEvent,
   ItemOpFeedbackEvent,
-  OwnItemsEvent,
   SelfItemEvent,
-  SharedItemsEvent,
   itemTopic,
   memberItemsTopic,
 } from '../../../ws/events';
@@ -726,10 +724,7 @@ describe('Recycle websocket hooks', () => {
 
       await waitForExpect(() => {
         expect(memberUpdates.find((v) => v.kind === 'feedback')).toMatchObject(
-          ItemOpFeedbackEvent('recycle', [item.id], {
-            data: { [item.id]: updatedItem },
-            errors: [],
-          }),
+          ItemOpFeedbackEvent('recycle', [item.id], { [item.id]: updatedItem }),
         );
       });
     });
@@ -754,9 +749,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(() => {
         const [feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('recycle', [item.id], {
-            error: new Error('mock error'),
-          }),
+          ItemOpFeedbackErrorEvent('recycle', [item.id], new Error('mock error')),
         );
       });
     });
@@ -786,10 +779,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(() => {
         const [_ownCreate, _recycleCreate, _accessibleCreate, feedbackUpdate] = memberUpdates;
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('restore', [item.id], {
-            data: { [item.id]: restored },
-            errors: [],
-          }),
+          ItemOpFeedbackEvent('restore', [item.id], { [item.id]: restored }),
         );
       });
     });
@@ -816,9 +806,7 @@ describe('Recycle websocket hooks', () => {
       await waitForExpect(() => {
         const feedbackUpdate = memberUpdates.find((update) => update.kind === 'feedback');
         expect(feedbackUpdate).toMatchObject(
-          ItemOpFeedbackEvent('restore', [item.id], {
-            error: new Error('mock error'),
-          }),
+          ItemOpFeedbackErrorEvent('restore', [item.id], new Error('mock error')),
         );
       });
     });

@@ -2024,9 +2024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@npm:4.7.6":
-  version: 4.7.6
-  resolution: "@graasp/sdk@npm:4.7.6"
+"@graasp/sdk@github:graasp/graasp-sdk#item-feedback-op-event":
+  version: 4.8.1
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=2c6b838d02f0a278443007731440403f97b741b1"
   dependencies:
     "@faker-js/faker": "npm:8.4.1"
     filesize: "npm:10.1.1"
@@ -2035,7 +2035,7 @@ __metadata:
   peerDependencies:
     date-fns: ^3
     uuid: ^9
-  checksum: 10/ac12c6438b0c71502b4b837f98b0dbc164c604a98c23064a5bc0ef233486be8012176fd4cbee3879db2cd468cefd5489678703709ae1b4e766f431ef3ac9f7b2
+  checksum: 10/5ef45d6b079f69a7e0148eee4e2883e72b231b840bde40b11c76122a89b4c3fb38b4172616f622a49abf4827490a49c3847c69a1dd4c8a40c0242a13e403eaaf
   languageName: node
   linkType: hard
 
@@ -6727,7 +6727,7 @@ __metadata:
     "@fastify/view": "npm:7.4.1"
     "@fastify/websocket": "npm:7.2.0"
     "@graasp/etherpad-api": "npm:2.1.1"
-    "@graasp/sdk": "npm:4.7.6"
+    "@graasp/sdk": "github:graasp/graasp-sdk#item-feedback-op-event"
     "@graasp/translations": "npm:1.23.0"
     "@rapideditor/country-coder": "npm:5.2.2"
     "@sentry/node": "npm:7.64.0"

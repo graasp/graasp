@@ -27,7 +27,7 @@ import {
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { getPostItemPayloadFromFormData } from './utils';
-import { ItemOpFeedbackEventType, memberItemsTopic } from './ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
@@ -260,7 +260,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             websockets.publish(
               memberItemsTopic,
               member.id,
-              ItemOpFeedbackEvent('update', ids, items),
+              ItemOpFeedbackEvent('update', ids, items.data, items.errors),
             );
           }
         })
@@ -270,7 +270,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             websockets.publish(
               memberItemsTopic,
               member.id,
-              ItemOpFeedbackEvent('update', ids, { error: e }),
+              ItemOpFeedbackErrorEvent('update', ids, e),
             );
           }
         });
@@ -302,10 +302,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             websockets.publish(
               memberItemsTopic,
               member.id,
-              ItemOpFeedbackEvent('delete', ids, {
-                data: Object.fromEntries(items.map((i) => [i.id, i])),
-                errors: [],
-              }),
+              ItemOpFeedbackEvent('delete', ids, Object.fromEntries(items.map((i) => [i.id, i]))),
             );
           }
         })
@@ -315,7 +312,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             websockets.publish(
               memberItemsTopic,
               member.id,
-              ItemOpFeedbackEvent('delete', ids, { error: e }),
+              ItemOpFeedbackErrorEvent('delete', ids, e),
             );
           }
         });
@@ -347,12 +344,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       })
         .then(({ items, moved }) => {
           if (member) {
-            websockets.publish<ItemOpFeedbackEventType>(memberItemsTopic, member.id, {
-              kind: 'feedback',
-              resource: ids,
-              op: 'move',
-              result: { items, moved },
-            });
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('move', ids, { items, moved }),
+            );
           }
         })
         .catch((e) => {
@@ -361,7 +357,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             websockets.publish(
               memberItemsTopic,
               member.id,
-              ItemOpFeedbackEvent('move', ids, { error: e }),
+              ItemOpFeedbackErrorEvent('move', ids, e),
             );
           }
         });
@@ -405,7 +401,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             websockets.publish(
               memberItemsTopic,
               member.id,
-              ItemOpFeedbackEvent('copy', ids, { error: e }),
+              ItemOpFeedbackErrorEvent('copy', ids, e),
             );
           }
         });

@@ -6,7 +6,7 @@ import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
 import { recycleWsHooks } from './ws/hooks';
@@ -67,7 +67,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('recycle', ids, items),
+            ItemOpFeedbackEvent('recycle', ids, items.data, items.errors),
           );
         }
         return items;
@@ -77,7 +77,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('recycle', ids, { error: e }),
+            ItemOpFeedbackErrorEvent('recycle', ids, e),
           );
         }
       });
@@ -105,7 +105,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('restore', ids, items),
+            ItemOpFeedbackEvent('restore', ids, items.data, items.errors),
           );
         }
       }).catch((e: Error) => {
@@ -114,7 +114,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('restore', ids, { error: e }),
+            ItemOpFeedbackErrorEvent('restore', ids, e),
           );
         }
       });

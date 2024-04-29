@@ -9,7 +9,11 @@ import { clearDatabase } from '../../../../../../test/app';
 import { TestWsClient } from '../../../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../../../websockets/test/ws-app';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../../ws/events';
+import {
+  ItemOpFeedbackErrorEvent,
+  ItemOpFeedbackEvent,
+  memberItemsTopic,
+} from '../../../ws/events';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 
 // mock datasource
@@ -80,7 +84,7 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
       expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('export', [item.id], { data: { [item.id]: item }, errors: [] }),
+        ItemOpFeedbackEvent('export', [item.id], { [item.id]: item }),
       );
     });
   });
@@ -102,7 +106,7 @@ describe('asynchronous feedback', () => {
     await waitForExpect(() => {
       const [feedbackUpdate] = memberUpdates;
       expect(feedbackUpdate).toMatchObject(
-        ItemOpFeedbackEvent('export', [item.id], { error: new Error('mock error') }),
+        ItemOpFeedbackErrorEvent('export', [item.id], new Error('mock error')),
       );
     });
   });
