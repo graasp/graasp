@@ -24,7 +24,6 @@ export function registerItemMembershipWsHooks(
   itemMembershipService.hooks.setPostHook('create', async (member, repositories, membership) => {
     // TODO: should it also check that there is no stronger or equal permission for this member on the item ancestors?
     // example: it should not be possible to create a weaker permission in the subtree of an ancestor that already has a membership
-    /** see similar to {@link recycleWsHooks} */
     websockets.publish(
       itemMembershipsTopic,
       membership.item.id,
@@ -39,7 +38,6 @@ export function registerItemMembershipWsHooks(
   itemMembershipService.hooks.setPostHook('update', async (member, repositories, membership) => {
     // TODO: should it check if the change is weaker than a membership on the item ancestors and thus "replace" it with the stronger ancestor one?
     // example: if an ancestor of this item has permission write, it should not be possible for this child item permission to be changed from admin to write
-    /** see similar to {@link recycleWsHooks} */
     websockets.publish(
       itemMembershipsTopic,
       membership.item.id,
@@ -56,7 +54,6 @@ export function registerItemMembershipWsHooks(
   itemMembershipService.hooks.setPostHook('delete', async (member, repositories, membership) => {
     // TODO: should it also check that there is no stronger or equal permission for this member on the item ancestors and thus "replace" it with the stronger ancestor one?
     // example: if an ancestor of this item has permission write, and the current permission being deleted is admin, then the item should have already received the former membership instead
-    /** see similar to {@link recycleWsHooks} */
     websockets.publish(
       itemMembershipsTopic,
       membership.item.id,

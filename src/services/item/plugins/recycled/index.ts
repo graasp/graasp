@@ -9,7 +9,6 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
-import { recycleWsHooks } from './ws/hooks';
 
 export interface RecycledItemDataOptions {
   /** Max number of items to recycle in a request.
@@ -28,10 +27,6 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   const { maxItemsInRequest = MAX_TARGETS_FOR_READ_REQUEST } = options;
 
   const recycleBinService = new RecycledBinService();
-
-  fastify.register(recycleWsHooks, {
-    recycleService: recycleBinService,
-  });
 
   fastify.addSchema(schemas);
 
