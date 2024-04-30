@@ -96,14 +96,15 @@ export const readPdfContent = async (source: string | URL) => {
 export const parseAndValidateField = <T>(
   content: string | undefined,
   validate: ValidateFunction<T>,
-): T => {
-  if (!content) {
-    throw new Error("Can't validate empty content");
+): T | undefined => {
+  if (content) {
+    console.log('check woops', content);
+    const parsedData = JSON.parse(content);
+    const isValid = validate(parsedData);
+    if (!isValid) {
+      throw new Error(validate.errors?.toString());
+    }
+    return parsedData;
   }
-  const parsedData = JSON.parse(content);
-  const isValid = validate(parsedData);
-  if (!isValid) {
-    throw new Error(validate.errors?.toString());
-  }
-  return parsedData;
+  return undefined;
 };
