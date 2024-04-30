@@ -5,6 +5,7 @@ import { v4 } from 'uuid';
 import {
   FileItemType,
   ItemType,
+  MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
   PermissionLevel,
   buildPathFromIds,
@@ -529,6 +530,17 @@ export class ItemRepository {
     } else {
       result += DEFAULT_COPY_SUFFIX;
     }
+
+    // If the copied name exceed the maximum item name length.
+    if (result.length > MAX_ITEM_NAME_LENGTH) {
+      // Then shorten the original name to match the maximum length.
+      const suffixStart = result.lastIndexOf('(');
+      const suffixLength = result.length - suffixStart + 1;
+      result =
+        result.substring(0, MAX_ITEM_NAME_LENGTH - suffixLength) +
+        result.substring(suffixStart - 1, result.length);
+    }
+
     return result;
   }
 

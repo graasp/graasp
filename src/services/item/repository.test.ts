@@ -1,8 +1,10 @@
+import { faker } from '@faker-js/faker/locale/en';
 import { v4 } from 'uuid';
 
 import {
   ItemType,
   LocalFileItemFactory,
+  MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
   MemberFactory,
   PermissionLevel,
@@ -692,6 +694,21 @@ describe('ItemRepository', () => {
       const result2 = await itemRepository.copy(copy, actor);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(item.name + ' (3)');
+    });
+
+    it('copy name do not exceed maximum length allowed.', async () => {
+      const item = await testUtils.saveItem({ actor });
+      item.name = faker.string.sample(MAX_ITEM_NAME_LENGTH);
+      itemRepository.patch(item.id, item);
+      const result = await itemRepository.copy(item, actor);
+      const copy = result.copyRoot;
+      expect(copy.name).toEqual(item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4) + ' (2)');
+
+      copy.name = item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4) + ' (9)';
+      itemRepository.patch(copy.id, copy);
+      const result2 = await itemRepository.copy(copy, actor);
+      const copy2 = result2.copyRoot;
+      expect(copy2.name).toEqual(item.name.substring(0, MAX_ITEM_NAME_LENGTH - 5) + ' (10)');
     });
   });
   describe('getItemSumSize', () => {
