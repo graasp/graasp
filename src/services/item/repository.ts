@@ -32,7 +32,7 @@ import { ItemChildrenParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
-const IS_COPY_REGEX = /.*\s\(\d+\)/g;
+const IS_COPY_REGEX = /.*?\s\(\d+\)/g;
 
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
@@ -512,15 +512,20 @@ export class ItemRepository {
    * Return a copy with a suffix of the string given in parameter.
    * The suffix respect the format " (0)". "0" is a succint positive number starting at 2.
    * If the string given in parameter already have a valid suffix, increase the number by 1.
+   * If the copied name exceed the maximum characters allowed, the original name will be shorten,
+   * the copied name will be equals to the maximum allowed.
    * @param name string to copy.
    * @returns a copy of the string given in parameter, with a suffix.
    */
   _addCopySuffix(name: string): string {
     let result = name;
+
+    // If the name already have a copy suffix
     if (IS_COPY_REGEX.test(name)) {
-      const start = name.lastIndexOf('(') + 1;
-      const number = Number(name.substring(start, name.length - 1)) + 1;
-      result = name.substring(0, start) + number + ')';
+      // Then fetch the number, and increase it.
+      const suffixStart = name.lastIndexOf('(') + 1;
+      const number = Number(name.substring(suffixStart, name.length - 1)) + 1;
+      result = name.substring(0, suffixStart) + number + ')';
     } else {
       result += DEFAULT_COPY_SUFFIX;
     }
