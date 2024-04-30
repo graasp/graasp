@@ -8,12 +8,23 @@ export const appSchema = S.object()
   .prop('url', S.string())
   .prop('extra', S.object().additionalProperties(true));
 
+export const mostUsedAppSchema = S.object()
+  .additionalProperties(false)
+  .prop('name', S.string())
+  .prop('url', S.string())
+  .prop('nbr', S.number());
+
 export const getMany = {
   response: {
     200: S.array().items(appSchema),
   },
 };
 
+export const getMostUsed = {
+  response: {
+    200: S.array().items(mostUsedAppSchema),
+  },
+};
 /**
  * Fluent schema definitions to extend core schemas
  */

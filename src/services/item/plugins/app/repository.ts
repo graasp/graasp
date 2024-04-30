@@ -13,15 +13,20 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
   },
 
   async getMostUsedApps(memberId: string): Promise<{ url: string; name: string; nbr: number }[]> {
-    return this.createQueryBuilder('app')
-      .leftJoin('item', "item.extra::json->>'app'->>'url' = app.url")
-      .select('item.creator_id', memberId)
-      .addSelect('app.url', 'url')
+    const data = await this.createQueryBuilder('app')
+      .innerJoin(
+        'item',
+        'item',
+        "item.extra::json->'app'->>'url' = app.url AND item.creator_id = :memberId",
+        { memberId },
+      )
+      .select('app.url', 'url')
       .addSelect('app.name', 'name')
       .addSelect('COUNT(item.id)', 'nbr')
-      .groupBy('app.url')
-      .addGroupBy('app.name')
-      .orderBy('nbr', 'DESC');
+      .groupBy('app.id, app.url, app.name')
+      .orderBy('nbr', 'DESC')
+      .getRawMany();
+    return data;
   },
 
   async isValidAppOrigin(appDetails: { key: string; origin: string }) {

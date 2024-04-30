@@ -13,7 +13,7 @@ import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
 import chatBotPlugin from './chatBot';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { createSchema, getMany, updateSchema } from './fluent-schema';
+import { createSchema, getMany, getMostUsed, updateSchema } from './fluent-schema';
 import common, { generateToken, getContext } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
@@ -117,12 +117,16 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         return aS.getAllApps(member, buildRepositories(), publisherId);
       });
 
-      fastify.get('/most-used', { schema: getMany }, async ({ member }) => {
-        if (!member) {
-          throw new Error('The user is not authenticated.');
-        }
-        return aS.getMostUsedApps(member, buildRepositories());
-      });
+      fastify.get(
+        '/most-used',
+        { schema: getMostUsed, preHandler: fastify.attemptVerifyAuthentication },
+        async ({ member }) => {
+          if (!member) {
+            throw new Error('This user is not authenticated.');
+          }
+          return aS.getMostUsedApps(member, buildRepositories());
+        },
+      );
 
       // generate api access token for member + (app-)item.
       fastify.post<{ Params: { itemId: string }; Body: { origin: string } & AppIdentification }>(
