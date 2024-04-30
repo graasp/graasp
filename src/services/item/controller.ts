@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import fastifyMultipart, { Multipart, MultipartFields, MultipartFile } from '@fastify/multipart';
+import fastifyMultipart, { MultipartFields } from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType, ItemTypeUnion, PermissionLevel } from '@graasp/sdk';

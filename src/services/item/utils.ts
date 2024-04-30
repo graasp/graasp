@@ -1,4 +1,4 @@
-import Ajv, { JSONSchemaType, Schema, ValidateFunction } from 'ajv';
+import { ValidateFunction } from 'ajv';
 import { readPdfText } from 'pdf-text-reader';
 
 import { ItemType, UUID, buildPathFromIds, isChildOf } from '@graasp/sdk';
@@ -98,7 +98,6 @@ export const parseAndValidateField = <T>(
   validate: ValidateFunction<T>,
 ): T | undefined => {
   if (content) {
-    console.log('check woops', content);
     const parsedData = JSON.parse(content);
     const isValid = validate(parsedData);
     if (!isValid) {
