@@ -1,3 +1,4 @@
+import Ajv, { JSONSchemaType, Schema, ValidateFunction } from 'ajv';
 import { readPdfText } from 'pdf-text-reader';
 
 import { ItemType, UUID, buildPathFromIds, isChildOf } from '@graasp/sdk';
@@ -90,4 +91,19 @@ export const readPdfContent = async (source: string | URL) => {
   } catch {
     return '';
   }
+};
+
+export const parseAndValidateField = <T>(
+  content: string | undefined,
+  validate: ValidateFunction<T>,
+): T => {
+  if (!content) {
+    throw new Error("Can't validate empty content");
+  }
+  const parsedData = JSON.parse(content);
+  const isValid = validate(parsedData);
+  if (!isValid) {
+    throw new Error(validate.errors?.toString());
+  }
+  return parsedData;
 };

@@ -44,6 +44,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       files: uploadMaxFileNb, // Max number of file fields (Default: Infinity).
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
+    attachFieldsToBody: true,
   });
 
   // "install" custom schema for validating file items update

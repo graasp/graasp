@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
@@ -19,7 +18,7 @@ import { Ordering, SortBy } from './types';
 /**
  * for serialization
  */
-const settings = S.object()
+export const settings = S.object()
   // Setting additional properties to false will only filter out invalid properties.
   .additionalProperties(false)
   // lang is deprecated
@@ -369,3 +368,5 @@ export default {
     },
   },
 };
+
+export const geolocation = S.object().prop('lat', S.number()).prop('lng', S.number());

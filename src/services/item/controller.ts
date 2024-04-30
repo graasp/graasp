@@ -2,10 +2,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { ItemTypeUnion, PermissionLevel } from '@graasp/sdk';
 
 import { IdParam, IdsParams, PaginationParams } from '../../types';
-import { UnauthorizedMember } from '../../utils/errors';
+import { NoFileProvided, UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
@@ -25,6 +25,8 @@ import {
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams } from './types';
+import { parseAndValidateField } from './utils';
+import { validateGeolocation, validateSettings } from './validation';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -58,6 +60,83 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           item: data,
           parentId,
           geolocation: data.geolocation,
+        });
+        await actionItemService.postPostAction(request, repositories, item);
+        return item;
+      });
+    },
+  );
+
+  // create folder element with thumbnail
+  fastify.post<{
+    Querystring: {
+      parentId?: string;
+    };
+    Body: {
+      name: string;
+      type: ItemTypeUnion;
+    } & Partial<{
+      description: string;
+      displayName: string;
+      // stringified version of the geolocation
+      geolocation: string;
+      // stringified version of the settings
+      settings: string;
+      // stringified version of the extra
+      extra: string;
+    }>;
+  }>(
+    '/with-thumbnail',
+    {
+      schema: items.extendCreateSchema(),
+      preHandler: fastify.verifyAuthentication,
+    },
+    async (request) => {
+      const {
+        member,
+        query: { parentId },
+        body,
+      } = request;
+
+      const {
+        name,
+        type,
+        displayName,
+        description,
+        settings: settingsRaw,
+        geolocation: geolocationRaw,
+        extra: extraRaw,
+      } = body;
+      const settings = parseAndValidateField<Item['settings']>(settingsRaw, validateSettings);
+      // const extra = parseAndValidateField<Item['extra']>(extraRaw);
+      // TODO: extra is not validated
+      const extra = JSON.parse(extraRaw ?? '');
+      const geolocation = parseAndValidateField<Pick<ItemGeolocation, 'lat' | 'lng'>>(
+        geolocationRaw,
+        validateGeolocation,
+      );
+
+      const thumbnail = await request.file();
+      if (!thumbnail) {
+        throw new NoFileProvided();
+      }
+
+      const itemPayload: Partial<Item> & Pick<Item, 'name' | 'type'> = {
+        name,
+        type,
+        displayName,
+        description,
+        settings,
+        extra,
+      };
+
+      return await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        const item = await itemService.post(member, repositories, {
+          item: itemPayload,
+          parentId,
+          geolocation,
+          thumbnail: thumbnail.file,
         });
         await actionItemService.postPostAction(request, repositories, item);
         return item;

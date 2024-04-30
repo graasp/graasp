@@ -1,3 +1,5 @@
+import { Readable } from 'stream';
+
 import { FastifyBaseLogger } from 'fastify';
 
 import {
@@ -79,6 +81,7 @@ export class ItemService {
       item: Partial<Item> & Pick<Item, 'name' | 'type'>;
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
+      thumbnail?: Readable;
     },
   ): Promise<Item> {
     if (!actor) {
@@ -87,7 +90,7 @@ export class ItemService {
 
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
-    const { item, parentId, geolocation } = args;
+    const { item, parentId, geolocation, thumbnail } = args;
 
     // name and type should exist
     if (!item.name || !item.type) {
@@ -162,6 +165,13 @@ export class ItemService {
       await itemGeolocationRepository.put(createdItem.path, geolocation);
     }
 
+    // thumbnail
+    if (thumbnail) {
+      await this.thumbnailService.upload(actor, createdItem.id, thumbnail);
+      await this.patch(actor, repositories, createdItem.id, {
+        settings: { hasThumbnail: true },
+      });
+    }
     return createdItem;
   }
 
