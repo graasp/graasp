@@ -3,8 +3,15 @@ coverage
 dist
 docs
 node_modules
-test
+**/test/**
+*.test.*
 types
+docker
+API Collections
+
+# We need this script file to prevent husky running in production.
+!.husky/install.mjs
+
 
 # Yarn files
 
