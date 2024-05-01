@@ -37,6 +37,7 @@ import {
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
+import { ThumbnailService } from '../../thumbnail/service';
 import { PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
@@ -501,6 +502,15 @@ describe('Item routes tests', () => {
             headObject: headObjectMock,
           };
         },
+      };
+    });
+    jest.mock('@aws-sdk/lib-storage', () => {
+      return {
+        Upload: jest.fn().mockImplementation(() => {
+          return {
+            done: uploadDoneMock,
+          };
+        }),
       };
     });
     beforeEach(async () => {
