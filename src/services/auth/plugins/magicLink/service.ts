@@ -49,7 +49,7 @@ export class MagicLinkService {
           member,
           type: ActionTriggers.MemberLogin,
           view: Context.Unknown,
-          extra: {},
+          extra: { type: 'email' },
         },
       ];
       await actionRepository.postMany(actions);

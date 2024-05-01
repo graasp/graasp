@@ -29,9 +29,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/actions',
     { schema: getMemberFilteredActions, preHandler: fastify.verifyAuthentication },
     async ({ member, query }) => {
-      return db.transaction(async (manager) => {
-        return actionMemberService.getFilteredActions(member, buildRepositories(manager), query);
-      });
+      return actionMemberService.getFilteredActions(member, buildRepositories(), query);
     },
   );
   // todo: delete self data

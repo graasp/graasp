@@ -10,7 +10,6 @@ import {
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
-import { ItemActionType } from '../../item/plugins/action/utils';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { getMonthBeforeNow } from '../../member/plugins/action/service';
 import { saveMember } from '../../member/test/fixtures/members';
@@ -87,21 +86,20 @@ describe('Action Repository', () => {
   describe('getForMember', () => {
     it('get actions for member with create and update action types within the last month', async () => {
       await saveActions(rawRepository, [
-        { member, type: ItemActionType.Create, createdAt: new Date().toISOString() },
-        { member, type: ItemActionType.Update, createdAt: new Date().toISOString() },
-        { member, type: ItemActionType.Copy, createdAt: new Date().toISOString() },
+        { member, createdAt: new Date().toISOString() },
+        { member, createdAt: new Date().toISOString() },
+        { member, createdAt: new Date('1999-07-08').toISOString() },
         { member, createdAt: new Date().toISOString() },
       ]);
 
       const r = new ActionRepository();
 
       const result = await r.getForMember(member.id, {
-        allowedTypes: [ItemActionType.Create, ItemActionType.Update],
         startDate: getMonthBeforeNow(),
         endDate: new Date(),
       });
 
-      expect(result.length).toEqual(2);
+      expect(result.length).toEqual(3);
     });
   });
 

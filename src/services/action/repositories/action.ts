@@ -59,19 +59,19 @@ export class ActionRepository {
    */
   async getForMember(
     memberId: string,
-    filters: { startDate: Date; endDate: Date; allowedTypes: string[] },
+    filters: { startDate: Date; endDate: Date },
   ): Promise<Action[]> {
     if (!memberId) {
       throw new MemberIdentifierNotFound();
     }
 
-    const { startDate, endDate, allowedTypes } = filters;
+    const { startDate, endDate } = filters;
 
     return this.repository.find({
-      select: schemaToSelectMapper(actionSchema),
+      // select: schemaToSelectMapper(actionSchema),
       where: {
         member: { id: memberId },
-        type: In(allowedTypes),
+        item: {},
         createdAt: Between(startDate, endDate),
       },
       order: { createdAt: 'DESC' },
