@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -16,7 +18,7 @@ const repository = new ItemGeolocationRepository();
 const testUtils = new ItemTestUtils();
 
 describe('ItemGeolocationRepository', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   beforeEach(async () => {

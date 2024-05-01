@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import fetch, { type Response } from 'node-fetch';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -35,7 +37,7 @@ jest.mock('../../../../plugins/datasource');
 
 const challenge = 'challenge';
 describe('Mobile Endpoints', () => {
-  let app;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
     ({ app } = await build({ member: null }));

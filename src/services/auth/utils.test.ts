@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { v4 } from 'uuid';
 
-import { FastifyRequest } from 'fastify';
+import { FastifyInstance, FastifyRequest } from 'fastify';
 
 import build, { clearDatabase } from '../../../test/app';
 import { AUTH_TOKEN_JWT_SECRET } from '../../utils/config';
@@ -24,7 +24,8 @@ const buildRequest = (memberId?: string) =>
   } as unknown as FastifyRequest & { member?: Member });
 
 describe('Auth utils', () => {
-  let app, member;
+  let app: FastifyInstance;
+  let member;
   beforeAll(async () => {
     ({ app } = await build());
 

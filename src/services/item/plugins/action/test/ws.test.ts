@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod } from '@graasp/sdk';
 
 import { clearDatabase } from '../../../../../../test/app';
@@ -47,7 +49,9 @@ jest.mock('@aws-sdk/lib-storage', () => {
 });
 
 describe('asynchronous feedback', () => {
-  let app, actor, address;
+  let app: FastifyInstance;
+  let actor;
+  let address;
   let ws: TestWsClient;
 
   beforeEach(async () => {

@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, ItemTagType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -34,7 +36,7 @@ const expectItemTags = async (itemTags, correctItemTags) => {
 };
 
 describe('Tags', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

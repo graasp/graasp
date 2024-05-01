@@ -1,6 +1,8 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -16,7 +18,7 @@ jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Member routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

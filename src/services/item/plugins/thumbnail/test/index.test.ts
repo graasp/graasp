@@ -4,6 +4,8 @@ import { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, ThumbnailSize } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -55,7 +57,7 @@ jest.mock('@aws-sdk/lib-storage', () => {
 });
 
 describe('Thumbnail Plugin Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

@@ -1,10 +1,13 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, ItemType, LinkItemFactory, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { Actor } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemRepository } from '../../repository';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
@@ -32,8 +35,8 @@ const iframelyResult = {
 // TODO: test iframely
 
 describe('Link Item tests', () => {
-  let app;
-  let actor;
+  let app: FastifyInstance;
+  let actor: Actor;
 
   beforeEach(() => {
     (fetch as jest.MockedFunction<typeof fetch>).mockImplementation(async () => {
@@ -45,7 +48,7 @@ describe('Link Item tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
+    actor = undefined;
     app.close();
   });
 

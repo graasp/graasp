@@ -3,6 +3,8 @@ import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import {
   DescriptionPlacement,
   FolderItemExtra,
@@ -91,7 +93,7 @@ const saveNbOfItems = async ({
 };
 
 describe('Item routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

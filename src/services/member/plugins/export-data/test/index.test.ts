@@ -2,6 +2,8 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -48,7 +50,7 @@ jest.mock('@aws-sdk/lib-storage', () => {
 });
 
 describe('Export Member Data Plugin Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

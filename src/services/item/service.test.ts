@@ -1,4 +1,4 @@
-import { FastifyBaseLogger } from 'fastify';
+import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import build, { clearDatabase } from '../../../test/app';
 import { buildRepositories } from '../../utils/repositories';
@@ -15,7 +15,7 @@ const mockedThumbnailService = {
 const service = new ItemService(mockedThumbnailService, {} as unknown as FastifyBaseLogger);
 
 describe('Item Service', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   beforeEach(async () => {

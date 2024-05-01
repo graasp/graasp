@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { FastifyBaseLogger } from 'fastify';
+import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
@@ -28,7 +28,7 @@ const service = new ItemGeolocationService(
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
 
 describe('ItemGeolocationService', () => {
-  let app;
+  let app: FastifyInstance;
   let actor: Actor;
 
   beforeEach(async () => {
