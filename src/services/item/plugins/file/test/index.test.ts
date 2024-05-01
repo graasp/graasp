@@ -603,7 +603,7 @@ describe('File Item routes tests', () => {
             expect(items1).toHaveLength(1);
 
             const items2 = await testUtils.rawItemRepository.find({
-              where: { name: item.name + ' (2)' },
+              where: { name: `${item.name} (2)` },
             });
             expect(items2).toHaveLength(1);
 

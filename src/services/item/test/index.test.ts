@@ -2717,7 +2717,7 @@ describe('Item routes tests', () => {
               relations: { creator: true },
             });
             const itemsInDb2 = await testUtils.rawItemRepository.find({
-              where: { name: name + ' (2)' },
+              where: { name: `${name} (2)` },
               relations: { creator: true },
             });
 
@@ -2777,7 +2777,7 @@ describe('Item routes tests', () => {
             expect(itemsInDb).toHaveLength(1);
 
             const itemsInDbCopied = await testUtils.rawItemRepository.findBy({
-              name: name + ' (2)',
+              name: `${name} (2)`,
             });
             expect(itemsInDbCopied).toHaveLength(1);
           }
@@ -2821,7 +2821,7 @@ describe('Item routes tests', () => {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb).toHaveLength(1);
 
-            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: name + ' (2)' });
+            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
             expect(itemsInDb2).toHaveLength(1);
           }
 
@@ -2916,7 +2916,7 @@ describe('Item routes tests', () => {
           for (const { name } of items) {
             const itemsInDb1 = await testUtils.rawItemRepository.findBy({ name });
             expect(itemsInDb1).toHaveLength(1);
-            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: name + ' (2)' });
+            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
             expect(itemsInDb2).toHaveLength(1);
           }
 
@@ -3013,7 +3013,7 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           for (const item of items) {
             const results = await testUtils.rawItemRepository.findBy({ name: item.name });
-            const copy = await testUtils.rawItemRepository.findBy({ name: item.name + ' (2)' });
+            const copy = await testUtils.rawItemRepository.findBy({ name: `${item.name} (2)` });
             if (!results.length && !copy.length) {
               throw new Error('item does not exist!');
             }

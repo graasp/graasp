@@ -526,7 +526,7 @@ export class ItemRepository {
       // Then fetch the number, and increase it.
       const suffixStart = name.lastIndexOf('(') + 1;
       const number = Number(name.substring(suffixStart, name.length - 1)) + 1;
-      result = name.substring(0, suffixStart) + number + ')';
+      result = `${name.substring(0, suffixStart)}${number})`;
     } else {
       result += DEFAULT_COPY_SUFFIX;
     }
