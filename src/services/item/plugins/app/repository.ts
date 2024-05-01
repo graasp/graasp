@@ -12,7 +12,7 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
     return this.findBy({ publisher: { id: publisherId } });
   },
 
-  async getMostUsedApps(memberId: string): Promise<{ url: string; name: string; nbr: number }[]> {
+  async getMostUsedApps(memberId: string): Promise<{ url: string; name: string; count: number }[]> {
     const data = await this.createQueryBuilder('app')
       .innerJoin(
         'item',
