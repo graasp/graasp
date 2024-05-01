@@ -490,6 +490,19 @@ describe('Item routes tests', () => {
   });
 
   describe('POST /items/with-thumbnail', () => {
+    const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+    const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
+    jest.mock('@aws-sdk/client-s3', () => {
+      return {
+        GetObjectCommand: jest.fn(),
+        S3: function () {
+          return {
+            putObject: uploadDoneMock,
+            headObject: headObjectMock,
+          };
+        },
+      };
+    });
     beforeEach(async () => {
       ({ app, actor } = await build());
     });
@@ -521,6 +534,7 @@ describe('Item routes tests', () => {
         actor,
       );
       expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(uploadDoneMock).toHaveBeenCalled();
     });
   });
 
