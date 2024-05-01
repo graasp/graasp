@@ -1,4 +1,7 @@
+import FormData from 'form-data';
+import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import path from 'node:path';
 import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
@@ -485,6 +488,42 @@ describe('Item routes tests', () => {
       });
     });
   });
+
+  describe('POST /items/with-thumbnail', () => {
+    beforeEach(async () => {
+      ({ app, actor } = await build());
+    });
+    it('Post item with thumbnail', async () => {
+      const imageStream = fs.createReadStream(path.resolve(__dirname, './fixtures/image.png'));
+      const itemName = 'Test Item';
+      const payload = new FormData();
+      payload.append('name', itemName);
+      payload.append('type', ItemType.FOLDER);
+      payload.append('description', '');
+      payload.append('file', imageStream);
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/with-thumbnail`,
+        payload,
+        headers: payload.getHeaders(),
+      });
+
+      const newItem = response.json();
+      console.log(newItem);
+      expectItem(
+        newItem,
+        FolderItemFactory({
+          name: itemName,
+          type: ItemType.FOLDER,
+          description: '',
+          settings: { hasThumbnail: true },
+        }),
+        actor,
+      );
+      expect(response.statusCode).toBe(StatusCodes.OK);
+    });
+  });
+
   describe('GET /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));

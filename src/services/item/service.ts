@@ -171,6 +171,8 @@ export class ItemService {
       await this.patch(actor, repositories, createdItem.id, {
         settings: { hasThumbnail: true },
       });
+      // set in the item
+      createdItem.settings = { hasThumbnail: true };
     }
     return createdItem;
   }
