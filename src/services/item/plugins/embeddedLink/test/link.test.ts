@@ -1,7 +1,7 @@
 import fetch, { Response } from 'node-fetch';
 
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN } from '../../../../../utils/config';
-import { checkEmbeddingAllowed, getLinkMetadata } from '../utils';
+import { EmbeddedLinkService } from '../service';
 import { FAKE_URL, FETCH_RESULT, expectedResult } from './fixtures';
 
 jest.mock('node-fetch');
@@ -18,10 +18,15 @@ export const mockHeaderResponse = (headers: { [key: string]: string }) => {
   );
 };
 
+const embeddedLinkService = new EmbeddedLinkService();
+
 describe('Tests retrieving link metadata', () => {
   it('Retrieve all metadata from URL', async () => {
     mockResponse({ json: async () => FETCH_RESULT } as Response);
-    const metadata = await getLinkMetadata(EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, FAKE_URL);
+    const metadata = await embeddedLinkService.getLinkMetadata(
+      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+      FAKE_URL,
+    );
     expect(metadata).toEqual(expectedResult);
   });
 });
@@ -30,45 +35,45 @@ describe('Tests allowed to embbed links in iFrame', () => {
   describe('Embedding is disallowed when X-Frame-Options is set', () => {
     it('Embedding is disallowed when X-FRAME-OPTIONS is DENY', async () => {
       mockHeaderResponse({ 'X-FRAME-OPTIONS': 'DENY' });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
     it('Embedding is disallowed when x-frame-options is deny', async () => {
       mockHeaderResponse({ 'x-frame-options': 'deny' });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
     it('Embedding is disallowed when X-FRAME-OPTIONS is SAMEORIGIN', async () => {
       mockHeaderResponse({ 'X-FRAME-OPTIONS': 'DENY' });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
     it('Embedding is disallowed when x-frame-options is sameorigin', async () => {
       mockHeaderResponse({ 'x-frame-options': 'sameorigin' });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
   });
 
   describe('Embedding is disallowed when Content-Security-Policy is set', () => {
     it('Embedding is disallowed when content-security-policy is none', async () => {
       mockHeaderResponse({ 'content-security-policy': "frame-ancestors 'none'" });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
     it('Embedding is disallowed when CONTENT-SECURITY-POLICY is NONE', async () => {
       mockHeaderResponse({ 'CONTENT-SECURITY-POLICY': "FRAME-ANCESTORS 'NONE'" });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
     it('Embedding is disallowed when content-security-policy is self', async () => {
       mockHeaderResponse({ 'content-security-policy': "frame-ancestors 'self'" });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
     it('Embedding is disallowed when CONTENT-SECURITY-POLICY is self', async () => {
       mockHeaderResponse({ 'CONTENT-SECURITY-POLICY': "FRAME-ANCESTORS 'SELF'" });
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(false);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(false);
     });
   });
 
   describe('Embedding is allowed when X-Frame-Options and CSP are not set', () => {
     it('Embedding is allowed', async () => {
       mockHeaderResponse({});
-      expect(await checkEmbeddingAllowed(FAKE_URL)).toBe(true);
+      expect(await embeddedLinkService.checkEmbeddingAllowed(FAKE_URL)).toBe(true);
     });
   });
 });

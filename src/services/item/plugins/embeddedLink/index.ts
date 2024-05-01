@@ -6,7 +6,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { createSchema } from './schemas';
-import { getLinkMetadata } from './utils';
+import { EmbeddedLinkService } from './service';
 
 interface GraaspEmbeddedLinkItemOptions {
   /** \<protocol\>://\<hostname\>:\<port\> */
@@ -18,6 +18,7 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   const {
     items: { extendCreateSchema, service: itemService },
   } = fastify;
+  const embeddedLinkService = new EmbeddedLinkService();
 
   if (!iframelyHrefOrigin) {
     throw new Error('graasp-embedded-link-item: mandatory options missing');
@@ -38,10 +39,8 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
     const { embeddedLink } = item.extra;
 
     const { url } = embeddedLink;
-    const { title, description, html, thumbnails, icons } = await getLinkMetadata(
-      iframelyHrefOrigin,
-      url,
-    );
+    const { title, description, html, thumbnails, icons } =
+      await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, url);
 
     // TODO: maybe all the code below should be moved to another place if it gets more complex
     if (title) {
