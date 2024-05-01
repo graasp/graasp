@@ -10,13 +10,6 @@ ARG ALPINE_VERSION=3.19
 # Variable passed as a build arg. Represents the tag or git sha used for the build
 ARG APP_VERSION 
 
-#######################
-### Node Base Image ###
-#######################
-# Download NodeJS Image to fetch a targeted NodeJS installation from arguments
-# This step is used to parallelize the yarn installation step.
-FROM node:${NODE_VERSION} AS base
-
 ##############################
 ### Build Application Step ###
 ##############################
@@ -60,7 +53,7 @@ COPY ./package.json ./
 COPY  ./.husky ./.husky
 
 # Install the application
-COPY --from=builder ./app/dist ./dist
 RUN yarn install --production
+COPY --from=builder ./app/dist ./dist
 
 CMD yarn start
