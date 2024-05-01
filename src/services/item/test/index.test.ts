@@ -490,32 +490,32 @@ describe('Item routes tests', () => {
   });
 
   describe('POST /items/with-thumbnail', () => {
-    const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
-    const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
-    jest.mock('@aws-sdk/client-s3', () => {
-      return {
-        GetObjectCommand: jest.fn(),
-        S3: function () {
-          return {
-            putObject: uploadDoneMock,
-            headObject: headObjectMock,
-          };
-        },
-      };
-    });
-    jest.mock('@aws-sdk/lib-storage', () => {
-      return {
-        Upload: jest.fn().mockImplementation(() => {
-          return {
-            done: uploadDoneMock,
-          };
-        }),
-      };
-    });
     beforeEach(async () => {
       ({ app, actor } = await build());
     });
     it('Post item with thumbnail', async () => {
+      const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+      const headObjectMock = jest.fn(async () => console.debug('headObjectMock'));
+      jest.mock('@aws-sdk/client-s3', () => {
+        return {
+          GetObjectCommand: jest.fn(),
+          S3: function () {
+            return {
+              putObject: uploadDoneMock,
+              headObject: headObjectMock,
+            };
+          },
+        };
+      });
+      jest.mock('@aws-sdk/lib-storage', () => {
+        return {
+          Upload: jest.fn().mockImplementation(() => {
+            return {
+              done: uploadDoneMock,
+            };
+          }),
+        };
+      });
       const imageStream = fs.createReadStream(path.resolve(__dirname, './fixtures/image.png'));
       const itemName = 'Test Item';
       const payload = new FormData();
