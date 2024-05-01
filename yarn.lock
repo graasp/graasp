@@ -6795,7 +6795,7 @@ __metadata:
     nock: "npm:13.5.4"
     node-fetch: "npm:2"
     nodemon: "npm:2.0.22"
-    openai: "npm:4.38.3"
+    openai: "npm:4.39.1"
     papaparse: "npm:^5.4.1"
     pdf-text-reader: "npm:3.0.2"
     pg: "npm:8.10.0"
@@ -9229,9 +9229,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:4.38.3":
-  version: 4.38.3
-  resolution: "openai@npm:4.38.3"
+"openai@npm:4.39.1":
+  version: 4.39.1
+  resolution: "openai@npm:4.39.1"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
@@ -9243,7 +9243,7 @@ __metadata:
     web-streams-polyfill: "npm:^3.2.1"
   bin:
     openai: bin/cli
-  checksum: 10/bbcfc5ce8280e9379c479c48b1f0a2715aef53ffad3736cc0c84cf79c364950f29760d6b38c9f89cb1ad0bf849f003059ca396854746caa372e7f9350ca789e7
+  checksum: 10/88a7a4c49db7d2f3a28b40acd709710d677ac58c57f38fd0cb9859c07852fc9de1a21d3b10e9b00c4fcba3131913aeae1f4dfdf1d017a4ee33ece820e59cdf56
   languageName: node
   linkType: hard
 
