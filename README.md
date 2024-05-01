@@ -32,12 +32,12 @@ In order to run the Graasp backend, it requires:
 
 ## Installation
 
-Graasp offers two ways to install the Graasp backend :
+Graasp offers two ways to run the Graasp backend :
 
-- [Docker](#docker-installation) (recommended) : this allows you to run a preconfigured environnement
-- [Local](#local-installation) : you'll need to install and configure all the required services
+- [DevContainer](#run-in-devcontainer) (recommended) : this allows you to run a preconfigured environnement
+- [Local](#run-in-local) : you'll need to install and configure all the required services
 
-### Docker installation
+### Run in DevContainer
 
 We recommend to set up the development environment using Docker, as it allows to use a preconfigured developement environnement.
 
@@ -66,21 +66,7 @@ Then install the required npm packages with `yarn install`. You should run this 
 > If the process is killed during the installation of the packages, you'll need to increase the memory limit for docker.  
 > To increase the memory limit, go to `Docker > Preferences > Resources` and change the memory from default (2 GB) to 8GB.
 
-### Local Installation
-
-First a running and accessible instance of PostgreSQL is required.
-
-To enable websockets capabilities, it is required to have a running instance of [Redis](https://redis.io).
-
-To use the backend with S3, it is required to have a running instance of [localstack](https://github.com/localstack/localstack).
-
-Then open the folder locally and run the following command to install the required npm packages.
-
-```sh
-yarn install
-```
-
-## Configuration
+#### Configuration
 
 To configure the application, you'll need to change the values in `.env.development`. The file should have the following structure :
 
@@ -208,6 +194,171 @@ GRAASP_MOBILE_BUILDER=graasp-mobile-builder
 RECAPTCHA_SECRET_ACCESS_KEY=<google-recaptcha-key>
 # Graasp search
 MEILISEARCH_URL=http://graasp-meilisearch:7700
+MEILISEARCH_MASTER_KEY=masterKey
+MEILISEARCH_REBUILD_SECRET=secret
+
+# Enable job scheduling (for cron based tasks)
+JOB_SCHEDULING=true
+
+# OPEN AI
+# OPENAI_GPT_VERSION=<DEFAULT_GPT_VERSION> # valid values are gpt-4 or gpt-3.5-turbo
+OPENAI_API_KEY=<openai-api-key>
+
+# GEOLOCATION API - this can be empty if you don't use geolocation
+GEOLOCATION_API_KEY=
+```
+
+### Run in Local
+
+Run the docker-compose file
+
+```sh
+docker-compose up -d
+```
+
+Install dependencies
+
+```sh
+yarn install
+```
+
+You can now either build and start the application
+
+```sh
+yarn build
+yarn start
+```
+
+Or watch files
+
+```sh
+yarn watch
+```
+
+#### Configuration
+
+To configure the application, you'll need to change the values in `.env.development`. The file should have the following structure :
+
+> We provide sample values for development purposes aligned with the docker-compose configuration. Adjust these values as needed.
+
+```bash
+### Graasp back-end configuration
+
+### Network configuration
+
+# Default protocol is already set
+# PROTOCOL=http
+HOSTNAME=0.0.0.0
+PORT=3000
+PUBLIC_URL=http://localhost:3000
+COOKIE_DOMAIN=localhost
+CORS_ORIGIN_REGEX=^http?:\/\/(localhost)?:[0-9]{4}$
+
+### Database configuration
+DB_NAME=docker
+DB_USERNAME=docker
+DB_PASSWORD=docker
+DB_HOST=localhost
+# If you use read replicas, set the hostnames here (separated by commas)
+# DB_READ_REPLICA_HOSTS=
+DATABASE_LOGS=true
+
+### Sessions
+
+# Session cookie key (to generate one: https://github.com/fastify/fastify-secure-session#using-a-pregenerated-key and https://github.com/fastify/fastify-secure-session#using-keys-as-strings)
+# TLDR: npx @fastify/secure-session > secret-key && node -e "let fs=require('fs'),file=path.join(__dirname, 'secret-key');console.log(fs.readFileSync(file).toString('hex'));fs.unlinkSync(file)"
+SECURE_SESSION_SECRET_KEY=c30b9ea26aedd395d568a78c8f2163e353707aee474c80ef04cc8c485207e3a0
+
+
+### Auth
+
+TOKEN_BASED_AUTH=true
+# JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
+JWT_SECRET=5ab27f732e009e48ddf9dd2d588eca2997a1b84c1cd7da1475d687fd1191cb68
+# Auth JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
+AUTH_TOKEN_JWT_SECRET=bc5f000dc469a1de635a3c672e0caa9988954e7c9cfd0f0f5d1dbd4e4f3b2da2
+AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
+# Refresh JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
+REFRESH_TOKEN_JWT_SECRET=6d60f2b51ac4fed5ec133ccae76dd3d2587b36a731c50d76ac13f107c1626a51
+REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
+
+
+### Mail server configuration
+
+# Mailer config
+# Set to random values if you don't want to use the mock mailbox at http://localhost:1080
+MAILER_CONFIG_SMTP_HOST=localhost
+MAILER_CONFIG_SMTP_PORT=1025
+MAILER_CONFIG_SMTP_USE_SSL='false' # only for dev purposes
+MAILER_CONFIG_USERNAME=docker
+MAILER_CONFIG_PASSWORD=docker
+
+
+### File storages configuration
+
+# If you are using a local installation of localstack
+S3_FILE_ITEM_HOST=http://localhost:4566
+
+# Graasp file item file storage path
+FILE_STORAGE_ROOT_PATH=/Users/admin/dev/graasp/tmp/graasp-file-item-storage
+FILE_STORAGE_HOST=http://localhost:1081
+
+# Graasp s3 file item
+S3_FILE_ITEM_PLUGIN=false
+S3_FILE_ITEM_REGION=us-east-1
+S3_FILE_ITEM_BUCKET=graasp
+S3_FILE_ITEM_ACCESS_KEY_ID=graasp-user
+S3_FILE_ITEM_SECRET_ACCESS_KEY=graasp-pwd
+
+# Graasp H5P
+H5P_FILE_STORAGE_TYPE=file
+H5P_STORAGE_ROOT_PATH=/tmp/graasp-h5p/
+H5P_PATH_PREFIX=h5p-content/
+
+
+### External services configuration
+
+# Graasp Etherpad
+ETHERPAD_URL=http://localhost:9001
+# Optional, if the etherpad server has a different public URL than what the back-end uses to communicate with the service (e.g. private network)
+ETHERPAD_PUBLIC_URL=http://localhost:9001
+# Optional, if the etherpad cookie domain is different from the domain of the public URL
+ETHERPAD_COOKIE_DOMAIN=localhost
+ETHERPAD_API_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+# Graasp embedded link item
+EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN=http://localhost:8061
+
+# Graasp apps
+APPS_JWT_SECRET=96b005bf84a6a0ba849e1b45e0352a4c9d6088f66e6850780ce3489bcc9ad0bf
+APPS_PUBLISHER_ID=<id>
+
+# Graasp websockets
+# Redis config
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_USERNAME=
+REDIS_PASSWORD=
+
+# Graasp Actions
+SAVE_ACTIONS=true
+
+# Client hosts
+BUILDER_CLIENT_HOST=http://localhost:3111
+PLAYER_CLIENT_HOST=http://localhost:3112
+LIBRARY_CLIENT_HOST=http://localhost:3005
+AUTH_CLIENT_HOST=http://localhost:3001
+ACCOUNT_CLIENT_HOST=http://localhost:3114
+ANALYTICS_CLIENT_HOST=http://localhost:3113
+GRAASP_MOBILE_BUILDER=graasp-mobile-builder
+
+# This is already set in the docker-compose file, un-comment below if you want to override it
+IMAGE_CLASSIFIER_API: http://localhost:8080/sync
+
+# get a recaptcha secret access key for your hostname at http://www.google.com/recaptcha/admin
+RECAPTCHA_SECRET_ACCESS_KEY=<google-recaptcha-key>
+# Graasp search
+MEILISEARCH_URL=http://localhost:7700
 MEILISEARCH_MASTER_KEY=masterKey
 MEILISEARCH_REBUILD_SECRET=secret
 

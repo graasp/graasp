@@ -1,0 +1,148 @@
+version: '3'
+
+services:
+  # Main Database
+  db:
+    container_name: graasp-postgres
+    image: postgres:15
+    restart: on-failure
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: docker
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+
+  # Database used for tests cases. Datas don't need to be persisted.
+  test-db:
+    container_name: graasp-postgres-test
+    image: postgres:15
+    restart: on-failure
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_DB: docker-test
+      POSTGRES_USER: docker-test
+      POSTGRES_PASSWORD: docker-test
+
+  # Redis Database
+  redis:
+    container_name: graasp-redis
+    image: redis
+    restart: on-failure
+    ports:
+      - 6379:6379
+
+  etherpad:
+    container_name: graasp-etherpad
+    image: etherpad/etherpad
+    restart: on-failure
+    # Start the server with dev API key
+    # https://hub.docker.com/r/etherpad/etherpad/dockerfile
+    # https://github.com/ether/etherpad-lite/issues/3849
+    volumes:
+      # Bind copy the dev API key
+      - ./etherpad/devApiKey.txt:/opt/etherpad-lite/APIKEY.txt
+    ports:
+      - 9001:9001
+    environment:
+      - DB_TYPE=postgres
+      - DB_HOST=etherpad-db
+      - DB_PORT=5432
+      - DB_NAME=etherpad
+      - DB_USER=etherpad
+      - DB_PASS=etherpad
+      # Allow only group pads
+      # - REQUIRE_SESSION=true
+      # Only API can create pads
+      - EDIT_ONLY=true
+    depends_on:
+      - etherpad-db
+
+  etherpad-db:
+    container_name: graasp-postgres-etherpad
+    image: postgres:15
+    restart: on-failure
+    ports:
+      - 5433:5432
+    volumes:
+      - postgres-data-etherpad:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: etherpad
+      POSTGRES_USER: etherpad
+      POSTGRES_PASSWORD: etherpad
+
+  meilisearch:
+    container_name: graasp-meilisearch
+    image: getmeili/meilisearch:v1.2
+    restart: on-failure
+    environment:
+      - MEILI_MASTER_KEY=masterKey
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=development
+      - MEILI_LOG_LEVEL
+    ports:
+      - 7700:7700
+    volumes:
+      - ./meilisearch_data:/meili_data
+
+  # Localstack is used to test aws services locally
+  localstack:
+    container_name: graasp-localstack
+    image: localstack/localstack
+    restart: on-failure
+    volumes:
+      - ${TMPDIR}/localstack:/tmp/graasp-localstack
+      - './localstack/init.sh:/etc/localstack/init/ready.d/init-aws.sh'
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=us-east-1
+    ports:
+      - 4566-4583:4566-4583
+
+  localfile:
+    container_name: localfile
+    image: joseluisq/static-web-server:2
+    restart: on-failure
+    environment:
+      - SERVER_HOST=127.0.0.1
+      - SERVER_PORT=80
+      - SERVER_ROOT=/tmp/graasp-file-item-storage
+    volumes:
+      - ../tmp:/tmp/graasp-file-item-storage
+    ports:
+      - 1081:80
+
+  # Necessary for graasp-embedded-link-item
+  iframely:
+    container_name: graasp-iframely
+    image: graasp/iframely:latest
+    restart: on-failure
+    ports:
+      - 8061:8061
+
+  # Necessary for validation
+  nudenet:
+    container_name: graasp-nudenet
+    image: notaitech/nudenet:classifier
+    restart: on-failure
+    ports:
+      - 8080:8080
+
+  # Mock mailbox on port 1025 (web UI at http://localhost:1080)
+  mailer:
+    container_name: mailer
+    image: schickling/mailcatcher
+    restart: on-failure
+    ports:
+      - 1080:1080
+      - 1025:1025
+
+volumes:
+  postgres-data:
+  postgres-data-etherpad:
