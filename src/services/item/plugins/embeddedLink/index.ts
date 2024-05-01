@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
@@ -16,6 +18,7 @@ interface GraaspEmbeddedLinkItemOptions {
 const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify, options) => {
   const { iframelyHrefOrigin } = options;
   const {
+    log,
     items: { extendCreateSchema, service: itemService },
   } = fastify;
   const embeddedLinkService = new EmbeddedLinkService();
@@ -25,6 +28,23 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   }
   // "install" custom schema for validating embedded link items creation
   extendCreateSchema(createSchema);
+
+  // TODO: should we protect this route ?
+  fastify.get<{ Querystring: { link: string } }>(
+    '/metadata',
+    async ({ query: { link } }, response) => {
+      if (!link) {
+        return response.code(StatusCodes.BAD_REQUEST).send('The link parameter is required.');
+      }
+      const metadata = await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, link);
+      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(link, log);
+
+      return {
+        ...metadata,
+        isEmbeddingAllowed,
+      };
+    },
+  );
 
   // register pre create handler to pre fetch link metadata
   const hook = async (

@@ -16,6 +16,16 @@ type IframelyResponse = {
   links: IframelyLink[];
 };
 
+type LinkMetadata = {
+  title?: string;
+  description?: string;
+  html: string;
+  thumbnails: string[];
+  icons: string[];
+};
+
+export const PREFIX_EMBEDDED_LINK = 'embedded-links';
+
 const hasRel = (rel: string[], value: string) => rel.some((r) => r === value);
 const hasThumbnailRel = (rel: string[]) => hasRel(rel, 'thumbnail');
 const hasIconRel = (rel: string[]) => hasRel(rel, 'icon');
@@ -26,7 +36,7 @@ const CSP_FRAME_NONE = ["frame-ancestors 'none'", "frame-ancestors 'self'"];
 const X_FRAME_DISABLED = ['sameorigin', 'deny'];
 
 export class EmbeddedLinkService {
-  async getLinkMetadata(iframelyHrefOrigin: string, url: string) {
+  async getLinkMetadata(iframelyHrefOrigin: string, url: string): Promise<LinkMetadata> {
     const response = await fetch(`${iframelyHrefOrigin}/iframely?uri=${encodeURIComponent(url)}`);
     // better clues on how to extract the metadata here: https://iframely.com/docs/links
     const { meta = {}, html, links = [] } = (await response.json()) as IframelyResponse;
@@ -63,16 +73,5 @@ export class EmbeddedLinkService {
       }
       return false;
     }
-  }
-
-  async getMetadataWithEmbedding(
-    iframelyHrefOrigin: string,
-    url: string,
-    logger?: FastifyBaseLogger,
-  ) {
-    return {
-      ...(await this.getLinkMetadata(iframelyHrefOrigin, url)),
-      isEmbeddingAllowed: this.checkEmbeddingAllowed(url, logger),
-    };
   }
 }
