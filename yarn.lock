@@ -6787,7 +6787,7 @@ __metadata:
     jsonwebtoken: "npm:9.0.2"
     lodash.groupby: "npm:4.6.0"
     lodash.uniqby: "npm:4.7.0"
-    luxon: "npm:3.3.0"
+    luxon: "npm:3.4.4"
     meilisearch: "npm:0.33.0"
     mime: "npm:3.0.0"
     mime-types: "npm:2.1.35"
@@ -8437,14 +8437,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:3.3.0":
-  version: 3.3.0
-  resolution: "luxon@npm:3.3.0"
-  checksum: 10/ff60904401caa2346da492c7776d8a17a8e5b3715d6246534c3c0ea3af07c22f9ba9f16730259749f6cafb3de02f0fdffb970d53d4139f0de66eb9ac16ea163c
-  languageName: node
-  linkType: hard
-
-"luxon@npm:^3.2.1":
+"luxon@npm:3.4.4, luxon@npm:^3.2.1":
   version: 3.4.4
   resolution: "luxon@npm:3.4.4"
   checksum: 10/c14164bc338987349075a08e63ea3ff902866735f7f5553a355b27be22667919765ff96fde4d3413d0e9a0edc4ff9e2e74ebcb8f86eae0ce8b14b27330d87d6e
