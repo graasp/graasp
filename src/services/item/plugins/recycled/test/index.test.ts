@@ -4,6 +4,8 @@ import { In } from 'typeorm';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import {
   FolderItemFactory,
   HttpMethod,
@@ -25,7 +27,7 @@ jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Recycle Bin Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

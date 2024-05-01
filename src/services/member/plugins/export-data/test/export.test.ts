@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
+import { FastifyInstance } from 'fastify';
+
 import build, { clearDatabase } from '../../../../../../test/app';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { buildRepositories } from '../../../../../utils/repositories';
@@ -26,7 +28,7 @@ const createOrReplaceFolder = (folder: string) => {
 };
 
 describe('Export member data tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   // represents the number of different entity insertion

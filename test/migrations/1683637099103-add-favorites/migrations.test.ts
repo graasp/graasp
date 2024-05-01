@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
 import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations';
 import { Migrations1683637099103 } from '../../../src/migrations/1683637099103-add-favorites';
@@ -9,7 +11,7 @@ import { up } from './fixture';
 jest.mock('../../../src/plugins/datasource');
 
 describe('migrations1683637099103', () => {
-  let app;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
     // init db empty, it is sync by default

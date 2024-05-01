@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { FolderItemFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -37,7 +39,7 @@ const expectMinimalMemberOrUndefined = (member?: Partial<Member> | null) => {
 jest.mock('../../../../plugins/datasource');
 
 describe('Base Analytics', () => {
-  let app;
+  let app: FastifyInstance;
 
   afterEach(async () => {
     jest.clearAllMocks();

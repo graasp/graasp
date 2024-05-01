@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { Context } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -70,7 +72,7 @@ const storageFolder = path.join(TMP_FOLDER, 'export-actions');
 fs.mkdirSync(storageFolder, { recursive: true });
 
 describe('exportActionsInArchive', () => {
-  let app;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
     ({ app } = await build());
