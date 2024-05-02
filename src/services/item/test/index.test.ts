@@ -551,6 +551,7 @@ describe('Item routes tests', () => {
           type: ItemType.FOLDER,
           description: '',
           settings: { hasThumbnail: true },
+          lang: 'en',
         }),
         actor,
       );
