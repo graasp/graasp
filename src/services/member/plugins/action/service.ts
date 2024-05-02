@@ -1,9 +1,10 @@
-import { Action, ActionTriggers, Context, DiscriminatedItem, PermissionLevel } from '@graasp/sdk';
+import { PermissionLevel } from '@graasp/sdk';
 
 import { CannotModifyOtherMembers, UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { validatePermissionMany } from '../../../authorization';
+import { Item, ItemExtraMap } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
 
 export const getMonthBeforeNow = () => {
@@ -11,22 +12,6 @@ export const getMonthBeforeNow = () => {
   date.setMonth(date.getMonth() - 1); // Set the date to one month ago
   return date;
 };
-
-type ReducedActionBasedOnPermission = {
-  actionsNeedsPermission: Action[];
-  actionsWithoutPermssion: Action[];
-  setOfItemsToCheckPermission: DiscriminatedItem[];
-};
-
-const actionTypesWithoutNeedOfPermission = [
-  ActionTriggers.CollectionView,
-  ActionTriggers.ItemLike,
-  ActionTriggers.ItemUnlike,
-  ActionTriggers.ItemDownload,
-  ActionTriggers.ItemEmbed,
-  ActionTriggers.ItemSearch,
-  ActionTriggers.MemberLogin,
-];
 
 export class ActionMemberService {
   actionService: ActionService;
@@ -49,39 +34,26 @@ export class ActionMemberService {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const data = await actionRepository.getForMember(actor.id, {
-      startDate: start,
-      endDate: end,
-    });
+    const [actionsNeedsPermission, actionsWithoutPermssion] = await Promise.all([
+      actionRepository.getMemberActionsNeedPesrmission(actor.id, {
+        startDate: start,
+        endDate: end,
+      }),
+      actionRepository.getMemberActionsNoNeedForPesrmission(actor.id, {
+        startDate: start,
+        endDate: end,
+      }),
+    ]);
 
-    const { actionsNeedsPermission, actionsWithoutPermssion, setOfItemsToCheckPermission } =
-      data.reduce(
-        (acc: ReducedActionBasedOnPermission, ele) => {
-          if (ele.type === ActionTriggers.Copy && ele.view === Context.Library) {
-            acc.actionsWithoutPermssion.push(ele);
-          } else if (actionTypesWithoutNeedOfPermission.indexOf(ele.type as ActionTriggers) > -1) {
-            acc.actionsWithoutPermssion.push(ele);
-          } else {
-            acc.actionsNeedsPermission.push(ele);
-
-            if (ele.item && !acc.setOfItemsToCheckPermission.find((m) => m.id === ele?.item?.id)) {
-              acc.setOfItemsToCheckPermission.push(ele.item);
-            }
-          }
-          return acc;
-        },
-        {
-          actionsNeedsPermission: [],
-          actionsWithoutPermssion: [],
-          setOfItemsToCheckPermission: [],
-        },
-      );
+    const setOfItemsToCheckPermission = Array.from(
+      new Map(actionsNeedsPermission.map(({ item }) => [item?.id, item])).values(),
+    );
 
     const memberships = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
-      setOfItemsToCheckPermission,
+      setOfItemsToCheckPermission as Item<keyof ItemExtraMap>[],
     );
 
     const filteredActionsWithAccessPermission = actionsNeedsPermission.filter((g) => {
