@@ -1,5 +1,6 @@
 import {
   ActionFactory,
+  ActionTriggers,
   AggregateBy,
   AggregateFunction,
   AggregateMetric,
@@ -84,22 +85,47 @@ describe('Action Repository', () => {
   });
 
   describe('getForMember', () => {
-    it('get actions for member with create and update action types within the last month', async () => {
+    it('get actions that require permissions for member within the last month', async () => {
+      const item = await testUtils.saveItem({ actor: member });
+
       await saveActions(rawRepository, [
-        { member, createdAt: new Date().toISOString() },
-        { member, createdAt: new Date().toISOString() },
-        { member, createdAt: new Date('1999-07-08').toISOString() },
-        { member, createdAt: new Date().toISOString() },
+        {
+          member,
+          createdAt: new Date().toISOString(),
+          type: ActionTriggers.Update,
+          item: item as unknown as DiscriminatedItem,
+        },
+        { member, createdAt: new Date().toISOString(), type: ActionTriggers.CollectionView },
+        { member, createdAt: new Date('1999-07-08').toISOString(), type: ActionTriggers.Update },
+        { member, createdAt: new Date().toISOString(), type: ActionTriggers.ItemLike },
       ]);
 
       const r = new ActionRepository();
 
-      const result = await r.getForMember(member.id, {
+      const result = await r.getMemberActionsNeedPesrmission(member.id, {
         startDate: getMonthBeforeNow(),
         endDate: new Date(),
       });
 
-      expect(result.length).toEqual(3);
+      expect(result.length).toEqual(1);
+    });
+
+    it("get actions that don't require a permission for member within the last month", async () => {
+      await saveActions(rawRepository, [
+        { member, createdAt: new Date().toISOString(), type: ActionTriggers.Create },
+        { member, createdAt: new Date().toISOString(), type: ActionTriggers.CollectionView },
+        { member, createdAt: new Date('1999-07-08').toISOString(), type: ActionTriggers.Update },
+        { member, createdAt: new Date().toISOString(), type: ActionTriggers.ItemLike },
+      ]);
+
+      const r = new ActionRepository();
+
+      const result = await r.getMemberActionsNoNeedForPesrmission(member.id, {
+        startDate: getMonthBeforeNow(),
+        endDate: new Date(),
+      });
+
+      expect(result.length).toEqual(2);
     });
   });
 
