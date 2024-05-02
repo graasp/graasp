@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
+import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
@@ -25,6 +26,7 @@ import {
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams } from './types';
+import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -64,6 +66,57 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
+
+  // isolate inside a register because of the mutlipart
+  fastify.register(async (fastify) => {
+    fastify.register(fastifyMultipart, {
+      limits: {
+        // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
+        // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
+        // fields: 5, // Max number of non-file fields (Default: Infinity).
+        fileSize: 1024 * 1024 * 10, // 10Mb For multipart forms, the max file size (Default: Infinity).
+        files: 1, // Max number of file fields (Default: Infinity).
+        // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
+      },
+    });
+    // create folder element with thumbnail
+    fastify.post<{
+      Querystring: {
+        parentId?: string;
+      };
+    }>(
+      '/with-thumbnail',
+      {
+        preHandler: fastify.verifyAuthentication,
+      },
+      async (request) => {
+        const {
+          member,
+          query: { parentId },
+        } = request;
+
+        // get the formData from the request
+        const formData = await request.file();
+        const {
+          item: itemPayload,
+          geolocation,
+          thumbnail,
+        } = getPostItemPayloadFromFormData(formData);
+
+        return await db.transaction(async (manager) => {
+          const repositories = buildRepositories(manager);
+          const item = await itemService.post(member, repositories, {
+            item: itemPayload,
+            parentId,
+            geolocation,
+            thumbnail,
+          });
+          await actionItemService.postPostAction(request, repositories, item);
+          return item;
+        });
+      },
+    );
+  });
 
   // get item
   fastify.get<{ Params: IdParam }>(
