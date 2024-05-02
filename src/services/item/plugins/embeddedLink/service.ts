@@ -2,6 +2,9 @@ import fetch from 'node-fetch';
 
 import { FastifyBaseLogger } from 'fastify';
 
+import { InvalidUrl } from './errors';
+import { isValidUrl } from './utils';
+
 type IframelyLink = {
   rel: string[];
   href: string;
@@ -36,7 +39,15 @@ const CSP_FRAME_NONE = ["frame-ancestors 'none'", "frame-ancestors 'self'"];
 const X_FRAME_DISABLED = ['sameorigin', 'deny'];
 
 export class EmbeddedLinkService {
+  private assertUrlIsValid(url: string) {
+    if (!isValidUrl(url)) {
+      throw new InvalidUrl(url);
+    }
+  }
+
   async getLinkMetadata(iframelyHrefOrigin: string, url: string): Promise<LinkMetadata> {
+    this.assertUrlIsValid(url);
+
     const response = await fetch(`${iframelyHrefOrigin}/iframely?uri=${encodeURIComponent(url)}`);
     // better clues on how to extract the metadata here: https://iframely.com/docs/links
     const { meta = {}, html, links = [] } = (await response.json()) as IframelyResponse;
@@ -52,6 +63,8 @@ export class EmbeddedLinkService {
   }
 
   async checkEmbeddingAllowed(url: string, logger?: FastifyBaseLogger): Promise<boolean> {
+    this.assertUrlIsValid(url);
+
     try {
       const { headers } = await fetch(url);
       const cspHeader = headers.get(CSP_KEY)?.toLowerCase() || '';

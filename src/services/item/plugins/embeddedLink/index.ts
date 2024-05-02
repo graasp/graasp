@@ -1,5 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
-
 import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
@@ -7,6 +5,7 @@ import { ItemType } from '@graasp/sdk';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
+import { LinkQueryParameterIsRequired } from './errors';
 import { createSchema } from './schemas';
 import { EmbeddedLinkService } from './service';
 
@@ -30,21 +29,19 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   extendCreateSchema(createSchema);
 
   // TODO: should we protect this route ?
-  fastify.get<{ Querystring: { link: string } }>(
-    '/metadata',
-    async ({ query: { link } }, response) => {
-      if (!link) {
-        return response.code(StatusCodes.BAD_REQUEST).send('The link parameter is required.');
-      }
-      const metadata = await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, link);
-      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(link, log);
+  fastify.get<{ Querystring: { link: string } }>('/metadata', async ({ query: { link } }) => {
+    if (!link) {
+      throw new LinkQueryParameterIsRequired();
+    }
 
-      return {
-        ...metadata,
-        isEmbeddingAllowed,
-      };
-    },
-  );
+    const metadata = await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, link);
+    const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(link, log);
+
+    return {
+      ...metadata,
+      isEmbeddingAllowed,
+    };
+  });
 
   // register pre create handler to pre fetch link metadata
   const hook = async (
