@@ -26,6 +26,16 @@ describe('Tests Embedded Link Controller', () => {
   });
 
   describe('GET /items/embedded-links/metadata', () => {
+    it('Throws if signed out', async () => {
+      ({ app } = await build({ member: null }));
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: URL,
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    });
+
     it('Throws if link parameter is not set', async () => {
       ({ app } = await build());
 

@@ -28,20 +28,23 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   // "install" custom schema for validating embedded link items creation
   extendCreateSchema(createSchema);
 
-  // TODO: should we protect this route ?
-  fastify.get<{ Querystring: { link: string } }>('/metadata', async ({ query: { link } }) => {
-    if (!link) {
-      throw new LinkQueryParameterIsRequired();
-    }
+  fastify.get<{ Querystring: { link: string } }>(
+    '/metadata',
+    { preHandler: fastify.verifyAuthentication },
+    async ({ query: { link } }) => {
+      if (!link) {
+        throw new LinkQueryParameterIsRequired();
+      }
 
-    const metadata = await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, link);
-    const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(link, log);
+      const metadata = await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, link);
+      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(link, log);
 
-    return {
-      ...metadata,
-      isEmbeddingAllowed,
-    };
-  });
+      return {
+        ...metadata,
+        isEmbeddingAllowed,
+      };
+    },
+  );
 
   // register pre create handler to pre fetch link metadata
   const hook = async (
