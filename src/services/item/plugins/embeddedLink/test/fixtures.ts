@@ -2,7 +2,7 @@ export const METADATA = {
   title: 'title',
   description: 'description',
 };
-export const FAKE_URL = 'https://fake-href.local';
+export const FAKE_URL = 'https://example.com';
 const THUMBNAIL_HREF = `${FAKE_URL}/24.png`;
 const ICON_HREF = `${FAKE_URL}/icon`;
 const HTML = 'html';
