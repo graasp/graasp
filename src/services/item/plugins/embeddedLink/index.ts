@@ -8,6 +8,7 @@ import { Item } from '../../entities/Item';
 import { LinkQueryParameterIsRequired } from './errors';
 import { createSchema } from './schemas';
 import { EmbeddedLinkService } from './service';
+import { ensureProtocol } from './utils';
 
 interface GraaspEmbeddedLinkItemOptions {
   /** \<protocol\>://\<hostname\>:\<port\> */
@@ -36,8 +37,12 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
         throw new LinkQueryParameterIsRequired();
       }
 
-      const metadata = await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, link);
-      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(link, log);
+      const url = ensureProtocol(link);
+      const { html: _html, ...metadata } = await embeddedLinkService.getLinkMetadata(
+        iframelyHrefOrigin,
+        url,
+      );
+      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(url, log);
 
       return {
         ...metadata,
