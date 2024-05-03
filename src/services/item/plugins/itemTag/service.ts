@@ -39,7 +39,7 @@ export class ItemTagService {
 
     const { itemTagRepository } = repositories;
     const item = await this.itemService.get(actor, repositories, id, PermissionLevel.Admin);
-    return itemTagRepository.post(actor, item, tagType);
+    return { ...(await itemTagRepository.post(actor, item, tagType)), item: { path: item.path } };
   }
 
   async deleteOne(actor: Actor, repositories: Repositories, id: string, tagType: ItemTagType) {
@@ -51,5 +51,6 @@ export class ItemTagService {
     const item = await this.itemService.get(actor, repositories, id, PermissionLevel.Admin);
 
     await itemTagRepository.deleteOne(item, tagType);
+    return { item: { path: item.path } };
   }
 }

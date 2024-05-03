@@ -123,7 +123,7 @@ const deleteOne = {
     },
   },
   response: {
-    200: {},
+    200: { $ref: 'https://graasp.org/item-tags/#/definitions/itemTag' },
   },
 };
 
