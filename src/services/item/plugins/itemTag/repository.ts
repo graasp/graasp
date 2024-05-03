@@ -265,7 +265,7 @@ export class ItemTagRepository {
       await this.repository.insert(
         itemTags
           .filter((tag) => !excludeTypes?.includes(tag.type))
-          .map(({ type }) => ({ item: { id: copy.id }, type, creator })),
+          .map(({ type }) => ({ item: { path: copy.path }, type, creator })),
       );
     }
   }

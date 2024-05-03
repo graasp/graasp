@@ -266,6 +266,7 @@ describe('Tags', () => {
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json().type).toEqual(type);
+        expect(res.json().item.path).toEqual(item.path);
       });
 
       it('Cannot create tag if exists for item', async () => {
@@ -361,7 +362,8 @@ describe('Tags', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/tags/${toDelete.type}`,
         });
 
-        expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json().item.path).toEqual(item.path);
         const itemTag = await rawItemTagRepository.findOneBy({ id: toDelete.id });
         expect(itemTag).toBeNull();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
