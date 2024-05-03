@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import waitForExpect from 'wait-for-expect';
 
-import { LightMyRequestResponse } from 'fastify';
+import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
 import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
@@ -35,7 +35,7 @@ async function cleanFiles() {
 }
 
 describe('Service plugin', () => {
-  let app;
+  let app: FastifyInstance;
   let member: Actor;
   let parent: Item;
 

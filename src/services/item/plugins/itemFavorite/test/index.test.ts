@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -18,7 +20,7 @@ const rawRepository = AppDataSource.getRepository(ItemFavorite);
 const testUtils = new ItemTestUtils();
 
 describe('Favorite', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let member;
   let item;

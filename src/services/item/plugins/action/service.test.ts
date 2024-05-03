@@ -1,5 +1,7 @@
 import { v4 } from 'uuid';
 
+import { FastifyBaseLogger, FastifyInstance } from 'fastify';
+
 import {
   AggregateFunction,
   AggregateMetric,
@@ -18,6 +20,7 @@ import { MOCK_REQUEST } from '../../../action/services/action.test';
 import { saveActions } from '../../../action/test/fixtures/actions';
 import { MemberService } from '../../../member/service';
 import { saveMember } from '../../../member/test/fixtures/members';
+import { ThumbnailService } from '../../../thumbnail/service';
 import ItemService from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ActionItemService } from './service';
@@ -25,7 +28,10 @@ import { ItemActionType } from './utils';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
-const itemService = new ItemService();
+const itemService = new ItemService(
+  {} as unknown as ThumbnailService,
+  {} as unknown as FastifyBaseLogger,
+);
 const memberService = new MemberService();
 const service = new ActionItemService(
   new ActionService(itemService, memberService),
@@ -36,7 +42,7 @@ const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 
 describe('ActionItemService', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item;
 

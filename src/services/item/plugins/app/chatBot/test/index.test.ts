@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { HttpMethod } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
+
+import { GPTVersion, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
@@ -12,7 +14,6 @@ import {
 import { saveMember } from '../../../../../member/test/fixtures/members';
 import { AppTestUtils } from '../../test/fixtures';
 import { FinishReason } from '../interfaces/finishReason';
-import { GPTVersion } from '../interfaces/gptVersion';
 import { DOCKER_MOCKED_BODY, DOCKER_MOCKED_RESPONSE, copyArray, mockResponse } from './fixtures';
 
 // mock datasource
@@ -29,7 +30,7 @@ function expectException(response, ex) {
 }
 
 describe('Chat Bot Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item, token;
   const CHAT_PATH = 'chat-bot';

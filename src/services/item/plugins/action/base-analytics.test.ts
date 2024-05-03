@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { FolderItemFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -6,9 +8,9 @@ import { ChatMessageRepository } from '../../../chat/repository';
 import { Member } from '../../../member/entities/member';
 import { saveMembers } from '../../../member/test/fixtures/members';
 import { Item } from '../../entities/Item';
-import { saveAppActions } from '../app/appAction/test/index.test';
-import { saveAppData } from '../app/appData/test/index.test';
-import { saveAppSettings } from '../app/appSetting/test/index.test';
+import { saveAppActions } from '../app/appAction/test/fixtures';
+import { saveAppData } from '../app/appData/test/fixtures';
+import { saveAppSettings } from '../app/appSetting/test/fixtures';
 import { BaseAnalytics } from './base-analytics';
 
 const rawItemRepository = AppDataSource.getRepository(Item);
@@ -37,7 +39,7 @@ const expectMinimalMemberOrUndefined = (member?: Partial<Member> | null) => {
 jest.mock('../../../../plugins/datasource');
 
 describe('Base Analytics', () => {
-  let app;
+  let app: FastifyInstance;
 
   afterEach(async () => {
     jest.clearAllMocks();

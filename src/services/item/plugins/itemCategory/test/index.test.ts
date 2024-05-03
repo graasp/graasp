@@ -1,7 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
-import { CategoryType, HttpMethod } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
+
+import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
@@ -13,8 +15,8 @@ import { setItemPublic } from '../../itemTag/test/fixtures';
 import { Category } from '../entities/Category';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
-import { CategoryRepository } from '../repositories/category';
 import { ItemCategoryRepository } from '../repositories/itemCategory';
+import { saveCategories, saveItemCategories } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -35,28 +37,6 @@ export const expectItemCategories = (newItemCategories, correctItemCategories) =
   }
 };
 
-export const saveCategories = async () => {
-  const categories: Category[] = [];
-  categories.push(await CategoryRepository.save({ name: 'level-1', type: CategoryType.Level }));
-  categories.push(await CategoryRepository.save({ name: 'level-2', type: CategoryType.Level }));
-  categories.push(await CategoryRepository.save({ name: 'level-3', type: CategoryType.Level }));
-  categories.push(
-    await CategoryRepository.save({ name: 'discipline-1', type: CategoryType.Discipline }),
-  );
-  categories.push(
-    await CategoryRepository.save({ name: 'discipline-2', type: CategoryType.Discipline }),
-  );
-  return categories;
-};
-
-export const saveItemCategories = async ({ item, categories }) => {
-  const itemCategories: ItemCategory[] = [];
-  for (const category of categories) {
-    itemCategories.push(await ItemCategoryRepository.save({ item, category }));
-  }
-  return itemCategories;
-};
-
 export const setUp = async ({ item }: { item?: Item }) => {
   const categories = await saveCategories();
   const returnValues: { itemCategories?: ItemCategory[]; categories: Category[] } = {
@@ -70,7 +50,7 @@ export const setUp = async ({ item }: { item?: Item }) => {
 };
 
 describe('Categories', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let member;
   let categories;

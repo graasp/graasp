@@ -5,7 +5,9 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import { HttpMethod, ItemType, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
+
+import { HttpMethod, ItemType, MaxWidth, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
@@ -76,7 +78,7 @@ const createFormData = (form = new FormData()) => {
 };
 
 describe('File Item routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {
@@ -496,6 +498,16 @@ describe('File Item routes tests', () => {
         payload: { extra: { [FILE_ITEM_TYPE]: { altText: 'new name' } } },
       });
       expect(response.json().extra[FILE_ITEM_TYPE].altText).toEqual('new name');
+    });
+
+    it('Edit file item maxWidth', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
+        payload: { settings: { maxWidth: MaxWidth.Small } },
+      });
+      console.log(response.json());
+      expect(response.json().settings.maxWidth).toEqual(MaxWidth.Small);
     });
 
     it('Cannot edit another file item field', async () => {

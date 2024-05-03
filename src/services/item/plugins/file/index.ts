@@ -102,7 +102,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     const { id, type } = copy; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== fileService.type) return;
+    if (!id || type !== fileService.type) {
+      return;
+    }
     await fileItemService.copy(actor, repositories, { original, copy });
   });
 

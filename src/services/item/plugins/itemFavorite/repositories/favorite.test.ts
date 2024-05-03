@@ -1,5 +1,7 @@
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import build, { clearDatabase } from '../../../../../../test/app';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -13,7 +15,7 @@ jest.mock('../../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('FavoriteRepository', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let favorites: ItemFavorite[];
 

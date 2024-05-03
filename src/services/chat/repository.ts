@@ -3,7 +3,10 @@ import { In } from 'typeorm';
 import { ResultOf } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
+import { messageSchema } from '../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { ChatMessage } from './chatMessage';
 import { ChatMessageNotFound } from './errors';
@@ -33,6 +36,26 @@ export const ChatMessageRepository = AppDataSource.getRepository(ChatMessage).ex
     return mapById({
       keys: itemIds,
       findElement: (id) => messages.filter(({ item }) => item.id === id),
+    });
+  },
+
+  /**
+   * Return all the messages related to the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of the messages.
+   */
+  async getForMemberExport(memberId: string): Promise<ChatMessage[]> {
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.find({
+      select: schemaToSelectMapper(messageSchema),
+      where: { creator: { id: memberId } },
+      order: { createdAt: 'DESC' },
+      relations: {
+        item: true,
+      },
     });
   },
 

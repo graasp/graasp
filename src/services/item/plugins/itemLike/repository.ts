@@ -1,6 +1,9 @@
 import { AppDataSource } from '../../../../plugins/datasource';
 import { Item } from '../../../item/entities/Item';
+import { MemberIdentifierNotFound } from '../../../itemLogin/errors';
 import { Member } from '../../../member/entities/member';
+import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
 import { ItemLikeNotFound } from './errors';
 import { ItemLike } from './itemLike';
 
@@ -25,6 +28,26 @@ export const ItemLikeRepository = AppDataSource.getRepository(ItemLike).extend({
       .where('itemLike.creator = :memberId', { memberId })
       .getMany();
     return itemLikes;
+  },
+
+  /**
+   * Return all the likes created by the given member.
+   * @param memberId ID of the member to retrieve the data.
+   * @returns an array of item likes.
+   */
+  async getForMemberExport(memberId: string): Promise<ItemLike[]> {
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.find({
+      select: schemaToSelectMapper(itemLikeSchema),
+      where: { creator: { id: memberId } },
+      order: { createdAt: 'DESC' },
+      relations: {
+        item: true,
+      },
+    });
   },
 
   /**

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
@@ -7,20 +6,19 @@ import {
   MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
   MAX_TARGETS_FOR_READ_REQUEST,
+  MaxWidth,
   PermissionLevel,
 } from '@graasp/sdk';
 
 import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
+import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Ordering, SortBy } from './types';
-
-const NOT_START_WITH_SPACE = /^\S[ \S]*$/;
-const EMPTY_OR_NOT_START_WITH_SPACE = /^(?:\S[ \S]*|$)$/;
 
 /**
  * for serialization
  */
-const settings = S.object()
+export const settings = S.object()
   // Setting additional properties to false will only filter out invalid properties.
   .additionalProperties(false)
   // lang is deprecated
@@ -37,7 +35,9 @@ const settings = S.object()
   .prop('enableSaveActions', S.boolean())
   // link settings
   .prop('showLinkIframe', S.boolean())
-  .prop('showLinkButton', S.boolean());
+  .prop('showLinkButton', S.boolean())
+  // file settings
+  .prop('maxWidth', S.enum(Object.values(MaxWidth)));
 
 export const partialMember = S.object()
   .additionalProperties(false)
@@ -75,13 +75,10 @@ export const packedItem = item.prop(
 // type 'base' (empty extra {})
 export const baseItemCreate = S.object()
   .additionalProperties(false)
-  .prop(
-    'name',
-    S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern(NOT_START_WITH_SPACE),
-  )
+  .prop('name', S.string().minLength(1).maxLength(MAX_ITEM_NAME_LENGTH).pattern(NAME_REGEX))
   .prop(
     'displayName',
-    S.string().maxLength(MAX_ITEM_NAME_LENGTH).pattern(EMPTY_OR_NOT_START_WITH_SPACE),
+    S.string().maxLength(MAX_ITEM_NAME_LENGTH).pattern(EMPTY_OR_SPACED_WORDS_REGEX),
   )
   .prop('description', S.string())
   .prop('type', S.const('base'))
@@ -130,8 +127,8 @@ export const folderItemCreate = S.object().prop('type', S.const('folder')).exten
  */
 export const itemUpdate = S.object()
   .additionalProperties(false)
-  .prop('name', S.string().minLength(1).pattern(NOT_START_WITH_SPACE))
-  .prop('displayName', S.string().pattern(EMPTY_OR_NOT_START_WITH_SPACE))
+  .prop('name', S.string().minLength(1).pattern(NAME_REGEX))
+  .prop('displayName', S.string().pattern(EMPTY_OR_SPACED_WORDS_REGEX))
   .prop('description', S.string())
   .prop('lang', S.string())
   .prop('settings', settings)
@@ -371,3 +368,5 @@ export default {
     },
   },
 };
+
+export const geolocation = S.object().prop('lat', S.number()).prop('lng', S.number());

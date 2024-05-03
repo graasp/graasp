@@ -1,7 +1,9 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 
-import { HttpMethod, ItemType } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
+
+import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
@@ -16,7 +18,7 @@ jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('Member routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {
@@ -478,6 +480,40 @@ describe('Member routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         expect(response.json().name).toEqual(newName);
         // todo: test whether extra is correctly modified (extra is not returned)
+      });
+
+      it('New name too short throws', async () => {
+        const newName = 'n';
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/members/${actor.id}`,
+          payload: {
+            name: newName,
+          },
+        });
+
+        const m = await MemberRepository.findOneBy({ id: actor.id });
+        expect(m?.name).toEqual(actor.name);
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
+      it('New name too long throws', async () => {
+        const newName = Array(MAX_USERNAME_LENGTH + 1).fill(() => 'a');
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/members/${actor.id}`,
+          payload: {
+            name: newName,
+          },
+        });
+
+        const m = await MemberRepository.findOneBy({ id: actor.id });
+        expect(m?.name).toEqual(actor.name);
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
       });
 
       it('Enable save actions successfully', async () => {

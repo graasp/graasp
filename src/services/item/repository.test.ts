@@ -1,5 +1,7 @@
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import {
   ItemType,
   LocalFileItemFactory,
@@ -28,7 +30,7 @@ const itemRepository = new ItemRepository();
 const testUtils = new ItemTestUtils();
 
 describe('ItemRepository', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   beforeEach(async () => {

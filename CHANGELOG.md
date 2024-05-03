@@ -2,6 +2,63 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.35.0](https://github.com/graasp/graasp/compare/v1.34.0...v1.35.0) (2024-05-02)
+
+
+### Features
+
+* add route to extract link's metadata ([#1009](https://github.com/graasp/graasp/issues/1009)) ([152672d](https://github.com/graasp/graasp/commit/152672d4522af7a8779fa9cb44fe492012c98709))
+* allow to create item with thumbnail ([#1002](https://github.com/graasp/graasp/issues/1002)) ([570bdf8](https://github.com/graasp/graasp/commit/570bdf83281a0500f826ba1e3eaae15898c2f4f3))
+
+
+### Bug Fixes
+
+* **deps:** update dependency luxon to v3.4.4 ([#954](https://github.com/graasp/graasp/issues/954)) ([7eb58c7](https://github.com/graasp/graasp/commit/7eb58c7b964d655d86de42545fae2b0c2c06d24d))
+* **deps:** update dependency openai to v4.39.1 ([#966](https://github.com/graasp/graasp/issues/966)) ([dd5852d](https://github.com/graasp/graasp/commit/dd5852dff286a0cacdc95c11f2f03e9315d9f31f))
+* **deps:** update dependency qs to v6.12.1 ([#969](https://github.com/graasp/graasp/issues/969)) ([616f909](https://github.com/graasp/graasp/commit/616f90925861501f622e1d23dd88c58ed68a18a4))
+* set config.ts file import as 1st priority ([#999](https://github.com/graasp/graasp/issues/999)) ([a3518e2](https://github.com/graasp/graasp/commit/a3518e206061b3b2dc77dbd1be513ec3d0437ca3))
+* **test:** set a valid url in fixtures and remove html in response ([#1010](https://github.com/graasp/graasp/issues/1010)) ([3814329](https://github.com/graasp/graasp/commit/3814329b609f67cbe7162f7aa6a7b48cbf4f67d9))
+* update tests to use fastify instance type for the app var ([#1004](https://github.com/graasp/graasp/issues/1004)) ([c7b8c40](https://github.com/graasp/graasp/commit/c7b8c402bd25c14b31c65ecab4c638e7a4d9adda))
+
+## [1.34.0](https://github.com/graasp/graasp/compare/v1.33.0...v1.34.0) (2024-04-26)
+
+
+### Features
+
+* change mobile link ([#985](https://github.com/graasp/graasp/issues/985)) ([34692e8](https://github.com/graasp/graasp/commit/34692e8013709e4634d37ac4b1a265bf78c32222))
+
+
+### Bug Fixes
+
+* include maxwidth in settings schema ([#991](https://github.com/graasp/graasp/issues/991)) ([78352fb](https://github.com/graasp/graasp/commit/78352fbeeacb8ade52ad2bf48bfa23462cd16c82))
+
+## [1.33.0](https://github.com/graasp/graasp/compare/v1.32.0...v1.33.0) (2024-04-24)
+
+
+### Features
+
+* export all user data ([#934](https://github.com/graasp/graasp/issues/934)) ([e1c818c](https://github.com/graasp/graasp/commit/e1c818cd7be025bc1ffcc1d2b67081cf7f44a643))
+
+
+### Bug Fixes
+
+* return hidden only for writer on export ([#984](https://github.com/graasp/graasp/issues/984)) ([b73c116](https://github.com/graasp/graasp/commit/b73c11605dc2268c91fbf5a08f2401a0ed2c95fc))
+* upgrade gpt versions ([#979](https://github.com/graasp/graasp/issues/979)) ([c7c5d53](https://github.com/graasp/graasp/commit/c7c5d5367f9a13cb5ba8efc88b5365f51f320029))
+
+## [1.32.0](https://github.com/graasp/graasp/compare/v1.31.0...v1.32.0) (2024-04-23)
+
+
+### Features
+
+* allow empty display name in POST or PATCH ([#974](https://github.com/graasp/graasp/issues/974)) ([e966d6f](https://github.com/graasp/graasp/commit/e966d6fced8fdd0a1f00760b53ee20e4b65e6c62))
+
+
+### Bug Fixes
+
+* apply user name limits ([#976](https://github.com/graasp/graasp/issues/976)) ([24ea66c](https://github.com/graasp/graasp/commit/24ea66cfb6bf083b54a93fbf5d32788c9d9a1d08))
+* copy item thumbnails ([#973](https://github.com/graasp/graasp/issues/973)) ([7e8894b](https://github.com/graasp/graasp/commit/7e8894b53f1f4e6c385b23bf07e30fbce6612c82))
+* use () instead of [] in spaces regex ([#978](https://github.com/graasp/graasp/issues/978)) ([b415e95](https://github.com/graasp/graasp/commit/b415e95e0346e50a9ec0e35eb29817047f3d20ab))
+
 ## [1.31.0](https://github.com/graasp/graasp/compare/v1.30.0...v1.31.0) (2024-04-17)
 
 

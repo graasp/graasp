@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import nock from 'nock';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -49,7 +51,7 @@ export const expectItemGeolocations = (
 };
 
 describe('Item Geolocation', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item;
   let packedItem: PackedItem | null;
@@ -493,8 +495,8 @@ describe('Item Geolocation', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
           query: {
-            lat: 2,
-            lng: 2,
+            lat: '2',
+            lng: '2',
           },
         });
 
@@ -521,8 +523,8 @@ describe('Item Geolocation', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
           query: {
-            lat: 2,
-            lng: 2,
+            lat: '2',
+            lng: '2',
           },
         });
         expect(res.json()).toMatchObject({ addressLabel: 'address', country: 'country' });
@@ -533,7 +535,7 @@ describe('Item Geolocation', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
           query: {
-            lng: 2,
+            lng: '2',
           },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -544,7 +546,7 @@ describe('Item Geolocation', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation/reverse`,
           query: {
-            lat: 2,
+            lat: '2',
           },
         });
         expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);

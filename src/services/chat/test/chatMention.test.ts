@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, MentionStatus } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -69,7 +71,7 @@ export const expectChatMentions = (
 };
 
 describe('Chat Mention tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

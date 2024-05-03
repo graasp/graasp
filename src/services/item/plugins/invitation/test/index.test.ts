@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import { In } from 'typeorm';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -69,7 +71,7 @@ const saveInvitations = async ({ member }) => {
 };
 
 describe('Invitation Plugin', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

@@ -4,6 +4,8 @@ import qs from 'qs';
 import { v4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import { CategoryType, HttpMethod, ItemTagType, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -14,7 +16,7 @@ import { saveMember, saveMembers } from '../../../../member/test/fixtures/member
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils, expectItem, expectManyItems } from '../../../test/fixtures/items';
 import { CategoryRepository } from '../../itemCategory/repositories/category';
-import { saveCategories } from '../../itemCategory/test/index.test';
+import { saveCategories } from '../../itemCategory/test/fixtures';
 import { ItemLike } from '../../itemLike/itemLike';
 import { saveItemLikes } from '../../itemLike/test/utils';
 import { ItemTagNotFound } from '../../itemTag/errors';
@@ -36,7 +38,7 @@ const expectPublishedEntry = (value, expectedValue) => {
 };
 
 describe('Item Published', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   const itemPublishedRawRepository = AppDataSource.getRepository(ItemPublished);
 
@@ -142,7 +144,7 @@ describe('Item Published', () => {
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/recent`,
-          query: { limit: 2 },
+          query: { limit: '2' },
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
 
@@ -192,7 +194,7 @@ describe('Item Published', () => {
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/collections/liked`,
-          query: { limit: 2 },
+          query: { limit: '2' },
         });
 
         const result = collections.slice(0, -1);
@@ -781,7 +783,7 @@ describe('Item Published', () => {
         await waitForExpect(async () => {
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + 1);
-        }, 300);
+        }, 1000);
 
         expect(indexSpy).toHaveBeenCalledTimes(5);
         // Topmost published at destination is reindexed

@@ -84,6 +84,7 @@ export class ItemTestUtils {
       ...item,
       createdAt: new Date(item.createdAt),
       updatedAt: new Date(item.updatedAt),
+      deletedAt: null,
     };
   }
 
@@ -136,14 +137,14 @@ export class ItemTestUtils {
     permission = PermissionLevel.Admin,
   }: {
     item: Item;
-    member: Member;
+    member: Actor;
     permission?: PermissionLevel;
   }) => {
     return ItemMembershipRepository.save({ item, member, permission });
   };
 
   saveItemAndMembership = async (options: {
-    member: Member;
+    member: Actor;
     item?: Partial<Item>;
     permission?: PermissionLevel;
     creator?: Member;

@@ -1,15 +1,17 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Member } from '../../../../../member/entities/member';
 import { saveMember } from '../../../../../member/test/fixtures/members';
-import { Item } from '../../../../entities/Item';
 import { AppTestUtils } from '../../test/fixtures';
 import { AppActionRepository } from '../repository';
+import { saveAppActions } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
@@ -21,14 +23,6 @@ const expectAppAction = (values, expected) => {
     expect(value.type).toEqual(expectValue.type);
     expect(value.data).toEqual(expectValue.data);
   }
-};
-
-export const saveAppActions = async ({ item, member }: { item: Item; member?: Member }) => {
-  const defaultData = { type: 'some-type', data: { some: 'data' } };
-  const s1 = await AppActionRepository.save({ item, member, ...defaultData });
-  const s2 = await AppActionRepository.save({ item, member, ...defaultData });
-  const s3 = await AppActionRepository.save({ item, member, ...defaultData });
-  return [s1, s2, s3];
 };
 
 // save apps, app actions, and get token
@@ -44,7 +38,7 @@ const setUpForAppActions = async (
 };
 
 describe('App Actions Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item, token;
   let appActions;

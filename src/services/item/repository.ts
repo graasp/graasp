@@ -22,7 +22,10 @@ import {
   TooManyDescendants,
   UnexpectedError,
 } from '../../utils/errors';
+import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
+import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
@@ -285,6 +288,28 @@ export class ItemRepository {
       .limit(1)
       .getOne();
     return farthestItem?.path?.split('.')?.length ?? 0;
+  }
+
+  /**
+   * Return all the items where the creator is the given actor.
+   * It even returns the item if the actor is the creator but without permissions on it !
+   *
+   * @param memberId The creator of the items.
+   * @returns an array of items created by the actor.
+   */
+  async getForMemberExport(memberId: string): Promise<Item[]> {
+    if (!memberId) {
+      throw new MemberIdentifierNotFound();
+    }
+
+    return this.repository.find({
+      select: schemaToSelectMapper(itemSchema),
+      where: { creator: { id: memberId } },
+      order: { updatedAt: 'DESC' },
+      relations: {
+        creator: true,
+      },
+    });
   }
 
   async getOwn(memberId: string): Promise<Item[]> {

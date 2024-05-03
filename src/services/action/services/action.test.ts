@@ -1,4 +1,4 @@
-import type { FastifyRequest } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
@@ -7,13 +7,17 @@ import { AppDataSource } from '../../../plugins/datasource';
 import { buildRepositories } from '../../../utils/repositories';
 import ItemService from '../../item/service';
 import { MemberService } from '../../member/service';
+import { ThumbnailService } from '../../thumbnail/service';
 import { Action } from '../entities/action';
 import { ActionService } from './action';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
 
-const service = new ActionService(new ItemService(), new MemberService());
+const service = new ActionService(
+  new ItemService({} as unknown as ThumbnailService, {} as unknown as FastifyBaseLogger),
+  new MemberService(),
+);
 const rawRepository = AppDataSource.getRepository(Action);
 
 export const MOCK_REQUEST = {
@@ -22,7 +26,7 @@ export const MOCK_REQUEST = {
 } as unknown as FastifyRequest;
 
 describe('ActionService', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

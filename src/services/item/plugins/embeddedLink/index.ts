@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
@@ -7,38 +5,51 @@ import { ItemType } from '@graasp/sdk';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
+import { LinkQueryParameterIsRequired } from './errors';
 import { createSchema } from './schemas';
+import { EmbeddedLinkService } from './service';
+import { ensureProtocol } from './utils';
 
 interface GraaspEmbeddedLinkItemOptions {
   /** \<protocol\>://\<hostname\>:\<port\> */
   iframelyHrefOrigin: string;
 }
 
-type IframelyLink = {
-  rel: string[];
-  href: string;
-};
-
-type IframelyResponse = {
-  meta: {
-    title?: string;
-    description?: string;
-  };
-  html: string;
-  links: IframelyLink[];
-};
-
 const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify, options) => {
   const { iframelyHrefOrigin } = options;
   const {
+    log,
     items: { extendCreateSchema, service: itemService },
   } = fastify;
+  const embeddedLinkService = new EmbeddedLinkService();
 
   if (!iframelyHrefOrigin) {
     throw new Error('graasp-embedded-link-item: mandatory options missing');
   }
   // "install" custom schema for validating embedded link items creation
   extendCreateSchema(createSchema);
+
+  fastify.get<{ Querystring: { link: string } }>(
+    '/metadata',
+    { preHandler: fastify.verifyAuthentication },
+    async ({ query: { link } }) => {
+      if (!link) {
+        throw new LinkQueryParameterIsRequired();
+      }
+
+      const url = ensureProtocol(link);
+      const { html: _html, ...metadata } = await embeddedLinkService.getLinkMetadata(
+        iframelyHrefOrigin,
+        url,
+      );
+      const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(url, log);
+
+      return {
+        ...metadata,
+        isEmbeddingAllowed,
+      };
+    },
+  );
 
   // register pre create handler to pre fetch link metadata
   const hook = async (
@@ -53,30 +64,22 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
     const { embeddedLink } = item.extra;
 
     const { url } = embeddedLink;
-
-    const response = await fetch(`${iframelyHrefOrigin}/iframely?uri=${encodeURIComponent(url)}`);
-    // better clues on how to extract the metadata here: https://iframely.com/docs/links
-    const { meta = {}, html, links = [] } = (await response.json()) as IframelyResponse;
-    const { title, description } = meta;
+    const { title, description, html, thumbnails, icons } =
+      await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, url);
 
     // TODO: maybe all the code below should be moved to another place if it gets more complex
     if (title) {
-      item.name = title.trim();
+      item.name = title;
     }
     if (description) {
-      item.description = description.trim();
+      item.description = description;
     }
     if (html) {
       embeddedLink.html = html;
     }
 
-    embeddedLink.thumbnails = links
-      .filter(({ rel }) => hasThumbnailRel(rel))
-      .map(({ href }) => href);
-
-    embeddedLink.icons = links
-      .filter(({ rel }: { rel: string[] }) => hasIconRel(rel))
-      .map(({ href }) => href);
+    embeddedLink.thumbnails = thumbnails;
+    embeddedLink.icons = icons;
 
     // default settings
     item.settings = {
@@ -88,9 +91,5 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
 
   itemService.hooks.setPreHook('create', hook);
 };
-
-const hasRel = (rel: string[], value: string) => rel.some((r) => r === value);
-const hasThumbnailRel = (rel: string[]) => hasRel(rel, 'thumbnail');
-const hasIconRel = (rel: string[]) => hasRel(rel, 'icon');
 
 export default plugin;

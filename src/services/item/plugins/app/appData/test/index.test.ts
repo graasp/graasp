@@ -1,16 +1,18 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
 import { APP_ITEMS_PREFIX } from '../../../../../../utils/config';
 import { Actor, Member } from '../../../../../member/entities/member';
 import { expectMinimalMember, saveMember } from '../../../../../member/test/fixtures/members';
-import { Item } from '../../../../entities/Item';
 import { AppTestUtils } from '../../test/fixtures';
 import { PreventUpdateAppDataFile } from '../errors';
 import { AppDataRepository } from '../repository';
+import { saveAppData } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../../plugins/datasource');
@@ -22,50 +24,6 @@ const expectAppData = (values, expected) => {
     expect(value.type).toEqual(expectValue.type);
     expect(value.data).toEqual(expectValue.data);
   }
-};
-
-export const saveAppData = async ({
-  item,
-  creator,
-  member,
-  visibility,
-}: {
-  item: Item;
-  creator: Member;
-  member?: Member;
-  visibility?: AppDataVisibility;
-}) => {
-  const defaultData = { type: 'some-type', data: { some: 'data' } };
-  const s1 = await AppDataRepository.save({
-    item,
-    creator,
-    member: member ?? creator,
-    ...defaultData,
-    visibility: visibility ?? AppDataVisibility.Item,
-  });
-  const s2 = await AppDataRepository.save({
-    item,
-    creator,
-    member: member ?? creator,
-    ...defaultData,
-    visibility: visibility ?? AppDataVisibility.Item,
-  });
-  const s3 = await AppDataRepository.save({
-    item,
-    creator,
-    member: member ?? creator,
-    ...defaultData,
-    visibility: visibility ?? AppDataVisibility.Member,
-  });
-  const s4 = await AppDataRepository.save({
-    item,
-    creator,
-    member: member ?? creator,
-    ...defaultData,
-    visibility: visibility ?? AppDataVisibility.Member,
-    type: 'other-type',
-  });
-  return [s1, s2, s3, s4];
 };
 
 // save apps, app data, and get token
@@ -86,7 +44,7 @@ const setUpForAppData = async (
 };
 
 describe('App Data Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item, token;
   let appData;

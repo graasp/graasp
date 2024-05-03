@@ -109,20 +109,15 @@ export class ImportExportService {
       const description = await this._getDescriptionForFilepath(path.join(filepath, filename));
 
       log.debug(`create folder from '${filename}'`);
-      return this.itemService.post(
-        actor,
-        repositories,
-        {
-          item: {
-            description,
-            name: filename,
-            type: ItemType.FOLDER,
-            extra: { [ItemType.FOLDER]: { childrenOrder: [] } },
-          },
-          parentId: parent?.id,
+      return this.itemService.post(actor, repositories, {
+        item: {
+          description,
+          name: filename,
+          type: ItemType.FOLDER,
+          extra: { [ItemType.FOLDER]: { childrenOrder: [] } },
         },
-        log,
-      );
+        parentId: parent?.id,
+      });
     }
     // string content
     // todo: optimize to avoid reading the file twice in case of upload
@@ -155,12 +150,10 @@ export class ImportExportService {
               },
             },
           };
-          return this.itemService.post(
-            actor,
-            repositories,
-            { item: newItem, parentId: parent?.id },
-            log,
-          );
+          return this.itemService.post(actor, repositories, {
+            item: newItem,
+            parentId: parent?.id,
+          });
         } else if (type === ItemType.LINK) {
           const newItem = {
             name,
@@ -172,12 +165,10 @@ export class ImportExportService {
               },
             },
           };
-          return this.itemService.post(
-            actor,
-            repositories,
-            { item: newItem, parentId: parent?.id },
-            log,
-          );
+          return this.itemService.post(actor, repositories, {
+            item: newItem,
+            parentId: parent?.id,
+          });
         } else {
           throw new Error(`${type} is not handled`);
         }
@@ -195,12 +186,7 @@ export class ImportExportService {
             },
           },
         };
-        return this.itemService.post(
-          actor,
-          repositories,
-          { item: newItem, parentId: parent?.id },
-          log,
-        );
+        return this.itemService.post(actor, repositories, { item: newItem, parentId: parent?.id });
       }
 
       // normal files
@@ -296,7 +282,7 @@ export class ImportExportService {
     if (isItemType(item, ItemType.FOLDER)) {
       // append description
       const folderPath = path.join(archiveRootPath, item.name);
-      const children = await repositories.itemRepository.getChildren(item);
+      const children = await this.itemService.getChildren(actor, repositories, item.id);
       const result = await Promise.all(
         children.map((child) =>
           this._addItemToZip(actor, repositories, {

@@ -6,6 +6,7 @@ import {
   ClientHostManager,
   Context,
   FileItemType,
+  GPTVersion,
   ItemType,
   LIBRARY_ITEMS_PREFIX,
   PLAYER_ITEMS_PREFIX,
@@ -15,7 +16,6 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
-import { GPTVersion } from '../services/item/plugins/app/chatBot/interfaces/gptVersion';
 
 enum Environment {
   production = 'production',
@@ -142,7 +142,7 @@ export const MOBILE_AUTH_URL = new URL(process.env.MOBILE_AUTH_URL || 'https://m
 
 export const MOBILE_DEEP_LINK_PROTOCOL = new URL(
   // the domain part below is just an example to check the validity of the URL
-  `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile-builder'}://graasp.org`,
+  `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile'}://graasp.org`,
 ).protocol; // we only use the protocol anyway
 
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
@@ -337,6 +337,7 @@ export const APP_ITEMS_PREFIX = '/app-items';
 export const THUMBNAILS_ROUTE_PREFIX = '/thumbnails';
 
 export const MEMBER_PROFILE_ROUTE_PREFIX = '/profile';
+export const MEMBER_EXPORT_DATA_ROUTE_PREFIX = '/export-data';
 
 if (!process.env.APPS_PUBLISHER_ID) {
   throw new Error('APPS_PUBLISHER_ID is not defined');
@@ -372,7 +373,14 @@ export const MEILISEARCH_STORE_LEGACY_PDF_CONTENT: boolean =
   process.env.MEILISEARCH_STORE_LEGACY_PDF_CONTENT === 'true';
 
 // OpenAI
-export const OPENAI_GPT_VERSION = process.env.OPENAI_GPT_VERSION || GPTVersion.GPT_4;
+const getGptVersion = (): GPTVersion => {
+  const GPTVersionEnv = process.env.OPENAI_GPT_VERSION ?? '';
+  if ((Object.values(GPTVersion) as string[]).includes(GPTVersionEnv)) {
+    return GPTVersionEnv as GPTVersion;
+  }
+  return GPTVersion.GPT_3_5_TURBO;
+};
+export const OPENAI_GPT_VERSION = getGptVersion();
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export const OPENAI_ORG_ID = process.env.OPENAI_ORG_ID;
 

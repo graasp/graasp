@@ -1,7 +1,10 @@
 import { QueryFailedError } from 'typeorm';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
+import { MemberNotFound } from '../../../../../utils/errors';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError';
+import { itemCategorySchema } from '../../../../member/plugins/export-data/schemas/schemas';
+import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
 import { Item } from '../../../entities/Item';
 import { ItemCategory } from '../entities/ItemCategory';
 import { DuplicateItemCategoryError } from '../errors';
@@ -36,6 +39,23 @@ export const ItemCategoryRepository = AppDataSource.getRepository(ItemCategory).
         itemPath: item.path,
       })
       .getMany();
+  },
+
+  /**
+   * Get itemCategory for a given member.
+   * @param memberId the id of the member.
+   * @returns an array of the item categories.
+   */
+  async getForMemberExport(memberId: string): Promise<ItemCategory[]> {
+    if (!memberId) {
+      throw new MemberNotFound();
+    }
+
+    return this.find({
+      select: schemaToSelectMapper(itemCategorySchema),
+      where: { creator: { id: memberId } },
+      relations: { category: true, item: true },
+    });
   },
 
   async post(itemPath: string, categoryId: string): Promise<ItemCategory> {

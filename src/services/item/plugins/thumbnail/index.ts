@@ -12,7 +12,6 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
-import { ItemThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
 
 type GraaspThumbnailsOptions = {
@@ -24,11 +23,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
   const {
     files: { service: fileService },
-    items,
+    items: {
+      thumbnails: { service: thumbnailService },
+    },
     db,
   } = fastify;
-
-  const { service: itemService } = items;
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -41,11 +40,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
   });
-
-  const thumbnailService = new ItemThumbnailService(itemService, fileService);
-
-  // decorate thumbnail service
-  items.thumbnails = { service: thumbnailService };
 
   fastify.post<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,

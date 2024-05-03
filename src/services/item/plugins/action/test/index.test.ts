@@ -2,6 +2,8 @@
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import { Context, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -10,9 +12,9 @@ import { BUILDER_HOST, ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { Action } from '../../../../action/entities/action';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils } from '../../../test/fixtures/items';
-import { saveAppActions } from '../../app/appAction/test/index.test';
-import { saveAppData } from '../../app/appData/test/index.test';
-import { saveAppSettings } from '../../app/appSetting/test/index.test';
+import { saveAppActions } from '../../app/appAction/test/fixtures';
+import { saveAppData } from '../../app/appData/test/fixtures';
+import { saveAppSettings } from '../../app/appSetting/test/fixtures';
 import { CannotPostAction } from '../errors';
 import { ActionRequestExportRepository } from '../requestExport/repository';
 import { ItemActionType } from '../utils';
@@ -57,7 +59,7 @@ jest.mock('@aws-sdk/lib-storage', () => {
 });
 
 describe('Action Plugin Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {
@@ -82,7 +84,7 @@ describe('Action Plugin Tests', () => {
             type: 'view',
           },
           headers: {
-            Origin: BUILDER_HOST.url,
+            Origin: BUILDER_HOST.url.toString(),
           },
         });
 
@@ -189,7 +191,7 @@ describe('Action Plugin Tests', () => {
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,
           body: {},
           headers: {
-            Origin: BUILDER_HOST.url,
+            Origin: BUILDER_HOST.url.toString(),
           },
         });
 
@@ -323,7 +325,7 @@ describe('Action Plugin Tests', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: members[0] });
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['user', 'createdDay', 'actionType'],
         aggregateFunction: 'avg',
@@ -349,7 +351,7 @@ describe('Action Plugin Tests', () => {
       });
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['user', 'createdDay', 'actionType'],
         aggregateFunction: 'avg',
@@ -371,7 +373,7 @@ describe('Action Plugin Tests', () => {
       await saveActions(item, members);
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['user', 'createdDay', 'actionType'],
         aggregateFunction: 'avg',
@@ -401,7 +403,7 @@ describe('Action Plugin Tests', () => {
       await saveActions(item, members);
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['user', 'createdDay'],
         aggregateFunction: 'count',
@@ -429,7 +431,7 @@ describe('Action Plugin Tests', () => {
       await saveActions(item, members);
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['actionType'],
         aggregateFunction: 'sum',
@@ -457,7 +459,7 @@ describe('Action Plugin Tests', () => {
       await saveActions(item, members);
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['createdTimeOfDay'],
         aggregateFunction: 'sum',
@@ -483,7 +485,7 @@ describe('Action Plugin Tests', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['user', 'createdDay', 'actionType'],
         aggregateFunction: 'avg',
@@ -503,7 +505,7 @@ describe('Action Plugin Tests', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['user', 'createdDay'],
         aggregateFunction: 'avg',
@@ -523,7 +525,7 @@ describe('Action Plugin Tests', () => {
       const { item } = await testUtils.saveItemAndMembership({ member: actor });
 
       const parameters = {
-        requestedSampleSize: 5000,
+        requestedSampleSize: '5000',
         view: Context.Builder,
         countGroupBy: ['user', 'createdDay'],
         aggregateFunction: 'avg',
