@@ -5,28 +5,28 @@ import { preHandlerHookHandler } from 'fastify';
 
 import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 
-import { JobService } from './jobs';
-import type { MailerDecoration } from './plugins/mailer';
-import { ActionService } from './services/action/services/action';
-import { MentionService } from './services/chat/plugins/mentions/service';
-import { ChatMessageService } from './services/chat/service';
-import FileService from './services/file/service';
-import { create, updateOne } from './services/item/fluent-schema';
-import { ActionItemService } from './services/item/plugins/action/service';
-import { EtherpadItemService } from './services/item/plugins/etherpad/service';
-import FileItemService from './services/item/plugins/file/service';
+import { JobService } from '../jobs';
+import type { MailerDecoration } from '../plugins/mailer';
+import { ActionService } from '../services/action/services/action';
+import { MentionService } from '../services/chat/plugins/mentions/service';
+import { ChatMessageService } from '../services/chat/service';
+import FileService from '../services/file/service';
+import { create, updateOne } from '../services/item/fluent-schema';
+import { ActionItemService } from '../services/item/plugins/action/service';
+import { EtherpadItemService } from '../services/item/plugins/etherpad/service';
+import FileItemService from '../services/item/plugins/file/service';
+import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
+import { SearchService } from '../services/item/plugins/published/plugins/search/service';
+import { ItemPublishedService } from '../services/item/plugins/published/service';
+import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service';
+import ItemService from '../services/item/service';
+import ItemMembershipService from '../services/itemMembership/service';
+import { Actor, Member } from '../services/member/entities/member';
+import { StorageService } from '../services/member/plugins/storage/service';
+import { MemberService } from '../services/member/service';
+import { ThumbnailService } from '../services/thumbnail/service';
+import { WebsocketService } from '../services/websockets/ws-service';
 import { H5PService } from './services/item/plugins/h5p/service';
-import { ItemCategoryService } from './services/item/plugins/itemCategory/services/itemCategory';
-import { SearchService } from './services/item/plugins/published/plugins/search/service';
-import { ItemPublishedService } from './services/item/plugins/published/service';
-import { ItemThumbnailService } from './services/item/plugins/thumbnail/service';
-import ItemService from './services/item/service';
-import ItemMembershipService from './services/itemMembership/service';
-import { Actor, Member } from './services/member/entities/member';
-import { StorageService } from './services/member/plugins/storage/service';
-import { MemberService } from './services/member/service';
-import { ThumbnailService } from './services/thumbnail/service';
-import { WebsocketService } from './services/websockets/ws-service';
 
 declare module 'fastify' {
   interface FastifyInstance {

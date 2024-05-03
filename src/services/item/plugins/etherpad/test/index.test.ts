@@ -5,6 +5,8 @@ import { And, Not } from 'typeorm';
 import * as uuid from 'uuid';
 import waitForExpect from 'wait-for-expect';
 
+import { FastifyInstance } from 'fastify';
+
 import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -32,7 +34,7 @@ const MOCK_SESSION_ID = 's.s8oes9dhwrvt0zif';
 const MODES: Array<'read' | 'write'> = ['read', 'write'];
 
 describe('Etherpad service API', () => {
-  let app;
+  let app: FastifyInstance;
   let member: Member;
 
   const payloadCreate = {

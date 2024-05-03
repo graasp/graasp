@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, ItemLoginSchemaType, MemberFactory, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -54,7 +56,7 @@ const savePseudonymizedMember = (name?: string) => {
 };
 
 describe('Item Login Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item;
   let member;

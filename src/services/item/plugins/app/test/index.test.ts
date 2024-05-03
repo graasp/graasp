@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -31,13 +33,13 @@ const setUpForAppContext = async (
 };
 
 describe('Apps Plugin Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor: Actor;
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor;
+    actor = undefined;
     app.close();
   });
 

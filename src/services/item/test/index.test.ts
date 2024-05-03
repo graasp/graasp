@@ -1,7 +1,12 @@
+import FormData from 'form-data';
+import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import path from 'node:path';
 import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
+
+import { FastifyInstance } from 'fastify';
 
 import {
   DescriptionPlacement,
@@ -49,6 +54,40 @@ jest.mock('../../../plugins/datasource');
 
 const testUtils = new ItemTestUtils();
 
+// Mock S3 libraries
+const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
+const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
+const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
+const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+const MOCK_SIGNED_URL = 'signed-url';
+jest.mock('@aws-sdk/client-s3', () => {
+  return {
+    GetObjectCommand: jest.fn(),
+    S3: function () {
+      return {
+        copyObject: copyObjectMock,
+        deleteObject: deleteObjectMock,
+        headObject: headObjectMock,
+      };
+    },
+  };
+});
+jest.mock('@aws-sdk/s3-request-presigner', () => {
+  const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
+  return {
+    getSignedUrl,
+  };
+});
+jest.mock('@aws-sdk/lib-storage', () => {
+  return {
+    Upload: jest.fn().mockImplementation(() => {
+      return {
+        done: uploadDoneMock,
+      };
+    }),
+  };
+});
+
 const saveUntilMaxDescendants = async (parent: Item, actor: Member) => {
   // save maximum depth
   // TODO: DYNAMIC
@@ -91,7 +130,7 @@ const saveNbOfItems = async ({
 };
 
 describe('Item routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {
@@ -483,6 +522,44 @@ describe('Item routes tests', () => {
       });
     });
   });
+
+  describe('POST /items/with-thumbnail', () => {
+    beforeEach(async () => {
+      ({ app, actor } = await build());
+    });
+    it('Post item with thumbnail', async () => {
+      const imageStream = fs.createReadStream(path.resolve(__dirname, './fixtures/image.png'));
+      const itemName = 'Test Item';
+      const payload = new FormData();
+      payload.append('name', itemName);
+      payload.append('type', ItemType.FOLDER);
+      payload.append('description', '');
+      payload.append('file', imageStream);
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/with-thumbnail`,
+        payload,
+        headers: payload.getHeaders(),
+      });
+
+      const newItem = response.json();
+      console.log(newItem);
+      expectItem(
+        newItem,
+        FolderItemFactory({
+          name: itemName,
+          type: ItemType.FOLDER,
+          description: '',
+          settings: { hasThumbnail: true },
+          lang: 'en',
+        }),
+        actor,
+      );
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(uploadDoneMock).toHaveBeenCalled();
+    });
+  });
+
   describe('GET /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));

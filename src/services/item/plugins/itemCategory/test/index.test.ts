@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -48,7 +50,7 @@ export const setUp = async ({ item }: { item?: Item }) => {
 };
 
 describe('Categories', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let member;
   let categories;

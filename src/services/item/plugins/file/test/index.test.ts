@@ -5,6 +5,8 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, ItemType, MaxWidth, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -76,7 +78,7 @@ const createFormData = (form = new FormData()) => {
 };
 
 describe('File Item routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

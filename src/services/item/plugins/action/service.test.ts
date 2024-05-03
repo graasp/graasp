@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { FastifyBaseLogger } from 'fastify';
+import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import {
   AggregateFunction,
@@ -42,7 +42,7 @@ const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 
 describe('ActionItemService', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item;
 

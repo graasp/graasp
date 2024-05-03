@@ -23,7 +23,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
-  fastify.register(fastifyMultipart);
 
   const iS = new InvitationService(
     log,
@@ -71,52 +70,55 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
+  fastify.register(async (fastify) => {
+    fastify.register(fastifyMultipart);
 
-  // post invitations from a csv file
-  fastify.post<{ Params: IdParam; Querystring: { templateId: string } }>(
-    '/:id/invitations/upload-csv',
-    { preHandler: fastify.verifyAuthentication },
-    async (request) => {
-      const { member, query, params } = request;
-      // this is needed to assert the type of the member to be a Member and not an Actor.
-      // verifyAuthentication preHandler should throw if there is no member, but the type can not be narrowed automatically
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    // post invitations from a csv file
+    fastify.post<{ Params: IdParam; Querystring: { templateId: string } }>(
+      '/:id/invitations/upload-csv',
+      { preHandler: fastify.verifyAuthentication },
+      async (request) => {
+        const { member, query, params } = request;
+        // this is needed to assert the type of the member to be a Member and not an Actor.
+        // verifyAuthentication preHandler should throw if there is no member, but the type can not be narrowed automatically
+        if (!member) {
+          throw new UnauthorizedMember(member);
+        }
 
-      // get uploaded file
-      const uploadedFile = await request.file({
-        limits: {
-          fields: 0, // Max number of non-file fields (Default: Infinity).
-          fileSize: MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
-          files: 1, // Max number of file fields (Default: Infinity).
-        },
-      });
+        // get uploaded file
+        const uploadedFile = await request.file({
+          limits: {
+            fields: 0, // Max number of non-file fields (Default: Infinity).
+            fileSize: MAX_FILE_SIZE, // For multipart forms, the max file size (Default: Infinity).
+            files: 1, // Max number of file fields (Default: Infinity).
+          },
+        });
 
-      if (!uploadedFile) {
-        throw new NoFileProvidedForInvitations();
-      }
+        if (!uploadedFile) {
+          throw new NoFileProvidedForInvitations();
+        }
 
-      // destructure query params
-      const { id: itemId } = params;
-      const { templateId } = query;
+        // destructure query params
+        const { id: itemId } = params;
+        const { templateId } = query;
 
-      if (templateId) {
+        if (templateId) {
+          return await db.transaction(async (manager) =>
+            iS.createStructureForCSVAndTemplate(
+              member,
+              buildRepositories(manager),
+              itemId,
+              templateId,
+              uploadedFile,
+            ),
+          );
+        }
         return await db.transaction(async (manager) =>
-          iS.createStructureForCSVAndTemplate(
-            member,
-            buildRepositories(manager),
-            itemId,
-            templateId,
-            uploadedFile,
-          ),
+          iS.importUsersWithCSV(member, buildRepositories(manager), itemId, uploadedFile),
         );
-      }
-      return await db.transaction(async (manager) =>
-        iS.importUsersWithCSV(member, buildRepositories(manager), itemId, uploadedFile),
-      );
-    },
-  );
+      },
+    );
+  });
 
   // get all invitations for an item
   fastify.get<{ Params: IdParam }>(

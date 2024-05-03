@@ -1,6 +1,8 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch, { type Response } from 'node-fetch';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
@@ -22,7 +24,7 @@ const mockCaptchaValidation = (action: RecaptchaActionType) => {
 jest.mock('../../../../../plugins/datasource');
 
 describe('Password routes tests', () => {
-  let app;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
     ({ app } = await build({ member: null }));

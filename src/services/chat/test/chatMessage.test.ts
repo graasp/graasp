@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -45,7 +47,7 @@ const expectChatMessages = (messages, correctMessages) => {
 };
 
 describe('Chat Message tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

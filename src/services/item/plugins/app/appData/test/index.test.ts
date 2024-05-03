@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { AppDataVisibility, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
@@ -42,7 +44,7 @@ const setUpForAppData = async (
 };
 
 describe('App Data Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item, token;
   let appData;

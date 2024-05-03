@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
@@ -43,7 +45,7 @@ const setUpForAppSettings = async (
 };
 
 describe('Apps Settings Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item, token;
   let appSettings;

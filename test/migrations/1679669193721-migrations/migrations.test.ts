@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
 import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations';
 import build from '../../app';
@@ -8,7 +10,7 @@ import { down, up } from './migrations1679669193721.fixtures';
 jest.mock('../../../src/plugins/datasource');
 
 describe('migrations1679669193721', () => {
-  let app;
+  let app: FastifyInstance;
   const migration = new Migrations1679669193721();
 
   beforeEach(async () => {

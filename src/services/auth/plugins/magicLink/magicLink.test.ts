@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import {
   HttpMethod,
   MAX_USERNAME_LENGTH,
@@ -33,7 +35,7 @@ export const mockCaptchaValidation = (action: RecaptchaActionType) => {
 jest.mock('../../../../plugins/datasource');
 
 describe('Auth routes tests', () => {
-  let app;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
     ({ app } = await build({ member: null }));

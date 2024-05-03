@@ -411,6 +411,19 @@ export class InvalidItemError extends CoreError {
   }
 }
 
+export class NoFileProvided extends CoreError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GERR033',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Expected a file to be present in the request, found none',
+      },
+      data,
+    );
+  }
+}
+
 export class DatabaseError extends CoreError {
   constructor(data?: unknown) {
     super({ code: 'GERR998', statusCode: 500, message: FAILURE_MESSAGES.DATABASE_ERROR }, data);
