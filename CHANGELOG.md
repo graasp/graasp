@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.36.0](https://github.com/graasp/graasp/compare/v1.35.0...v1.36.0) (2024-05-03)
+
+
+### Features
+
+* implements automatic suffix to copied item ([#997](https://github.com/graasp/graasp/issues/997)) ([66dc9b2](https://github.com/graasp/graasp/commit/66dc9b22e561e5d3b770c6e41cc9b78ec21602cf))
+* implements seed function with sample data ([#989](https://github.com/graasp/graasp/issues/989)) ([9084fe7](https://github.com/graasp/graasp/commit/9084fe75585472835242cdd1401722489db3f169))
+
 ## [1.35.0](https://github.com/graasp/graasp/compare/v1.34.0...v1.35.0) (2024-05-02)
 
 
