@@ -5,6 +5,7 @@ import { v4 } from 'uuid';
 import {
   FileItemType,
   ItemType,
+  MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
   PermissionLevel,
   buildPathFromIds,
@@ -30,6 +31,9 @@ import { mapById } from '../utils';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
+
+const DEFAULT_COPY_SUFFIX = ' (2)';
+const IS_COPY_REGEX = /\s\(\d+\)$/g;
 
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
@@ -466,6 +470,7 @@ export class ItemRepository {
       ...originalParent,
       creator,
       parent: parentItem,
+      name: this._addCopySuffix(originalParent.name),
     });
     old2New.set(originalParent.id, { copy: copiedItem, original: originalParent });
 
@@ -502,6 +507,41 @@ export class ItemRepository {
     }
 
     return old2New;
+  }
+
+  /**
+   * Return a copy with a suffix of the string given in parameter.
+   * The suffix respect the format " (0)". "0" is a succint positive number starting at 2.
+   * If the string given in parameter already have a valid suffix, increase the number by 1.
+   * If the copied name exceed the maximum characters allowed, the original name will be shorten,
+   * the copied name will be equals to the maximum allowed.
+   * @param name string to copy.
+   * @returns a copy of the string given in parameter, with a suffix.
+   */
+  _addCopySuffix(name: string): string {
+    let result = name;
+
+    // If the name already have a copy suffix
+    if (IS_COPY_REGEX.test(name)) {
+      // Then fetch the number, and increase it.
+      const suffixStart = name.lastIndexOf('(') + 1;
+      const number = Number(name.substring(suffixStart, name.length - 1)) + 1;
+      result = `${name.substring(0, suffixStart)}${number})`;
+    } else {
+      result += DEFAULT_COPY_SUFFIX;
+    }
+
+    // If the copied name exceed the maximum item name length.
+    if (result.length > MAX_ITEM_NAME_LENGTH) {
+      // Then shorten the original name to match the maximum length.
+      const suffixStart = result.lastIndexOf('(');
+      const suffixLength = result.length - suffixStart + 1;
+      result =
+        result.substring(0, MAX_ITEM_NAME_LENGTH - suffixLength) +
+        result.substring(suffixStart - 1, result.length);
+    }
+
+    return result;
   }
 
   /**

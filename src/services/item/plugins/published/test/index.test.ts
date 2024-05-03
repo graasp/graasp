@@ -788,7 +788,7 @@ describe('Item Published', () => {
         expect(indexSpy).toHaveBeenCalledTimes(5);
         // Topmost published at destination is reindexed
         expect(indexSpy.mock.calls[4][0].id).not.toEqual(unpublishedItem.id);
-        expect(indexSpy.mock.calls[4][0].name).toEqual('unpublishedItem');
+        expect(indexSpy.mock.calls[4][0].name).toEqual('unpublishedItem (2)');
 
         // Testing category usecase
         const { item: categoryItem } = await testUtils.saveItemAndMembership({

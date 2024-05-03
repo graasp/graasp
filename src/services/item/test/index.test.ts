@@ -2789,10 +2789,19 @@ describe('Item routes tests', () => {
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await testUtils.rawItemRepository.find({
+            const itemsInDb1 = await testUtils.rawItemRepository.find({
               where: { name },
               relations: { creator: true },
             });
+            const itemsInDb2 = await testUtils.rawItemRepository.find({
+              where: { name: `${name} (2)` },
+              relations: { creator: true },
+            });
+
+            expect(itemsInDb1).toHaveLength(1);
+            expect(itemsInDb2).toHaveLength(1);
+
+            const itemsInDb = [...itemsInDb1, ...itemsInDb2];
             expect(itemsInDb).toHaveLength(2);
 
             // expect copied data
@@ -2842,7 +2851,12 @@ describe('Item routes tests', () => {
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
+            expect(itemsInDb).toHaveLength(1);
+
+            const itemsInDbCopied = await testUtils.rawItemRepository.findBy({
+              name: `${name} (2)`,
+            });
+            expect(itemsInDbCopied).toHaveLength(1);
           }
 
           // check it did not create a new membership because user is admin of parent
@@ -2882,7 +2896,10 @@ describe('Item routes tests', () => {
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
+            expect(itemsInDb).toHaveLength(1);
+
+            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
+            expect(itemsInDb2).toHaveLength(1);
           }
 
           // check it created a new membership because user is writer of parent
@@ -2974,8 +2991,10 @@ describe('Item routes tests', () => {
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
+            const itemsInDb1 = await testUtils.rawItemRepository.findBy({ name });
+            expect(itemsInDb1).toHaveLength(1);
+            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
+            expect(itemsInDb2).toHaveLength(1);
           }
 
           // check it did not create a new membership because user is admin of parent
@@ -3071,12 +3090,13 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           for (const item of items) {
             const results = await testUtils.rawItemRepository.findBy({ name: item.name });
-            if (!results.length) {
+            const copy = await testUtils.rawItemRepository.findBy({ name: `${item.name} (2)` });
+            if (!results.length && !copy.length) {
               throw new Error('item does not exist!');
             }
-            expect(results).toHaveLength(2);
-            const copy = results.find(({ id }) => id !== item.id);
-            expect(copy?.path.startsWith(parentItem.path)).toBeTruthy();
+            expect(results).toHaveLength(1);
+            expect(copy).toHaveLength(1);
+            expect(copy[0].path.startsWith(parentItem.path)).toBeTruthy();
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });
