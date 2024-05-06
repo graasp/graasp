@@ -20,7 +20,7 @@ import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
 import { RecycledItemDataRepository } from '../repository';
-import { expectManyRecycledItems } from './fixtures';
+import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');
@@ -56,15 +56,16 @@ describe('Recycle Bin Tests', () => {
         });
 
         it('Successfully get recycled items', async () => {
-          const item0 = await testUtils.saveRecycledItem(actor);
-          const item1 = await testUtils.saveRecycledItem(actor);
+          const { item: item0, packedItem: packedItem0 } = await testUtils.saveRecycledItem(actor);
+          const { item: item1, packedItem: packedItem1 } = await testUtils.saveRecycledItem(actor);
 
           // actor does not have access
           const member = await saveMember();
           await testUtils.saveRecycledItem(member);
 
           // we should not get item2
-          const recycled = [item0, item1];
+          const recycledItems = [item0, item1];
+          const recycledPackedItems = [packedItem0, packedItem1];
 
           const res = await app.inject({
             method: HttpMethod.Get,
@@ -78,20 +79,21 @@ describe('Recycle Bin Tests', () => {
             where: { creator: { id: actor.id } },
             withDeleted: true,
           });
-          expect(response).toHaveLength(recycled.length);
-          expectManyItems(dbDeletedItems, recycled);
+          expect(response).toHaveLength(recycledItems.length);
+          expectManyItems(dbDeletedItems, recycledItems);
           // check response recycled item
-          expectManyRecycledItems(response, recycled, actor);
+          expectManyPackedRecycledItems(response, recycledPackedItems, actor);
         });
 
         it('Successfully get subitems recycled items', async () => {
-          const item0 = await testUtils.saveRecycledItem(actor);
+          const { item: item0, packedItem: packedItem0 } = await testUtils.saveRecycledItem(actor);
           const { item: parentItem } = await testUtils.saveItemAndMembership({ member: actor });
-          const deletedChild = await testUtils.saveItem({
-            item: { name: 'child' },
-            parentItem,
-            actor,
-          });
+          const { item: deletedChild, packedItem: packedDeletedChild } =
+            await testUtils.saveItemAndMembership({
+              item: { name: 'child' },
+              parentItem,
+              member: actor,
+            });
           await testUtils.saveRecycledItem(actor, deletedChild);
 
           // actor does not have access
@@ -99,7 +101,8 @@ describe('Recycle Bin Tests', () => {
           await testUtils.saveRecycledItem(member);
 
           // we should not get item2
-          const recycled = [item0, deletedChild];
+          const recycledItems = [item0, deletedChild];
+          const recycledPackedItems = [packedItem0, packedDeletedChild];
 
           const res = await app.inject({
             method: HttpMethod.Get,
@@ -109,11 +112,11 @@ describe('Recycle Bin Tests', () => {
           const response = res.json();
           expect(res.statusCode).toBe(StatusCodes.OK);
 
-          expect(response).toHaveLength(recycled.length);
+          expect(response).toHaveLength(recycledItems.length);
           const dbDeletedItems = response.map(({ item }) => item);
-          expectManyItems(dbDeletedItems, recycled);
+          expectManyItems(dbDeletedItems, recycledItems);
           // check response recycled item
-          expectManyRecycledItems(response, recycled, actor);
+          expectManyPackedRecycledItems(response, recycledPackedItems, actor);
         });
       });
     });
@@ -176,7 +179,7 @@ describe('Recycle Bin Tests', () => {
 
         it('Returns error in array if does not have rights on one item', async () => {
           const member = await saveMember();
-          const errorItem = await testUtils.saveRecycledItem(member);
+          const { item: errorItem } = await testUtils.saveRecycledItem(member);
           const res = await app.inject({
             method: HttpMethod.Post,
             url: `/items/recycle?${qs.stringify(
@@ -251,9 +254,9 @@ describe('Recycle Bin Tests', () => {
         let items, itemIds;
         beforeEach(async () => {
           ({ app, actor } = await build());
-          const item1 = await testUtils.saveRecycledItem(actor);
-          const item2 = await testUtils.saveRecycledItem(actor);
-          const item3 = await testUtils.saveRecycledItem(actor);
+          const { item: item1 } = await testUtils.saveRecycledItem(actor);
+          const { item: item2 } = await testUtils.saveRecycledItem(actor);
+          const { item: item3 } = await testUtils.saveRecycledItem(actor);
           items = [item1, item2, item3];
           itemIds = items.map(({ id }) => id);
         });

@@ -26,7 +26,7 @@ describe('ItemPublishedRepository', () => {
 
   describe('getForMember', () => {
     it('get published items for member', async () => {
-      const items = await testUtils.saveCollections(actor);
+      const { items } = await testUtils.saveCollections(actor);
       // noise
       const member = await saveMember();
       await testUtils.saveCollections(member);

@@ -562,6 +562,7 @@ export class ItemRepository {
     );
   }
 
+  // to remove: unused
   async getAllPublishedItems(): Promise<Item[]> {
     const publishedRows = await this.repository
       .createQueryBuilder('item')
@@ -570,6 +571,27 @@ export class ItemRepository {
       .getMany();
 
     return publishedRows;
+  }
+
+  /**
+   * Return published items for given member
+   * @param memberId
+   * @returns published items for given member
+   */
+  async getPublishedItemsForMember(memberId: string): Promise<Item[]> {
+    // get for membership write and admin -> createquerybuilder
+    const result = await this.repository
+      .createQueryBuilder('item')
+      .innerJoin('item_published', 'pi', 'pi.item_path = item.path')
+      .innerJoin('item_membership', 'im', 'im.item_path @> item.path')
+      .innerJoinAndSelect('item.creator', 'member')
+      .where('im.member_id = :memberId', { memberId })
+      .andWhere('im.permission IN (:...permissions)', {
+        permissions: [PermissionLevel.Admin, PermissionLevel.Write],
+      })
+      .getMany();
+
+    return result;
   }
 
   async findAndCount(args: FindManyOptions<Item>) {

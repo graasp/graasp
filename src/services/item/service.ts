@@ -33,6 +33,7 @@ import {
   validatePermission,
   validatePermissionMany,
 } from '../authorization';
+import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../member/entities/member';
 import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
@@ -193,9 +194,14 @@ export class ItemService {
   ) {
     const item = await repositories.itemRepository.get(id);
 
-    const itemMembership = await validatePermission(repositories, permission, actor, item);
+    const { itemMembership, tags } = await validatePermission(
+      repositories,
+      permission,
+      actor,
+      item,
+    );
 
-    return { item, itemMembership };
+    return { item, itemMembership, tags };
   }
 
   /**
@@ -231,9 +237,9 @@ export class ItemService {
     id: string,
     permission: PermissionLevel = PermissionLevel.Read,
   ) {
-    const { item, itemMembership } = await this._get(actor, repositories, id, permission);
+    const { item, itemMembership, tags } = await this._get(actor, repositories, id, permission);
 
-    return new ItemWrapper(item, itemMembership).packed();
+    return new ItemWrapper(item, itemMembership, tags).packed();
   }
 
   /**
@@ -249,7 +255,7 @@ export class ItemService {
 
     // check memberships
     // remove items if they do not have permissions
-    const memberships = await validatePermissionMany(
+    const { itemMemberships, tags } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
@@ -258,12 +264,12 @@ export class ItemService {
 
     for (const [id, _item] of Object.entries(result.data)) {
       // Do not delete if value exist but is null, because no memberships but can be public
-      if (memberships?.data[id] === undefined) {
+      if (itemMemberships?.data[id] === undefined) {
         delete result.data[id];
       }
     }
 
-    return { items: result, memberships };
+    return { items: result, itemMemberships, tags };
   }
 
   /**
@@ -274,9 +280,9 @@ export class ItemService {
    * @returns
    */
   async getMany(actor: Actor, repositories: Repositories, ids: string[]) {
-    const { items, memberships } = await this._getMany(actor, repositories, ids);
+    const { items, itemMemberships } = await this._getMany(actor, repositories, ids);
 
-    return { data: items.data, errors: items.errors.concat(memberships?.errors ?? []) };
+    return { data: items.data, errors: items.errors.concat(itemMemberships?.errors ?? []) };
   }
 
   /**
@@ -287,9 +293,9 @@ export class ItemService {
    * @returns
    */
   async getManyPacked(actor: Actor, repositories: Repositories, ids: string[]) {
-    const { items, memberships } = await this._getMany(actor, repositories, ids);
+    const { items, itemMemberships, tags } = await this._getMany(actor, repositories, ids);
 
-    return ItemWrapper.mergeResult(items, memberships);
+    return ItemWrapper.mergeResult(items, itemMemberships, tags);
   }
 
   async getAccessible(
@@ -298,7 +304,25 @@ export class ItemService {
     params: ItemSearchParams,
     pagination: PaginationParams,
   ): Promise<Paginated<PackedItem>> {
-    return repositories.itemMembershipRepository.getAccessibleItems(actor, params, pagination);
+    const { data: memberships, totalCount } =
+      await repositories.itemMembershipRepository.getAccessibleItems(actor, params, pagination);
+
+    const items = memberships.map(({ item }) => item);
+    const resultOfMembership = mapById<ItemMembership[]>({
+      keys: items.map((i) => i.id),
+      findElement: (id) => {
+        const im = memberships.find(({ item: thisItem }) => thisItem.id === id);
+        return im ? [im] : undefined;
+      },
+    });
+
+    const packedItems = await ItemWrapper.createPackedItems(
+      actor,
+      repositories,
+      memberships.map(({ item }) => item),
+      resultOfMembership,
+    );
+    return { data: packedItems, totalCount };
   }
 
   async getOwn(actor: Actor, { itemRepository }: Repositories) {
@@ -387,16 +411,16 @@ export class ItemService {
     const item = await this.get(actor, repositories, itemId);
 
     const parents = await itemRepository.getAncestors(item);
-    const memberships = await validatePermissionMany(
+    const { itemMemberships, tags } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
       parents,
     );
     // remove parents actor does not have access
-    const parentsIds = Object.keys(memberships.data);
+    const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
-    return ItemWrapper.merge(items, memberships);
+    return ItemWrapper.merge(items, itemMemberships, tags);
   }
 
   async patch(actor: Actor, repositories: Repositories, itemId: UUID, body: Partial<Item>) {
@@ -564,7 +588,7 @@ export class ItemService {
       destination: result,
     });
 
-    return result;
+    return { item, moved: result };
   }
 
   // TODO: optimize
@@ -573,10 +597,10 @@ export class ItemService {
       throw new UnauthorizedMember(actor);
     }
 
-    const items = await Promise.all(
+    const results = await Promise.all(
       itemIds.map((id) => this.move(actor, repositories, id, toItemId)),
     );
-    return items;
+    return { items: results.map(({ item }) => item), moved: results.map(({ moved }) => moved) };
   }
 
   /**
@@ -686,7 +710,7 @@ export class ItemService {
       }
     }
 
-    return copyRoot;
+    return { item, copy: copyRoot };
   }
 
   // TODO: optimize
@@ -696,8 +720,10 @@ export class ItemService {
     itemIds: string[],
     args: { parentId?: UUID },
   ) {
-    const items = await Promise.all(itemIds.map((id) => this.copy(actor, repositories, id, args)));
-    return items;
+    const results = await Promise.all(
+      itemIds.map((id) => this.copy(actor, repositories, id, args)),
+    );
+    return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
   }
 }
 

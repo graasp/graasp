@@ -41,7 +41,7 @@ describe('ZIP routes tests', () => {
         actor,
         parentItem: item,
       });
-      await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
+      await new ItemTagRepository().post(actor, child1, ItemTagType.Hidden);
 
       const importExportService = new ImportExportService(
         app.db,

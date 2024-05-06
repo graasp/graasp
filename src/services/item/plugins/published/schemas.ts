@@ -131,7 +131,7 @@ export const getCollectionsForMember = {
     200: {
       type: 'array',
       items: {
-        $ref: 'https://graasp.org/items/#/definitions/item',
+        $ref: 'https://graasp.org/items/#/definitions/packedItem',
       },
     },
   },

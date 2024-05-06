@@ -33,6 +33,10 @@ export const expectItemGeolocations = (
   expected: PackedItemGeolocation[],
 ) => {
   for (const ig of expected) {
+    const publicTest = ig.item.public?.id
+      ? { public: expect.objectContaining({ id: ig.item.public.id }) }
+      : {};
+
     expect(results).toContainEqual(
       expect.objectContaining({
         lat: ig.lat,
@@ -44,6 +48,7 @@ export const expectItemGeolocations = (
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           creator: expect.objectContaining({ id: ig.item.creator!.id }),
           permission: ig.item.permission,
+          ...publicTest,
         }),
       }),
     );
@@ -70,16 +75,16 @@ describe('Item Geolocation', () => {
       it('Get geolocation for public item', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        item = await testUtils.savePublicItem({ actor: member });
-        const geoloc = await repository.save({ item, lat: 1, lng: 2, country: 'de' });
+        ({ packedItem } = await testUtils.savePublicItem({ actor: member }));
+        const geoloc = await repository.save({ item: packedItem, lat: 1, lng: 2, country: 'de' });
 
         const res = await app.inject({
           method: HttpMethod.Get,
-          url: `${ITEMS_ROUTE_PREFIX}/${item.id}/geolocation`,
+          url: `${ITEMS_ROUTE_PREFIX}/${packedItem.id}/geolocation`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         const result = res.json();
-        expectItemGeolocations([result], [{ ...geoloc, item: { ...item, permission: null } }]);
+        expectItemGeolocations([result], [{ ...geoloc, item: packedItem }]);
       });
 
       it('Throws for non public item', async () => {
@@ -157,23 +162,23 @@ describe('Item Geolocation', () => {
       it('Get public item geolocations', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const item1 = await testUtils.savePublicItem({ actor: member });
+        const { packedItem } = await testUtils.savePublicItem({ actor: member });
         const { packed: geoloc1 } = await saveGeolocation({
-          item: { ...item1, permission: null },
+          item: packedItem,
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const item2 = await testUtils.savePublicItem({ actor: member });
+        const { packedItem: item2 } = await testUtils.savePublicItem({ actor: member });
         const { packed: geoloc2 } = await saveGeolocation({
-          item: { ...item2, permission: null },
+          item: item2,
           lat: 1,
           lng: 2,
           country: 'de',
         });
-        const item3 = await testUtils.savePublicItem({ actor: member });
+        const { packedItem: item3 } = await testUtils.savePublicItem({ actor: member });
         const { packed: geoloc3 } = await saveGeolocation({
-          item: { ...item3, permission: null },
+          item: item3,
           lat: 1,
           lng: 2,
           country: 'de',

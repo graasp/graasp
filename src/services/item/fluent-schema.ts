@@ -2,6 +2,7 @@ import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 
 import {
   DescriptionPlacement,
+  ItemTagType,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TARGETS_FOR_MODIFY_REQUEST,
@@ -65,10 +66,25 @@ export const item = S.object()
   .prop('createdAt', S.raw({}))
   .prop('updatedAt', S.raw({}));
 
-export const packedItem = item.prop(
-  'permission',
-  S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]),
-);
+export const packedItem = item
+  .prop('permission', S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]))
+  // TODO
+  .prop(
+    'hidden',
+    S.object()
+      .prop('id', S.string())
+      .prop('createdAt', S.string())
+      .prop('type', S.string())
+      .prop('item', item),
+  )
+  .prop(
+    'public',
+    S.object()
+      .prop('id', S.string())
+      .prop('createdAt', S.string())
+      .prop('type', S.string())
+      .prop('item', item),
+  );
 /**
  * for validation on create
  */
@@ -313,6 +329,25 @@ export const copyMany = {
   body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
 
+// item tag properties to be returned to the client
+export const itemTagType = {
+  type: 'string',
+  enum: Object.values(ItemTagType),
+};
+export const itemTag = {
+  type: 'object',
+  properties: {
+    id: { $ref: 'https://graasp.org/#/definitions/uuid' },
+    type: itemTagType,
+    item: {
+      $ref: 'https://graasp.org/items/#/definitions/item',
+    },
+    creator: { $ref: 'https://graasp.org/members/#/definitions/member' },
+    createdAt: { type: 'string' },
+  },
+  additionalProperties: false,
+};
+
 // ajv for other schemas to import
 export default {
   $id: 'https://graasp.org/items/',
@@ -364,6 +399,8 @@ export default {
         createdAt: { type: 'string' },
         updatedAt: { type: 'string' },
         permission: { type: ['string', 'null'], enum: Object.values(PermissionLevel) },
+        hidden: itemTag,
+        public: itemTag,
       },
     },
   },

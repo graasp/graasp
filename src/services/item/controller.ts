@@ -27,7 +27,7 @@ import {
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { getPostItemPayloadFromFormData } from './utils';
-import { ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
@@ -253,23 +253,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           repositories,
           resultOfToList(items),
         );
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('update', ids, items),
-          );
-        }
-      }).catch((e: Error) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('update', ids, { error: e }),
-          );
-        }
-      });
+        return items;
+      })
+        .then((items) => {
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('update', ids, items.data, items.errors),
+            );
+          }
+        })
+        .catch((e: Error) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackErrorEvent('update', ids, e),
+            );
+          }
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -291,26 +295,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.deleteMany(member, repositories, ids);
         await actionItemService.postManyDeleteAction(request, repositories, items);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('delete', ids, {
-              data: Object.fromEntries(items.map((i) => [i.id, i])),
-              errors: [],
-            }),
-          );
-        }
-      }).catch((e) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('delete', ids, { error: e }),
-          );
-        }
-      });
+        return items;
+      })
+        .then((items) => {
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('delete', ids, Object.fromEntries(items.map((i) => [i.id, i]))),
+            );
+          }
+        })
+        .catch((e) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackErrorEvent('delete', ids, e),
+            );
+          }
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -333,28 +338,29 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const items = await itemService.moveMany(member, repositories, ids, parentId);
-        await actionItemService.postManyMoveAction(request, repositories, items);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, {
-              data: Object.fromEntries(items.map((i) => [i.id, i])),
-              errors: [],
-            }),
-          );
-        }
-      }).catch((e) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('move', ids, { error: e }),
-          );
-        }
-      });
+        const results = await itemService.moveMany(member, repositories, ids, parentId);
+        await actionItemService.postManyMoveAction(request, repositories, results.items);
+        return results;
+      })
+        .then(({ items, moved }) => {
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('move', ids, { items, moved }),
+            );
+          }
+        })
+        .catch((e) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackErrorEvent('move', ids, e),
+            );
+          }
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
@@ -375,30 +381,29 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const items = await itemService.copyMany(member, repositories, ids, {
+        return await itemService.copyMany(member, repositories, ids, {
           parentId,
         });
-        await actionItemService.postManyCopyAction(request, repositories, items);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('copy', ids, {
-              data: Object.fromEntries(items.map((i) => [i.id, i])),
-              errors: [],
-            }),
-          );
-        }
-      }).catch((e) => {
-        log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('copy', ids, { error: e }),
-          );
-        }
-      });
+      })
+        .then(({ items, copies }) => {
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackEvent('copy', ids, { items, copies }),
+            );
+          }
+        })
+        .catch((e) => {
+          log.error(e);
+          if (member) {
+            websockets.publish(
+              memberItemsTopic,
+              member.id,
+              ItemOpFeedbackErrorEvent('copy', ids, e),
+            );
+          }
+        });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
     },

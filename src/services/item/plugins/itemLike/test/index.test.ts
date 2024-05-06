@@ -9,7 +9,7 @@ import build, { clearDatabase } from '../../../../../../test/app';
 import { MemberCannotAccess } from '../../../../../utils/errors';
 import { Member } from '../../../../member/entities/member';
 import { saveMember } from '../../../../member/test/fixtures/members';
-import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
+import { ItemTestUtils, expectManyPackedItems } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
 import { ItemLikeNotFound } from '../errors';
 import { ItemLike } from '../itemLike';
@@ -76,8 +76,12 @@ describe('Item Like', () => {
       });
 
       it('Get item likes of a user', async () => {
-        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
-        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item1, packedItem: packedItem1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        const { item: item2, packedItem: packedItem2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
         const items = [item1, item2];
         await saveItemLikes(items, actor);
 
@@ -89,16 +93,20 @@ describe('Item Like', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         // check returned items
-        expectManyItems(
+        expectManyPackedItems(
           res.json().map(({ item }) => item),
-          items,
+          [packedItem1, packedItem2],
           actor,
         );
       });
 
       it('Get item likes of a user without trashed items', async () => {
-        const { item: item1 } = await testUtils.saveItemAndMembership({ member: actor });
-        const { item: item2 } = await testUtils.saveItemAndMembership({ member: actor });
+        const { item: item1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        const { item: item2, packedItem: packedItem2 } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
         const items = [item1, item2];
         await saveItemLikes(items, actor);
         // mimic putting an item in the trash by softRemoving it
@@ -112,9 +120,9 @@ describe('Item Like', () => {
         expect(res.statusCode).toBe(StatusCodes.OK);
 
         // check returned items
-        expectManyItems(
+        expectManyPackedItems(
           res.json().map(({ item }) => item),
-          [item2],
+          [packedItem2],
           actor,
         );
       });

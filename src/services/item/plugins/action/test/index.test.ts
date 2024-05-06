@@ -96,7 +96,7 @@ describe('Action Plugin Tests', () => {
       it('Post action for public item', async () => {
         ({ app, actor } = await build({ member: null }));
         const member = await saveMember();
-        const item = await testUtils.savePublicItem({ actor: member });
+        const { item } = await testUtils.savePublicItem({ actor: member });
         const response = await app.inject({
           method: HttpMethod.Post,
           url: `${ITEMS_ROUTE_PREFIX}/${item.id}/actions`,

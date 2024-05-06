@@ -1,7 +1,10 @@
-import { ResultOf } from '@graasp/sdk';
+import { ItemTagType, ResultOf } from '@graasp/sdk';
 
+import { Repositories } from '../../utils/repositories';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
+import { Actor } from '../member/entities/member';
 import { Item } from './entities/Item';
+import { ItemTag } from './plugins/itemTag/ItemTag';
 
 type GraaspItem = Pick<
   Item,
@@ -22,15 +25,23 @@ type GraaspItem = Pick<
 export type PackedItem = GraaspItem & {
   // permission can be undefined because the item is public
   permission: ItemMembership['permission'] | null;
+  hidden: ItemTag | undefined;
+  public: ItemTag | undefined;
 };
 
 export class ItemWrapper {
   item: Item;
-  actorHighestItemMembership?: ItemMembership | null;
+  actorPermission?: { permission: ItemMembership['permission'] } | null;
+  tags?: ItemTag[] | null;
 
-  constructor(item: Item, im?: ItemMembership | null) {
+  constructor(
+    item: Item,
+    im?: { permission: ItemMembership['permission'] } | null,
+    tags?: ItemTag[] | null,
+  ) {
     this.item = item;
-    this.actorHighestItemMembership = im;
+    this.actorPermission = im;
+    this.tags = tags;
   }
 
   /**
@@ -39,12 +50,21 @@ export class ItemWrapper {
    * @param memberships result memberships for many items
    * @returns PackedItem[]
    */
-  static merge(items: Item[], memberships: ResultOf<ItemMembership | null>): PackedItem[] {
+  static merge(
+    items: Item[],
+    memberships: ResultOf<ItemMembership | null>,
+    tags?: ResultOf<ItemTag[] | null>,
+  ): PackedItem[] {
     const data: PackedItem[] = [];
 
     for (const i of items) {
       const { permission = null } = memberships.data[i.id] ?? {};
-      data.push({ ...i, permission });
+      data.push({
+        ...i,
+        permission,
+        hidden: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Hidden),
+        public: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Public),
+      });
     }
 
     return data;
@@ -59,15 +79,46 @@ export class ItemWrapper {
   static mergeResult(
     items: ResultOf<Item>,
     memberships: ResultOf<ItemMembership | null>,
+    tags?: ResultOf<ItemTag[] | null>,
   ): ResultOf<PackedItem> {
     const data: ResultOf<PackedItem>['data'] = {};
 
     for (const i of Object.values(items.data)) {
       const { permission = null } = memberships.data[i.id] ?? {};
-      data[i.id] = { ...i, permission };
+      data[i.id] = {
+        ...i,
+        permission,
+        hidden: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Hidden),
+        public: tags?.data?.[i.id]?.find((t) => t.type === ItemTagType.Public),
+      };
     }
 
     return { data, errors: [...items.errors, ...memberships.errors] };
+  }
+
+  static async createPackedItems(
+    actor: Actor,
+    repositories: Repositories,
+    items: Item[],
+    memberships?: ResultOf<ItemMembership[]>,
+    { withDeleted = false }: { withDeleted?: boolean } = {},
+  ): Promise<PackedItem[]> {
+    const tags = await repositories.itemTagRepository.getForManyItems(items, { withDeleted });
+
+    const m =
+      memberships ??
+      (await repositories.itemMembershipRepository.getForManyItems(items, { withDeleted }));
+
+    // TODO
+    return items.map((item) => {
+      const permission = m.data[item.id][0]?.permission;
+      return {
+        ...item,
+        permission,
+        hidden: (tags?.data?.[item.id] ?? [])?.find((t) => t.type === ItemTagType.Hidden),
+        public: (tags?.data?.[item.id] ?? [])?.find((t) => t.type === ItemTagType.Public),
+      } as unknown as PackedItem;
+    });
   }
 
   /**
@@ -75,6 +126,11 @@ export class ItemWrapper {
    * @returns item unit with permission
    */
   packed(): PackedItem {
-    return { ...this.item, permission: this.actorHighestItemMembership?.permission ?? null };
+    return {
+      ...this.item,
+      permission: this.actorPermission?.permission ?? null,
+      hidden: this.tags?.find((t) => t.type === ItemTagType.Hidden),
+      public: this.tags?.find((t) => t.type === ItemTagType.Public),
+    };
   }
 }

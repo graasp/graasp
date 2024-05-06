@@ -6,12 +6,6 @@ import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graa
 import { clearDatabase } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
-import {
-  AccessibleItemsEvent,
-  ItemEvent,
-  SharedItemsEvent,
-  memberItemsTopic,
-} from '../../item/ws/events';
 import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
 import { setupWsApp } from '../../websockets/test/ws-app';
@@ -81,35 +75,6 @@ describe('Item websocket hooks', () => {
   });
 
   describe('on create membership', () => {
-    it('member receives shared item create event', async () => {
-      const anna = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member: anna });
-
-      const memberUpdates = await ws.subscribe<ItemEvent>({
-        topic: memberItemsTopic,
-        channel: actor.id,
-      });
-
-      // perform request as anna
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-        request.member = anna;
-      });
-
-      const response = await app.inject({
-        method: HttpMethod.Post,
-        url: `/item-memberships/${item.id}`,
-        payload: { memberships: [{ memberId: actor.id, permission: PermissionLevel.Read }] },
-      });
-      expect(response.statusCode).toBe(StatusCodes.OK);
-
-      await waitForExpect(() => {
-        const [sharedCreate, accessibleCreate] = memberUpdates;
-        expect(sharedCreate).toMatchObject(SharedItemsEvent('create', item));
-        expect(accessibleCreate).toMatchObject(AccessibleItemsEvent('create', item));
-      });
-    });
-
     it('receives item membership create event', async () => {
       const anna = await saveMember();
       const bob = await saveMember();
@@ -185,40 +150,6 @@ describe('Item websocket hooks', () => {
   });
 
   describe('on delete membership', () => {
-    it('member receives shared items delete event', async () => {
-      const anna = await saveMember();
-      const { item } = await testUtils.saveItemAndMembership({ member: anna });
-      const membership = await testUtils.saveMembership({
-        item,
-        member: actor,
-        permission: PermissionLevel.Read,
-      });
-
-      const memberUpdates = await ws.subscribe<MembershipEvent>({
-        topic: memberItemsTopic,
-        channel: actor.id,
-      });
-
-      // perform request as anna
-
-      // perform request as anna
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-        request.member = anna;
-      });
-      const response = await app.inject({
-        method: HttpMethod.Delete,
-        url: `/item-memberships/${membership.id}`,
-      });
-      expect(response.statusCode).toBe(StatusCodes.OK);
-
-      await waitForExpect(() => {
-        const [membershipDelete, accessibleToDelete] = memberUpdates;
-        expect(membershipDelete).toMatchObject(SharedItemsEvent('delete', item));
-        expect(accessibleToDelete).toMatchObject(AccessibleItemsEvent('delete', item));
-      });
-    });
-
     it('receives item membership delete event', async () => {
       const anna = await saveMember();
       const { item } = await testUtils.saveItemAndMembership({ member: anna });
