@@ -14,10 +14,10 @@ import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { log, db, generateAuthTokensPair } = fastify;
+  const { mailer, log, db, generateAuthTokensPair } = fastify;
 
   const mobileService = new MobileService(fastify, log);
-  const memberPasswordService = new MemberPasswordService(log);
+  const memberPasswordService = new MemberPasswordService(mailer, log);
 
   // no need to add CORS support here - only used by mobile app
 

@@ -187,6 +187,15 @@ export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = process.env.REFRESH_TOKEN_EXP
   ? +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
   : 86400;
 
+/** Password reset token Secret */
+export const PASSWORD_RESET_JWT_SECRET: string = process.env.PASSWORD_RESET_JWT_SECRET!;
+if (!PASSWORD_RESET_JWT_SECRET) {
+  throw new Error('PASSWORD_RESET_JWT_SECRET should be defined');
+}
+/** Password reset token expiration, in minutes */
+export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES: number =
+  Number(process.env.PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES) || 1440;
+
 // Graasp mailer config
 if (
   !process.env.MAILER_CONFIG_SMTP_HOST ||
