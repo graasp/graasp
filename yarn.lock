@@ -6782,7 +6782,7 @@ __metadata:
     h5p-standalone: "npm:3.6.0"
     http-status-codes: "npm:2.3.0"
     husky: "npm:8.0.3"
-    ioredis: "npm:5.4.0"
+    ioredis: "npm:5.4.1"
     is-url-http: "npm:2.3.8"
     jest: "npm:29.7.0"
     jsonwebtoken: "npm:9.0.2"
@@ -7179,9 +7179,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.4.0":
-  version: 5.4.0
-  resolution: "ioredis@npm:5.4.0"
+"ioredis@npm:5.4.1":
+  version: 5.4.1
+  resolution: "ioredis@npm:5.4.1"
   dependencies:
     "@ioredis/commands": "npm:^1.1.1"
     cluster-key-slot: "npm:^1.1.0"
@@ -7192,7 +7192,7 @@ __metadata:
     redis-errors: "npm:^1.2.0"
     redis-parser: "npm:^3.0.0"
     standard-as-callback: "npm:^2.1.0"
-  checksum: 10/60e789c8afc7844187035015c6af54253a3fa39f2a42dc2b0103378054fd4510d2b23fb56103d97c443930000998d0b28b9c34158814729c00ca3935da79665d
+  checksum: 10/9043b812ac58065e80c759d130602cc64490fcaeaacf93723453fda04c7ba61dab0e2f50380eacb045592378ededf44f270c0d43e13e3e8b8d7c5a8d7fecb823
   languageName: node
   linkType: hard
 
