@@ -149,10 +149,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preValidation: fastifyPassport.authenticate(PASSPORT_STATEGY_ID, { session: false }), // Session is not required.
     },
     async (request, reply) => {
-      const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+      const token: string = ExtractJwt.fromAuthHeaderAsBearerToken()(request)!;
       const { password } = request.body;
-      await memberPasswordService.forcePatch(buildRepositories(), password, token!);
-      const member = await memberPasswordService.getMemberByToken(buildRepositories(), token!);
+      await memberPasswordService.forcePatch(buildRepositories(), password, token);
+      const member = await memberPasswordService.getMemberByToken(buildRepositories(), token);
       reply.status(StatusCodes.NO_CONTENT);
 
       // Log the action
