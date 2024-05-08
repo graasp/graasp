@@ -7,11 +7,11 @@ import { FastifyBaseLogger } from 'fastify';
 import { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import {
-  AUTH_TOKEN_JWT_SECRET,
+  AUTH_CLIENT_HOST,
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
-  PUBLIC_URL,
+  PASSWORD_RESET_JWT_SECRET,
   REDIS_HOST,
   REDIS_PASSWORD,
   REDIS_PORT,
@@ -95,19 +95,20 @@ export class MemberPasswordService {
   async createResetPasswordRequest(
     repositories: Repositories,
     email: string,
-  ): Promise<{ token: string; lang: string } | undefined> {
+  ): Promise<{ token: string; member: Member } | undefined> {
     const { memberRepository } = repositories;
     const member: Member = await memberRepository.getByEmail(email);
-    if (member) {
-      if ((await MemberPasswordRepository.getForMemberId(member.id)) === undefined) return;
-      const payload = {};
-      const token = jwt.sign(payload, AUTH_TOKEN_JWT_SECRET);
-      this.redis.setex(token, PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60, member.id);
+
+    if (!member) return;
+    if (!(await MemberPasswordRepository.getForMemberId(member.id))) return;
+    const payload = {};
+    const token = jwt.sign(payload, PASSWORD_RESET_JWT_SECRET);
     this.redis.setex(
       `${REDIS_PREFIX}${token}`,
       PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60,
       member.id,
     );
+    return { token, member };
   }
 
   /**
@@ -147,6 +148,20 @@ export class MemberPasswordService {
    */
   async validateResetPasswordToken(token: string): Promise<boolean> {
     return (await this.redis.get(`${REDIS_PREFIX}${token}`)) !== null;
+  }
+
+  /**
+   * Get the member associated to the JSON Web Token registered in the redis database.
+   * @param repositories Object with the repositories needed to interact with the database. Must contain a memberRepository.
+   * @param token The JSON Web Token to identify the member.
+   * @returns The member associated to the token. Otherwise, undefined if we couldn't find the member.
+   */
+  async getMemberByToken(repositories: Repositories, token: string): Promise<Member | undefined> {
+    const id = await this.redis.get(`${REDIS_PREFIX}${token}`);
+    if (!id) return;
+
+    const { memberRepository } = repositories;
+    return memberRepository.get(id);
   }
 
   /**

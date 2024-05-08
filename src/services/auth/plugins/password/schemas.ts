@@ -53,6 +53,7 @@ export const postResetPasswordRequest: FastifySchema = {
     type: 'object',
     properties: {
       email: { type: 'string' },
+      captcha: { type: 'string' },
     },
     additionalProperties: false,
   },

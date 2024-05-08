@@ -4,7 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsync } from 'fastify';
 
-import { RecaptchaAction } from '@graasp/sdk';
+import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
 import { PASSWORD_RESET_JWT_SECRET, PUBLIC_URL } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
@@ -107,20 +107,30 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { email, captcha } = request.body;
 
-      // TODO : Validate specific recaptcha action
-      await fastify.validateCaptcha(request, captcha, RecaptchaAction.SignInWithPassword, {
+      await fastify.validateCaptcha(request, captcha, RecaptchaAction.ResetPassword, {
         shouldFail: false,
       });
+
+      // We can already return to avoid leaking timing information.
+      reply.status(StatusCodes.NO_CONTENT);
+      reply.send();
 
       const resetPasswordRequest = await memberPasswordService.createResetPasswordRequest(
         buildRepositories(),
         email,
       );
       if (resetPasswordRequest) {
-        const { token, lang } = resetPasswordRequest;
-        memberPasswordService.mailResetPasswordRequest(email, token, lang);
+        const { token, member } = resetPasswordRequest;
+        memberPasswordService.mailResetPasswordRequest(email, token, member.lang);
+        const action = {
+          member,
+          type: ActionTriggers.AskResetPassword,
+          view: Context.Auth,
+          extra: {},
+        };
+        // Do not await the action to be saved. It is not critical.
+        fastify.actions.service.postMany(member, buildRepositories(), request, [action]);
       }
-      reply.status(StatusCodes.NO_CONTENT);
     },
   );
 
@@ -138,11 +148,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: patchResetPasswordRequest,
       preValidation: fastifyPassport.authenticate(PASSPORT_STATEGY_ID, { session: false }), // Session is not required.
     },
-    async (req, reply) => {
-      const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-      const { password } = req.body;
+    async (request, reply) => {
+      const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+      const { password } = request.body;
       await memberPasswordService.forcePatch(buildRepositories(), password, token!);
+      const member = await memberPasswordService.getMemberByToken(buildRepositories(), token!);
       reply.status(StatusCodes.NO_CONTENT);
+
+      // Log the action
+      const action = {
+        member,
+        type: ActionTriggers.ResetPassword,
+        view: Context.Auth,
+        extra: {},
+      };
+      // Do not await the action to be saved. It is not critical.
+      fastify.actions.service.postMany(member, buildRepositories(), request, [action]);
     },
   );
 };
