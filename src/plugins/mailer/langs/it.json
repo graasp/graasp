@@ -25,5 +25,9 @@
   "SHARE_ITEM_TITLE": "{{creatorName}} ha condiviso {{itemName}} con te su Graasp",
   "FOOTER": "Hai ricevuto questa email a causa del tuo account su <a href=\"https://graasp.org\">Graasp</a>",
   "POWERED_BY": "Fornito da <a href=\"https://graasp.org\">Graasp</a>.",
-  "USER_AGREEMENTS_MAIL_TEXT": "* Facendo clic su <strong>{{signUpButtonText}}</strong>, accetti i <a href=\"{{graaspLandingPageOrigin}}/terms\">termini di servizio</a> e i <a href=\"{ {graaspLandingPageOrigin}}/privacy\">informativa sulla privacy</a>."
+  "USER_AGREEMENTS_MAIL_TEXT": "* Facendo clic su <strong>{{signUpButtonText}}</strong>, accetti i <a href=\"{{graaspLandingPageOrigin}}/terms\">termini di servizio</a> e i <a href=\"{ {graaspLandingPageOrigin}}/privacy\">informativa sulla privacy</a>.",
+  "RESET_PASSWORD_TITLE": "Reimposta la password",
+  "RESET_PASSWORD_TEXT": "Hai richiesto di reimpostare la tua password. Clicca sul bottone sottostante per completare il processo.",
+  "RESET_PASSWORD_BUTTON_TEXT": "Reimposta la password",
+  "RESET_PASSWORD_NOT_REQUESTED": "Se non hai richiesto la reimpostazione della password, non sono necessarie ulteriori azioni. Il link scadrà presto."
 }

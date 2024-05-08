@@ -117,14 +117,14 @@ export class MemberPasswordService {
   mailResetPasswordRequest(email: string, token: string, lang: string): void {
     const translated = this.mailer.translate(lang);
     const subject = translated(MAIL.RESET_PASSWORD_TITLE);
-
-    const domain = PUBLIC_URL;
-    const destination = new URL('/auth', domain);
+    // auth.graasp.org/reset-password?t=<token>
+    const domain = AUTH_CLIENT_HOST;
+    const destination = new URL('/reset-password', domain);
     destination.searchParams.set('t', token);
     const link = destination.toString();
 
     const html = `
-      ${this.mailer.buildText(MAIL.RESET_PASSWORD_TEXT)}
+      ${this.mailer.buildText(translated(MAIL.RESET_PASSWORD_TEXT))}
       ${this.mailer.buildButton(link, translated(MAIL.RESET_PASSWORD_BUTTON_TEXT))}
       ${this.mailer.buildText(translated(MAIL.RESET_PASSWORD_NOT_REQUESTED))}`;
 

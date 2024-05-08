@@ -28,5 +28,10 @@
   "USER_AGREEMENTS_MAIL_TEXT": "* بالنقر على <strong>{{signUpButtonText}}</strong>، فإنك توافق على <a href=\"{{graaspLandingPageOrigin}}/terms\">شروط الخدمة</a> و<a href=\"{ {graaspLandingPageOrigin}}/privacy\">سياسة الخصوصية</a>.",
   "EXPORT_MEMBER_DATA_TEXT": "لقد طلبت تنزيل جميع بياناتك، إليك رابط تنزيل الأرشيف. سيكون متاحًا لمدة {{days}} يوم",
   "EXPORT_MEMBER_DATA_TITLE": "قم بتنزيل بياناتك",
-  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "تحميل"
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "تحميل",
+  "USER_AGREEMENTS_MAIL_TEXT": "* بالنقر على <strong>{{signUpButtonText}}</strong>، فإنك توافق على <a href=\"{{graaspLandingPageOrigin}}/terms\">شروط الخدمة</a> و<a href=\"{ {graaspLandingPageOrigin}}/privacy\">سياسة الخصوصية</a>.",
+  "RESET_PASSWORD_TITLE": "إعادة تعيين كلمة المرور",
+  "RESET_PASSWORD_TEXT": "لقد طلبت إعادة تعيين كلمة المرور الخاصة بك. انقر على الزر التالي لإعادة تعيين كلمة المرور الخاصة بك.",
+  "RESET_PASSWORD_BUTTON_TEXT": "إعادة تعيين كلمة المرور",
+  "RESET_PASSWORD_NOT_REQUESTED": "إذا لم تكن قد طلبت إعادة تعيين كلمة المرور، فلا يلزم اتخاذ أي إجراء آخر. ستنتهي صلاحيته قريبًا، لا تقلق، حسابك وبياناتك آمنة."
 }
