@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.37.0](https://github.com/graasp/graasp/compare/v1.36.0...v1.37.0) (2024-05-07)
+
+
+### Features
+
+* add more packed items ([#925](https://github.com/graasp/graasp/issues/925)) ([56f0d2f](https://github.com/graasp/graasp/commit/56f0d2f7b9bea837cb0999fd8787088f737e46ed))
+
+
+### Bug Fixes
+
+* **deps:** update dependency ioredis to v5.4.1 ([#1005](https://github.com/graasp/graasp/issues/1005)) ([0355416](https://github.com/graasp/graasp/commit/03554167d1aae0ba76d8ac6e8ded7908bfc5c91f))
+* **spanish:** translation ([#1019](https://github.com/graasp/graasp/issues/1019)) ([555c607](https://github.com/graasp/graasp/commit/555c607c5d74f7d871f38c4c5a669db13d2ccef7))
+
 ## [1.36.0](https://github.com/graasp/graasp/compare/v1.35.0...v1.36.0) (2024-05-03)
 
 
