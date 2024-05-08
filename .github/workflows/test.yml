@@ -202,6 +202,7 @@ jobs:
           H5P_PATH_PREFIX: h5p-content/
           H5P_STORAGE_ROOT_PATH: /tmp/h5p
           JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
+          PASSWORD_RESET_JWT_SECRET: ${{ secrets.MOCK_JWT_SECRET }}
           MAILER_CONFIG_PASSWORD: password
           MAILER_CONFIG_SMTP_HOST: localhost
           MAILER_CONFIG_USERNAME: username
