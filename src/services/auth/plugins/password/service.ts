@@ -1,6 +1,5 @@
 import Redis from 'ioredis';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
-import { Timestamp } from 'typeorm';
 import { promisify } from 'util';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -22,6 +21,8 @@ import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/erro
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { MemberPasswordRepository } from './repository';
+
+const REDIS_PREFIX = 'reset-password:';
 
 const promisifiedJwtSign = promisify<
   { sub: string; challenge?: string },
@@ -74,7 +75,7 @@ export class MemberPasswordService {
    * @returns void
    */
   async forcePatch(repositories: Repositories, password: string, token: string): Promise<void> {
-    const id = await this.redis.get(token);
+    const id = await this.redis.get(`${REDIS_PREFIX}${token}`);
     if (!id) return;
     await this.redis.del(token);
     const { memberPasswordRepository } = repositories;
@@ -102,8 +103,11 @@ export class MemberPasswordService {
       const payload = {};
       const token = jwt.sign(payload, AUTH_TOKEN_JWT_SECRET);
       this.redis.setex(token, PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60, member.id);
-      return { token, lang: member.lang };
-    }
+    this.redis.setex(
+      `${REDIS_PREFIX}${token}`,
+      PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60,
+      member.id,
+    );
   }
 
   /**
@@ -142,7 +146,7 @@ export class MemberPasswordService {
    * @returns True if the token is registered, false otherwise.
    */
   async validateResetPasswordToken(token: string): Promise<boolean> {
-    return (await this.redis.get(token)) !== null;
+    return (await this.redis.get(`${REDIS_PREFIX}${token}`)) !== null;
   }
 
   /**

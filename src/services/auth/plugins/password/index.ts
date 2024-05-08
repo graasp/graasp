@@ -32,8 +32,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: PASSWORD_RESET_JWT_SECRET,
-        issuer: undefined, // TODO : Should it be defined ?
-        audience: undefined, // TODO : Should it be defined ?
         passReqToCallback: true,
       },
       async (req, _payload, done) => {
