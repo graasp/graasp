@@ -1,6 +1,5 @@
 import Redis from 'ioredis';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
-import { Timestamp } from 'typeorm';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
