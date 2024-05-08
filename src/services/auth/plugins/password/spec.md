@@ -1,6 +1,6 @@
 # Reset Password
 
-## POST /ask-reset-password
+## POST /reset-password-request
 
 ```mermaid
 sequenceDiagram
@@ -29,9 +29,9 @@ sequenceDiagram
                     redis--)-service: OK
                 end
             end
-        service--)-ctrl: jwt, lang
-        opt jwt && lang
-            ctrl->>+service: mailResetPasswordRequest(email, jwt, lang)
+        service--)-ctrl: jwt, member
+        opt jwt && member
+            ctrl->>+service: mailResetPasswordRequest(email, jwt, member.lang)
                 service->>+mailer: SEND jwt
                 mailer-->>-service: OK
             service-->>-ctrl: void
@@ -39,7 +39,7 @@ sequenceDiagram
     ctrl--)-usr: 204 No Content
 ```
 
-## PATCH /set-password
+## PATCH /reset-password-request
 
 ```mermaid
 sequenceDiagram
@@ -65,3 +65,7 @@ sequenceDiagram
         service--)-ctrl: void
     ctrl--)-usr: 204 No Content
 ```
+
+## Question
+
+- Actions
