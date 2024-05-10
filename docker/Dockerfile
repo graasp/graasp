@@ -26,11 +26,10 @@ RUN yarn build-ts
 ### Run Application Step ###
 ############################
 # Final step that will run the application
-FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} as runner
+FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} AS runner
 
 # Set APP_VERSION as ENV variable from ARG passed at build step
 ENV APP_VERSION=${APP_VERSION:-latest}
-ENV NODE_ENV=production
 
 EXPOSE 3000
 
@@ -45,7 +44,8 @@ RUN apk update \
         python3 \
         py3-pip \
         make \
-        build-base
+        build-base \
+    && apk cache clean
 
 COPY ./package.json ./
 
@@ -56,4 +56,5 @@ COPY  ./.husky ./.husky
 RUN yarn install --production
 COPY --from=builder ./app/dist ./dist
 
+USER node
 CMD yarn start
