@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { Context } from '@graasp/sdk';
+import { Context, ExportActionsFormatting } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
@@ -94,6 +94,7 @@ describe('exportActionsInArchive', () => {
       baseAnalytics,
       storageFolder,
       views,
+      format: ExportActionsFormatting.JSON,
     });
 
     // call on success callback
