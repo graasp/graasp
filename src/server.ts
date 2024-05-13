@@ -1,21 +1,9 @@
-// sort-imports-ignore
-// ./utils/config needs to be the first import so environment variables are initialised before being used.
-// Prettier's sort imports is ignored so the order can be conserved.
-import {
-  APP_VERSION,
-  CORS_ORIGIN_REGEX,
-  DEV,
-  ENVIRONMENT,
-  HOSTNAME,
-  PORT,
-  PROD,
-} from './utils/config';
-
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 import registerAppPlugins from './app';
 import { initSentry } from './sentry';
+import { APP_VERSION, CORS_ORIGIN_REGEX, DEV, ENVIRONMENT, HOSTNAME, PORT, PROD } from './utils/config';
 // import fastifyCompress from 'fastify-compress';
 import { GREETING } from './utils/constants';
 

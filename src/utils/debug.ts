@@ -1,9 +1,11 @@
 import { ObjectLiteral, QueryBuilder } from 'typeorm';
 
+import { NODE_ENV } from './config';
+
 // Print a query with parameters already filled in, ready to be sent to the database
 // Only for debugging purposes. DO NOT USE in production. (injection risk)
 export const printFilledSQL = <T extends ObjectLiteral>(query: QueryBuilder<T>) => {
-  if (process.env.NODE_ENV === 'production') {
+  if (NODE_ENV === 'production') {
     throw new Error('Do not use debug functions in productionsÒ');
   }
 

@@ -31,19 +31,26 @@ import { ItemLoginSchema } from '../../services/itemLogin/entities/itemLoginSche
 import { ItemMembership } from '../../services/itemMembership/entities/ItemMembership';
 import { Member } from '../../services/member/entities/member';
 import { MemberProfile } from '../../services/member/plugins/profile/entities/profile';
-import { DB_PORT } from '../../utils/config';
+import {
+  CI,
+  DB_HOST,
+  DB_NAME,
+  DB_PASSWORD,
+  DB_PORT,
+  DB_USERNAME,
+  JEST_WORKER_ID,
+} from '../../utils/config';
 
 // mock data source
 // we could use the original file, but for extra security we keep this file
 // dropSchema and synchronize could kill the database
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST ?? 'graasp-postgres-test',
-  port:
-    process.env.CI === 'true' ? 5432 + parseInt(process.env.JEST_WORKER_ID ?? '1') - 1 : DB_PORT,
-  username: process.env.DB_USERNAME ?? 'docker-test',
-  password: process.env.DB_PASSWORD ?? 'docker-test',
-  database: process.env.DB_NAME ?? 'docker-test',
+  host: DB_HOST ?? 'graasp-postgres-test',
+  port: CI ? 5432 + JEST_WORKER_ID - 1 : DB_PORT,
+  username: DB_USERNAME ?? 'docker-test',
+  password: DB_PASSWORD ?? 'docker-test',
+  database: DB_NAME ?? 'docker-test',
   // This was an attempt to ensure we don't use the same table as the prod/dev one
   // BUT it DOES NOT WORK for test since migrations are based on 'public'
   schema: DB_TEST_SCHEMA,
