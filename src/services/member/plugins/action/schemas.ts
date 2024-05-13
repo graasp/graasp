@@ -9,8 +9,8 @@ export const getMemberFilteredActions = {
   querystring: {
     type: 'object',
     properties: {
-      startDate: { type: 'string' },
-      endDate: { type: 'string' },
+      startDate: { type: 'string', format: 'date-time' },
+      endDate: { type: 'string', format: 'date-time' },
     },
     additionalProperties: false,
   },

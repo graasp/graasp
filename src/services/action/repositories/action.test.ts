@@ -12,7 +12,7 @@ import {
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
-import { getMonthBeforeNow } from '../../member/plugins/action/service';
+import { getPreviousMonthFromNow } from '../../member/plugins/action/service';
 import { saveMember } from '../../member/test/fixtures/members';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
@@ -103,7 +103,7 @@ describe('Action Repository', () => {
       const r = new ActionRepository();
 
       const result = await r.getMemberActionsNeedPesrmission(member.id, {
-        startDate: getMonthBeforeNow(),
+        startDate: getPreviousMonthFromNow(),
         endDate: new Date(),
       });
 
@@ -121,7 +121,7 @@ describe('Action Repository', () => {
       const r = new ActionRepository();
 
       const result = await r.getMemberActionsNoNeedForPesrmission(member.id, {
-        startDate: getMonthBeforeNow(),
+        startDate: getPreviousMonthFromNow(),
         endDate: new Date(),
       });
 

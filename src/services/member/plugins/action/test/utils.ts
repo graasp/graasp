@@ -1,4 +1,4 @@
-import { ActionTriggers, DiscriminatedItem } from '@graasp/sdk';
+import { ActionFactory, ActionTriggers, DiscriminatedItem } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { Action } from '../../../../action/entities/action';
@@ -18,30 +18,30 @@ export const getDateBeforeOrAfterNow = (dateDiff) => {
 export const saveActionsWithItems = async (member, { saveActionForNotOwnedItem = false } = {}) => {
   const item = await testUtils.saveItem({ actor: member });
   const actions = [
-    {
+    ActionFactory({
       member,
-      createdAt: new Date().toISOString(),
-      type: ActionTriggers.Update,
       item: item as unknown as DiscriminatedItem,
-    },
-    { member, createdAt: new Date().toISOString(), type: ActionTriggers.CollectionView },
-    {
+      createdAt: new Date().toISOString(),
+    }),
+    ActionFactory({
       member,
-      createdAt: new Date('1999-07-08').toISOString(),
-      type: ActionTriggers.Update,
-    },
-    { member, createdAt: new Date().toISOString(), type: ActionTriggers.ItemLike },
+      type: ActionTriggers.CollectionView,
+      createdAt: new Date().toISOString(),
+    }),
+    ActionFactory({ member }),
+    ActionFactory({ member, createdAt: new Date().toISOString(), type: ActionTriggers.ItemLike }),
   ];
 
   if (saveActionForNotOwnedItem) {
     const m = await saveMember();
     const notOwnItem = await testUtils.saveItem({ actor: m });
-    actions.push({
-      member,
-      createdAt: new Date().toISOString(),
-      type: ActionTriggers.Update,
-      item: notOwnItem as unknown as DiscriminatedItem,
-    });
+    actions.push(
+      ActionFactory({
+        member,
+        createdAt: new Date().toISOString(),
+        item: notOwnItem as unknown as DiscriminatedItem,
+      }),
+    );
   }
   await saveActions(rawRepository, actions);
 };

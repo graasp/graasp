@@ -7,7 +7,7 @@ import { validatePermissionMany } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
 import { Actor } from '../../entities/member';
 
-export const getMonthBeforeNow = () => {
+export const getPreviousMonthFromNow = () => {
   const date = new Date(); // Today's date
   date.setMonth(date.getMonth() - 1); // Set the date to one month ago
   return date;
@@ -28,7 +28,7 @@ export class ActionMemberService {
     const { actionRepository } = repositories;
 
     const { startDate, endDate } = filters;
-    const start = startDate ? new Date(startDate) : getMonthBeforeNow();
+    const start = startDate ? new Date(startDate) : getPreviousMonthFromNow();
     const end = endDate ? new Date(endDate) : new Date();
 
     if (!actor) {
@@ -60,7 +60,7 @@ export class ActionMemberService {
       if (g.item && g?.item?.id in memberships.data) {
         return true;
       }
-      return null;
+      return false;
     });
     return [...filteredActionsWithAccessPermission, ...actionsWithoutPermssion];
   }
