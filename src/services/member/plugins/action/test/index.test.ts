@@ -44,7 +44,7 @@ describe('Get member actions', () => {
       expect(response.json()).toHaveLength(2);
     });
 
-    it('Get actions when user signed in specifing start and end dates that doesnt have any actions', async () => {
+    it('Get actions when user signed in specifing start and end dates that does not have any actions', async () => {
       ({ app, actor } = await build());
       await saveActionsWithItems(actor);
       const response = await app.inject({
