@@ -1,7 +1,15 @@
 // sort-imports-ignore
 // ./utils/config needs to be the first import so environment variables are initialised before being used.
 // Prettier's sort imports is ignored so the order can be conserved.
-import { APP_VERSION, CORS_ORIGIN_REGEX, DEV, ENVIRONMENT, HOSTNAME, PORT } from './utils/config';
+import {
+  APP_VERSION,
+  CORS_ORIGIN_REGEX,
+  DEV,
+  ENVIRONMENT,
+  HOSTNAME,
+  PORT,
+  PROD,
+} from './utils/config';
 
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
@@ -17,6 +25,12 @@ const start = async () => {
     // can not be set using an environnement variable
     disableRequestLogging: false,
     logger: {
+      // Do not use pino-pretty in production
+      transport: PROD
+        ? undefined
+        : {
+            target: 'pino-pretty',
+          },
       level: process.env.LOG_LEVEL,
     },
     ajv: {
