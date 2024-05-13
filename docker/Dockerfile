@@ -1,49 +1,60 @@
 # Production Docker backend image definition
 # Used in CI for creating images to push on registry
 
-# Update the VARIANT arg in docker-compose.yml to pick a Node version: 10, 12, 14
-ARG VARIANT=20
-FROM node:${VARIANT}
+# Update the NODE_VERSION arg in docker-compose.yml to pick a Node version of Docker Image
+ARG NODE_VERSION=20
 
-# Update args in docker-compose.yaml to set the UID/GID of the "node" user.
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
-  groupmod --gid $USER_GID node \
-  && usermod --uid $USER_UID --gid $USER_GID node \
-  && chown -R $USER_UID:$USER_GID /home/node \
-  && chown -R $USER_UID:root /usr/local/share/nvm /usr/local/share/npm-global; \
-  fi
+# Update the ALPINE_VERSION arg in docker-compose.yml to pick a Node version of Docker Image
+ARG ALPINE_VERSION=3.19
 
-# variable passed as a build arg. Represents the tag or git sha used for the build
-ARG APP_VERSION
+# Variable passed as a build arg. Represents the tag or git sha used for the build
+ARG APP_VERSION 
 
-# [Optional] Uncomment this section to install additional OS packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
+##############################
+### Build Application Step ###
+##############################
+# This step will build the application
+FROM node:${NODE_VERSION} AS builder
 
-# [Optional] Uncomment if you want to install an additional version of node using nvm
-# ARG EXTRA_NODE_VERSION=10
-# RUN su node -c "source /usr/local/share/nvm/nvm.sh && nvm install ${EXTRA_NODE_VERSION}"
-
-# [Optional] Uncomment if you want to install more global node packages
-# RUN sudo -u node npm install -g <your-package-list-here>
-
-USER node
-
-WORKDIR /home/node
-
-RUN mkdir /home/node/app
-RUN mkdir /home/node/file-storage
-
-COPY --chown=$USER_UID:$USER_GID . /home/node/app
-
-WORKDIR /home/node/app
-
+WORKDIR /app
+COPY . .
 RUN yarn install
 
 RUN yarn build-ts
 
-# set APP_VERSION as ENV variable from ARG passed at build step
+############################
+### Run Application Step ###
+############################
+# Final step that will run the application
+FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} AS runner
+
+# Set APP_VERSION as ENV variable from ARG passed at build step
 ENV APP_VERSION=${APP_VERSION:-latest}
-CMD NODE_PATH=./dist node dist/server.js
+
+EXPOSE 3000
+
+WORKDIR /app
+
+# Add needed packages
+RUN apk update \
+    && apk upgrade \
+    && apk add \
+        yarn \
+    # Python and GCC are necessary for mmmagic dependency.
+        python3 \
+        py3-pip \
+        make \
+        build-base \
+    && apk cache clean
+
+COPY ./package.json ./
+
+# Husky's script are needed for postinstall script
+COPY  ./.husky ./.husky
+
+# Install the application
+RUN yarn install --production
+COPY --from=builder ./app/dist ./dist
+
+USER node
+CMD yarn start
