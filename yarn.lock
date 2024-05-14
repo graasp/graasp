@@ -5802,13 +5802,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csv-writer@npm:1.6.0":
-  version: 1.6.0
-  resolution: "csv-writer@npm:1.6.0"
-  checksum: 10/01ae6eb0653ef823278ba89192146631c577a8d4f69eba82cb71b315b87852952d7e1fa1d693561f00f89fd4e99433e2a8e570394d0273b0214999a0607326da
-  languageName: node
-  linkType: hard
-
 "dargs@npm:^7.0.0":
   version: 7.0.0
   resolution: "dargs@npm:7.0.0"
@@ -7606,7 +7599,6 @@ __metadata:
     checksum: "npm:1.0.0"
     concurrently: "npm:7.6.0"
     content-disposition: "npm:0.5.4"
-    csv-writer: "npm:1.6.0"
     date-fns: "npm:3.6.0"
     dir-compare: "npm:4.2.0"
     dotenv: "npm:16.4.5"

@@ -70,6 +70,7 @@ const setUpActions = async (app, member: Member) => {
 
 const storageFolder = path.join(TMP_FOLDER, 'export-actions');
 fs.mkdirSync(storageFolder, { recursive: true });
+// fs.unlinkSync(storageFolder);
 
 describe('exportActionsInArchive', () => {
   let app: FastifyInstance;
@@ -94,19 +95,17 @@ describe('exportActionsInArchive', () => {
       baseAnalytics,
       storageFolder,
       views,
-      format: ExportActionsFormatting.JSON,
+      format: ExportActionsFormatting.CSV,
     });
 
     // call on success callback
     expect(result).toBeTruthy();
-    // create files for all views, items, members and memberships, chat messages, apps
-    expect(writeFileSyncMock).toHaveBeenCalledTimes(views.length + 6);
+    // create files for views, items, members and memberships, chat messages, apps only with data inside
+    expect(writeFileSyncMock).toHaveBeenCalledTimes(7);
     const files = fs.readdirSync(storageFolder);
     expect(files.length).toBeTruthy();
 
-    // assume only 2 files exist in the folder
-    const [folder, zip] = files;
-    expect(zip.includes(baseAnalytics.item.name)).toBeTruthy();
-    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(views.length + 6);
+    expect(files[files.length - 1].includes(baseAnalytics.item.name)).toBeTruthy();
+    expect(fs.readdirSync(path.join(storageFolder, files[0])).length).toEqual(7);
   });
 });
