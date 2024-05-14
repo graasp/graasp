@@ -49,7 +49,7 @@ export class ActionMemberService {
       new Map(actionsNeedsPermission.map(({ item }) => [item?.id, item])).values(),
     );
 
-    const memberships = await validatePermissionMany(
+    const { itemMemberships } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
       actor,
@@ -57,7 +57,7 @@ export class ActionMemberService {
     );
 
     const filteredActionsWithAccessPermission = actionsNeedsPermission.filter((g) => {
-      if (g.item && g?.item?.id in memberships.data) {
+      if (g.item && g?.item?.id in itemMemberships.data) {
         return true;
       }
       return false;
