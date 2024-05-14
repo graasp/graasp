@@ -13,10 +13,6 @@ import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_SECRET,
-  REDIS_HOST,
-  REDIS_PASSWORD,
-  REDIS_PORT,
-  REDIS_USERNAME,
 } from '../../../../utils/config';
 import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
@@ -40,6 +36,7 @@ export class MemberPasswordService {
   constructor(mailer, log, redis) {
     this.mailer = mailer;
     this.log = log;
+    this.redis = redis;
   }
 
   generateToken(data, expiration) {

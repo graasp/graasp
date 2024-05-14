@@ -16,6 +16,7 @@ import { StorageService } from '../services/member/plugins/storage/service';
 import { MemberService } from '../services/member/service';
 import { ThumbnailService } from '../services/thumbnail/service';
 import {
+  FILE_ITEM_TYPE,
   MEILISEARCH_MASTER_KEY,
   MEILISEARCH_URL,
   REDIS_HOST,
@@ -23,7 +24,6 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
 } from '../utils/config';
-import { FILE_ITEM_TYPE } from '../utils/config';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   /**
