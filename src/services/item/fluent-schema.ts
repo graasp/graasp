@@ -164,7 +164,7 @@ export const create =
     return {
       querystring: S.object().additionalProperties(false).prop('parentId', uuid),
       body: S.object().oneOf(itemSchemas),
-      response: { 201: item, '4xx': error },
+      response: { '2xx': item, '4xx': error },
     };
   };
 
