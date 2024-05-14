@@ -29,5 +29,5 @@
   "RESET_PASSWORD_TITLE": "Réinitialiser votre mot de passe",
   "RESET_PASSWORD_TEXT": "Vous nous avez demandé de réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour continuer.",
   "RESET_PASSWORD_BUTTON_TEXT": "Réinitialiser le mot de passe",
-  "RESET_PASSWORD_NOT_REQUESTED": "Si vous n'avez pas demandé de réinitialisation de mot de passe, aucune action supplémentaire n'est requise. Ce lien va bientôt expirer."
+  "RESET_PASSWORD_NOT_REQUESTED": "Si vous n'avez pas demandé la réinitialisation de votre mot de passe, aucune action supplémentaire n'est requise. Vous pouvez continuer à utiliser votre mot de passe. Ce lien va bientôt expirer."
 }

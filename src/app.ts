@@ -70,7 +70,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
           channelName: 'graasp-realtime-updates',
           config: {
             host: REDIS_HOST,
-            port: parseInt(REDIS_PORT ?? '6379'),
+            port: REDIS_PORT,
             username: REDIS_USERNAME,
             password: REDIS_PASSWORD,
           },

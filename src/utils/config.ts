@@ -326,7 +326,7 @@ export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
 export const REDIS_HOST = process.env.REDIS_HOST;
-export const REDIS_PORT = process.env.REDIS_PORT;
+export const REDIS_PORT: number = +process.env.REDIS_PORT! || 6379;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 

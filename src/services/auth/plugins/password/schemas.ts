@@ -41,7 +41,7 @@ export const updatePassword = {
       properties: {
         id: { type: 'string' },
         name: { type: 'string' },
-        email: { type: 'string' },
+        email: { type: 'string', format: 'email' },
       },
       additionalProperties: false,
     },
@@ -52,7 +52,7 @@ export const postResetPasswordRequest: FastifySchema = {
   body: {
     type: 'object',
     properties: {
-      email: { type: 'string' },
+      email: { type: 'string', format: 'email' },
       captcha: { type: 'string' },
     },
     additionalProperties: false,

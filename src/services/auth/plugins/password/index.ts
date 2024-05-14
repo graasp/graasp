@@ -19,6 +19,9 @@ import {
 import { MemberPasswordService } from './service';
 
 const PASSPORT_STATEGY_ID = 'jwt-reset-password';
+type ResetPasswordUser = {
+  uuid: string;
+};
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { mailer, log, db } = fastify;
@@ -34,16 +37,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         secretOrKey: PASSWORD_RESET_JWT_SECRET,
         passReqToCallback: true,
       },
-      async (req, _payload, done) => {
-        const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-        if (token && (await memberPasswordService.validateResetPasswordToken(token))) {
-          return done(null, {});
+      async (req, payload, verifiedCallback) => {
+        if (payload.uuid && (await memberPasswordService.validatePasswordResetUuid(payload.uuid))) {
+          // Token has been validated
+          // Error is null, req.user is the Password Reset Request UUID.
+          const user: ResetPasswordUser = { uuid: payload.uuid };
+          return verifiedCallback(null, user);
         } else {
-          return done(null, false);
+          // Authentication refused
+          // Error is null, user is false to trigger a 401 Unauthorized.
+          return verifiedCallback(null, false);
         }
       },
     ),
   );
+  // Register user object to req.user
+  fastifyPassport.registerUserSerializer(async (user: ResetPasswordUser, _req) => user.uuid);
 
   const memberPasswordService = new MemberPasswordService(mailer, log);
 
@@ -93,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   /**
    * Create a reset password request.
    * This will send an email to the member in his langage with a link to reset the password.
-   * The link target a frontend route endpoint.
+   * The link targets a frontend route endpoint.
    * The link will be valid for 24h.
    * If the member does not exist, or does not have a password, the request will return success, to avoid leaking information.
    * If the captcha is invalid the request will fail.
@@ -102,7 +111,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    * @returns 204 No Content if the request was successful.
    */
   fastify.post<{ Body: { email: string; captcha: string } }>(
-    '/reset-password-request',
+    '/password/reset',
     { schema: postResetPasswordRequest },
     async (request, reply) => {
       const { email, captcha } = request.body;
@@ -115,8 +124,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       reply.status(StatusCodes.NO_CONTENT);
       reply.send();
 
+      const repositories = buildRepositories();
+
       const resetPasswordRequest = await memberPasswordService.createResetPasswordRequest(
-        buildRepositories(),
+        repositories,
         email,
       );
       if (resetPasswordRequest) {
@@ -129,7 +140,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           extra: {},
         };
         // Do not await the action to be saved. It is not critical.
-        fastify.actions.service.postMany(member, buildRepositories(), request, [action]);
+        fastify.actions.service.postMany(member, repositories, request, [action]);
       }
     },
   );
@@ -142,17 +153,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    * @param password - New password.
    * @returns 204 No Content if the request was successful.
    */
-  fastify.patch<{ Body: { password: string } }>(
-    '/reset-password-request',
+  fastify.patch<{ Body: { password: string }; User: { uuid: string } }>(
+    '/password/reset',
     {
       schema: patchResetPasswordRequest,
       preValidation: fastifyPassport.authenticate(PASSPORT_STATEGY_ID, { session: false }), // Session is not required.
     },
     async (request, reply) => {
-      const token: string = ExtractJwt.fromAuthHeaderAsBearerToken()(request)!;
+      const user: ResetPasswordUser = request.user! as ResetPasswordUser;
       const { password } = request.body;
-      await memberPasswordService.forcePatch(buildRepositories(), password, token);
-      const member = await memberPasswordService.getMemberByToken(buildRepositories(), token);
+      const repositories = buildRepositories();
+      await memberPasswordService.applyReset(repositories, password, user.uuid);
+      const member = await memberPasswordService.getMemberByPasswordResetUuid(
+        repositories,
+        user.uuid,
+      );
       reply.status(StatusCodes.NO_CONTENT);
 
       // Log the action
@@ -163,7 +178,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         extra: {},
       };
       // Do not await the action to be saved. It is not critical.
-      fastify.actions.service.postMany(member, buildRepositories(), request, [action]);
+      fastify.actions.service.postMany(member, repositories, request, [action]);
     },
   );
 };

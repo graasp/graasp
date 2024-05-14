@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import { StatusCodes } from 'http-status-codes';
 import Redis from 'ioredis';
 import jwt from 'jsonwebtoken';
+import waitForExpect from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
@@ -44,13 +45,21 @@ async function login(
 
 describe('Reset Password', () => {
   let app: FastifyInstance;
-  let entities;
+  let entities: { id: string; email: string; pass?: string }[];
   let mockSendEmail;
   let mockRedisSetEx;
   beforeAll(async () => {
     ({ app } = await build());
     mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
     mockRedisSetEx = jest.spyOn(Redis.prototype, 'setex');
+  });
+
+  afterEach(async () => {
+    await clearDatabase(app.db);
+  });
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
 
     // Seed the database with members and passwords
     entities = [
@@ -73,28 +82,17 @@ describe('Reset Password', () => {
       members: {
         constructor: Member,
         factory: MemberFactory,
-        entities: [
-          { id: entities[0].id, email: entities[0].email },
-          { id: entities[1].id, email: entities[1].email },
-          { id: entities[2].id, email: entities[2].email },
-        ],
+        entities: entities.map((e) => ({ id: e.id, email: e.email })),
       },
       passwords: {
         constructor: MemberPassword,
-        entities: [
-          { member: entities[0].id, password: await encryptPassword(entities[0].pass) },
-          { member: entities[1].id, password: await encryptPassword(entities[1].pass) },
-        ],
+        entities: await Promise.all(
+          entities
+            .filter((e) => e.pass)
+            .map(async (e) => ({ member: e.id, password: await encryptPassword(e.pass!) })),
+        ),
       },
     });
-  });
-
-  afterAll(async () => {
-    await clearDatabase(app.db);
-  });
-
-  beforeEach(async () => {
-    jest.clearAllMocks();
   });
 
   describe('POST Reset Password Request Route', () => {
@@ -102,7 +100,7 @@ describe('Reset Password', () => {
       mockCaptchaValidation(RecaptchaAction.ResetPassword);
       const response = await app.inject({
         method: 'POST',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           email: entities[0].email,
           captcha: MOCK_CAPTCHA,
@@ -111,16 +109,16 @@ describe('Reset Password', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       // Wait for the mail to be sent
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+      await waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+      });
     });
-    it('Create a password request to an non-existing email', async () => {
+    it('Create a password request to a non-existing email', async () => {
       mockCaptchaValidation(RecaptchaAction.ResetPassword);
       const response = await app.inject({
         method: 'POST',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           email: faker.internet.email().toLowerCase(),
           captcha: MOCK_CAPTCHA,
@@ -129,15 +127,15 @@ describe('Reset Password', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       // Wait for the mail to be sent
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      expect(mockSendEmail).toHaveBeenCalledTimes(0);
+      await waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(0);
+      });
     });
     it('Create a password request to a user without a password', async () => {
       mockCaptchaValidation(RecaptchaAction.ResetPassword);
       const response = await app.inject({
         method: 'POST',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           email: entities[2].email,
           captcha: MOCK_CAPTCHA,
@@ -146,15 +144,15 @@ describe('Reset Password', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       // Wait for the mail to be sent
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      expect(mockSendEmail).toHaveBeenCalledTimes(0);
+      await waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(0);
+      });
     });
     it('Create a password request with an invalid captcha', async () => {
       mockCaptchaValidation(RecaptchaAction.SignIn);
       const response = await app.inject({
         method: 'POST',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           email: entities[0].email,
           captcha: 'bad captcha',
@@ -163,9 +161,9 @@ describe('Reset Password', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
 
       // Wait for the mail to be sent
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      expect(mockSendEmail).toHaveBeenCalledTimes(0);
+      await waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(0);
+      });
     });
   });
 
@@ -175,7 +173,7 @@ describe('Reset Password', () => {
       mockCaptchaValidation(RecaptchaAction.ResetPassword);
       const response = await app.inject({
         method: 'POST',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           email: entities[0].email,
           captcha: MOCK_CAPTCHA,
@@ -184,17 +182,18 @@ describe('Reset Password', () => {
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
 
       // Wait for the mail to be sent
-      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      expect(mockSendEmail).toHaveBeenCalledTimes(1);
-      expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+      await waitForExpect(() => {
+        expect(mockSendEmail).toHaveBeenCalledTimes(1);
+        expect(mockSendEmail.mock.calls[0][1]).toBe(entities[0].email);
+      });
       token = mockSendEmail.mock.calls[0][2].split('?t=')[1];
     });
     it('Reset password', async () => {
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
       const responseReset = await app.inject({
         method: 'PATCH',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           password: newPassword,
         },
@@ -210,7 +209,7 @@ describe('Reset Password', () => {
 
       // Try to login with the old password
 
-      const responseLoginOld = await login(app, entities[0].email, entities[0].pass);
+      const responseLoginOld = await login(app, entities[0].email, entities[0].pass!);
       expect(responseLoginOld.statusCode).toBe(StatusCodes.UNAUTHORIZED);
 
       // Try to login with a wrong password
@@ -222,7 +221,7 @@ describe('Reset Password', () => {
       expect(responseLoginWrong.statusCode).toBe(StatusCodes.UNAUTHORIZED);
 
       // Try to login with a different user
-      const responseLoginDifferent = await login(app, entities[1].email, entities[1].pass);
+      const responseLoginDifferent = await login(app, entities[1].email, entities[1].pass!);
       expect(responseLoginDifferent.statusCode).toBe(StatusCodes.SEE_OTHER);
 
       // Set new password to the entities array
@@ -232,7 +231,7 @@ describe('Reset Password', () => {
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
       const response = await app.inject({
         method: 'PATCH',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           password: newPassword,
         },
@@ -251,7 +250,7 @@ describe('Reset Password', () => {
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
       const response = await app.inject({
         method: 'PATCH',
-        url: '/reset-password-request',
+        url: '/password/reset',
         payload: {
           password: newPassword,
         },
@@ -270,7 +269,7 @@ describe('Reset Password', () => {
       expect(seconds).toBe(PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60);
       const redis = new Redis({
         host: REDIS_HOST,
-        port: parseInt(REDIS_PORT ?? '6379'),
+        port: REDIS_PORT,
         username: REDIS_USERNAME,
         password: REDIS_PASSWORD,
       });
@@ -280,7 +279,7 @@ describe('Reset Password', () => {
     mockCaptchaValidation(RecaptchaAction.ResetPassword);
     const responseCreateReset = await app.inject({
       method: 'POST',
-      url: '/reset-password-request',
+      url: '/password/reset',
       payload: {
         email: entities[0].email,
         captcha: MOCK_CAPTCHA,
@@ -298,7 +297,7 @@ describe('Reset Password', () => {
     const newPassword = faker.internet.password({ prefix: '!1Aa' });
     const responseReset = await app.inject({
       method: 'PATCH',
-      url: '/reset-password-request',
+      url: '/password/reset',
       payload: {
         password: newPassword,
       },

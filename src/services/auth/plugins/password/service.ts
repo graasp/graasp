@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
+import { v4 as uuid } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -42,7 +43,7 @@ export class MemberPasswordService {
 
     this.redis = new Redis({
       host: REDIS_HOST,
-      port: parseInt(REDIS_PORT ?? '6379'),
+      port: REDIS_PORT,
       username: REDIS_USERNAME,
       password: REDIS_PASSWORD,
     });
@@ -68,26 +69,30 @@ export class MemberPasswordService {
 
   /**
    * Modify the password of a member. Force the change without checking the current password.
-   * Check if the token is registered in the redis database. If it is, delete it and change the password of the associated member.
+   * Check if the Password Reset Request UUID is registered in the redis database.
+   * If it is, delete it and change the password of the associated member.
    * @param repositories Object with the repositories needed to interact with the database. Must contain a memberPasswordRepository.
    * @param password New password.
-   * @param token The JSON Web Token associated to the member that wants to reset the password.
+   * @param uuid The Password Reset Request UUID associated to the member that wants to reset the password.
    * @returns void
    */
-  async forcePatch(repositories: Repositories, password: string, token: string): Promise<void> {
-    const id = await this.redis.get(`${REDIS_PREFIX}${token}`);
-    if (!id) return;
-    await this.redis.del(token);
+  async applyReset(repositories: Repositories, password: string, uuid: string): Promise<void> {
+    const id = await this.redis.get(`${REDIS_PREFIX}${uuid}`);
+    if (!id) {
+      return;
+    }
+    await this.redis.del(uuid);
     const { memberPasswordRepository } = repositories;
     await memberPasswordRepository.patch(id, password);
   }
 
   /**
    * Create a password reset request.
-   * Push a JSON Web Token to the redis database with the member id as value.
+   * Push a Password Reset Request UUID to the redis database with the member id as value.
    * If the email is not registered, do nothing. If the member doesn't have a password, do nothing.
+   * Generate a JSON Web Token used for authentication.
    * The token will be valid for 24h, after that it will be deleted by the redis database.
-   * The token contains an empty payload, it is only used to identify the member.
+   * The token contains an UUID, it is only used to identify the member on Redis Database.
    * @param repositories Object with the repositories needed to interact with the database. Must contain a memberRepository and a memberPasswordRepository.
    * @param email The email of the member that requested the password reset.
    * @returns The JSON Web Token to reset the password and the language of the member. Otherwise, undefined if the email is not registered or the member doesn't have a password.
@@ -99,12 +104,18 @@ export class MemberPasswordService {
     const { memberRepository } = repositories;
     const member: Member = await memberRepository.getByEmail(email);
 
-    if (!member) return;
-    if (!(await MemberPasswordRepository.getForMemberId(member.id))) return;
-    const payload = {};
-    const token = jwt.sign(payload, PASSWORD_RESET_JWT_SECRET);
+    if (!member) {
+      return;
+    }
+    if (!(await MemberPasswordRepository.getForMemberId(member.id))) {
+      return;
+    }
+    const payload = { uuid: uuid() };
+    const token = jwt.sign(payload, PASSWORD_RESET_JWT_SECRET, {
+      expiresIn: `${PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES}m`,
+    });
     this.redis.setex(
-      `${REDIS_PREFIX}${token}`,
+      `${REDIS_PREFIX}${payload.uuid}`,
       PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES * 60,
       member.id,
     );
@@ -113,10 +124,10 @@ export class MemberPasswordService {
 
   /**
    * Send an email to the member with a link to reset their password.
-   * The link target to a frontend endpoint that will handle the password reset.
+   * The link targets to a frontend endpoint that will handle the password reset.
    * @param email The email of destination
    * @param token The JSON Web Token to reset the password.
-   * @param memberLang The language to use for the email.
+   * @param lang The language to use for the email.
    * @returns void
    */
   mailResetPasswordRequest(email: string, token: string, lang: string): void {
@@ -142,23 +153,28 @@ export class MemberPasswordService {
   }
 
   /**
-   * Check if the JSON Web Token is registered in the redis database.
-   * @param token The token to check.
-   * @returns True if the token is registered, false otherwise.
+   * Check if the UUID is registered in the redis database as a Password Reset Request
+   * @param uuid The UUID to check.
+   * @returns True if the UUID is registered, false otherwise.
    */
-  async validateResetPasswordToken(token: string): Promise<boolean> {
-    return (await this.redis.get(`${REDIS_PREFIX}${token}`)) !== null;
+  async validatePasswordResetUuid(uuid: string): Promise<boolean> {
+    return (await this.redis.get(`${REDIS_PREFIX}${uuid}`)) !== null;
   }
 
   /**
-   * Get the member associated to the JSON Web Token registered in the redis database.
+   * Get the member associated to the Password Reset Request UUID registered in the redis database.
    * @param repositories Object with the repositories needed to interact with the database. Must contain a memberRepository.
-   * @param token The JSON Web Token to identify the member.
-   * @returns The member associated to the token. Otherwise, undefined if we couldn't find the member.
+   * @param uuid The Password Reset Request UUID
+   * @returns The member associated to the UUID. Otherwise, undefined if we couldn't find the member.
    */
-  async getMemberByToken(repositories: Repositories, token: string): Promise<Member | undefined> {
-    const id = await this.redis.get(`${REDIS_PREFIX}${token}`);
-    if (!id) return;
+  async getMemberByPasswordResetUuid(
+    repositories: Repositories,
+    uuid: string,
+  ): Promise<Member | undefined> {
+    const id = await this.redis.get(`${REDIS_PREFIX}${uuid}`);
+    if (!id) {
+      return;
+    }
 
     const { memberRepository } = repositories;
     return memberRepository.get(id);
