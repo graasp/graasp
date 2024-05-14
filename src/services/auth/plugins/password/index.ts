@@ -19,6 +19,9 @@ import {
 import { MemberPasswordService } from './service';
 
 const PASSPORT_STATEGY_ID = 'jwt-reset-password';
+type ResetPasswordUser = {
+  uuid: string;
+};
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { mailer, log, db, redis } = fastify;
