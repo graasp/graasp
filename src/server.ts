@@ -3,7 +3,15 @@ import fastify from 'fastify';
 
 import registerAppPlugins from './app';
 import { initSentry } from './sentry';
-import { APP_VERSION, CORS_ORIGIN_REGEX, DEV, ENVIRONMENT, HOSTNAME, PORT, PROD } from './utils/config';
+import {
+  APP_VERSION,
+  CORS_ORIGIN_REGEX,
+  DEV,
+  ENVIRONMENT,
+  HOSTNAME,
+  PORT,
+  PROD,
+} from './utils/config';
 // import fastifyCompress from 'fastify-compress';
 import { GREETING } from './utils/constants';
 
