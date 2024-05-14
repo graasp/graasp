@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import fastifyPassport from '@fastify/passport';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
@@ -19,12 +19,9 @@ import {
 import { MemberPasswordService } from './service';
 
 const PASSPORT_STATEGY_ID = 'jwt-reset-password';
-type ResetPasswordUser = {
-  uuid: string;
-};
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db } = fastify;
+  const { mailer, log, db, redis } = fastify;
 
   await fastify.register(fastifyPassport.initialize());
   await fastify.register(fastifyPassport.secureSession());
@@ -41,7 +38,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         if (payload.uuid && (await memberPasswordService.validatePasswordResetUuid(payload.uuid))) {
           // Token has been validated
           // Error is null, req.user is the Password Reset Request UUID.
-          const user: ResetPasswordUser = { uuid: payload.uuid };
+          const user: PassportUser = { uuid: payload.uuid };
           return verifiedCallback(null, user);
         } else {
           // Authentication refused
@@ -51,10 +48,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       },
     ),
   );
-  // Register user object to req.user
-  fastifyPassport.registerUserSerializer(async (user: ResetPasswordUser, _req) => user.uuid);
+  // Register user object to session
+  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.uuid);
 
-  const memberPasswordService = new MemberPasswordService(mailer, log);
+  const memberPasswordService = new MemberPasswordService(mailer, log, redis);
 
   // login with password
   fastify.post<{
@@ -160,7 +157,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preValidation: fastifyPassport.authenticate(PASSPORT_STATEGY_ID, { session: false }), // Session is not required.
     },
     async (request, reply) => {
-      const user: ResetPasswordUser = request.user! as ResetPasswordUser;
+      const user: PassportUser = request.user!;
       const { password } = request.body;
       const repositories = buildRepositories();
       await memberPasswordService.applyReset(repositories, password, user.uuid);

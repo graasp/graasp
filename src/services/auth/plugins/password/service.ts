@@ -37,16 +37,9 @@ export class MemberPasswordService {
   mailer: MailerDecoration;
   redis: Redis;
 
-  constructor(mailer, log) {
+  constructor(mailer, log, redis) {
     this.mailer = mailer;
     this.log = log;
-
-    this.redis = new Redis({
-      host: REDIS_HOST,
-      port: REDIS_PORT,
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-    });
   }
 
   generateToken(data, expiration) {
