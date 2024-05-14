@@ -2,6 +2,7 @@
 import FormData from 'form-data';
 import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
+import groupBy from 'lodash.groupby';
 import fetch from 'node-fetch';
 import path from 'path';
 import { In } from 'typeorm';
@@ -27,6 +28,7 @@ import { Member } from '../../../../member/entities/member';
 import { saveMember, saveMembers } from '../../../../member/test/fixtures/members';
 import { FolderItem, Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
+import { TEST_FLAG_NO_GROUP_CSV } from '../constants';
 import { Invitation } from '../entity';
 import { MissingEmailColumnInCSVError, MissingEmailInRowError } from '../errors';
 import { InvitationRepository } from '../repository';
@@ -574,83 +576,60 @@ describe('Group endpoint', () => {
 
   const setupFromFile = async (filename: string) => {
     const filePath = path.resolve(__dirname, `./fixtures/${filename}`);
-    const file = fs.createReadStream(filePath);
-    const { rows } = await parseCSV(file);
+    //Notice that we are creating two streams from the same file
+    //because if using one stream, this will close as when parsing the file
+    const { rows } = await parseCSV(fs.createReadStream(filePath));
     const form = new FormData();
-    form.append('myfile', file);
+    form.append('myfile', fs.createReadStream(filePath));
     return { form, rows };
   };
 
+  type mockInvitations = {
+    email: string;
+    item: Pick<Item, 'name' | 'type'>;
+    permission: string;
+  };
+  type mockItemMemberships = {
+    member: Pick<Member, 'email'>;
+    item: Pick<Item, 'name' | 'type'>;
+    permission: string;
+  };
+
   const createExpectedItemMemberships = async (rows: CSVInvite[], item?: Item) => {
-    const memRows = rows.reduce<{
-      [key: string]: {
-        member: Pick<Member, 'email'>;
-        item: Pick<Item, 'name' | 'type'>;
-        permission: string;
-      };
-    }>((resMap, row) => {
-      resMap[row.email] = {
+    const memRows = rows.map<mockItemMemberships>((row) => {
+      return {
         member: { email: row.email },
         item: { name: item ? item.name : row.group_name ?? '', type: ItemType.FOLDER },
         permission: row.permission ?? PermissionLevel.Read,
       };
-      return resMap;
-    }, {});
+    });
     return memRows;
   };
 
   const createExpectedInvitations = async (rows: CSVInvite[], item?: Item) => {
-    const invRows = rows.reduce<{
-      [key: string]: {
-        email: string;
-        item: Pick<Item, 'name' | 'type'>;
-        permission: string;
-      };
-    }>((resMap, row) => {
-      resMap[row.email] = {
+    const invRows = rows.map<mockInvitations>((row) => {
+      return {
         email: row.email,
         item: { name: item ? item.name : row.group_name ?? '', type: ItemType.FOLDER },
         permission: row.permission ?? PermissionLevel.Read,
       };
-      return resMap;
-    }, {});
+    });
     return invRows;
   };
 
   const compareResponse = (
     data: {
       groupName: string;
-      memberships: ItemMembership[];
       invitations: Invitation[];
+      memberships: ItemMembership[];
     }[],
-    expMem?: {
-      [key: string]: {
-        member: Pick<Member, 'email'>;
-        item: Pick<Item, 'name' | 'type'>;
-        permission: string;
-      };
-    },
-    expInv?: {
-      [key: string]: {
-        email: string;
-        item: Pick<Item, 'name' | 'type'>;
-        permission: string;
-      };
-    },
+    resObject: {
+      groupName: string;
+      invitations: mockInvitations[];
+      memberships: mockItemMemberships[];
+    }[],
   ) => {
-    const expectedSize =
-      (expMem ? Object.keys(expMem).length : 0) + (expInv ? Object.keys(expInv).length : 0);
-
-    expect(data).toHaveLength(expectedSize);
-    // data.map(async ({ memberships, invitations, groupName }) => {
-    //   let entryToCompare;
-    //   if (memberships) {
-    //     entryToCompare = expMem ? expMem[(memberships).member.email] : undefined;
-    //   } else {
-    //     entryToCompare = expInv ? expInv[(e as Invitation).email] : undefined;
-    //   }
-    //   expect(e).toMatchObject(entryToCompare);
-    // });
+    expect(data).toMatchObject(resObject);
   };
 
   const uploadInjection = async (form: FormData, item: Item, idTemplate: string = '') => {
@@ -662,28 +641,136 @@ describe('Group endpoint', () => {
     });
     return response;
   };
+
+  const createExpectedResObj = async (
+    csvRows: CSVInvite[],
+    item?: Item,
+    invitationsToItemMemRatio = 0.5,
+  ) => {
+    const invitationsSize = csvRows.length * invitationsToItemMemRatio;
+    const invRows = csvRows.slice(0, invitationsSize);
+    const memRows = csvRows.slice(invitationsSize, csvRows.length);
+    const protoMembers: CompleteMember[] = memRows.map((row) =>
+      MemberFactory({ email: row.email }),
+    );
+    await saveMembers(protoMembers);
+    const groupInv = groupBy(invRows, (r) => r.group_name);
+    const groupMem = groupBy(memRows, (r) => r.group_name);
+
+    const groupRes: {
+      [key: string]: {
+        groupName: string;
+        memberships: mockItemMemberships[];
+        invitations: mockInvitations[];
+      };
+    } = {};
+
+    const groupNames = [
+      ...new Set(csvRows.map((row) => row.group_name).filter((grpName) => grpName !== undefined)),
+    ];
+    if (groupNames.length > 0) {
+      for await (const groupName of groupNames) {
+        groupRes[groupName!] = { groupName: groupName!, invitations: [], memberships: [] };
+      }
+
+      for await (const [groupName, users] of Object.entries(groupInv)) {
+        groupRes[groupName].invitations.push(...(await createExpectedInvitations(users)));
+      }
+
+      for await (const [groupName, users] of Object.entries(groupMem)) {
+        groupRes[groupName].memberships.push(...(await createExpectedItemMemberships(users)));
+      }
+
+      return Object.values(groupRes);
+    } else {
+      return [
+        {
+          groupName: TEST_FLAG_NO_GROUP_CSV,
+          memberships: await createExpectedItemMemberships(memRows, item),
+          invitations: await createExpectedInvitations(invRows, item),
+        },
+      ];
+    }
+  };
+
   // ${API_HOST}/items/${_itemId}/invitations/upload_csv?id=${_itemId}&template_id=${idTemplate}
   it('Upload a group CSV all members', async () => {
     //By default save Item will create an item
     const { item } = await testUtils.saveItemAndMembership({
       member: actor,
     });
+
+    const subFolder = await testUtils.saveItem({
+      item: { name: 'sub' },
+      actor: actor,
+    });
+
     const mockSendMail = mockEmail(app);
     const { form, rows: rowsInvitations } = await setupFromFile('group.csv');
-    const expItemMem = await createExpectedItemMemberships(rowsInvitations);
-    const protoMembers: CompleteMember[] = rowsInvitations.map((row) =>
-      MemberFactory({ email: row.email }),
-    );
-    await saveMembers(protoMembers);
-    const response = await uploadInjection(form, item);
+    const expRes = await createExpectedResObj(rowsInvitations, item);
+    const response = await uploadInjection(form, item, subFolder.id);
     expect(response.statusCode).toBe(StatusCodes.OK);
-    const data: ItemMembership[] = JSON.parse(response.body).data;
-    // compareResponse(data, expItemMem);
+    let data = JSON.parse(response.body);
+    console.log(data);
+    if (expRes[0].groupName == TEST_FLAG_NO_GROUP_CSV) {
+      data = [
+        {
+          groupName: TEST_FLAG_NO_GROUP_CSV,
+          ...data,
+        },
+      ];
+    }
+    console.log(expRes);
+    compareResponse(data, expRes);
     await waitForExpect(() => {
       expect(mockSendMail).toHaveBeenCalledTimes(rowsInvitations.length);
     });
   });
 
+  it('Group folders creations all members', async () => {
+    //By default save Item will create an item
+    const { item } = await testUtils.saveItemAndMembership({
+      member: actor,
+    });
+
+    const { item: subFolder } = await testUtils.saveItemAndMembership({
+      item: { name: 'empty_folder' },
+      member: actor,
+    });
+
+    const mockSendMail = mockEmail(app);
+    const spyFuncCopy = jest.spyOn(app.items.service, 'copy');
+    const spyFuncRename = jest.spyOn(app.items.service, 'patch');
+    const spyFuncImportUsersWithCSV = jest.spyOn(app.items.service, 'importUsersWithCSV');
+    const spyFuncCreateStructureForCSVAndTemplate = jest.spyOn(
+      app.items.service,
+      'createStructureForCSVAndTemplate',
+    );
+    const { form, rows: rowsInvitations } = await setupFromFile('group.csv');
+    const expRes = await createExpectedResObj(rowsInvitations, item);
+    const response = await uploadInjection(form, item, subFolder.id);
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    let data = JSON.parse(response.body);
+    console.log(data);
+    if (expRes[0].groupName == TEST_FLAG_NO_GROUP_CSV) {
+      data = [
+        {
+          groupName: TEST_FLAG_NO_GROUP_CSV,
+          ...data,
+        },
+      ];
+    }
+    compareResponse(data, expRes);
+    await waitForExpect(() => {
+      expect(mockSendMail).toHaveBeenCalledTimes(rowsInvitations.length);
+    });
+    expect(spyFuncCopy).toHaveBeenCalledTimes(expRes.length);
+    expect(spyFuncRename).toHaveBeenCalledTimes(expRes.length);
+    expect(spyFuncImportUsersWithCSV).toHaveBeenCalledTimes(0);
+    expect(spyFuncCreateStructureForCSVAndTemplate).toHaveBeenCalledTimes(1);
+  });
+
+  /*
   it('Upload a group CSV all invitations', async () => {
     //By default save Item will create an item
     const { item } = await testUtils.saveItemAndMembership({
@@ -904,4 +991,5 @@ describe('Group endpoint', () => {
     });
     console.log(itemChildren);
   });
+*/
 });

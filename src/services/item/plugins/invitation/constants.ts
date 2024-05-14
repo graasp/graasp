@@ -17,3 +17,4 @@ export const MAX_FILE_SIZE = 1024 * 1024 * 200; // 200 MB
 export const CSV_MIMETYPE = 'text/csv';
 export const GROUP_COL_NAME = 'group_name';
 export const EMAIL_COLUMN_NAME = 'email';
+export const TEST_FLAG_NO_GROUP_CSV = 'no_group_csv';
