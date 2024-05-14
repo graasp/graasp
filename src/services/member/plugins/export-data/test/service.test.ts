@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -53,7 +55,7 @@ const checkNoMemberIdLeaks = <T>({
 };
 
 describe('DataMember Export', () => {
-  let app;
+  let app: FastifyInstance;
   let exportingActor;
   let randomUser;
   let item;

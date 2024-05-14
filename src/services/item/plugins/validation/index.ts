@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
 
@@ -89,7 +89,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('validate', [itemId], { data: { [item.id]: item }, errors: [] }),
+            ItemOpFeedbackEvent('validate', [itemId], { [item.id]: item }),
           );
         }
       }).catch((e: Error) => {
@@ -98,7 +98,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('validate', [itemId], { error: e }),
+            ItemOpFeedbackErrorEvent('validate', [itemId], e),
           );
         }
       });

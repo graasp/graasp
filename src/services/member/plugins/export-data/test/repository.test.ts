@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -54,7 +56,7 @@ const itemTestUtils = new ItemTestUtils();
 jest.mock('../../../../../plugins/datasource');
 
 describe('DataMember Export', () => {
-  let app;
+  let app: FastifyInstance;
   let exportingActor;
   let randomUser;
   let item;

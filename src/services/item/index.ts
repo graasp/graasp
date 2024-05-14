@@ -31,6 +31,7 @@ import actionItemPlugin from './plugins/action';
 import graaspApps from './plugins/app';
 import graaspDocumentItem from './plugins/document';
 import graaspEmbeddedLinkItem from './plugins/embeddedLink';
+import { PREFIX_EMBEDDED_LINK } from './plugins/embeddedLink/service';
 import graaspEtherpadPlugin from './plugins/etherpad';
 import graaspFileItem from './plugins/file';
 import itemGeolocationPlugin from './plugins/geolocation/index';
@@ -122,6 +123,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         // 'await' necessary because internally it uses 'extendCreateSchema'
         await fastify.register(graaspEmbeddedLinkItem, {
           iframelyHrefOrigin: EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN,
+          prefix: PREFIX_EMBEDDED_LINK,
         });
 
         await fastify.register(graaspDocumentItem);

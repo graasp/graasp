@@ -1,5 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
-
 import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType } from '@graasp/sdk';
@@ -69,10 +67,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string; type: ItemTagType } & IdParam }>(
     '/:itemId/tags/:type',
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId, type } }, reply) => {
-      await db.transaction(async (manager) => {
-        await iTS.deleteOne(member, buildRepositories(manager), itemId, type);
-        reply.status(StatusCodes.NO_CONTENT);
+    async ({ member, params: { itemId, type } }) => {
+      return db.transaction(async (manager) => {
+        return iTS.deleteOne(member, buildRepositories(manager), itemId, type);
       });
     },
   );

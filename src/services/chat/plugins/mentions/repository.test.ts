@@ -1,5 +1,7 @@
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { MentionStatus } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
@@ -31,7 +33,7 @@ const saveItemWithChatMessagesAndMentionsAndNoise = async (actor: Actor) => {
 };
 
 describe('ChatMentionRepository', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   beforeEach(async () => {

@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import {
   ActionFactory,
   ActionTriggers,
@@ -26,7 +28,7 @@ const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 
 describe('Action Repository', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let member;
   let item;

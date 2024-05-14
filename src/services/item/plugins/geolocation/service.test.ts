@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { FastifyBaseLogger } from 'fastify';
+import { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
@@ -11,6 +11,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
+import { ItemWrapper } from '../../ItemWrapper';
 import ItemService from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
@@ -28,7 +29,7 @@ const service = new ItemGeolocationService(
 const rawRepository = AppDataSource.getRepository(ItemGeolocation);
 
 describe('ItemGeolocationService', () => {
-  let app;
+  let app: FastifyInstance;
   let actor: Actor;
 
   beforeEach(async () => {
@@ -131,13 +132,13 @@ describe('ItemGeolocationService', () => {
 
     it('get successfully for public item', async () => {
       const member = await saveMember();
-      const item = await testUtils.savePublicItem({
+      const { item } = await testUtils.savePublicItem({
         actor: member,
       });
       const { packed: geoloc } = await saveGeolocation({
         lat: 1,
         lng: 2,
-        item: { ...item, permission: null },
+        item: new ItemWrapper(item, null).packed(),
         country: 'de',
       });
 
@@ -225,24 +226,24 @@ describe('ItemGeolocationService', () => {
         item: item1,
         country: 'de',
       });
-      const publicItem = await testUtils.savePublicItem({
+      const { item: publicItem } = await testUtils.savePublicItem({
         actor: member,
       });
       const { packed: geoloc2 } = await saveGeolocation({
         lat: 1,
         lng: 2,
-        item: { ...publicItem, permission: null },
+        item: new ItemWrapper(publicItem, null).packed(),
         country: 'de',
       });
 
       // noise
-      const publicItem1 = await testUtils.savePublicItem({
+      const { item: publicItem1 } = await testUtils.savePublicItem({
         actor: member,
       });
       await saveGeolocation({
         lat: 1,
         lng: 6,
-        item: { ...publicItem1, permission: null },
+        item: new ItemWrapper(publicItem1, null).packed(),
         country: 'de',
       });
 

@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { v4 } from 'uuid';
 
+import { FastifyInstance } from 'fastify';
+
 import { FlagType, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -22,7 +24,7 @@ const expectItemFlag = (flag, correctFlag) => {
 };
 
 describe('Item Flag Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   const payload = { type: FlagType.FalseInformation };
 

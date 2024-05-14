@@ -10,6 +10,7 @@ import {
 import { v4 } from 'uuid';
 
 import { Member } from '../../../member/entities/member';
+import { PackedItem } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 
 @Entity()
@@ -36,3 +37,7 @@ export class RecycledItemData extends BaseEntity {
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;
 }
+
+export type PackedRecycledItemData = RecycledItemData & {
+  item: PackedItem;
+};

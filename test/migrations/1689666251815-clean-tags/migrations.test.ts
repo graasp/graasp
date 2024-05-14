@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { ItemTagType } from '@graasp/sdk';
 
 import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
@@ -12,7 +14,7 @@ import { up } from './fixture';
 jest.mock('../../../src/plugins/datasource');
 
 describe('migrations1689666251815', () => {
-  let app;
+  let app: FastifyInstance;
 
   beforeEach(async () => {
     // init db empty, it is sync by default

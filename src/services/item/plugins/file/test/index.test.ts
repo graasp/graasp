@@ -5,7 +5,9 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 import { In } from 'typeorm';
 
-import { HttpMethod, ItemType, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
+import { FastifyInstance } from 'fastify';
+
+import { HttpMethod, ItemType, MaxWidth, PermissionLevel, S3FileItemExtra } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../../test/constants';
@@ -76,7 +78,7 @@ const createFormData = (form = new FormData()) => {
 };
 
 describe('File Item routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {
@@ -498,6 +500,16 @@ describe('File Item routes tests', () => {
       expect(response.json().extra[FILE_ITEM_TYPE].altText).toEqual('new name');
     });
 
+    it('Edit file item maxWidth', async () => {
+      const response = await app.inject({
+        method: HttpMethod.Patch,
+        url: `${ITEMS_ROUTE_PREFIX}/${item.id}`,
+        payload: { settings: { maxWidth: MaxWidth.Small } },
+      });
+      console.log(response.json());
+      expect(response.json().settings.maxWidth).toEqual(MaxWidth.Small);
+    });
+
     it('Cannot edit another file item field', async () => {
       const response = await app.inject({
         method: HttpMethod.Patch,
@@ -589,10 +601,16 @@ describe('File Item routes tests', () => {
           setTimeout(async () => {
             await expect(copyObjectMock).toHaveBeenCalled();
 
-            const items = await testUtils.rawItemRepository.find({ where: { name: item.name } });
-            expect(items).toHaveLength(2);
-            expect((items[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
-              (items[1].extra as S3FileItemExtra).s3File.path,
+            const items1 = await testUtils.rawItemRepository.find({ where: { name: item.name } });
+            expect(items1).toHaveLength(1);
+
+            const items2 = await testUtils.rawItemRepository.find({
+              where: { name: `${item.name} (2)` },
+            });
+            expect(items2).toHaveLength(1);
+
+            expect((items1[0].extra as S3FileItemExtra).s3File.path).not.toEqual(
+              (items2[0].extra as S3FileItemExtra).s3File.path,
             );
 
             done(true);

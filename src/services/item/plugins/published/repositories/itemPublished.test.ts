@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import build, { clearDatabase } from '../../../../../../test/app';
 import { saveMember } from '../../../../member/test/fixtures/members';
 import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items';
@@ -9,7 +11,7 @@ const itemPublishedRepository = new ItemPublishedRepository();
 const testUtils = new ItemTestUtils();
 
 describe('ItemPublishedRepository', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   beforeEach(async () => {
@@ -24,7 +26,7 @@ describe('ItemPublishedRepository', () => {
 
   describe('getForMember', () => {
     it('get published items for member', async () => {
-      const items = await testUtils.saveCollections(actor);
+      const { items } = await testUtils.saveCollections(actor);
       // noise
       const member = await saveMember();
       await testUtils.saveCollections(member);

@@ -1,8 +1,12 @@
+import { faker } from '@faker-js/faker/locale/en';
 import { v4 } from 'uuid';
+
+import { FastifyInstance } from 'fastify';
 
 import {
   ItemType,
   LocalFileItemFactory,
+  MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
   MemberFactory,
   PermissionLevel,
@@ -28,7 +32,7 @@ const itemRepository = new ItemRepository();
 const testUtils = new ItemTestUtils();
 
 describe('ItemRepository', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   beforeEach(async () => {
@@ -645,7 +649,7 @@ describe('ItemRepository', () => {
       const item = await testUtils.saveItem({ actor });
       const result = await itemRepository.copy(item, actor);
       const copy = result.copyRoot;
-      expect(copy.name).toEqual(item.name);
+      expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
@@ -656,7 +660,7 @@ describe('ItemRepository', () => {
       const item = await testUtils.saveItem({ actor, parentItem: originalParentItem });
       const result = await itemRepository.copy(item, actor, parentItem);
       const copy = result.copyRoot;
-      expect(copy.name).toEqual(item.name);
+      expect(copy.name).toEqual(`${item.name} (2)`);
       expect(copy.id).not.toEqual(item.id);
       expect(copy.path).toContain(parentItem.path);
       expect(copy.path).not.toContain(originalParentItem.path);
@@ -669,6 +673,44 @@ describe('ItemRepository', () => {
       await expect(itemRepository.copy(item, actor, parentItem)).rejects.toBeInstanceOf(
         ItemNotFolder,
       );
+    });
+    it('copy suffix is updated', async () => {
+      const item = await testUtils.saveItem({ actor });
+      const result = await itemRepository.copy(item, actor);
+      const copy = result.copyRoot;
+      expect(copy.name).toEqual(`${item.name} (2)`);
+
+      const result2 = await itemRepository.copy(copy, actor);
+      const copy2 = result2.copyRoot;
+      expect(copy2.name).toEqual(`${item.name} (3)`);
+    });
+
+    it('copy name is not altered', async () => {
+      const item = await testUtils.saveItem({ actor });
+      item.name = '()(/\\)(..)() (a) (3) ';
+      itemRepository.patch(item.id, item);
+      const result = await itemRepository.copy(item, actor);
+      const copy = result.copyRoot;
+      expect(copy.name).toEqual(`${item.name} (2)`);
+
+      const result2 = await itemRepository.copy(copy, actor);
+      const copy2 = result2.copyRoot;
+      expect(copy2.name).toEqual(`${item.name} (3)`);
+    });
+
+    it('copy name do not exceed maximum length allowed.', async () => {
+      const item = await testUtils.saveItem({ actor });
+      item.name = faker.string.sample(MAX_ITEM_NAME_LENGTH);
+      itemRepository.patch(item.id, item);
+      const result = await itemRepository.copy(item, actor);
+      const copy = result.copyRoot;
+      expect(copy.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (2)`);
+
+      copy.name = `${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (9)`;
+      itemRepository.patch(copy.id, copy);
+      const result2 = await itemRepository.copy(copy, actor);
+      const copy2 = result2.copyRoot;
+      expect(copy2.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 5)} (10)`);
     });
   });
   describe('getItemSumSize', () => {
@@ -704,8 +746,19 @@ describe('ItemRepository', () => {
   });
   describe('getAllPublishedItems', () => {
     it('get published items', async () => {
-      const items = await testUtils.saveCollections(actor);
+      const { items } = await testUtils.saveCollections(actor);
       const result = await itemRepository.getAllPublishedItems();
+      expectManyItems(result, items);
+    });
+  });
+  describe('getPublishedItemsForMember', () => {
+    it('get published items for member', async () => {
+      const { items } = await testUtils.saveCollections(actor);
+      // noise
+      const member = await saveMember();
+      await testUtils.saveCollections(member);
+
+      const result = await itemRepository.getPublishedItemsForMember(actor.id);
       expectManyItems(result, items);
     });
   });

@@ -13,7 +13,6 @@ import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/config
 import { FileRepository } from './interfaces/fileRepository';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
-import { S3_PRESIGNED_EXPIRATION } from './utils/constants';
 import {
   CopyFileInvalidPathError,
   CopyFolderInvalidPathError,
@@ -214,8 +213,8 @@ class FileService {
     replyUrl?: boolean;
   }) {
     if (replyUrl) {
-      const replyUrlExpiration = S3_PRESIGNED_EXPIRATION;
-      reply.header('Cache-Control', `max-age=${replyUrlExpiration}`);
+      // const replyUrlExpiration = S3_PRESIGNED_EXPIRATION;
+      // reply.header('Cache-Control', `max-age=${replyUrlExpiration}`);
       reply.status(StatusCodes.OK).send(url);
     } else {
       // this header will make the browser download the file with 'name'

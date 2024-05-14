@@ -20,7 +20,7 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
 import { exportAction, getAggregateActions, getItemActions, postAction } from './schemas';
@@ -159,7 +159,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('export', [itemId], { data: { [item.id]: item }, errors: [] }),
+            ItemOpFeedbackEvent('export', [itemId], { [item.id]: item }),
           );
         }
       }).catch((e: Error) => {
@@ -168,7 +168,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('export', [itemId], { error: e }),
+            ItemOpFeedbackErrorEvent('export', [itemId], e),
           );
         }
       });

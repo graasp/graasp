@@ -25,5 +25,8 @@
   "SHARE_ITEM_TITLE": "قام {{creatorName}} بمشاركة {{itemName}} معك على Graasp",
   "FOOTER": "أنت تتلقى هذا البريد الإلكتروني بسبب حسابك على <a href=\"https://graasp.org\">Graasp</a>",
   "POWERED_BY": "مدعوم من <a href=\"https://graasp.org\">Graasp</a>.",
-  "USER_AGREEMENTS_MAIL_TEXT": "* بالنقر على <strong>{{signUpButtonText}}</strong>، فإنك توافق على <a href=\"{{graaspLandingPageOrigin}}/terms\">شروط الخدمة</a> و<a href=\"{ {graaspLandingPageOrigin}}/privacy\">سياسة الخصوصية</a>."
+  "USER_AGREEMENTS_MAIL_TEXT": "* بالنقر على <strong>{{signUpButtonText}}</strong>، فإنك توافق على <a href=\"{{graaspLandingPageOrigin}}/terms\">شروط الخدمة</a> و<a href=\"{ {graaspLandingPageOrigin}}/privacy\">سياسة الخصوصية</a>.",
+  "EXPORT_MEMBER_DATA_TEXT": "لقد طلبت تنزيل جميع بياناتك، إليك رابط تنزيل الأرشيف. سيكون متاحًا لمدة {{days}} يوم",
+  "EXPORT_MEMBER_DATA_TITLE": "قم بتنزيل بياناتك",
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "تحميل"
 }

@@ -21,7 +21,6 @@ import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { ItemCategory } from '../../itemCategory/entities/ItemCategory';
 import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
-import { ItemTagRepository } from '../../itemTag/repository';
 import { ItemPublished } from '../entities/itemPublished';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
 import { ItemPublishedRepository } from '../repositories/itemPublished';
@@ -98,10 +97,6 @@ describe('MeilisearchWrapper', () => {
 
   const meilisearch = new MeiliSearchWrapper(datasource, fakeClient, fileService, logger);
 
-  const itemTagRepositoryMock = {
-    hasForMany: jest.fn(),
-  } as unknown as jest.Mocked<typeof ItemTagRepository>;
-
   const itemPublishedRepositoryMock = {
     getForItem: jest.fn(),
     getPaginatedItems: jest.fn(),
@@ -115,7 +110,7 @@ describe('MeilisearchWrapper', () => {
     itemMembershipRepository: {
       getInherited: jest.fn(() => ({ permission: 'anything' })),
     } as unknown as jest.Mocked<typeof ItemMembershipRepository>,
-    itemTagRepository: itemTagRepositoryMock,
+    itemTagRepository: testUtils.itemTagRepository,
     itemRepository: testUtils.itemRepository,
     itemPublishedRepository: itemPublishedRepositoryMock,
     itemCategoryRepository: itemCategoryRepositoryMock,
@@ -149,7 +144,9 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
-      itemTagRepositoryMock.hasForMany.mockResolvedValue({ data: {}, errors: [] });
+      jest
+        .spyOn(testUtils.itemTagRepository, 'hasForMany')
+        .mockResolvedValue({ data: {}, errors: [] });
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
@@ -179,7 +176,7 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
-      itemTagRepositoryMock.hasForMany.mockResolvedValue({
+      jest.spyOn(testUtils.itemTagRepository, 'hasForMany').mockResolvedValue({
         data: { [descendant.id]: true },
         errors: [],
       });
@@ -243,7 +240,9 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
-      itemTagRepositoryMock.hasForMany.mockResolvedValue({ data: {}, errors: [] });
+      jest
+        .spyOn(testUtils.itemTagRepository, 'hasForMany')
+        .mockResolvedValue({ data: {}, errors: [] });
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 
@@ -313,7 +312,7 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockImplementation((i) =>
         Promise.resolve(published[i.id]),
       );
-      itemTagRepositoryMock.hasForMany.mockResolvedValue({
+      jest.spyOn(testUtils.itemTagRepository, 'hasForMany').mockResolvedValue({
         data: { [descendant.id]: true },
         errors: [],
       });
@@ -377,7 +376,9 @@ describe('MeilisearchWrapper', () => {
       itemPublishedRepositoryMock.getForItem.mockResolvedValue({
         item: { id: item.id } as Item,
       } as ItemPublished);
-      itemTagRepositoryMock.hasForMany.mockResolvedValue({ data: {}, errors: [] });
+      jest
+        .spyOn(testUtils.itemTagRepository, 'hasForMany')
+        .mockResolvedValue({ data: {}, errors: [] });
 
       const addDocumentSpy = jest.spyOn(mockIndex, 'addDocuments');
 

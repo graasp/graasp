@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifyInstance } from 'fastify';
+
 import { Context, HttpMethod, PermissionLevel, ShortLinkPlatform } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -34,7 +36,7 @@ function expectException(response, ex) {
 }
 
 describe('Short links routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item;
   let anna;

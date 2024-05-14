@@ -6,10 +6,9 @@ import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
-import { ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
+import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
-import { recycleWsHooks } from './ws/hooks';
 
 export interface RecycledItemDataOptions {
   /** Max number of items to recycle in a request.
@@ -29,10 +28,6 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
 
   const recycleBinService = new RecycledBinService();
 
-  fastify.register(recycleWsHooks, {
-    recycleService: recycleBinService,
-  });
-
   fastify.addSchema(schemas);
 
   // Note: it's okay to not prevent memberships changes on recycled items
@@ -51,18 +46,6 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
     },
   );
 
-  // TO RECYCLE: restore one item could restore a whole tree
-  // recycle item
-  // fastify.post<{ Params: IdParam }>(
-  //   '/:id/recycle',
-  //   { schema: recycleOne },
-  //   async ({ member, params: { id: itemId }, log }) => {
-  //     return db.transaction(async (manager) => {
-  //       return recycleBinService.recycle(member, buildRepositories(manager), itemId);
-  //     });
-  //   },
-  // );
-
   // recycle multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
@@ -79,7 +62,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('recycle', ids, items),
+            ItemOpFeedbackEvent('recycle', ids, items.data, items.errors),
           );
         }
         return items;
@@ -89,7 +72,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('recycle', ids, { error: e }),
+            ItemOpFeedbackErrorEvent('recycle', ids, e),
           );
         }
       });
@@ -98,19 +81,6 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
       return ids;
     },
   );
-
-  // TO REMOVE: restore one item could restore a whole tree
-  // restore one item
-  // fastify.post<{ Params: IdParam }>(
-  //   '/:id/restore',
-  //   { schema: restoreOne },
-  //   async ({ member, params: { id }, log }) => {
-  //     log.info(`Restore item '${id}'`);
-  //     return db.transaction(async (manager) => {
-  //       return recycleBinService.restoreOne(member, buildRepositories(manager), id);
-  //     });
-  //   },
-  // );
 
   // restore multiple items
   fastify.post<{ Querystring: IdsParams }>(
@@ -130,7 +100,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('restore', ids, items),
+            ItemOpFeedbackEvent('restore', ids, items.data, items.errors),
           );
         }
       }).catch((e: Error) => {
@@ -139,7 +109,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           websockets.publish(
             memberItemsTopic,
             member.id,
-            ItemOpFeedbackEvent('restore', ids, { error: e }),
+            ItemOpFeedbackErrorEvent('restore', ids, e),
           );
         }
       });

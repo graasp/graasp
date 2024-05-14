@@ -1,6 +1,6 @@
 import yazl from 'yazl';
 
-import { FastifyReply } from 'fastify';
+import { FastifyInstance, FastifyReply } from 'fastify';
 
 import { ItemTagType } from '@graasp/sdk';
 
@@ -17,7 +17,8 @@ jest.mock('../../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
 
 describe('ZIP routes tests', () => {
-  let app, actor;
+  let app: FastifyInstance;
+  let actor;
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -40,14 +41,14 @@ describe('ZIP routes tests', () => {
         actor,
         parentItem: item,
       });
-      await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
+      await new ItemTagRepository().post(actor, child1, ItemTagType.Hidden);
 
       const importExportService = new ImportExportService(
         app.db,
         {} as unknown as FileItemService,
         app.items.service,
         {} as unknown as H5PService,
-        app.logger,
+        app.log,
       );
       const repositories = buildRepositories();
       const reply = {} as unknown as FastifyReply;

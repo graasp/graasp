@@ -8,21 +8,14 @@ import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
 const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
-  // const app = fastify({
-  //   logger: {
-  //     prettyPrint: true,
-  //     level: 'debug',
-  //   },
-  //   ajv: {
-  //     customOptions: {
-  //       coerceTypes: 'array',
-  //     },
-  //   },
-  // });
-
   const app = fastify({
     disableRequestLogging: true,
-    logger: { level: 'info' },
+    logger: {
+      transport: {
+        target: 'pino-pretty',
+      },
+      level: 'info',
+    },
     ajv: {
       customOptions: {
         coerceTypes: 'array',

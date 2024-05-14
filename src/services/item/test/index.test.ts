@@ -1,7 +1,12 @@
+import FormData from 'form-data';
+import fs from 'fs';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import path from 'node:path';
 import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
 import waitForExpect from 'wait-for-expect';
+
+import { FastifyInstance } from 'fastify';
 
 import {
   DescriptionPlacement,
@@ -35,7 +40,7 @@ import { saveMember } from '../../member/test/fixtures/members';
 import { PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
-import { ItemTagRepository } from '../plugins/itemTag/repository';
+import { ItemTag } from '../plugins/itemTag/ItemTag';
 import { Ordering, SortBy } from '../types';
 import {
   ItemTestUtils,
@@ -47,7 +52,43 @@ import {
 // mock datasource
 jest.mock('../../../plugins/datasource');
 
+const rawRepository = AppDataSource.getRepository(ItemTag);
+
 const testUtils = new ItemTestUtils();
+
+// Mock S3 libraries
+const deleteObjectMock = jest.fn(async () => console.debug('deleteObjectMock'));
+const copyObjectMock = jest.fn(async () => console.debug('copyObjectMock'));
+const headObjectMock = jest.fn(async () => ({ ContentLength: 10 }));
+const uploadDoneMock = jest.fn(async () => console.debug('aws s3 storage upload'));
+const MOCK_SIGNED_URL = 'signed-url';
+jest.mock('@aws-sdk/client-s3', () => {
+  return {
+    GetObjectCommand: jest.fn(),
+    S3: function () {
+      return {
+        copyObject: copyObjectMock,
+        deleteObject: deleteObjectMock,
+        headObject: headObjectMock,
+      };
+    },
+  };
+});
+jest.mock('@aws-sdk/s3-request-presigner', () => {
+  const getSignedUrl = jest.fn(async () => MOCK_SIGNED_URL);
+  return {
+    getSignedUrl,
+  };
+});
+jest.mock('@aws-sdk/lib-storage', () => {
+  return {
+    Upload: jest.fn().mockImplementation(() => {
+      return {
+        done: uploadDoneMock,
+      };
+    }),
+  };
+});
 
 const saveUntilMaxDescendants = async (parent: Item, actor: Member) => {
   // save maximum depth
@@ -91,7 +132,7 @@ const saveNbOfItems = async ({
 };
 
 describe('Item routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {
@@ -483,6 +524,44 @@ describe('Item routes tests', () => {
       });
     });
   });
+
+  describe('POST /items/with-thumbnail', () => {
+    beforeEach(async () => {
+      ({ app, actor } = await build());
+    });
+    it('Post item with thumbnail', async () => {
+      const imageStream = fs.createReadStream(path.resolve(__dirname, './fixtures/image.png'));
+      const itemName = 'Test Item';
+      const payload = new FormData();
+      payload.append('name', itemName);
+      payload.append('type', ItemType.FOLDER);
+      payload.append('description', '');
+      payload.append('file', imageStream);
+      const response = await app.inject({
+        method: HttpMethod.Post,
+        url: `/items/with-thumbnail`,
+        payload,
+        headers: payload.getHeaders(),
+      });
+
+      const newItem = response.json();
+      console.log(newItem);
+      expectItem(
+        newItem,
+        FolderItemFactory({
+          name: itemName,
+          type: ItemType.FOLDER,
+          description: '',
+          settings: { hasThumbnail: true },
+          lang: 'en',
+        }),
+        actor,
+      );
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(uploadDoneMock).toHaveBeenCalled();
+    });
+  });
+
   describe('GET /items/:id', () => {
     it('Throws if signed out', async () => {
       ({ app } = await build({ member: null }));
@@ -557,7 +636,7 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
-        const item = await testUtils.savePublicItem({ actor: member });
+        const { item, publicTag } = await testUtils.savePublicItem({ actor: member });
 
         const response = await app.inject({
           method: HttpMethod.Get,
@@ -565,12 +644,14 @@ describe('Item routes tests', () => {
         });
 
         const returnedItem = response.json();
-        expectPackedItem(returnedItem, { ...item, permission: null }, actor);
+        expectPackedItem(returnedItem, { ...item, permission: null }, actor, undefined, [
+          publicTag,
+        ]);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
       it('Returns successfully for write right', async () => {
         ({ app, actor } = await build());
-        const item = await testUtils.savePublicItem({ actor });
+        const { item, publicTag } = await testUtils.savePublicItem({ actor });
         await testUtils.saveMembership({ item, member: actor, permission: PermissionLevel.Write });
 
         const response = await app.inject({
@@ -579,7 +660,13 @@ describe('Item routes tests', () => {
         });
 
         const returnedItem = response.json();
-        expectPackedItem(returnedItem, { ...item, permission: PermissionLevel.Write }, actor);
+        expectPackedItem(
+          returnedItem,
+          { ...item, permission: PermissionLevel.Write },
+          actor,
+          undefined,
+          [publicTag],
+        );
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
     });
@@ -688,9 +775,11 @@ describe('Item routes tests', () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
         const items: Item[] = [];
+        const publicTags: ItemTag[] = [];
         for (let i = 0; i < 3; i++) {
-          const item = await testUtils.savePublicItem({ actor: member });
+          const { item, publicTag } = await testUtils.savePublicItem({ actor: member });
           items.push(item);
+          publicTags.push(publicTag);
         }
 
         const response = await app.inject({
@@ -704,11 +793,17 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
         const { data, errors } = response.json();
         expect(errors).toHaveLength(0);
-        items.forEach(({ id }) => {
-          expectPackedItem(data[id], {
-            ...items.find(({ id: thisId }) => thisId === id),
-            permission: null,
-          });
+        items.forEach(({ id }, idx) => {
+          expectPackedItem(
+            data[id],
+            {
+              ...items.find(({ id: thisId }) => thisId === id),
+              permission: null,
+            },
+            member,
+            undefined,
+            [publicTags[idx]],
+          );
         });
       });
     });
@@ -1411,7 +1506,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
+        await rawRepository.save({ item: child1, creator: actor, type: ItemTagType.Hidden });
 
         const children = [child2];
 
@@ -1525,9 +1620,15 @@ describe('Item routes tests', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
         const actor = await saveMember();
-        const parent = await testUtils.savePublicItem({ actor });
-        const child1 = await testUtils.savePublicItem({ actor, parentItem: parent });
-        const child2 = await testUtils.savePublicItem({ actor, parentItem: parent });
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor });
+        const { item: child1 } = await testUtils.savePublicItem({
+          actor,
+          parentItem: parent,
+        });
+        const { item: child2 } = await testUtils.savePublicItem({
+          actor,
+          parentItem: parent,
+        });
 
         const children = [child1, child2];
         // create child of child
@@ -1544,6 +1645,10 @@ describe('Item routes tests', () => {
           expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
             { ...children.find(({ id: thisId }) => thisId === id), permission: null },
+            actor,
+            undefined,
+            // inheritance
+            [publicTag],
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1617,7 +1722,7 @@ describe('Item routes tests', () => {
           member,
           parentItem: parent,
         });
-        await ItemTagRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
+        await rawRepository.save({ item: child1, creator: member, type: ItemTagType.Hidden });
 
         await testUtils.saveItemAndMembership({
           member,
@@ -1689,21 +1794,21 @@ describe('Item routes tests', () => {
 
     describe('Public', () => {
       it('Returns successfully', async () => {
-        const actor = await saveMember();
         ({ app } = await build({ member: null }));
-        const parent = await testUtils.savePublicItem({ actor });
-        const child1 = await testUtils.savePublicItem({
+        const actor = await saveMember();
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor });
+        const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
           actor,
           parentItem: parent,
         });
-        const child2 = await testUtils.savePublicItem({
+        const { item: child2 } = await testUtils.savePublicItem({
           item: { name: 'child2' },
           actor,
           parentItem: parent,
         });
 
-        const childOfChild = await testUtils.savePublicItem({
+        const { item: childOfChild } = await testUtils.savePublicItem({
           item: { name: 'child3' },
           actor,
           parentItem: child1,
@@ -1721,6 +1826,10 @@ describe('Item routes tests', () => {
           expectPackedItem(
             data.find(({ id: thisId }) => thisId === id),
             { ...descendants.find(({ id: thisId }) => thisId === id), permission: null },
+            actor,
+            undefined,
+            // inheritance
+            [publicTag],
           );
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -1831,14 +1940,14 @@ describe('Item routes tests', () => {
     describe('Public', () => {
       it('Returns successfully', async () => {
         ({ app } = await build({ member: null }));
-        const parent = await testUtils.savePublicItem({ actor: null });
-        const child1 = await testUtils.savePublicItem({
+        const { item: parent, publicTag } = await testUtils.savePublicItem({ actor: null });
+        const { item: child1 } = await testUtils.savePublicItem({
           item: { name: 'child1' },
           actor: null,
           parentItem: parent,
         });
 
-        const childOfChild = await testUtils.savePublicItem({
+        const { item: childOfChild } = await testUtils.savePublicItem({
           item: { name: 'child3' },
           actor: null,
           parentItem: child1,
@@ -1861,7 +1970,9 @@ describe('Item routes tests', () => {
         const data = response.json();
         expect(data).toHaveLength(parents.length);
         data.forEach((p, idx) => {
-          expectPackedItem(p, { ...parents[idx], permission: null });
+          expectPackedItem(p, { ...parents[idx], permission: null }, undefined, undefined, [
+            publicTag,
+          ]);
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
@@ -2712,10 +2823,19 @@ describe('Item routes tests', () => {
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await testUtils.rawItemRepository.find({
+            const itemsInDb1 = await testUtils.rawItemRepository.find({
               where: { name },
               relations: { creator: true },
             });
+            const itemsInDb2 = await testUtils.rawItemRepository.find({
+              where: { name: `${name} (2)` },
+              relations: { creator: true },
+            });
+
+            expect(itemsInDb1).toHaveLength(1);
+            expect(itemsInDb2).toHaveLength(1);
+
+            const itemsInDb = [...itemsInDb1, ...itemsInDb2];
             expect(itemsInDb).toHaveLength(2);
 
             // expect copied data
@@ -2765,7 +2885,12 @@ describe('Item routes tests', () => {
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
+            expect(itemsInDb).toHaveLength(1);
+
+            const itemsInDbCopied = await testUtils.rawItemRepository.findBy({
+              name: `${name} (2)`,
+            });
+            expect(itemsInDbCopied).toHaveLength(1);
           }
 
           // check it did not create a new membership because user is admin of parent
@@ -2805,7 +2930,10 @@ describe('Item routes tests', () => {
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
             const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
+            expect(itemsInDb).toHaveLength(1);
+
+            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
+            expect(itemsInDb2).toHaveLength(1);
           }
 
           // check it created a new membership because user is writer of parent
@@ -2897,8 +3025,10 @@ describe('Item routes tests', () => {
           const newCount = await testUtils.rawItemRepository.count();
           expect(newCount).toEqual(initialCount + items.length);
           for (const { name } of items) {
-            const itemsInDb = await testUtils.rawItemRepository.findBy({ name });
-            expect(itemsInDb).toHaveLength(2);
+            const itemsInDb1 = await testUtils.rawItemRepository.findBy({ name });
+            expect(itemsInDb1).toHaveLength(1);
+            const itemsInDb2 = await testUtils.rawItemRepository.findBy({ name: `${name} (2)` });
+            expect(itemsInDb2).toHaveLength(1);
           }
 
           // check it did not create a new membership because user is admin of parent
@@ -2994,12 +3124,13 @@ describe('Item routes tests', () => {
         await waitForExpect(async () => {
           for (const item of items) {
             const results = await testUtils.rawItemRepository.findBy({ name: item.name });
-            if (!results.length) {
+            const copy = await testUtils.rawItemRepository.findBy({ name: `${item.name} (2)` });
+            if (!results.length && !copy.length) {
               throw new Error('item does not exist!');
             }
-            expect(results).toHaveLength(2);
-            const copy = results.find(({ id }) => id !== item.id);
-            expect(copy?.path.startsWith(parentItem.path)).toBeTruthy();
+            expect(results).toHaveLength(1);
+            expect(copy).toHaveLength(1);
+            expect(copy[0].path.startsWith(parentItem.path)).toBeTruthy();
           }
         }, MULTIPLE_ITEMS_LOADING_TIME);
       });

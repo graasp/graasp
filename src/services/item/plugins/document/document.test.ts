@@ -1,10 +1,13 @@
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
+import { FastifyInstance } from 'fastify';
+
 import { DocumentItemFactory, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { MULTIPLE_ITEMS_LOADING_TIME } from '../../../../../test/constants';
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
+import { Actor } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ItemTestUtils, expectItem } from '../../test/fixtures/items';
 
@@ -19,13 +22,13 @@ const extra = {
 };
 
 describe('Document Item tests', () => {
-  let app;
-  let actor;
+  let app: FastifyInstance;
+  let actor: Actor;
 
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
+    actor = undefined;
     app.close();
   });
 

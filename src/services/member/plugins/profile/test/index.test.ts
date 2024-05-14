@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifyInstance } from 'fastify';
+
 import { HttpMethod, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
@@ -17,7 +19,7 @@ import {
 jest.mock('../../../../../plugins/datasource');
 
 describe('Profile Member routes tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

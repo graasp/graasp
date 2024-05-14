@@ -9,7 +9,7 @@ import { RecycledItemData } from './RecycledItemData';
 import { CannotRestoreNonDeletedItem } from './errors';
 
 export const RecycledItemDataRepository = AppDataSource.getRepository(RecycledItemData).extend({
-  async getOwnRecycledItemDatas(member: Member) {
+  async getOwnRecycledItemDatas(member: Member): Promise<RecycledItemData[]> {
     // get only with admin membership
     const recycledItemEntries = await this.createQueryBuilder('recycledItem')
       .withDeleted()

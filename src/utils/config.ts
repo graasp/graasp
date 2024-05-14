@@ -142,7 +142,7 @@ export const MOBILE_AUTH_URL = new URL(process.env.MOBILE_AUTH_URL || 'https://m
 
 export const MOBILE_DEEP_LINK_PROTOCOL = new URL(
   // the domain part below is just an example to check the validity of the URL
-  `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile-builder'}://graasp.org`,
+  `${process.env.MOBILE_DEEP_LINK_PROTOCOL || 'graasp-mobile'}://graasp.org`,
 ).protocol; // we only use the protocol anyway
 
 export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';

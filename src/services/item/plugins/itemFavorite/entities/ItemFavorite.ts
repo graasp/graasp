@@ -10,6 +10,7 @@ import {
 import { v4 } from 'uuid';
 
 import { Member } from '../../../../member/entities/member';
+import { PackedItem } from '../../../ItemWrapper';
 import { Item } from '../../../entities/Item';
 
 @Entity({ name: 'item_favorite' })
@@ -36,3 +37,7 @@ export class ItemFavorite extends BaseEntity {
   @CreateDateColumn({ name: 'created_at', nullable: false })
   createdAt: Date;
 }
+
+export type PackedItemFavorite = Pick<ItemFavorite, 'id' | 'createdAt' | 'member'> & {
+  item: PackedItem;
+};

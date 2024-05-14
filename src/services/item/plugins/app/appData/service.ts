@@ -120,7 +120,7 @@ export class AppDataService {
     const item = await itemRepository.get(itemId);
 
     // patching requires at least read
-    const inheritedMembership = await validatePermission(
+    const { itemMembership: inheritedMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
       member,
@@ -171,7 +171,7 @@ export class AppDataService {
     const item = await itemRepository.get(itemId);
 
     // delete an app data is allowed to readers
-    const inheritedMembership = await validatePermission(
+    const { itemMembership: inheritedMembership } = await validatePermission(
       repositories,
       PermissionLevel.Read,
       member,
@@ -213,7 +213,12 @@ export class AppDataService {
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
-    const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
+    const { itemMembership } = await validatePermission(
+      repositories,
+      PermissionLevel.Read,
+      member,
+      item,
+    );
 
     const appData = await appDataRepository.get(appDataId);
 
@@ -223,7 +228,7 @@ export class AppDataService {
         member,
         appData,
         PermissionLevel.Read,
-        membership,
+        itemMembership,
       )
     ) {
       throw new AppDataNotAccessible({ appDataId, memberId });
@@ -250,9 +255,14 @@ export class AppDataService {
     const item = await itemRepository.get(itemId);
 
     // posting an app data is allowed to readers
-    const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
+    const { itemMembership } = await validatePermission(
+      repositories,
+      PermissionLevel.Read,
+      member,
+      item,
+    );
 
-    return appDataRepository.getForItem(itemId, { memberId, type }, membership?.permission);
+    return appDataRepository.getForItem(itemId, { memberId, type }, itemMembership?.permission);
   }
 
   // TODO: check for many items
@@ -281,11 +291,16 @@ export class AppDataService {
         return result;
       }
       // TODO: optimize
-      const membership = await validatePermission(repositories, PermissionLevel.Read, member, item);
+      const { itemMembership } = await validatePermission(
+        repositories,
+        PermissionLevel.Read,
+        member,
+        item,
+      );
       const appData = await appDataRepository.getForItem(
         itemId,
         { memberId },
-        membership?.permission,
+        itemMembership?.permission,
       );
       result.data[itemId] = appData;
       return result;

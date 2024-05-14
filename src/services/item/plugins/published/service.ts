@@ -11,6 +11,7 @@ import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
 import { filterOutHiddenItems } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
+import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 import ItemService from '../../service';
 import { buildPublishedItemLink } from './constants';
@@ -155,9 +156,11 @@ export class ItemPublishedService {
     return result;
   }
 
-  async getItemsForMember(actor: Actor, repositories: Repositories, memberId: UUID) {
-    const { itemPublishedRepository } = repositories;
-    return itemPublishedRepository.getForMember(memberId);
+  async getItemsForMember(actor: Actor, repositories, memberId: UUID) {
+    const { itemRepository } = repositories;
+    const items = await itemRepository.getPublishedItemsForMember(memberId);
+
+    return ItemWrapper.createPackedItems(actor, repositories, items);
   }
 
   async getLikedItems(actor: Actor, repositories: Repositories, limit?: number) {

@@ -1,4 +1,4 @@
-import type { FastifyBaseLogger, FastifyRequest } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance, FastifyRequest } from 'fastify';
 
 import { ActionFactory, MemberFactory } from '@graasp/sdk';
 
@@ -26,7 +26,7 @@ export const MOCK_REQUEST = {
 } as unknown as FastifyRequest;
 
 describe('ActionService', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
 
   afterEach(async () => {

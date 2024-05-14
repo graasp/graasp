@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.37.0](https://github.com/graasp/graasp/compare/v1.36.0...v1.37.0) (2024-05-07)
+
+
+### Features
+
+* add more packed items ([#925](https://github.com/graasp/graasp/issues/925)) ([56f0d2f](https://github.com/graasp/graasp/commit/56f0d2f7b9bea837cb0999fd8787088f737e46ed))
+
+
+### Bug Fixes
+
+* **deps:** update dependency ioredis to v5.4.1 ([#1005](https://github.com/graasp/graasp/issues/1005)) ([0355416](https://github.com/graasp/graasp/commit/03554167d1aae0ba76d8ac6e8ded7908bfc5c91f))
+* **spanish:** translation ([#1019](https://github.com/graasp/graasp/issues/1019)) ([555c607](https://github.com/graasp/graasp/commit/555c607c5d74f7d871f38c4c5a669db13d2ccef7))
+
+## [1.36.0](https://github.com/graasp/graasp/compare/v1.35.0...v1.36.0) (2024-05-03)
+
+
+### Features
+
+* implements automatic suffix to copied item ([#997](https://github.com/graasp/graasp/issues/997)) ([66dc9b2](https://github.com/graasp/graasp/commit/66dc9b22e561e5d3b770c6e41cc9b78ec21602cf))
+* implements seed function with sample data ([#989](https://github.com/graasp/graasp/issues/989)) ([9084fe7](https://github.com/graasp/graasp/commit/9084fe75585472835242cdd1401722489db3f169))
+
+## [1.35.0](https://github.com/graasp/graasp/compare/v1.34.0...v1.35.0) (2024-05-02)
+
+
+### Features
+
+* add route to extract link's metadata ([#1009](https://github.com/graasp/graasp/issues/1009)) ([152672d](https://github.com/graasp/graasp/commit/152672d4522af7a8779fa9cb44fe492012c98709))
+* allow to create item with thumbnail ([#1002](https://github.com/graasp/graasp/issues/1002)) ([570bdf8](https://github.com/graasp/graasp/commit/570bdf83281a0500f826ba1e3eaae15898c2f4f3))
+
+
+### Bug Fixes
+
+* **deps:** update dependency luxon to v3.4.4 ([#954](https://github.com/graasp/graasp/issues/954)) ([7eb58c7](https://github.com/graasp/graasp/commit/7eb58c7b964d655d86de42545fae2b0c2c06d24d))
+* **deps:** update dependency openai to v4.39.1 ([#966](https://github.com/graasp/graasp/issues/966)) ([dd5852d](https://github.com/graasp/graasp/commit/dd5852dff286a0cacdc95c11f2f03e9315d9f31f))
+* **deps:** update dependency qs to v6.12.1 ([#969](https://github.com/graasp/graasp/issues/969)) ([616f909](https://github.com/graasp/graasp/commit/616f90925861501f622e1d23dd88c58ed68a18a4))
+* set config.ts file import as 1st priority ([#999](https://github.com/graasp/graasp/issues/999)) ([a3518e2](https://github.com/graasp/graasp/commit/a3518e206061b3b2dc77dbd1be513ec3d0437ca3))
+* **test:** set a valid url in fixtures and remove html in response ([#1010](https://github.com/graasp/graasp/issues/1010)) ([3814329](https://github.com/graasp/graasp/commit/3814329b609f67cbe7162f7aa6a7b48cbf4f67d9))
+* update tests to use fastify instance type for the app var ([#1004](https://github.com/graasp/graasp/issues/1004)) ([c7b8c40](https://github.com/graasp/graasp/commit/c7b8c402bd25c14b31c65ecab4c638e7a4d9adda))
+
+## [1.34.0](https://github.com/graasp/graasp/compare/v1.33.0...v1.34.0) (2024-04-26)
+
+
+### Features
+
+* change mobile link ([#985](https://github.com/graasp/graasp/issues/985)) ([34692e8](https://github.com/graasp/graasp/commit/34692e8013709e4634d37ac4b1a265bf78c32222))
+
+
+### Bug Fixes
+
+* include maxwidth in settings schema ([#991](https://github.com/graasp/graasp/issues/991)) ([78352fb](https://github.com/graasp/graasp/commit/78352fbeeacb8ade52ad2bf48bfa23462cd16c82))
+
 ## [1.33.0](https://github.com/graasp/graasp/compare/v1.32.0...v1.33.0) (2024-04-24)
 
 

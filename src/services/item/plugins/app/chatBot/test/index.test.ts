@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { FastifyInstance } from 'fastify';
+
 import { GPTVersion, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
@@ -28,7 +30,7 @@ function expectException(response, ex) {
 }
 
 describe('Chat Bot Tests', () => {
-  let app;
+  let app: FastifyInstance;
   let actor;
   let item, token;
   const CHAT_PATH = 'chat-bot';

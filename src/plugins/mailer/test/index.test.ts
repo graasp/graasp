@@ -1,3 +1,5 @@
+import { FastifyInstance } from 'fastify';
+
 import { SUCCESS_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../test/app';
@@ -6,7 +8,7 @@ import build, { clearDatabase } from '../../../../test/app';
 jest.mock('../../../plugins/datasource');
 
 describe('Mailer', () => {
-  let app;
+  let app: FastifyInstance;
 
   beforeAll(async () => {
     ({ app } = await build());
