@@ -58,7 +58,7 @@ export const item = S.object()
   .prop('settings', settings)
   .prop('lang', S.string())
   // creator could have been deleted
-  .prop('creator', S.ifThenElse(S.null(), S.null(), partialMember))
+  .prop('creator', partialMember)
   /**
    * for some reason setting these date fields as "type: 'string'"
    * makes the serialization fail using the anyOf.
