@@ -45,7 +45,7 @@ const writeFileForFormat = (
 ): void => {
   if (data.length) {
     switch (format) {
-      case ExportActionsFormatting.CSV:
+      case ExportActionsFormatting.CSV: {
         const newData = data.map((obj) => flattenObject(obj));
         const csv = Papa.unparse(newData, {
           header: true,
@@ -54,9 +54,11 @@ const writeFileForFormat = (
 
         fs.writeFileSync(path, csv);
         break;
+      }
       case ExportActionsFormatting.JSON:
-      default:
+      default: {
         fs.writeFileSync(path, JSON.stringify(data));
+      }
     }
   }
 };
