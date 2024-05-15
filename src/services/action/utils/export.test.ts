@@ -70,7 +70,6 @@ const setUpActions = async (app, member: Member) => {
 
 const storageFolder = path.join(TMP_FOLDER, 'export-actions');
 fs.mkdirSync(storageFolder, { recursive: true });
-// fs.unlinkSync(storageFolder);
 
 describe('exportActionsInArchive', () => {
   let app: FastifyInstance;
@@ -105,7 +104,9 @@ describe('exportActionsInArchive', () => {
     const files = fs.readdirSync(storageFolder);
     expect(files.length).toBeTruthy();
 
-    expect(files[files.length - 1].includes(baseAnalytics.item.name)).toBeTruthy();
-    expect(fs.readdirSync(path.join(storageFolder, files[0])).length).toEqual(7);
+    // assume only 2 files exist in the folder
+    const [folder, zip] = files;
+    expect(zip.includes(baseAnalytics.item.name)).toBeTruthy();
+    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(7);
   });
 });
