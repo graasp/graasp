@@ -1,7 +1,10 @@
+import { partition } from 'lodash';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import { CannotModifyOtherMembers, UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
+import { actionTypesWithoutNeedOfPermission } from '../../../action/repositories/action';
 import { ActionService } from '../../../action/services/action';
 import { validatePermissionMany } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
@@ -34,20 +37,20 @@ export class ActionMemberService {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
-    const [actionsNeedsPermission, actionsWithoutPermssion] = await Promise.all([
-      actionRepository.getMemberActionsNeedPesrmission(actor.id, {
-        startDate: start,
-        endDate: end,
-      }),
-      actionRepository.getMemberActionsNoNeedForPesrmission(actor.id, {
-        startDate: start,
-        endDate: end,
-      }),
-    ]);
+
+    const actions = await actionRepository.getMemberActions(actor.id, {
+      startDate: start,
+      endDate: end,
+    });
+
+    // filter actions based on permission validity
+    const [actionsWithoutPermssion, actionsNeedsPermission] = partition(actions, (action) => {
+      return actionTypesWithoutNeedOfPermission.indexOf(action.type) > -1;
+    });
 
     const setOfItemsToCheckPermission = Array.from(
       new Map(actionsNeedsPermission.map(({ item }) => [item?.id, item])).values(),
-    );
+    ).filter(Boolean);
 
     const { itemMemberships } = await validatePermissionMany(
       repositories,
@@ -62,7 +65,7 @@ export class ActionMemberService {
       }
       return false;
     });
-    return [...filteredActionsWithAccessPermission, ...actionsWithoutPermssion];
+    return [...actionsWithoutPermssion, ...filteredActionsWithAccessPermission];
   }
 
   async deleteAllForMember(

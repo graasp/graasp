@@ -104,30 +104,12 @@ describe('Action Repository', () => {
 
       const r = new ActionRepository();
 
-      const result = await r.getMemberActionsNeedPesrmission(member.id, {
+      const result = await r.getMemberActions(member.id, {
         startDate: getPreviousMonthFromNow(),
         endDate: new Date(),
       });
 
-      expect(result.length).toEqual(1);
-    });
-
-    it("get actions that don't require a permission for member within the last month", async () => {
-      await saveActions(rawRepository, [
-        { member, createdAt: new Date().toISOString(), type: ActionTriggers.Create },
-        { member, createdAt: new Date().toISOString(), type: ActionTriggers.CollectionView },
-        { member, createdAt: new Date('1999-07-08').toISOString(), type: ActionTriggers.Update },
-        { member, createdAt: new Date().toISOString(), type: ActionTriggers.ItemLike },
-      ]);
-
-      const r = new ActionRepository();
-
-      const result = await r.getMemberActionsNoNeedForPesrmission(member.id, {
-        startDate: getPreviousMonthFromNow(),
-        endDate: new Date(),
-      });
-
-      expect(result.length).toEqual(2);
+      expect(result.length).toEqual(3);
     });
   });
 

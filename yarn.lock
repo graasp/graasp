@@ -3448,6 +3448,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.partition@npm:^4":
+  version: 4.6.9
+  resolution: "@types/lodash.partition@npm:4.6.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 10/29d1fead7f9a71af8279ceb6c1b08128c7f05f06a72ed60fea02a7c010f69006a4e3dc24afb9c4a3187a033b918a1b3dcf611004781f927ff573b104bdf34060
+  languageName: node
+  linkType: hard
+
 "@types/lodash@npm:*":
   version: 4.17.0
   resolution: "@types/lodash@npm:4.17.0"
@@ -6778,6 +6787,7 @@ __metadata:
     "@types/jest": "npm:29.5.12"
     "@types/jsonwebtoken": "npm:9.0.6"
     "@types/lodash.groupby": "npm:4.6.9"
+    "@types/lodash.partition": "npm:^4"
     "@types/mime": "npm:3.0.4"
     "@types/mmmagic": "npm:0.4.33"
     "@types/node": "npm:18.15.13"
@@ -6823,6 +6833,7 @@ __metadata:
     jest: "npm:29.7.0"
     jsonwebtoken: "npm:9.0.2"
     lodash.groupby: "npm:4.6.0"
+    lodash.partition: "npm:4.6.0"
     lodash.uniqby: "npm:4.7.0"
     luxon: "npm:3.4.4"
     meilisearch: "npm:0.33.0"
@@ -8424,6 +8435,13 @@ __metadata:
   version: 4.1.1
   resolution: "lodash.once@npm:4.1.1"
   checksum: 10/202f2c8c3d45e401b148a96de228e50ea6951ee5a9315ca5e15733d5a07a6b1a02d9da1e7fdf6950679e17e8ca8f7190ec33cae47beb249b0c50019d753f38f3
+  languageName: node
+  linkType: hard
+
+"lodash.partition@npm:4.6.0":
+  version: 4.6.0
+  resolution: "lodash.partition@npm:4.6.0"
+  checksum: 10/6912bdf8006e1389242d35dc670570c470c93822c6859f5e0c18426be519e9ebba576969443fca256ef5913d12319ffa1a1eb870ac403978089cc1c703d705c2
   languageName: node
   linkType: hard
 
