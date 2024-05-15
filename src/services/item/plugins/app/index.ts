@@ -7,6 +7,7 @@ import { FastifyPluginAsync, FastifyRequest, preHandlerHookHandler } from 'fasti
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
@@ -119,10 +120,10 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
       fastify.get(
         '/most-used',
-        { schema: getMostUsed, preHandler: fastify.attemptVerifyAuthentication },
+        { schema: getMostUsed, preHandler: fastify.verifyAuthentication },
         async ({ member }) => {
           if (!member) {
-            throw new Error('This user is not authenticated.');
+            throw new UnauthorizedMember(member);
           }
           return aS.getMostUsedApps(member, buildRepositories());
         },
