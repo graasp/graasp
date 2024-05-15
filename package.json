@@ -101,7 +101,7 @@
     "openai": "4.39.1",
     "papaparse": "^5.4.1",
     "pdf-text-reader": "3.0.2",
-    "pg": "8.10.0",
+    "pg": "8.11.5",
     "qs": "6.12.1",
     "sanitize-html": "2.12.1",
     "sharp": "0.32.6",
