@@ -1,10 +1,9 @@
 import { partition } from 'lodash';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
 import { CannotModifyOtherMembers, UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import { actionTypesWithoutNeedOfPermission } from '../../../action/repositories/action';
 import { ActionService } from '../../../action/services/action';
 import { validatePermissionMany } from '../../../authorization';
 import { Item, ItemExtraMap } from '../../../item/entities/Item';
@@ -15,6 +14,16 @@ export const getPreviousMonthFromNow = () => {
   date.setMonth(date.getMonth() - 1); // Set the date to one month ago
   return date;
 };
+
+export const actionTypesWithoutNeedOfPermission: string[] = [
+  ActionTriggers.CollectionView,
+  ActionTriggers.ItemLike,
+  ActionTriggers.ItemUnlike,
+  ActionTriggers.ItemDownload,
+  ActionTriggers.ItemEmbed,
+  ActionTriggers.ItemSearch,
+  ActionTriggers.MemberLogin,
+];
 
 export class ActionMemberService {
   actionService: ActionService;

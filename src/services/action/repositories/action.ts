@@ -1,13 +1,6 @@
 import { Between, EntityManager, Repository } from 'typeorm';
 
-import {
-  ActionTriggers,
-  AggregateBy,
-  AggregateFunction,
-  AggregateMetric,
-  CountGroupBy,
-  UUID,
-} from '@graasp/sdk';
+import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../plugins/datasource';
 import { MemberIdentifierNotFound } from '../../itemLogin/errors';
@@ -17,16 +10,6 @@ import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
 import { aggregateExpressionNames, buildAggregateExpression } from '../utils/actions';
 import { validateAggregationParameters } from '../utils/utils';
-
-export const actionTypesWithoutNeedOfPermission = [
-  ActionTriggers.CollectionView,
-  ActionTriggers.ItemLike,
-  ActionTriggers.ItemUnlike,
-  ActionTriggers.ItemDownload,
-  ActionTriggers.ItemEmbed,
-  ActionTriggers.ItemSearch,
-  ActionTriggers.MemberLogin,
-];
 
 export class ActionRepository {
   private repository: Repository<Action>;
