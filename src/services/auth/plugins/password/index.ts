@@ -1,81 +1,65 @@
 import { StatusCodes } from 'http-status-codes';
-import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
-import { PASSWORD_RESET_JWT_SECRET, PUBLIC_URL } from '../../../../utils/config';
+import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
+import { PassportStrategy } from '../passport/strategies';
 import {
   passwordLogin,
   patchResetPasswordRequest,
   postResetPasswordRequest,
   updatePassword,
 } from './schemas';
-import { MemberPasswordService } from './service';
-
-const PASSPORT_STATEGY_ID = 'jwt-reset-password';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db, redis } = fastify;
-
+  const {
+    db,
+    memberPassword: { service: memberPasswordService },
+  } = fastify;
   await fastify.register(fastifyPassport.initialize());
   await fastify.register(fastifyPassport.secureSession());
-
-  fastifyPassport.use(
-    PASSPORT_STATEGY_ID,
-    new Strategy(
-      {
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: PASSWORD_RESET_JWT_SECRET,
-        passReqToCallback: true,
-      },
-      async (req, payload, verifiedCallback) => {
-        if (payload.uuid && (await memberPasswordService.validatePasswordResetUuid(payload.uuid))) {
-          // Token has been validated
-          // Error is null, req.user is the Password Reset Request UUID.
-          const user: PassportUser = { uuid: payload.uuid };
-          return verifiedCallback(null, user);
-        } else {
-          // Authentication refused
-          // Error is null, user is false to trigger a 401 Unauthorized.
-          return verifiedCallback(null, false);
-        }
-      },
-    ),
-  );
-  // Register user object to session
-  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.uuid);
-
-  const memberPasswordService = new MemberPasswordService(mailer, log, redis);
 
   // login with password
   fastify.post<{
     Body: { email: string; password: string; captcha: string; url?: string };
-  }>('/login-password', { schema: passwordLogin }, async (request, reply) => {
-    const { body, log } = request;
-    const { url } = body;
+  }>(
+    '/login-password',
+    {
+      schema: passwordLogin,
+      preHandler: fastifyPassport.authenticate(PassportStrategy.WEB_PASSWORD),
+    },
+    async (request, reply) => {
+      const { body, log } = request;
+      const { url } = body;
 
-    // validate captcha
-    await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword, {
-      shouldFail: false,
-    });
+      // validate captcha
+      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword, {
+        shouldFail: false,
+      });
 
-    const token = await memberPasswordService.login(undefined, buildRepositories(), body);
-    const redirectionUrl = getRedirectionUrl(log, url);
+      const token = await memberPasswordService.generateToken(
+        { sub: 'memberId' },
+        `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+      );
 
-    const target = new URL('/auth', PUBLIC_URL);
-    target.searchParams.set('t', token);
-    target.searchParams.set('url', encodeURIComponent(redirectionUrl));
-    const resource = target.toString();
+      // TODO : Cleanup all this mess
+      const redirectionUrl = getRedirectionUrl(log, url);
 
-    reply.status(StatusCodes.SEE_OTHER);
-    return { resource };
-  });
+      const target = new URL('/auth', PUBLIC_URL);
+      target.searchParams.set('t', token);
+      target.searchParams.set('url', encodeURIComponent(redirectionUrl));
+      const resource = target.toString();
+
+      reply.status(StatusCodes.SEE_OTHER);
+      return { resource };
+    },
+  );
 
   // update member password
   fastify.patch<{ Body: { currentPassword: string; password: string } }>(
@@ -154,7 +138,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/password/reset',
     {
       schema: patchResetPasswordRequest,
-      preValidation: fastifyPassport.authenticate(PASSPORT_STATEGY_ID, { session: false }), // Session is not required.
+      preValidation: fastifyPassport.authenticate(PassportStrategy.PASSPORT_RESET, {
+        session: false,
+      }), // Session is not required.
     },
     async (request, reply) => {
       const user: PassportUser = request.user!;

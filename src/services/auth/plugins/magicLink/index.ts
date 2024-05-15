@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import fastifyPassport from '@fastify/passport';
+import { FastifyPluginAsync, FastifyReply, FastifyRequest, PassportUser } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -9,20 +10,21 @@ import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
+import { PassportStrategy } from '../passport/strategies';
 import { auth, login, register } from './schemas';
-import { MagicLinkService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
-    log,
     db,
     members: { service: memberService },
+    magicLink: { service: magicLinkService },
   } = fastify;
-
-  const magicLinkService = new MagicLinkService(fastify, log);
 
   // cookie based auth and api endpoints
   await fastify.register(async function (fastify) {
+    await fastify.register(fastifyPassport.initialize());
+    await fastify.register(fastifyPassport.secureSession());
+    // await fastify.register(passportPlugin);
     // register
     fastify.post<{
       Body: {
@@ -92,40 +94,41 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // authenticate
     fastify.get<{ Querystring: { t: string; url?: string } }>(
       '/auth',
-      { schema: auth },
+      {
+        schema: auth,
+        preHandler: fastifyPassport.authenticate(
+          PassportStrategy.WEB_MAGIC_LINK,
+          async (
+            request: FastifyRequest,
+            reply: FastifyReply,
+            err: null | Error,
+            user?: PassportUser,
+          ) => {
+            if (!user || err) {
+              // Authentication failed
+              const target = new URL('/', AUTH_CLIENT_HOST);
+              target.searchParams.set('error', 'true');
+              reply.redirect(StatusCodes.SEE_OTHER, target.toString());
+            } else {
+              request.logIn(user, { session: true });
+            }
+          },
+        ),
+      },
       async (request, reply) => {
         const {
-          query: { t: token, url },
-          session,
+          query: { url },
           log,
         } = request;
-
-        try {
-          const { sub: memberId } = await magicLinkService.auth(
-            undefined,
-            buildRepositories(),
-            token,
-          );
-
-          // add member id to session
-          session.set('member', memberId);
-
-          const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
-          reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
-        } catch (error) {
-          session.delete();
-          const target = new URL('/', AUTH_CLIENT_HOST);
-          target.searchParams.set('error', 'true');
-          reply.redirect(StatusCodes.SEE_OTHER, target.toString());
-        }
+        const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
+        reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
       },
     );
 
     // logout
-    fastify.get('/logout', async ({ session }, reply) => {
-      // remove session
-      session.delete();
-      reply.status(204);
+    fastify.get('/logout', async (request, reply) => {
+      request.logOut();
+      reply.send(StatusCodes.NO_CONTENT);
     });
   });
 };

@@ -5,6 +5,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { JobService } from '../jobs';
 import { ActionService } from '../services/action/services/action';
+import { MagicLinkService } from '../services/auth/plugins/magicLink/service';
+import { MemberPasswordService } from '../services/auth/plugins/password/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
@@ -26,6 +28,16 @@ import {
 } from '../utils/config';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
+  fastify.decorate(
+    'redis',
+    new Redis({
+      host: REDIS_HOST,
+      port: REDIS_PORT,
+      username: REDIS_USERNAME,
+      password: REDIS_PASSWORD,
+    }),
+  );
+
   /**
    * This is done for performance reasons:
    * 1. First decorateRequest with the empty type of the value to be set (null for an object)
@@ -97,14 +109,12 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   // need to register this before files
   fastify.decorate('storage', { service: new StorageService(FILE_ITEM_TYPE) });
 
-  fastify.decorate(
-    'redis',
-    new Redis({
-      host: REDIS_HOST,
-      port: REDIS_PORT,
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-    }),
-  );
+  fastify.decorate('magicLink', {
+    service: new MagicLinkService(fastify, fastify.log),
+  });
+
+  fastify.decorate('memberPassword', {
+    service: new MemberPasswordService(fastify.mailer, fastify.log, fastify.redis),
+  });
 };
 export default decoratorPlugin;

@@ -6,6 +6,7 @@ import { SALT_ROUNDS } from '../../../../utils/config';
 import { MemberPassword } from './entities/password';
 import { PasswordNotDefined } from './errors';
 
+/** @deprecated */
 export const verifyCredentials = (
   memberPassword: MemberPassword,
   body: { email: string; password: string },
@@ -24,6 +25,7 @@ export const verifyCredentials = (
   return verified;
 };
 
+/** @deprecated */
 export async function verifyCurrentPassword(
   memberPassword?: MemberPassword | null,
   password?: string,
@@ -47,6 +49,16 @@ export async function verifyCurrentPassword(
   }
   // if the member does not have a password set: return true
   return true;
+}
+
+/**
+ * Compares a plain password with a hash.
+ * @param password Password to encrypt.
+ * @param hash Hash to be compared against.
+ * @returns A promise to be either resolved with the comparison result salt or rejected with an Error
+ */
+export async function comparePasswords(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }
 
 export async function encryptPassword(password: string) {

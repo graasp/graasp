@@ -16,6 +16,7 @@ import {
 import { Repositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
 
+/** @deprecated */
 const promisifiedJwtVerify = promisify<
   string,
   Secret,
@@ -58,7 +59,8 @@ export class MagicLinkService {
     }
   }
 
-  async auth(actor: Actor, repositories: Repositories, token: string) {
+  /** @deprecated */
+  async auth(_actor: Actor, repositories: Repositories, token: string) {
     try {
       // verify and extract member info
       const result = await promisifiedJwtVerify(token, JWT_SECRET, {});
@@ -81,5 +83,9 @@ export class MagicLinkService {
       }
       throw new UnexpectedError();
     }
+  }
+
+  async validateMemberId(_actor: Actor, repositories: Repositories, memberId: string) {
+    return (await repositories.memberRepository.get(memberId)) !== undefined;
   }
 }

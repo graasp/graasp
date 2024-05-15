@@ -18,6 +18,7 @@ import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/erro
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
 import { MemberPasswordRepository } from './repository';
+import { comparePasswords } from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
 
@@ -39,7 +40,13 @@ export class MemberPasswordService {
     this.redis = redis;
   }
 
-  generateToken(data, expiration) {
+  /**
+   * Generate a Token with the member id and an optional challenge.
+   * @param data The data to be included in the token.
+   * @param expiration The expiration time of the token.
+   * @returns A promise to be resolved with the generated token.
+   */
+  generateToken(data: { sub: string; challenge?: string }, expiration: string) {
     return promisifiedJwtSign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
@@ -171,7 +178,7 @@ export class MemberPasswordService {
   }
 
   /**
-   *
+   * @deprecated
    * @param actor
    * @param repositories
    * @param body
@@ -179,7 +186,7 @@ export class MemberPasswordService {
    * @returns
    */
   async login(
-    actor: undefined,
+    _actor: undefined,
     repositories: Repositories,
     body: { email: string; password: string },
     challenge?: string,
@@ -207,5 +214,34 @@ export class MemberPasswordService {
     );
 
     return token;
+  }
+
+  /** Authenticate a member with email and password.
+   * @param repositories Repositories needed to interact with the database. Must contain a memberRepository and a memberPasswordRepository.
+   * @param email The email of the member that wants to authenticate.
+   * @param password The password of the member that wants to authenticate.
+   * @returns The member if the credentials are correct. Otherwise, undefined.
+   * @throws MemberNotSignedUp if the email is not registered.
+   * @throws MemberWithoutPassword if the member doesn't have a password.
+   */
+  async authenticate(
+    repositories: Repositories,
+    email: string,
+    password: string,
+  ): Promise<Member | undefined> {
+    const { memberRepository, memberPasswordRepository } = repositories;
+    // Check if the member is registered
+    const member = await memberRepository.getByEmail(email);
+    if (!member) {
+      this.log.warn(`Login attempt with non-existent email '${email}'`);
+      throw new MemberNotSignedUp({ email });
+    }
+    // Fetch the member's password
+    const memberPassword = await memberPasswordRepository.getForMemberId(member.id);
+    if (!memberPassword) {
+      throw new MemberWithoutPassword({ email });
+    }
+    // Validate credentials to build token
+    return (await comparePasswords(password, memberPassword.password)) ? member : undefined;
   }
 }

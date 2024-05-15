@@ -63,6 +63,7 @@ export const MemberPasswordRepository = AppDataSource.getRepository(MemberPasswo
     }
   },
 
+  /** @deprecated */
   async validateCredentials(
     memberPassword: MemberPassword,
     body: { email: string; password: string },

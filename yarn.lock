@@ -3948,6 +3948,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/passport-local@npm:^1":
+  version: 1.0.38
+  resolution: "@types/passport-local@npm:1.0.38"
+  dependencies:
+    "@types/express": "npm:*"
+    "@types/passport": "npm:*"
+    "@types/passport-strategy": "npm:*"
+  checksum: 10/d33395669960d47644b7c094c3ef59bba84e7aa4ee9bc820570027b922c1b7ff9b3f45ac8c11226f6861d2ef795c34b9498ab6f8e29693b51dafb64edd8b9879
+  languageName: node
+  linkType: hard
+
 "@types/passport-strategy@npm:*":
   version: 0.2.38
   resolution: "@types/passport-strategy@npm:0.2.38"
@@ -7577,6 +7588,7 @@ __metadata:
     "@types/node-fetch": "npm:2"
     "@types/papaparse": "npm:5.3.14"
     "@types/passport-jwt": "npm:4.0.1"
+    "@types/passport-local": "npm:^1"
     "@types/qs": "npm:6.9.15"
     "@types/sanitize-html": "npm:2.11.0"
     "@types/sharp": "npm:0.31.1"
@@ -7634,6 +7646,7 @@ __metadata:
     openai: "npm:4.48.1"
     papaparse: "npm:^5.4.1"
     passport-jwt: "npm:4.0.1"
+    passport-local: "npm:1.0.0"
     pdf-text-reader: "npm:3.0.2"
     pg: "npm:8.12.0"
     pino-pretty: "npm:11.0.0"
@@ -10630,7 +10643,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-strategy@npm:^1.0.0":
+"passport-local@npm:1.0.0":
+  version: 1.0.0
+  resolution: "passport-local@npm:1.0.0"
+  dependencies:
+    passport-strategy: "npm:1.x.x"
+  checksum: 10/86dc08b12f05f0ce1bb109780ccb0377eff45bbba70aa9c0d65f092b3ef476d344c0443517db2e9f3e5ec0ca849171ab25fb622164e0f69a677173af42b9bba7
+  languageName: node
+  linkType: hard
+
+"passport-strategy@npm:1.x.x, passport-strategy@npm:^1.0.0":
   version: 1.0.0
   resolution: "passport-strategy@npm:1.0.0"
   checksum: 10/5086693f2508e538dffa55a338c89fe8192fb5f4478c71f80cd5890b8573419a098f4fec88b505374f60bbe9049f6f24b9f3992678612528a3370b4dc73354a2

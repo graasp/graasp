@@ -8,16 +8,19 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
-import { MemberPasswordService } from '../password/service';
 import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db, redis, generateAuthTokensPair } = fastify;
+  const {
+    log,
+    db,
+    generateAuthTokensPair,
+    memberPassword: { service: memberPasswordService },
+  } = fastify;
 
   const mobileService = new MobileService(fastify, log);
-  const memberPasswordService = new MemberPasswordService(mailer, log, redis);
 
   // no need to add CORS support here - only used by mobile app
 

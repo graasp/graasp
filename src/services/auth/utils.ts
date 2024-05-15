@@ -31,6 +31,7 @@ const promisifiedJwtSign = promisify<
 >(jwt.sign);
 
 const defaultClientHost = BUILDER_HOST;
+const sessionKey = 'passport';
 
 const validOrigins = CLIENT_HOSTS.map((c) => c.url.origin);
 

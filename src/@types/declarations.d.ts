@@ -8,6 +8,8 @@ import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 import { JobService } from '../jobs';
 import type { MailerDecoration } from '../plugins/mailer';
 import { ActionService } from '../services/action/services/action';
+import { MagicLinkService } from '../services/auth/plugins/magicLink/service';
+import { MemberPasswordService } from '../services/auth/plugins/password/service';
 import { MentionService } from '../services/chat/plugins/mentions/service';
 import { ChatMessageService } from '../services/chat/service';
 import FileService from '../services/file/service';
@@ -80,6 +82,15 @@ declare module 'fastify' {
     search: {
       service: SearchService;
     };
+
+    magicLink: {
+      service: MagicLinkService;
+    };
+
+    memberPassword: {
+      service: MemberPasswordService;
+    };
+
     members: { service: MemberService };
     actions: { service: ActionService };
     chat: { service: ChatMessageService };

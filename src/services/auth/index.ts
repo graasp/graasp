@@ -15,6 +15,7 @@ import { AuthPluginOptions } from './interfaces/auth';
 import captchaPlugin from './plugins/captcha';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
+import passportPlugin from './plugins/passport';
 import passwordController from './plugins/password';
 import { AuthService } from './service';
 import {
@@ -42,7 +43,7 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   fastify.decorate('fetchMemberInSession', fetchMemberInSession);
 
   fastify.decorate('validateSession', verifyMemberInSession);
-
+  await fastify.register(passportPlugin);
   await fastify.register(fastifyAuth);
   await fastify.register(fastifyBearerAuth, {
     addHook: false,
