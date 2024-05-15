@@ -130,7 +130,21 @@ export const exportActionsInArchive = async (args: {
 
     // create files for the apps
     const appsPath = path.join(fileFolderPath, buildActionFileName('apps', archiveDate, format));
-    writeFileForFormat(appsPath, format, [baseAnalytics.apps]);
+    writeFileForFormat(
+      appsPath,
+      format,
+      // get actions from apps data
+      Object.entries(baseAnalytics.apps)
+        .map(([appID, { actions, data, settings }]) =>
+          actions.map((action) => ({
+            ...action,
+            appID,
+            data: JSON.stringify(data),
+            settings: JSON.stringify(settings),
+          })),
+        )
+        .flat(),
+    );
 
     // add directory in archive
     archive.directory(fileFolderPath, fileName);
