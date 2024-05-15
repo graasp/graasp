@@ -12,7 +12,7 @@ export const mostUsedAppSchema = S.object()
   .additionalProperties(false)
   .prop('name', S.string())
   .prop('url', S.string())
-  .prop('nbr', S.number());
+  .prop('count', S.number());
 
 export const getMany = {
   response: {

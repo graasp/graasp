@@ -22,9 +22,9 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
       )
       .select('app.url', 'url')
       .addSelect('app.name', 'name')
-      .addSelect('COUNT(item.id)', 'nbr')
+      .addSelect('COUNT(item.id)', 'count')
       .groupBy('app.id, app.url, app.name')
-      .orderBy('nbr', 'DESC')
+      .orderBy('count', 'DESC')
       .getRawMany();
     return data;
   },
