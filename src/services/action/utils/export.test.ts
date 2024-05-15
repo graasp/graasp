@@ -100,13 +100,13 @@ describe('exportActionsInArchive', () => {
     // call on success callback
     expect(result).toBeTruthy();
     // create files for views, items, members and memberships, chat messages, apps only with data inside
-    expect(writeFileSyncMock).toHaveBeenCalledTimes(7);
+    expect(writeFileSyncMock).toHaveBeenCalledTimes(6);
     const files = fs.readdirSync(storageFolder);
     expect(files.length).toBeTruthy();
 
     // assume only 2 files exist in the folder
     const [folder, zip] = files;
     expect(zip.includes(baseAnalytics.item.name)).toBeTruthy();
-    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(7);
+    expect(fs.readdirSync(path.join(storageFolder, folder)).length).toEqual(6);
   });
 });
