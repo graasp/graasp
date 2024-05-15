@@ -322,7 +322,6 @@ export class ItemService {
       memberships.map(({ item }) => item),
       resultOfMembership,
     );
-    this.log.debug(packedItems);
     return { data: packedItems, totalCount };
   }
 
