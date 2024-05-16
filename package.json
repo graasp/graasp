@@ -93,7 +93,7 @@
     "lodash.groupby": "4.6.0",
     "lodash.uniqby": "4.7.0",
     "luxon": "3.4.4",
-    "meilisearch": "0.33.0",
+    "meilisearch": "0.40.0",
     "mime": "3.0.0",
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
