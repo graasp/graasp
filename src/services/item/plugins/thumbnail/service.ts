@@ -72,6 +72,8 @@ export class ItemThumbnailService {
     await this.itemService.get(actor, repositories, itemId, PermissionLevel.Write);
     await Promise.all(
       Object.values(ThumbnailSize).map(async (size) => {
+        // we take care of these promises in the Promise.all()
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.thumbnailService.delete(actor, { id: itemId, size });
       }),
     );

@@ -85,7 +85,7 @@ class FileService {
       });
     } catch (e) {
       // rollback uploaded file
-      this.delete(member, filepath);
+      void this.delete(member, filepath);
       this.logger.error(e);
       throw new UploadFileUnexpectedError({ mimetype, memberId: member.id });
     }
@@ -201,7 +201,7 @@ class FileService {
     });
   }
   // should this be here?
-  setHeaders({
+  async setHeaders({
     reply,
     id,
     replyUrl,
@@ -215,18 +215,18 @@ class FileService {
     if (replyUrl) {
       // const replyUrlExpiration = S3_PRESIGNED_EXPIRATION;
       // reply.header('Cache-Control', `max-age=${replyUrlExpiration}`);
-      reply.status(StatusCodes.OK).send(url);
+      await reply.status(StatusCodes.OK).send(url);
     } else {
       // this header will make the browser download the file with 'name'
       // instead of simply opening it and showing it
-      reply.header('Content-Disposition', contentDisposition(id));
+      await reply.header('Content-Disposition', contentDisposition(id));
       // TODO: necessary for localfiles ?
       // reply.type(mimetype);
       // It is necessary to add the header manually, because the redirect sends the request and
       // when the fastify-cors plugin try to add the header it's already sent and can't add it.
       // So we add it because otherwise the browser won't send the cookie
-      reply.header('Access-Control-Allow-Credentials', 'true');
-      reply.redirect(StatusCodes.MOVED_TEMPORARILY, url);
+      await reply.header('Access-Control-Allow-Credentials', 'true');
+      await reply.redirect(StatusCodes.MOVED_TEMPORARILY, url);
     }
   }
 }

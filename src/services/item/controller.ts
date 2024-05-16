@@ -68,8 +68,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // isolate inside a register because of the mutlipart
-  fastify.register(async (fastify) => {
-    fastify.register(fastifyMultipart, {
+  await fastify.register(async (fastify) => {
+    await fastify.register(fastifyMultipart, {
       limits: {
         // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
         // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
@@ -274,7 +274,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      reply.status(StatusCodes.ACCEPTED);
+      await reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -316,7 +316,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      reply.status(StatusCodes.ACCEPTED);
+      await reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -361,7 +361,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      reply.status(StatusCodes.ACCEPTED);
+      await reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -404,7 +404,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      reply.status(StatusCodes.ACCEPTED);
+      await reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );

@@ -33,7 +33,7 @@ describe('Favorite', () => {
     member = null;
     item = null;
     favorite = null;
-    app.close();
+    await app.close();
   });
 
   describe('GET /favorite', () => {

@@ -85,7 +85,7 @@ describe('File Item routes tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    await app.close();
   });
 
   describe('POST /upload', () => {

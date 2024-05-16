@@ -174,7 +174,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       });
 
       // reply no content and let the server create the archive and send the mail
-      reply.status(StatusCodes.NO_CONTENT);
+      await reply.status(StatusCodes.NO_CONTENT);
     },
   });
 };

@@ -80,7 +80,7 @@ export class MeiliSearchWrapper {
     this.logger = logger;
 
     // create index in the background if it doesn't exist
-    this.getIndex();
+    void this.getIndex();
   }
 
   private removeHTMLTags(s?: string | null): string {
@@ -105,8 +105,11 @@ export class MeiliSearchWrapper {
    * We need a Index object to do operations on meilisearch indices, but we get the index with an API call
    * This method wraps getting an Index, and stores it in a local dictionary, so we don't need to call the API again
    */
-  private async getIndex(name: ALLOWED_INDICES = ACTIVE_INDEX): Promise<Index<IndexItem>> {
-    if (this.indexDictionary[name]) {
+  private async getIndex(
+    name: ALLOWED_INDICES = ACTIVE_INDEX,
+    force = false,
+  ): Promise<Index<IndexItem>> {
+    if (!force && this.indexDictionary[name]) {
       return this.indexDictionary[name];
     }
 
@@ -122,7 +125,7 @@ export class MeiliSearchWrapper {
         // If main index just got created, rebuild it in the background
         if (name === ACTIVE_INDEX) {
           this.logger.info('Search index just created, rebuilding index...');
-          this.rebuildIndex();
+          void this.rebuildIndex();
         }
 
         const index = await this.meilisearchClient.getIndex(name);
@@ -136,11 +139,16 @@ export class MeiliSearchWrapper {
 
   // WORKS ONLY FOR PUBLISHED ITEMS
   async search(queries: MultiSearchParams) {
-    const searchResult = await this.meilisearchClient.multiSearch(queries, {
-      attributesToHighlight: ['*'],
-    });
-
-    return searchResult;
+    console.log(this.indexDictionary[ACTIVE_INDEX]);
+    try {
+      const searchResult = await this.meilisearchClient.multiSearch(queries, {
+        attributesToHighlight: ['*'],
+      });
+      return searchResult;
+    } catch {
+      this.logger.info('Search failed on index');
+      await this.getIndex(ACTIVE_INDEX, true);
+    }
   }
 
   private async parseItem(
@@ -244,7 +252,7 @@ export class MeiliSearchWrapper {
 
       const index = await this.getIndex(targetIndex);
       const indexingTask = await index.addDocuments(documents);
-      this.logTaskCompletion(
+      void this.logTaskCompletion(
         indexingTask,
         items
           .slice(0, 30) // Avoid logging too many items
@@ -270,7 +278,7 @@ export class MeiliSearchWrapper {
 
       const documentIds = itemsToIndex.map((i) => i.id);
       const indexingTask = await (await this.getIndex()).deleteDocuments(documentIds);
-      this.logTaskCompletion(indexingTask, item.name);
+      void this.logTaskCompletion(indexingTask, item.name);
     } catch (err) {
       this.logger.error(`There was a problem adding item ${item.id} to meilisearch: ${err}`);
     }

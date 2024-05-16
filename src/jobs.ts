@@ -63,7 +63,7 @@ export class JobService {
 
     if (JOB_SCHEDULING) {
       this.setupWorker();
-      this.setupJobs();
+      void this.setupJobs();
     }
   }
 
@@ -99,7 +99,7 @@ export class JobService {
       this.logger.info(
         `Scheduling job ${jobKey} with pattern: ${this.scheduledTasks[jobKey].pattern}`,
       );
-      this.scheduledJobsQueue.add(
+      await this.scheduledJobsQueue.add(
         jobKey,
         {},
         {

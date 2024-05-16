@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const appSettingService = new AppSettingService(itemService);
 
-  fastify.register(appSettingsWsHooks, { appSettingService });
+  await fastify.register(appSettingsWsHooks, { appSettingService });
 
   // copy app settings and related files on item copy
   const hook = async (
@@ -39,10 +39,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   itemService.hooks.setPostHook('copy', hook);
 
   // endpoints accessible to third parties with Bearer token
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
-    fastify.register(appSettingFilePlugin, { appSettingService });
+    await fastify.register(appSettingFilePlugin, { appSettingService });
 
     // create app setting
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppSetting> }>(

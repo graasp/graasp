@@ -27,7 +27,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     db,
   } = fastify;
 
-  fastify.register(fastifyMultipart, {
+  await fastify.register(fastifyMultipart, {
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
@@ -70,7 +70,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
           await thumbnailService.upload(member, buildRepositories(manager), file.file);
 
-          reply.status(StatusCodes.NO_CONTENT);
+          await reply.status(StatusCodes.NO_CONTENT);
         })
         .catch((e) => {
           console.error(e);
@@ -95,7 +95,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     async ({ member, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
       const url = await thumbnailService.getUrl(member, buildRepositories(), { memberId, size });
 
-      fileService.setHeaders({ reply, replyUrl, url, id: memberId });
+      await fileService.setHeaders({ reply, replyUrl, url, id: memberId });
     },
   );
 };

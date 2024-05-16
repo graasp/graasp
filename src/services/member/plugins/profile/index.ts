@@ -6,7 +6,7 @@ import memberProfileController from './controller';
 const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(
     async function (fastify) {
-      fastify.register(memberProfileController);
+      await fastify.register(memberProfileController);
     },
     { prefix: MEMBER_PROFILE_ROUTE_PREFIX },
   );

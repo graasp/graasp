@@ -109,10 +109,9 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
   );
 
   // cleanup on server close
-  fastify.addHook('onClose', (instance, done) => {
-    wsMultiBroker.close();
+  fastify.addHook('onClose', async () => {
+    await wsMultiBroker.close();
     wsChannels.close();
-    done();
   });
 
   logBootMessage(log, options);

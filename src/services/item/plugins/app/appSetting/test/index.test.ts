@@ -57,7 +57,7 @@ describe('Apps Settings Tests', () => {
     item = null;
     token = null;
     appSettings = null;
-    app.close();
+    await app.close();
   });
 
   describe('GET /:itemId/app-settings', () => {

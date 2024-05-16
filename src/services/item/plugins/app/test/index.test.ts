@@ -40,7 +40,7 @@ describe('Apps Plugin Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = undefined;
-    app.close();
+    await app.close();
   });
 
   describe('GET /list', () => {

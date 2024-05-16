@@ -59,14 +59,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             member,
             url,
           );
-          reply.status(StatusCodes.NO_CONTENT);
+          await reply.status(StatusCodes.NO_CONTENT);
         } catch (e) {
           if (!(e instanceof MemberAlreadySignedUp)) {
             throw e;
           }
           // send login email
           await magicLinkService.login(undefined, buildRepositories(manager), body, lang);
-          reply.status(StatusCodes.NO_CONTENT);
+          await reply.status(StatusCodes.NO_CONTENT);
         }
       });
     });
@@ -86,7 +86,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignIn);
 
       await magicLinkService.login(undefined, buildRepositories(), body, lang, url);
-      reply.status(StatusCodes.NO_CONTENT);
+      await reply.status(StatusCodes.NO_CONTENT);
     });
 
     // authenticate
@@ -111,12 +111,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           session.set('member', memberId);
 
           const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
-          reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+          await reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
         } catch (error) {
           session.delete();
           const target = new URL('/', AUTH_CLIENT_HOST);
           target.searchParams.set('error', 'true');
-          reply.redirect(StatusCodes.SEE_OTHER, target.toString());
+          await reply.redirect(StatusCodes.SEE_OTHER, target.toString());
         }
       },
     );
@@ -125,7 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     fastify.get('/logout', async ({ session }, reply) => {
       // remove session
       session.delete();
-      reply.status(204);
+      await reply.status(StatusCodes.NO_CONTENT);
     });
   });
 };

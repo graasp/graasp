@@ -91,7 +91,7 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
             mode,
           );
 
-          reply.setCookie(cookie.name, cookie.value, cookie.options);
+          await reply.setCookie(cookie.name, cookie.value, cookie.options);
           return { padUrl };
         },
       );

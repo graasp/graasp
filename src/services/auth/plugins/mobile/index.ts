@@ -59,7 +59,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
     return db.transaction(async (manager) => {
       await mobileService.register(undefined, buildRepositories(manager), body, lang);
-      reply.status(StatusCodes.NO_CONTENT);
+      await reply.status(StatusCodes.NO_CONTENT);
     });
   });
 
@@ -76,7 +76,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInMobile);
 
     await mobileService.login(undefined, buildRepositories(), body, lang);
-    reply.status(StatusCodes.NO_CONTENT);
+    await reply.status(StatusCodes.NO_CONTENT);
   });
 
   // login with password
@@ -104,7 +104,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // redirect to the universal link domain
       const redirectionUrl = new URL(`${MOBILE_DEEP_LINK_PROTOCOL}//auth`);
       redirectionUrl.searchParams.set('t', token);
-      reply.status(StatusCodes.SEE_OTHER);
+      await reply.status(StatusCodes.SEE_OTHER);
 
       return { resource: redirectionUrl.toString() };
     },
@@ -139,7 +139,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
         query.url ? decodeURIComponent(query.url) : undefined,
       );
-      reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+      await reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
     },
   );
 };

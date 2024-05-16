@@ -25,7 +25,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const itemGeolocationService = new ItemGeolocationService(iS, GEOLOCATION_API_KEY);
 
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     fastify.get<{ Params: { id: Item['id'] } }>(
       '/:id/geolocation',
       {
@@ -77,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             params.id,
             body.geolocation,
           );
-          reply.status(StatusCodes.NO_CONTENT);
+          await reply.status(StatusCodes.NO_CONTENT);
         });
       },
     );
@@ -91,7 +91,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       async ({ member, params }, reply) => {
         return db.transaction(async (manager) => {
           await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
-          reply.status(StatusCodes.NO_CONTENT);
+          await reply.status(StatusCodes.NO_CONTENT);
         });
       },
     );

@@ -70,8 +70,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
     },
   );
-  fastify.register(async (fastify) => {
-    fastify.register(fastifyMultipart);
+
+  await fastify.register(async (fastify) => {
+    await fastify.register(fastifyMultipart);
 
     // post invitations from a csv file
     fastify.post<{ Params: IdParam; Querystring: { templateId: string } }>(
@@ -164,7 +165,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const { invitationId } = params;
 
       await iS.resend(member, buildRepositories(), invitationId);
-      reply.status(StatusCodes.NO_CONTENT);
+      await reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

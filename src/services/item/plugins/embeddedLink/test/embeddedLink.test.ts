@@ -49,7 +49,7 @@ describe('Link Item tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = undefined;
-    app.close();
+    await app.close();
   });
 
   describe('POST /items', () => {

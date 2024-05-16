@@ -11,3 +11,4 @@ coverage/*
 # temp files mount
 /tmp
 test/migrations/*
+jest.config.js

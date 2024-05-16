@@ -64,7 +64,7 @@ describe('Thumbnail Plugin Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    await app.close();
   });
 
   describe('GET /:id/thumbnails/:size', () => {

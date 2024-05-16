@@ -44,7 +44,7 @@ const start = async () => {
 
   const { Sentry } = initSentry(instance);
 
-  instance.register(fastifyHelmet);
+  await instance.register(fastifyHelmet);
   // fastifyApp.register(fastifyCompress);
 
   if (CORS_ORIGIN_REGEX) {
@@ -84,4 +84,4 @@ const start = async () => {
   }
 };
 
-start();
+start().catch(() => console.log('Failed to start'));

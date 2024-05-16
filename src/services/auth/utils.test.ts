@@ -44,13 +44,13 @@ describe('Auth utils', () => {
     });
     it('Throw for undefined memberId', async () => {
       const request = buildRequest();
-      expect(verifyMemberInSession(request)).rejects.toBeInstanceOf(InvalidSession);
+      await expect(verifyMemberInSession(request)).rejects.toBeInstanceOf(InvalidSession);
 
       expect(request.member).toBeUndefined();
     });
     it('Throw if member does not exist', async () => {
       const request = buildRequest(v4());
-      expect(verifyMemberInSession(request)).rejects.toBeInstanceOf(OrphanSession);
+      await expect(verifyMemberInSession(request)).rejects.toBeInstanceOf(OrphanSession);
 
       expect(request.member).toBeUndefined();
     });
@@ -71,7 +71,7 @@ describe('Auth utils', () => {
     });
     it('Throw if member does not exist', async () => {
       const request = buildRequest(v4());
-      expect(fetchMemberInSession(request)).rejects.toBeInstanceOf(MemberNotFound);
+      await expect(fetchMemberInSession(request)).rejects.toBeInstanceOf(MemberNotFound);
 
       expect(request.member).toBeUndefined();
     });

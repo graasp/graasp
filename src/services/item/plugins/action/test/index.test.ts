@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { StatusCodes } from 'http-status-codes';
 import waitForExpect from 'wait-for-expect';
 
@@ -66,7 +65,7 @@ describe('Action Plugin Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    await app.close();
   });
 
   describe('POST /:id/actions', () => {

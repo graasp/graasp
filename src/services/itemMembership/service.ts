@@ -39,7 +39,7 @@ export class ItemMembershipService {
     const link = new URL(item.id, PLAYER_HOST.url).toString();
 
     const lang = member.lang;
-    const t = this.mailer.translate(lang);
+    const t = await this.mailer.translate(lang);
 
     const text = t(MAIL.SHARE_ITEM_TEXT, { itemName: item.name });
     const html = `
@@ -49,7 +49,7 @@ export class ItemMembershipService {
 
     const title = t(MAIL.SHARE_ITEM_TITLE, { creatorName: actor.name, itemName: item.name });
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = await this.mailer.buildFooter(lang);
 
     await this.mailer
       .sendEmail(title, member.email, link, html, footer)

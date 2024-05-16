@@ -61,7 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // this needs to execute before 'create()' and 'updateOne()' are called
   // because graaspApps extends the schemas
-  fastify.register(graaspApps, {
+  await fastify.register(graaspApps, {
     jwtSecret: APPS_JWT_SECRET,
     prefix: APP_ITEMS_PREFIX,
     publisherId: APPS_PUBLISHER_ID,
@@ -82,43 +82,43 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async function (fastify) {
       // add CORS support
       if (fastify.corsPluginOptions) {
-        fastify.register(fastifyCors, fastify.corsPluginOptions);
+        await fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
       // // plugins that don't require authentication
-      fastify.register(graaspItemLogin);
+      await fastify.register(graaspItemLogin);
 
-      fastify.register(graaspCategoryPlugin);
+      await fastify.register(graaspCategoryPlugin);
 
-      fastify.register(graaspFavoritePlugin);
+      await fastify.register(graaspFavoritePlugin);
 
-      fastify.register(graaspItemPublish);
+      await fastify.register(graaspItemPublish);
 
-      fastify.register(thumbnailsPlugin);
+      await fastify.register(thumbnailsPlugin);
 
-      fastify.register(graaspFileItem, {});
+      await fastify.register(graaspFileItem, {});
 
-      fastify.register(graaspItemTags);
+      await fastify.register(graaspItemTags);
 
-      fastify.register(ShortLinkService, {
+      await fastify.register(ShortLinkService, {
         prefix: SHORT_LINKS_ROUTE_PREFIX,
       });
 
       // core routes - require authentication
-      fastify.register(async function (fastify) {
-        fastify.register(itemWsHooks);
+      await fastify.register(async function (fastify) {
+        await fastify.register(itemWsHooks);
 
         // H5P plugin must be registered before ZIP
-        fastify.register(graaspH5PPlugin);
+        await fastify.register(graaspH5PPlugin);
 
-        fastify.register(graaspEtherpadPlugin, {
+        await fastify.register(graaspEtherpadPlugin, {
           url: ETHERPAD_URL,
           apiKey: ETHERPAD_API_KEY,
           publicUrl: ETHERPAD_PUBLIC_URL,
           cookieDomain: ETHERPAD_COOKIE_DOMAIN,
         });
 
-        fastify.register(graaspZipPlugin);
+        await fastify.register(graaspZipPlugin);
 
         // 'await' necessary because internally it uses 'extendCreateSchema'
         await fastify.register(graaspEmbeddedLinkItem, {
@@ -128,26 +128,26 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         await fastify.register(graaspDocumentItem);
 
-        fastify.register(graaspInvitationsPlugin);
+        await fastify.register(graaspInvitationsPlugin);
 
-        fastify.register(graaspItemFlags);
+        await fastify.register(graaspItemFlags);
 
-        fastify.register(graaspRecycledItemData);
+        await fastify.register(graaspRecycledItemData);
 
-        fastify.register(graaspValidationPlugin, {
+        await fastify.register(graaspValidationPlugin, {
           // this api needs to be defined from .env
           imageClassifierApi: IMAGE_CLASSIFIER_API,
         });
 
-        fastify.register(graaspItemLikes);
+        await fastify.register(graaspItemLikes);
 
-        fastify.register(fp(graaspChatbox));
+        await fastify.register(fp(graaspChatbox));
 
-        fastify.register(actionItemPlugin);
+        await fastify.register(actionItemPlugin);
 
-        fastify.register(itemGeolocationPlugin);
+        await fastify.register(itemGeolocationPlugin);
 
-        fastify.register(itemController);
+        await fastify.register(itemController);
       });
     },
     { prefix: ITEMS_ROUTE_PREFIX },

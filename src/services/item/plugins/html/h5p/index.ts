@@ -83,12 +83,12 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
         DEFAULT_H5P_CONTENT_ROUTE,
         CLIENT_HOSTS.map(({ url }) => url.hostname) ?? ['localhost'],
       );
-      res.send(html);
+      await res.send(html);
     });
 
     // hack to serve the "dist" folder of package "h5p-standalone"
     const h5pAssetsRoot = path.dirname(require.resolve('h5p-standalone'));
-    fastify.register(fastifyStatic, {
+    await fastify.register(fastifyStatic, {
       root: h5pAssetsRoot,
       prefix: DEFAULT_H5P_ASSETS_ROUTE,
       decorateReply: false,
@@ -97,7 +97,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
 
     const h5pStorageRoot = h5pService.buildLocalStorageRoot();
     fs.mkdirSync(h5pStorageRoot, { recursive: true });
-    fastify.register(fastifyStatic, {
+    await fastify.register(fastifyStatic, {
       root: h5pStorageRoot,
       prefix: DEFAULT_H5P_CONTENT_ROUTE,
       decorateReply: false,
@@ -110,7 +110,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     with other instances since we use fp to remove the outer scope
   */
   await fastify.register(async (fastify) => {
-    fastify.register(fastifyMultipart, {
+    await fastify.register(fastifyMultipart, {
       limits: {
         fields: MAX_NON_FILE_FIELDS,
         files: MAX_FILES,

@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     target.searchParams.set('url', encodeURIComponent(redirectionUrl));
     const resource = target.toString();
 
-    reply.status(StatusCodes.SEE_OTHER);
+    await reply.status(StatusCodes.SEE_OTHER);
     return { resource };
   });
 

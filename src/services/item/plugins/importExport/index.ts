@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const importExportService = new ImportExportService(db, fS, iS, h5pService, fastifyLogger);
 
-  fastify.register(fastifyMultipart, {
+  await fastify.register(fastifyMultipart, {
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
@@ -86,7 +86,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           log.error(e);
         });
 
-      reply.status(StatusCodes.ACCEPTED);
+      await reply.status(StatusCodes.ACCEPTED);
     },
   );
 
@@ -129,7 +129,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log?.error(e);
         reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
       }
-      reply.type('application/octet-stream');
+      await reply.type('application/octet-stream');
       return archiveStream.outputStream;
     },
   });

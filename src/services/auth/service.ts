@@ -58,7 +58,7 @@ export class AuthService {
 
     const lang = member.lang;
 
-    const translated = this.mailer.translate(lang);
+    const translated = await this.mailer.translate(lang);
     const subject = translated(MAIL.SIGN_UP_TITLE);
     const greetingsAndSignupText = `${translated(MAIL.GREETINGS)} ${translated(MAIL.SIGN_UP_TEXT)}`;
     const html = `
@@ -74,7 +74,7 @@ export class AuthService {
     )}
     ${this.mailer.buildText(translated(MAIL.SIGN_UP_NOT_REQUESTED))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = await this.mailer.buildFooter(lang);
 
     // don't wait for mailer's response; log error and link if it fails.
     this.mailer
@@ -102,14 +102,14 @@ export class AuthService {
 
     const memberLang = member.lang ?? lang;
 
-    const translated = this.mailer.translate(memberLang);
+    const translated = await this.mailer.translate(memberLang);
     const subject = translated(MAIL.SIGN_IN_TITLE);
     const html = `
     ${this.mailer.buildText(translated(MAIL.SIGN_IN_TEXT))}
     ${this.mailer.buildButton(link, translated(MAIL.SIGN_IN_BUTTON_TEXT))}
     ${this.mailer.buildText(translated(MAIL.SIGN_IN_NOT_REQUESTED))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = await this.mailer.buildFooter(lang);
 
     // don't wait for mailer's response; log error and link if it fails.
     this.mailer

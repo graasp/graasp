@@ -98,7 +98,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     async ({ member, params: { id } }, reply) => {
       return db.transaction(async (manager) => {
         await memberService.deleteOne(member, buildRepositories(manager), id);
-        reply.status(StatusCodes.NO_CONTENT);
+        await reply.status(StatusCodes.NO_CONTENT);
       });
     },
   );

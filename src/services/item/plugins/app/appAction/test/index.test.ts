@@ -52,7 +52,7 @@ describe('App Actions Tests', () => {
     item = null;
     token = null;
     appActions = null;
-    app.close();
+    await app.close();
   });
 
   // TODO test different payload

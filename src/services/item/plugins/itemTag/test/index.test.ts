@@ -27,7 +27,7 @@ export const saveTagsForItem = async ({ item, creator }) => {
   return itemTags;
 };
 
-const expectItemTags = async (itemTags, correctItemTags) => {
+const expectItemTags = (itemTags, correctItemTags) => {
   expect(itemTags).toHaveLength(correctItemTags.length);
 
   for (const it of itemTags) {
@@ -44,7 +44,7 @@ describe('Tags', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    await app.close();
   });
 
   describe('GET /:itemId/tags', () => {
@@ -79,7 +79,7 @@ describe('Tags', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
-        expectItemTags(res.json(), [itemTag]);
+        await expectItemTags(res.json(), [itemTag]);
       });
     });
 

@@ -59,7 +59,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     // need to be defined before member and item for auth check
     .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
 
-  instance.register(async (instance) => {
+  await instance.register(async (instance) => {
     // core API modules
     await instance
       // the websockets plugin must be registered before but in the same scope as the apis

@@ -24,11 +24,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Body: MultiSearchParams }>(
     '/collections/search',
     { preHandler: fastify.attemptVerifyAuthentication, schema: search },
-    async (request) => {
+    async (request, reply) => {
       const { member, body } = request;
       const repositories = buildRepositories();
 
       const searchResults = await searchService.search(member, repositories, body);
+      if (!searchResults) {
+        return reply.status(StatusCodes.SERVICE_UNAVAILABLE);
+      }
       const action = {
         type: ActionTriggers.ItemSearch,
         extra: body,
@@ -43,10 +46,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     const headerRebuildSecret = headers['meilisearch-rebuild'];
 
     if (MEILISEARCH_REBUILD_SECRET && MEILISEARCH_REBUILD_SECRET === headerRebuildSecret) {
-      searchService.rebuildIndex();
-      reply.status(StatusCodes.ACCEPTED);
+      // explicitly rebuild index in the background
+      void searchService.rebuildIndex();
+      await reply.status(StatusCodes.ACCEPTED);
     } else {
-      reply.status(StatusCodes.UNAUTHORIZED);
+      await reply.status(StatusCodes.UNAUTHORIZED);
     }
   });
 };

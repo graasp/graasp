@@ -14,21 +14,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // schemas
   fastify.addSchema(common);
 
-  fastify.register(
+  await fastify.register(
     async function (fastify) {
       // add CORS support
       if (fastify.corsPluginOptions) {
         await fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      fastify.register(actionMemberPlugin);
+      await fastify.register(actionMemberPlugin);
 
       // routes
-      fastify.register(memberController);
+      await fastify.register(memberController);
 
-      fastify.register(memberThumbnailPlugin);
-      fastify.register(memberProfilePlugin);
-      fastify.register(memberExportDataPlugin);
+      await fastify.register(memberThumbnailPlugin);
+      await fastify.register(memberProfilePlugin);
+      await fastify.register(memberExportDataPlugin);
     },
     { prefix: ROUTES_PREFIX },
   );

@@ -71,7 +71,7 @@ export class SearchService {
   }
 
   async rebuildIndex() {
-    this.meilisearchClient.rebuildIndex();
+    await this.meilisearchClient.rebuildIndex();
   }
 
   // Registers all hooks related to sync between database and meilisearch index

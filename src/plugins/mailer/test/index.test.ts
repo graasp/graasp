@@ -17,7 +17,7 @@ describe('Mailer', () => {
   afterAll(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    app.close();
+    await app.close();
   });
 
   describe('buildButton', () => {
@@ -39,8 +39,8 @@ describe('Mailer', () => {
   });
 
   describe('translate', () => {
-    it('generates button given link and text', () => {
-      const translate = app.mailer.translate('fr');
+    it('generates button given link and text', async () => {
+      const translate = await app.mailer.translate('fr');
       expect(translate(SUCCESS_MESSAGES.COPY_ITEM).length).toBeGreaterThan(1);
     });
   });

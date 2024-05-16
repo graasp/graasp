@@ -6,7 +6,7 @@ import esTranslations from './langs/es.json';
 import frTranslations from './langs/fr.json';
 import itTranslations from './langs/it.json';
 
-i18next.init({
+void i18next.init({
   fallbackLng: 'en',
   resources: {
     en: {

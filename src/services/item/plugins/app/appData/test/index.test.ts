@@ -28,7 +28,7 @@ const expectAppData = (values, expected) => {
 
 // save apps, app data, and get token
 const setUpForAppData = async (
-  app,
+  app: FastifyInstance,
   actor: Actor,
   creator: Member,
   permission?: PermissionLevel,
@@ -58,7 +58,7 @@ describe('App Data Tests', () => {
     item = null;
     token = null;
     appData = null;
-    app.close();
+    await app.close();
   });
 
   // TODO test different payload

@@ -35,7 +35,7 @@ export class MentionService {
     });
     const lang = member?.extra?.lang as string;
 
-    const translated = this.mailer.translate(lang);
+    const translated = await this.mailer.translate(lang);
     const subject = translated(MAIL.CHAT_MENTION_TITLE, {
       creatorName: creator.name,
       itemName: item.name,
@@ -50,7 +50,7 @@ export class MentionService {
     )}
     ${this.mailer.buildButton(itemLink, translated(MAIL.CHAT_MENTION_BUTTON_TEXT))}`;
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = await this.mailer.buildFooter(lang);
 
     this.mailer.sendEmail(subject, member.email, itemLink, html, footer).catch((err) => {
       console.error(err);
@@ -73,7 +73,7 @@ export class MentionService {
     // TODO: optimize ? suppose same item - validate multiple times
     const results = await mentionRepository.postMany(mentionedMembers, message.id);
 
-    this.hooks.runPostHooks('createMany', actor, repositories, { mentions: results, item });
+    await this.hooks.runPostHooks('createMany', actor, repositories, { mentions: results, item });
 
     return results;
   }

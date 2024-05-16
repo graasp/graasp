@@ -138,8 +138,8 @@ describe('Item routes tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    actor = null;
-    app.close();
+    actor = undefined;
+    await app.close();
   });
 
   describe('POST /items', () => {

@@ -139,7 +139,7 @@ export class WebsocketService {
    * @param member member performing the request
    * @param socket client socket
    */
-  handleRequest(data: WebSocket.Data, member: Actor, client: WebSocket): void {
+  async handleRequest(data: WebSocket.Data, member: Actor, client: WebSocket): Promise<void> {
     const request = this.parse(typeof data === 'string' ? data : data?.toString());
 
     // validation error, send bad request
@@ -160,13 +160,13 @@ export class WebsocketService {
         break;
       }
       case Websocket.ClientActions.Subscribe: {
-        this.handleSubscribe(request, member, client, (client, channel) =>
+        await this.handleSubscribe(request, member, client, (client, channel) =>
           this.wsChannels.clientSubscribe(client, channel),
         );
         break;
       }
       case Websocket.ClientActions.SubscribeOnly: {
-        this.handleSubscribe(request, member, client, (client, channel) =>
+        await this.handleSubscribe(request, member, client, (client, channel) =>
           this.wsChannels.clientSubscribeOnly(client, channel),
         );
         break;

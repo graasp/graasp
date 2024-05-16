@@ -34,7 +34,7 @@ async function responseFactory(finishReason: string | null, content?: string) {
   };
 }
 
-export async function mockResponse(finishReason: string | null, content?: string) {
+export function mockResponse(finishReason: string | null, content?: string) {
   jest
     .spyOn(OpenAICompletion, 'openAICompletion')
     .mockImplementation(() => responseFactory(finishReason, content) as Promise<ChatCompletion>);

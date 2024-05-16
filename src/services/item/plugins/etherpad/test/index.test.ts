@@ -57,7 +57,7 @@ describe('Etherpad service API', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    app.close();
+    await app.close();
     nock.cleanAll();
   });
 
@@ -90,7 +90,7 @@ describe('Etherpad service API', () => {
     });
 
     it('returns error on etherpad HTTP error', async () => {
-      setUpApi({
+      await setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
@@ -110,7 +110,7 @@ describe('Etherpad service API', () => {
     it.each(['pad does already exist', 'groupID does not exist'])(
       'returns error on etherpad server error: %p',
       async (error) => {
-        setUpApi({
+        await setUpApi({
           createGroupIfNotExistsFor: [
             StatusCodes.OK,
             { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
@@ -169,7 +169,7 @@ describe('Etherpad service API', () => {
 
     beforeEach(async () => {
       // create an existing etherpad item to test reading it
-      setUpApi({
+      await setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
@@ -557,7 +557,7 @@ describe('Etherpad service API', () => {
     });
 
     it.each(MODES)('returns error if item is not found (%p)', async (mode) => {
-      setUpApi({
+      await setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
@@ -577,7 +577,7 @@ describe('Etherpad service API', () => {
     });
 
     it.each(MODES)('returns error if item is missing etherpad extra (%p)', async (mode) => {
-      setUpApi({
+      await setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
@@ -605,7 +605,7 @@ describe('Etherpad service API', () => {
         },
       });
 
-      setUpApi({
+      await setUpApi({
         getReadOnlyID: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { readOnlyID: MOCK_PAD_READ_ONLY_ID } },
@@ -619,7 +619,7 @@ describe('Etherpad service API', () => {
     });
 
     it('returns error on etherpad HTTP error', async () => {
-      setUpApi({
+      await setUpApi({
         getReadOnlyID: [StatusCodes.GATEWAY_TIMEOUT],
       });
       const res = await app.inject(payloadView('read', item.id));
@@ -632,7 +632,7 @@ describe('Etherpad service API', () => {
     });
 
     it('returns error on etherpad server error: "padID does not exist"', async () => {
-      setUpApi({
+      await setUpApi({
         getReadOnlyID: [StatusCodes.OK, { code: 1, message: 'padID does not exist', data: null }],
       });
       const res = await app.inject(payloadView('read', item.id));
@@ -647,7 +647,7 @@ describe('Etherpad service API', () => {
     it.each(["groupID doesn't exist", "authorID doesn't exist", 'validUntil is in the past'])(
       'returns error on etherpad server error: %p',
       async (error) => {
-        setUpApi({
+        await setUpApi({
           createAuthorIfNotExistsFor: [
             StatusCodes.OK,
             { code: 0, message: 'ok', data: { authorID: MOCK_AUTHOR_ID } },
@@ -670,7 +670,7 @@ describe('Etherpad service API', () => {
 
     beforeEach(async () => {
       // create an existing etherpad item to test hooks
-      setUpApi({
+      await setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },
@@ -746,7 +746,7 @@ describe('Etherpad service API', () => {
       const { item: parent } = await testUtils.saveItemAndMembership({ member });
       const { item: bogusItem } = await testUtils.saveItemAndMembership({ member });
 
-      setUpApi({
+      await setUpApi({
         createGroupIfNotExistsFor: [
           StatusCodes.OK,
           { code: 0, message: 'ok', data: { groupID: MOCK_GROUP_ID } },

@@ -89,14 +89,14 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
    */
   fastify.decorateRequest('authTokenSubject', null);
 
-  fastify.register(fastifyBearerAuth, {
+  await fastify.register(fastifyBearerAuth, {
     addHook: false,
     keys: new Set<string>(),
     auth: validateApiAccessToken,
   });
 
   // API endpoints
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     // add CORS support that allows graasp's origin(s) + app publishers' origins.
     // TODO: not perfect because it's allowing apps' origins to call "/<id>/api-access-token",
     // even though they would not be able to fulfill the request because they need the
@@ -106,13 +106,13 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       const allowedOrigins = await aS.getAllValidAppOrigins(undefined, buildRepositories());
 
       const graaspAndAppsOrigins = corsPluginOptions.origin.concat(allowedOrigins);
-      fastify.register(
+      await fastify.register(
         fastifyCors,
         Object.assign({}, corsPluginOptions, { origin: graaspAndAppsOrigins }),
       );
     }
 
-    fastify.register(async function (fastify) {
+    await fastify.register(async function (fastify) {
       // get all apps
       fastify.get('/list', { schema: getMany }, async ({ member }) => {
         return aS.getAllApps(member, buildRepositories(), publisherId);
@@ -168,7 +168,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       // });
     });
 
-    fastify.register(async function (fastify) {
+    await fastify.register(async function (fastify) {
       // all app endpoints need the bearer token
       fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
@@ -183,16 +183,16 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       );
 
       // register app data plugin
-      fastify.register(appDataPlugin);
+      await fastify.register(appDataPlugin);
 
       // register app action plugin
-      fastify.register(appActionPlugin);
+      await fastify.register(appActionPlugin);
 
       // register app settings plugin
-      fastify.register(appSettingPlugin);
+      await fastify.register(appSettingPlugin);
 
       // register app chatbot plugin
-      fastify.register(chatBotPlugin);
+      await fastify.register(chatBotPlugin);
     });
   });
 };

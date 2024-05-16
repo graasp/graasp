@@ -77,7 +77,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
         }
       });
 
-      reply.status(StatusCodes.ACCEPTED);
+      await reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -113,7 +113,7 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
           );
         }
       });
-      reply.status(StatusCodes.ACCEPTED);
+      await reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );

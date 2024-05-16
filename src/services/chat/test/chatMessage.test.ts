@@ -54,7 +54,7 @@ describe('Chat Message tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    await app.close();
   });
 
   describe('GET /item-id/chat', () => {

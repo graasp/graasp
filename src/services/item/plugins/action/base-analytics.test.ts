@@ -44,7 +44,7 @@ describe('Base Analytics', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    app.close();
+    await app.close();
   });
 
   it('Members should be cleaned', async () => {

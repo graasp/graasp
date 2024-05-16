@@ -17,10 +17,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(common);
 
   // endpoints accessible to third parties with Bearer token
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
 
-    fastify.register(appActionsWsHooks, { appActionService });
+    await fastify.register(appActionsWsHooks, { appActionService });
 
     // create app action
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppAction> }>(

@@ -76,7 +76,7 @@ describe('DataMember Export', () => {
     exportingActor = null;
     randomUser = null;
     item = null;
-    app.close();
+    await app.close();
   });
 
   describe('Actions', () => {

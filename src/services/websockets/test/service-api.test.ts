@@ -51,9 +51,9 @@ describe('plugin options', () => {
     expect(((await res2) as Buffer).toString()).toStrictEqual('noPrefix');
 
     clientWithPrefix.close();
-    serverWithPrefix.close();
+    await serverWithPrefix.close();
     clientNoPrefix.close();
-    serverNoPrefix.close();
+    await serverNoPrefix.close();
   });
 });
 

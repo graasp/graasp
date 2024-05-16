@@ -23,7 +23,7 @@ describe('ZIP routes tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    app.close();
+    await app.close();
   });
 
   describe('export', () => {

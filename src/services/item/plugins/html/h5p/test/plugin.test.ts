@@ -59,7 +59,7 @@ describe('Service plugin', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     await cleanFiles();
-    app.close();
+    await app.close();
   });
 
   describe('Upload valid .h5p package', () => {
@@ -219,7 +219,7 @@ describe('Service plugin', () => {
       expect(res.json()).toEqual(new HtmlImportError());
 
       const { storageRootPath } = H5P_LOCAL_CONFIG.local;
-      waitForExpect(async () => {
+      await waitForExpect(async () => {
         const extractionDirContents = await fsp.readdir(H5P_TMP_FOLDER);
         const storageDirContents = await fsp.readdir(
           path.join(...([storageRootPath, H5P_PATH_PREFIX].filter((e) => e) as string[])),

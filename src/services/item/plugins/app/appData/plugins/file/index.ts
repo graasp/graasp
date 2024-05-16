@@ -42,7 +42,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   const appDataFileService = new AppDataFileService(appDataService, fileService, itemService);
 
-  fastify.register(fastifyMultipart, {
+  await fastify.register(fastifyMultipart, {
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).

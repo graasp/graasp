@@ -49,7 +49,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         return;
       }
       mentions.forEach((mention) => {
-        mentionService.sendMentionNotificationEmail({
+        // explicitly do not wait for the mail to be sent
+        void mentionService.sendMentionNotificationEmail({
           item,
           member: (mention as ChatMention).member,
           creator,
@@ -111,7 +112,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       await db.transaction(async (manager) => {
         await mentionService.deleteAll(member, buildRepositories(manager));
       });
-      reply.status(StatusCodes.NO_CONTENT);
+      await reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

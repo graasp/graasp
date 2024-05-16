@@ -67,7 +67,7 @@ describe('Item Login Tests', () => {
     actor = null;
     item = null;
     member = null;
-    app.close();
+    await app.close();
   });
 
   describe('GET /:id/login-schema-type', () => {

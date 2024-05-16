@@ -51,7 +51,7 @@ describe('Export member data tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    app.close();
+    await app.close();
   });
 
   it('Create archive successfully', async () => {
