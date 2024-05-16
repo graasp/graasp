@@ -6049,9 +6049,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-json-stringify@npm:5.14.1":
-  version: 5.14.1
-  resolution: "fast-json-stringify@npm:5.14.1"
+"fast-json-stringify@npm:5.15.1":
+  version: 5.15.1
+  resolution: "fast-json-stringify@npm:5.15.1"
   dependencies:
     "@fastify/merge-json-schemas": "npm:^0.1.0"
     ajv: "npm:^8.10.0"
@@ -6060,7 +6060,7 @@ __metadata:
     fast-uri: "npm:^2.1.0"
     json-schema-ref-resolver: "npm:^1.0.1"
     rfdc: "npm:^1.2.0"
-  checksum: 10/41945db9f9da0468b2089a4fc8ba7cf620bbb573a4daa71950e97257cf8acce87ed0d9569b68336cda9ff087678c481eb96b7ec7576ee1365e7dd55c7fa37487
+  checksum: 10/2cb75c38137c2188befd77a3db25f44ddd646c02a045f797f9b60bcbeebdf9236cc52e0eb2c5bec5f7f207d2821d47581a69e9a607eeb104cc1607496fb05cc4
   languageName: node
   linkType: hard
 
@@ -6817,7 +6817,7 @@ __metadata:
     eslint-config-prettier: "npm:8.10.0"
     eta: "npm:2.2.0"
     extract-zip: "npm:2.0.1"
-    fast-json-stringify: "npm:5.14.1"
+    fast-json-stringify: "npm:5.15.1"
     fastify: "npm:4.27.0"
     fastify-nodemailer: "npm:5.0.0"
     fastify-plugin: "npm:4.5.1"
