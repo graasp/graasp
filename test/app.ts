@@ -3,6 +3,7 @@ import fastify from 'fastify';
 import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
+import ajvFormats from '../src/schemas/ajvFormats';
 import { Actor } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
@@ -20,6 +21,7 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
       customOptions: {
         coerceTypes: 'array',
       },
+      plugins: [ajvFormats],
     },
   });
 

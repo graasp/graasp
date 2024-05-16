@@ -14,6 +14,7 @@ import {
 } from './utils/config';
 // import fastifyCompress from 'fastify-compress';
 import { GREETING } from './utils/constants';
+import ajvFormats from './schemas/ajvFormats';
 
 const start = async () => {
   const instance = fastify({
@@ -35,6 +36,7 @@ const start = async () => {
         // https://github.com/fastify/fastify/blob/main/docs/Validation-and-Serialization.md
         coerceTypes: 'array',
       },
+      plugins: [ajvFormats],
     },
   });
 

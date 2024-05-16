@@ -58,9 +58,13 @@ export const auth = {
     type: 'object',
     required: ['t'],
     properties: {
-      t: { type: 'string' },
+      t: {
+        type: 'string',
+        format: 'jwt',
+      },
       url: {
         type: 'string',
+        format: 'uri',
       },
     },
     additionalProperties: false,

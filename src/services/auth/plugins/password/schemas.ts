@@ -73,7 +73,7 @@ export const patchResetPasswordRequest: FastifySchema = {
   headers: {
     type: 'object',
     properties: {
-      authorization: { type: 'string' },
+      authorization: { type: 'string', format: 'bearer' },
     },
   },
   response: {
