@@ -8,6 +8,7 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
+import captchaPreHandler from '../captcha';
 import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 import { MobileService } from './service';
 
@@ -51,51 +52,57 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       enableSaveActions?: boolean;
     };
     Querystring: { lang?: string };
-  }>('/register', { schema: mregister }, async (request, reply) => {
-    const {
-      body,
-      query: { lang = DEFAULT_LANG },
-    } = request;
+  }>(
+    '/register',
+    {
+      schema: mregister,
+      preHandler: captchaPreHandler(RecaptchaAction.SignUpMobile),
+    },
+    async (request, reply) => {
+      const {
+        body,
+        query: { lang = DEFAULT_LANG },
+      } = request;
 
-    // validate captcha
-    await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUpMobile);
-
-    return db.transaction(async (manager) => {
-      await mobileService.register(undefined, buildRepositories(manager), body, lang);
-      reply.status(StatusCodes.NO_CONTENT);
-    });
-  });
+      return db.transaction(async (manager) => {
+        await mobileService.register(undefined, buildRepositories(manager), body, lang);
+        reply.status(StatusCodes.NO_CONTENT);
+      });
+    },
+  );
 
   fastify.post<{
     Body: { email: string; challenge: string; captcha: string };
     Querystring: { lang?: string };
-  }>('/login', { schema: mlogin }, async (request, reply) => {
-    const {
-      body,
-      query: { lang },
-    } = request;
+  }>(
+    '/login',
+    {
+      schema: mlogin,
+      preHandler: captchaPreHandler(RecaptchaAction.SignInMobile),
+    },
+    async (request, reply) => {
+      const {
+        body,
+        query: { lang },
+      } = request;
 
-    // validate captcha
-    await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInMobile);
-
-    await mobileService.login(undefined, buildRepositories(), body, lang);
-    reply.status(StatusCodes.NO_CONTENT);
-  });
+      await mobileService.login(undefined, buildRepositories(), body, lang);
+      reply.status(StatusCodes.NO_CONTENT);
+    },
+  );
 
   // login with password
   fastify.post<{ Body: { email: string; challenge: string; password: string; captcha: string } }>(
     '/login-password',
-    { schema: mPasswordLogin },
+    {
+      schema: mPasswordLogin,
+
+      preHandler: captchaPreHandler(RecaptchaAction.SignInWithPasswordMobile, {
+        shouldFail: false,
+      }),
+    },
     async (request, reply) => {
       const { body } = request;
-
-      // validate captcha
-      await fastify.validateCaptcha(
-        request,
-        body.captcha,
-        RecaptchaAction.SignInWithPasswordMobile,
-        { shouldFail: false },
-      );
 
       const token = await memberPasswordService.login(
         undefined,

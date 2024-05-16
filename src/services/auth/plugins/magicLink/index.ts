@@ -10,6 +10,7 @@ import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
+import captchaPreHandler from '../captcha';
 import { PassportStrategy } from '../passport/strategies';
 import { auth, login, register } from './schemas';
 
@@ -35,61 +36,66 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         enableSaveActions?: boolean;
       };
       Querystring: { lang?: string };
-    }>('/register', { schema: register }, async (request, reply) => {
-      const {
-        body,
-        query: { lang = DEFAULT_LANG },
-      } = request;
-      const { url } = body;
+    }>(
+      '/register',
+      { schema: register, preHandler: captchaPreHandler(RecaptchaAction.SignUp) },
+      async (request, reply) => {
+        const {
+          body,
+          query: { lang = DEFAULT_LANG },
+        } = request;
+        const { url } = body;
 
-      // validate captcha
-      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUp);
+        return db.transaction(async (manager) => {
+          try {
+            // we use member service to allow post hook for invitation
+            const member = await memberService.post(
+              undefined,
+              buildRepositories(manager),
+              body,
+              lang,
+            );
 
-      return db.transaction(async (manager) => {
-        try {
-          // we use member service to allow post hook for invitation
-          const member = await memberService.post(
-            undefined,
-            buildRepositories(manager),
-            body,
-            lang,
-          );
-
-          await magicLinkService.sendRegisterMail(
-            undefined,
-            buildRepositories(manager),
-            member,
-            url,
-          );
-          reply.status(StatusCodes.NO_CONTENT);
-        } catch (e) {
-          if (!(e instanceof MemberAlreadySignedUp)) {
-            throw e;
+            await magicLinkService.sendRegisterMail(
+              undefined,
+              buildRepositories(manager),
+              member,
+              url,
+            );
+            reply.status(StatusCodes.NO_CONTENT);
+          } catch (e) {
+            if (!(e instanceof MemberAlreadySignedUp)) {
+              throw e;
+            }
+            // send login email
+            await magicLinkService.login(undefined, buildRepositories(manager), body, lang);
+            reply.status(StatusCodes.NO_CONTENT);
           }
-          // send login email
-          await magicLinkService.login(undefined, buildRepositories(manager), body, lang);
-          reply.status(StatusCodes.NO_CONTENT);
-        }
-      });
-    });
+        });
+      },
+    );
 
     // login
     fastify.post<{
       Body: { email: string; captcha: string; url?: string };
       Querystring: { lang?: string };
-    }>('/login', { schema: login }, async (request, reply) => {
-      const {
-        body,
-        query: { lang },
-      } = request;
-      const { url } = body;
+    }>(
+      '/login',
+      {
+        schema: login,
+        preHandler: captchaPreHandler(RecaptchaAction.SignIn),
+      },
+      async (request, reply) => {
+        const {
+          body,
+          query: { lang },
+        } = request;
+        const { url } = body;
 
-      // validate captcha
-      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignIn);
-
-      await magicLinkService.login(undefined, buildRepositories(), body, lang, url);
-      reply.status(StatusCodes.NO_CONTENT);
-    });
+        await magicLinkService.login(undefined, buildRepositories(), body, lang, url);
+        reply.status(StatusCodes.NO_CONTENT);
+      },
+    );
 
     // authenticate
     fastify.get<{ Querystring: { t: string; url?: string } }>(

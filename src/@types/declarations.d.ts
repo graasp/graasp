@@ -113,12 +113,6 @@ declare module 'fastify' {
           Logger
         >
       | ((request: FastifyRequest) => Promise<void>);
-    validateCaptcha: (
-      request: FastifyRequest,
-      captcha: string,
-      actionType: RecaptchaActionType,
-      options?: { shouldFail?: boolean },
-    ) => Promise<void>;
     attemptVerifyAuthentication:
       | preHandlerHookHandler<
           RawServer,

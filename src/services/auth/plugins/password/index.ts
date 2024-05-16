@@ -9,6 +9,7 @@ import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
+import captchaPreHandler from '../captcha';
 import { PassportStrategy } from '../passport/strategies';
 import {
   passwordLogin,
@@ -32,16 +33,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/login-password',
     {
       schema: passwordLogin,
-      preHandler: fastifyPassport.authenticate(PassportStrategy.WEB_PASSWORD),
+      preHandler: [
+        captchaPreHandler(RecaptchaAction.SignInWithPassword, {
+          shouldFail: false,
+        }),
+        fastifyPassport.authenticate(PassportStrategy.WEB_PASSWORD),
+      ],
     },
     async (request, reply) => {
       const { body, log } = request;
       const { url } = body;
-
-      // validate captcha
-      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword, {
-        shouldFail: false,
-      });
 
       const token = await memberPasswordService.generateToken(
         { sub: 'memberId' },
@@ -93,13 +94,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post<{ Body: { email: string; captcha: string } }>(
     '/password/reset',
-    { schema: postResetPasswordRequest },
+    {
+      schema: postResetPasswordRequest,
+      preHandler: captchaPreHandler(RecaptchaAction.ResetPassword),
+    },
     async (request, reply) => {
-      const { email, captcha } = request.body;
-
-      await fastify.validateCaptcha(request, captcha, RecaptchaAction.ResetPassword, {
-        shouldFail: false,
-      });
+      const { email } = request.body;
 
       // We can already return to avoid leaking timing information.
       reply.status(StatusCodes.NO_CONTENT);
@@ -138,7 +138,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/password/reset',
     {
       schema: patchResetPasswordRequest,
-      preValidation: fastifyPassport.authenticate(PassportStrategy.PASSPORT_RESET, {
+      preHandler: fastifyPassport.authenticate(PassportStrategy.PASSPORT_RESET, {
         session: false,
       }), // Session is not required.
     },

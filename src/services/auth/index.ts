@@ -4,15 +4,8 @@ import fastifyCors from '@fastify/cors';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyPluginAsync } from 'fastify';
 
-import {
-  PROD,
-  RECAPTCHA_SECRET_ACCESS_KEY,
-  SECURE_SESSION_SECRET_KEY,
-  STAGING,
-  TOKEN_BASED_AUTH,
-} from '../../utils/config';
+import { PROD, SECURE_SESSION_SECRET_KEY, STAGING, TOKEN_BASED_AUTH } from '../../utils/config';
 import { AuthPluginOptions } from './interfaces/auth';
-import captchaPlugin from './plugins/captcha';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
 import passportPlugin from './plugins/passport';
@@ -36,9 +29,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
     cookie: { domain, path: '/', secure: PROD || STAGING, httpOnly: true },
   });
-
-  // captcha
-  await fastify.register(captchaPlugin, { secretAccessKey: RECAPTCHA_SECRET_ACCESS_KEY });
 
   fastify.decorate('fetchMemberInSession', fetchMemberInSession);
 
