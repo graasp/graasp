@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
           );
         }
       });
-      await reply.status(StatusCodes.ACCEPTED);
+      void reply.status(StatusCodes.ACCEPTED);
       return itemId;
     },
   );

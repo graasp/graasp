@@ -99,7 +99,8 @@ export class JobService {
       this.logger.info(
         `Scheduling job ${jobKey} with pattern: ${this.scheduledTasks[jobKey].pattern}`,
       );
-      await this.scheduledJobsQueue.add(
+      // explicitly do not wait for the jobs to finish
+      void this.scheduledJobsQueue.add(
         jobKey,
         {},
         {

@@ -77,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             params.id,
             body.geolocation,
           );
-          await reply.status(StatusCodes.NO_CONTENT);
+          void reply.status(StatusCodes.NO_CONTENT);
         });
       },
     );
@@ -91,7 +91,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       async ({ member, params }, reply) => {
         return db.transaction(async (manager) => {
           await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
-          await reply.status(StatusCodes.NO_CONTENT);
+          void reply.status(StatusCodes.NO_CONTENT);
         });
       },
     );

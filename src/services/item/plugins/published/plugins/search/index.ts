@@ -48,9 +48,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     if (MEILISEARCH_REBUILD_SECRET && MEILISEARCH_REBUILD_SECRET === headerRebuildSecret) {
       // explicitly rebuild index in the background
       void searchService.rebuildIndex();
-      await reply.status(StatusCodes.ACCEPTED);
+      void reply.status(StatusCodes.ACCEPTED);
     } else {
-      await reply.status(StatusCodes.UNAUTHORIZED);
+      void reply.status(StatusCodes.UNAUTHORIZED);
     }
   });
 };

@@ -21,7 +21,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // No need to be logged for the redirection
     fastify.get<{ Params: { alias: string } }>('/:alias', async ({ params: { alias } }, reply) => {
       const path = await shortLinkService.getRedirection(buildRepositories(), alias);
-      await reply.code(StatusCodes.MOVED_TEMPORARILY).redirect(path);
+      void reply.code(StatusCodes.MOVED_TEMPORARILY).redirect(path);
     });
 
     // WARNING: Do not return the entire item, because this route is not protected !

@@ -59,18 +59,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     localConfig: FILE_ITEM_PLUGIN_OPTIONS,
   });
 
-  // this needs to execute before 'create()' and 'updateOne()' are called
-  // because graaspApps extends the schemas
-  await fastify.register(graaspApps, {
-    jwtSecret: APPS_JWT_SECRET,
-    prefix: APP_ITEMS_PREFIX,
-    publisherId: APPS_PUBLISHER_ID,
-  });
-
   // we move this from fluent schema because it was a global value
   // this did not fit well with tests
   const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
-
   const initializedUpdate = updateOne(folderExtra);
 
   const { items } = fastify;
@@ -78,14 +69,21 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   items.extendCreateSchema = initializedCreate;
   items.extendExtrasUpdateSchema = initializedUpdate;
 
+  // register the apps plugin outside of the scope of the plugin as it sets its own CORS
+  await fastify.register(graaspApps, {
+    jwtSecret: APPS_JWT_SECRET,
+    prefix: APP_ITEMS_PREFIX,
+    publisherId: APPS_PUBLISHER_ID,
+  });
+
+  // isolate plugins using the base CORS settings
   await fastify.register(
-    async function (fastify) {
+    async (fastify) => {
       // add CORS support
       if (fastify.corsPluginOptions) {
         await fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      // // plugins that don't require authentication
       await fastify.register(graaspItemLogin);
 
       await fastify.register(graaspCategoryPlugin);

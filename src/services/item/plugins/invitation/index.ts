@@ -165,7 +165,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const { invitationId } = params;
 
       await iS.resend(member, buildRepositories(), invitationId);
-      await reply.status(StatusCodes.NO_CONTENT);
+      void reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

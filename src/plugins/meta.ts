@@ -77,7 +77,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     const iframely = (await getIframelyStatusCheck()).format();
 
     // allow request cross origin
-    await reply.header('Access-Control-Allow-Origin', '*');
+    void reply.header('Access-Control-Allow-Origin', '*');
     return {
       api,
       database,

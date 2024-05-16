@@ -274,7 +274,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      await reply.status(StatusCodes.ACCEPTED);
+      void reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -316,7 +316,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      await reply.status(StatusCodes.ACCEPTED);
+      void reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -361,7 +361,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      await reply.status(StatusCodes.ACCEPTED);
+      void reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );
@@ -404,7 +404,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
             );
           }
         });
-      await reply.status(StatusCodes.ACCEPTED);
+      void reply.status(StatusCodes.ACCEPTED);
       return ids;
     },
   );

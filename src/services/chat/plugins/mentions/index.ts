@@ -112,7 +112,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       await db.transaction(async (manager) => {
         await mentionService.deleteAll(member, buildRepositories(manager));
       });
-      await reply.status(StatusCodes.NO_CONTENT);
+      void reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

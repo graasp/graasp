@@ -86,7 +86,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           log.error(e);
         });
 
-      await reply.status(StatusCodes.ACCEPTED);
+      void reply.status(StatusCodes.ACCEPTED);
     },
   );
 
@@ -129,7 +129,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log?.error(e);
         reply.raw.setHeader('Content-Disposition', 'filename="download.zip"');
       }
-      await reply.type('application/octet-stream');
+      void reply.type('application/octet-stream');
       return archiveStream.outputStream;
     },
   });

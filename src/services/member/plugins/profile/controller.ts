@@ -23,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const memberProfile = await memberProfileService.post(member, repositories, data);
-        await reply.status(StatusCodes.CREATED);
+        void reply.status(StatusCodes.CREATED);
 
         return memberProfile;
       });

@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
           await thumbnailService.upload(member, buildRepositories(manager), itemId, file.file);
 
-          await reply.status(StatusCodes.NO_CONTENT);
+          void reply.status(StatusCodes.NO_CONTENT);
         })
         .catch((e) => {
           log.error(e);
@@ -113,7 +113,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
         throw new UnauthorizedMember(member);
       }
       await thumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), { itemId });
-      await reply.status(StatusCodes.NO_CONTENT);
+      void reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };
