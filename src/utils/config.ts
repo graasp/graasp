@@ -157,7 +157,7 @@ export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 if (!process.env.SECURE_SESSION_SECRET_KEY) {
   throw new Error('SECURE_SESSION_SECRET_KEY is not defined');
 }
-export const SECURE_SESSION_SECRET_KEY = process.env.SECURE_SESSION_SECRET_KEY;
+export const SECURE_SESSION_SECRET_KEY: string = process.env.SECURE_SESSION_SECRET_KEY!;
 
 /**
  * JWT

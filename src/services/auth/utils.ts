@@ -31,7 +31,7 @@ const promisifiedJwtSign = promisify<
 >(jwt.sign);
 
 const defaultClientHost = BUILDER_HOST;
-const sessionKey = 'passport';
+const SESSION_MEMBER_ID_KEY = 'passport';
 
 const validOrigins = CLIENT_HOSTS.map((c) => c.url.origin);
 
@@ -57,7 +57,7 @@ export const getRedirectionUrl = (log: FastifyBaseLogger, target?: string) => {
 
 export async function verifyMemberInSession(request: FastifyRequest) {
   const { session } = request;
-  const memberId = session.get('member');
+  const memberId = session.get(SESSION_MEMBER_ID_KEY);
 
   if (!memberId) {
     throw new InvalidSession(memberId);
@@ -76,7 +76,7 @@ export async function verifyMemberInSession(request: FastifyRequest) {
 // used to get authenticated member without throwing
 export async function fetchMemberInSession(request: FastifyRequest) {
   const { session } = request;
-  const memberId = session.get('member');
+  const memberId = session.get(SESSION_MEMBER_ID_KEY);
 
   if (!memberId) return;
 

@@ -17,7 +17,6 @@ export default (
     new Strategy(
       {
         usernameField: 'email',
-        passwordField: 'password',
       },
       (email, password, done) => {
         memberPasswordService

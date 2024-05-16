@@ -1,12 +1,12 @@
 import fastifyPassport from '@fastify/passport';
-import { FastifyPluginAsync, PassportUser } from 'fastify';
+import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import passwordResetStrategy from './strategies/passwordReset';
 import webMagicLinkStrategy from './strategies/webMagicLink';
 import webPasswordStrategy from './strategies/webPassword';
 
-const plugin: FastifyPluginAsync = async (fastify) => {
+const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const {
     magicLink: { service: magicLinkService },
     memberPassword: { service: memberPasswordService },
