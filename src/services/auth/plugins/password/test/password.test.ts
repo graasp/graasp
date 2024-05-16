@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import fetch, { type Response } from 'node-fetch';
 
@@ -108,7 +109,7 @@ describe('Password routes tests', () => {
 
     it('Sign In does send unauthorized error for wrong password', async () => {
       const member = MemberFactory();
-      const wrongPassword = '1234';
+      const wrongPassword = faker.internet.password({ prefix: '!1Aa' });
       await saveMemberAndPassword(member, MOCK_PASSWORD);
 
       const response = await app.inject({
@@ -121,7 +122,7 @@ describe('Password routes tests', () => {
     });
 
     it('Sign In does send not acceptable error when member does not have password', async () => {
-      const password = 'asd';
+      const password = faker.internet.password({ prefix: '!1Aa' });
       const member = await saveMember();
       const response = await app.inject({
         method: HttpMethod.Post,
@@ -134,7 +135,7 @@ describe('Password routes tests', () => {
 
     it('Sign In send not found error for non-existing email', async () => {
       const email = 'some@email.com';
-      const password = '1234';
+      const password = faker.internet.password({ prefix: '!1Aa' });
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/login-password',

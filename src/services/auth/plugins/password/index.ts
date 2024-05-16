@@ -41,11 +41,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       ],
     },
     async (request, reply) => {
-      const { body, log } = request;
+      const { body, log, user } = request;
       const { url } = body;
-
       const token = await memberPasswordService.generateToken(
-        { sub: 'memberId' },
+        { sub: user!.uuid },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
 

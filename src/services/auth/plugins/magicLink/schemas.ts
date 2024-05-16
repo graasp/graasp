@@ -64,7 +64,7 @@ export const auth = {
       },
       url: {
         type: 'string',
-        format: 'uri',
+        format: 'uri-reference',
       },
     },
     additionalProperties: false,
