@@ -134,7 +134,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // logout
     fastify.get('/logout', async (request, reply) => {
       request.logOut();
-      reply.send(StatusCodes.NO_CONTENT);
+      reply.status(StatusCodes.NO_CONTENT);
     });
   });
 };
