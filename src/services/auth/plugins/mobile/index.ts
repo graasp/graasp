@@ -141,8 +141,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.get('/auth/refresh', { preHandler: fastify.verifyBearerAuth }, async ({ memberId }) =>
-    generateAuthTokensPair(memberId),
+  fastify.get(
+    '/auth/refresh',
+    {
+      preHandler: fastifyPassport.authenticate(PassportStrategy.REFRESH_TOKEN),
+    },
+    async ({ memberId }) => {
+      return generateAuthTokensPair(memberId);
+    },
   );
 
   // from user token, set corresponding cookie

@@ -8,4 +8,6 @@ export enum PassportStrategy {
   PASSWORD = 'password',
 
   JWT_CHALLENGE_VERIFIER = 'jwt-challenge-verifier',
+
+  REFRESH_TOKEN = 'refresh-token',
 }
