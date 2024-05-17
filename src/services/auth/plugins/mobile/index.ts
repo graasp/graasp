@@ -6,7 +6,10 @@ import { FastifyPluginAsync } from 'fastify';
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
+import {
+  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
+  MOBILE_DEEP_LINK_PROTOCOL,
+} from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
@@ -100,18 +103,22 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: mPasswordLogin,
 
-      preHandler: captchaPreHandler(RecaptchaAction.SignInWithPasswordMobile, {
-        shouldFail: false,
-      }),
+      preHandler: [
+        captchaPreHandler(RecaptchaAction.SignInWithPasswordMobile, {
+          shouldFail: false,
+        }),
+        fastifyPassport.authenticate(PassportStrategy.PASSWORD),
+      ],
     },
     async (request, reply) => {
-      const { body } = request;
+      const {
+        body: { challenge },
+        user,
+      } = request;
 
-      const token = await memberPasswordService.login(
-        undefined,
-        buildRepositories(),
-        body,
-        body.challenge,
+      const token = await memberPasswordService.generateToken(
+        { sub: user!.uuid, challenge: challenge },
+        `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
 
       // redirect to the universal link domain

@@ -13,19 +13,20 @@ export default (
   repositories: Repositories,
 ) => {
   passport.use(
-    PassportStrategy.WEB_PASSWORD,
+    PassportStrategy.PASSWORD,
     new Strategy(
       {
         usernameField: 'email',
+        passReqToCallback: true,
       },
-      (email, password, done) => {
+      (req, email, password, done) => {
         memberPasswordService
           .authenticate(repositories, email, password)
           .then((member?: Member) => {
             if (member) {
               // Token has been validated
               // Error is undefined, req.user is the Password Reset Request UUID.
-              done(null, { uuid: member.id });
+              done(null, { uuid: member.id, challenge: req.body.challenge });
             } else {
               // Authentication refused
               // Error is undefined, user is false to trigger a 401 Unauthorized.

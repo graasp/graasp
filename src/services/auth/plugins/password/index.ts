@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         captchaPreHandler(RecaptchaAction.SignInWithPassword, {
           shouldFail: false,
         }),
-        fastifyPassport.authenticate(PassportStrategy.WEB_PASSWORD),
+        fastifyPassport.authenticate(PassportStrategy.PASSWORD),
       ],
     },
     async (request, reply) => {

@@ -5,8 +5,8 @@ import { AUTH_TOKEN_JWT_SECRET, JWT_SECRET } from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { PassportStrategy } from './strategies';
 import magicLinkStrategy from './strategies/magicLink';
+import passwordStrategy from './strategies/password';
 import passwordResetStrategy from './strategies/passwordReset';
-import webPasswordStrategy from './strategies/webPassword';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const {
@@ -14,8 +14,8 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     authentication: { service: authService },
   } = fastify;
   const repositories: Repositories = buildRepositories();
+  passwordStrategy(fastifyPassport, memberPasswordService, repositories);
   passwordResetStrategy(fastifyPassport, memberPasswordService);
-  webPasswordStrategy(fastifyPassport, memberPasswordService, repositories);
   magicLinkStrategy(
     fastifyPassport,
     authService,
