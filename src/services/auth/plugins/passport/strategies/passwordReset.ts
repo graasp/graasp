@@ -1,7 +1,6 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
-import { PassportUser } from 'fastify';
 
 import { PASSWORD_RESET_JWT_SECRET } from '../../../../../utils/config';
 import { MemberPasswordService } from '../../password/service';
@@ -15,12 +14,11 @@ export default (passport: Authenticator, memberPasswordService: MemberPasswordSe
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: PASSWORD_RESET_JWT_SECRET,
       },
-      async (payload, done) => {
-        if (payload.uuid && (await memberPasswordService.validatePasswordResetUuid(payload.uuid))) {
+      async ({ uuid }, done) => {
+        if (uuid && (await memberPasswordService.validatePasswordResetUuid(uuid))) {
           // Token has been validated
           // Error is null, payload contains the UUID.
-          const user: PassportUser = { uuid: payload.uuid };
-          return done(null, user);
+          return done(null, { uuid });
         } else {
           // Authentication refused
           // Error is null, user is false to trigger a 401 Unauthorized.

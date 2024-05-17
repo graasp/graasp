@@ -132,9 +132,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Body: { t: string; verifier: string } }>(
     '/auth',
-    { schema: mauth },
-    async ({ body: { t: token, verifier } }) => {
-      return mobileService.auth(undefined, buildRepositories(), token, verifier);
+    {
+      schema: mauth,
+      preHandler: fastifyPassport.authenticate(PassportStrategy.JWT_CHALLENGE_VERIFIER),
+    },
+    async ({ user }) => {
+      return fastify.generateAuthTokensPair(user!.uuid);
     },
   );
 

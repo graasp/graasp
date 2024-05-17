@@ -6,4 +6,6 @@ export enum PassportStrategy {
 
   WEB_MAGIC_LINK = 'web-magic-link',
   PASSWORD = 'password',
+
+  JWT_CHALLENGE_VERIFIER = 'jwt-challenge-verifier',
 }

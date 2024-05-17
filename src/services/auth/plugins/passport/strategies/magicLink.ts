@@ -21,20 +21,14 @@ export default (
         jwtFromRequest: ExtractJwt.fromUrlQueryParameter(tokenQueryParameter),
         secretOrKey: jwtSecret,
       },
-      (
-        payload: {
-          sub: string;
-          challenge?: string | undefined;
-        },
-        done,
-      ) => {
+      ({ sub: uuid }, done) => {
         authService
-          .validateMemberId(repositories, payload.sub)
+          .validateMemberId(repositories, uuid)
           .then((validated) => {
             if (validated) {
               // Token has been validated
               // Error is null, req.user is the Password Reset Request UUID.
-              done(null, { uuid: payload.sub });
+              done(null, { uuid });
             } else {
               // Authentication refused
               // Error is null, user is false

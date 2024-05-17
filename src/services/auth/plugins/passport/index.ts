@@ -4,6 +4,7 @@ import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 import { AUTH_TOKEN_JWT_SECRET, JWT_SECRET } from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { PassportStrategy } from './strategies';
+import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';
 import magicLinkStrategy from './strategies/magicLink';
 import passwordStrategy from './strategies/password';
 import passwordResetStrategy from './strategies/passwordReset';
@@ -32,6 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     't',
     JWT_SECRET,
   );
+  jwtChallengeVerifierStrategy(fastifyPassport, repositories.memberRepository);
 
   // Register user object to session
   fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.uuid);
