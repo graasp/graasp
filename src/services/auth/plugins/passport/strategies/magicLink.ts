@@ -2,22 +2,24 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
-import { JWT_SECRET } from '../../../../../utils/config';
 import { Repositories } from '../../../../../utils/repositories';
-import { MagicLinkService } from '../../magicLink/service';
+import { AuthService } from '../../../service';
 import { PassportStrategy } from '../strategies';
 
 export default (
   passport: Authenticator,
-  magicLinkService: MagicLinkService,
+  authService: AuthService,
   repositories: Repositories,
+  strategy: PassportStrategy,
+  tokenQueryParameter: string,
+  jwtSecret: string,
 ) => {
   passport.use(
-    PassportStrategy.WEB_MAGIC_LINK,
+    strategy,
     new Strategy(
       {
-        jwtFromRequest: ExtractJwt.fromUrlQueryParameter('t'),
-        secretOrKey: JWT_SECRET,
+        jwtFromRequest: ExtractJwt.fromUrlQueryParameter(tokenQueryParameter),
+        secretOrKey: jwtSecret,
       },
       (
         payload: {
@@ -26,8 +28,8 @@ export default (
         },
         done,
       ) => {
-        magicLinkService
-          .validateMemberId(undefined, repositories, payload.sub)
+        authService
+          .validateMemberId(repositories, payload.sub)
           .then((validated) => {
             if (validated) {
               // Token has been validated

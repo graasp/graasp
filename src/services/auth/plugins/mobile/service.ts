@@ -113,6 +113,7 @@ export class MobileService {
     }
   }
 
+  /**@deprecated */
   async getMemberIdFromAuthToken(actor: Actor, repositories: Repositories, token: string) {
     try {
       const { sub: memberId } = await promisifiedJwtVerify(token, AUTH_TOKEN_JWT_SECRET, {});

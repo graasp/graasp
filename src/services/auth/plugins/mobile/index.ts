@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
+import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsync } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
@@ -9,8 +10,8 @@ import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
+import { PassportStrategy } from '../passport/strategies';
 import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
-import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsync = async (fastify) => {
@@ -19,9 +20,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     db,
     generateAuthTokensPair,
     memberPassword: { service: memberPasswordService },
+    mobile: { service: mobileService },
   } = fastify;
 
-  const mobileService = new MobileService(fastify, log);
+  await fastify.register(fastifyPassport.initialize());
+  await fastify.register(fastifyPassport.secureSession());
 
   // no need to add CORS support here - only used by mobile app
 
@@ -135,16 +138,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // from user token, set corresponding cookie
   fastify.get<{ Querystring: { token: string; url: string } }>(
     '/auth/web',
-    { schema: authWeb },
-    async ({ query, session }, reply) => {
-      const memberId = await mobileService.getMemberIdFromAuthToken(
-        undefined,
-        buildRepositories(),
-        query.token,
-      );
-
-      session.set('member', memberId);
-
+    {
+      schema: authWeb,
+      preHandler: fastifyPassport.authenticate(PassportStrategy.MOBILE_MAGIC_LINK),
+    },
+    async ({ query }, reply) => {
       const redirectionUrl = getRedirectionUrl(
         log,
         query.url ? decodeURIComponent(query.url) : undefined,

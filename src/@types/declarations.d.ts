@@ -9,7 +9,9 @@ import { JobService } from '../jobs';
 import type { MailerDecoration } from '../plugins/mailer';
 import { ActionService } from '../services/action/services/action';
 import { MagicLinkService } from '../services/auth/plugins/magicLink/service';
+import { MobileService } from '../services/auth/plugins/mobile/service';
 import { MemberPasswordService } from '../services/auth/plugins/password/service';
+import { AuthService } from '../services/auth/service';
 import { MentionService } from '../services/chat/plugins/mentions/service';
 import { ChatMessageService } from '../services/chat/service';
 import FileService from '../services/file/service';
@@ -83,13 +85,9 @@ declare module 'fastify' {
       service: SearchService;
     };
 
-    magicLink: {
-      service: MagicLinkService;
-    };
-
-    memberPassword: {
-      service: MemberPasswordService;
-    };
+    authentication: { service: AuthService };
+    memberPassword: { service: MemberPasswordService };
+    mobile: { service: MobileService };
 
     members: { service: MemberService };
     actions: { service: ActionService };

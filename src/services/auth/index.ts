@@ -10,7 +10,6 @@ import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
 import passportPlugin from './plugins/passport';
 import passwordController from './plugins/password';
-import { AuthService } from './service';
 import {
   fetchMemberInSession,
   generateAuthTokensPair,
@@ -20,9 +19,9 @@ import {
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   const { sessionCookieDomain: domain } = options;
-  const { log, mailer } = fastify;
-
-  const authService = new AuthService(mailer, log);
+  const {
+    authentication: { service: authService },
+  } = fastify;
 
   // cookie based auth
   await fastify.register(fastifySecureSession, {

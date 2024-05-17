@@ -5,8 +5,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { JobService } from '../jobs';
 import { ActionService } from '../services/action/services/action';
-import { MagicLinkService } from '../services/auth/plugins/magicLink/service';
+import { MobileService } from '../services/auth/plugins/mobile/service';
 import { MemberPasswordService } from '../services/auth/plugins/password/service';
+import { AuthService } from '../services/auth/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
@@ -109,12 +110,17 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   // need to register this before files
   fastify.decorate('storage', { service: new StorageService(FILE_ITEM_TYPE) });
 
-  fastify.decorate('magicLink', {
-    service: new MagicLinkService(fastify, fastify.log),
+  // 'auth' key is not accepted
+  fastify.decorate('authentication', {
+    service: new AuthService(fastify.mailer, fastify.log),
   });
 
   fastify.decorate('memberPassword', {
     service: new MemberPasswordService(fastify.mailer, fastify.log, fastify.redis),
+  });
+
+  fastify.decorate('mobile', {
+    service: new MobileService(fastify, fastify.log),
   });
 };
 export default decoratorPlugin;

@@ -13,6 +13,7 @@ import {
   REGISTER_TOKEN_EXPIRATION_IN_MINUTES,
 } from '../../utils/config';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants';
+import { Repositories } from '../../utils/repositories';
 import { Member } from '../member/entities/member';
 import { getRedirectionUrl } from './utils';
 
@@ -116,4 +117,8 @@ export class AuthService {
       .sendEmail(subject, member.email, link, html, footer)
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   };
+
+  async validateMemberId(repositories: Repositories, memberId: string) {
+    return (await repositories.memberRepository.get(memberId)) !== undefined;
+  }
 }

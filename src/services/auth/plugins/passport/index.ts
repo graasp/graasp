@@ -1,20 +1,37 @@
 import fastifyPassport from '@fastify/passport';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
+import { AUTH_TOKEN_JWT_SECRET, JWT_SECRET } from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { PassportStrategy } from './strategies';
+import magicLinkStrategy from './strategies/magicLink';
 import passwordResetStrategy from './strategies/passwordReset';
-import webMagicLinkStrategy from './strategies/webMagicLink';
 import webPasswordStrategy from './strategies/webPassword';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const {
-    magicLink: { service: magicLinkService },
     memberPassword: { service: memberPasswordService },
+    authentication: { service: authService },
   } = fastify;
   const repositories: Repositories = buildRepositories();
   passwordResetStrategy(fastifyPassport, memberPasswordService);
-  webMagicLinkStrategy(fastifyPassport, magicLinkService, repositories);
   webPasswordStrategy(fastifyPassport, memberPasswordService, repositories);
+  magicLinkStrategy(
+    fastifyPassport,
+    authService,
+    repositories,
+    PassportStrategy.MOBILE_MAGIC_LINK,
+    'token',
+    AUTH_TOKEN_JWT_SECRET,
+  );
+  magicLinkStrategy(
+    fastifyPassport,
+    authService,
+    repositories,
+    PassportStrategy.WEB_MAGIC_LINK,
+    't',
+    JWT_SECRET,
+  );
 
   // Register user object to session
   fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.uuid);

@@ -84,8 +84,4 @@ export class MagicLinkService {
       throw new UnexpectedError();
     }
   }
-
-  async validateMemberId(_actor: Actor, repositories: Repositories, memberId: string) {
-    return (await repositories.memberRepository.get(memberId)) !== undefined;
-  }
 }
