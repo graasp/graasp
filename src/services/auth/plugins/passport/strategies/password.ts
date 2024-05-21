@@ -17,16 +17,15 @@ export default (
     new Strategy(
       {
         usernameField: 'email',
-        passReqToCallback: true,
       },
-      ({ body: challenge }, email, password, done) => {
+      (email, password, done) => {
         memberPasswordService
           .authenticate(repositories, email, password)
           .then((member?: Member) => {
             if (member) {
               // Token has been validated
               // Error is undefined, req.user is the Password Reset Request UUID.
-              done(null, { uuid: member.id, challenge });
+              done(null, member);
             } else {
               // Authentication refused
               // Error is undefined, user is false to trigger a 401 Unauthorized.

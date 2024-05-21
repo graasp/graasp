@@ -17,15 +17,15 @@ export default (passport: Authenticator, memberRepository: typeof MemberReposito
         secretOrKey: JWT_SECRET,
         passReqToCallback: true,
       },
-      async ({ body: { verifier } }, { sub: uuid, challenge }, done) => {
+      async ({ body: { verifier } }, { sub, challenge }, done) => {
         if (challenge === crypto.createHash('sha256').update(verifier).digest('hex')) {
           memberRepository
-            .get(uuid)
+            .get(sub)
             .then((member) => {
               if (member) {
                 // Token has been validated
                 // Error is null, user payload contains the UUID.
-                done(null, { uuid });
+                done(null, member);
               } else {
                 // Authentication refused
                 // Error is null, user is false

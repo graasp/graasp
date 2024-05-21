@@ -124,10 +124,6 @@ declare module 'fastify' {
         >
       | ((request: FastifyRequest) => Promise<void>);
     fetchMemberInSession: (request: FastifyRequest) => Promise<void>;
-    generateAuthTokensPair: (memberId: string) => Promise<{
-      authToken: string;
-      refreshToken: string;
-    }>;
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
       options: {
@@ -149,10 +145,10 @@ declare module 'fastify' {
     member: Actor;
     memberId: string;
     authTokenSubject?: AuthTokenSubject;
-    user?: { uuid: string };
+    user?: Member | { uuid: string };
   }
 
-  interface PassportUser {
+  interface PassportUser extends Member {
     uuid: string;
   }
 }

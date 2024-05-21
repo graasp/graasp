@@ -14,14 +14,14 @@ export default (passport: Authenticator, memberRepository: typeof MemberReposito
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: REFRESH_TOKEN_JWT_SECRET,
       },
-      async ({ sub: uuid }, done) => {
+      async ({ sub }, done) => {
         memberRepository
-          .get(uuid)
+          .get(sub)
           .then((member) => {
             if (member) {
               // Token has been validated
               // Error is null, user payload contains the UUID.
-              done(null, { uuid });
+              done(null, member);
             } else {
               // Authentication refused
               // Error is null, user is false

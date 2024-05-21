@@ -16,6 +16,7 @@ import {
 } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
+import { generateAuthTokensPair } from '../../utils';
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -99,7 +100,7 @@ export class MobileService {
       await repositories.memberRepository.get(memberId);
 
       // TODO: should we fetch/test the member from the DB?
-      return this.fastify.generateAuthTokensPair(memberId);
+      return generateAuthTokensPair(memberId);
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         // return a custom error when the token expired

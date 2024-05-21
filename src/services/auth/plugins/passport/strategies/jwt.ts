@@ -2,24 +2,19 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { JWT_SECRET } from '../../../../../utils/config';
 import MemberRepository from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
 
-export default (
-  passport: Authenticator,
-  memberRepository: typeof MemberRepository,
-  strategy: PassportStrategy,
-  tokenQueryParameter: string,
-  jwtSecret: string,
-) => {
+export default (passport: Authenticator, memberRepository: typeof MemberRepository) => {
   passport.use(
-    strategy,
+    PassportStrategy.JWT,
     new Strategy(
       {
-        jwtFromRequest: ExtractJwt.fromUrlQueryParameter(tokenQueryParameter),
-        secretOrKey: jwtSecret,
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey: JWT_SECRET,
       },
-      ({ sub }, done) => {
+      async ({ sub }, done) => {
         memberRepository
           .get(sub)
           .then((member) => {

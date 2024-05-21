@@ -11,13 +11,13 @@ import {
   MOBILE_DEEP_LINK_PROTOCOL,
 } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
-import { getRedirectionUrl } from '../../utils';
+import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
   authenticateJWTChallengeVerifier,
   authenticateMobileMagicLink,
   authenticatePassword,
-  authenticateRefreshPassword,
+  authenticateRefreshToken,
 } from '../passport';
 import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 
@@ -26,7 +26,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     log,
     db,
-    generateAuthTokensPair,
     memberPassword: { service: memberPasswordService },
     mobile: { service: mobileService },
   } = fastify;
@@ -122,7 +121,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
 
       const token = await memberPasswordService.generateToken(
-        { sub: user!.uuid, challenge: challenge },
+        { sub: user!.id, challenge: challenge },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
 
@@ -142,17 +141,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateJWTChallengeVerifier,
     },
     async ({ user }) => {
-      return fastify.generateAuthTokensPair(user!.uuid);
+      return generateAuthTokensPair(user!.id);
     },
   );
 
   fastify.get(
     '/auth/refresh',
     {
-      preHandler: authenticateRefreshPassword,
+      preHandler: authenticateRefreshToken,
     },
-    async ({ memberId }) => {
-      return generateAuthTokensPair(memberId);
+    async ({ user }) => {
+      return generateAuthTokensPair(user!.id);
     },
   );
 

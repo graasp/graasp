@@ -3,7 +3,9 @@ import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { AUTH_TOKEN_JWT_SECRET, JWT_SECRET } from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import MemberRepository from '../../../member/repository';
 import { PassportStrategy } from './strategies';
+import jwtStrategy from './strategies/jwt';
 import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';
 import magicLinkStrategy from './strategies/magicLink';
 import passwordStrategy from './strategies/password';
@@ -16,29 +18,36 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     authentication: { service: authService },
   } = fastify;
   const repositories: Repositories = buildRepositories();
+
+  //-- Password Strategies --//
   passwordStrategy(fastifyPassport, memberPasswordService, repositories);
   passwordResetStrategy(fastifyPassport, memberPasswordService);
+
+  //-- Magic Link Strategies --//
   magicLinkStrategy(
     fastifyPassport,
-    authService,
-    repositories,
+    repositories.memberRepository,
     PassportStrategy.MOBILE_MAGIC_LINK,
     'token',
     AUTH_TOKEN_JWT_SECRET,
   );
   magicLinkStrategy(
     fastifyPassport,
-    authService,
-    repositories,
+    repositories.memberRepository,
     PassportStrategy.WEB_MAGIC_LINK,
     't',
     JWT_SECRET,
   );
+
+  //-- JWT Strategies --//
   jwtChallengeVerifierStrategy(fastifyPassport, repositories.memberRepository);
   refreshTokenStrategy(fastifyPassport, repositories.memberRepository);
+  jwtStrategy(fastifyPassport, repositories.memberRepository);
 
   // Register user object to session
-  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.uuid);
-  fastifyPassport.registerUserDeserializer(async (uuid: string, _req) => uuid);
+  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.id);
+  fastifyPassport.registerUserDeserializer(
+    async (uuid: string, _req) => await MemberRepository.get(uuid),
+  );
 };
 export default plugin;

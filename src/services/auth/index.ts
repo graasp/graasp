@@ -10,12 +10,7 @@ import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
 import { plugin as passportPlugin } from './plugins/passport';
 import passwordController from './plugins/password';
-import {
-  fetchMemberInSession,
-  generateAuthTokensPair,
-  verifyMemberInAuthToken,
-  verifyMemberInSession,
-} from './utils';
+import { fetchMemberInSession, verifyMemberInAuthToken, verifyMemberInSession } from './utils';
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   const { sessionCookieDomain: domain } = options;
@@ -63,8 +58,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
     : verifyMemberInSession;
 
   fastify.decorate('verifyAuthentication', verifyAuthentication);
-
-  fastify.decorate('generateAuthTokensPair', generateAuthTokensPair);
 
   // TODO: decorate auth service and use it instead of decorating function
   fastify.decorate('generateRegisterLinkAndEmailIt', authService.generateRegisterLinkAndEmailIt);
