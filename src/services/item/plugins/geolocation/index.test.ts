@@ -11,7 +11,7 @@ import { AppDataSource } from '../../../../plugins/datasource';
 import { GEOLOCATION_API_HOST, ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { MemberCannotAccess } from '../../../../utils/errors';
 import { saveMember } from '../../../member/test/fixtures/members';
-import { PackedItem } from '../../ItemWrapper';
+import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { ItemTestUtils, expectPackedItem } from '../../test/fixtures/items';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 
@@ -159,25 +159,25 @@ describe('Item Geolocation', () => {
   });
   describe('GET /geolocation', () => {
     describe('Signed out', () => {
-      it('Get public item geolocations', async () => {
+      it('Does not get public item geolocations on root', async () => {
         ({ app } = await build({ member: null }));
         const member = await saveMember();
         const { packedItem } = await testUtils.savePublicItem({ actor: member });
-        const { packed: geoloc1 } = await saveGeolocation({
+        await saveGeolocation({
           item: packedItem,
           lat: 1,
           lng: 2,
           country: 'de',
         });
         const { packedItem: item2 } = await testUtils.savePublicItem({ actor: member });
-        const { packed: geoloc2 } = await saveGeolocation({
+        await saveGeolocation({
           item: item2,
           lat: 1,
           lng: 2,
           country: 'de',
         });
         const { packedItem: item3 } = await testUtils.savePublicItem({ actor: member });
-        const { packed: geoloc3 } = await saveGeolocation({
+        await saveGeolocation({
           item: item3,
           lat: 1,
           lng: 2,
@@ -187,6 +187,43 @@ describe('Item Geolocation', () => {
         const res = await app.inject({
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toHaveLength(0);
+        expectItemGeolocations(res.json(), []);
+      });
+
+      it('Get public item geolocations within public item', async () => {
+        ({ app } = await build({ member: null }));
+        const member = await saveMember();
+        const { item: parentItem, publicTag } = await testUtils.savePublicItem({ actor: member });
+
+        const item1 = await testUtils.saveItem({ actor: member, parentItem });
+        const { packed: geoloc1 } = await saveGeolocation({
+          item: new ItemWrapper(item1, null, [publicTag]).packed(),
+          lat: 1,
+          lng: 2,
+          country: 'de',
+        });
+        const item2 = await testUtils.saveItem({ actor: member, parentItem });
+        console.log(item2);
+        const { packed: geoloc2 } = await saveGeolocation({
+          item: new ItemWrapper(item2, null, [publicTag]).packed(),
+          lat: 1,
+          lng: 2,
+          country: 'it',
+        });
+        const item3 = await testUtils.saveItem({ actor: member, parentItem });
+        const { packed: geoloc3 } = await saveGeolocation({
+          item: new ItemWrapper(item3, null, [publicTag]).packed(),
+          lat: 1,
+          lng: 2,
+          country: 'fr',
+        });
+
+        const res = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/geolocation?lat1=1&lat2=1&lng1=1&lng2=2&parentItemId=${parentItem.id}`,
         });
         expect(res.statusCode).toBe(StatusCodes.OK);
         expect(res.json()).toHaveLength(3);
