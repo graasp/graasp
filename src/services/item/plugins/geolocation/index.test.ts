@@ -67,7 +67,7 @@ describe('Item Geolocation', () => {
     actor = null;
     packedItem = null;
     item = null;
-    await app.close();
+    void app.close();
   });
 
   describe('GET /:id/geolocation', () => {

@@ -55,7 +55,7 @@ describe('Item Like', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    await app.close();
+    void app.close();
   });
 
   describe('GET /liked', () => {

@@ -40,7 +40,7 @@ describe('ItemGeolocationService', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = undefined;
-    await app.close();
+    void app.close();
   });
 
   describe('delete', () => {

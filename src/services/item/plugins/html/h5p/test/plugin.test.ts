@@ -59,7 +59,7 @@ describe('Service plugin', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     await cleanFiles();
-    await app.close();
+    void app.close();
   });
 
   describe('Upload valid .h5p package', () => {

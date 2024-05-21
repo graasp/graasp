@@ -34,7 +34,7 @@ describe('Item Validation Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    await app.close();
+    void app.close();
   });
 
   describe('GET /:itemId/validations/latest', () => {

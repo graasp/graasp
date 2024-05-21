@@ -44,7 +44,7 @@ describe('Tags', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    await app.close();
+    void app.close();
   });
 
   describe('GET /:itemId/tags', () => {

@@ -56,7 +56,7 @@ describe('Short links routes tests', () => {
     anna = null;
     bob = null;
     cedric = null;
-    await app.close();
+    void app.close();
   });
 
   describe('PUBLIC tests (member not connected)', () => {

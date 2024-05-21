@@ -29,7 +29,7 @@ describe('ItemGeolocationRepository', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    await app.close();
+    void app.close();
   });
   describe('copy', () => {
     it('copy geolocation on item copy', async () => {

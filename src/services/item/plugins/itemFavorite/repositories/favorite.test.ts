@@ -40,7 +40,7 @@ describe('FavoriteRepository', () => {
     await clearDatabase(app.db);
     actor = null;
     favorites = [];
-    await app.close();
+    void app.close();
   });
 
   describe('get', () => {

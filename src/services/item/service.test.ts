@@ -26,7 +26,7 @@ describe('Item Service', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    await app.close();
+    void app.close();
   });
   describe('Copy', () => {
     it('Should copy thumbnails on item copy if original has thumbnails', async () => {

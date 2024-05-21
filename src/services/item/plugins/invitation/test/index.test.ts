@@ -78,7 +78,7 @@ describe('Invitation Plugin', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    await app.close();
+    void app.close();
   });
 
   describe('POST /invite', () => {

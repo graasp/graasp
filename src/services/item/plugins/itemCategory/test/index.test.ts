@@ -65,7 +65,7 @@ describe('Categories', () => {
     categories = null;
     itemCategories = null;
     item = null;
-    await app.close();
+    void app.close();
   });
 
   describe('GET /categories', () => {

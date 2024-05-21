@@ -58,7 +58,7 @@ describe('App Data Tests', () => {
     item = null;
     token = null;
     appData = null;
-    await app.close();
+    void app.close();
   });
 
   // TODO test different payload
