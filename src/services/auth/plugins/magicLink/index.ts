@@ -111,6 +111,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           err: null | Error,
           user?: PassportUser,
         ) => {
+          // This function is called after the strategy has been executed.
+          // It is necessary, so we match the behavior of the original implementation.
           if (!user || err) {
             // Authentication failed
             const target = new URL('/', AUTH_CLIENT_HOST);

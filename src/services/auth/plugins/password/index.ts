@@ -10,7 +10,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
-import { PassportStrategy } from '../passport/strategies';
+import { authenticatePassword, authenticatePasswordReset } from '../passport';
 import {
   passwordLogin,
   patchResetPasswordRequest,
@@ -37,7 +37,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         captchaPreHandler(RecaptchaAction.SignInWithPassword, {
           shouldFail: false,
         }),
-        fastifyPassport.authenticate(PassportStrategy.PASSWORD),
+        authenticatePassword,
       ],
     },
     async (request, reply) => {
@@ -137,9 +137,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/password/reset',
     {
       schema: patchResetPasswordRequest,
-      preHandler: fastifyPassport.authenticate(PassportStrategy.PASSPORT_RESET, {
-        session: false,
-      }), // Session is not required.
+      preHandler: authenticatePasswordReset,
     },
     async (request, reply) => {
       const user: PassportUser = request.user!;

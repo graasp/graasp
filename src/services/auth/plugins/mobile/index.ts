@@ -13,7 +13,12 @@ import {
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
-import { PassportStrategy } from '../passport/strategies';
+import {
+  authenticateJWTChallengeVerifier,
+  authenticateMobileMagicLink,
+  authenticatePassword,
+  authenticateRefreshPassword,
+} from '../passport';
 import { authWeb, mPasswordLogin, mauth, mlogin, mregister } from './schemas';
 
 // token based auth and endpoints for mobile
@@ -107,7 +112,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         captchaPreHandler(RecaptchaAction.SignInWithPasswordMobile, {
           shouldFail: false,
         }),
-        fastifyPassport.authenticate(PassportStrategy.PASSWORD),
+        authenticatePassword,
       ],
     },
     async (request, reply) => {
@@ -134,7 +139,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/auth',
     {
       schema: mauth,
-      preHandler: fastifyPassport.authenticate(PassportStrategy.JWT_CHALLENGE_VERIFIER),
+      preHandler: authenticateJWTChallengeVerifier,
     },
     async ({ user }) => {
       return fastify.generateAuthTokensPair(user!.uuid);
@@ -144,7 +149,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/auth/refresh',
     {
-      preHandler: fastifyPassport.authenticate(PassportStrategy.REFRESH_TOKEN),
+      preHandler: authenticateRefreshPassword,
     },
     async ({ memberId }) => {
       return generateAuthTokensPair(memberId);
@@ -156,7 +161,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/auth/web',
     {
       schema: authWeb,
-      preHandler: fastifyPassport.authenticate(PassportStrategy.MOBILE_MAGIC_LINK),
+      preHandler: authenticateMobileMagicLink,
     },
     async ({ query }, reply) => {
       const redirectionUrl = getRedirectionUrl(

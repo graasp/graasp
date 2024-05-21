@@ -8,7 +8,7 @@ import { PROD, SECURE_SESSION_SECRET_KEY, STAGING, TOKEN_BASED_AUTH } from '../.
 import { AuthPluginOptions } from './interfaces/auth';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
-import passportPlugin from './plugins/passport';
+import { plugin as passportPlugin } from './plugins/passport';
 import passwordController from './plugins/password';
 import {
   fetchMemberInSession,
