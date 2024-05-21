@@ -44,7 +44,7 @@ describe('Auth routes tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    await app.close();
+    void app.close();
   });
 
   describe('POST /register', () => {
@@ -277,7 +277,7 @@ describe('Auth routes tests', () => {
 
       expect(mockSendEmail).not.toHaveBeenCalled();
       expect(response.statusCode).toEqual(StatusCodes.NOT_FOUND);
-      await app.close();
+      void app.close();
     });
 
     it('Bad request for invalid email', async () => {

@@ -46,7 +46,7 @@ describe('Mobile Endpoints', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    await app.close();
+    void app.close();
   });
 
   describe('POST /m/register', () => {

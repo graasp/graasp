@@ -57,7 +57,7 @@ describe('Export Member Data Plugin Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    await app.close();
+    void app.close();
   });
 
   describe('POST /export-data', () => {

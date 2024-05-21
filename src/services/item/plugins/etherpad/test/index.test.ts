@@ -57,7 +57,7 @@ describe('Etherpad service API', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    await app.close();
+    void app.close();
     nock.cleanAll();
   });
 

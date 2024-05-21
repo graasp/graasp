@@ -33,7 +33,7 @@ describe('Password routes tests', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    await app.close();
+    void app.close();
   });
 
   describe('POST /login-password', () => {

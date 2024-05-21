@@ -81,7 +81,7 @@ describe('exportActionsInArchive', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    await app.close();
+    void app.close();
   });
 
   it('Create archive successfully', async () => {

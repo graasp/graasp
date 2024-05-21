@@ -44,7 +44,7 @@ describe('Action Repository', () => {
     actor = null;
     member = null;
     item = null;
-    await app.close();
+    void app.close();
   });
 
   describe('postMany', () => {

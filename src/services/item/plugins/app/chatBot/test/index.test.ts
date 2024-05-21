@@ -41,7 +41,7 @@ describe('Chat Bot Tests', () => {
     actor = null;
     item = null;
     token = null;
-    await app.close();
+    void app.close();
   });
 
   describe('POST /:itemId/chat-bot', () => {

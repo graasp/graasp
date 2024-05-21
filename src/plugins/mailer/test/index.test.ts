@@ -17,7 +17,7 @@ describe('Mailer', () => {
   afterAll(async () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
-    await app.close();
+    void app.close();
   });
 
   describe('buildButton', () => {
