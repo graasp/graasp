@@ -12,6 +12,23 @@ export const AppRepository = AppDataSource.getRepository(App).extend({
     return this.findBy({ publisher: { id: publisherId } });
   },
 
+  async getMostUsedApps(memberId: string): Promise<{ url: string; name: string; count: number }[]> {
+    const data = await this.createQueryBuilder('app')
+      .innerJoin(
+        'item',
+        'item',
+        "item.extra::json->'app'->>'url' = app.url AND item.creator_id = :memberId",
+        { memberId },
+      )
+      .select('app.url', 'url')
+      .addSelect('app.name', 'name')
+      .addSelect('COUNT(item.id)', 'count')
+      .groupBy('app.id, app.url, app.name')
+      .orderBy('count', 'DESC')
+      .getRawMany();
+    return data;
+  },
+
   async isValidAppOrigin(appDetails: { key: string; origin: string }) {
     const valid = await this.findOneBy({
       key: appDetails.key,

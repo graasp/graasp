@@ -32,6 +32,10 @@ export class AppService {
     return repositories.appRepository.getAll(publisherId);
   }
 
+  async getMostUsedApps(member: Member, repositories: Repositories) {
+    return repositories.appRepository.getMostUsedApps(member.id);
+  }
+
   async getApiAccessToken(
     actor: Actor,
     repositories: Repositories,

@@ -131,7 +131,7 @@ services:
 
   meilisearch:
     container_name: graasp-meilisearch
-    image: getmeili/meilisearch:v1.2
+    image: getmeili/meilisearch:v1.8
     restart: on-failure
     environment:
       - MEILI_MASTER_KEY=masterKey
