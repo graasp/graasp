@@ -78,14 +78,17 @@ export class ItemGeolocationService {
     // TODO optimize?
     return geoloc
       .map((g) => {
-        if (g.item.id in itemMemberships.data) {
+        const itemId = g.item.id;
+        if (
+          // accessible items
+          itemId in itemMemberships.data &&
+          // accept public items within parent item
+          // otherwise the actor should have at least read permission on root
+          (query.parentItemId || itemMemberships.data[g.item.id])
+        ) {
           return {
             ...g,
-            item: new ItemWrapper(
-              g.item,
-              itemMemberships.data[g.item.id],
-              tags.data[g.item.id],
-            ).packed(),
+            item: new ItemWrapper(g.item, itemMemberships.data[itemId], tags.data[itemId]).packed(),
           };
         }
         return null;
