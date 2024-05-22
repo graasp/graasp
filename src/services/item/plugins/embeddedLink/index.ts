@@ -68,7 +68,6 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
 
     // TODO: maybe all the code below should be moved to another place if it gets more complex
     if (title) {
-      // only override item name if it is an empty string (should not happen)
       item.name = title;
     }
     if (description) {
