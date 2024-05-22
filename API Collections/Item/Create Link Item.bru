@@ -1,0 +1,27 @@
+meta {
+  name: Create Link Item
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/items
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "New Link item",
+    "type": "embeddedLink",
+    "description": "My custom description",
+    "extra": {
+      "embeddedLink": {
+        "url": "https://graasp.org"
+      }
+    },
+    "settings": {
+      "showButton": true
+    }
+  }
+}

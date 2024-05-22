@@ -189,7 +189,7 @@ describe('Link Item tests', () => {
         ({ app, actor } = await build());
       });
 
-      it('Bad Request for link', async () => {
+      it('Allow to edit link url', async () => {
         const { item } = await testUtils.saveItemAndMembership({
           item: {
             name: 'link item',
@@ -206,6 +206,34 @@ describe('Link Item tests', () => {
           },
           settings: {
             someSetting: 'value',
+          },
+        };
+
+        const response = await app.inject({
+          method: HttpMethod.Patch,
+          url: `/items/${item.id}`,
+          payload,
+        });
+
+        expect(response.statusMessage).toEqual(ReasonPhrases.OK);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        // TODO: check that the title and description have been updated for the new link
+      });
+
+      it('Disallow editing html in extra', async () => {
+        const { item } = await testUtils.saveItemAndMembership({
+          item: {
+            name: 'link item',
+            type: ItemType.LINK,
+          },
+          member: actor,
+        });
+        const payload = {
+          name: 'new name',
+          extra: {
+            [ItemType.LINK]: {
+              html: '<script>alert("Hello !")</script>',
+            },
           },
         };
 

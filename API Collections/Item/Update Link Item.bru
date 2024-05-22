@@ -1,0 +1,22 @@
+meta {
+  name: Update Link Item
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{host}}/items/{{itemId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "type": "embeddedLink",
+    "extra": {
+      "embeddedLink": {
+        "url": "https://google.com"
+      }
+    }
+  }
+}
