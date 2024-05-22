@@ -67,7 +67,7 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
       await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, url);
 
     // TODO: maybe all the code below should be moved to another place if it gets more complex
-    if (!item.name && title) {
+    if (title) {
       // only override item name if it is an empty string (should not happen)
       item.name = title;
     }

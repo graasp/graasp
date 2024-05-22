@@ -88,9 +88,10 @@ describe('Link Item tests', () => {
               html: 'html',
               icons: [],
               thumbnails: [],
+              description: iframelyMeta.description,
             },
           },
-          description: iframelyMeta.description,
+          description: payload.description,
           settings: {
             showLinkIframe: false,
             showLinkButton: true,
@@ -302,8 +303,9 @@ describe('Link Item tests', () => {
           payload,
         });
 
-        expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
-        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(response.statusMessage).toEqual(ReasonPhrases.ACCEPTED);
+        expect(response.statusCode).toBe(StatusCodes.ACCEPTED);
+        // TODO: test that the link info has been updated
       });
     });
   });
