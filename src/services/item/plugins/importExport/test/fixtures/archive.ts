@@ -16,8 +16,8 @@ export const childContent = {
 export const link = {
   name: 'Graasp',
   type: ItemType.LINK,
-  description: 'Graasp description',
-  extra: { embeddedLink: { url: 'https://graasp.org' } },
+  description: 'link.url\n',
+  extra: { embeddedLink: { url: 'https://graasp.org', description: 'Graasp description' } },
 };
 
 export const archive = [
