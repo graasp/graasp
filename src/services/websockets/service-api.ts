@@ -11,6 +11,7 @@ import { RedisOptions } from 'ioredis';
 import fws from '@fastify/websocket';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 
+import { NODE_ENV } from '../../utils/config';
 import { AjvMessageSerializer } from './message-serializer';
 import { MultiInstanceChannelsBroker } from './multi-instance';
 import { WebSocketChannels } from './ws-channels';
@@ -80,7 +81,7 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
   fastify.decorate('websockets', wsService);
 
   // decorate with debug internals in test mode
-  if (process.env.NODE_ENV === 'test') {
+  if (NODE_ENV === 'test') {
     fastify.decorate('_debug_websocketsChannels', wsChannels);
   }
 

@@ -30,32 +30,37 @@ import { ItemLoginSchema } from '../services/itemLogin/entities/itemLoginSchema'
 import { ItemMembership } from '../services/itemMembership/entities/ItemMembership';
 import { Member } from '../services/member/entities/member';
 import { MemberProfile } from '../services/member/plugins/profile/entities/profile';
-
-const DB_READ_REPLICA_HOSTS = process.env.DB_READ_REPLICA_HOSTS // also takes care of empty string
-  ? process.env.DB_READ_REPLICA_HOSTS.split(',')
-  : [];
+import {
+  DB_CONNECTION_POOL_SIZE,
+  DB_HOST,
+  DB_NAME,
+  DB_PASSWORD,
+  DB_PORT,
+  DB_READ_REPLICA_HOSTS,
+  DB_USERNAME,
+} from '../utils/config';
 
 const slaves = DB_READ_REPLICA_HOSTS.map((host) => ({
   host,
   port: 5432,
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  username: DB_USERNAME,
+  password: DB_PASSWORD,
+  database: DB_NAME,
 }));
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
   replication: {
     master: {
-      host: process.env.DB_HOST,
-      port: 5432,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      host: DB_HOST,
+      port: DB_PORT,
+      username: DB_USERNAME,
+      password: DB_PASSWORD,
+      database: DB_NAME,
     },
     slaves,
   },
-  poolSize: parseInt(process.env.DB_CONNECTION_POOL_SIZE ?? '10', 10), // *2 because of the number of tasks
+  poolSize: DB_CONNECTION_POOL_SIZE, // *2 because of the number of tasks
   // log queries that take more than 2s to execute
   maxQueryExecutionTime: 2000,
   logging: ['migration', 'error'],
