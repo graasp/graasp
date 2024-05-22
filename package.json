@@ -1,6 +1,6 @@
 {
   "name": "graasp",
-  "version": "1.37.0",
+  "version": "1.38.0",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -78,8 +78,8 @@
     "dotenv": "16.4.5",
     "eta": "2.2.0",
     "extract-zip": "2.0.1",
-    "fast-json-stringify": "5.14.1",
-    "fastify": "4.26.2",
+    "fast-json-stringify": "5.15.1",
+    "fastify": "4.27.0",
     "fastify-nodemailer": "5.0.0",
     "fastify-plugin": "4.5.1",
     "fluent-json-schema": "4.2.1",
@@ -94,7 +94,7 @@
     "lodash.groupby": "4.6.0",
     "lodash.uniqby": "4.7.0",
     "luxon": "3.4.4",
-    "meilisearch": "0.33.0",
+    "meilisearch": "0.40.0",
     "mime": "3.0.0",
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
@@ -105,13 +105,13 @@
     "pdf-text-reader": "3.0.2",
     "pg": "8.11.5",
     "qs": "6.12.1",
-    "sanitize-html": "2.12.1",
-    "sharp": "0.32.6",
+    "sanitize-html": "2.13.0",
+    "sharp": "0.33.4",
     "striptags": "3.2.0",
     "tmp-promise": "3.0.3",
     "typeorm": "0.3.19",
     "uuid": "9.0.1",
-    "ws": "8.13.0",
+    "ws": "8.17.0",
     "yazl": "2.5.1"
   },
   "devDependencies": {
