@@ -45,7 +45,7 @@ async function login(
 
 describe('Reset Password', () => {
   let app: FastifyInstance;
-  let entities: { id: string; email: string; pass?: string }[];
+  let entities: { id: string; email: string; password?: string }[];
   let mockSendEmail;
   let mockRedisSetEx;
   beforeAll(async () => {
@@ -65,12 +65,12 @@ describe('Reset Password', () => {
     entities = [
       {
         id: faker.string.uuid(),
-        pass: faker.internet.password({ prefix: '!1Aa' }),
+        password: faker.internet.password({ prefix: '!1Aa' }),
         email: faker.internet.email().toLowerCase(),
       },
       {
         id: faker.string.uuid(),
-        pass: faker.internet.password({ prefix: '!1Aa' }),
+        password: faker.internet.password({ prefix: '!1Aa' }),
         email: faker.internet.email().toLowerCase(),
       },
       {
@@ -88,8 +88,8 @@ describe('Reset Password', () => {
         constructor: MemberPassword,
         entities: await Promise.all(
           entities
-            .filter((e) => e.pass)
-            .map(async (e) => ({ member: e.id, password: await encryptPassword(e.pass!) })),
+            .filter((e) => e.password)
+            .map(async (e) => ({ member: e.id, password: await encryptPassword(e.password!) })),
         ),
       },
     });
@@ -209,7 +209,7 @@ describe('Reset Password', () => {
 
       // Try to login with the old password
 
-      const responseLoginOld = await login(app, entities[0].email, entities[0].pass!);
+      const responseLoginOld = await login(app, entities[0].email, entities[0].password!);
       expect(responseLoginOld.statusCode).toBe(StatusCodes.UNAUTHORIZED);
 
       // Try to login with a wrong password
@@ -221,11 +221,11 @@ describe('Reset Password', () => {
       expect(responseLoginWrong.statusCode).toBe(StatusCodes.UNAUTHORIZED);
 
       // Try to login with a different user
-      const responseLoginDifferent = await login(app, entities[1].email, entities[1].pass!);
+      const responseLoginDifferent = await login(app, entities[1].email, entities[1].password!);
       expect(responseLoginDifferent.statusCode).toBe(StatusCodes.SEE_OTHER);
 
       // Set new password to the entities array
-      entities[0].pass = newPassword;
+      entities[0].password = newPassword;
     });
     it('Reset password with an invalid token', async () => {
       const newPassword = faker.internet.password({ prefix: '!1Aa' });
