@@ -4,7 +4,7 @@ import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { filterOutPackedItems } from '../../../../authorization';
 import { Actor } from '../../../../member/entities/member';
-import ItemService from '../../../service';
+import { ItemService } from '../../../service';
 import { PackedItemFavorite } from '../entities/ItemFavorite';
 
 export class FavoriteService {

@@ -5,9 +5,8 @@
  */
 import WebSocket from 'ws';
 
-import fastify from 'fastify';
+import fastify, { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import { FastifyInstance } from 'fastify/types/instance';
 
 import { Websocket } from '@graasp/sdk';
 

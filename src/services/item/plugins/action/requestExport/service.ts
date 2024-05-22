@@ -22,7 +22,7 @@ import { validatePermission } from '../../../../authorization';
 import FileService from '../../../../file/service';
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
-import ItemService from '../../../service';
+import { ItemService } from '../../../service';
 import { ActionItemService } from '../service';
 import { ActionRequestExport } from './requestExport';
 

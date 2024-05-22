@@ -23,7 +23,7 @@ import { ActionService } from '../../../action/services/action';
 import { Actor } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { Item } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { AppAction } from '../app/appAction/appAction';
 import { AppData } from '../app/appData/appData';
 import { AppSetting } from '../app/appSetting/appSettings';

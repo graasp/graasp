@@ -12,7 +12,7 @@ import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { validatePermission } from '../authorization';
 import { Item } from '../item/entities/Item';
-import ItemService from '../item/service';
+import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ItemMembership } from './entities/ItemMembership';
 
@@ -230,5 +230,3 @@ export class ItemMembershipService {
     return result;
   }
 }
-
-export default ItemMembershipService;

@@ -10,7 +10,7 @@ import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/c
 import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
-import MemberRepository from '../repository';
+import { MemberRepository } from '../repository';
 import { saveMember, saveMembers } from './fixtures/members';
 
 // mock datasource

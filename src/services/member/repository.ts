@@ -107,4 +107,3 @@ export const MemberRepository = AppDataSource.getRepository(Member).extend({
     return this.get(createdMember.identifiers[0].id);
   },
 });
-export default MemberRepository;

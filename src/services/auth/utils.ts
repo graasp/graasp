@@ -12,7 +12,7 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../utils/config';
 import { InvalidSession, OrphanSession } from '../../utils/errors';
-import MemberRepository from '../member/repository';
+import { MemberRepository } from '../member/repository';
 
 const promisifiedJwtVerify = promisify<
   string,

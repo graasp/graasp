@@ -1,3 +1,5 @@
+// This import is necessary so we only download needed langage. eslint can't find the import because it's dynamic.
+// eslint-disable-next-line import/no-unresolved
 import { faker } from '@faker-js/faker/locale/en';
 import { v4 } from 'uuid';
 

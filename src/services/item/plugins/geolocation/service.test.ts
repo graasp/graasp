@@ -12,7 +12,7 @@ import { Actor } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapper } from '../../ItemWrapper';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { expectItemGeolocations, saveGeolocation } from './index.test';

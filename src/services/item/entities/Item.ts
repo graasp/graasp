@@ -19,6 +19,7 @@ import {
   EtherpadItemExtra,
   FolderItemExtra,
   H5PItemExtra,
+  ItemSettings,
   ItemType,
   LinkItemExtra,
   LinkItemSettings,
@@ -27,7 +28,6 @@ import {
   S3FileItemExtra,
   ShortcutItemExtra,
 } from '@graasp/sdk';
-import { ItemSettings } from '@graasp/sdk/types/item/itemSettings';
 
 import { Member } from '../../member/entities/member';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';

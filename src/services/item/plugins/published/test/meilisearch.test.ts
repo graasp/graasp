@@ -2,12 +2,12 @@ import { expect, jest } from '@jest/globals';
 import {
   EnqueuedTask,
   Index,
+  MeiliSearch,
   MultiSearchParams,
   MultiSearchResponse,
   Task,
   TaskStatus,
 } from 'meilisearch';
-import { MeiliSearch } from 'meilisearch';
 import { DataSource, EntityManager } from 'typeorm';
 
 import { FastifyBaseLogger } from 'fastify';

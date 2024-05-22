@@ -5,7 +5,7 @@ import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
-import ItemService from '../../../service';
+import { ItemService } from '../../../service';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
 

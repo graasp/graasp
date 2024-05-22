@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import MeiliSearch from 'meilisearch';
+import { MeiliSearch } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
 
@@ -10,8 +10,8 @@ import { ItemCategoryService } from '../services/item/plugins/itemCategory/servi
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { ItemPublishedService } from '../services/item/plugins/published/service';
 import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service';
-import ItemService from '../services/item/service';
-import ItemMembershipService from '../services/itemMembership/service';
+import { ItemService } from '../services/item/service';
+import { ItemMembershipService } from '../services/itemMembership/service';
 import { StorageService } from '../services/member/plugins/storage/service';
 import { MemberService } from '../services/member/service';
 import { ThumbnailService } from '../services/thumbnail/service';

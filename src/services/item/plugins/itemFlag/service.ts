@@ -1,6 +1,6 @@
 import { Repositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { ItemFlag } from './itemFlag';
 
 export class ItemFlagService {
