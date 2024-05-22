@@ -14,7 +14,7 @@ import {
 
 const connection: ConnectionOptions = {
   host: REDIS_HOST,
-  port: parseInt(REDIS_PORT ?? '6379'),
+  port: REDIS_PORT,
   username: REDIS_USERNAME,
   password: REDIS_PASSWORD,
 };

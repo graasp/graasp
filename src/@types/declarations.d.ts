@@ -31,6 +31,7 @@ import { H5PService } from './services/item/plugins/h5p/service';
 declare module 'fastify' {
   interface FastifyInstance {
     db: DataSource;
+    redis: Redis;
 
     jobs: {
       service: JobService;
@@ -145,6 +146,11 @@ declare module 'fastify' {
     member: Actor;
     memberId: string;
     authTokenSubject?: AuthTokenSubject;
+    user?: { uuid: string };
+  }
+
+  interface PassportUser {
+    uuid: string;
   }
 }
 

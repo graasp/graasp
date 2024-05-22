@@ -4,7 +4,16 @@ import { Transaction } from '@sentry/types';
 
 import { FastifyInstance } from 'fastify';
 
-import { APP_VERSION } from './utils/config';
+import {
+  APP_VERSION,
+  NODE_ENV,
+  SENTRY_DSN,
+  SENTRY_ENABLE_PERFORMANCE,
+  SENTRY_ENABLE_PROFILING,
+  SENTRY_ENV,
+  SENTRY_PROFILES_SAMPLE_RATE,
+  SENTRY_TRACES_SAMPLE_RATE,
+} from './utils/config';
 
 // todo: use graasp-sdk?
 declare module 'fastify' {
@@ -32,12 +41,12 @@ const IGNORED_TRANSACTIONS = {
 };
 
 export const SentryConfig = {
-  enable: Boolean(process.env.SENTRY_DSN),
-  dsn: process.env.SENTRY_DSN,
-  enablePerformance: (process.env.SENTRY_ENABLE_PERFORMANCE ?? 'true') === 'true', // env var must be literal string "true"
-  enableProfiling: (process.env.SENTRY_ENABLE_PROFILING ?? 'true') === 'true', // env var must be literal string "true"
-  profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE ?? '1.0'),
-  tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? '1.0'),
+  enable: Boolean(SENTRY_DSN),
+  dsn: SENTRY_DSN,
+  enablePerformance: SENTRY_ENABLE_PERFORMANCE,
+  enableProfiling: SENTRY_ENABLE_PROFILING,
+  profilesSampleRate: SENTRY_PROFILES_SAMPLE_RATE,
+  tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
 };
 
 export function initSentry(instance: FastifyInstance): {
@@ -50,7 +59,7 @@ export function initSentry(instance: FastifyInstance): {
 
   Sentry.init({
     dsn: SentryConfig.dsn,
-    environment: process.env.SENTRY_ENV ?? process.env.NODE_ENV,
+    environment: SENTRY_ENV ?? NODE_ENV,
     release: APP_VERSION,
     integrations: [
       // TODO: re-enable when @sentry/profiling-node is more stable
