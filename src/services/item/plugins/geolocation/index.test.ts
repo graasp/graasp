@@ -206,7 +206,6 @@ describe('Item Geolocation', () => {
           country: 'de',
         });
         const item2 = await testUtils.saveItem({ actor: member, parentItem });
-        console.log(item2);
         const { packed: geoloc2 } = await saveGeolocation({
           item: new ItemWrapper(item2, null, [publicTag]).packed(),
           lat: 1,

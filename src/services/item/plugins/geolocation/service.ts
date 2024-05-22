@@ -35,13 +35,18 @@ export class ItemGeolocationService {
     const { itemGeolocationRepository } = repositories;
 
     // check item exists and actor has permission
-    const packedItem = await this.itemService.getPacked(actor, repositories, itemId);
+    const item = await this.itemService.get(actor, repositories, itemId);
 
-    const geoloc = await itemGeolocationRepository.getByItem(packedItem.path);
+    const geoloc = await itemGeolocationRepository.getByItem(item.path);
 
     if (geoloc) {
-      // add permission for item packed
-      return { ...geoloc, item: packedItem };
+      // return packed item of related item (could be parent)
+      const geolocPackedItem = await this.itemService.getPacked(
+        actor,
+        repositories,
+        geoloc.item.id,
+      );
+      return { ...geoloc, item: geolocPackedItem };
     }
     return null;
   }
@@ -74,21 +79,21 @@ export class ItemGeolocationService {
     );
 
     // filter out items without permission
-    // and add permission for item packed
-    // TODO optimize?
     return geoloc
       .map((g) => {
         const itemId = g.item.id;
-        if (
-          // accessible items
-          itemId in itemMemberships.data &&
-          // accept public items within parent item
-          // otherwise the actor should have at least read permission on root
-          (query.parentItemId || itemMemberships.data[g.item.id])
-        ) {
+        // accessible items - permission can be null
+        // accept public items within parent item
+        const itemIsAtLeastPublicOrInParent = itemId in itemMemberships.data && query.parentItemId;
+        // otherwise the actor should have at least read permission on root
+        const itemIsAtLeastReadable = itemMemberships.data[itemId];
+        if (itemIsAtLeastPublicOrInParent || itemIsAtLeastReadable) {
+          // and add permission for item packed
+          // TODO optimize?
+          const newItem = new ItemWrapper(g.item, itemMemberships.data[itemId], tags.data[itemId]);
           return {
             ...g,
-            item: new ItemWrapper(g.item, itemMemberships.data[itemId], tags.data[itemId]).packed(),
+            item: newItem.packed(),
           };
         }
         return null;
