@@ -190,6 +190,15 @@ export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = process.env.REFRESH_TOKEN_EXP
   ? +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
   : 86400;
 
+/** Password reset token Secret */
+export const PASSWORD_RESET_JWT_SECRET: string = process.env.PASSWORD_RESET_JWT_SECRET!;
+if (!PASSWORD_RESET_JWT_SECRET) {
+  throw new Error('PASSWORD_RESET_JWT_SECRET should be defined');
+}
+/** Password reset token expiration, in minutes */
+export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES: number =
+  Number(process.env.PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES) || 1440;
+
 // Graasp mailer config
 if (
   !process.env.MAILER_CONFIG_SMTP_HOST ||
@@ -320,7 +329,7 @@ export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
 export const REDIS_HOST = process.env.REDIS_HOST;
-export const REDIS_PORT = process.env.REDIS_PORT;
+export const REDIS_PORT: number = +process.env.REDIS_PORT! || 6379;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
 

@@ -1,3 +1,7 @@
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify/types/schema';
+
 export const passwordLogin = {
   body: {
     type: 'object',
@@ -37,9 +41,43 @@ export const updatePassword = {
       properties: {
         id: { type: 'string' },
         name: { type: 'string' },
-        email: { type: 'string' },
+        email: { type: 'string', format: 'email' },
       },
       additionalProperties: false,
     },
+  },
+};
+
+export const postResetPasswordRequest: FastifySchema = {
+  body: {
+    type: 'object',
+    properties: {
+      email: { type: 'string', format: 'email' },
+      captcha: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.BAD_REQUEST]: {},
+  },
+};
+export const patchResetPasswordRequest: FastifySchema = {
+  body: {
+    type: 'object',
+    properties: {
+      password: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  headers: {
+    type: 'object',
+    properties: {
+      authorization: { type: 'string' },
+    },
+  },
+  response: {
+    [StatusCodes.NO_CONTENT]: {},
+    [StatusCodes.BAD_REQUEST]: {},
   },
 };

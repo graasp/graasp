@@ -128,6 +128,9 @@ AUTH_TOKEN_EXPIRATION_IN_MINUTES=10080
 # Refresh JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
 REFRESH_TOKEN_JWT_SECRET=<secret-key>
 REFRESH_TOKEN_EXPIRATION_IN_MINUTES=86400
+# Password reset JWT secret (can use the same command as for SECURE_SESSION_SECRET_KEY)
+PASSWORD_RESET_JWT_SECRET=<secret-key>
+PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES=1440
 
 
 ### Mail server configuration
