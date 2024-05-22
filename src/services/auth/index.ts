@@ -81,14 +81,14 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
 
   fastify.decorate('generateLoginLinkAndEmailIt', authService.generateLoginLinkAndEmailIt);
 
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     // add CORS support
     if (fastify.corsPluginOptions) {
       await fastify.register(fastifyCors, fastify.corsPluginOptions);
     }
-    fastify.register(magicLinkController);
-    fastify.register(passwordController);
-    fastify.register(mobileController, { prefix: '/m' });
+    await fastify.register(magicLinkController);
+    await fastify.register(passwordController);
+    await fastify.register(mobileController, { prefix: '/m' });
   });
 };
 

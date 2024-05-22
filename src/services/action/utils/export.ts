@@ -108,7 +108,7 @@ export const exportActionsInArchive = async (args: {
     });
   });
 
-  archive.finalize();
+  await archive.finalize();
 
   return promise;
 };

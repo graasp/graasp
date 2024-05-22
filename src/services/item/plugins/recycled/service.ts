@@ -78,7 +78,10 @@ export class RecycledBinService {
     await recycledItemRepository.recycleMany(items, actor);
 
     for (const d of descendants) {
-      this.hooks.runPostHooks('recycle', actor, repositories, { item: d, isRecycledRoot: false });
+      await this.hooks.runPostHooks('recycle', actor, repositories, {
+        item: d,
+        isRecycledRoot: false,
+      });
     }
     for (const item of items) {
       await this.hooks.runPostHooks('recycle', actor, repositories, { item, isRecycledRoot: true });

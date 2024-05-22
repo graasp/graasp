@@ -50,7 +50,7 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
 
   // isolate plugin content using fastify.register to ensure that the hooks will not be called when other routes match
   // routes associated with mentions should not trigger the action hook
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     // register websocket behaviours for chats
     if (websockets) {
       registerChatWsHooks(buildRepositories(), websockets, chatService, itemService);

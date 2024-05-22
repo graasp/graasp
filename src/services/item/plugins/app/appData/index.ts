@@ -19,12 +19,12 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
   const appDataService = new AppDataService();
 
   // endpoints accessible to third parties with Bearer token
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     // TODO: allow CORS but only the origins in the table from approved publishers - get all
     // origins from the publishers table an build a rule with that.
 
-    fastify.register(appDataFilePlugin, { appDataService });
-    fastify.register(appDataWsHooks, { appDataService });
+    await fastify.register(appDataFilePlugin, { appDataService });
+    await fastify.register(appDataWsHooks, { appDataService });
 
     // create app data
     fastify.post<{ Params: { itemId: string }; Body: Partial<InputAppData> }>(

@@ -14,7 +14,7 @@ type QueryParameters = {
 const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
   const chatBotService = new ChatBotService();
 
-  fastify.register(async function (fastify) {
+  await fastify.register(async function (fastify) {
     fastify.post<{
       Params: { itemId: string };
       Body: Array<ChatBotMessage>;
@@ -24,10 +24,7 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
       {
         schema: create,
       },
-      async (
-        { authTokenSubject: requestDetails, params: { itemId }, body: prompt, query },
-        reply,
-      ) => {
+      async ({ authTokenSubject: requestDetails, params: { itemId }, body: prompt, query }) => {
         // default to 3.5 turbo / or the version specified in the env variable
         // as it is the cheapest model while still allowing a larger context window than gpt4
         const gptVersion = query.gptVersion ?? OPENAI_GPT_VERSION;
@@ -38,7 +35,7 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
         await chatBotService.checkJWTItem(jwtItemId, itemId, repositories);
 
         const message = await chatBotService.post(member, repositories, itemId, prompt, gptVersion);
-        reply.code(200).send({ completion: message.completion, model: message.model });
+        return { completion: message.completion, model: message.model };
       },
     );
   });

@@ -35,7 +35,7 @@ describe('Membership routes tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    void app.close();
   });
 
   describe('GET /item-memberships?itemId=<itemId>', () => {

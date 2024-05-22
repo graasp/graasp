@@ -34,7 +34,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   const { service: itemService, extendExtrasUpdateSchema } = items;
 
-  fastify.register(fastifyMultipart, {
+  await fastify.register(fastifyMultipart, {
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
@@ -189,7 +189,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const url = await fileItemService.getUrl(member, buildRepositories(), {
         itemId,
       });
-      fileService.setHeaders({ url, reply, replyUrl, id: itemId });
+      await fileService.setHeaders({ url, reply, replyUrl, id: itemId });
     },
   );
 };

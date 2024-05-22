@@ -17,7 +17,7 @@ import {
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, itemsPublished } = fastify;
 
-  fastify.register(graaspSearchPlugin);
+  await fastify.register(graaspSearchPlugin);
 
   fastify.get<{ Params: { memberId: UUID } }>(
     '/collections/members/:memberId',

@@ -106,7 +106,7 @@ class MultiInstanceChannelsBroker {
     this.sub = createRedisClientInstance(redisParams.config, log);
     this.pub = createRedisClientInstance(redisParams.config, log);
 
-    this.sub.subscribe(this.notifChannel, (err, _result) => {
+    void this.sub.subscribe(this.notifChannel, (err, _result) => {
       if (err) {
         log?.error(
           `graasp-plugin-websockets: MultiInstanceChannelsBroker failed to subscribe to ${this.notifChannel}, reason: ${err.message}`,
@@ -142,7 +142,8 @@ class MultiInstanceChannelsBroker {
   dispatch(channel: string | 'broadcast', notif: Websocket.ServerMessage): void {
     const msg = createRedisMessage(notif, channel);
     const json = redisSerdes.serialize(msg);
-    this.pub.publish(this.notifChannel, json);
+    // TODO: Should the promise be ignored or awaited ?
+    void this.pub.publish(this.notifChannel, json);
   }
 
   /**

@@ -108,7 +108,7 @@ export class ActionRequestExportService {
 
     // factor out
     const lang = actor.lang;
-    const t = this.mailer.translate(lang);
+    const t = await this.mailer.translate(lang);
 
     const text = t(MAIL.EXPORT_ACTIONS_TEXT, {
       itemName: item.name,
@@ -120,7 +120,7 @@ export class ActionRequestExportService {
     `;
     const title = t(MAIL.EXPORT_ACTIONS_TITLE, { itemName: item.name });
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = await this.mailer.buildFooter(lang);
 
     this.mailer.sendEmail(title, actor.email, link, html, footer).catch((err) => {
       console.debug(err, `mailer failed. export zip link: ${link}`);

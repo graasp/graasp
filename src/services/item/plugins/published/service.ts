@@ -49,7 +49,7 @@ export class ItemPublishedService {
 
     for (const member of contributors) {
       const lang = member.lang ?? DEFAULT_LANG;
-      const t = this.mailer.translate(lang);
+      const t = await this.mailer.translate(lang);
 
       const text = t(MAIL.PUBLISH_ITEM_TEXT, { itemName: item.name });
       const html = `
@@ -58,7 +58,7 @@ export class ItemPublishedService {
       `;
       const title = t(MAIL.PUBLISH_ITEM_TITLE, { itemName: item.name });
 
-      const footer = this.mailer.buildFooter(lang);
+      const footer = await this.mailer.buildFooter(lang);
 
       await this.mailer.sendEmail(title, member.email, link, html, footer).catch((err) => {
         this.log.warn(err, `mailer failed. published link: ${link}`);
@@ -134,7 +134,7 @@ export class ItemPublishedService {
     await this.hooks.runPostHooks('create', actor, repositories, { item });
     //TODO: should we sent a publish hooks for all descendants? If yes take inspiration from delete method in ItemService
 
-    this._notifyContributors(actor, repositories, item);
+    await this._notifyContributors(actor, repositories, item);
 
     return published;
   }

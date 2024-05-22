@@ -202,7 +202,7 @@ export class RequestDataExportService {
 
     // factor out
     const lang = actor.lang;
-    const t = this.mailer.translate(lang);
+    const t = await this.mailer.translate(lang);
 
     const text = t(MAIL.EXPORT_MEMBER_DATA_TEXT, {
       days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
@@ -213,7 +213,7 @@ export class RequestDataExportService {
       `;
     const title = t(MAIL.EXPORT_MEMBER_DATA_TITLE);
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = await this.mailer.buildFooter(lang);
 
     this.mailer.sendEmail(title, actor.email, link, html, footer).catch((err) => {
       console.debug(err, `mailer failed. export zip link: ${link}`);
@@ -254,6 +254,6 @@ export class RequestDataExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    this._sendExportLinkInMail(member, exportId, archiveCreationTime);
+    await this._sendExportLinkInMail(member, exportId, archiveCreationTime);
   }
 }

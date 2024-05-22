@@ -23,14 +23,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(common);
 
   // routes
-  fastify.register(
+  await fastify.register(
     async function (fastify) {
       // add CORS support
       if (fastify.corsPluginOptions) {
-        fastify.register(fastifyCors, fastify.corsPluginOptions);
+        await fastify.register(fastifyCors, fastify.corsPluginOptions);
       }
 
-      fastify.register(membershipWsHooks);
+      await fastify.register(membershipWsHooks);
 
       // get many item's memberships
       // returns empty for item not found

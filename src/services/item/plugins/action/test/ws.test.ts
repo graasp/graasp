@@ -67,7 +67,7 @@ describe('asynchronous feedback', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    void app.close();
     ws.close();
   });
 

@@ -32,7 +32,7 @@ describe('Item Flag Tests', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    void app.close();
   });
 
   describe('GET /flags', () => {

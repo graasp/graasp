@@ -125,14 +125,16 @@ export async function createFastifyInstance(
     server.verifyAuthentication = mockValidateSession;
     server.addHook('preHandler', mockSessionPreHandler);
 
-    setupFn(server).then(() => {
-      server.listen(config.port, config.host, (err, _addr) => {
-        if (err) {
-          reject(err.message);
-        }
-        resolve(server);
-      });
-    });
+    setupFn(server)
+      .then(() => {
+        server.listen(config.port, config.host, (err, _addr) => {
+          if (err) {
+            reject(err.message);
+          }
+          resolve(server);
+        });
+      })
+      .catch(() => server.log.error('Unexpected error occured when setting up the server'));
   });
 
   return promise;

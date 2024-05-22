@@ -22,7 +22,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: fastify.verifyAuthentication,
     },
     async ({ member }, reply) => {
-      db.transaction(async (manager) => {
+      // specifically do not await this call, let it finish asynchonously
+      void db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
         await exportMemberDataService.requestDataExport({
@@ -34,7 +35,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       });
 
       // reply no content and let the server create the archive and send the mail
-      reply.status(StatusCodes.NO_CONTENT);
+      void reply.status(StatusCodes.NO_CONTENT);
     },
   );
 };

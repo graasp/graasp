@@ -61,7 +61,7 @@ export class InvitationService {
     const lang = actor.lang;
     const link = buildInvitationLink(invitation);
 
-    const t = this.mailer.translate(lang);
+    const t = await this.mailer.translate(lang);
 
     const text = t(MAIL.INVITATION_TEXT, {
       itemName: item.name,
@@ -83,7 +83,7 @@ export class InvitationService {
       itemName: item.name,
     });
 
-    const footer = this.mailer.buildFooter(lang);
+    const footer = await this.mailer.buildFooter(lang);
 
     this.mailer.sendEmail(title, email, link, html, footer).catch((err) => {
       this.log.warn(err, `mailer failed. invitation link: ${link}`);
@@ -120,7 +120,7 @@ export class InvitationService {
     this.log.debug('send invitation mails');
     completeInvitations.forEach((invitation: Invitation) => {
       // send mail without awaiting
-      this.sendInvitationEmail({ actor, invitation });
+      void this.sendInvitationEmail({ actor, invitation });
     });
 
     return completeInvitations;
@@ -161,7 +161,8 @@ export class InvitationService {
     const invitation = await invitationRepository.get(invitationId);
     await validatePermission(repositories, PermissionLevel.Admin, actor, invitation.item);
 
-    this.sendInvitationEmail({ invitation, actor });
+    // do not await this call
+    void this.sendInvitationEmail({ invitation, actor });
   }
 
   async createToMemberships(actor: Actor, repositories: Repositories, member: Member) {

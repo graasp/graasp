@@ -1,3 +1,5 @@
+import { DataSource } from 'typeorm';
+
 import fastify from 'fastify';
 
 import { CompleteMember } from '@graasp/sdk';
@@ -41,10 +43,10 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
   return { app, actor };
 };
 
-export const clearDatabase = async (db) => {
+export const clearDatabase = async (db: DataSource) => {
   const entities = db.entityMetadatas;
   for (const entity of entities) {
-    const repository = await db.getRepository(entity.name);
+    const repository = db.getRepository(entity.name);
     await repository.query(
       `TRUNCATE ${DB_TEST_SCHEMA}.${entity.tableName} RESTART IDENTITY CASCADE;`,
     );

@@ -33,14 +33,14 @@ export interface MailerDecoration {
     footer: string,
     from?: string,
   ) => Promise<void>;
-  translate: (lang: string) => i18n['t'];
-  buildFooter: (lang?: string) => string;
+  translate: (lang: string) => Promise<i18n['t']>;
+  buildFooter: (lang?: string) => Promise<string>;
 }
 
 const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
   const { host, port = 465, useSsl = true, username: user, password: pass, fromEmail } = options;
 
-  fastify.register(pointOfView, { engine: { eta } });
+  await fastify.register(pointOfView, { engine: { eta } });
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   await fastify.register(require('fastify-nodemailer'), {
@@ -72,8 +72,8 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     });
   };
 
-  const buildFooter = (lang: string = DEFAULT_LANG): string => {
-    const t = translate(lang);
+  const buildFooter = async (lang: string = DEFAULT_LANG): Promise<string> => {
+    const t = await translate(lang);
     return `
     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
     <tr>
@@ -124,8 +124,8 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
     return `<p ${buildStyles(styles)}>${text}</p>`;
   };
 
-  const translate = (lang: string = DEFAULT_LANG) => {
-    i18next.changeLanguage(lang);
+  const translate = async (lang: string = DEFAULT_LANG) => {
+    await i18next.changeLanguage(lang);
     return i18next.t;
   };
 

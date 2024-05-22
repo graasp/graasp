@@ -102,8 +102,7 @@ test('multi-instance broker', async () => {
   await instance2.close();
 });
 
-// flacky
-test.skip('incorrect Redis message format', async () => {
+test('incorrect Redis message format', async () => {
   const config = createDefaultLocalConfig({ port: portGen.getNewPort() });
   let logInfoSpy;
   const server = await createWsFastifyInstance(config, async (instance) => {
@@ -112,12 +111,12 @@ test.skip('incorrect Redis message format', async () => {
   const pub = new Redis({
     host: config.redis.config.host,
   });
-  pub.publish(config.redis.channelName, JSON.stringify('Mock invalid redis message'));
+  await pub.publish(config.redis.channelName, JSON.stringify('Mock invalid redis message'));
   await waitForExpect(() => {
     expect(logInfoSpy).toHaveBeenCalledWith(
       `graasp-plugin-websockets: MultiInstanceChannelsBroker incorrect message received from Redis channel "${config.redis.channelName}": "Mock invalid redis message"`,
     );
   }, 7000);
   pub.disconnect();
-  server.close();
+  await server.close();
 });

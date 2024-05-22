@@ -6,7 +6,7 @@ import memberDataController from './controller';
 const plugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(
     async function (fastify) {
-      fastify.register(memberDataController);
+      await fastify.register(memberDataController);
     },
     { prefix: MEMBER_EXPORT_DATA_ROUTE_PREFIX },
   );

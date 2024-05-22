@@ -21,7 +21,7 @@ describe('ItemPublishedRepository', () => {
     jest.clearAllMocks();
     await clearDatabase(app.db);
     actor = null;
-    app.close();
+    void app.close();
   });
 
   describe('getForMember', () => {
