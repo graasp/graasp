@@ -146,6 +146,24 @@ describe('ItemGeolocationService', () => {
       expectItemGeolocations([res!], [geoloc]);
     });
 
+    it('return inherited geoloc', async () => {
+      const { packedItem: parentItem, item: pi } = await testUtils.saveItemAndMembership({
+        member: actor,
+        permission: PermissionLevel.Read,
+      });
+      const item = await testUtils.saveItem({ parentItem: pi });
+      const { packed: geoloc } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
+
+      const res = await service.getByItem(actor, buildRepositories(), item.id);
+
+      expectItemGeolocations([res!], [geoloc]);
+    });
+
     it('return null if does not have geolocation', async () => {
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,

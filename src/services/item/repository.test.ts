@@ -688,7 +688,7 @@ describe('ItemRepository', () => {
     it('copy name is not altered', async () => {
       const item = await testUtils.saveItem({ actor });
       item.name = '()(/\\)(..)() (a) (3) ';
-      itemRepository.patch(item.id, item);
+      await itemRepository.patch(item.id, item);
       const result = await itemRepository.copy(item, actor);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
