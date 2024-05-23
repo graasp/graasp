@@ -1,9 +1,72 @@
 version: '3'
 
 services:
+  backend:
+    container_name: backend
+    profiles:
+      - 'production'
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      HOSTNAME: 0.0.0.0
+      PUBLIC_URL: http://localhost:3000
+      COOKIE_DOMAIN: localhost
+      CORS_ORIGIN_REGEX: ^http?:\/\/(localhost)?:[0-9]{4}$
+
+      SECURE_SESSION_SECRET_KEY: c30b9ea26aedd395d568a78c8f2163e353707aee474c80ef04cc8c485207e3a0
+
+      TOKEN_BASED_AUTH: true
+      JWT_SECRET: 5ab27f732e009e48ddf9dd2d588eca2997a1b84c1cd7da1475d687fd1191cb68
+      AUTH_TOKEN_JWT_SECRET: bc5f000dc469a1de635a3c672e0caa9988954e7c9cfd0f0f5d1dbd4e4f3b2da2
+      REFRESH_TOKEN_JWT_SECRET: 6d60f2b51ac4fed5ec133ccae76dd3d2587b36a731c50d76ac13f107c1626a51
+      PASSWORD_RESET_JWT_SECRET: 7d60f2b51ac4fed5ec133ccae76dd3d2587b36a731c50d76ac13f107c1626a51
+
+      BUILDER_CLIENT_HOST: http://localhost:3111
+      PLAYER_CLIENT_HOST: http://localhost:3112
+      LIBRARY_CLIENT_HOST: http://localhost:3005
+      AUTH_CLIENT_HOST: http://localhost:3001
+      ACCOUNT_CLIENT_HOST: http://localhost:3114
+      ANALYTICS_CLIENT_HOST: http://localhost:3113
+
+      H5P_FILE_STORAGE_TYPE: file
+      H5P_STORAGE_ROOT_PATH: /tmp/graasp-h5p/
+      H5P_PATH_PREFIX: h5p-content/
+
+      APPS_JWT_SECRET: 96b005bf84a6a0ba849e1b45e0352a4c9d6088f66e6850780ce3489bcc9ad0bf
+      APPS_PUBLISHER_ID: <id>
+
+      RECAPTCHA_SECRET_ACCESS_KEY: <google-recaptcha-key>
+      OPENAI_API_KEY: <openai-api-key>
+
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_MASTER_KEY: masterKey
+      MEILISEARCH_REBUILD_SECRET: secret
+
+      FILE_STORAGE_ROOT_PATH: /tmp/graasp-file-item-storage
+      FILE_STORAGE_HOST: http://localhost:1081
+      IMAGE_CLASSIFIER_API: http://nudenet:8080/sync
+      DB_NAME: docker
+      DB_USERNAME: docker
+      DB_PASSWORD: docker
+      DB_HOST: db
+      ETHERPAD_URL: http://etherpad:9001
+      ETHERPAD_PUBLIC_URL: http://localhost:9001
+      ETHERPAD_COOKIE_DOMAIN: localhost
+      ETHERPAD_API_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAILER_CONFIG_SMTP_HOST: mailer
+      MAILER_CONFIG_SMTP_PORT: 1025
+      MAILER_CONFIG_SMTP_USE_SSL: 'false' # only for dev purposes
+      MAILER_CONFIG_USERNAME: docker
+      MAILER_CONFIG_PASSWORD: docker
+      S3_FILE_ITEM_HOST: http://localstack:4566
+      EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN: http://graasp-iframely:8061
+
   # Main Database
   db:
-    container_name: graasp-postgres
+    container_name: postgres
     image: postgres:15
     restart: on-failure
     ports:
@@ -17,7 +80,7 @@ services:
 
   # Database used for tests cases. Datas don't need to be persisted.
   test-db:
-    container_name: graasp-postgres-test
+    container_name: postgres-test
     image: postgres:15
     restart: on-failure
     ports:
@@ -29,14 +92,14 @@ services:
 
   # Redis Database
   redis:
-    container_name: graasp-redis
+    container_name: redis
     image: redis
     restart: on-failure
     ports:
       - 6379:6379
 
   etherpad:
-    container_name: graasp-etherpad
+    container_name: etherpad
     image: etherpad/etherpad
     restart: on-failure
     # Start the server with dev API key
@@ -62,7 +125,7 @@ services:
       - etherpad-db
 
   etherpad-db:
-    container_name: graasp-postgres-etherpad
+    container_name: postgres-etherpad
     image: postgres:15
     restart: on-failure
     ports:
@@ -75,7 +138,7 @@ services:
       POSTGRES_PASSWORD: etherpad
 
   meilisearch:
-    container_name: graasp-meilisearch
+    container_name: meilisearch
     image: getmeili/meilisearch:v1.2
     restart: on-failure
     environment:
@@ -86,11 +149,11 @@ services:
     ports:
       - 7700:7700
     volumes:
-      - ./meilisearch_data:/meili_data
+      - ./.meilisearch_data:/meili_data
 
   # Localstack is used to test aws services locally
   localstack:
-    container_name: graasp-localstack
+    container_name: localstack
     image: localstack/localstack
     restart: on-failure
     volumes:
@@ -120,15 +183,17 @@ services:
 
   # Necessary for graasp-embedded-link-item
   iframely:
-    container_name: graasp-iframely
+    container_name: iframely
     image: graasp/iframely:latest
     restart: on-failure
     ports:
       - 8061:8061
 
-  # Necessary for validation
+  # Needed for validation
   nudenet:
-    container_name: graasp-nudenet
+    profiles:
+      - 'optional'
+    container_name: nudenet
     image: notaitech/nudenet:classifier
     restart: on-failure
     ports:
