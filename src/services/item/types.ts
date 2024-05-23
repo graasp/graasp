@@ -19,7 +19,9 @@ export enum Ordering {
 
 export type ItemSearchParams = {
   creatorId?: Member['id'];
+  /** @deprecated use keywords */
   name?: string;
+  keywords?: string[];
   sortBy?: SortBy;
   ordering?: Ordering;
   permissions?: PermissionLevel[];

@@ -177,6 +177,7 @@ export const getAccessible = {
   querystring: S.object()
     .prop('page', S.number().default(1))
     .prop('name', S.string())
+    .prop('keywords', S.array().items(S.string()))
     .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
     .prop('sortBy', S.enum(Object.values(SortBy)))
     .prop('ordering', S.enum(Object.values(Ordering)))

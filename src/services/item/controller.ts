@@ -148,11 +148,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       if (!member) {
         throw new UnauthorizedMember();
       }
-      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types } = query;
+      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types, keywords } =
+        query;
       return itemService.getAccessible(
         member,
         buildRepositories(),
-        { creatorId, name, sortBy, ordering, permissions, types },
+        { creatorId, name, sortBy, ordering, permissions, types, keywords },
         { page, pageSize },
       );
     },
