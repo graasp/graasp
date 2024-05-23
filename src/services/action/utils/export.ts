@@ -25,12 +25,14 @@ export interface ExportActionsInArchiveOutput {
   filepath: string;
 }
 
+type RecursiveObject = { [key: string]: string | number | RecursiveObject };
+type ReturnObject = { [key: string]: string | number };
 // faltten object nested keys to have as item.id, member.id to be used for export csv header
-const flattenObject = (obj: object, prefix: string = ''): object => {
+const flattenObject = (obj: RecursiveObject, prefix: string = ''): ReturnObject => {
   return Object.keys(obj).reduce((acc, k) => {
     const pre = prefix.length ? prefix + '.' : '';
     if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
-      Object.assign(acc, flattenObject(obj[k], pre + k));
+      Object.assign(acc, flattenObject(obj[k] as RecursiveObject, pre + k));
     } else {
       acc[pre + k] = obj[k];
     }
@@ -41,12 +43,12 @@ const flattenObject = (obj: object, prefix: string = ''): object => {
 const writeFileForFormat = (
   path: string,
   format: ExportActionsFormatting,
-  data: object[],
+  data: object[], // TODO: Replace 'object' with specific type(s) when defining schema for data to export
 ): void => {
   if (data.length) {
     switch (format) {
       case ExportActionsFormatting.CSV: {
-        const newData = data.map((obj) => flattenObject(obj));
+        const newData = data.map((obj) => flattenObject(obj as RecursiveObject));
         const csv = Papa.unparse(newData, {
           header: true,
           delimiter: ',',
@@ -128,7 +130,7 @@ export const exportActionsInArchive = async (args: {
     const chatPath = path.join(fileFolderPath, buildActionFileName('chat', archiveDate, format));
     writeFileForFormat(chatPath, format, baseAnalytics.chatMessages);
 
-    // create files for the apps
+    // create file for the apps
     const appsPath = path.join(fileFolderPath, buildActionFileName('apps', archiveDate, format));
     writeFileForFormat(
       appsPath,
