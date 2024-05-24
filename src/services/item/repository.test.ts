@@ -690,7 +690,7 @@ describe('ItemRepository', () => {
     it('copy name is not altered', async () => {
       const item = await testUtils.saveItem({ actor });
       item.name = '()(/\\)(..)() (a) (3) ';
-      itemRepository.patch(item.id, item);
+      await itemRepository.patch(item.id, item);
       const result = await itemRepository.copy(item, actor);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name} (2)`);
@@ -703,13 +703,13 @@ describe('ItemRepository', () => {
     it('copy name do not exceed maximum length allowed.', async () => {
       const item = await testUtils.saveItem({ actor });
       item.name = faker.string.sample(MAX_ITEM_NAME_LENGTH);
-      itemRepository.patch(item.id, item);
+      await itemRepository.patch(item.id, item);
       const result = await itemRepository.copy(item, actor);
       const copy = result.copyRoot;
       expect(copy.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (2)`);
 
       copy.name = `${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 4)} (9)`;
-      itemRepository.patch(copy.id, copy);
+      await itemRepository.patch(copy.id, copy);
       const result2 = await itemRepository.copy(copy, actor);
       const copy2 = result2.copyRoot;
       expect(copy2.name).toEqual(`${item.name.substring(0, MAX_ITEM_NAME_LENGTH - 5)} (10)`);
