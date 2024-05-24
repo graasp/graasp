@@ -6,7 +6,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
 export class AppService {

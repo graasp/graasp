@@ -18,6 +18,7 @@ FROM node:${NODE_VERSION} AS builder
 
 WORKDIR /app
 COPY . .
+RUN yarn set version berry
 RUN yarn install
 
 RUN yarn build-ts
@@ -30,6 +31,8 @@ FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} AS runner
 
 # Set APP_VERSION as ENV variable from ARG passed at build step
 ENV APP_VERSION=${APP_VERSION:-latest}
+# Set NODE_ENV to production so we don't trigger .husky/install.mjs
+ENV NODE_ENV=production
 
 EXPOSE 3000
 
@@ -48,12 +51,16 @@ RUN apk update \
     && apk cache clean
 
 COPY ./package.json ./
+COPY ./.yarnrc.yml ./
+COPY ./.yarn/ ./.yarn/
+
 
 # Husky's script are needed for postinstall script
 COPY  ./.husky ./.husky
 
 # Install the application
-RUN yarn install --production
+RUN yarn set version berry
+RUN yarn workspaces focus --all --production
 COPY --from=builder ./app/dist ./dist
 
 USER node

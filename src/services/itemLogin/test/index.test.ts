@@ -14,7 +14,7 @@ import { expectMinimalMember, saveMember } from '../../member/test/fixtures/memb
 import { ItemLogin } from '../entities/itemLogin';
 import { ItemLoginSchema } from '../entities/itemLoginSchema';
 import { CannotNestItemLoginSchema, ValidMemberSession } from '../errors';
-import ItemLoginRepository from '../repositories/itemLogin';
+import { ItemLoginRepository } from '../repositories/itemLogin';
 import { encryptPassword, generateRandomEmail } from '../utils';
 import { USERNAME_LOGIN } from './fixtures';
 

@@ -12,7 +12,7 @@ import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
-import MemberRepository from '../../member/repository';
+import { MemberRepository } from '../../member/repository';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ChatMessage } from '../chatMessage';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';

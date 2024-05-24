@@ -726,5 +726,3 @@ export class ItemService {
     return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
   }
 }
-
-export default ItemService;

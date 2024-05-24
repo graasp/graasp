@@ -2,7 +2,7 @@ import forwarded from '@fastify/forwarded';
 import { FastifyRequest } from 'fastify';
 
 import { Repositories } from '../../../utils/repositories';
-import ItemService from '../../item/service';
+import { ItemService } from '../../item/service';
 import { Actor } from '../../member/entities/member';
 import { MemberService } from '../../member/service';
 import { Action } from '../entities/action';

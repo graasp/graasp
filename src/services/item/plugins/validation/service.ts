@@ -17,7 +17,7 @@ import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
   InvalidFileItemError,

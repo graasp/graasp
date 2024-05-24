@@ -79,4 +79,3 @@ export const ItemLoginSchemaRepository = AppDataSource.getRepository(ItemLoginSc
     }
   },
 });
-export default ItemLoginSchemaRepository;

@@ -25,11 +25,11 @@ import { ItemValidationGroupRepository } from '../services/item/plugins/validati
 import { ItemValidationRepository } from '../services/item/plugins/validation/repositories/itemValidation';
 import { ItemValidationReviewRepository } from '../services/item/plugins/validation/repositories/itemValidationReview';
 import { ItemRepository } from '../services/item/repository';
-import ItemLoginRepository from '../services/itemLogin/repositories/itemLogin';
-import ItemLoginSchemaRepository from '../services/itemLogin/repositories/itemLoginSchema';
+import { ItemLoginRepository } from '../services/itemLogin/repositories/itemLogin';
+import { ItemLoginSchemaRepository } from '../services/itemLogin/repositories/itemLoginSchema';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import MemberProfileRepository from '../services/member/plugins/profile/repository';
-import MemberRepository from '../services/member/repository';
+import { MemberRepository } from '../services/member/repository';
 
 export type Repositories = {
   actionRepository: ActionRepository;

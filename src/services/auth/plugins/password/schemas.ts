@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifySchema } from 'fastify/types/schema';
+import { FastifySchema } from 'fastify';
 
 export const passwordLogin = {
   body: {
