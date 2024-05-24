@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.39.0](https://github.com/graasp/graasp/compare/v1.38.0...v1.39.0) (2024-05-24)
+
+
+### Features
+
+* reset password ([#1021](https://github.com/graasp/graasp/issues/1021)) ([9fe3ba3](https://github.com/graasp/graasp/commit/9fe3ba31788b4c4292730d56ad93f5e9656505ff))
+
+
+### Bug Fixes
+
+* **deps:** update dependency sanitize-html to v2.13.0 ([#1042](https://github.com/graasp/graasp/issues/1042)) ([3fb73e2](https://github.com/graasp/graasp/commit/3fb73e210b1fd7c62614e01f1c3d2fad36821541))
+* **deps:** update sentry packages ([#1047](https://github.com/graasp/graasp/issues/1047)) ([94ace8f](https://github.com/graasp/graasp/commit/94ace8fbfe462a302847d7e062afa8a3c1a0c2af))
+* getIn geoloc returns public only inside item ([#1053](https://github.com/graasp/graasp/issues/1053)) ([d9f68e9](https://github.com/graasp/graasp/commit/d9f68e9cd60321bceb9fbc29913c7029663171e9))
+* use yarn4 in dockerfile ([#1061](https://github.com/graasp/graasp/issues/1061)) ([ec0089e](https://github.com/graasp/graasp/commit/ec0089ee60ae0b45748ab7fcad36e65ea30bf34c))
+
 ## [1.38.0](https://github.com/graasp/graasp/compare/v1.37.0...v1.38.0) (2024-05-16)
 
 
