@@ -6,7 +6,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { LinkQueryParameterIsRequired } from './errors';
-import { createSchema } from './schemas';
+import { createSchema, getLinkMetadata, updateExtraSchema } from './schemas';
 import { EmbeddedLinkService } from './service';
 import { ensureProtocol } from './utils';
 
@@ -19,7 +19,7 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   const { iframelyHrefOrigin } = options;
   const {
     log,
-    items: { extendCreateSchema, service: itemService },
+    items: { extendCreateSchema, extendExtrasUpdateSchema, service: itemService },
   } = fastify;
   const embeddedLinkService = new EmbeddedLinkService();
 
@@ -28,20 +28,19 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   }
   // "install" custom schema for validating embedded link items creation
   extendCreateSchema(createSchema);
+  // add link extra update schema that allows to update url
+  extendExtrasUpdateSchema(updateExtraSchema);
 
   fastify.get<{ Querystring: { link: string } }>(
     '/metadata',
-    { preHandler: fastify.verifyAuthentication },
+    { preHandler: fastify.verifyAuthentication, schema: getLinkMetadata },
     async ({ query: { link } }) => {
       if (!link) {
         throw new LinkQueryParameterIsRequired();
       }
 
       const url = ensureProtocol(link);
-      const { html: _html, ...metadata } = await embeddedLinkService.getLinkMetadata(
-        iframelyHrefOrigin,
-        url,
-      );
+      const metadata = await embeddedLinkService.getLinkMetadata(iframelyHrefOrigin, url);
       const isEmbeddingAllowed = await embeddedLinkService.checkEmbeddingAllowed(url, log);
 
       return {
@@ -72,7 +71,7 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
       item.name = title;
     }
     if (description) {
-      item.description = description;
+      embeddedLink.description = description;
     }
     if (html) {
       embeddedLink.html = html;
@@ -90,6 +89,7 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   };
 
   itemService.hooks.setPreHook('create', hook);
+  itemService.hooks.setPreHook('update', hook);
 };
 
 export default plugin;
