@@ -27,7 +27,7 @@ export interface ExportActionsInArchiveOutput {
 
 type RecursiveObject = { [key: string]: string | number | RecursiveObject };
 type ReturnObject = { [key: string]: string | number };
-// faltten object nested keys to have as item.id, member.id to be used for export csv header
+// flatten object nested keys to have as item.id, member.id to be used for export csv header
 const flattenObject = (obj: RecursiveObject, prefix: string = ''): ReturnObject => {
   return Object.keys(obj).reduce((acc, k) => {
     const pre = prefix.length ? prefix + '.' : '';
