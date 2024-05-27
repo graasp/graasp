@@ -15,12 +15,16 @@ import {
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { AppDataSource } from '../../../../plugins/datasource';
 import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
-import { MemberRepository } from '../../../member/repository';
+import { Member } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
+// mock database and decorator plugins
+jest.mock('../../../../plugins/datasource');
 jest.mock('node-fetch');
+const memberRawRepository = AppDataSource.getRepository(Member);
 
 // mock captcha
 // bug: cannot use exported mockCaptchaValidation
@@ -30,9 +34,6 @@ export const mockCaptchaValidation = (action: RecaptchaActionType) => {
     return { json: async () => ({ success: true, action, score: 1 }) } as any;
   });
 };
-
-// mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
 
 describe('Auth routes tests', () => {
   let app: FastifyInstance;
@@ -62,7 +63,7 @@ describe('Auth routes tests', () => {
         url: '/register',
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
-      const m = await MemberRepository.findOneBy({ email, name });
+      const m = await memberRawRepository.findOneBy({ email, name });
 
       expectMember(m, { name, email });
 
@@ -99,7 +100,7 @@ describe('Auth routes tests', () => {
         expect.anything(),
         expect.anything(),
       );
-      const m = await MemberRepository.findOneBy({ email, name });
+      const m = await memberRawRepository.findOneBy({ email, name });
       expectMember(m, { name, email, extra: { lang } });
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreementsDate).toBeDefined();
@@ -117,7 +118,7 @@ describe('Auth routes tests', () => {
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
-      const m = await MemberRepository.findOneBy({ email });
+      const m = await memberRawRepository.findOneBy({ email });
       expect(m).toBeFalsy();
       expect(response.statusCode).toEqual(StatusCodes.BAD_REQUEST);
     });
@@ -141,7 +142,7 @@ describe('Auth routes tests', () => {
         expect.anything(),
         expect.anything(),
       );
-      const m = await MemberRepository.findOneBy({ email, name });
+      const m = await memberRawRepository.findOneBy({ email, name });
       expectMember(m, { name, email });
       expect(m?.enableSaveActions).toBe(enableSaveActions);
       // ensure that the user agreements are set for new registration
@@ -169,7 +170,7 @@ describe('Auth routes tests', () => {
         expect.anything(),
         expect.anything(),
       );
-      const m = await MemberRepository.findOneBy({ email, name });
+      const m = await memberRawRepository.findOneBy({ email, name });
       expectMember(m, { name, email });
       expect(m?.enableSaveActions).toBe(enableSaveActions);
       // ensure that the user agreements are set for new registration
@@ -197,7 +198,7 @@ describe('Auth routes tests', () => {
         expect.anything(),
       );
 
-      const members = await MemberRepository.findBy({ email: member.email });
+      const members = await memberRawRepository.findBy({ email: member.email });
       expect(members).toHaveLength(1);
       expectMember(member, members[0]);
 
@@ -213,7 +214,7 @@ describe('Auth routes tests', () => {
         payload: { email, name, captcha: MOCK_CAPTCHA },
       });
 
-      const members = await MemberRepository.findBy({ email });
+      const members = await memberRawRepository.findBy({ email });
       expect(members).toHaveLength(0);
 
       expect(response.statusMessage).toEqual(ReasonPhrases.BAD_REQUEST);
