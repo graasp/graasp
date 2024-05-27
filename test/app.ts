@@ -1,9 +1,13 @@
+import { Strategy as CustomStrategy } from 'passport-custom';
+
+import fastifyPassport from '@fastify/passport';
 import fastify from 'fastify';
 
 import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
 import ajvFormats from '../src/schemas/ajvFormats';
+import { PassportStrategy } from '../src/services/auth/plugins/passport';
 import { Actor } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
@@ -15,11 +19,12 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
       transport: {
         target: 'pino-pretty',
       },
-      level: 'info',
+      level: 'error',
     },
     ajv: {
       customOptions: {
         coerceTypes: 'array',
+        strictTypes: false,
       },
       plugins: [ajvFormats],
     },
@@ -29,15 +34,14 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
 
   const actor: Actor = member !== null ? await saveMember(member) : undefined;
   if (actor) {
-    const authenticatedActor = actor;
-
-    jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request) => {
-      request.member = authenticatedActor;
-    });
-    jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request) => {
-      request.session.set('member', authenticatedActor.id);
-      request.member = authenticatedActor;
-    });
+    // If an actor is provided, use a custom strategy that always validate the request.
+    // This will replace the original session strategy to a custom one
+    fastifyPassport.use(
+      PassportStrategy.STRICT_SESSION,
+      new CustomStrategy((_req, done) => {
+        done(null, actor);
+      }),
+    );
   }
 
   return { app, actor };

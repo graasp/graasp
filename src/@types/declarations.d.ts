@@ -99,30 +99,6 @@ declare module 'fastify' {
     etherpad: EtherpadItemService;
 
     corsPluginOptions: any;
-    verifyAuthentication:
-      | preHandlerHookHandler<
-          RawServer,
-          RawRequest,
-          RawReply,
-          RouteGenericInterface,
-          ContextConfigDefault,
-          FastifySchema,
-          TypeProvider,
-          Logger
-        >
-      | ((request: FastifyRequest) => Promise<void>);
-    attemptVerifyAuthentication:
-      | preHandlerHookHandler<
-          RawServer,
-          RawRequest,
-          RawReply,
-          RouteGenericInterface,
-          ContextConfigDefault,
-          FastifySchema,
-          TypeProvider,
-          Logger
-        >
-      | ((request: FastifyRequest) => Promise<void>);
     fetchMemberInSession: (request: FastifyRequest) => Promise<void>;
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
@@ -141,20 +117,18 @@ declare module 'fastify' {
     ) => Promise<void>;
   }
 
-  interface FastifyRequest {
-    member: Actor;
-    memberId: string;
-    authTokenSubject?: AuthTokenSubject;
-    user?: Member | { uuid: string };
+  interface PassportUser {
+    member?: Member;
+    uuid?: string;
   }
 
-  interface PassportUser extends Member {
-    uuid: string;
+  interface FastifyRequest {
+    authTokenSubject?: AuthTokenSubject;
   }
 }
 
 declare module '@fastify/secure-session' {
   interface SessionData {
-    member: string;
+    passport: string;
   }
 }

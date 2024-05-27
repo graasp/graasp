@@ -6,6 +6,7 @@ import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from 
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated } from '../../../auth/plugins/passport';
 import { create, restricted_get, update } from './schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
 
@@ -51,16 +52,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // Only the admin can manage a short link of this resource
     // or list all the shortlinks associated to this resource
     await fastify.register(async (fastify) => {
-      fastify.addHook('preHandler', fastify.verifyAuthentication);
-
       fastify.get<{ Params: { itemId: string } }>(
         `${SHORT_LINKS_LIST_ROUTE}/:itemId`,
-        async ({ member, params: { itemId } }) => {
-          if (!member) {
-            throw new UnauthorizedMember();
-          }
-
-          return shortLinkService.getAllForItem(member, buildRepositories(), itemId);
+        { preHandler: authenticated },
+        async ({ user, params: { itemId } }) => {
+          return shortLinkService.getAllForItem(user!.member!, buildRepositories(), itemId);
         },
       );
 
@@ -68,15 +64,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/',
         {
           schema: create,
+          preHandler: authenticated,
         },
-        async ({ member, body: shortLink }) => {
-          if (!member) {
+        async ({ user, body: shortLink }) => {
+          if (!user) {
             throw new UnauthorizedMember();
           }
 
           return db.transaction(async (manager) => {
             const newLink = await shortLinkService.post(
-              member,
+              user!.member!,
               buildRepositories(manager),
               shortLink,
             );
@@ -87,14 +84,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.delete<{ Params: { alias: string } }>(
         '/:alias',
-        async ({ member, params: { alias } }) => {
-          if (!member) {
-            throw new UnauthorizedMember();
-          }
-
+        { preHandler: authenticated },
+        async ({ user, params: { alias } }) => {
           return db.transaction(async (manager) => {
             const oldLink = await shortLinkService.delete(
-              member,
+              user!.member!,
               buildRepositories(manager),
               alias,
             );
@@ -107,15 +101,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:alias',
         {
           schema: update,
+          preHandler: authenticated,
         },
-        async ({ member, body: shortLink, params: { alias } }) => {
-          if (!member) {
-            throw new UnauthorizedMember();
-          }
-
+        async ({ user, body: shortLink, params: { alias } }) => {
           return db.transaction(async (manager) => {
             const updatedLink = await shortLinkService.update(
-              member,
+              user!.member!,
               buildRepositories(manager),
               alias,
               shortLink,

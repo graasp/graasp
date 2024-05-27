@@ -11,11 +11,11 @@ import magicLinkStrategy from './strategies/magicLink';
 import passwordStrategy from './strategies/password';
 import passwordResetStrategy from './strategies/passwordReset';
 import refreshTokenStrategy from './strategies/refreshToken';
+import strictSessionStrategy from './strategies/strictSession';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const {
     memberPassword: { service: memberPasswordService },
-    authentication: { service: authService },
   } = fastify;
   const repositories: Repositories = buildRepositories();
 
@@ -43,11 +43,14 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   jwtChallengeVerifierStrategy(fastifyPassport, repositories.memberRepository);
   refreshTokenStrategy(fastifyPassport, repositories.memberRepository);
   jwtStrategy(fastifyPassport, repositories.memberRepository);
+  strictSessionStrategy(fastifyPassport);
 
   // Register user object to session
-  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.id);
-  fastifyPassport.registerUserDeserializer(
-    async (uuid: string, _req) => await MemberRepository.get(uuid),
-  );
+  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.member!.id);
+  fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
+    return {
+      member: await MemberRepository.get(uuid),
+    };
+  });
 };
 export default plugin;

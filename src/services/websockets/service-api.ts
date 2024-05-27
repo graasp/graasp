@@ -11,6 +11,7 @@ import { RedisOptions } from 'ioredis';
 import fws from '@fastify/websocket';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 
+import { optionalAuthenticated } from '../auth/plugins/passport';
 import { NODE_ENV } from '../../utils/config';
 import { AjvMessageSerializer } from './message-serializer';
 import { MultiInstanceChannelsBroker } from './multi-instance';
@@ -90,16 +91,16 @@ const plugin: FastifyPluginAsync<WebsocketsPluginOptions> = async (fastify, opti
   // TODO: remove allow public
   fastify.get(
     options.prefix,
-    { websocket: true, preHandler: fastify.attemptVerifyAuthentication },
+    { websocket: true, preHandler: optionalAuthenticated },
     (conn, req) => {
       // raw websocket client
       const client = conn.socket;
       // member from valid session
-      const { member } = req;
+      const { user } = req;
 
       wsChannels.clientRegister(client);
 
-      client.on('message', (msg) => wsService.handleRequest(msg, member, client));
+      client.on('message', (msg) => wsService.handleRequest(msg, user?.member, client));
 
       client.on('error', log.error);
 

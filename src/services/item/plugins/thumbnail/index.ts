@@ -7,8 +7,8 @@ import { ThumbnailSizeType } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
@@ -45,19 +45,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
     {
       schema: upload,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: authenticated,
     },
     async (request, reply) => {
       const {
-        member,
+        user,
         params: { id: itemId },
         log,
       } = request;
-
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
-
       return db
         .transaction(async (manager) => {
           // const files = request.files();
@@ -70,7 +65,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), itemId, file.file);
+          await thumbnailService.upload(
+            user!.member!,
+            buildRepositories(manager),
+            itemId,
+            file.file,
+          );
 
           reply.status(StatusCodes.NO_CONTENT);
         })
@@ -92,10 +92,13 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     `/:id${THUMBNAILS_ROUTE_PREFIX}/:size`,
     {
       schema: download,
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalAuthenticated,
     },
-    async ({ member, params: { size, id: itemId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService.getUrl(member, buildRepositories(), { itemId, size });
+    async ({ user, params: { size, id: itemId }, query: { replyUrl } }, reply) => {
+      const url = await thumbnailService.getUrl(user?.member, buildRepositories(), {
+        itemId,
+        size,
+      });
 
       fileService.setHeaders({ reply, replyUrl, url, id: itemId });
     },
@@ -103,16 +106,15 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
 
   fastify.delete<{ Params: IdParam }>(
     `/:id${THUMBNAILS_ROUTE_PREFIX}`,
-    { schema: deleteSchema, preHandler: fastify.verifyAuthentication },
+    { schema: deleteSchema, preHandler: authenticated },
     async (request, reply) => {
       const {
-        member,
+        user,
         params: { id: itemId },
       } = request;
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
-      await thumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), { itemId });
+      await thumbnailService.deleteAllThumbnailSizes(user!.member!, buildRepositories(), {
+        itemId,
+      });
       reply.status(StatusCodes.NO_CONTENT);
     },
   );

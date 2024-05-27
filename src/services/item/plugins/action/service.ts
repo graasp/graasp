@@ -221,17 +221,17 @@ export class ActionItemService {
   }
 
   async postPostAction(request: FastifyRequest, repositories: Repositories, item: Item) {
-    const { member } = request;
+    const { user } = request;
     const action = {
       item,
       type: ItemActionType.Create,
       extra: { itemId: item.id },
     };
-    await this.actionService.postMany(member, repositories, request, [action]);
+    await this.actionService.postMany(user?.member, repositories, request, [action]);
   }
 
   async postPatchAction(request: FastifyRequest, repositories: Repositories, item: Item) {
-    const { member } = request;
+    const { user } = request;
     const action = {
       item,
       type: ItemActionType.Update,
@@ -239,11 +239,11 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     };
-    await this.actionService.postMany(member, repositories, request, [action]);
+    await this.actionService.postMany(user?.member, repositories, request, [action]);
   }
 
   async postManyPatchAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
-    const { member } = request;
+    const { user } = request;
     const actions = items.map((item) => ({
       item,
       type: ItemActionType.Update,
@@ -251,21 +251,21 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(member, repositories, request, actions);
+    await this.actionService.postMany(user?.member, repositories, request, actions);
   }
 
   async postManyDeleteAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
-    const { member } = request;
+    const { user } = request;
     const actions = items.map((item) => ({
       // cannot include item since is has been deleted
       type: ItemActionType.Delete,
       extra: { itemId: item.id },
     }));
-    await this.actionService.postMany(member, repositories, request, actions);
+    await this.actionService.postMany(user?.member, repositories, request, actions);
   }
 
   async postManyMoveAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
-    const { member } = request;
+    const { user } = request;
     const actions = items.map((item) => ({
       item,
       type: ItemActionType.Move,
@@ -273,11 +273,11 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(member, repositories, request, actions);
+    await this.actionService.postMany(user?.member, repositories, request, actions);
   }
 
   async postManyCopyAction(request: FastifyRequest, repositories: Repositories, items: Item[]) {
-    const { member } = request;
+    const { user } = request;
     const actions = items.map((item) => ({
       item,
       type: ItemActionType.Copy,
@@ -285,6 +285,6 @@ export class ActionItemService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       extra: { itemId: item.id, body: request.body as any },
     }));
-    await this.actionService.postMany(member, repositories, request, actions);
+    await this.actionService.postMany(user?.member, repositories, request, actions);
   }
 }

@@ -7,6 +7,7 @@ import { PermissionLevel } from '@graasp/sdk';
 
 import { IdParam } from '../../types';
 import { buildRepositories } from '../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../auth/plugins/passport';
 import { PurgeBelowParam } from './interfaces/requests';
 import common, { create, createMany, deleteOne, getItems, updateOne } from './schemas';
 import { membershipWsHooks } from './ws/hooks';
@@ -36,9 +37,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // returns empty for item not found
       fastify.get<{ Querystring: { itemId: string[] } }>(
         '/',
-        { schema: getItems, preHandler: fastify.attemptVerifyAuthentication },
-        async ({ member, query: { itemId: ids } }) => {
-          return itemMembershipService.getForManyItems(member, buildRepositories(), ids);
+        { schema: getItems, preHandler: optionalAuthenticated },
+        async ({ user, query: { itemId: ids } }) => {
+          return itemMembershipService.getForManyItems(user?.member, buildRepositories(), ids);
         },
       );
 
@@ -48,10 +49,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         Body: { permission: PermissionLevel; memberId: string };
       }>(
         '/',
-        { schema: create, preHandler: fastify.verifyAuthentication },
-        async ({ member, query: { itemId }, body }) => {
+        { schema: create, preHandler: authenticated },
+        async ({ user, query: { itemId }, body }) => {
           return db.transaction((manager) => {
-            return itemMembershipService.post(member, buildRepositories(manager), {
+            return itemMembershipService.post(user!.member, buildRepositories(manager), {
               permission: body.permission,
               itemId,
               memberId: body.memberId,
@@ -66,14 +67,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         Body: { memberships: { permission: PermissionLevel; memberId: UUID }[] };
       }>(
         '/:itemId',
-        { schema: createMany, preHandler: fastify.verifyAuthentication },
-        async ({ member, params: { itemId }, body }) => {
+        { schema: createMany, preHandler: authenticated },
+        async ({ user, params: { itemId }, body }) => {
           // BUG: because we use this call to save csv member
           // we have to return immediately
           // solution: it's probably simpler to upload a csv and handle it in the back
           return db.transaction((manager) => {
             return itemMembershipService.postMany(
-              member,
+              user!.member,
               buildRepositories(manager),
               body.memberships,
               itemId,
@@ -90,11 +91,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:id',
         {
           schema: updateOne,
-          preHandler: fastify.verifyAuthentication,
+          preHandler: authenticated,
         },
-        async ({ member, params: { id }, body }) => {
+        async ({ user, params: { id }, body }) => {
           return db.transaction((manager) => {
-            return itemMembershipService.patch(member, buildRepositories(manager), id, body);
+            return itemMembershipService.patch(user!.member, buildRepositories(manager), id, body);
           });
         },
       );
@@ -102,10 +103,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       // delete item membership
       fastify.delete<{ Params: IdParam; Querystring: PurgeBelowParam }>(
         '/:id',
-        { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-        async ({ member, params: { id }, query: { purgeBelow } }) => {
+        { schema: deleteOne, preHandler: authenticated },
+        async ({ user, params: { id }, query: { purgeBelow } }) => {
           return db.transaction((manager) => {
-            return itemMembershipService.deleteOne(member, buildRepositories(manager), id, {
+            return itemMembershipService.deleteOne(user!.member, buildRepositories(manager), id, {
               purgeBelow,
             });
           });

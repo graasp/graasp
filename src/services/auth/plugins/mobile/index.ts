@@ -121,7 +121,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
 
       const token = await memberPasswordService.generateToken(
-        { sub: user!.id, challenge: challenge },
+        { sub: user!.member!.id, challenge: challenge },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
 
@@ -141,7 +141,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateJWTChallengeVerifier,
     },
     async ({ user }) => {
-      return generateAuthTokensPair(user!.id);
+      return generateAuthTokensPair(user!.member!.id);
     },
   );
 
@@ -151,7 +151,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateRefreshToken,
     },
     async ({ user }) => {
-      return generateAuthTokensPair(user!.id);
+      return generateAuthTokensPair(user!.member!.id);
     },
   );
 

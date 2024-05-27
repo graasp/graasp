@@ -7,8 +7,8 @@ import { FastifyPluginAsync, FastifyRequest, preHandlerHookHandler } from 'fasti
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
@@ -114,33 +114,34 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
     fastify.register(async function (fastify) {
       // get all apps
-      fastify.get('/list', { schema: getMany }, async ({ member }) => {
-        return aS.getAllApps(member, buildRepositories(), publisherId);
-      });
+      fastify.get(
+        '/list',
+        { schema: getMany, preHandler: optionalAuthenticated },
+        async ({ user }) => {
+          return aS.getAllApps(user?.member, buildRepositories(), publisherId);
+        },
+      );
 
       fastify.get(
         '/most-used',
-        { schema: getMostUsed, preHandler: fastify.verifyAuthentication },
-        async ({ member }) => {
-          if (!member) {
-            throw new UnauthorizedMember(member);
-          }
-          return aS.getMostUsedApps(member, buildRepositories());
+        { schema: getMostUsed, preHandler: authenticated },
+        async ({ user }) => {
+          return aS.getMostUsedApps(user!.member!, buildRepositories());
         },
       );
 
       // generate api access token for member + (app-)item.
       fastify.post<{ Params: { itemId: string }; Body: { origin: string } & AppIdentification }>(
         '/:itemId/api-access-token',
-        { schema: generateToken, preHandler: fastify.attemptVerifyAuthentication },
+        { schema: generateToken, preHandler: optionalAuthenticated },
         async (request) => {
           const {
-            member,
+            user,
             params: { itemId },
             body,
           } = request;
 
-          return aS.getApiAccessToken(member, buildRepositories(), itemId, body);
+          return aS.getApiAccessToken(user?.member, buildRepositories(), itemId, body);
         },
       );
 
@@ -176,8 +177,8 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       fastify.get<{ Params: { itemId: string } }>(
         '/:itemId/context',
         { schema: getContext },
-        async ({ member, authTokenSubject: requestDetails, params: { itemId } }) => {
-          const memberId = member ? member.id : requestDetails?.memberId;
+        async ({ user, authTokenSubject: requestDetails, params: { itemId } }) => {
+          const memberId = user?.member ? user.member.id : requestDetails?.memberId;
           return aS.getContext(memberId, buildRepositories(), itemId, requestDetails);
         },
       );

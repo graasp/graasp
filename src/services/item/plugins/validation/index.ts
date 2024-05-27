@@ -2,8 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated } from '../../../auth/plugins/passport';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
@@ -31,14 +31,11 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     {
       schema: itemValidation,
 
-      preHandler: fastify.verifyAuthentication,
+      preHandler: authenticated,
     },
-    async ({ member, params: { itemId } }) => {
-      if (!member) {
-        throw new UnauthorizedMember();
-      }
+    async ({ user, params: { itemId } }) => {
       return validationService.getLastItemValidationGroupForItem(
-        member,
+        user!.member!,
         buildRepositories(),
         itemId,
       );
@@ -50,14 +47,11 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     '/:itemId/validations/:itemValidationGroupId',
     {
       schema: itemValidationGroup,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: authenticated,
     },
-    async ({ member, params: { itemValidationGroupId } }) => {
-      if (!member) {
-        throw new UnauthorizedMember();
-      }
+    async ({ user, params: { itemValidationGroupId } }) => {
       return validationService.getItemValidationGroup(
-        member,
+        user!.member!,
         buildRepositories(),
         itemValidationGroupId,
       );
@@ -69,19 +63,17 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     '/:itemId/validate',
     {
       schema: itemValidation,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: authenticated,
     },
     async (request, reply) => {
       const {
-        member,
+        user,
         params: { itemId },
         log,
       } = request;
+      const member = user!.member!;
       // we do not wait
       db.transaction(async (manager) => {
-        if (!member) {
-          throw new UnauthorizedMember();
-        }
         const repositories = buildRepositories(manager);
         const { item, hasValidationSucceeded } = await validationService.post(
           member,
@@ -96,22 +88,19 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
         }
 
         // the process could take long time, so let the process run in the background and return the itemId instead
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('validate', [itemId], { [item.id]: item }),
-          );
-        }
+
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackEvent('validate', [itemId], { [item.id]: item }),
+        );
       }).catch((e: Error) => {
         log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackErrorEvent('validate', [itemId], e),
-          );
-        }
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackErrorEvent('validate', [itemId], e),
+        );
       });
       reply.status(StatusCodes.ACCEPTED);
       return itemId;

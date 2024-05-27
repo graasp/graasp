@@ -2,6 +2,8 @@ export enum PassportStrategy {
   // Be careful ! 'session' is a reserved strategy key in Passport. We shoudln't override it.
   SESSION = 'session',
 
+  STRICT_SESSION = 'strict-session',
+
   PASSPORT_RESET = 'password-reset-jwt',
 
   MOBILE_MAGIC_LINK = 'mobile-magic-link',

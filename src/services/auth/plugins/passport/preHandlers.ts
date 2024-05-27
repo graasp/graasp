@@ -4,9 +4,14 @@ import { PassportStrategy } from './strategies';
 
 // PreHandlers are defined here, so we can change used library if needed.
 
-export const authenticated = fastifyPassport.authenticate([
+export const optionalAuthenticated = fastifyPassport.authenticate([
   PassportStrategy.JWT,
   PassportStrategy.SESSION,
+]);
+
+export const authenticated = fastifyPassport.authenticate([
+  PassportStrategy.JWT,
+  PassportStrategy.STRICT_SESSION,
 ]);
 
 //-- Password Strategies --//

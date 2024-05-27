@@ -65,7 +65,7 @@ export async function verifyMemberInSession(request: FastifyRequest) {
 
   try {
     const member = await memberRepository.get(memberId);
-    request.member = member;
+    request.user = { member };
   } catch (e) {
     session.delete();
     throw new OrphanSession(memberId);
@@ -81,7 +81,7 @@ export async function fetchMemberInSession(request: FastifyRequest) {
   if (!memberId) return;
 
   // this throws if someone tries to use a fake member id
-  request.member = await memberRepository.get(memberId);
+  request.user = { member: await memberRepository.get(memberId) };
 }
 
 // for token based auth
@@ -93,11 +93,7 @@ export async function verifyMemberInAuthToken(jwtToken: string, request: Fastify
     const { sub: memberId } = await promisifiedJwtVerify(jwtToken, secret, {});
     const member = await memberRepository.get(memberId);
 
-    if (refreshing) {
-      request.memberId = memberId;
-    } else {
-      request.member = member;
-    }
+    request.user = { member };
 
     return true;
   } catch (error) {

@@ -105,6 +105,7 @@
     "node-fetch": "2",
     "openai": "4.48.1",
     "papaparse": "^5.4.1",
+    "passport-custom": "1.1.1",
     "passport-jwt": "4.0.1",
     "passport-local": "1.0.0",
     "pdf-text-reader": "3.0.2",

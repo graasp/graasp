@@ -3,8 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { GEOLOCATION_API_KEY } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
 import { Item } from '../../entities/Item';
 import { ItemGeolocation } from './ItemGeolocation';
 import {
@@ -30,10 +30,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: getByItem,
-        preHandler: fastify.attemptVerifyAuthentication,
+        preHandler: optionalAuthenticated,
       },
-      async ({ member, params }) => {
-        return itemGeolocationService.getByItem(member, buildRepositories(), params.id);
+      async ({ user, params }) => {
+        return itemGeolocationService.getByItem(user?.member, buildRepositories(), params.id);
       },
     );
 
@@ -50,10 +50,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/geolocation',
       {
         schema: getItemsInBox,
-        preHandler: fastify.attemptVerifyAuthentication,
+        preHandler: optionalAuthenticated,
       },
-      async ({ member, query }) => {
-        return itemGeolocationService.getIn(member, buildRepositories(), query);
+      async ({ user, query }) => {
+        return itemGeolocationService.getIn(user?.member, buildRepositories(), query);
       },
     );
 
@@ -67,12 +67,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: putGeolocation,
-        preHandler: fastify.verifyAuthentication,
+        preHandler: authenticated,
       },
-      async ({ member, body, params }, reply) => {
+      async ({ user, body, params }, reply) => {
         return db.transaction(async (manager) => {
           await itemGeolocationService.put(
-            member,
+            user!.member!,
             buildRepositories(manager),
             params.id,
             body.geolocation,
@@ -86,11 +86,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:id/geolocation',
       {
         schema: deleteGeolocation,
-        preHandler: fastify.verifyAuthentication,
+        preHandler: authenticated,
       },
-      async ({ member, params }, reply) => {
+      async ({ user, params }, reply) => {
         return db.transaction(async (manager) => {
-          await itemGeolocationService.delete(member, buildRepositories(manager), params.id);
+          await itemGeolocationService.delete(user!.member, buildRepositories(manager), params.id);
           reply.status(StatusCodes.NO_CONTENT);
         });
       },
@@ -100,13 +100,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/geolocation/reverse',
       {
         schema: geolocationReverse,
-        preHandler: fastify.verifyAuthentication,
+        preHandler: authenticated,
       },
-      async ({ member, query }) => {
-        if (!member) {
-          throw new UnauthorizedMember();
-        }
-        return itemGeolocationService.getAddressFromCoordinates(member, buildRepositories(), query);
+      async ({ user, query }) => {
+        return itemGeolocationService.getAddressFromCoordinates(
+          user!.member!,
+          buildRepositories(),
+          query,
+        );
       },
     );
 
@@ -114,13 +115,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/geolocation/search',
       {
         schema: geolocationSearch,
-        preHandler: fastify.verifyAuthentication,
+        preHandler: authenticated,
       },
-      async ({ member, query }) => {
-        if (!member) {
-          throw new UnauthorizedMember();
-        }
-        return itemGeolocationService.getSuggestionsForQuery(member, buildRepositories(), query);
+      async ({ user, query }) => {
+        return itemGeolocationService.getSuggestionsForQuery(
+          user!.member!,
+          buildRepositories(),
+          query,
+        );
       },
     );
   });

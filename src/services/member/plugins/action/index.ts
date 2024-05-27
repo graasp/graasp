@@ -4,6 +4,7 @@ import { FileItemType } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated } from '../../../auth/plugins/passport';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -36,10 +37,10 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   // delete all the actions matching the given `memberId`
   fastify.delete<{ Params: IdParam }>(
     '/members/:id/delete',
-    { schema: deleteAllById, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { id } }) => {
+    { schema: deleteAllById, preHandler: authenticated },
+    async ({ user, params: { id } }) => {
       return db.transaction(async (manager) => {
-        return actionMemberService.deleteAllForMember(member, buildRepositories(manager), id);
+        return actionMemberService.deleteAllForMember(user!.member, buildRepositories(manager), id);
       });
     },
   );

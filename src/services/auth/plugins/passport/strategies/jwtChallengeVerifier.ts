@@ -25,7 +25,7 @@ export default (passport: Authenticator, memberRepository: typeof MemberReposito
               if (member) {
                 // Token has been validated
                 // Error is null, user payload contains the UUID.
-                done(null, member);
+                done(null, { member });
               } else {
                 // Authentication refused
                 // Error is null, user is false

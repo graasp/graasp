@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
 import { ItemFlag } from './itemFlag';
 import common, { create, getFlags } from './schemas';
 import { ItemFlagService } from './service';
@@ -17,22 +17,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get flags
   fastify.get(
     '/flags',
-    { schema: getFlags, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member }) => {
-      return iFS.getAllFlags(member, buildRepositories());
+    { schema: getFlags, preHandler: optionalAuthenticated },
+    async ({ user }) => {
+      return iFS.getAllFlags(user?.member, buildRepositories());
     },
   );
 
   // create item flag
   fastify.post<{ Params: { itemId: string }; Body: Partial<ItemFlag> }>(
     '/:itemId/flags',
-    { schema: create, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { itemId }, body }) => {
+    { schema: create, preHandler: authenticated },
+    async ({ user, params: { itemId }, body }) => {
       return db.transaction(async (manager) => {
-        if (!member) {
-          throw new UnauthorizedMember(member);
-        }
-        return iFS.post(member, buildRepositories(manager), itemId, body);
+        return iFS.post(user!.member!, buildRepositories(manager), itemId, body);
       });
     },
   );

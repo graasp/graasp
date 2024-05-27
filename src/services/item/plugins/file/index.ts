@@ -5,6 +5,7 @@ import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../entities/Item';
 import { download, updateSchema, upload } from './schema';
@@ -112,24 +113,19 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
-    preHandler: fastify.verifyAuthentication,
+    preHandler: authenticated,
     handler: async (request) => {
       const {
-        member,
+        user,
         query: { id: parentId },
         log,
       } = request;
-
-      // todo: check that it is ok to throw if member is not present
-      if (!member) {
-        throw new Error('member is undefined');
-      }
 
       // check rights
       if (parentId) {
         const repositories = buildRepositories();
         const item = await repositories.itemRepository.get(parentId);
-        await validatePermission(repositories, PermissionLevel.Write, member, item);
+        await validatePermission(repositories, PermissionLevel.Write, user!.member, item);
       }
 
       // upload file one by one
@@ -146,7 +142,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           const repositories = buildRepositories(manager);
 
           try {
-            const i = await fileItemService.upload(member, repositories, {
+            const i = await fileItemService.upload(user!.member!, repositories, {
               parentId,
               filename,
               mimetype,
@@ -177,16 +173,16 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     {
       schema: download,
 
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalAuthenticated,
     },
     async (request, reply) => {
       const {
-        member,
+        user,
         params: { id: itemId },
         query: { replyUrl },
       } = request;
 
-      const url = await fileItemService.getUrl(member, buildRepositories(), {
+      const url = await fileItemService.getUrl(user?.member, buildRepositories(), {
         itemId,
       });
       fileService.setHeaders({ url, reply, replyUrl, id: itemId });

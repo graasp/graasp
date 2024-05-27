@@ -17,6 +17,7 @@ import {
 import { IdParam } from '../../../../types';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -62,10 +63,10 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/:id/actions',
     {
       schema: getItemActions,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: authenticated,
     },
-    async ({ member, params: { id }, query }) => {
-      return actionItemService.getBaseAnalyticsForItem(member, buildRepositories(), {
+    async ({ user, params: { id }, query }) => {
+      return actionItemService.getBaseAnalyticsForItem(user!.member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -89,10 +90,10 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/:id/actions/aggregation',
     {
       schema: getAggregateActions,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: authenticated,
     },
-    async ({ member, params: { id }, query }) => {
-      return actionItemService.getAnalyticsAggregation(member, buildRepositories(), {
+    async ({ user, params: { id }, query }) => {
+      return actionItemService.getAnalyticsAggregation(user!.member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -111,13 +112,14 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     method: HttpMethod.Post,
     url: '/:id/actions',
     schema: postAction,
-    preHandler: fastify.attemptVerifyAuthentication,
+    preHandler: optionalAuthenticated,
     handler: async (request) => {
       const {
-        member,
+        user,
         params: { id: itemId },
         body: { type, extra = {} },
       } = request;
+      const member = user?.member;
 
       // allow only from known hosts
       if (!request.headers.origin) {
@@ -146,18 +148,19 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     method: 'POST',
     url: '/:id/actions/export',
     schema: exportAction,
-    preHandler: fastify.verifyAuthentication,
+    preHandler: authenticated,
     handler: async (request, reply) => {
       const {
-        member,
+        user,
         params: { id: itemId },
         query: { format = ExportActionsFormatting.JSON },
         log,
       } = request;
+      const member = user!.member!;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await requestExportService.request(member, repositories, itemId, format);
-        if (member && item) {
+        if (item) {
           websockets.publish(
             memberItemsTopic,
             member.id,
@@ -166,13 +169,11 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         }
       }).catch((e: Error) => {
         log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackErrorEvent('export', [itemId], e),
-          );
-        }
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackErrorEvent('export', [itemId], e),
+        );
       });
 
       // reply no content and let the server create the archive and send the mail

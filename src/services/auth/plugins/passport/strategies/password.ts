@@ -25,7 +25,7 @@ export default (
             if (member) {
               // Token has been validated
               // Error is undefined, req.user is the Password Reset Request UUID.
-              done(null, member);
+              done(null, { member });
             } else {
               // Authentication refused
               // Error is undefined, user is false to trigger a 401 Unauthorized.

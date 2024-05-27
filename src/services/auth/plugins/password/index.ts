@@ -1,16 +1,15 @@
 import { StatusCodes } from 'http-status-codes';
 
 import fastifyPassport from '@fastify/passport';
-import { FastifyPluginAsync, PassportUser } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
-import { authenticatePassword, authenticatePasswordReset } from '../passport';
+import { authenticatePassword, authenticatePasswordReset, authenticated } from '../passport';
 import {
   passwordLogin,
   patchResetPasswordRequest,
@@ -44,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const { body, log, user } = request;
       const { url } = body;
       const token = await memberPasswordService.generateToken(
-        { sub: user!.uuid },
+        { sub: user!.member!.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
 
@@ -64,14 +63,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // update member password
   fastify.patch<{ Body: { currentPassword: string; password: string } }>(
     '/members/update-password',
-    { schema: updatePassword, preHandler: fastify.verifyAuthentication },
-    async ({ member, body: { currentPassword, password } }) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    { schema: updatePassword, preHandler: authenticated },
+    async ({ user, body: { currentPassword, password } }) => {
       return db.transaction(async (manager) => {
         return memberPasswordService.patch(
-          member,
+          user!.member!,
           buildRepositories(manager),
           password,
           currentPassword,
@@ -140,14 +136,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticatePasswordReset,
     },
     async (request, reply) => {
-      const user: PassportUser = request.user!;
-      const { password } = request.body;
       const repositories = buildRepositories();
-      await memberPasswordService.applyReset(repositories, password, user.uuid);
-      const member = await memberPasswordService.getMemberByPasswordResetUuid(
-        repositories,
-        user.uuid,
-      );
+      const {
+        user,
+        body: { password },
+      } = request;
+      const uuid = user!.uuid!;
+      await memberPasswordService.applyReset(repositories, password, uuid);
+      const member = await memberPasswordService.getMemberByPasswordResetUuid(repositories, uuid);
       reply.status(StatusCodes.NO_CONTENT);
 
       // Log the action

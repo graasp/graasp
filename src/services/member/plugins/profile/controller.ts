@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
 import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
 import { MemberProfileService } from './service';
 import { IMemberProfile } from './types';
@@ -16,13 +17,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: createProfile,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: authenticated,
     },
     async (request, reply) => {
-      const { member, body: data } = request;
+      const { user, body: data } = request;
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const memberProfile = await memberProfileService.post(member, repositories, data);
+        const memberProfile = await memberProfileService.post(user!.member, repositories, data);
         reply.status(StatusCodes.CREATED);
 
         return memberProfile;
@@ -32,7 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get<{ Params: { memberId: string } }>(
     '/:memberId',
-    { schema: getProfileForMember, preHandler: fastify.attemptVerifyAuthentication },
+    { schema: getProfileForMember, preHandler: optionalAuthenticated },
     async ({ params: { memberId } }) => {
       return memberProfileService.get(memberId, buildRepositories());
     },
@@ -40,20 +41,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get<{ Params: { memberId: string } }>(
     '/own',
-    { schema: getOwnProfile, preHandler: fastify.verifyAuthentication },
-    async ({ member }) => {
-      return memberProfileService.getOwn(member, buildRepositories());
+    { schema: getOwnProfile, preHandler: authenticated },
+    async ({ user }) => {
+      return memberProfileService.getOwn(user!.member, buildRepositories());
     },
   );
 
   fastify.patch<{ Body: Partial<IMemberProfile> }>(
     '/',
-    { schema: updateMemberProfile, preHandler: fastify.verifyAuthentication },
-    async ({ member, body }) => {
+    { schema: updateMemberProfile, preHandler: authenticated },
+    async ({ user, body }) => {
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        return memberProfileService.patch(member, repositories, body);
+        return memberProfileService.patch(user!.member, repositories, body);
       });
     },
   );

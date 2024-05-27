@@ -9,8 +9,8 @@ import fp from 'fastify-plugin';
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { CLIENT_HOSTS } from '../../../../../utils/config';
-import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
+import { authenticated } from '../../../../auth/plugins/passport';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { Item, isItemType } from '../../../entities/Item';
@@ -119,23 +119,18 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     });
 
     /* routes in this scope are authenticated */
-    fastify.addHook('preHandler', fastify.verifyAuthentication);
 
     fastify.post<{ Querystring: { parentId?: string } }>(
       '/h5p-import',
-      { schema: h5pImport },
+      { schema: h5pImport, preHandler: authenticated },
       async (request) => {
         const {
-          member,
+          user,
           log,
           query: { parentId },
         } = request;
-
+        const member = user!.member!;
         return db.transaction(async (manager) => {
-          if (!member) {
-            throw new UnauthorizedMember(member);
-          }
-
           const repositories = buildRepositories(manager);
 
           // validate write permission in parent if it exists
@@ -153,7 +148,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
             throw new H5PInvalidFileError(h5pFile);
           }
 
-          return h5pService.createItem(member, repositories, h5pFile, createH5PItem, parentId, log);
+          return h5pService.createItem(user, repositories, h5pFile, createH5PItem, parentId, log);
         });
       },
     );
