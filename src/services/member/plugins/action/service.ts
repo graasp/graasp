@@ -37,15 +37,15 @@ export class ActionMemberService {
     repositories: Repositories,
     filters: { startDate?: string; endDate?: string },
   ) {
+    if (!actor) {
+      throw new UnauthorizedMember(actor);
+    }
+
     const { actionRepository } = repositories;
 
     const { startDate, endDate } = filters;
     const start = startDate ? new Date(startDate) : getPreviousMonthFromNow();
     const end = endDate ? new Date(endDate) : new Date();
-
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
 
     const actions = await actionRepository.getMemberActions(actor.id, {
       startDate: start,
@@ -53,12 +53,12 @@ export class ActionMemberService {
     });
 
     // filter actions based on permission validity
-    const [actionsWithoutPermssion, actionsNeedsPermission] = partition(actions, (action) => {
-      return actionTypesWithoutNeedOfPermission.indexOf(action.type) > -1;
+    const [actionsWithoutPermission, actionsNeedPermission] = partition(actions, (action) => {
+      return actionTypesWithoutNeedOfPermission.includes(action.type);
     });
 
     const setOfItemsToCheckPermission = Array.from(
-      new Map(actionsNeedsPermission.map(({ item }) => [item?.id, item])).values(),
+      new Map(actionsNeedPermission.map(({ item }) => [item?.id, item])).values(),
     ).filter(Boolean);
 
     const { itemMemberships } = await validatePermissionMany(
@@ -68,13 +68,10 @@ export class ActionMemberService {
       setOfItemsToCheckPermission as Item<keyof ItemExtraMap>[],
     );
 
-    const filteredActionsWithAccessPermission = actionsNeedsPermission.filter((g) => {
-      if (g.item && g?.item?.id in itemMemberships.data) {
-        return true;
-      }
-      return false;
+    const filteredActionsWithAccessPermission = actionsNeedPermission.filter((g) => {
+      return g.item && g?.item?.id in itemMemberships.data;
     });
-    return [...actionsWithoutPermssion, ...filteredActionsWithAccessPermission];
+    return [...actionsWithoutPermission, ...filteredActionsWithAccessPermission];
   }
 
   async deleteAllForMember(
