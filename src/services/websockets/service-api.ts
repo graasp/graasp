@@ -11,8 +11,8 @@ import { RedisOptions } from 'ioredis';
 import fws from '@fastify/websocket';
 import { FastifyBaseLogger, FastifyPluginAsync } from 'fastify';
 
-import { optionalAuthenticated } from '../auth/plugins/passport';
 import { NODE_ENV } from '../../utils/config';
+import { optionalAuthenticated } from '../auth/plugins/passport';
 import { AjvMessageSerializer } from './message-serializer';
 import { MultiInstanceChannelsBroker } from './multi-instance';
 import { WebSocketChannels } from './ws-channels';

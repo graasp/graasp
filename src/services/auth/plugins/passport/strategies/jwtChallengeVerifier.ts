@@ -5,7 +5,7 @@ import { Authenticator } from '@fastify/passport';
 
 import { JWT_SECRET } from '../../../../../utils/config';
 import { ChallengeFailed } from '../../../../../utils/errors';
-import MemberRepository from '../../../../member/repository';
+import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
 
 export default (passport: Authenticator, memberRepository: typeof MemberRepository) => {

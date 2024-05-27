@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { AUTH_TOKEN_JWT_SECRET, JWT_SECRET } from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
-import MemberRepository from '../../../member/repository';
+import { MemberRepository } from '../../../member/repository';
 import { PassportStrategy } from './strategies';
 import jwtStrategy from './strategies/jwt';
 import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';

@@ -2,6 +2,7 @@ import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 import registerAppPlugins from './app';
+import ajvFormats from './schemas/ajvFormats';
 import { initSentry } from './sentry';
 import {
   APP_VERSION,
@@ -14,7 +15,6 @@ import {
 } from './utils/config';
 // import fastifyCompress from 'fastify-compress';
 import { GREETING } from './utils/constants';
-import ajvFormats from './schemas/ajvFormats';
 
 const start = async () => {
   const instance = fastify({

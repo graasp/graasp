@@ -2,7 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
-import MemberRepository from '../../../../member/repository';
+import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
 
 export default (
