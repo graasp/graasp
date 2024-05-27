@@ -7,7 +7,7 @@ import { buildRepositories } from '../../../../../utils/repositories';
 import { Action } from '../../../../action/entities/action';
 import { ActionService } from '../../../../action/services/action';
 import { getMemberActions } from '../../../../action/test/fixtures/actions';
-import ItemService from '../../../../item/service';
+import { ItemService } from '../../../../item/service';
 import { ThumbnailService } from '../../../../thumbnail/service';
 import { MemberService } from '../../../service';
 import { ActionMemberService } from '../service';

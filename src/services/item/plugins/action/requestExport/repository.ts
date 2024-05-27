@@ -1,4 +1,4 @@
-import { UUID } from '@graasp/sdk';
+import { ExportActionsFormatting, UUID } from '@graasp/sdk';
 
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { DEFAULT_REQUEST_EXPORT_INTERVAL } from '../../../../action/constants/constants';
@@ -16,6 +16,7 @@ export const ActionRequestExportRepository = AppDataSource.getRepository(
       member: requestExport.member,
       item: requestExport.item,
       createdAt: requestExport.createdAt,
+      format: requestExport.format,
     });
   },
 
@@ -25,14 +26,17 @@ export const ActionRequestExportRepository = AppDataSource.getRepository(
   async getLast({
     memberId,
     itemPath,
+    format,
   }: {
     memberId: UUID;
     itemPath: string;
+    format: ExportActionsFormatting;
   }): Promise<ActionRequestExport> {
     const lowerLimitDate = new Date(Date.now() - DEFAULT_REQUEST_EXPORT_INTERVAL);
     return this.createQueryBuilder('actionRequestExport')
       .where('actionRequestExport.member_id = :memberId', { memberId })
       .andWhere('actionRequestExport.item_path = :itemPath', { itemPath })
+      .andWhere('actionRequestExport.format = :format', { format })
       .andWhere('actionRequestExport.created_at >= :lowerLimitDate', { lowerLimitDate })
       .getOne();
   },

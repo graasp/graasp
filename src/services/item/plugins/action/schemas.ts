@@ -1,7 +1,13 @@
 import S from 'fluent-json-schema';
 import { StatusCodes } from 'http-status-codes';
 
-import { AggregateBy, AggregateFunction, AggregateMetric, CountGroupBy } from '@graasp/sdk';
+import {
+  AggregateBy,
+  AggregateFunction,
+  AggregateMetric,
+  CountGroupBy,
+  ExportActionsFormatting,
+} from '@graasp/sdk';
 
 import { idParam } from '../../../../schemas/fluent-schema';
 import {
@@ -113,6 +119,7 @@ export const getAggregateActions = {
 
 export const exportAction = {
   params: idParam,
+  querystring: S.object().prop('format', S.enum(Object.values(ExportActionsFormatting))),
   response: {
     [StatusCodes.NO_CONTENT]: {},
   },

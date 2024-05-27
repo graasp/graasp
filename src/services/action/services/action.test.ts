@@ -5,7 +5,7 @@ import { ActionFactory, MemberFactory } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { buildRepositories } from '../../../utils/repositories';
-import ItemService from '../../item/service';
+import { ItemService } from '../../item/service';
 import { MemberService } from '../../member/service';
 import { ThumbnailService } from '../../thumbnail/service';
 import { Action } from '../entities/action';

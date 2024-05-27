@@ -7,13 +7,14 @@ import { FastifyPluginAsync, FastifyRequest, preHandlerHookHandler } from 'fasti
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
 import chatBotPlugin from './chatBot';
 import { DEFAULT_JWT_EXPIRATION } from './constants';
-import { createSchema, getMany, updateSchema } from './fluent-schema';
+import { createSchema, getMany, getMostUsed, updateSchema } from './fluent-schema';
 import common, { generateToken, getContext } from './schemas';
 import { AppService } from './service';
 import { AppsPluginOptions } from './types';
@@ -116,6 +117,17 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       fastify.get('/list', { schema: getMany }, async ({ member }) => {
         return aS.getAllApps(member, buildRepositories(), publisherId);
       });
+
+      fastify.get(
+        '/most-used',
+        { schema: getMostUsed, preHandler: fastify.verifyAuthentication },
+        async ({ member }) => {
+          if (!member) {
+            throw new UnauthorizedMember(member);
+          }
+          return aS.getMostUsedApps(member, buildRepositories());
+        },
+      );
 
       // generate api access token for member + (app-)item.
       fastify.post<{ Params: { itemId: string }; Body: { origin: string } & AppIdentification }>(

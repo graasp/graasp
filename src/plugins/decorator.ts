@@ -1,4 +1,5 @@
-import MeiliSearch from 'meilisearch';
+import Redis from 'ioredis';
+import { MeiliSearch } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
 
@@ -9,13 +10,20 @@ import { ItemCategoryService } from '../services/item/plugins/itemCategory/servi
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { ItemPublishedService } from '../services/item/plugins/published/service';
 import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service';
-import ItemService from '../services/item/service';
-import ItemMembershipService from '../services/itemMembership/service';
+import { ItemService } from '../services/item/service';
+import { ItemMembershipService } from '../services/itemMembership/service';
 import { StorageService } from '../services/member/plugins/storage/service';
 import { MemberService } from '../services/member/service';
 import { ThumbnailService } from '../services/thumbnail/service';
-import { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } from '../utils/config';
-import { FILE_ITEM_TYPE } from '../utils/config';
+import {
+  FILE_ITEM_TYPE,
+  MEILISEARCH_MASTER_KEY,
+  MEILISEARCH_URL,
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
+  REDIS_USERNAME,
+} from '../utils/config';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   /**
@@ -88,5 +96,15 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('jobs', { service: new JobService(fastify.search.service, fastify.log) });
   // need to register this before files
   fastify.decorate('storage', { service: new StorageService(FILE_ITEM_TYPE) });
+
+  fastify.decorate(
+    'redis',
+    new Redis({
+      host: REDIS_HOST,
+      port: REDIS_PORT,
+      username: REDIS_USERNAME,
+      password: REDIS_PASSWORD,
+    }),
+  );
 };
 export default decoratorPlugin;

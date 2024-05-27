@@ -42,9 +42,9 @@ export const settings = S.object()
 
 export const partialMember = S.object()
   .additionalProperties(false)
-  .prop('id', S.string())
+  .prop('id', uuid)
   .prop('name', S.string())
-  .prop('email', S.string());
+  .prop('email', S.string().format('email'));
 
 export const item = S.object()
   .additionalProperties(false)
@@ -58,13 +58,13 @@ export const item = S.object()
   .prop('settings', settings)
   .prop('lang', S.string())
   // creator could have been deleted
-  .prop('creator', S.ifThenElse(S.null(), S.null(), partialMember))
+  .prop('creator', S.ifThenElse(S.not(S.null()), partialMember, S.null()))
   /**
    * for some reason setting these date fields as "type: 'string'"
    * makes the serialization fail using the anyOf.
    */
-  .prop('createdAt', S.raw({}))
-  .prop('updatedAt', S.raw({}));
+  .prop('createdAt', S.string().format('date-time'))
+  .prop('updatedAt', S.string().format('date-time'));
 
 export const packedItem = item
   .prop('permission', S.oneOf([S.null(), S.enum(Object.values(PermissionLevel))]))
@@ -164,7 +164,7 @@ export const create =
     return {
       querystring: S.object().additionalProperties(false).prop('parentId', uuid),
       body: S.object().oneOf(itemSchemas),
-      response: { 201: item, '4xx': error },
+      response: { '2xx': item, '4xx': error },
     };
   };
 

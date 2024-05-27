@@ -1,8 +1,7 @@
 import { AppDataSource } from '../../../plugins/datasource';
 import { Item } from '../../item/entities/Item';
 import { ItemLogin } from '../entities/itemLogin';
-import { MissingCredentialsForLoginSchema } from '../errors';
-import { InvalidCredentials } from '../errors';
+import { InvalidCredentials, MissingCredentialsForLoginSchema } from '../errors';
 import { encryptPassword, loginSchemaRequiresPassword, validatePassword } from '../utils';
 
 export const ItemLoginRepository = AppDataSource.getRepository(ItemLogin).extend({
@@ -66,4 +65,3 @@ export const ItemLoginRepository = AppDataSource.getRepository(ItemLogin).extend
     }
   },
 });
-export default ItemLoginRepository;

@@ -16,7 +16,7 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../../../utils/config';
 import { MemberNotFound } from '../../../../utils/errors';
-import MemberRepository from '../../../member/repository';
+import { MemberRepository } from '../../../member/repository';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';

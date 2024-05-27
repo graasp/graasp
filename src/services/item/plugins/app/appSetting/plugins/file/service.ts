@@ -9,7 +9,7 @@ import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/err
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Member } from '../../../../../../member/entities/member';
-import ItemService from '../../../../../service';
+import { ItemService } from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
 import { AppSettingService } from '../../service';

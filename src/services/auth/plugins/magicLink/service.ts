@@ -1,5 +1,4 @@
-import { JsonWebTokenError } from 'jsonwebtoken';
-import jwt, { Secret, TokenExpiredError, VerifyOptions } from 'jsonwebtoken';
+import jwt, { JsonWebTokenError, Secret, TokenExpiredError, VerifyOptions } from 'jsonwebtoken';
 import { promisify } from 'util';
 
 import { FastifyBaseLogger, FastifyInstance } from 'fastify';

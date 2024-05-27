@@ -1,6 +1,7 @@
-import MeiliSearch, {
+import {
   EnqueuedTask,
   Index,
+  MeiliSearch,
   MeiliSearchApiError,
   MeiliSearchTimeOutError,
   MultiSearchParams,

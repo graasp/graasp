@@ -17,7 +17,7 @@ import { Repositories, buildRepositories } from '../../../../utils/repositories'
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import FileItemService from '../file/service';
 import { H5PService } from '../html/h5p/service';
 import {

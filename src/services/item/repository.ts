@@ -4,6 +4,7 @@ import { v4 } from 'uuid';
 
 import {
   FileItemType,
+  ItemSettings,
   ItemType,
   MAX_ITEM_NAME_LENGTH,
   MAX_TREE_LEVELS,
@@ -12,7 +13,6 @@ import {
   getChildFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
-import { ItemSettings } from '@graasp/sdk/types/item/itemSettings';
 
 import { AppDataSource } from '../../plugins/datasource';
 import {

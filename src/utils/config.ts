@@ -24,8 +24,11 @@ enum Environment {
   test = 'test',
 }
 
+export const LOG_LEVEL: string | undefined = process.env.LOG_LEVEL;
+export const NODE_ENV: string | undefined = process.env.NODE_ENV;
+
 export const ENVIRONMENT: Environment = (() => {
-  switch (process.env.NODE_ENV) {
+  switch (NODE_ENV) {
     case Environment.production:
       dotenv.config({ path: '.env.production', override: true });
       return Environment.production;
@@ -187,6 +190,15 @@ export const REFRESH_TOKEN_EXPIRATION_IN_MINUTES = process.env.REFRESH_TOKEN_EXP
   ? +process.env.REFRESH_TOKEN_EXPIRATION_IN_MINUTES
   : 86400;
 
+/** Password reset token Secret */
+export const PASSWORD_RESET_JWT_SECRET: string = process.env.PASSWORD_RESET_JWT_SECRET!;
+if (!PASSWORD_RESET_JWT_SECRET) {
+  throw new Error('PASSWORD_RESET_JWT_SECRET should be defined');
+}
+/** Password reset token expiration, in minutes */
+export const PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES: number =
+  Number(process.env.PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES) || 1440;
+
 // Graasp mailer config
 if (
   !process.env.MAILER_CONFIG_SMTP_HOST ||
@@ -317,12 +329,9 @@ export const APPS_JWT_SECRET = process.env.APPS_JWT_SECRET;
 
 // Graasp websockets
 export const REDIS_HOST = process.env.REDIS_HOST;
-export const REDIS_PORT = process.env.REDIS_PORT;
+export const REDIS_PORT: number = +process.env.REDIS_PORT! || 6379;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
-
-// Database
-export const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432;
 
 // validation
 export const IMAGE_CLASSIFIER_API = process.env.IMAGE_CLASSIFIER_API;
@@ -398,3 +407,35 @@ export const ALLOWED_SEARCH_LANGS = {
 // Geolocation API Key
 export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY;
 export const GEOLOCATION_API_HOST = process.env.GEOLOCATION_API_HOST;
+
+////////////
+// Sentry //
+////////////
+export const SENTRY_ENV: string | undefined = process.env.SENTRY_ENV;
+export const SENTRY_DSN: string | undefined = process.env.SENTRY_DSN;
+export const SENTRY_ENABLE_PERFORMANCE: boolean =
+  (process.env.SENTRY_ENABLE_PERFORMANCE ?? 'true') === 'true'; // env var must be literal string "true"
+export const SENTRY_ENABLE_PROFILING: boolean =
+  (process.env.SENTRY_ENABLE_PROFILING ?? 'true') === 'true'; // env var must be literal string "true"
+export const SENTRY_PROFILES_SAMPLE_RATE: number = +process.env.SENTRY_PROFILES_SAMPLE_RATE! || 1.0;
+export const SENTRY_TRACES_SAMPLE_RATE: number = +process.env.SENTRY_TRACES_SAMPLE_RATE! || 1.0;
+
+//////////////////////////////////////
+// Database Environements Variables //
+//////////////////////////////////////
+// Can be undefined, so tests can run without setting it. In production, TypeORM will throw an exception if not defined.
+export const DB_HOST: string | undefined = process.env.DB_HOST;
+export const DB_PORT = +process.env.DB_PORT! || 5432;
+export const DB_USERNAME: string | undefined = process.env.DB_USERNAME;
+export const DB_PASSWORD: string | undefined = process.env.DB_PASSWORD;
+export const DB_NAME: string | undefined = process.env.DB_NAME;
+export const DB_CONNECTION_POOL_SIZE: number = +process.env.DB_CONNECTION_POOL_SIZE! || 10;
+export const DB_READ_REPLICA_HOSTS: string[] = process.env.DB_READ_REPLICA_HOSTS
+  ? process.env.DB_READ_REPLICA_HOSTS?.split(',')
+  : [];
+
+/////////////////
+// CI and Test //
+/////////////////
+export const JEST_WORKER_ID: number = +process.env.JEST_WORKER_ID! || 1;
+export const CI: boolean = process.env.CI === 'true';

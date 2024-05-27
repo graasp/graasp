@@ -21,7 +21,7 @@ import { saveActions } from '../../../action/test/fixtures/actions';
 import { MemberService } from '../../../member/service';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ActionItemService } from './service';
 import { ItemActionType } from './utils';

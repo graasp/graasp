@@ -4,7 +4,7 @@ import { ItemLoginSchemaType, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../utils/errors';
 import { Repositories } from '../../utils/repositories';
-import ItemService from '../item/service';
+import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ItemLoginSchema } from './entities/itemLoginSchema';
 import { InvalidMember, MemberIdentifierNotFound, ValidMemberSession } from './errors';

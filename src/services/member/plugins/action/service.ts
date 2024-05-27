@@ -1,4 +1,4 @@
-import { partition } from 'lodash';
+import partition from 'lodash.partition';
 
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 

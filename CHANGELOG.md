@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.39.0](https://github.com/graasp/graasp/compare/v1.38.0...v1.39.0) (2024-05-24)
+
+
+### Features
+
+* reset password ([#1021](https://github.com/graasp/graasp/issues/1021)) ([9fe3ba3](https://github.com/graasp/graasp/commit/9fe3ba31788b4c4292730d56ad93f5e9656505ff))
+
+
+### Bug Fixes
+
+* **deps:** update dependency sanitize-html to v2.13.0 ([#1042](https://github.com/graasp/graasp/issues/1042)) ([3fb73e2](https://github.com/graasp/graasp/commit/3fb73e210b1fd7c62614e01f1c3d2fad36821541))
+* **deps:** update sentry packages ([#1047](https://github.com/graasp/graasp/issues/1047)) ([94ace8f](https://github.com/graasp/graasp/commit/94ace8fbfe462a302847d7e062afa8a3c1a0c2af))
+* getIn geoloc returns public only inside item ([#1053](https://github.com/graasp/graasp/issues/1053)) ([d9f68e9](https://github.com/graasp/graasp/commit/d9f68e9cd60321bceb9fbc29913c7029663171e9))
+* use yarn4 in dockerfile ([#1061](https://github.com/graasp/graasp/issues/1061)) ([ec0089e](https://github.com/graasp/graasp/commit/ec0089ee60ae0b45748ab7fcad36e65ea30bf34c))
+
+## [1.38.0](https://github.com/graasp/graasp/compare/v1.37.0...v1.38.0) (2024-05-16)
+
+
+### Features
+
+* add endpoint for most-used apps per user ([#992](https://github.com/graasp/graasp/issues/992)) ([c693b40](https://github.com/graasp/graasp/commit/c693b40da274c9a86caef824ffb2486a46651189))
+* pretty logs ([#1025](https://github.com/graasp/graasp/issues/1025)) ([146689f](https://github.com/graasp/graasp/commit/146689f4af8179b993ce538984833c924528b0e7))
+
+
+### Bug Fixes
+
+* **arabic:** translations ([#1028](https://github.com/graasp/graasp/issues/1028)) ([e5cd9a2](https://github.com/graasp/graasp/commit/e5cd9a21c9f64e72d30a9a56259f0f2acd739c90))
+* **build:** use alpine version of node docker image ([#1008](https://github.com/graasp/graasp/issues/1008)) ([39d1dea](https://github.com/graasp/graasp/commit/39d1dea5d60a3b610fbc7e74e7fd8168d00acadb))
+* **chatbot:** add support for gpt-4o model ([39f722d](https://github.com/graasp/graasp/commit/39f722d1df20832cd2060f18ced0428c7aa4d892))
+* creator serialisation issue ([#1033](https://github.com/graasp/graasp/issues/1033)) ([2e4cd21](https://github.com/graasp/graasp/commit/2e4cd21395ba6eb2ae66a1efe62dd54b8b768f30))
+* **deps:** update aws-sdk-js-v3 monorepo to v3.577.0 ([#1018](https://github.com/graasp/graasp/issues/1018)) ([a55ecb9](https://github.com/graasp/graasp/commit/a55ecb9092f6d0fdf710ef8948f8ccd3f703f313))
+* **deps:** update dependency @fastify/helmet to v11 ([#1029](https://github.com/graasp/graasp/issues/1029)) ([7d7f763](https://github.com/graasp/graasp/commit/7d7f7631954a7553a59964aa9212b2ce56cd0410))
+* **deps:** update dependency @graasp/sdk to v4.10.1 ([#1035](https://github.com/graasp/graasp/issues/1035)) ([39f722d](https://github.com/graasp/graasp/commit/39f722d1df20832cd2060f18ced0428c7aa4d892))
+* **deps:** update dependency ajv to v8.13.0 ([#1036](https://github.com/graasp/graasp/issues/1036)) ([8fd80a8](https://github.com/graasp/graasp/commit/8fd80a84e38754e3d0ba24f247bfa682844c8fdd))
+* **deps:** update dependency fast-json-stringify to v5.15.1 ([#1040](https://github.com/graasp/graasp/issues/1040)) ([3fbf5f7](https://github.com/graasp/graasp/commit/3fbf5f7b685c55e0812df567bee2be242c00b49a))
+* **deps:** update dependency fastify to v4.27.0 ([#1041](https://github.com/graasp/graasp/issues/1041)) ([c429b76](https://github.com/graasp/graasp/commit/c429b7647fcff7b947586a16e5c8bda8c25d03f7))
+* **deps:** update dependency meilisearch to v0.40.0 ([#965](https://github.com/graasp/graasp/issues/965)) ([bd341a3](https://github.com/graasp/graasp/commit/bd341a3f6292a1575af0d24c8724c8f075c26884))
+* **deps:** update dependency openai to v4.47.1 ([#1006](https://github.com/graasp/graasp/issues/1006)) ([4992fd9](https://github.com/graasp/graasp/commit/4992fd9d52805fe3270235436fb97bcd7b20bedd))
+* **deps:** update dependency pg to v8.11.5 ([#968](https://github.com/graasp/graasp/issues/968)) ([616af2a](https://github.com/graasp/graasp/commit/616af2a28381939035e9896897f6cafeb87574db))
+* **deps:** update dependency sharp to v0.33.4 ([#1045](https://github.com/graasp/graasp/issues/1045)) ([2b2d577](https://github.com/graasp/graasp/commit/2b2d57763eec15c03f49dfe3b8e65352ba658d30))
+* **deps:** update dependency ws to v8.17.0 ([#1046](https://github.com/graasp/graasp/issues/1046)) ([ce06cc1](https://github.com/graasp/graasp/commit/ce06cc1eeec027e3edbc9101970ae3540174e48b))
+
 ## [1.37.0](https://github.com/graasp/graasp/compare/v1.36.0...v1.37.0) (2024-05-07)
 
 

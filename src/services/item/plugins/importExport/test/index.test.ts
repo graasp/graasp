@@ -61,7 +61,7 @@ jest.mock('@aws-sdk/lib-storage', () => {
 
 const iframelyMeta = {
   title: ARCHIVE_CONTENT.link.name,
-  description: ARCHIVE_CONTENT.link.description,
+  description: ARCHIVE_CONTENT.link.extra.embeddedLink.description,
 };
 
 const iframelyResult = {

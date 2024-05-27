@@ -59,6 +59,26 @@ describe('Apps Plugin Tests', () => {
     });
   });
 
+  describe('GET /most-used/', () => {
+    it('should throw an error if member is not authenticated', async () => {
+      ({ app } = await build({ member: null }));
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `${APP_ITEMS_PREFIX}/most-used`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+    });
+    it('should return the most used apps for a valid member', async () => {
+      ({ app, actor } = await build());
+      await testUtils.saveAppList();
+      const response = await app.inject({
+        method: HttpMethod.Get,
+        url: `${APP_ITEMS_PREFIX}/most-used`,
+      });
+      expect(response.statusCode).toEqual(StatusCodes.OK);
+    });
+  });
+
   describe('POST /:itemId/api-access-token', () => {
     let apps;
 

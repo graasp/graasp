@@ -6,7 +6,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
 export class AppService {
@@ -30,6 +30,10 @@ export class AppService {
 
   async getAllApps(actor: Actor, repositories: Repositories, publisherId: string) {
     return repositories.appRepository.getAll(publisherId);
+  }
+
+  async getMostUsedApps(member: Member, repositories: Repositories) {
+    return repositories.appRepository.getMostUsedApps(member.id);
   }
 
   async getApiAccessToken(

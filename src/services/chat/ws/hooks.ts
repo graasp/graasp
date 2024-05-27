@@ -1,7 +1,7 @@
 import { PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../utils/repositories';
-import ItemService from '../../item/service';
+import { ItemService } from '../../item/service';
 import { WebsocketService } from '../../websockets/ws-service';
 import { ChatMessageService } from '../service';
 import { ItemChatEvent, itemChatTopic } from './events';

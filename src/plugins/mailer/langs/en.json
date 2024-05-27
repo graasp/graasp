@@ -7,7 +7,7 @@
   "SIGN_UP_BUTTON_TEXT": "Register",
   "SIGN_IN_TEXT": "You asked us to send you a magic link for quickly signing in to your account. Here your go:",
   "SIGN_IN_NOT_REQUESTED": "If you haven't requested the link, no further action is required. It will expire soon, don't worry your account and data are safe.",
-  "EXPORT_ACTIONS_TEXT": "You requested to download actions from item {{itemName}}, here is the link to download the files. It will be available for {{days}} days",
+  "EXPORT_ACTIONS_TEXT": "You requested to download actions from item {{itemName}} as {{exportFormat}} files, here is the link to download the files. It will be available for {{days}} days",
   "EXPORT_ACTIONS_BUTTON_TEXT": "Download",
   "SIGN_IN_TITLE": "Sign In Link",
   "SIGN_UP_TITLE": "Register",
@@ -28,5 +28,9 @@
   "USER_AGREEMENTS_MAIL_TEXT": "* By clicking on <strong>{{signUpButtonText}}</strong>, you agree to the <a href=\"{{graaspLandingPageOrigin}}/terms\">terms of service</a> and the <a href=\"{{graaspLandingPageOrigin}}/privacy\">privacy policy</a>.",
   "EXPORT_MEMBER_DATA_TEXT": "You requested to download all your data, here is the link to download the archive. It will be available for {{days}} days",
   "EXPORT_MEMBER_DATA_TITLE": "Download your data",
-  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Download"
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Download",
+  "RESET_PASSWORD_TITLE": "Reset Password",
+  "RESET_PASSWORD_TEXT": "You requested to reset your password. Click on the following button to set a new password.",
+  "RESET_PASSWORD_BUTTON_TEXT": "Reset Password",
+  "RESET_PASSWORD_NOT_REQUESTED": "If you didn't request to reset your password, no further action is required."
 }

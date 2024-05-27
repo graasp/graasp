@@ -6,7 +6,7 @@ import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { ThumbnailService } from '../../../thumbnail/service';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 
 export class ItemThumbnailService {
   thumbnailService: ThumbnailService;

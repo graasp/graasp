@@ -28,5 +28,9 @@
   "USER_AGREEMENTS_MAIL_TEXT": "* Al hacer clic en <strong>{{signUpButtonText}}</strong>, aceptas los <a href=\"{{graaspLandingPageOrigin}}/terms\">términos de servicio</a> y los <a href=\"{ {graaspLandingPageOrigin}}/privacy\">política de privacidad</a>.",
   "EXPORT_MEMBER_DATA_TEXT": "Solicitó descargar todos sus datos, aquí está el enlace para descargar el archivo. Estará disponible durante {{days}} días",
   "EXPORT_MEMBER_DATA_TITLE": "Descarga tus datos",
-  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Descargar"
+  "EXPORT_MEMBER_DATA_BUTTON_TEXT": "Descargar",
+  "RESET_PASSWORD_TITLE": "Restablecer contraseña",
+  "RESET_PASSWORD_TEXT": "Has solicitado restablecer tu contraseña. Haz clic en el siguiente botón para continuar con el proceso.",
+  "RESET_PASSWORD_BUTTON_TEXT": "Restablecer contraseña",
+  "RESET_PASSWORD_NOT_REQUESTED": "Si no has solicitado restablecer tu contraseña, no es necesario realizar ninguna otra acción."
 }

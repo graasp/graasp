@@ -13,7 +13,7 @@ import { filterOutHiddenItems } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { buildPublishedItemLink } from './constants';
 import { ItemPublishedNotFound } from './errors';
 

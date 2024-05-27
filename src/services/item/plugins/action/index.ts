@@ -9,6 +9,7 @@ import {
   AggregateMetric,
   Context,
   CountGroupBy,
+  ExportActionsFormatting,
   FileItemType,
   HttpMethod,
 } from '@graasp/sdk';
@@ -141,7 +142,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   });
 
   // export actions matching the given `id`
-  fastify.route<{ Params: IdParam }>({
+  fastify.route<{ Params: IdParam; Querystring: { format?: ExportActionsFormatting } }>({
     method: 'POST',
     url: '/:id/actions/export',
     schema: exportAction,
@@ -150,11 +151,12 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
       const {
         member,
         params: { id: itemId },
+        query: { format = ExportActionsFormatting.JSON },
         log,
       } = request;
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await requestExportService.request(member, repositories, itemId);
+        const item = await requestExportService.request(member, repositories, itemId, format);
         if (member && item) {
           websockets.publish(
             memberItemsTopic,

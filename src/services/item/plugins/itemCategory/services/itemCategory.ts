@@ -3,7 +3,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { Actor } from '../../../../member/entities/member';
-import ItemService from '../../../service';
+import { ItemService } from '../../../service';
 import { ItemCategory } from '../entities/ItemCategory';
 
 export class ItemCategoryService {

@@ -16,7 +16,7 @@ import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';
-import MemberRepository from '../../../member/repository';
+import { MemberRepository } from '../../../member/repository';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 
