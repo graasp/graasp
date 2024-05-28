@@ -14,7 +14,7 @@ import { REDIS_HOST } from '../../../utils/config';
 import { AjvMessageSerializer } from '../message-serializer';
 import graaspWebSockets, { WebsocketsPluginOptions } from '../service-api';
 import { WebSocketChannels } from '../ws-channels';
-import { mockSessionPreHandler, mockValidateSession } from './mocks';
+import { mockSessionPreHandler } from './mocks';
 
 const clientSerdes = { serialize: JSON.stringify, parse: JSON.parse };
 const serverSerdes = new AjvMessageSerializer();
@@ -121,7 +121,6 @@ export async function createFastifyInstance(
   const promise = new Promise<FastifyInstance>((resolve, reject) => {
     const server = fastify({ logger: true });
 
-    server.verifyAuthentication = mockValidateSession;
     server.addHook('preHandler', mockSessionPreHandler);
 
     setupFn(server).then(() => {

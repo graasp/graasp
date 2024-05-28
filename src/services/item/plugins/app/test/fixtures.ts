@@ -1,8 +1,12 @@
+import { Strategy as CustomStrategy } from 'passport-custom';
 import { v4 } from 'uuid';
+
+import fastifyPassport from '@fastify/passport';
 
 import { HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import { APPS_PUBLISHER_ID, APP_ITEMS_PREFIX } from '../../../../../utils/config';
+import { PassportStrategy } from '../../../../auth/plugins/passport';
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemTestUtils } from '../../../test/fixtures/items';
@@ -134,15 +138,10 @@ export class AppTestUtils extends ItemTestUtils {
       url: '/logout',
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-      request.member = unauthorized;
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
-      request.session.set('member', unauthorized.id);
-      request.member = unauthorized;
-    });
+    // This will override the original session strategies to a custom one that always validate the request.
+    const strategy = new CustomStrategy((_req, done) => done(null, unauthorized));
+    fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
+    fastifyPassport.use(PassportStrategy.SESSION, strategy);
 
     const { item: item2 } = await this.saveApp({ url: unauthorizedApp.url, member: unauthorized });
     const appDetails = { origin: unauthorizedApp.publisher.origins[0], key: unauthorizedApp.key };

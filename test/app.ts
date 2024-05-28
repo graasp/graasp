@@ -35,7 +35,7 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
   const actor: Actor = member !== null ? await saveMember(member) : undefined;
   if (actor) {
     // If an actor is provided, use a custom strategy that always validate the request.
-    // This will replace the original session strategy to a custom one
+    // This will override the original session strategy to a custom one
     fastifyPassport.use(
       PassportStrategy.STRICT_SESSION,
       new CustomStrategy((_req, done) => {

@@ -4,7 +4,7 @@ import fastifyCors from '@fastify/cors';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyPluginAsync } from 'fastify';
 
-import { PROD, SECURE_SESSION_SECRET_KEY, STAGING, TOKEN_BASED_AUTH } from '../../utils/config';
+import { PROD, SECURE_SESSION_SECRET_KEY, STAGING } from '../../utils/config';
 import { AuthPluginOptions } from './interfaces/auth';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
@@ -38,26 +38,6 @@ const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) =
   if (!fastify.verifyBearerAuth) {
     throw new Error('verifyBearerAuth is not defined');
   }
-
-  fastify.decorate(
-    'attemptVerifyAuthentication',
-    TOKEN_BASED_AUTH
-      ? fastify.auth([
-          verifyMemberInSession,
-          fastify.verifyBearerAuth,
-          // this will make the chain of auth schemas to never fail,
-          // which is what we want to happen with this auth hook
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
-          async () => {},
-        ])
-      : fetchMemberInSession, // this hook, by itself, will also never fail
-  );
-
-  const verifyAuthentication = TOKEN_BASED_AUTH
-    ? fastify.auth([verifyMemberInSession, fastify.verifyBearerAuth])
-    : verifyMemberInSession;
-
-  fastify.decorate('verifyAuthentication', verifyAuthentication);
 
   // TODO: decorate auth service and use it instead of decorating function
   fastify.decorate('generateRegisterLinkAndEmailIt', authService.generateRegisterLinkAndEmailIt);

@@ -1,5 +1,10 @@
+import { Strategy as CustomStrategy } from 'passport-custom';
+
+import fastifyPassport from '@fastify/passport';
+
 import { ClientHostManager, Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
+import { PassportStrategy } from '../../../../auth/plugins/passport';
 import { Member } from '../../../../member/entities/member';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';
@@ -94,28 +99,18 @@ export const injectDelete = async (app, alias) => {
   return app.inject({ method: HttpMethod.Delete, url: shortLinkUrl(alias) });
 };
 
-export const logOut = (app) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-    delete request.member;
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
-    delete request.session.member;
-    delete request.member;
-  });
+export const logOut = (_app) => {
+  // This will override the original session strategies to logout the request.
+  const strategy = new CustomStrategy((req, done) => req.logOut({ keepSessionInfo: false }, done));
+  fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
+  fastifyPassport.use(PassportStrategy.SESSION, strategy);
 };
 
 export const logInAs = async (app, member) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-    request.member = member;
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jest.spyOn(app, 'attemptVerifyAuthentication').mockImplementation(async (request: any) => {
-    request.session.set('member', member.id);
-    request.member = member;
-  });
+  // This will override the original session strategies to a custom one that always validate the request.
+  const strategy = new CustomStrategy((_req, done) => done(null, member));
+  fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
+  fastifyPassport.use(PassportStrategy.SESSION, strategy);
 };
 
 export function getRedirection(itemId: string, platform: Context) {
