@@ -1,11 +1,12 @@
 import { CompleteMember, MemberFactory, MemberType } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { AppDataSource } from '../../../../plugins/datasource';
 import { Member } from '../../entities/member';
-import { MemberRepository } from '../../repository';
 
 export const saveMember = async (m: CompleteMember = MemberFactory()) => {
-  const savedMember = await MemberRepository.save({ ...m, email: m.email.toLowerCase() });
+  const rawRepository = AppDataSource.getRepository(Member);
+  const savedMember = await rawRepository.save({ ...m, email: m.email.toLowerCase() });
   return savedMember;
 };
 
