@@ -68,13 +68,10 @@ export class MemberService {
       throw new CannotModifyOtherMembers(id);
     }
 
-    const m = await memberRepository.get(id);
-    const extra = Object.assign({}, m.extra, body?.extra);
-
     return memberRepository.patch(id, {
       name: body.name,
       email: body.email,
-      extra,
+      extra: body?.extra,
       enableSaveActions: body.enableSaveActions,
     });
   }

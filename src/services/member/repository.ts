@@ -1,26 +1,18 @@
-import { EntityManager, In, Repository } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 
 import { UUID } from '@graasp/sdk';
 
-import { AppDataSource } from '../../plugins/datasource';
+import { AbstractRepository } from '../../repository';
 import { MemberNotFound } from '../../utils/errors';
 import { mapById } from '../utils';
 import { Member } from './entities/member';
 
-export class MemberRepository {
-  private repository: Repository<Member>;
-
+export class MemberRepository extends AbstractRepository<Member> {
   constructor(manager?: EntityManager) {
-    if (manager) {
-      this.repository = manager.getRepository(Member);
-    } else {
-      this.repository = AppDataSource.getRepository(Member);
-    }
+    super(Member, manager);
   }
 
   async deleteOne(id: string) {
-    // TODO:
-    // check member exists
     return this.repository.delete(id);
   }
 
@@ -83,18 +75,19 @@ export class MemberRepository {
     }
 
     if (body.extra) {
-      newData.extra = Object.assign({}, body?.extra, body.extra);
+      const member = await this.get(id);
+      newData.extra = Object.assign({}, member.extra, body?.extra);
     }
 
     if (typeof body.enableSaveActions === 'boolean') {
       newData.enableSaveActions = body.enableSaveActions;
     }
 
-    // TODO: throw if newData is empty
-
-    // TODO: check member exists
-    await this.repository.update(id, newData);
-
+    // update if newData is not empty
+    if (Object.keys(newData).length) {
+      // TODO: check member exists
+      await this.repository.update(id, newData);
+    }
     // todo: optimize?
     return this.get(id);
   }

@@ -2,19 +2,16 @@ import { v4 } from 'uuid';
 
 import { FastifyInstance } from 'fastify';
 
-import { MemberFactory } from '@graasp/sdk';
+import { EmailFrequency, MemberFactory } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
-import { AppDataSource } from '../../plugins/datasource';
 import { MemberNotFound } from '../../utils/errors';
-import { Member } from './entities/member';
 import { MemberRepository } from './repository';
 import { expectMember, saveMember, saveMembers } from './test/fixtures/members';
 
 // mock datasource
 jest.mock('../../plugins/datasource');
 const memberRepository = new MemberRepository();
-const rawRepository = AppDataSource.getRepository(Member);
 
 const expectMembersById = (members, expectedMembers) => {
   for (const m of members) {
@@ -41,10 +38,10 @@ describe('MemberRepository', () => {
   describe('deleteOne', () => {
     it('delete member', async () => {
       const member = await saveMember();
-      expect(await rawRepository.findOneBy({ id: member.id })).toBeDefined();
+      expect(await memberRepository.get(member.id)).toBeDefined();
 
       await memberRepository.deleteOne(member.id);
-      expect(await rawRepository.findOneBy({ id: member.id })).toBeNull();
+      expect(memberRepository.get(member.id)).rejects.toBeInstanceOf(MemberNotFound);
     });
     it('silent error if member does not exist', async () => {
       await memberRepository.deleteOne(v4());
@@ -153,12 +150,16 @@ describe('MemberRepository', () => {
     });
 
     it('patch extra', async () => {
-      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true } }));
-      const extra = { lang: 'fr' };
+      const member = await saveMember(MemberFactory({ extra: { hasAvatar: true, lang: 'en' } }));
+      const extra = { lang: 'fr', emailFreq: EmailFrequency.Never };
       const newM = await memberRepository.patch(member.id, { extra });
 
+      // keep previous extra
       expect(newM.extra.hasAvatar).toBe(true);
+      // update previous extra
       expect(newM.extra.lang).toEqual('fr');
+      // add new extra
+      expect(newM.extra.emailFreq).toEqual(EmailFrequency.Never);
     });
 
     it('patch enableSaveActions', async () => {
@@ -167,6 +168,13 @@ describe('MemberRepository', () => {
       const newM = await memberRepository.patch(member.id, newMember);
 
       expect(newM.enableSaveActions).toBe(false);
+    });
+
+    it('does not update for empty new data', async () => {
+      const member = await saveMember();
+      const newM = await memberRepository.patch(member.id, {});
+
+      expectMember(newM, member);
     });
 
     it('update unexisting member', async () => {
