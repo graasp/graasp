@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsync } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
@@ -29,9 +28,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     memberPassword: { service: memberPasswordService },
     mobile: { service: mobileService },
   } = fastify;
-
-  await fastify.register(fastifyPassport.initialize());
-  await fastify.register(fastifyPassport.secureSession());
 
   // no need to add CORS support here - only used by mobile app
 

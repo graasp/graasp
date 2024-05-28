@@ -7,13 +7,13 @@ import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
+import passportPlugin from './services/auth/plugins/passport/plugin';
 import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
 import websocketsPlugin from './services/websockets';
 import {
-  COOKIE_DOMAIN,
   DATABASE_LOGS,
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
@@ -56,8 +56,9 @@ export default async function (instance: FastifyInstance): Promise<void> {
       fromEmail: MAILER_CONFIG_FROM_EMAIL,
     })
     .register(fp(decoratorPlugin))
+    .register(fp(passportPlugin))
     // need to be defined before member and item for auth check
-    .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
+    .register(fp(authPlugin));
 
   instance.register(async (instance) => {
     // core API modules

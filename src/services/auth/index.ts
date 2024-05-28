@@ -1,43 +1,19 @@
-import fastifyAuth from '@fastify/auth';
-import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from '@fastify/cors';
-import fastifySecureSession from '@fastify/secure-session';
 import { FastifyPluginAsync } from 'fastify';
 
-import { PROD, SECURE_SESSION_SECRET_KEY, STAGING } from '../../utils/config';
-import { AuthPluginOptions } from './interfaces/auth';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
-import { plugin as passportPlugin } from './plugins/passport';
 import passwordController from './plugins/password';
-import { fetchMemberInSession, verifyMemberInAuthToken, verifyMemberInSession } from './utils';
+import { fetchMemberInSession, verifyMemberInSession } from './utils';
 
-const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
-  const { sessionCookieDomain: domain } = options;
+const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     authentication: { service: authService },
   } = fastify;
 
-  // cookie based auth
-  await fastify.register(fastifySecureSession, {
-    key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
-    cookie: { domain, path: '/', secure: PROD || STAGING, httpOnly: true },
-  });
-
   fastify.decorate('fetchMemberInSession', fetchMemberInSession);
 
   fastify.decorate('validateSession', verifyMemberInSession);
-  await fastify.register(passportPlugin);
-  await fastify.register(fastifyAuth);
-  await fastify.register(fastifyBearerAuth, {
-    addHook: false,
-    keys: new Set<string>(),
-    auth: verifyMemberInAuthToken,
-  });
-
-  if (!fastify.verifyBearerAuth) {
-    throw new Error('verifyBearerAuth is not defined');
-  }
 
   // TODO: decorate auth service and use it instead of decorating function
   fastify.decorate('generateRegisterLinkAndEmailIt', authService.generateRegisterLinkAndEmailIt);

@@ -139,7 +139,7 @@ export class AppTestUtils extends ItemTestUtils {
     });
 
     // This will override the original session strategies to a custom one that always validate the request.
-    const strategy = new CustomStrategy((_req, done) => done(null, unauthorized));
+    const strategy = new CustomStrategy((_req, done) => done(null, { member: unauthorized }));
     fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
     fastifyPassport.use(PassportStrategy.SESSION, strategy);
 

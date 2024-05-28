@@ -23,10 +23,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   } = fastify;
 
   const magicLinkService = new MagicLinkService(fastify, log);
-
-  await fastify.register(fastifyPassport.initialize());
-  await fastify.register(fastifyPassport.secureSession());
-  // await fastify.register(passportPlugin);
   // register
   fastify.post<{
     Body: {

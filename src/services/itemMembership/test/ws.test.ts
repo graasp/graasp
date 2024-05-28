@@ -99,7 +99,7 @@ describe('Item websocket hooks', () => {
       fastifyPassport.use(
         PassportStrategy.STRICT_SESSION,
         new CustomStrategy((_req, done) => {
-          done(null, anna);
+          done(null, { member: anna });
         }),
       );
       const response = await app.inject({
@@ -139,7 +139,7 @@ describe('Item websocket hooks', () => {
       fastifyPassport.use(
         PassportStrategy.STRICT_SESSION,
         new CustomStrategy((_req, done) => {
-          done(null, anna);
+          done(null, { member: anna });
         }),
       );
       const response = await app.inject({
@@ -179,7 +179,7 @@ describe('Item websocket hooks', () => {
       fastifyPassport.use(
         PassportStrategy.STRICT_SESSION,
         new CustomStrategy((_req, done) => {
-          done(null, anna);
+          done(null, { member: anna });
         }),
       );
       const response = await app.inject({

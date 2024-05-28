@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams } from '../../types';
@@ -24,12 +23,10 @@ const controller: FastifyPluginAsync = async (fastify) => {
     storage: { service: storageService },
     files: { service: fileService },
   } = fastify;
-  await fastify.register(fastifyPassport.initialize());
-  await fastify.register(fastifyPassport.secureSession());
 
   // get current
   fastify.get('/current', { schema: getCurrent, preHandler: authenticated }, async ({ user }) => {
-    return user;
+    return user!.member;
   });
 
   // get current member storage and its limits

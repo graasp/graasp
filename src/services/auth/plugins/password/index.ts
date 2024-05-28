@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
 
-import fastifyPassport from '@fastify/passport';
 import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
@@ -22,9 +21,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     db,
     memberPassword: { service: memberPasswordService },
   } = fastify;
-  await fastify.register(fastifyPassport.initialize());
-  await fastify.register(fastifyPassport.secureSession());
-
   // login with password
   fastify.post<{
     Body: { email: string; password: string; captcha: string; url?: string };

@@ -1,7 +1,15 @@
 import fastifyPassport from '@fastify/passport';
+import fastifySecureSession from '@fastify/secure-session';
 import { FastifyInstance, FastifyPluginAsync, PassportUser } from 'fastify';
 
-import { AUTH_TOKEN_JWT_SECRET, JWT_SECRET } from '../../../../utils/config';
+import {
+  AUTH_TOKEN_JWT_SECRET,
+  COOKIE_DOMAIN,
+  JWT_SECRET,
+  PROD,
+  SECURE_SESSION_SECRET_KEY,
+  STAGING,
+} from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { MemberRepository } from '../../../member/repository';
 import { PassportStrategy } from './strategies';
@@ -18,6 +26,15 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     memberPassword: { service: memberPasswordService },
   } = fastify;
   const repositories: Repositories = buildRepositories();
+
+  // cookie based auth
+  await fastify.register(fastifySecureSession, {
+    key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
+    cookie: { domain: COOKIE_DOMAIN, path: '/', secure: PROD || STAGING, httpOnly: true },
+    expiry: 2592000000, // 1 month
+  });
+  await fastify.register(fastifyPassport.initialize());
+  await fastify.register(fastifyPassport.secureSession());
 
   //-- Password Strategies --//
   passwordStrategy(fastifyPassport, memberPasswordService, repositories);

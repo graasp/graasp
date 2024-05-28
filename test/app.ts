@@ -39,7 +39,7 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
     fastifyPassport.use(
       PassportStrategy.STRICT_SESSION,
       new CustomStrategy((_req, done) => {
-        done(null, actor);
+        done(null, { member: actor });
       }),
     );
   }

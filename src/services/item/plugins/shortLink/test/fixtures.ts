@@ -108,7 +108,7 @@ export const logOut = (_app) => {
 
 export const logInAs = async (app, member) => {
   // This will override the original session strategies to a custom one that always validate the request.
-  const strategy = new CustomStrategy((_req, done) => done(null, member));
+  const strategy = new CustomStrategy((_req, done) => done(null, { member }));
   fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
   fastifyPassport.use(PassportStrategy.SESSION, strategy);
 };

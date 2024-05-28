@@ -4,7 +4,6 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { authenticated } from '../../../auth/plugins/passport';
 import { create, restricted_get, update } from './schemas';
@@ -67,10 +66,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           preHandler: authenticated,
         },
         async ({ user, body: shortLink }) => {
-          if (!user) {
-            throw new UnauthorizedMember();
-          }
-
           return db.transaction(async (manager) => {
             const newLink = await shortLinkService.post(
               user!.member!,
