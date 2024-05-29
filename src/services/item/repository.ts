@@ -33,7 +33,7 @@ import { ItemChildrenParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
-const IS_COPY_REGEX = /\s\(\d+\)$/g;
+const IS_COPY_REGEX = /\s\(\d+\)$/;
 
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
