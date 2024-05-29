@@ -12,7 +12,6 @@ import { ItemNotFound, MemberCannotAccess } from '../../../utils/errors';
 import { setItemPublic } from '../../item/plugins/itemTag/test/fixtures';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { Member } from '../../member/entities/member';
-import { MemberRepository } from '../../member/repository';
 import { saveMember } from '../../member/test/fixtures/members';
 import { ChatMessage } from '../chatMessage';
 import { ChatMessageNotFound, MemberCannotDeleteMessage, MemberCannotEditMessage } from '../errors';
@@ -22,6 +21,7 @@ import { ChatMessageRepository } from '../repository';
 // mock datasource
 jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
+const memberRawRepository = AppDataSource.getRepository(Member);
 
 const adminChatMentionRepository = AppDataSource.getRepository(ChatMention);
 
@@ -187,7 +187,7 @@ describe('Chat Message tests', () => {
       it('Post successfully with mentions', async () => {
         const mock = jest.spyOn(app.mailer, 'sendEmail');
 
-        const members = await MemberRepository.find();
+        const members = await memberRawRepository.find();
         const payload = { body: 'hello', mentions: members.map(({ id }) => id) };
         const initialCount = await ChatMessageRepository.count();
 
