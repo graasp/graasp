@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 import {
   ActionFactory,
+  ActionTriggers,
   AggregateBy,
   AggregateFunction,
   AggregateMetric,
@@ -13,6 +14,7 @@ import {
 import build, { clearDatabase } from '../../../../test/app';
 import { AppDataSource } from '../../../plugins/datasource';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
+import { getPreviousMonthFromNow } from '../../member/plugins/action/service';
 import { saveMember } from '../../member/test/fixtures/members';
 import { DEFAULT_ACTIONS_SAMPLE_SIZE } from '../constants/constants';
 import { Action } from '../entities/action';
@@ -81,6 +83,33 @@ describe('Action Repository', () => {
       await r.deleteAllForMember(member.id);
 
       expect(await rawRepository.count()).toEqual(1);
+    });
+  });
+
+  describe('getForMember', () => {
+    it('get actions that require permissions for member within the last month', async () => {
+      const item = await testUtils.saveItem({ actor: member });
+
+      await saveActions(rawRepository, [
+        {
+          member,
+          createdAt: new Date().toISOString(),
+          type: ActionTriggers.Update,
+          item: item as unknown as DiscriminatedItem,
+        },
+        { member, createdAt: new Date().toISOString(), type: ActionTriggers.CollectionView },
+        { member, createdAt: new Date('1999-07-08').toISOString(), type: ActionTriggers.Update },
+        { member, createdAt: new Date().toISOString(), type: ActionTriggers.ItemLike },
+      ]);
+
+      const r = new ActionRepository();
+
+      const result = await r.getMemberActions(member.id, {
+        startDate: getPreviousMonthFromNow(),
+        endDate: new Date(),
+      });
+
+      expect(result.length).toEqual(3);
     });
   });
 

@@ -11,6 +11,10 @@ export const saveActions = async (
   return rawRepository.save(data);
 };
 
+export const getMemberActions = async (rawRepository, memberId): Promise<Action[]> => {
+  return rawRepository.findBy({ member: { id: memberId } });
+};
+
 export const expectAction = (action, correctAction) => {
   expect(action.extra).toMatchObject(correctAction.extra);
   expect(action.view).toEqual(correctAction.view);
