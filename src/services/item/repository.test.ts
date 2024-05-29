@@ -669,6 +669,22 @@ describe('ItemRepository', () => {
       expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
       expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
     });
+    it('copy multiple times', async () => {
+      // regession test for issue with statefull regular expression
+      const item = await testUtils.saveItem({ actor });
+      const result = await itemRepository.copy(item, actor);
+      const copy = result.copyRoot;
+      expect(copy.name).toEqual(`${item.name} (2)`);
+      expect(copy.id).not.toEqual(item.id);
+      expect(result.treeCopyMap.get(item.id)!.copy.id).toEqual(copy.id);
+      expect(result.treeCopyMap.get(item.id)!.original.id).toEqual(item.id);
+      const secondResult = await itemRepository.copy(copy, actor);
+      const secondCopy = secondResult.copyRoot;
+      expect(secondCopy.name).toEqual(`${item.name} (3)`);
+      const thirdResult = await itemRepository.copy(secondCopy, actor);
+      const thirdCopy = thirdResult.copyRoot;
+      expect(thirdCopy.name).toEqual(`${item.name} (4)`);
+    });
     it('cannot copy in non-folder', async () => {
       const parentItem = await testUtils.saveItem({ actor, item: { type: 'app' } });
       const item = await testUtils.saveItem({ actor });
