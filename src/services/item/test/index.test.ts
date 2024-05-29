@@ -1129,6 +1129,35 @@ describe('Item routes tests', () => {
         expectManyPackedItems(data, items);
       });
 
+      it('Returns successfully items for stop words', async () => {
+        await testUtils.saveItemAndMembership({ item: { name: 'i am' }, member: actor });
+        await testUtils.saveItemAndMembership({ item: { name: 'the' }, member: actor });
+
+        const bob = await saveMember();
+
+        const { packedItem: item2 } = await testUtils.saveItemAndMembership({
+          item: { name: 'to be' },
+          member: actor,
+          creator: bob,
+        });
+
+        const items = [item2];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/accessible?${qs.stringify(
+            { keywords: ['to be'] },
+            { arrayFormat: 'repeat' },
+          )}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        expectManyPackedItems(data, items);
+      });
+
       it('Returns successfully items for member id', async () => {
         await testUtils.saveItemAndMembership({ member: actor });
         await testUtils.saveItemAndMembership({ member: actor });
