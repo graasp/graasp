@@ -1637,6 +1637,38 @@ describe('Item routes tests', () => {
         });
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
+
+      it('Returns search successfully', async () => {
+        const { item: parentItem } = await testUtils.saveItemAndMembership({
+          member: actor,
+        });
+        const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'to be' },
+          parentItem,
+        });
+        // noise
+        await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem,
+        });
+        // create child of child
+        await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
+
+        const children = [child1];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${parentItem.id}/children`,
+          query: { keywords: ['be'] },
+        });
+
+        const data = response.json();
+        expect(data).toHaveLength(children.length);
+        expectManyPackedItems(data, children);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
       it('Bad Request for invalid id', async () => {
         const response = await app.inject({
           method: HttpMethod.Get,

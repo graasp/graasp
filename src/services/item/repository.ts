@@ -15,6 +15,7 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -24,7 +25,7 @@ import {
   UnexpectedError,
 } from '../../utils/errors';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
-import { Member } from '../member/entities/member';
+import { Actor, Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
@@ -175,7 +176,7 @@ export class ItemRepository {
       .getMany();
   }
 
-  async getChildren(parent: Item, params?: ItemChildrenParams): Promise<Item[]> {
+  async getChildren(actor: Actor, parent: Item, params?: ItemChildrenParams): Promise<Item[]> {
     if (!isItemType(parent, ItemType.FOLDER)) {
       throw new ItemNotFolder(parent);
     }
@@ -189,6 +190,31 @@ export class ItemRepository {
     if (params?.types) {
       const types = params.types;
       query.andWhere('item.type IN (:...types)', { types });
+    }
+
+    const allKeywords = params?.keywords?.filter((s) => s && s.length);
+    if (allKeywords?.length) {
+      const keywordsString = allKeywords.join(' ');
+      const memberLang = actor?.lang;
+      query.andWhere((q) => {
+        // search in english by default
+        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // no dictionary
+        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // search by member lang
+        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+            keywords: keywordsString,
+            lang: ALLOWED_SEARCH_LANGS[memberLang],
+          });
+        }
+      });
     }
 
     const children = await query.orderBy('item.createdAt', 'ASC').getMany();

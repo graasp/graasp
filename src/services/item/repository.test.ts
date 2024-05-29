@@ -247,14 +247,14 @@ describe('ItemRepository', () => {
       // create child of child
       await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
-      const data = await itemRepository.getChildren(parentItem);
+      const data = await itemRepository.getChildren(actor, parentItem);
       expect(data).toHaveLength(children.length);
       expectManyItems(data, children);
     });
     it('Returns successfully empty children', async () => {
       const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
 
-      const response = await itemRepository.getChildren(parent);
+      const response = await itemRepository.getChildren(actor, parent);
 
       expect(response).toEqual([]);
     });
@@ -281,7 +281,7 @@ describe('ItemRepository', () => {
 
       // create child of child
       await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-      const data = await itemRepository.getChildren(patchedParent, { ordered: true });
+      const data = await itemRepository.getChildren(actor, patchedParent, { ordered: true });
       expect(data).toHaveLength(children.length);
       // verify order and content
       childrenInOrder.forEach((child, idx) => {
@@ -307,7 +307,7 @@ describe('ItemRepository', () => {
       // create child of child
       await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
 
-      const data = await itemRepository.getChildren(parent, { ordered: true });
+      const data = await itemRepository.getChildren(actor, parent, { ordered: true });
       expect(data).toHaveLength(children.length);
       children.forEach(({ id }) => {
         expectItem(
@@ -336,7 +336,7 @@ describe('ItemRepository', () => {
       });
       const children = [child2];
 
-      const data = await itemRepository.getChildren(parent, { types: [ItemType.FOLDER] });
+      const data = await itemRepository.getChildren(actor, parent, { types: [ItemType.FOLDER] });
       expect(data).toHaveLength(children.length);
       children.forEach(({ id }, idx) => {
         expectItem(

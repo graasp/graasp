@@ -124,7 +124,7 @@ export class ItemService {
       itemRepository.checkHierarchyDepth(parentItem);
 
       // check if there's too many children under the same parent
-      const descendants = await itemRepository.getChildren(parentItem);
+      const descendants = await itemRepository.getChildren(actor, parentItem);
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
         throw new TooManyChildren();
       }
@@ -351,7 +351,7 @@ export class ItemService {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
 
-    return itemRepository.getChildren(item, params);
+    return itemRepository.getChildren(actor, item, params);
   }
 
   async getChildren(

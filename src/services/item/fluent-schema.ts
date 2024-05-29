@@ -211,6 +211,7 @@ export const getChildren = {
   querystring: S.object()
     .additionalProperties(false)
     .prop('ordered', S.boolean())
+    .prop('keywords', S.array().items(S.string()))
     .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
     200: S.array().items(packedItem),
