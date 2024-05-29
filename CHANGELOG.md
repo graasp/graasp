@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.40.0](https://github.com/graasp/graasp/compare/v1.39.0...v1.40.0) (2024-05-29)
+
+
+### Features
+
+* create an api to get user actions for dashboard view ([#987](https://github.com/graasp/graasp/issues/987)) ([fd9f9d5](https://github.com/graasp/graasp/commit/fd9f9d50f73b69985f4e3584e6f9f6da6ad04df9))
+* create export actions with csv format ([#1022](https://github.com/graasp/graasp/issues/1022)) ([89fe445](https://github.com/graasp/graasp/commit/89fe4450f59c30e1103e0cafeead64dd333f3446))
+
+
+### Bug Fixes
+
+* allow to update link url and disallow editing html ([#1058](https://github.com/graasp/graasp/issues/1058)) ([1a657fb](https://github.com/graasp/graasp/commit/1a657fb437cb07daaac538ebde189c477cf00f4e))
+* copy suffix can't increment past 3 ([#1072](https://github.com/graasp/graasp/issues/1072)) ([50ef2e2](https://github.com/graasp/graasp/commit/50ef2e259dacf9f11e7bc7f39200014f645dc8fa))
+
 ## [1.39.0](https://github.com/graasp/graasp/compare/v1.38.0...v1.39.0) (2024-05-24)
 
 
