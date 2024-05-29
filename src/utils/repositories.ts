@@ -25,11 +25,11 @@ import { ItemValidationGroupRepository } from '../services/item/plugins/validati
 import { ItemValidationRepository } from '../services/item/plugins/validation/repositories/itemValidation';
 import { ItemValidationReviewRepository } from '../services/item/plugins/validation/repositories/itemValidationReview';
 import { ItemRepository } from '../services/item/repository';
-import ItemLoginRepository from '../services/itemLogin/repositories/itemLogin';
-import ItemLoginSchemaRepository from '../services/itemLogin/repositories/itemLoginSchema';
+import { ItemLoginRepository } from '../services/itemLogin/repositories/itemLogin';
+import { ItemLoginSchemaRepository } from '../services/itemLogin/repositories/itemLoginSchema';
 import { ItemMembershipRepository } from '../services/itemMembership/repository';
 import MemberProfileRepository from '../services/member/plugins/profile/repository';
-import MemberRepository from '../services/member/repository';
+import { MemberRepository } from '../services/member/repository';
 
 export type Repositories = {
   actionRepository: ActionRepository;
@@ -55,7 +55,7 @@ export type Repositories = {
   itemValidationRepository: typeof ItemValidationRepository;
   itemValidationReviewRepository: typeof ItemValidationReviewRepository;
   memberPasswordRepository: typeof MemberPasswordRepository;
-  memberRepository: typeof MemberRepository;
+  memberRepository: MemberRepository;
   mentionRepository: ChatMentionRepository;
   publisherRepository: typeof PublisherRepository;
   recycledItemRepository: typeof RecycledItemDataRepository;
@@ -70,7 +70,7 @@ export const buildRepositories = (manager?: EntityManager): Repositories => ({
   itemMembershipRepository: manager
     ? manager.withRepository(ItemMembershipRepository)
     : ItemMembershipRepository,
-  memberRepository: manager ? manager.withRepository(MemberRepository) : MemberRepository,
+  memberRepository: new MemberRepository(manager),
 
   itemPublishedRepository: new ItemPublishedRepository(manager),
   itemLoginRepository: manager ? manager.withRepository(ItemLoginRepository) : ItemLoginRepository,

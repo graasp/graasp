@@ -10,7 +10,7 @@ import {
 import { ITEMS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
-import ItemService from '../../../item/service';
+import { ItemService } from '../../../item/service';
 import { Member } from '../../../member/entities/member';
 import { ItemPublishedNotFound } from '../published/errors';
 import { ItemPublishedService } from '../published/service';

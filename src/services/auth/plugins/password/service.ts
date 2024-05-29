@@ -92,7 +92,7 @@ export class MemberPasswordService {
     email: string,
   ): Promise<{ token: string; member: Member } | undefined> {
     const { memberRepository } = repositories;
-    const member: Member = await memberRepository.getByEmail(email);
+    const member = await memberRepository.getByEmail(email);
 
     if (!member) {
       return;

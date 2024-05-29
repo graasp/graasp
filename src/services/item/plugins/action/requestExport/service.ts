@@ -3,6 +3,7 @@ import fs from 'fs';
 import {
   Context,
   DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
+  ExportActionsFormatting,
   PermissionLevel,
   UUID,
 } from '@graasp/sdk';
@@ -22,7 +23,7 @@ import { validatePermission } from '../../../../authorization';
 import FileService from '../../../../file/service';
 import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
-import ItemService from '../../../service';
+import { ItemService } from '../../../service';
 import { ActionItemService } from '../service';
 import { ActionRequestExport } from './requestExport';
 
@@ -47,7 +48,12 @@ export class ActionRequestExportService {
     this.mailer = mailer;
   }
 
-  async request(member: Actor, repositories: Repositories, itemId: UUID) {
+  async request(
+    member: Actor,
+    repositories: Repositories,
+    itemId: UUID,
+    format: ExportActionsFormatting,
+  ) {
     if (!member) {
       throw new UnauthorizedMember(member);
     }
@@ -60,11 +66,12 @@ export class ActionRequestExportService {
     const lastRequestExport = await repositories.actionRequestExportRepository.getLast({
       memberId: member?.id,
       itemPath: item.path,
+      format,
     });
 
     // check if a previous request already created the file and send it back
     if (lastRequestExport) {
-      await this._sendExportLinkInMail(member, item, lastRequestExport.createdAt);
+      await this._sendExportLinkInMail(member, item, lastRequestExport.createdAt, format);
       return;
       // the previous exported data does not exist or
       // is outdated and a new version should be uploaded
@@ -80,6 +87,7 @@ export class ActionRequestExportService {
       repositories,
       itemId,
       tmpFolder,
+      format,
     );
 
     // delete tmp folder
@@ -93,12 +101,17 @@ export class ActionRequestExportService {
       console.error(`${tmpFolder} was not found, and was not deleted`);
     }
 
-    await this._sendExportLinkInMail(member, item, requestExport.createdAt);
+    await this._sendExportLinkInMail(member, item, requestExport.createdAt, format);
 
     return item;
   }
 
-  async _sendExportLinkInMail(actor: Member, item: Item, archiveDate: Date) {
+  async _sendExportLinkInMail(
+    actor: Member,
+    item: Item,
+    archiveDate: Date,
+    format: ExportActionsFormatting,
+  ) {
     const filepath = buildActionFilePath(item.id, archiveDate);
     const link = await this.fileService.getUrl(actor, {
       id: item.id,
@@ -113,6 +126,7 @@ export class ActionRequestExportService {
     const text = t(MAIL.EXPORT_ACTIONS_TEXT, {
       itemName: item.name,
       days: DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS,
+      exportFormat: format,
     });
     const html = `
       ${this.mailer.buildText(text)}
@@ -132,6 +146,7 @@ export class ActionRequestExportService {
     repositories: Repositories,
     itemId: UUID,
     storageFolder: string,
+    format: ExportActionsFormatting,
   ): Promise<ActionRequestExport> {
     // get actions and more data
     const baseAnalytics = await this.actionItemService.getBaseAnalyticsForItem(
@@ -149,6 +164,7 @@ export class ActionRequestExportService {
       baseAnalytics,
       // include all actions from any view
       views: Object.values(Context),
+      format,
     });
 
     // upload file
@@ -163,6 +179,7 @@ export class ActionRequestExportService {
       item: baseAnalytics.item,
       member: actor,
       createdAt: new Date(archive.timestamp.getTime()),
+      format,
     });
 
     return requestExport;

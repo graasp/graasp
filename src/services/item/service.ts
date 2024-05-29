@@ -434,6 +434,8 @@ export class ItemService {
     const item = await itemRepository.get(itemId);
     await validatePermission(repositories, PermissionLevel.Write, actor, item);
 
+    // TODO: if updating a link item, fetch the new informations
+
     await this.hooks.runPreHooks('update', actor, repositories, { item: item });
 
     const updated = await itemRepository.patch(itemId, body);
@@ -726,5 +728,3 @@ export class ItemService {
     return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
   }
 }
-
-export default ItemService;

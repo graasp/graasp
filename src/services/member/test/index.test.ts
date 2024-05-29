@@ -6,16 +6,19 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, ItemType, MAX_USERNAME_LENGTH } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
+import { AppDataSource } from '../../../plugins/datasource';
 import { DEFAULT_MAX_STORAGE } from '../../../services/item/plugins/file/utils/constants';
 import { FILE_ITEM_TYPE } from '../../../utils/config';
 import { CannotModifyOtherMembers, MemberNotFound } from '../../../utils/errors';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
-import MemberRepository from '../repository';
+import { Member } from '../entities/member';
 import { saveMember, saveMembers } from './fixtures/members';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');
 const testUtils = new ItemTestUtils();
+
+const rawRepository = AppDataSource.getRepository(Member);
 
 describe('Member routes tests', () => {
   let app: FastifyInstance;
@@ -474,7 +477,7 @@ describe('Member routes tests', () => {
           },
         });
 
-        const m = await MemberRepository.findOneBy({ id: actor.id });
+        const m = await rawRepository.findOneBy({ id: actor.id });
         expect(m?.name).toEqual(newName);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -493,7 +496,7 @@ describe('Member routes tests', () => {
           },
         });
 
-        const m = await MemberRepository.findOneBy({ id: actor.id });
+        const m = await rawRepository.findOneBy({ id: actor.id });
         expect(m?.name).toEqual(actor.name);
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -510,7 +513,7 @@ describe('Member routes tests', () => {
           },
         });
 
-        const m = await MemberRepository.findOneBy({ id: actor.id });
+        const m = await rawRepository.findOneBy({ id: actor.id });
         expect(m?.name).toEqual(actor.name);
 
         expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
@@ -524,7 +527,7 @@ describe('Member routes tests', () => {
           payload: { enableSaveActions },
         });
 
-        const m = await MemberRepository.findOneBy({ id: actor.id });
+        const m = await rawRepository.findOneBy({ id: actor.id });
         expect(m?.enableSaveActions).toEqual(enableSaveActions);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -538,7 +541,7 @@ describe('Member routes tests', () => {
           url: `/members/${actor.id}`,
           payload: { enableSaveActions: true },
         });
-        const memberBeforePatch = await MemberRepository.findOneBy({ id: actor.id });
+        const memberBeforePatch = await rawRepository.findOneBy({ id: actor.id });
         expect(memberBeforePatch?.enableSaveActions).toBe(true);
 
         const enableSaveActions = false;
@@ -548,7 +551,7 @@ describe('Member routes tests', () => {
           payload: { enableSaveActions },
         });
 
-        const m = await MemberRepository.findOneBy({ id: actor.id });
+        const m = await rawRepository.findOneBy({ id: actor.id });
         expect(m?.enableSaveActions).toEqual(enableSaveActions);
 
         expect(response.statusCode).toBe(StatusCodes.OK);
@@ -566,7 +569,7 @@ describe('Member routes tests', () => {
           },
         });
 
-        const m = await MemberRepository.findOneBy({ id: member.id });
+        const m = await rawRepository.findOneBy({ id: member.id });
         expect(m?.name).not.toEqual(newName);
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
@@ -598,7 +601,7 @@ describe('Member routes tests', () => {
           url: `/members/${actor.id}`,
         });
 
-        const m = await MemberRepository.findOneBy({ id: actor.id });
+        const m = await rawRepository.findOneBy({ id: actor.id });
         expect(m).toBeFalsy();
 
         expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
@@ -611,7 +614,7 @@ describe('Member routes tests', () => {
           url: `/members/${member.id}`,
         });
 
-        const m = await MemberRepository.findOneBy({ id: member.id });
+        const m = await rawRepository.findOneBy({ id: member.id });
         expect(m).toBeTruthy();
 
         expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);

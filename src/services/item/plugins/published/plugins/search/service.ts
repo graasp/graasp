@@ -1,4 +1,4 @@
-import MeiliSearch, { MultiSearchParams } from 'meilisearch';
+import { MeiliSearch, MultiSearchParams } from 'meilisearch';
 import { DataSource } from 'typeorm';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -6,7 +6,7 @@ import { FastifyBaseLogger } from 'fastify';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
 import { Actor } from '../../../../../member/entities/member';
-import ItemService from '../../../../service';
+import { ItemService } from '../../../../service';
 import { ItemCategoryService } from '../../../itemCategory/services/itemCategory';
 import { stripHtml } from '../../../validation/utils';
 import { ItemPublishedNotFound } from '../../errors';

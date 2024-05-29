@@ -430,7 +430,9 @@ export const DB_USERNAME: string | undefined = process.env.DB_USERNAME;
 export const DB_PASSWORD: string | undefined = process.env.DB_PASSWORD;
 export const DB_NAME: string | undefined = process.env.DB_NAME;
 export const DB_CONNECTION_POOL_SIZE: number = +process.env.DB_CONNECTION_POOL_SIZE! || 10;
-export const DB_READ_REPLICA_HOSTS: string[] = process.env.DB_READ_REPLICA_HOSTS?.split(',') ?? [];
+export const DB_READ_REPLICA_HOSTS: string[] = process.env.DB_READ_REPLICA_HOSTS
+  ? process.env.DB_READ_REPLICA_HOSTS?.split(',')
+  : [];
 
 /////////////////
 // CI and Test //

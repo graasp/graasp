@@ -10,7 +10,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { MAX_SESSIONS_IN_COOKIE, PLUGIN_NAME } from './constants';
 import { EtherpadServerError, ItemMissingExtraError } from './errors';
 

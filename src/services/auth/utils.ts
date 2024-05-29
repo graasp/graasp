@@ -12,7 +12,10 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../utils/config';
 import { InvalidSession, OrphanSession } from '../../utils/errors';
-import MemberRepository from '../member/repository';
+import { MemberRepository } from '../member/repository';
+
+// todo: duplicate?
+const memberRepository = new MemberRepository();
 
 const promisifiedJwtVerify = promisify<
   string,
@@ -60,7 +63,7 @@ export async function verifyMemberInSession(request: FastifyRequest) {
   }
 
   try {
-    const member = await MemberRepository.get(memberId);
+    const member = await memberRepository.get(memberId);
     request.member = member;
   } catch (e) {
     session.delete();
@@ -77,7 +80,7 @@ export async function fetchMemberInSession(request: FastifyRequest) {
   if (!memberId) return;
 
   // this throws if someone tries to use a fake member id
-  request.member = await MemberRepository.get(memberId);
+  request.member = await memberRepository.get(memberId);
 }
 
 // for token based auth
@@ -87,7 +90,7 @@ export async function verifyMemberInAuthToken(jwtToken: string, request: Fastify
     const refreshing = '/m/auth/refresh' === routerPath;
     const secret = refreshing ? REFRESH_TOKEN_JWT_SECRET : AUTH_TOKEN_JWT_SECRET;
     const { sub: memberId } = await promisifiedJwtVerify(jwtToken, secret, {});
-    const member = await MemberRepository.get(memberId);
+    const member = await memberRepository.get(memberId);
 
     if (refreshing) {
       request.memberId = memberId;

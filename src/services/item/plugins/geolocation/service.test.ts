@@ -12,7 +12,7 @@ import { Actor } from '../../../member/entities/member';
 import { saveMember } from '../../../member/test/fixtures/members';
 import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemWrapper } from '../../ItemWrapper';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import { ItemGeolocation } from './ItemGeolocation';
 import { expectItemGeolocations, saveGeolocation } from './index.test';
@@ -146,6 +146,24 @@ describe('ItemGeolocationService', () => {
       expectItemGeolocations([res!], [geoloc]);
     });
 
+    it('return inherited geoloc', async () => {
+      const { packedItem: parentItem, item: pi } = await testUtils.saveItemAndMembership({
+        member: actor,
+        permission: PermissionLevel.Read,
+      });
+      const item = await testUtils.saveItem({ parentItem: pi });
+      const { packed: geoloc } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: parentItem,
+        country: 'de',
+      });
+
+      const res = await service.getByItem(actor, buildRepositories(), item.id);
+
+      expectItemGeolocations([res!], [geoloc]);
+    });
+
     it('return null if does not have geolocation', async () => {
       const { item } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -213,7 +231,7 @@ describe('ItemGeolocationService', () => {
       expectItemGeolocations(res, [geoloc1, geoloc2]);
     });
 
-    it('get successfully for public item', async () => {
+    it('ignore public root item', async () => {
       const member = await saveMember();
       const { packedItem: item1 } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -229,7 +247,9 @@ describe('ItemGeolocationService', () => {
       const { item: publicItem } = await testUtils.savePublicItem({
         actor: member,
       });
-      const { packed: geoloc2 } = await saveGeolocation({
+
+      // public root item - should be ignored
+      await saveGeolocation({
         lat: 1,
         lng: 2,
         item: new ItemWrapper(publicItem, null).packed(),
@@ -253,8 +273,58 @@ describe('ItemGeolocationService', () => {
         lng1: 0,
         lng2: 4,
       });
-      expect(res).toHaveLength(2);
-      expectItemGeolocations(res, [geoloc1, geoloc2]);
+      expect(res).toHaveLength(1);
+      expectItemGeolocations(res, [geoloc1]);
+    });
+
+    it('get successfully inside public item', async () => {
+      const member = await saveMember();
+      const { item: publicItem } = await testUtils.savePublicItem({
+        actor: member,
+      });
+      const { packed: geoloc } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: new ItemWrapper(publicItem, null).packed(),
+        country: 'de',
+      });
+
+      const res = await service.getIn(actor, buildRepositories(), {
+        parentItemId: publicItem.id,
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+      });
+      expect(res).toHaveLength(1);
+      expectItemGeolocations(res, [geoloc]);
+    });
+
+    it('get successfully geolocalized child in public item', async () => {
+      const member = await saveMember();
+      const { item: publicItem } = await testUtils.savePublicItem({
+        actor: member,
+      });
+      const child = await testUtils.saveItem({
+        actor: member,
+        parentItem: publicItem,
+      });
+      const { packed: geoloc } = await saveGeolocation({
+        lat: 1,
+        lng: 2,
+        item: new ItemWrapper(child, null).packed(),
+        country: 'de',
+      });
+
+      const res = await service.getIn(actor, buildRepositories(), {
+        parentItemId: publicItem.id,
+        lat1: 0,
+        lat2: 4,
+        lng1: 0,
+        lng2: 4,
+      });
+      expect(res).toHaveLength(1);
+      expectItemGeolocations(res, [geoloc]);
     });
 
     it('return empty for nothing in box', async () => {

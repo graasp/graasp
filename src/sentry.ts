@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
-import { Transaction } from '@sentry/types';
 
 import { FastifyInstance } from 'fastify';
 
@@ -29,7 +28,7 @@ declare module 'fastify' {
         /**
          * Sentry transaction span attached to the request
          */
-        transaction: Transaction;
+        transaction: Sentry.Transaction;
       };
     };
   }

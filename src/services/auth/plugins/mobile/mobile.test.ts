@@ -9,6 +9,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { AppDataSource } from '../../../../plugins/datasource';
 import {
   AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
@@ -16,12 +17,15 @@ import {
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../../../utils/config';
 import { MemberNotFound } from '../../../../utils/errors';
-import MemberRepository from '../../../member/repository';
+import { Member } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
+// mock database and decorator plugins
+jest.mock('../../../../plugins/datasource');
 jest.mock('node-fetch');
+const memberRawRepository = AppDataSource.getRepository(Member);
 
 // mock captcha
 // bug: cannot use exported mockCaptchaValidation
@@ -31,9 +35,6 @@ const mockCaptchaValidation = (action: RecaptchaActionType) => {
     return { json: async () => ({ success: true, action, score: 1 }) } as Response;
   });
 };
-
-// mock database and decorator plugins
-jest.mock('../../../../plugins/datasource');
 
 const challenge = 'challenge';
 describe('Mobile Endpoints', () => {
@@ -66,7 +67,7 @@ describe('Mobile Endpoints', () => {
         payload: { email, name, challenge, captcha: MOCK_CAPTCHA },
       });
 
-      const m = await MemberRepository.findOneBy({ email });
+      const m = await memberRawRepository.findOneBy({ email });
       expectMember(m, { email, name });
 
       // ensure that the user agreements are set for new registration
@@ -98,7 +99,7 @@ describe('Mobile Endpoints', () => {
         expect.anything(),
       );
 
-      const m = await MemberRepository.findOneBy({ email });
+      const m = await memberRawRepository.findOneBy({ email });
       expectMember(m, member);
       // ensure that the user agreements are set for new registration
       expect(m?.userAgreementsDate).toBeDefined();
@@ -118,7 +119,7 @@ describe('Mobile Endpoints', () => {
         payload: { email, name, challenge, captcha: MOCK_CAPTCHA, enableSaveActions },
       });
 
-      const m = await MemberRepository.findOneBy({ email });
+      const m = await memberRawRepository.findOneBy({ email });
       expectMember(m, { email, name });
       expect(m?.enableSaveActions).toBe(enableSaveActions);
       expect(mockSendEmail).toHaveBeenCalled();
@@ -137,7 +138,7 @@ describe('Mobile Endpoints', () => {
         payload: { email, name, challenge, enableSaveActions, captcha: MOCK_CAPTCHA },
       });
 
-      const m = await MemberRepository.findOneBy({ email });
+      const m = await memberRawRepository.findOneBy({ email });
       expectMember(m, { email, name });
       expect(m?.enableSaveActions).toBe(enableSaveActions);
       expect(mockSendEmail).toHaveBeenCalled();
@@ -161,7 +162,7 @@ describe('Mobile Endpoints', () => {
         expect.anything(),
         expect.anything(),
       );
-      const m = await MemberRepository.findOneBy({ email: member.email });
+      const m = await memberRawRepository.findOneBy({ email: member.email });
       expectMember(m, member);
 
       expect(response.statusCode).toEqual(StatusCodes.CONFLICT);

@@ -1,7 +1,7 @@
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { filterOutPackedItems } from '../../../authorization';
-import ItemService from '../../../item/service';
+import { ItemService } from '../../../item/service';
 import { Actor } from '../../../member/entities/member';
 
 export class ItemLikeService {

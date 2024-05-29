@@ -5,7 +5,7 @@ import { validatePermissionMany } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
-import ItemService from '../../service';
+import { ItemService } from '../../service';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationApiKey } from './errors';
 
@@ -35,13 +35,18 @@ export class ItemGeolocationService {
     const { itemGeolocationRepository } = repositories;
 
     // check item exists and actor has permission
-    const packedItem = await this.itemService.getPacked(actor, repositories, itemId);
+    const item = await this.itemService.get(actor, repositories, itemId);
 
-    const geoloc = await itemGeolocationRepository.getByItem(packedItem.path);
+    const geoloc = await itemGeolocationRepository.getByItem(item.path);
 
     if (geoloc) {
-      // add permission for item packed
-      return { ...geoloc, item: packedItem };
+      // return packed item of related item (could be parent)
+      const geolocPackedItem = await this.itemService.getPacked(
+        actor,
+        repositories,
+        geoloc.item.id,
+      );
+      return { ...geoloc, item: geolocPackedItem };
     }
     return null;
   }
@@ -74,18 +79,21 @@ export class ItemGeolocationService {
     );
 
     // filter out items without permission
-    // and add permission for item packed
-    // TODO optimize?
     return geoloc
       .map((g) => {
-        if (g.item.id in itemMemberships.data) {
+        const itemId = g.item.id;
+        // accessible items - permission can be null
+        // accept public items within parent item
+        const itemIsAtLeastPublicOrInParent = itemId in itemMemberships.data && query.parentItemId;
+        // otherwise the actor should have at least read permission on root
+        const itemIsAtLeastReadable = itemMemberships.data[itemId];
+        if (itemIsAtLeastPublicOrInParent || itemIsAtLeastReadable) {
+          // and add permission for item packed
+          // TODO optimize?
+          const newItem = new ItemWrapper(g.item, itemMemberships.data[itemId], tags.data[itemId]);
           return {
             ...g,
-            item: new ItemWrapper(
-              g.item,
-              itemMemberships.data[g.item.id],
-              tags.data[g.item.id],
-            ).packed(),
+            item: newItem.packed(),
           };
         }
         return null;

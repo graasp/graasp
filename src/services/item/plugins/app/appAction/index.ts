@@ -1,5 +1,4 @@
-import { preHandlerHookHandler } from 'fastify';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
 import { buildRepositories } from '../../../../../utils/repositories';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';

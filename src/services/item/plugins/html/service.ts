@@ -1,7 +1,6 @@
 import extract from 'extract-zip';
 import fs from 'fs';
-import { lstat, readdir } from 'fs/promises';
-import { mkdir } from 'fs/promises';
+import { lstat, mkdir, readdir } from 'fs/promises';
 import mime from 'mime';
 import path from 'path';
 import { pipeline } from 'stream/promises';

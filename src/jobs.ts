@@ -1,5 +1,4 @@
-import { ConnectionOptions, Queue } from 'bullmq';
-import { Worker } from 'bullmq';
+import { ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { FastifyBaseLogger } from 'fastify';
 

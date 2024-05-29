@@ -1,11 +1,14 @@
 import {
   BaseEntity,
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+import { ExportActionsFormatting } from '@graasp/sdk';
 
 import { Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
@@ -29,6 +32,13 @@ export class ActionRequestExport extends BaseEntity {
   })
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
   item: Item;
+
+  @Column({
+    default: ExportActionsFormatting.JSON,
+    type: 'enum',
+    enum: Object.values(ExportActionsFormatting),
+  })
+  format: ExportActionsFormatting;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
