@@ -6,6 +6,7 @@ import { Repositories } from '../../../../../utils/repositories';
 import { Member } from '../../../../member/entities/member';
 import { MemberPasswordService } from '../../password/service';
 import { PassportStrategy } from '../strategies';
+import { StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
@@ -18,7 +19,7 @@ export default (
       {
         usernameField: 'email',
       },
-      (email, password, done) => {
+      (email, password, done: StrictVerifiedCallback) => {
         memberPasswordService
           .authenticate(repositories, email, password)
           .then((member?: Member) => {

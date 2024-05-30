@@ -12,6 +12,8 @@ import { Actor } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
+const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.SESSION)!;
+
 const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
   const app = fastify({
     disableRequestLogging: true,
@@ -36,12 +38,12 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
   if (actor) {
     // If an actor is provided, use a custom strategy that always validate the request.
     // This will override the original session strategy to a custom one
-    fastifyPassport.use(
-      PassportStrategy.STRICT_SESSION,
-      new CustomStrategy((_req, done) => {
-        done(null, { member: actor });
-      }),
-    );
+    const strategy = new CustomStrategy((_req, done) => done(null, { member: actor }));
+    fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
+    fastifyPassport.use(PassportStrategy.SESSION, strategy);
+  } else {
+    // Set the original session strategy back
+    fastifyPassport.use(PassportStrategy.SESSION, originalSessionStrategy);
   }
 
   return { app, actor };

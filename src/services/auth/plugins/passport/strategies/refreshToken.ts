@@ -5,6 +5,7 @@ import { Authenticator } from '@fastify/passport';
 import { REFRESH_TOKEN_JWT_SECRET } from '../../../../../utils/config';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
+import { StrictVerifiedCallback } from '../types';
 
 export default (passport: Authenticator, memberRepository: typeof MemberRepository) => {
   passport.use(
@@ -14,7 +15,7 @@ export default (passport: Authenticator, memberRepository: typeof MemberReposito
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: REFRESH_TOKEN_JWT_SECRET,
       },
-      async ({ sub }, done) => {
+      async ({ sub }, done: StrictVerifiedCallback) => {
         memberRepository
           .get(sub)
           .then((member) => {

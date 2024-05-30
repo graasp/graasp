@@ -5,10 +5,10 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { FileItemProperties, MAX_ITEM_NAME_LENGTH, UUID } from '@graasp/sdk';
 
-import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import { Member } from '../../../../../../member/entities/member';
+import { Item } from '../../../../../entities/Item';
 import { ItemService } from '../../../../../service';
 import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
@@ -33,28 +33,10 @@ class AppSettingFileService {
     this.itemService = itemService;
   }
 
-  async upload(
-    actorId: string | undefined,
-    repositories: Repositories,
-    file: MultipartFile,
-    itemId?: string,
-  ) {
-    const { memberRepository } = repositories;
-
-    if (!actorId) {
-      throw new UnauthorizedMember(actorId);
-    }
-    const member = await memberRepository.get(actorId);
-
-    // posting an app data is allowed to readers
-    if (!itemId) {
-      throw new ItemNotFound(itemId);
-    }
-    await this.itemService.get(member, repositories, itemId);
-
+  async upload(member: Member, repositories: Repositories, file: MultipartFile, item: Item) {
     const { filename, mimetype, fields, file: stream } = file;
     const appSettingId = v4();
-    const filepath = this.buildFilePath(itemId, appSettingId); // parentId, filename
+    const filepath = this.buildFilePath(item.id, appSettingId); // parentId, filename
 
     // TODO: CHECK that it is working
     // compute body data from file's fields
@@ -88,7 +70,7 @@ class AppSettingFileService {
         throw e;
       });
 
-    const appSetting = await repositories.appSettingRepository.post(itemId, actorId, {
+    const appSetting = await repositories.appSettingRepository.post(item.id, member.id, {
       id: appSettingId,
       name,
       data: {
@@ -100,28 +82,15 @@ class AppSettingFileService {
   }
 
   async download(
-    actorId: string | undefined,
+    member: Member,
     repositories: Repositories,
-    { itemId, appSettingId }: { itemId?: UUID; appSettingId: UUID },
+    { item, appSettingId }: { item: Item; appSettingId: UUID },
   ) {
-    const { memberRepository } = repositories;
-
-    let member: Member | undefined;
-    if (actorId) {
-      member = await memberRepository.get(actorId);
-    }
-
-    // check rights
-    if (!itemId) {
-      throw new ItemNotFound(itemId);
-    }
-    await this.itemService.get(member, repositories, itemId);
-
     // get app setting and check it is a file
     const appSetting = await this.appSettingService.get(
-      actorId,
+      member,
       repositories,
-      itemId,
+      item.id,
       appSettingId,
     );
     const fileProp = appSetting.data[this.fileService.type];

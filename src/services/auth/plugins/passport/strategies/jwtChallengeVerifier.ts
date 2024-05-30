@@ -7,6 +7,7 @@ import { JWT_SECRET } from '../../../../../utils/config';
 import { ChallengeFailed } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
+import { StrictVerifiedCallback } from '../types';
 
 export default (passport: Authenticator, memberRepository: typeof MemberRepository) => {
   passport.use(
@@ -17,7 +18,7 @@ export default (passport: Authenticator, memberRepository: typeof MemberReposito
         secretOrKey: JWT_SECRET,
         passReqToCallback: true,
       },
-      async ({ body: { verifier } }, { sub, challenge }, done) => {
+      async ({ body: { verifier } }, { sub, challenge }, done: StrictVerifiedCallback) => {
         if (challenge === crypto.createHash('sha256').update(verifier).digest('hex')) {
           memberRepository
             .get(sub)

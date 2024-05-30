@@ -4,6 +4,7 @@ import { Authenticator } from '@fastify/passport';
 
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
+import { StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
@@ -19,7 +20,7 @@ export default (
         jwtFromRequest: ExtractJwt.fromUrlQueryParameter(tokenQueryParameter),
         secretOrKey: jwtSecret,
       },
-      ({ sub }, done) => {
+      ({ sub }, done: StrictVerifiedCallback) => {
         memberRepository
           .get(sub)
           .then((member) => {

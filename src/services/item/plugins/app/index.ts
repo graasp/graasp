@@ -1,14 +1,14 @@
-import { promisify } from 'util';
-
-import fastifyBearerAuth from '@fastify/bearer-auth';
 import fastifyCors from '@fastify/cors';
-import fastifyJwt from '@fastify/jwt';
-import { FastifyPluginAsync, FastifyRequest, preHandlerHookHandler } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import {
+  authenticated,
+  optionalAuthenticateAppsJWT,
+  optionalAuthenticated,
+} from '../../../auth/plugins/passport';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
@@ -27,13 +27,8 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
   }
 
   const {
-    verifyBearerAuth,
     items: { service: itemService, extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
-
-  if (!verifyBearerAuth) {
-    throw new Error('verifyBearerAuth is not defined!');
-  }
 
   // "install" custom schema for validating document items creation
   extendCreateSchema(createSchema);
@@ -42,35 +37,8 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
   fastify.addSchema(common);
 
-  // register auth plugin
-  // jwt plugin to manipulate jwt token
-  await fastify.register(fastifyJwt, { secret: jwtSecret });
+  const aS = new AppService(itemService, jwtExpiration);
 
-  const promisifiedJwtSign = promisify<{ sub: AuthTokenSubject }, { expiresIn: string }, string>(
-    fastify.jwt.sign,
-  );
-
-  const aS = new AppService(itemService, jwtExpiration, promisifiedJwtSign);
-
-  const promisifiedJwtVerify = promisify<string, { sub: AuthTokenSubject }>(fastify.jwt.verify);
-
-  const validateApiAccessToken = async (jwtToken: string, request: FastifyRequest) => {
-    // try {
-    // verify token and extract its data
-    const { sub } = await promisifiedJwtVerify(jwtToken);
-
-    // TODO: check if origin in token matches request's origin ?
-    // (Origin header is only present in CORS request: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin)
-    request.authTokenSubject = sub;
-    return true;
-    // } catch (error) {
-    //   // const { log } = request;
-    //   // log.warn('Invalid app api access token');
-    //   return false;
-    // }
-  };
-
-  // bearer token plugin to read and validate token in Bearer header
   /**
    * This is done for performance reasons:
    * 1. First decorateRequest with the empty type of the value to be set (null for an object)
@@ -88,12 +56,6 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
    *  https://www.fastify.io/docs/latest/Reference/Decorators/
    */
   fastify.decorateRequest('authTokenSubject', null);
-
-  fastify.register(fastifyBearerAuth, {
-    addHook: false,
-    keys: new Set<string>(),
-    auth: validateApiAccessToken,
-  });
 
   // API endpoints
   fastify.register(async function (fastify) {
@@ -170,16 +132,23 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
     });
 
     fastify.register(async function (fastify) {
-      // all app endpoints need the bearer token
-      fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
-
       // get app item context
       fastify.get<{ Params: { itemId: string } }>(
         '/:itemId/context',
-        { schema: getContext },
-        async ({ user, authTokenSubject: requestDetails, params: { itemId } }) => {
-          const memberId = user?.member ? user.member.id : requestDetails?.memberId;
-          return aS.getContext(memberId, buildRepositories(), itemId, requestDetails);
+        { schema: getContext, preHandler: optionalAuthenticateAppsJWT },
+        async ({ user, params: { itemId } }) => {
+          const requestDetails: AuthTokenSubject = {
+            memberId: user?.member?.id,
+            itemId: user!.app!.item.id,
+            origin: user!.app!.origin,
+            key: user!.app!.key,
+          };
+          return aS.getContext(
+            requestDetails.memberId,
+            buildRepositories(),
+            itemId,
+            requestDetails,
+          );
         },
       );
 

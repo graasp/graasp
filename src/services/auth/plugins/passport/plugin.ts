@@ -14,6 +14,7 @@ import { Repositories, buildRepositories } from '../../../../utils/repositories'
 import { MemberRepository } from '../../../member/repository';
 import { PassportStrategy } from './strategies';
 import jwtStrategy from './strategies/jwt';
+import jwtAppsStrategy from './strategies/jwtApps';
 import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';
 import magicLinkStrategy from './strategies/magicLink';
 import passwordStrategy from './strategies/password';
@@ -35,6 +36,8 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   });
   await fastify.register(fastifyPassport.initialize());
   await fastify.register(fastifyPassport.secureSession());
+
+  strictSessionStrategy(fastifyPassport);
 
   //-- Password Strategies --//
   passwordStrategy(fastifyPassport, memberPasswordService, repositories);
@@ -59,8 +62,21 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   //-- JWT Strategies --//
   jwtChallengeVerifierStrategy(fastifyPassport, repositories.memberRepository);
   refreshTokenStrategy(fastifyPassport, repositories.memberRepository);
-  jwtStrategy(fastifyPassport, repositories.memberRepository);
-  strictSessionStrategy(fastifyPassport);
+  jwtStrategy(fastifyPassport, repositories.memberRepository, PassportStrategy.JWT, JWT_SECRET);
+  jwtAppsStrategy(
+    fastifyPassport,
+    repositories.memberRepository,
+    repositories.itemRepository,
+    PassportStrategy.APPS_JWT,
+    true,
+  );
+  jwtAppsStrategy(
+    fastifyPassport,
+    repositories.memberRepository,
+    repositories.itemRepository,
+    PassportStrategy.OPTIONAL_APPS_JWT,
+    false,
+  );
 
   // Register user object to session
   fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.member!.id);

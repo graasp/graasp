@@ -1,9 +1,10 @@
-import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
 import { IdParam } from '../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { appSettingsWsHooks } from '../ws/hooks';
@@ -40,8 +41,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {
-    fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
-
     fastify.register(appSettingFilePlugin, { appSettingService });
 
     // create app setting
@@ -49,11 +48,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-settings',
       {
         schema: create,
+        preHandler: authenticateAppsJWT,
       },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, body }) => {
-        const memberId = requestDetails?.memberId;
+      async ({ user, params: { itemId }, body }) => {
         return db.transaction(async (manager) => {
-          return appSettingService.post(memberId, buildRepositories(manager), itemId, body);
+          return appSettingService.post(user!.member!, buildRepositories(manager), itemId, body);
         });
       },
     );
@@ -61,12 +60,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // update app setting
     fastify.patch<{ Params: { itemId: string } & IdParam; Body: Partial<AppSetting> }>(
       '/:itemId/app-settings/:id',
-      { schema: updateOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId, id: appSettingId }, body }) => {
-        const memberId = requestDetails?.memberId;
+      {
+        schema: updateOne,
+        preHandler: authenticateAppsJWT,
+      },
+      async ({ user, params: { itemId, id: appSettingId }, body }) => {
         return db.transaction(async (manager) => {
           return appSettingService.patch(
-            memberId,
+            user!.member!,
             buildRepositories(manager),
             itemId,
             appSettingId,
@@ -79,13 +80,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // delete app setting
     fastify.delete<{ Params: { itemId: string } & IdParam }>(
       '/:itemId/app-settings/:id',
-      { schema: deleteOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId, id: appSettingId } }) => {
-        const memberId = requestDetails?.memberId;
-
+      { schema: deleteOne, preHandler: authenticateAppsJWT },
+      async ({ user, params: { itemId, id: appSettingId } }) => {
         return db.transaction(async (manager) => {
           return appSettingService.deleteOne(
-            memberId,
+            user!.member!,
             buildRepositories(manager),
             itemId,
             appSettingId,
@@ -97,10 +96,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // get app settings
     fastify.get<{ Params: { itemId: string }; Querystring: { name?: string } }>(
       '/:itemId/app-settings',
-      { schema: getForOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, query: { name } }) => {
-        const memberId = requestDetails?.memberId;
-        return appSettingService.getForItem(memberId, buildRepositories(), itemId, name);
+      { schema: getForOne, preHandler: authenticateAppsJWT },
+      async ({ user, params: { itemId }, query: { name } }) => {
+        return appSettingService.getForItem(user?.member, buildRepositories(), itemId, name);
       },
     );
   });

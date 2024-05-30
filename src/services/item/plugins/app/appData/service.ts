@@ -1,11 +1,11 @@
 import { AppDataVisibility, PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MemberCannotWriteItem, UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { ItemMembership } from '../../../../itemMembership/entities/ItemMembership';
-import { Actor } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
+import { Item } from '../../../entities/Item';
 import { AppData } from './appData';
 import { AppDataNotAccessible, PreventUpdateOtherAppData } from './errors';
 import { InputAppData } from './interfaces/app-data';
@@ -63,27 +63,21 @@ export class AppDataService {
   }>();
 
   async post(
-    actorId: string | undefined,
+    member: Member,
     repositories: Repositories,
     itemId: string,
     body: Partial<InputAppData>,
   ) {
-    const { appDataRepository, memberRepository, itemRepository } = repositories;
-
-    // check member exists
-    if (!actorId) {
-      throw new MemberCannotWriteItem();
-    }
-    const actor = await memberRepository.get(actorId);
+    const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
 
     // posting an app data is allowed to readers
-    await validatePermission(repositories, PermissionLevel.Read, actor, item);
+    await validatePermission(repositories, PermissionLevel.Read, member, item);
 
     // any user can write app data for others
-    const attachedToMemberId = body.memberId ?? actorId;
+    const attachedToMemberId = body.memberId ?? member.id;
 
     const completeData = Object.assign(
       {
@@ -95,26 +89,21 @@ export class AppDataService {
       },
     );
 
-    await this.hooks.runPreHooks('post', actor, repositories, { appData: body, itemId });
+    await this.hooks.runPreHooks('post', member, repositories, { appData: body, itemId });
 
-    const appData = await appDataRepository.post(itemId, actorId, completeData);
-    await this.hooks.runPostHooks('post', actor, repositories, { appData, itemId });
+    const appData = await appDataRepository.post(itemId, member.id, completeData);
+    await this.hooks.runPostHooks('post', member, repositories, { appData, itemId });
     return appData;
   }
 
   async patch(
-    memberId: string | undefined,
+    member: Member,
     repositories: Repositories,
     itemId: string,
     appDataId: string,
     body: Partial<AppData>,
   ) {
-    const { appDataRepository, memberRepository, itemRepository } = repositories;
-    // check member exists
-    if (!memberId) {
-      throw new MemberCannotWriteItem();
-    }
-    const member = await memberRepository.get(memberId);
+    const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -154,18 +143,8 @@ export class AppDataService {
     return appData;
   }
 
-  async deleteOne(
-    memberId: string | undefined,
-    repositories: Repositories,
-    itemId: string,
-    appDataId: string,
-  ) {
-    const { appDataRepository, memberRepository, itemRepository } = repositories;
-    // check member exists
-    if (!memberId) {
-      throw new MemberCannotWriteItem();
-    }
-    const member = await memberRepository.get(memberId);
+  async deleteOne(member: Member, repositories: Repositories, itemId: string, appDataId: string) {
+    const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -198,20 +177,8 @@ export class AppDataService {
     return result;
   }
 
-  async get(
-    memberId: string | undefined,
-    repositories: Repositories,
-    itemId: UUID,
-    appDataId: UUID,
-  ) {
-    const { appDataRepository, memberRepository, itemRepository } = repositories;
-
-    // get member if exists
-    // item can be public
-    const member = memberId ? await memberRepository.get(memberId) : undefined;
-
-    // check item exists? let post fail?
-    const item = await itemRepository.get(itemId);
+  async get(member: Member, repositories: Repositories, item: Item, appDataId: UUID) {
+    const { appDataRepository } = repositories;
 
     const { itemMembership } = await validatePermission(
       repositories,
@@ -231,25 +198,14 @@ export class AppDataService {
         itemMembership,
       )
     ) {
-      throw new AppDataNotAccessible({ appDataId, memberId });
+      throw new AppDataNotAccessible({ appDataId, memberId: member.id });
     }
 
     return appData;
   }
 
-  async getForItem(
-    memberId: string | undefined,
-    repositories: Repositories,
-    itemId: string,
-    type?: string,
-  ) {
-    const { appDataRepository, memberRepository, itemRepository } = repositories;
-
-    // get member
-    if (!memberId) {
-      throw new UnauthorizedMember(memberId);
-    }
-    const member = await memberRepository.get(memberId);
+  async getForItem(member: Member, repositories: Repositories, itemId: string, type?: string) {
+    const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -262,22 +218,16 @@ export class AppDataService {
       item,
     );
 
-    return appDataRepository.getForItem(itemId, { memberId, type }, itemMembership?.permission);
+    return appDataRepository.getForItem(
+      itemId,
+      { memberId: member.id, type },
+      itemMembership?.permission,
+    );
   }
 
   // TODO: check for many items
-  async getForManyItems(
-    memberId: string | undefined,
-    repositories: Repositories,
-    itemIds: string[],
-  ) {
-    const { appDataRepository, memberRepository, itemRepository } = repositories;
-
-    // get member
-    if (!memberId) {
-      throw new UnauthorizedMember(memberId);
-    }
-    const member = await memberRepository.get(memberId);
+  async getForManyItems(member: Member, repositories: Repositories, itemIds: string[]) {
+    const { appDataRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
     const items = await itemRepository.getMany(itemIds);
@@ -299,7 +249,7 @@ export class AppDataService {
       );
       const appData = await appDataRepository.getForItem(
         itemId,
-        { memberId },
+        { memberId: member.id },
         itemMembership?.permission,
       );
       result.data[itemId] = appData;

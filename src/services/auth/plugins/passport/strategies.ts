@@ -15,4 +15,6 @@ export enum PassportStrategy {
 
   REFRESH_TOKEN = 'refresh-token',
   JWT = 'jwt',
+  APPS_JWT = 'apps-jwt',
+  OPTIONAL_APPS_JWT = 'optional-apps-jwt',
 }

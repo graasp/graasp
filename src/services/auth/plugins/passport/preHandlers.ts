@@ -35,3 +35,14 @@ export const authenticateJWTChallengeVerifier = fastifyPassport.authenticate(
   PassportStrategy.JWT_CHALLENGE_VERIFIER,
   { session: false },
 );
+
+export const authenticateAppsJWT = fastifyPassport.authenticate(PassportStrategy.APPS_JWT, {
+  session: false,
+});
+
+export const optionalAuthenticateAppsJWT = fastifyPassport.authenticate(
+  PassportStrategy.OPTIONAL_APPS_JWT,
+  {
+    session: false,
+  },
+);

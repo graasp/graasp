@@ -15,6 +15,7 @@ import { AuthService } from '../services/auth/service';
 import { MentionService } from '../services/chat/plugins/mentions/service';
 import { ChatMessageService } from '../services/chat/service';
 import FileService from '../services/file/service';
+import { Item } from '../services/item/entities/Item';
 import { create, updateOne } from '../services/item/fluent-schema';
 import { ActionItemService } from '../services/item/plugins/action/service';
 import { EtherpadItemService } from '../services/item/plugins/etherpad/service';
@@ -119,7 +120,13 @@ declare module 'fastify' {
 
   interface PassportUser {
     member?: Member;
-    uuid?: string;
+    uuid?: string; // Used for Password Reset
+    app?: {
+      // Used for App Authentication
+      item: Item;
+      key: string;
+      origin: string;
+    };
   }
 
   interface FastifyRequest {

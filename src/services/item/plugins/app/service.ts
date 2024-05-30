@@ -1,7 +1,9 @@
+import jwt from 'jsonwebtoken';
 import uniqBy from 'lodash.uniqby';
 
 import { AuthTokenSubject, ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { APPS_JWT_SECRET } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
@@ -12,16 +14,10 @@ import { checkTargetItemAndTokenItemMatch } from './utils';
 export class AppService {
   itemService: ItemService;
   jwtExpiration: number;
-  promisifiedJwtSign: (
-    arg1: { sub: AuthTokenSubject },
-    arg2: { expiresIn: string },
-  ) => Promise<string>;
 
-  constructor(itemService, jwtExpiration, promisifiedJwtSign) {
+  constructor(itemService, jwtExpiration) {
     this.itemService = itemService;
     this.jwtExpiration = jwtExpiration;
-    // this.promisifiedJwtVerify = promisifiedJwtVerify;
-    this.promisifiedJwtSign = promisifiedJwtSign;
   }
 
   async getAllValidAppOrigins(actor: Actor, repositories: Repositories) {
@@ -61,10 +57,9 @@ export class AppService {
       appDetails,
     );
 
-    const token = await this.promisifiedJwtSign(
-      { sub: authTokenSubject },
-      { expiresIn: `${this.jwtExpiration}m` },
-    );
+    const token = jwt.sign({ sub: authTokenSubject }, APPS_JWT_SECRET, {
+      expiresIn: `${this.jwtExpiration}m`,
+    });
     return { token };
   }
 

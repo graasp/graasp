@@ -5,6 +5,7 @@ import { Authenticator } from '@fastify/passport';
 import { PASSWORD_RESET_JWT_SECRET } from '../../../../../utils/config';
 import { MemberPasswordService } from '../../password/service';
 import { PassportStrategy } from '../strategies';
+import { StrictVerifiedCallback } from '../types';
 
 export default (passport: Authenticator, memberPasswordService: MemberPasswordService) => {
   passport.use(
@@ -14,7 +15,7 @@ export default (passport: Authenticator, memberPasswordService: MemberPasswordSe
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: PASSWORD_RESET_JWT_SECRET,
       },
-      async ({ uuid }, done) => {
+      async ({ uuid }, done: StrictVerifiedCallback) => {
         if (uuid && (await memberPasswordService.validatePasswordResetUuid(uuid))) {
           // Token has been validated
           // Error is null, payload contains the UUID.

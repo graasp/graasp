@@ -5,6 +5,7 @@ import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { IdParam } from '../../../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
+import { optionalAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -66,8 +67,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   // prevent patch on app data file
   const patchPreHook = async (
-    actor: Actor,
-    repositories: Repositories,
+    _actor: Actor,
+    _repositories: Repositories,
     args: { appData: Partial<AppData> },
   ) => {
     const { appData } = args;
@@ -81,10 +82,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/app-data/upload',
     schema: upload,
+    preHandler: optionalAuthenticateAppsJWT,
     handler: async (request) => {
-      const { authTokenSubject: requestDetails } = request;
-      const memberId = requestDetails?.memberId;
-      const itemId = requestDetails?.itemId;
+      const { user } = request;
 
       return db
         .transaction(async (manager) => {
@@ -97,7 +97,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return appDataFileService.upload(memberId, repositories, file, itemId);
+          return appDataFileService.upload(user!.member!, repositories, file, user!.app!.item);
         })
         .catch((e) => {
           console.error(e);
@@ -122,17 +122,16 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     '/app-data/:id/download',
     {
       schema: download,
+      preHandler: optionalAuthenticateAppsJWT,
     },
     async (request) => {
       const {
-        authTokenSubject: requestDetails,
+        user,
         params: { id: appDataId },
       } = request;
-      const memberId = requestDetails?.memberId;
-      const itemId = requestDetails?.itemId;
 
       return appDataFileService
-        .download(memberId, buildRepositories(), { itemId, appDataId })
+        .download(user!.member!, buildRepositories(), { item: user!.app!.item, appDataId })
         .catch((e) => {
           if (e.code) {
             throw e;
