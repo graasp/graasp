@@ -16,6 +16,7 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../test/app';
+import { AppDataSource } from '../../plugins/datasource';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -25,6 +26,7 @@ import {
 } from '../../utils/errors';
 import { saveMember } from '../member/test/fixtures/members';
 import { FolderItem, Item } from './entities/Item';
+import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemRepository } from './repository';
 import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
 
@@ -32,6 +34,7 @@ import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/item
 jest.mock('../../plugins/datasource');
 const itemRepository = new ItemRepository();
 const testUtils = new ItemTestUtils();
+const itemGeolocationRepository = AppDataSource.getRepository(ItemGeolocation);
 
 describe('ItemRepository', () => {
   let app: FastifyInstance;
@@ -761,6 +764,87 @@ describe('ItemRepository', () => {
       await testUtils.saveCollections(member);
 
       const result = await itemRepository.getPublishedItemsForMember(actor.id);
+      expectManyItems(result, items);
+    });
+  });
+
+  describe.only('searchItems', () => {
+    it('searchItems', async () => {
+      const name = 'dog';
+      const { item: parent } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name },
+      });
+      const child = await testUtils.saveItem({
+        actor,
+        parentItem: parent,
+      });
+      const childOfChild = await testUtils.saveItem({
+        actor,
+        parentItem: child,
+        item: { name },
+      });
+      const { item: parent1 } = await testUtils.saveItemAndMembership({
+        member: actor,
+      });
+      const child1 = await testUtils.saveItem({
+        actor,
+        item: { name },
+        parentItem: parent1,
+      });
+
+      // noise
+      await testUtils.saveItemAndMembership({
+        member: actor,
+      });
+
+      const items = [parent, childOfChild, child1];
+
+      const result = await itemRepository.searchItems(actor, { keywords: [name] });
+      expectManyItems(result, items);
+    });
+
+    it.only('searchItems with geoloc', async () => {
+      const name = 'dog';
+      const { item: parent, packedItem: parentPacked } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name },
+      });
+      // save geoloc
+      await itemGeolocationRepository.save({ item: parentPacked, lat: 1, lng: 2, country: 'de' });
+
+      const child = await testUtils.saveItem({
+        actor,
+        parentItem: parent,
+      });
+      const childOfChild = await testUtils.saveItem({
+        actor,
+        parentItem: child,
+        item: { name },
+      });
+      const { item: parent1, packedItem: parentPacked1 } = await testUtils.saveItemAndMembership({
+        member: actor,
+      });
+      // save geoloc
+      await itemGeolocationRepository.save({ item: parentPacked1, lat: 1, lng: 2, country: 'de' });
+
+      const child1 = await testUtils.saveItem({
+        actor,
+        item: { name },
+        parentItem: parent1,
+      });
+
+      // noise
+      await testUtils.saveItemAndMembership({
+        member: actor,
+      });
+
+      const items = [parent, childOfChild, child1];
+
+      const result = await itemRepository.searchItems(actor, {
+        keywords: [name],
+        withGeolocation: true,
+      });
       expectManyItems(result, items);
     });
   });

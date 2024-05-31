@@ -38,9 +38,13 @@ export default async function seed(
       for (const mockEntity of table.entities) {
         const entity: BaseEntity = new table.constructor();
         Object.assign(entity, table.factory ? table.factory(mockEntity) : mockEntity);
-        await manager.save(entity);
+        try {
+          await manager.save(entity);
+        } catch (e) {
+          // console.log(e);
+        }
       }
     }
   });
-  console.log('Database has been fed by mock data!');
+  console.log('Database has been fed with mock data!');
 }

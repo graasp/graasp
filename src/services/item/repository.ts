@@ -16,6 +16,7 @@ import {
 
 import { AppDataSource } from '../../plugins/datasource';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
+import { printFilledSQL } from '../../utils/debug';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -30,7 +31,7 @@ import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
-import { ItemChildrenParams } from './types';
+import { ItemChildrenParams, ItemSearchParams } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
@@ -181,7 +182,6 @@ export class ItemRepository {
       throw new ItemNotFolder(parent);
     }
 
-    // CHECK SQL
     const query = await this.repository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
@@ -226,6 +226,70 @@ export class ItemRepository {
       children.sort(compareFn);
     }
     return children;
+  }
+
+  // return item actor has access to, return child as well
+  async searchItems(
+    actor: Actor,
+    params?: ItemSearchParams & { withGeolocation?: boolean },
+  ): // actor: Actor, parent: Item, params?: ItemChildrenParams
+
+  Promise<Item[]> {
+    // if (!isItemType(parent, ItemType.FOLDER)) {
+    //   throw new ItemNotFolder(parent);
+    // }
+
+    if (!actor) {
+      return [];
+    }
+
+    const query = await this.repository
+      .createQueryBuilder('item')
+      .leftJoin('item.creator', 'creator')
+      .innerJoin('item_membership', 'im', 'item.path <@ im.item_path')
+      .andWhere('im.member_id = :memberId', { memberId: actor.id });
+
+    if (params?.types) {
+      const types = params.types;
+      query.andWhere('item.type IN (:...types)', { types });
+    }
+
+    if (params?.withGeolocation) {
+      query
+        .innerJoin('item_geolocation', 'ig', 'item.path <@ ig.item_path')
+        .andWhere('ig IS NOT NULL');
+    }
+
+    const allKeywords = params?.keywords?.filter((s) => s && s.length);
+    if (allKeywords?.length) {
+      const keywordsString = allKeywords.join(' ');
+      const memberLang = actor?.lang;
+      query.andWhere((q) => {
+        // search in english by default
+        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // no dictionary
+        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+          keywords: keywordsString,
+        });
+
+        // search by member lang
+        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
+          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+            keywords: keywordsString,
+            lang: ALLOWED_SEARCH_LANGS[memberLang],
+          });
+        }
+      });
+    }
+
+    console.log(printFilledSQL(query));
+
+    const res = await query.getMany();
+
+    return res;
   }
 
   /**

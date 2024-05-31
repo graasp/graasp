@@ -10,7 +10,6 @@ import {
 
 import { AppDataSource } from '../../plugins/datasource';
 import { Paginated, PaginationParams } from '../../types';
-import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
 import {
   InvalidMembership,
   InvalidPermissionLevel,
@@ -112,8 +111,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
     actor: Member,
     {
       creatorId,
-      name = '',
-      keywords = [],
+      name,
       sortBy = SortBy.ItemUpdatedAt,
       ordering = Ordering.desc,
       permissions,
@@ -145,29 +143,9 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
         return 'item.path =' + subQuery.getQuery();
       });
 
-    // todo: remove name
-    const allKeywords = [name, ...keywords].filter((s) => s && s.length);
-    if (allKeywords?.length) {
-      const keywordsString = allKeywords.join(' ');
-      const memberLang = actor?.lang;
-      query.andWhere((q) => {
-        // search in english by default
-        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // no dictionary
-        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // search by member lang
-        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
-          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
-            keywords: keywordsString,
-            lang: ALLOWED_SEARCH_LANGS[memberLang],
-          });
-        }
+    if (name) {
+      query.andWhere("LOWER(item.name) LIKE '%' || :name || '%'", {
+        name: name.toLowerCase().trim(),
       });
     }
 

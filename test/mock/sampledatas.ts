@@ -3,6 +3,7 @@ import { BaseEntity } from 'typeorm';
 
 import {
   CompleteMember,
+  ItemLoginSchemaType,
   ItemTagType,
   ItemType,
   ItemValidationProcess,
@@ -22,6 +23,7 @@ import { ItemTag } from '../../src/services/item/plugins/itemTag/ItemTag';
 import { ItemPublished } from '../../src/services/item/plugins/published/entities/itemPublished';
 import { ItemValidation } from '../../src/services/item/plugins/validation/entities/ItemValidation';
 import { ItemValidationGroup } from '../../src/services/item/plugins/validation/entities/ItemValidationGroup';
+import { ItemLoginSchema } from '../../src/services/itemLogin/entities/itemLoginSchema';
 import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
 import { Member } from '../../src/services/member/entities/member';
 
@@ -44,6 +46,8 @@ const sharedIds = {
   samplePublisher: 'cbfca68f-4e94-4e2e-a1d0-6c03d2d5e87f',
   sampleAppId: '8614d856-8b51-4a45-a9b9-4e67e651d2d6',
   sampleAppUrl: 'http://apps.localhost:3012',
+
+  itemLoginItem: '84a7a73a-eacd-4bad-ae7b-82dcc9a04aac',
 };
 
 const datas: {
@@ -72,6 +76,10 @@ const datas: {
   itemsPublished?: TableType<
     ItemPublished,
     { [K in keyof Omit<ItemPublished, defaultOmitedKeys>] }
+  >;
+  itemsLoginSchema?: TableType<
+    ItemLoginSchema,
+    { [K in keyof Omit<ItemLoginSchema, defaultOmitedKeys>] }
   >;
   publishers?: TableType<Publisher, { [K in keyof Omit<Publisher, defaultOmitedKeys>] }>;
   apps?: TableType<App, { [K in keyof Omit<App, defaultOmitedKeys>] }>;
@@ -156,6 +164,19 @@ const datas: {
         lang: 'en',
         deletedAt: undefined,
       },
+      {
+        id: sharedIds.itemLoginItem,
+        name: 'item with pseudo login',
+        displayName: 'item with pseudo login',
+        type: ItemType.FOLDER,
+        description: undefined,
+        path: buildPathFromIds(sharedIds.itemLoginItem),
+        creator: sharedIds.bobMember,
+        extra: { folder: { childrenOrder: [] } },
+        settings: { hasThumbnail: false, showChatbox: false },
+        lang: 'en',
+        deletedAt: undefined,
+      },
     ],
   },
   itemMemberships: {
@@ -167,6 +188,13 @@ const datas: {
         creator: sharedIds.bobMember,
         member: sharedIds.bobMember,
         item: buildPathFromIds(sharedIds.publicRootFolder),
+      },
+      {
+        id: 'e5f4e255-fd5e-4edb-b4fb-935707e2df58',
+        permission: PermissionLevel.Admin,
+        creator: sharedIds.bobMember,
+        member: sharedIds.bobMember,
+        item: buildPathFromIds(sharedIds.itemLoginItem),
       },
     ],
   },
@@ -230,6 +258,17 @@ const datas: {
     ],
   },
 
+  itemsLoginSchema: {
+    constructor: ItemLoginSchema,
+    entities: [
+      {
+        id: '7d47dee2-d8d3-43b6-86a2-c5de2f30ea9e',
+        item: buildPathFromIds(sharedIds.itemLoginItem),
+        type: ItemLoginSchemaType.Username,
+      },
+    ],
+  },
+
   itemsPublished: {
     constructor: ItemPublished,
     entities: [
@@ -259,7 +298,7 @@ const datas: {
         id: sharedIds.sampleAppId,
         key: sharedIds.sampleAppId,
         name: 'SampleApp',
-        description: faker.lorem.text(),
+        description: faker.lorem.sentence(),
         url: sharedIds.sampleAppUrl,
         publisher: sharedIds.samplePublisher,
         extra: {},

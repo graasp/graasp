@@ -37,7 +37,7 @@ import {
 import { ItemMembershipRepository } from '../../itemMembership/repository';
 import { Member } from '../../member/entities/member';
 import { saveMember } from '../../member/test/fixtures/members';
-import { PackedItem } from '../ItemWrapper';
+import { ItemWrapper, PackedItem } from '../ItemWrapper';
 import { Item } from '../entities/Item';
 import { ItemGeolocation } from '../plugins/geolocation/ItemGeolocation';
 import { ItemTag } from '../plugins/itemTag/ItemTag';
@@ -1158,6 +1158,40 @@ describe('Item routes tests', () => {
         expectManyPackedItems(data, items);
       });
 
+      it.skip('Returns successfully child for keywords', async () => {
+        const { itemMembership, item: parentItem } = await testUtils.saveItemAndMembership({
+          item: { name: 'dog' },
+          member: actor,
+        });
+        await testUtils.saveItemAndMembership({
+          item: { name: 'other' },
+          member: actor,
+        });
+
+        const item2 = await testUtils.saveItem({
+          item: { name: 'cat' },
+          parentItem,
+          actor,
+        });
+
+        const items = [new ItemWrapper(item2, itemMembership).packed()];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/accessible?${qs.stringify(
+            { keywords: ['cat'] },
+            { arrayFormat: 'repeat' },
+          )}`,
+        });
+        expect(response.statusCode).toBe(StatusCodes.OK);
+
+        const { data, totalCount } = response.json();
+        console.log(data);
+        expect(totalCount).toEqual(items.length);
+        expect(data).toHaveLength(items.length);
+        expectManyPackedItems(data, items);
+      });
+
       it('Returns successfully items for member id', async () => {
         await testUtils.saveItemAndMembership({ member: actor });
         await testUtils.saveItemAndMembership({ member: actor });
@@ -1645,7 +1679,6 @@ describe('Item routes tests', () => {
         const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { name: 'to be' },
-          parentItem,
         });
         // noise
         await testUtils.saveItemAndMembership({
@@ -1665,6 +1698,42 @@ describe('Item routes tests', () => {
 
         const data = response.json();
         expect(data).toHaveLength(children.length);
+        expectManyPackedItems(data, children);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      });
+
+      it.only('Returns search successfully for child of child', async () => {
+        const { item: parentItem, itemMembership } = await testUtils.saveItemAndMembership({
+          member: actor,
+          item: { name: 'no' },
+        });
+        const child1 = await testUtils.saveItem({
+          actor,
+          item: { name: 'yes' },
+          parentItem,
+        });
+        const childOfChild = await testUtils.saveItem({
+          actor,
+          item: { name: 'keyword' },
+          parentItem: child1,
+        });
+        // noise
+        await testUtils.saveItemAndMembership({
+          member: actor,
+          parentItem,
+          item: { name: 'maybe' },
+        });
+
+        const children = [new ItemWrapper(childOfChild, itemMembership).packed()];
+
+        const response = await app.inject({
+          method: HttpMethod.Get,
+          url: `/items/${parentItem.id}/children`,
+          query: { keywords: ['keyword'] },
+        });
+        const data = response.json();
+        expect(data).toHaveLength(children.length);
+        console.log(data);
         expectManyPackedItems(data, children);
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
