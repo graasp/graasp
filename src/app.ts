@@ -7,7 +7,7 @@ import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
-import passportPlugin from './services/auth/plugins/passport/plugin';
+import { plugin as passportPlugin } from './services/auth/plugins/passport';
 import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
 import ItemMembershipServiceApi from './services/itemMembership';
