@@ -8,14 +8,16 @@ import { ItemRepository } from '../../../../item/repository';
 import { Member } from '../../../../member/entities/member';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
-import { StrictVerifiedCallback } from '../types';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
-  memberRepository: typeof MemberRepository,
+  log: (msg: string) => void,
+  memberRepository: MemberRepository,
   itemRepository: ItemRepository,
   strategy: PassportStrategy,
   strict: boolean, // Throw 401 if member is not found
+  options?: CustomStrategyOptions,
 ) => {
   passport.use(
     strategy,
@@ -32,9 +34,11 @@ export default (
           let member: Member | undefined;
           try {
             member = await memberRepository.get(memberId);
-          } catch (e) {
+          } catch (err) {
+            // Exception occurred
+            log(err);
             if (strict) {
-              return done(new UnauthorizedMember(), false);
+              done(options?.spreadException ? err : new UnauthorizedMember(), false);
             }
           }
           const item = await itemRepository.get(itemId);
@@ -46,8 +50,10 @@ export default (
               key,
             },
           });
-        } catch (e) {
-          return done(e, false);
+        } catch (err) {
+          // Exception occurred
+          log(err);
+          done(options?.spreadException ? err : new UnauthorizedMember(), false);
         }
       },
     ),

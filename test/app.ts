@@ -13,6 +13,24 @@ import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.SESSION)!;
+let originalStrictSessionStrategy;
+
+export function logIn(actor: Actor) {
+  if (!originalStrictSessionStrategy) {
+    originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.STRICT_SESSION);
+  }
+  // If an actor is provided, use a custom strategy that always validate the request.
+  // This will override the original session strategy to a custom one
+  const strategy = new CustomStrategy((_req, done) => done(null, { member: actor }));
+  fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
+  fastifyPassport.use(PassportStrategy.SESSION, strategy);
+}
+export function logOut() {
+  fastifyPassport.use(PassportStrategy.SESSION, originalSessionStrategy);
+  if (originalStrictSessionStrategy) {
+    fastifyPassport.use(PassportStrategy.STRICT_SESSION, originalStrictSessionStrategy);
+  }
+}
 
 const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
   const app = fastify({
@@ -36,14 +54,10 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
 
   const actor: Actor = member !== null ? await saveMember(member) : undefined;
   if (actor) {
-    // If an actor is provided, use a custom strategy that always validate the request.
-    // This will override the original session strategy to a custom one
-    const strategy = new CustomStrategy((_req, done) => done(null, { member: actor }));
-    fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
-    fastifyPassport.use(PassportStrategy.SESSION, strategy);
+    logIn(actor);
   } else {
     // Set the original session strategy back
-    fastifyPassport.use(PassportStrategy.SESSION, originalSessionStrategy);
+    logOut();
   }
 
   return { app, actor };

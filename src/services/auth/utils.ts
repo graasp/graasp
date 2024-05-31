@@ -1,7 +1,6 @@
-import jwt, { Secret, SignOptions, VerifyOptions } from 'jsonwebtoken';
-import { promisify } from 'util';
+import jwt from 'jsonwebtoken';
 
-import { FastifyBaseLogger, FastifyRequest } from 'fastify';
+import { FastifyBaseLogger } from 'fastify';
 
 import {
   AUTH_TOKEN_EXPIRATION_IN_MINUTES,
@@ -11,27 +10,8 @@ import {
   REFRESH_TOKEN_EXPIRATION_IN_MINUTES,
   REFRESH_TOKEN_JWT_SECRET,
 } from '../../utils/config';
-import { InvalidSession, OrphanSession } from '../../utils/errors';
-import { MemberRepository } from '../member/repository';
-
-// todo: duplicate?
-const memberRepository = new MemberRepository();
-
-const promisifiedJwtVerify = promisify<
-  string,
-  Secret,
-  VerifyOptions,
-  { sub: string; challenge?: string }
->(jwt.verify);
-const promisifiedJwtSign = promisify<
-  { sub: string; challenge?: string },
-  Secret,
-  SignOptions,
-  string
->(jwt.sign);
 
 const defaultClientHost = BUILDER_HOST;
-const SESSION_MEMBER_ID_KEY = 'passport';
 
 const validOrigins = CLIENT_HOSTS.map((c) => c.url.origin);
 
@@ -55,64 +35,17 @@ export const getRedirectionUrl = (log: FastifyBaseLogger, target?: string) => {
   return target;
 };
 
-export async function verifyMemberInSession(request: FastifyRequest) {
-  const { session } = request;
-  const memberId = session.get(SESSION_MEMBER_ID_KEY);
-
-  if (!memberId) {
-    throw new InvalidSession(memberId);
-  }
-
-  try {
-    const member = await memberRepository.get(memberId);
-    request.user = { member };
-  } catch (e) {
-    session.delete();
-    throw new OrphanSession(memberId);
-  }
-}
-
-// set member in request from session if exist
-// used to get authenticated member without throwing
-export async function fetchMemberInSession(request: FastifyRequest) {
-  const { session } = request;
-  const memberId = session.get(SESSION_MEMBER_ID_KEY);
-
-  if (!memberId) return;
-
-  // this throws if someone tries to use a fake member id
-  request.user = { member: await memberRepository.get(memberId) };
-}
-
-// for token based auth
-export async function verifyMemberInAuthToken(jwtToken: string, request: FastifyRequest) {
-  try {
-    const { routerPath } = request;
-    const refreshing = '/m/auth/refresh' === routerPath;
-    const secret = refreshing ? REFRESH_TOKEN_JWT_SECRET : AUTH_TOKEN_JWT_SECRET;
-    const { sub: memberId } = await promisifiedJwtVerify(jwtToken, secret, {});
-    const member = await memberRepository.get(memberId);
-
-    request.user = { member };
-
-    return true;
-  } catch (error) {
-    const { log } = request;
-    log.warn('Invalid auth token');
-    return false;
-  }
-}
-
-export async function generateAuthTokensPair(
-  memberId: string,
-): Promise<{ authToken: string; refreshToken: string }> {
-  const [authToken, refreshToken] = await Promise.all([
-    promisifiedJwtSign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET, {
-      expiresIn: `${AUTH_TOKEN_EXPIRATION_IN_MINUTES}m`,
+export function generateAuthTokensPair(memberId: string): {
+  authToken: string;
+  refreshToken: string;
+} {
+  const [authToken, refreshToken] = [
+    jwt.sign({ sub: memberId }, AUTH_TOKEN_JWT_SECRET, {
+      expiresIn: AUTH_TOKEN_EXPIRATION_IN_MINUTES * 60,
     }),
-    promisifiedJwtSign({ sub: memberId }, REFRESH_TOKEN_JWT_SECRET, {
-      expiresIn: `${REFRESH_TOKEN_EXPIRATION_IN_MINUTES}m`,
+    jwt.sign({ sub: memberId }, REFRESH_TOKEN_JWT_SECRET, {
+      expiresIn: REFRESH_TOKEN_EXPIRATION_IN_MINUTES * 60,
     }),
-  ]);
+  ];
   return { authToken, refreshToken };
 }

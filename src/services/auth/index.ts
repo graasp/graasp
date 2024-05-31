@@ -4,16 +4,11 @@ import { FastifyPluginAsync } from 'fastify';
 import magicLinkController from './plugins/magicLink';
 import mobileController from './plugins/mobile';
 import passwordController from './plugins/password';
-import { fetchMemberInSession, verifyMemberInSession } from './utils';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     authentication: { service: authService },
   } = fastify;
-
-  fastify.decorate('fetchMemberInSession', fetchMemberInSession);
-
-  fastify.decorate('validateSession', verifyMemberInSession);
 
   // TODO: decorate auth service and use it instead of decorating function
   fastify.decorate('generateRegisterLinkAndEmailIt', authService.generateRegisterLinkAndEmailIt);

@@ -4,12 +4,17 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Authenticator } from '@fastify/passport';
 
 import { JWT_SECRET } from '../../../../../utils/config';
-import { ChallengeFailed } from '../../../../../utils/errors';
+import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
-import { StrictVerifiedCallback } from '../types';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
-export default (passport: Authenticator, memberRepository: typeof MemberRepository) => {
+export default (
+  passport: Authenticator,
+  log: (msg: string) => void,
+  memberRepository: MemberRepository,
+  options?: CustomStrategyOptions,
+) => {
   passport.use(
     PassportStrategy.JWT_CHALLENGE_VERIFIER,
     new Strategy(
@@ -25,16 +30,19 @@ export default (passport: Authenticator, memberRepository: typeof MemberReposito
             .then((member) => {
               if (member) {
                 // Token has been validated
-                // Error is null, user payload contains the UUID.
                 done(null, { member });
               } else {
                 // Authentication refused
-                // Error is null, user is false
-                return done(null, false);
+                done(
+                  options?.spreadException ? new MemberNotFound(sub) : new UnauthorizedMember(),
+                  false,
+                );
               }
             })
             .catch((err) => {
-              return done(err, false);
+              // Exception occurred
+              log(err);
+              done(options?.spreadException ? err : new UnauthorizedMember(), false);
             });
         } else {
           // Challenge failed

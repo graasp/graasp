@@ -3,11 +3,16 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Authenticator } from '@fastify/passport';
 
 import { PASSWORD_RESET_JWT_SECRET } from '../../../../../utils/config';
+import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberPasswordService } from '../../password/service';
 import { PassportStrategy } from '../strategies';
-import { StrictVerifiedCallback } from '../types';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
-export default (passport: Authenticator, memberPasswordService: MemberPasswordService) => {
+export default (
+  passport: Authenticator,
+  memberPasswordService: MemberPasswordService,
+  options?: CustomStrategyOptions,
+) => {
   passport.use(
     PassportStrategy.PASSPORT_RESET,
     new Strategy(
@@ -18,12 +23,13 @@ export default (passport: Authenticator, memberPasswordService: MemberPasswordSe
       async ({ uuid }, done: StrictVerifiedCallback) => {
         if (uuid && (await memberPasswordService.validatePasswordResetUuid(uuid))) {
           // Token has been validated
-          // Error is null, payload contains the UUID.
           return done(null, { uuid });
         } else {
           // Authentication refused
-          // Error is null, user is false to trigger a 401 Unauthorized.
-          return done(null, false);
+          done(
+            options?.spreadException ? new MemberNotFound(uuid) : new UnauthorizedMember(),
+            false,
+          );
         }
       },
     ),

@@ -99,20 +99,6 @@ export const injectDelete = async (app, alias) => {
   return app.inject({ method: HttpMethod.Delete, url: shortLinkUrl(alias) });
 };
 
-export const logOut = (_app) => {
-  // This will override the original session strategies to logout the request.
-  const strategy = new CustomStrategy((req, done) => req.logOut({ keepSessionInfo: false }, done));
-  fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
-  fastifyPassport.use(PassportStrategy.SESSION, strategy);
-};
-
-export const logInAs = async (app, member) => {
-  // This will override the original session strategies to a custom one that always validate the request.
-  const strategy = new CustomStrategy((_req, done) => done(null, { member }));
-  fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
-  fastifyPassport.use(PassportStrategy.SESSION, strategy);
-};
-
 export function getRedirection(itemId: string, platform: Context) {
   const clientHostManager = ClientHostManager.getInstance();
 

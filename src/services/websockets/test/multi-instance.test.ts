@@ -8,6 +8,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { Websocket } from '@graasp/sdk';
 
+import '../../auth/plugins/passport/preHandlers';
 import {
   PortGenerator,
   clientSend,
@@ -18,7 +19,10 @@ import {
 } from './test-utils';
 
 const portGen = new PortGenerator(5000);
-
+jest.mock('../../auth/plugins/passport/preHandlers', () => ({
+  optionalAuthenticated: jest.fn().mockReturnValue(Promise.resolve()),
+  authenticated: jest.fn().mockReturnValue(Promise.resolve()),
+}));
 test('multi-instance broker', async () => {
   const config1 = createDefaultLocalConfig({ port: portGen.getNewPort() });
   const config2 = createDefaultLocalConfig({ port: portGen.getNewPort() });

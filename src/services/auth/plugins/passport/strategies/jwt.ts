@@ -2,15 +2,18 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { Authenticator } from '@fastify/passport';
 
+import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
-import { StrictVerifiedCallback } from '../types';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
-  memberRepository: typeof MemberRepository,
+  log: (msg: string) => void,
+  memberRepository: MemberRepository,
   strategy: PassportStrategy,
   secretOrKey: string,
+  options?: CustomStrategyOptions,
 ) => {
   passport.use(
     strategy,
@@ -25,18 +28,19 @@ export default (
           .then((member) => {
             if (member) {
               // Token has been validated
-              // Error is null, user payload contains the UUID.
               done(null, { member });
             } else {
               // Authentication refused
-              // Error is null, user is false
-              return done(null, false);
+              done(
+                options?.spreadException ? new MemberNotFound(sub) : new UnauthorizedMember(),
+                false,
+              );
             }
           })
           .catch((err) => {
             // Exception occurred
-            // Error is defined, user is false
-            return done(err, false);
+            log(err);
+            done(options?.spreadException ? err : new UnauthorizedMember(), false);
           });
       },
     ),

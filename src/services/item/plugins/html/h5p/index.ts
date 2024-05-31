@@ -148,7 +148,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
             throw new H5PInvalidFileError(h5pFile);
           }
 
-          return h5pService.createItem(user, repositories, h5pFile, createH5PItem, parentId, log);
+          return h5pService.createItem(member, repositories, h5pFile, createH5PItem, parentId, log);
         });
       },
     );

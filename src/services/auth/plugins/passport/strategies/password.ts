@@ -2,16 +2,19 @@ import { Strategy } from 'passport-local';
 
 import { Authenticator } from '@fastify/passport';
 
+import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { Member } from '../../../../member/entities/member';
 import { MemberPasswordService } from '../../password/service';
 import { PassportStrategy } from '../strategies';
-import { StrictVerifiedCallback } from '../types';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
+  log: (msg: string) => void,
   memberPasswordService: MemberPasswordService,
   repositories: Repositories,
+  options?: CustomStrategyOptions,
 ) => {
   passport.use(
     PassportStrategy.PASSWORD,
@@ -25,18 +28,16 @@ export default (
           .then((member?: Member) => {
             if (member) {
               // Token has been validated
-              // Error is undefined, req.user is the Password Reset Request UUID.
               done(null, { member });
             } else {
               // Authentication refused
-              // Error is undefined, user is false to trigger a 401 Unauthorized.
-              done(null, false);
+              done(new UnauthorizedMember(), false);
             }
           })
           .catch((err) => {
-            // Authentication refused
-            // Error is defined, user is false to trigger a 401 Unauthorized.
-            done(err, false);
+            // Exception occurred
+            log(err);
+            done(options?.spreadException ? err : new UnauthorizedMember(), false);
           });
       },
     ),

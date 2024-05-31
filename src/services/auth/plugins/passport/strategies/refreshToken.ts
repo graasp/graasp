@@ -3,11 +3,17 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Authenticator } from '@fastify/passport';
 
 import { REFRESH_TOKEN_JWT_SECRET } from '../../../../../utils/config';
+import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/repository';
 import { PassportStrategy } from '../strategies';
-import { StrictVerifiedCallback } from '../types';
+import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
-export default (passport: Authenticator, memberRepository: typeof MemberRepository) => {
+export default (
+  passport: Authenticator,
+  log: (msg: string) => void,
+  memberRepository: MemberRepository,
+  options?: CustomStrategyOptions,
+) => {
   passport.use(
     PassportStrategy.REFRESH_TOKEN,
     new Strategy(
@@ -25,13 +31,16 @@ export default (passport: Authenticator, memberRepository: typeof MemberReposito
               done(null, { member });
             } else {
               // Authentication refused
-              // Error is null, user is false
-              return done(null, false);
+              return done(
+                options?.spreadException ? new MemberNotFound(sub) : new UnauthorizedMember(),
+                false,
+              );
             }
           })
-          .catch((_err) => {
-            // Should return err here. But we don't because of the original implementation
-            return done(null, false);
+          .catch((err) => {
+            // Exception occurred
+            log(err);
+            done(options?.spreadException ? err : new UnauthorizedMember(), false);
           });
       },
     ),

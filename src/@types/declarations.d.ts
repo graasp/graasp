@@ -100,7 +100,6 @@ declare module 'fastify' {
     etherpad: EtherpadItemService;
 
     corsPluginOptions: any;
-    fetchMemberInSession: (request: FastifyRequest) => Promise<void>;
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
       options: {

@@ -42,8 +42,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         { sub: user!.member!.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
-
-      // TODO : Cleanup all this mess
       const redirectionUrl = getRedirectionUrl(log, url);
 
       const target = new URL('/auth', PUBLIC_URL);

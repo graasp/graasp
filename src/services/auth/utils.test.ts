@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { v4 } from 'uuid';
 
@@ -6,28 +7,25 @@ import { FastifyInstance, FastifyRequest } from 'fastify';
 
 import build, { clearDatabase } from '../../../test/app';
 import { AUTH_TOKEN_JWT_SECRET } from '../../utils/config';
-import { InvalidSession, MemberNotFound, OrphanSession } from '../../utils/errors';
+import { InvalidSession, OrphanSession } from '../../utils/errors';
 import { Member } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
-import { fetchMemberInSession, verifyMemberInAuthToken, verifyMemberInSession } from './utils';
+import { authenticateMobileMagicLink } from './plugins/passport';
 
 // mock datasource
 jest.mock('../../plugins/datasource');
-
-const buildRequest = (memberId?: string) =>
-  ({
-    session: {
-      get: () => memberId,
-      delete: jest.fn(),
-    },
-    log: { warn: jest.fn() },
-  } as unknown as FastifyRequest & { member?: Member });
+const MOCKED_ROUTE = '/mock-route';
 
 describe('Auth utils', () => {
   let app: FastifyInstance;
   let member;
+  let fn: jest.Mock;
   beforeAll(async () => {
     ({ app } = await build());
+    fn = jest.fn();
+    app.get(MOCKED_ROUTE, { preHandler: authenticateMobileMagicLink }, async (...args) => {
+      fn(...args);
+    });
 
     member = await saveMember();
   });
@@ -35,46 +33,9 @@ describe('Auth utils', () => {
   afterAll(async () => {
     await clearDatabase(app.db);
   });
-  describe('verifyMemberInSession', () => {
-    it('Correctly set member in request', async () => {
-      const request = buildRequest(member.id);
-      await verifyMemberInSession(request);
 
-      expect(request.member).toEqual(member);
-    });
-    it('Throw for undefined memberId', async () => {
-      const request = buildRequest();
-      expect(verifyMemberInSession(request)).rejects.toBeInstanceOf(InvalidSession);
-
-      expect(request.member).toBeUndefined();
-    });
-    it('Throw if member does not exist', async () => {
-      const request = buildRequest(v4());
-      expect(verifyMemberInSession(request)).rejects.toBeInstanceOf(OrphanSession);
-
-      expect(request.member).toBeUndefined();
-    });
-  });
-
-  describe('fetchMemberInSession', () => {
-    it('Correctly set member in request', async () => {
-      const request = buildRequest(member.id);
-      await fetchMemberInSession(request);
-
-      expect(request.member).toEqual(member);
-    });
-    it('No memberId does not throw', async () => {
-      const request = buildRequest();
-      await fetchMemberInSession(request);
-
-      expect(request.member).toBeUndefined();
-    });
-    it('Throw if member does not exist', async () => {
-      const request = buildRequest(v4());
-      expect(fetchMemberInSession(request)).rejects.toBeInstanceOf(MemberNotFound);
-
-      expect(request.member).toBeUndefined();
-    });
+  afterEach(() => {
+    fn.mockClear();
   });
 
   describe('verifyMemberInAuthToken', () => {
@@ -82,29 +43,25 @@ describe('Auth utils', () => {
     const challenge = crypto.createHash('sha256').update(verifier).digest('hex');
 
     it('Correctly set member in request', async () => {
-      const request = buildRequest();
-
-      const t = jwt.sign({ sub: member.id, challenge }, AUTH_TOKEN_JWT_SECRET);
-      expect(await verifyMemberInAuthToken(t, request)).toBeTruthy();
-
-      expect(request.member).toEqual(member);
+      const token = jwt.sign({ sub: member.id, challenge }, AUTH_TOKEN_JWT_SECRET);
+      fn.mockImplementation(({ user }) => expect(user!.member).toEqual(member));
+      const response = await app.inject({ path: MOCKED_ROUTE, query: { token } });
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(response.statusCode).toBe(StatusCodes.OK);
     });
-    it('No memberId return false', async () => {
-      const request = buildRequest();
-
-      const t = jwt.sign({ sub: undefined, challenge }, AUTH_TOKEN_JWT_SECRET);
-      expect(await verifyMemberInAuthToken(t, request)).toBeFalsy();
-
-      expect(request.member).toBeUndefined();
+    it('No memberId throw unauthorized', async () => {
+      const token = jwt.sign({ sub: undefined, challenge }, AUTH_TOKEN_JWT_SECRET);
+      fn.mockImplementation(() => fail('Should not be called'));
+      const response = await app.inject({ path: MOCKED_ROUTE, query: { token } });
+      expect(fn).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
-    it('If member does not exist return false', async () => {
-      const request = buildRequest();
-
-      const t = jwt.sign({ sub: v4(), challenge }, AUTH_TOKEN_JWT_SECRET);
-
-      expect(await verifyMemberInAuthToken(t, request)).toBeFalsy();
-
-      expect(request.member).toBeUndefined();
+    it('If member does not exist throw unauthorized', async () => {
+      const token = jwt.sign({ sub: v4(), challenge }, AUTH_TOKEN_JWT_SECRET);
+      fn.mockImplementation(() => fail('Should not be called'));
+      const response = await app.inject({ path: MOCKED_ROUTE, query: { token } });
+      expect(fn).toHaveBeenCalledTimes(0);
+      expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
     });
   });
 });

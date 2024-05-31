@@ -194,7 +194,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/descendants',
     { schema: getDescendants, preHandler: optionalAuthenticated },
     async ({ user, params: { id }, query }) => {
-      return itemService.getPackedDescendants(user!.member, buildRepositories(), id, query);
+      return itemService.getPackedDescendants(user!.member, buildRepositories(), id);
+    async ({ user, params: { id }, query }) => {
+      return itemService.getPackedDescendants(user?.member, buildRepositories(), id, query);
     },
   );
 
