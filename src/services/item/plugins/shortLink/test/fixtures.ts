@@ -1,10 +1,5 @@
-import { Strategy as CustomStrategy } from 'passport-custom';
-
-import fastifyPassport from '@fastify/passport';
-
 import { ClientHostManager, Context, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import { PassportStrategy } from '../../../../auth/plugins/passport';
 import { Member } from '../../../../member/entities/member';
 import { ItemTestUtils } from '../../../test/fixtures/items';
 import { setItemPublic } from '../../itemTag/test/fixtures';

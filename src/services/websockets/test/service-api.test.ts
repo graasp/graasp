@@ -12,6 +12,7 @@ import { FastifyInstance } from 'fastify';
 
 import { Websocket } from '@graasp/sdk';
 
+import '../../auth/plugins/passport/preHandlers';
 import { createServerInfo } from '../message';
 import {
   PortGenerator,
@@ -26,7 +27,10 @@ import {
 } from './test-utils';
 
 const portGen = new PortGenerator(7000);
-
+jest.mock('../../auth/plugins/passport/preHandlers', () => ({
+  optionalAuthenticated: jest.fn().mockReturnValue(Promise.resolve()),
+  authenticated: jest.fn().mockReturnValue(Promise.resolve()),
+}));
 describe('plugin options', () => {
   test('route prefix', async () => {
     const configWithPrefix = createDefaultLocalConfig({

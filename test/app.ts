@@ -15,7 +15,11 @@ import { DB_TEST_SCHEMA } from './constants';
 const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.SESSION)!;
 let originalStrictSessionStrategy;
 
-export function logIn(actor: Actor) {
+/**
+ * Override the session strategy to always validate the request. Set the given actor to request.user.member on authentications
+ * @param actor Actor to set to request.user.member
+ */
+export function mockAuthenticate(actor: Actor) {
   if (!originalStrictSessionStrategy) {
     originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.STRICT_SESSION);
   }
@@ -25,7 +29,11 @@ export function logIn(actor: Actor) {
   fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
   fastifyPassport.use(PassportStrategy.SESSION, strategy);
 }
-export function logOut() {
+
+/**
+ * Set the original session strategy back.
+ */
+export function unmockAuthenticate() {
   fastifyPassport.use(PassportStrategy.SESSION, originalSessionStrategy);
   if (originalStrictSessionStrategy) {
     fastifyPassport.use(PassportStrategy.STRICT_SESSION, originalStrictSessionStrategy);
@@ -54,10 +62,10 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
 
   const actor: Actor = member !== null ? await saveMember(member) : undefined;
   if (actor) {
-    logIn(actor);
+    mockAuthenticate(actor);
   } else {
     // Set the original session strategy back
-    logOut();
+    unmockAuthenticate();
   }
 
   return { app, actor };

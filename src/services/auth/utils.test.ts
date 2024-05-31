@@ -3,12 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { v4 } from 'uuid';
 
-import { FastifyInstance, FastifyRequest } from 'fastify';
+import { FastifyInstance } from 'fastify';
 
 import build, { clearDatabase } from '../../../test/app';
 import { AUTH_TOKEN_JWT_SECRET } from '../../utils/config';
-import { InvalidSession, OrphanSession } from '../../utils/errors';
-import { Member } from '../member/entities/member';
 import { saveMember } from '../member/test/fixtures/members';
 import { authenticateMobileMagicLink } from './plugins/passport';
 

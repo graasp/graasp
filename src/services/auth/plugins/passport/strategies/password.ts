@@ -2,7 +2,7 @@ import { Strategy } from 'passport-local';
 
 import { Authenticator } from '@fastify/passport';
 
-import { MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
+import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { Member } from '../../../../member/entities/member';
 import { MemberPasswordService } from '../../password/service';

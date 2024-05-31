@@ -4,7 +4,11 @@ import { FastifyInstance } from 'fastify';
 
 import { Context, HttpMethod, PermissionLevel, ShortLinkPlatform } from '@graasp/sdk';
 
-import build, { clearDatabase, logIn, logOut } from '../../../../../../test/app';
+import build, {
+  clearDatabase,
+  mockAuthenticate,
+  unmockAuthenticate,
+} from '../../../../../../test/app';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { ShortLinkDuplication, ShortLinkLimitExceed } from '../../../../../utils/errors';
 import { saveMember } from '../../../../member/test/fixtures/members';
@@ -67,7 +71,7 @@ describe('Short links routes tests', () => {
       const response = await injectPost(app, shortLinkPayload);
       expect(response.statusCode).toEqual(StatusCodes.OK);
       expect(response.json().alias).toEqual(MOCK_ALIAS);
-      logOut();
+      unmockAuthenticate();
     });
 
     describe('POST /short-links without connected member', () => {
@@ -436,7 +440,7 @@ describe('Short links routes tests', () => {
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
           // sign in as bob
-          await logIn(bob);
+          mockAuthenticate(bob);
 
           const response = await injectPatch(app, MOCK_ALIAS, { platform: Context.Builder });
           expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
@@ -460,7 +464,7 @@ describe('Short links routes tests', () => {
           expect(post.statusCode).toEqual(StatusCodes.OK);
 
           // sign in as bob
-          await logIn(bob);
+          mockAuthenticate(bob);
 
           const response = await injectPatch(app, MOCK_ALIAS, { platform: Context.Builder });
           expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -607,7 +611,7 @@ describe('Short links routes tests', () => {
           expect(post.json().alias).toEqual(MOCK_ALIAS);
 
           // log in as bob
-          await logIn(bob);
+          mockAuthenticate(bob);
 
           const response = await injectDelete(app, MOCK_ALIAS);
           expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
@@ -632,7 +636,7 @@ describe('Short links routes tests', () => {
           expect(post.statusCode).toEqual(StatusCodes.OK);
           expect(post.json().alias).toEqual(MOCK_ALIAS);
 
-          await logIn(bob);
+          mockAuthenticate(bob);
 
           const response = await injectDelete(app, MOCK_ALIAS);
           expect(response.statusCode).toEqual(StatusCodes.OK);
@@ -696,7 +700,7 @@ describe('Short links routes tests', () => {
 
       describe('Forbidden', () => {
         it('Forbidden if no memberships on item', async () => {
-          await logIn(cedric);
+          mockAuthenticate(cedric);
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
         });
@@ -711,14 +715,14 @@ describe('Short links routes tests', () => {
         });
 
         it('Success if read permission', async () => {
-          await logIn(anna);
+          mockAuthenticate(anna);
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.OK);
           expect(response.json()).toHaveLength(platformLinks.length);
         });
 
         it('Success if admin', async () => {
-          await logIn(bob);
+          mockAuthenticate(bob);
           const response = await injectGetAll(app, item.id);
           expect(response.statusCode).toEqual(StatusCodes.OK);
           expect(response.json()).toHaveLength(platformLinks.length);
