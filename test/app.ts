@@ -47,12 +47,11 @@ const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
       transport: {
         target: 'pino-pretty',
       },
-      level: 'error',
+      level: 'info',
     },
     ajv: {
       customOptions: {
         coerceTypes: 'array',
-        strictTypes: false,
       },
       plugins: [ajvFormats],
     },

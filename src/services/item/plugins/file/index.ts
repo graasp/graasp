@@ -120,12 +120,12 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         query: { id: parentId },
         log,
       } = request;
-
+      const member = user!.member!;
       // check rights
       if (parentId) {
         const repositories = buildRepositories();
         const item = await repositories.itemRepository.get(parentId);
-        await validatePermission(repositories, PermissionLevel.Write, user!.member, item);
+        await validatePermission(repositories, PermissionLevel.Write, member, item);
       }
 
       // upload file one by one
@@ -142,7 +142,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           const repositories = buildRepositories(manager);
 
           try {
-            const i = await fileItemService.upload(user!.member!, repositories, {
+            const i = await fileItemService.upload(member, repositories, {
               parentId,
               filename,
               mimetype,

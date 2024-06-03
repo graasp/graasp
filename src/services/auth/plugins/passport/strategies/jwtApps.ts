@@ -12,7 +12,6 @@ import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
-  log: (msg: string) => void,
   memberRepository: MemberRepository,
   itemRepository: ItemRepository,
   strategy: PassportStrategy,
@@ -30,17 +29,16 @@ export default (
         const {
           sub: { memberId, itemId, key, origin },
         } = payload;
+        let member: Member | undefined;
         try {
-          let member: Member | undefined;
-          try {
-            member = await memberRepository.get(memberId);
-          } catch (err) {
-            // Exception occurred
-            log(err);
-            if (strict) {
-              done(options?.spreadException ? err : new UnauthorizedMember(), false);
-            }
+          member = await memberRepository.get(memberId);
+        } catch (err) {
+          // Member can be undefined if authorized.
+          if (strict) {
+            done(options?.spreadException ? err : new UnauthorizedMember(), false);
           }
+        }
+        try {
           const item = await itemRepository.get(itemId);
           done(null, {
             member,
@@ -51,8 +49,7 @@ export default (
             },
           });
         } catch (err) {
-          // Exception occurred
-          log(err);
+          // Exception occurred while fetching item
           done(options?.spreadException ? err : new UnauthorizedMember(), false);
         }
       },

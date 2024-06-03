@@ -158,6 +158,8 @@ if (!process.env.SECURE_SESSION_SECRET_KEY) {
   throw new Error('SECURE_SESSION_SECRET_KEY is not defined');
 }
 export const SECURE_SESSION_SECRET_KEY: string = process.env.SECURE_SESSION_SECRET_KEY!;
+export const SECURE_SESSION_EXPIRATION_IN_SECONDS: number =
+  +process.env.SECURE_SESSION_EXPIRATION_IN_SECONDS! || 2592000; // 30 days
 
 /**
  * JWT

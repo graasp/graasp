@@ -11,7 +11,6 @@ import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
 export default (
   passport: Authenticator,
-  log: (msg: string) => void,
   memberRepository: MemberRepository,
   options?: CustomStrategyOptions,
 ) => {
@@ -40,8 +39,7 @@ export default (
               }
             })
             .catch((err) => {
-              // Exception occurred
-              log(err);
+              // Exception occurred while fetching member
               done(options?.spreadException ? err : new UnauthorizedMember(), false);
             });
         } else {

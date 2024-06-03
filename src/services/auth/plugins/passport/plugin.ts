@@ -7,6 +7,8 @@ import {
   COOKIE_DOMAIN,
   JWT_SECRET,
   PROD,
+  REFRESH_TOKEN_JWT_SECRET,
+  SECURE_SESSION_EXPIRATION_IN_SECONDS,
   SECURE_SESSION_SECRET_KEY,
   STAGING,
 } from '../../../../utils/config';
@@ -18,40 +20,38 @@ import jwtChallengeVerifierStrategy from './strategies/jwtChallengeVerifier';
 import magicLinkStrategy from './strategies/magicLink';
 import passwordStrategy from './strategies/password';
 import passwordResetStrategy from './strategies/passwordReset';
-import refreshTokenStrategy from './strategies/refreshToken';
 import strictSessionStrategy from './strategies/strictSession';
 
+// This plugin needs to be globally register before using the prehandlers.
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const {
-    log,
     memberPassword: { service: memberPasswordService },
   } = fastify;
   const repositories: Repositories = buildRepositories();
   const memberRepository = repositories.memberRepository;
   const itemRepository = repositories.itemRepository;
 
-  // cookie based auth
+  // Mandatory registration for @fastify/passport
   await fastify
     .register(fastifySecureSession, {
       key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
       cookie: { domain: COOKIE_DOMAIN, path: '/', secure: PROD || STAGING, httpOnly: true },
-      expiry: 2592000000, // 1 month
+      expiry: SECURE_SESSION_EXPIRATION_IN_SECONDS, // 1 month
     })
     .register(fastifyPassport.initialize())
     .register(fastifyPassport.secureSession());
 
+  //-- Sessions Strategies --//
   strictSessionStrategy(fastifyPassport);
 
   //-- Password Strategies --//
-  passwordStrategy(fastifyPassport, log.info, memberPasswordService, repositories, {
+  passwordStrategy(fastifyPassport, memberPasswordService, repositories, {
     spreadException: true,
   });
-  passwordResetStrategy(fastifyPassport, memberPasswordService);
 
-  //-- Magic Link Strategies --//
+  //-- Magic Link Strategies (JWT) --//
   magicLinkStrategy(
     fastifyPassport,
-    log.info,
     memberRepository,
     PassportStrategy.MOBILE_MAGIC_LINK,
     'token',
@@ -60,7 +60,6 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   );
   magicLinkStrategy(
     fastifyPassport,
-    log.info,
     memberRepository,
     PassportStrategy.WEB_MAGIC_LINK,
     't',
@@ -69,16 +68,22 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   );
 
   //-- JWT Strategies --//
-  jwtChallengeVerifierStrategy(fastifyPassport, log.info, memberRepository, {
+  passwordResetStrategy(fastifyPassport, memberPasswordService);
+  jwtChallengeVerifierStrategy(fastifyPassport, memberRepository, {
     spreadException: true,
   });
-  refreshTokenStrategy(fastifyPassport, log.info, memberRepository, { spreadException: false });
-  jwtStrategy(fastifyPassport, log.info, memberRepository, PassportStrategy.JWT, JWT_SECRET, {
+  jwtStrategy(fastifyPassport, memberRepository, PassportStrategy.JWT, JWT_SECRET, {
     spreadException: true,
   });
+  jwtStrategy(
+    fastifyPassport,
+    memberRepository,
+    PassportStrategy.REFRESH_TOKEN,
+    REFRESH_TOKEN_JWT_SECRET,
+    { spreadException: false },
+  );
   jwtAppsStrategy(
     fastifyPassport,
-    log.info,
     memberRepository,
     itemRepository,
     PassportStrategy.APPS_JWT,
@@ -86,14 +91,13 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   );
   jwtAppsStrategy(
     fastifyPassport,
-    log.info,
     memberRepository,
     itemRepository,
     PassportStrategy.OPTIONAL_APPS_JWT,
     false,
   );
 
-  // Register user object to session
+  // Serialize and Deserialize user
   fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.member!.id);
   fastifyPassport.registerUserDeserializer(async (uuid: string, _req): Promise<PassportUser> => {
     return {

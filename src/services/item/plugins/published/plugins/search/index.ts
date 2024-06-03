@@ -28,13 +28,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { user, body } = request;
       const repositories = buildRepositories();
-
-      const searchResults = await searchService.search(user?.member, repositories, body);
+      const member = user?.member;
+      const searchResults = await searchService.search(member, repositories, body);
       const action = {
         type: ActionTriggers.ItemSearch,
         extra: body,
       };
-      await actionService.postMany(user?.member, repositories, request, [action]);
+      await actionService.postMany(member, repositories, request, [action]);
       return searchResults;
     },
   );

@@ -92,13 +92,11 @@ export class AppActionService {
       item,
     );
     const permission = itemMembership?.permission;
-    let { memberId: fMemberId } = filters;
+    const { memberId: fMemberId } = filters;
 
     // can read only own app action if not admin
     if (permission !== PermissionLevel.Admin) {
-      if (!fMemberId) {
-        fMemberId = member.id;
-      } else if (fMemberId !== member.id) {
+      if (fMemberId && fMemberId !== member.id) {
         throw new AppActionNotAccessible();
       }
     }
