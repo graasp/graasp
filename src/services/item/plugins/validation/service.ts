@@ -18,6 +18,7 @@ import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
+import { ItemPublishedService } from '../published/service';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
   InvalidFileItemError,
@@ -31,12 +32,19 @@ import { stripHtml } from './utils';
 
 export class ItemValidationService {
   itemService: ItemService;
+  private publishService: ItemPublishedService;
   fileService: FileService;
   imageClassifierApi?: string;
 
-  constructor(itemService: ItemService, fileService: FileService, imageClassifierApi?: string) {
+  constructor(
+    itemService: ItemService,
+    fileService: FileService,
+    publishService: ItemPublishedService,
+    imageClassifierApi?: string,
+  ) {
     this.itemService = itemService;
     this.fileService = fileService;
+    this.publishService = publishService;
     this.imageClassifierApi = imageClassifierApi;
   }
 
@@ -89,7 +97,13 @@ export class ItemValidationService {
     const iVG = await itemValidationGroupRepository.post(itemId);
 
     // create validation and execute for each node recursively
-    await this._post(member, repositories, item, iVG);
+    const allResults = await this._post(member, repositories, item, iVG);
+    // ensure that all validations are success and not failure or pending.
+    const hasValidationSucceeded = allResults.every((v) => v === ItemValidationStatus.Success);
+
+    if (hasValidationSucceeded) {
+      await this.publishService.post(member, repositories, itemId);
+    }
 
     return item;
   }
@@ -99,41 +113,55 @@ export class ItemValidationService {
     repositories: Repositories,
     item: Item,
     itemValidationGroup: ItemValidationGroup,
-  ) {
+  ): Promise<ItemValidationStatus[]> {
     // execute each process on item
-    await Promise.all(
-      // todo: add more validation processes to this array
-      [ItemValidationProcess.ImageChecking, ItemValidationProcess.BadWordsDetection].map(
-        async (process) => {
-          try {
-            // if item is not of type 'file', skip the image checking
-            if (
-              process === ItemValidationProcess.ImageChecking &&
-              item?.type !== this.fileService.type
-            ) {
-              return;
-            }
+    const results = (
+      await Promise.all(
+        // todo: add more validation processes to this array
+        [ItemValidationProcess.ImageChecking, ItemValidationProcess.BadWordsDetection].map(
+          async (process) => {
+            try {
+              // if item is not of type 'file', skip the image checking
+              if (
+                process === ItemValidationProcess.ImageChecking &&
+                item?.type !== this.fileService.type
+              ) {
+                return undefined;
+              }
 
-            // create and validate item
-            await this.validateItem(actor, repositories, item, itemValidationGroup.id, process);
-          } catch (error) {
-            throw new ProcessExecutionError(process, error);
-          }
-        },
-      ),
-    );
+              // create and validate item
+              return await this.validateItem(
+                actor,
+                repositories,
+                item,
+                itemValidationGroup.id,
+                process,
+              );
+            } catch (error) {
+              throw new ProcessExecutionError(process, error);
+            }
+          },
+        ),
+      )
+    ).filter((r): r is ItemValidationStatus => Boolean(r));
 
     // recursively validate subitems
     if (item?.type === ItemType.FOLDER) {
       const subItems = await this.itemService.getChildren(actor, repositories, item.id);
-      await Promise.all(
+      const childrenResults = await Promise.all(
         subItems.map(async (subitem) => {
-          await this._post(actor, repositories, subitem, itemValidationGroup).catch((error) => {
-            throw new ItemValidationError(error);
-          });
+          return await this._post(actor, repositories, subitem, itemValidationGroup).catch(
+            (error) => {
+              throw new ItemValidationError(error);
+            },
+          );
         }),
       );
+
+      return results.concat(...childrenResults);
     }
+
+    return results;
   }
 
   async validateItem(
@@ -142,7 +170,7 @@ export class ItemValidationService {
     item: Item,
     groupId: string,
     process: ItemValidationProcess,
-  ) {
+  ): Promise<ItemValidationStatus> {
     const { itemValidationReviewRepository, itemValidationRepository } = repositories;
 
     // create pending validation
