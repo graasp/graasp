@@ -118,7 +118,7 @@ export class AuthService {
       .catch((err) => this.log.warn(err, `mailer failed. link: ${link}`));
   };
 
-  async validateMemberId(repositories: Repositories, memberId: string) {
+  async validateMemberId(repositories: Repositories, memberId: string): Promise<boolean> {
     return (await repositories.memberRepository.get(memberId)) !== undefined;
   }
 }

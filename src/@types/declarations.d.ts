@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 import 'fastify';
 import { preHandlerHookHandler } from 'fastify';
 
-import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
+import { RecaptchaActionType } from '@graasp/sdk';
 
 import { JobService } from '../jobs';
 import type { MailerDecoration } from '../plugins/mailer';
@@ -126,10 +126,6 @@ declare module 'fastify' {
       key: string;
       origin: string;
     };
-  }
-
-  interface FastifyRequest {
-    authTokenSubject?: AuthTokenSubject;
   }
 }
 

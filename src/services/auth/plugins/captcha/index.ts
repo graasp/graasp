@@ -12,6 +12,13 @@ import { AuthenticationError } from './errors';
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
 export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 
+/**
+ * Prehandler builder to validate the captcha tokens.
+ * Routes that use this prehandler should have a body with a `captcha` field.
+ * @param action Recaptcha action type
+ * @param options
+ * @returns Prehandler route
+ */
 export default function captchaPreHandler(
   action: RecaptchaActionType,
   options?: { shouldFail: boolean },

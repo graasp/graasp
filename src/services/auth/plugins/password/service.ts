@@ -1,6 +1,5 @@
 import Redis from 'ioredis';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
-import { promisify } from 'util';
+import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -10,7 +9,6 @@ import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import {
   AUTH_CLIENT_HOST,
   JWT_SECRET,
-  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_SECRET,
 } from '../../../../utils/config';
@@ -22,19 +20,12 @@ import { comparePasswords } from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
 
-const promisifiedJwtSign = promisify<
-  { sub: string; challenge?: string },
-  Secret,
-  SignOptions,
-  string
->(jwt.sign);
-
 export class MemberPasswordService {
   log: FastifyBaseLogger;
   mailer: MailerDecoration;
   redis: Redis;
 
-  constructor(mailer, log, redis) {
+  constructor(mailer: MailerDecoration, log: FastifyBaseLogger, redis: Redis) {
     this.mailer = mailer;
     this.log = log;
     this.redis = redis;
@@ -47,7 +38,7 @@ export class MemberPasswordService {
    * @returns A promise to be resolved with the generated token.
    */
   generateToken(data: { sub: string; challenge?: string }, expiration: string) {
-    return promisifiedJwtSign(data, JWT_SECRET, {
+    return jwt.sign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
   }
@@ -175,45 +166,6 @@ export class MemberPasswordService {
 
     const { memberRepository } = repositories;
     return memberRepository.get(id);
-  }
-
-  /**
-   * @deprecated
-   * @param actor
-   * @param repositories
-   * @param body
-   * @param challenge  used for mobile
-   * @returns
-   */
-  async login(
-    _actor: undefined,
-    repositories: Repositories,
-    body: { email: string; password: string },
-    challenge?: string,
-  ) {
-    const { memberRepository, memberPasswordRepository } = repositories;
-    const { email } = body;
-
-    const member = await memberRepository.getByEmail(email);
-    if (!member) {
-      this.log.warn(`Login attempt with non-existent email '${email}'`);
-      throw new MemberNotSignedUp({ email });
-    }
-
-    const memberPassword = await memberPasswordRepository.getForMemberId(member.id);
-    if (!memberPassword) {
-      throw new MemberWithoutPassword({ email });
-    }
-
-    // validate credentials to build token
-    await memberPasswordRepository.validateCredentials(memberPassword, body);
-
-    const token = await this.generateToken(
-      { sub: member.id, challenge },
-      `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-    );
-
-    return token;
   }
 
   /** Authenticate a member with email and password.
