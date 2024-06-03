@@ -23,7 +23,12 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
 
   const { imageClassifierApi } = options;
 
-  const validationService = new ItemValidationService(iS, fileService, imageClassifierApi);
+  const validationService = new ItemValidationService(
+    iS,
+    fileService,
+    publishService,
+    imageClassifierApi,
+  );
 
   // get validation status of given itemId
   fastify.get<{ Params: { itemId: string } }>(
