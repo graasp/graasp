@@ -102,7 +102,9 @@ export class ItemValidationService {
     const hasValidationSucceeded = allResults.every((v) => v === ItemValidationStatus.Success);
 
     if (hasValidationSucceeded) {
-      await this.publishService.post(member, repositories, itemId);
+      // publish automatically the item if it is valid.
+      // private item will be set to public automatically (should ask the user on the frontend).
+      await this.publishService.post(member, repositories, itemId, { shouldBePublic: false });
     }
 
     return item;
