@@ -74,7 +74,7 @@ export class ItemGeolocationService {
 
     // check if there are any items with a geolocation, if not return early
     const itemsWithGeoloc = geoloc.map(({ item }) => item);
-    if (itemsWithGeoloc.length === 0) {
+    if (!itemsWithGeoloc.length) {
       return null;
     }
 
