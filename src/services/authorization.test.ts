@@ -2183,7 +2183,6 @@ describe('Authorization', () => {
         const sharedMembership = buildSharedMembership(PermissionLevel.Admin);
 
         getManyForManyMock.mockImplementation(async () => {
-          console.log('weofijwek');
           return {
             data: { [ITEM.id]: [MOCK_ITEM_TAG_PUBLIC] },
             errors: [],

@@ -52,7 +52,6 @@ export class MemberRepository extends AbstractRepository<Member> {
 
   async getManyByEmail(emails: string[]) {
     const members = await this.repository.find({ where: { email: In(emails) } });
-    console.log(members);
     return mapById({
       keys: emails,
       findElement: (email) => members.find(({ email: thisEmail }) => thisEmail === email),

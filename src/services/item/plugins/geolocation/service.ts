@@ -62,7 +62,7 @@ export class ItemGeolocationService {
       lng2?: ItemGeolocation['lng'];
       keywords?: string[];
     },
-  ): Promise<PackedItemGeolocation[]> {
+  ): Promise<PackedItemGeolocation[] | null> {
     const { itemGeolocationRepository } = repositories;
 
     let parentItem: Item | undefined;
@@ -71,6 +71,13 @@ export class ItemGeolocationService {
     }
 
     const geoloc = await itemGeolocationRepository.getItemsIn(actor, query, parentItem);
+
+    // check if there are any items with a geolocation, if not return early
+    const itemsWithGeoloc = geoloc.map(({ item }) => item);
+    if (itemsWithGeoloc.length === 0) {
+      return null;
+    }
+
     const { itemMemberships, tags } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,

@@ -41,6 +41,7 @@ import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
+import { ItemTag } from './plugins/itemTag/ItemTag';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 
 export class ItemService {
@@ -249,10 +250,17 @@ export class ItemService {
    * @param ids
    * @returns result of items given ids
    */
-  async _getMany(actor: Actor, repositories: Repositories, ids: string[]) {
+  async _getMany(
+    actor: Actor,
+    repositories: Repositories,
+    ids: string[],
+  ): Promise<{
+    items: ResultOf<Item>;
+    itemMemberships: ResultOf<ItemMembership | null>;
+    tags: ResultOf<ItemTag[] | null>;
+  }> {
     const { itemRepository } = repositories;
     const result = await itemRepository.getMany(ids);
-
     // check memberships
     // remove items if they do not have permissions
     const { itemMemberships, tags } = await validatePermissionMany(
@@ -409,8 +417,8 @@ export class ItemService {
   async getParents(actor: Actor, repositories: Repositories, itemId: UUID) {
     const { itemRepository } = repositories;
     const item = await this.get(actor, repositories, itemId);
-
     const parents = await itemRepository.getAncestors(item);
+
     const { itemMemberships, tags } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,
