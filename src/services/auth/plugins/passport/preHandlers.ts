@@ -48,7 +48,7 @@ export const authenticateAppsJWT = fastifyPassport.authenticate(PassportStrategy
   session: false,
 });
 // Items app authentication. Allows public authentication.
-export const optionalAuthenticateAppsJWT = fastifyPassport.authenticate(
+export const guestAuthenticateAppsJWT = fastifyPassport.authenticate(
   PassportStrategy.OPTIONAL_APPS_JWT,
   {
     session: false,

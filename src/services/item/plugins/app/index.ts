@@ -6,7 +6,7 @@ import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 import { buildRepositories } from '../../../../utils/repositories';
 import {
   authenticated,
-  optionalAuthenticateAppsJWT,
+  guestAuthenticateAppsJWT,
   optionalAuthenticated,
 } from '../../../auth/plugins/passport';
 import appActionPlugin from './appAction';
@@ -117,7 +117,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
       // get app item context
       fastify.get<{ Params: { itemId: string } }>(
         '/:itemId/context',
-        { schema: getContext, preHandler: optionalAuthenticateAppsJWT },
+        { schema: getContext, preHandler: guestAuthenticateAppsJWT },
         async ({ user, params: { itemId } }) => {
           const requestDetails: AuthTokenSubject = {
             memberId: user?.member?.id,

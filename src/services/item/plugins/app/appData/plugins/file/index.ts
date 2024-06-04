@@ -5,7 +5,7 @@ import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { IdParam } from '../../../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
-import { optionalAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
+import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -82,7 +82,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/app-data/upload',
     schema: upload,
-    preHandler: optionalAuthenticateAppsJWT,
+    preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
       const { user } = request;
 
@@ -122,7 +122,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     '/app-data/:id/download',
     {
       schema: download,
-      preHandler: optionalAuthenticateAppsJWT,
+      preHandler: guestAuthenticateAppsJWT,
     },
     async (request) => {
       const {

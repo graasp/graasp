@@ -23,10 +23,10 @@ export default (
         passReqToCallback: true,
       },
       async ({ body: { verifier } }, { sub, challenge }, done: StrictVerifiedCallback) => {
-        if (challenge === crypto.createHash('sha256').update(verifier).digest('hex')) {
-          memberRepository
-            .get(sub)
-            .then((member) => {
+        try {
+          if (challenge === crypto.createHash('sha256').update(verifier).digest('hex')) {
+            try {
+              const member = await memberRepository.get(sub);
               if (member) {
                 // Token has been validated
                 done(null, { member });
@@ -37,15 +37,21 @@ export default (
                   false,
                 );
               }
-            })
-            .catch((err) => {
+            } catch (err) {
               // Exception occurred while fetching member
               done(options?.spreadException ? err : new UnauthorizedMember(), false);
-            });
-        } else {
-          // Challenge failed
-          // Error is defined, user is false
-          return done(new ChallengeFailed(), false);
+            }
+          } else {
+            // Challenge failed
+            // Error is defined, user is false
+            done(
+              options?.spreadException ? new ChallengeFailed() : new UnauthorizedMember(),
+              false,
+            );
+          }
+        } catch (err) {
+          // Exception occurred while comparing challenge
+          done(options?.spreadException ? new ChallengeFailed() : new UnauthorizedMember(), false);
         }
       },
     ),

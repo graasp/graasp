@@ -6,7 +6,7 @@ import { HttpMethod, UUID } from '@graasp/sdk';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import {
   authenticateAppsJWT,
-  optionalAuthenticateAppsJWT,
+  guestAuthenticateAppsJWT,
 } from '../../../../../../auth/plugins/passport';
 import {
   DownloadFileUnexpectedError,
@@ -99,7 +99,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/app-settings/upload',
     schema: upload,
-    preHandler: optionalAuthenticateAppsJWT,
+    preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
       const { user } = request;
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK

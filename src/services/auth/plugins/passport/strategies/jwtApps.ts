@@ -30,6 +30,9 @@ export default (
           sub: { memberId, itemId, key, origin },
         } = payload;
         let member: Member | undefined;
+        if (!key || !origin || !itemId) {
+          return done(null, false);
+        }
         try {
           member = await memberRepository.get(memberId);
         } catch (err) {

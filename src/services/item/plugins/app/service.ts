@@ -20,11 +20,11 @@ export class AppService {
     this.jwtExpiration = jwtExpiration;
   }
 
-  async getAllValidAppOrigins(actor: Actor, repositories: Repositories) {
+  async getAllValidAppOrigins(_actor: Actor, repositories: Repositories) {
     return repositories.publisherRepository.getAllValidAppOrigins();
   }
 
-  async getAllApps(actor: Actor, repositories: Repositories, publisherId: string) {
+  async getAllApps(_actor: Actor, repositories: Repositories, publisherId: string) {
     return repositories.appRepository.getAll(publisherId);
   }
 
@@ -64,7 +64,7 @@ export class AppService {
   }
 
   async getContext(
-    actorId,
+    actorId: string | undefined,
     repositories: Repositories,
     itemId: string,
     requestDetails?: AuthTokenSubject,
