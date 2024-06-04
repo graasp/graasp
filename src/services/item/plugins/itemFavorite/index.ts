@@ -14,7 +14,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // get favorites
   fastify.get('/favorite', { schema: getFavorite, preHandler: authenticated }, async ({ user }) => {
-    return favoriteService.getOwn(user!.member!, buildRepositories());
+    return favoriteService.getOwn(user!.member, buildRepositories());
   });
 
   // insert favorite
@@ -23,7 +23,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: create, preHandler: authenticated },
     async ({ user, params: { itemId } }) => {
       return db.transaction(async (manager) => {
-        return favoriteService.post(user!.member!, buildRepositories(manager), itemId);
+        return favoriteService.post(user!.member, buildRepositories(manager), itemId);
       });
     },
   );
@@ -34,7 +34,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: deleteOne, preHandler: authenticated },
     async ({ user, params: { itemId } }) => {
       return db.transaction(async (manager) => {
-        return favoriteService.delete(user!.member!, buildRepositories(manager), itemId);
+        return favoriteService.delete(user!.member, buildRepositories(manager), itemId);
       });
     },
   );

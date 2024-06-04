@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       async ({ user, body, params }, reply) => {
         return db.transaction(async (manager) => {
           await itemGeolocationService.put(
-            user!.member!,
+            user!.member,
             buildRepositories(manager),
             params.id,
             body.geolocation,

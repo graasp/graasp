@@ -83,7 +83,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
       // question: you can never remove a key?
 
       return db.transaction(async (manager) => {
-        return memberService.patch(user!.member!, buildRepositories(manager), id, body);
+        return memberService.patch(user!.member, buildRepositories(manager), id, body);
       });
     },
   );
@@ -94,7 +94,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
     { schema: deleteOne, preHandler: authenticated },
     async ({ user, params: { id } }, reply) => {
       return db.transaction(async (manager) => {
-        await memberService.deleteOne(user!.member!, buildRepositories(manager), id);
+        await memberService.deleteOne(user!.member, buildRepositories(manager), id);
         reply.status(StatusCodes.NO_CONTENT);
       });
     },
