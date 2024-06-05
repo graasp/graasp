@@ -6070,13 +6070,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dir-compare@npm:4.2.0":
-  version: 4.2.0
-  resolution: "dir-compare@npm:4.2.0"
+"dir-compare@npm:5.0.0":
+  version: 5.0.0
+  resolution: "dir-compare@npm:5.0.0"
   dependencies:
     minimatch: "npm:^3.0.5"
     p-limit: "npm:^3.1.0 "
-  checksum: 10/e88cbe5021126f2edfe3441a4038e1d02aac95d5b9f591db543ce3d1175c337b9cf855d2f368dbc159b4b72c42f11823bf00841961ffb413fc6a6ce2794a618c
+  checksum: 10/31eef33cb0dc868cc1594145fbcefe8d455754d58ebd1349254859758c7a9d5b9121ee0579c26cf179ef28f33c34a870198a113cbca2f30b182cbce0568f1d15
   languageName: node
   linkType: hard
 
@@ -7629,7 +7629,7 @@ __metadata:
     concurrently: "npm:7.6.0"
     content-disposition: "npm:0.5.4"
     date-fns: "npm:3.6.0"
-    dir-compare: "npm:4.2.0"
+    dir-compare: "npm:5.0.0"
     dotenv: "npm:16.4.5"
     eslint: "npm:8.57.0"
     eslint-config-prettier: "npm:8.10.0"

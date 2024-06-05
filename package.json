@@ -154,7 +154,7 @@
     "@typescript-eslint/parser": "7.9.0",
     "checksum": "1.0.0",
     "concurrently": "7.6.0",
-    "dir-compare": "4.2.0",
+    "dir-compare": "5.0.0",
     "eslint": "8.57.0",
     "eslint-config-prettier": "8.10.0",
     "eslint-import-resolver-typescript": "3.6.1",
