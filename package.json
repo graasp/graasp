@@ -166,7 +166,7 @@
     "pino-pretty": "11.0.0",
     "prettier": "2.8.8",
     "standard-version": "9.5.0",
-    "ts-jest": "29.1.2",
+    "ts-jest": "29.1.4",
     "ts-node": "10.9.2",
     "typescript": "5.3.3",
     "wait-for-expect": "3.0.2"
