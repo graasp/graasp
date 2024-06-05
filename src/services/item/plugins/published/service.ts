@@ -133,7 +133,7 @@ export class ItemPublishedService {
     });
 
     // if the item can be private and be published, set it to public automatically.
-    // it's usefull for the publishing automatically after the validation.
+    // it's usefull to publish the item automatically after the validation.
     // the user is asked to set the item to public in the frontend.
     if (!tag && !shouldBePublic) {
       await itemTagRepository.post(actor, item, ItemTagType.Public);

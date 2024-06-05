@@ -98,7 +98,7 @@ export class ItemValidationService {
 
     // create validation and execute for each node recursively
     const allResults = await this._post(member, repositories, item, iVG);
-    // ensure that all validations are success and not failure or pending.
+    // ensure that all validations have successeeded.
     const hasValidationSucceeded = allResults.every((v) => v === ItemValidationStatus.Success);
 
     if (hasValidationSucceeded) {
