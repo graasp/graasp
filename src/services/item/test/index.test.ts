@@ -549,7 +549,6 @@ describe('Item routes tests', () => {
       });
 
       const newItem = response.json();
-      console.log(newItem);
       expectItem(
         newItem,
         FolderItemFactory({

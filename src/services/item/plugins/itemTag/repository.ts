@@ -60,6 +60,11 @@ export class ItemTagRepository {
   }
 
   private async getManyTagsForTypes(items: Item[], tagTypes: ItemTagType[]): Promise<ItemTag[]> {
+    // we expect to query tags for defined items, if the items array is empty we will return
+    if (!items.length) {
+      return [];
+    }
+
     const query = this.repository
       .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item');
@@ -76,7 +81,6 @@ export class ItemTagRepository {
     const hasTags: ItemTag[] = await query
       .andWhere('itemTag.type IN (:...types)', { types: tagTypes })
       .getMany();
-
     return hasTags;
   }
 

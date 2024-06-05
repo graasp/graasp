@@ -46,6 +46,14 @@ export const validatePermissionMany = async (
   itemMemberships: ResultOf<ItemMembership | null>;
   tags: ResultOf<ItemTag[] | null>;
 }> => {
+  // items array is empty, nothing to check return early
+  if (!items.length) {
+    return {
+      itemMemberships: { data: {}, errors: [] },
+      tags: { data: {}, errors: [] },
+    };
+  }
+
   // batch request for all items
   const inheritedMemberships = member
     ? await itemMembershipRepository.getInheritedMany(items, member, true)
@@ -195,6 +203,7 @@ const _filterOutItems = async (actor: Actor, repositories: Repositories, items: 
         memberId: actor.id,
       })
     : { data: [] };
+
   const tags = await repositories.itemTagRepository.getManyForMany(items, [
     ItemTagType.Hidden,
     ItemTagType.Public,
@@ -237,7 +246,6 @@ export const filterOutPackedItems = async (
     memberships,
     tags,
   } = await _filterOutItems(actor, repositories, items);
-
   return filteredItems.map((item) => {
     const permission = PermissionLevelCompare.getHighest(
       memberships[item.id]?.map(({ permission }) => permission),

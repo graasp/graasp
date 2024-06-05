@@ -71,6 +71,13 @@ export class ItemGeolocationService {
     }
 
     const geoloc = await itemGeolocationRepository.getItemsIn(actor, query, parentItem);
+
+    // check if there are any items with a geolocation, if not return early
+    const itemsWithGeoloc = geoloc.map(({ item }) => item);
+    if (!itemsWithGeoloc.length) {
+      return [];
+    }
+
     const { itemMemberships, tags } = await validatePermissionMany(
       repositories,
       PermissionLevel.Read,

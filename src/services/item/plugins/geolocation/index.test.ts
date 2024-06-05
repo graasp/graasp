@@ -29,7 +29,7 @@ export const saveGeolocation = async (
 };
 
 export const expectItemGeolocations = (
-  results: PackedItemGeolocation[],
+  results: PackedItemGeolocation[] | null,
   expected: PackedItemGeolocation[],
 ) => {
   for (const ig of expected) {
