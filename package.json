@@ -103,7 +103,7 @@
     "mime-types": "2.1.35",
     "mmmagic": "0.5.3",
     "node-fetch": "2",
-    "openai": "4.47.3",
+    "openai": "4.48.1",
     "papaparse": "^5.4.1",
     "passport-jwt": "4.0.1",
     "pdf-text-reader": "3.0.2",
