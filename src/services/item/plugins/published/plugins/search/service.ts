@@ -59,6 +59,7 @@ export class SearchService {
     const updatedQueries = {
       ...queries,
       queries: queries.queries.map((q) => ({
+        attributesToHighlight: ['*'],
         ...q,
         filter: q.filter ? `(${q.filter}) AND ${forcedFilter}` : forcedFilter,
       })),
