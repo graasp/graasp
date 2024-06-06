@@ -104,7 +104,7 @@ export class ItemValidationService {
     if (hasValidationSucceeded) {
       // publish automatically the item if it is valid.
       // private item will be set to public automatically (should ask the user on the frontend).
-      await this.publishService.post(member, repositories, itemId, { shouldBePublic: false });
+      await this.publishService.post(member, repositories, itemId, { canBePrivate: true });
     }
 
     return item;
