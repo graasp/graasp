@@ -18,7 +18,6 @@ import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { ItemPublishedService } from '../published/service';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
   InvalidFileItemError,
@@ -32,19 +31,12 @@ import { stripHtml } from './utils';
 
 export class ItemValidationService {
   itemService: ItemService;
-  private publishService: ItemPublishedService;
   fileService: FileService;
   imageClassifierApi?: string;
 
-  constructor(
-    itemService: ItemService,
-    fileService: FileService,
-    publishService: ItemPublishedService,
-    imageClassifierApi?: string,
-  ) {
+  constructor(itemService: ItemService, fileService: FileService, imageClassifierApi?: string) {
     this.itemService = itemService;
     this.fileService = fileService;
-    this.publishService = publishService;
     this.imageClassifierApi = imageClassifierApi;
   }
 
