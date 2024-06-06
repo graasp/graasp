@@ -23,12 +23,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
 
   const { imageClassifierApi } = options;
 
-  const validationService = new ItemValidationService(
-    iS,
-    fileService,
-    publishService,
-    imageClassifierApi,
-  );
+  const validationService = new ItemValidationService(iS, fileService, imageClassifierApi);
 
   // get validation status of given itemId
   fastify.get<{ Params: { itemId: string } }>(
@@ -88,7 +83,17 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
           throw new UnauthorizedMember();
         }
         const repositories = buildRepositories(manager);
-        const item = await validationService.post(member, repositories, itemId);
+        const { item, hasValidationSucceeded } = await validationService.post(
+          member,
+          repositories,
+          itemId,
+        );
+
+        if (hasValidationSucceeded) {
+          // publish automatically the item if it is valid.
+          // private item will be set to public automatically (should ask the user on the frontend).
+          await publishService.post(member, repositories, itemId, { canBePrivate: true });
+        }
 
         // the process could take long time, so let the process run in the background and return the itemId instead
         if (member) {
