@@ -227,6 +227,32 @@ export const getDescendants = {
   },
 };
 
+export const search = {
+  querystring: S.object()
+    .additionalProperties(false)
+    .prop('page', S.number().default(1))
+    .prop('name', S.string())
+    .prop('keywords', S.array().items(S.string()))
+    .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
+    .prop('sortBy', S.enum(Object.values(SortBy)))
+    .prop('ordering', S.enum(Object.values(Ordering)))
+    .prop('creatorId', S.string())
+    .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
+    .prop('types', S.array().items(S.enum(Object.values(ItemType))))
+    // geolocation prop
+    .prop('lat1', S.number())
+    .prop('lat2', S.number())
+    .prop('lng1', S.number())
+    .prop('lng2', S.number()),
+  response: {
+    200: S.object()
+      .additionalProperties(false)
+      .prop('data', S.array().items(packedItem))
+      .prop('totalCount', S.number()),
+    '4xx': error,
+  },
+};
+
 export const getParents = {
   params: idParam,
   response: {

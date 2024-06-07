@@ -18,7 +18,7 @@ import {
 } from '../../utils/errors';
 import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from '../item/constants';
 import { Item } from '../item/entities/Item';
-import { ItemSearchParams, Ordering, SortBy } from '../item/types';
+import { AccessibleItemSearchParams, Ordering, SortBy } from '../item/types';
 import { MemberIdentifierNotFound } from '../itemLogin/errors';
 import { Member } from '../member/entities/member';
 import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas';
@@ -116,7 +116,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       ordering = Ordering.desc,
       permissions,
       types,
-    }: ItemSearchParams,
+    }: AccessibleItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams,
   ): Promise<Paginated<ItemMembership>> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);

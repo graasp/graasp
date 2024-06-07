@@ -22,10 +22,12 @@ import {
   getParents,
   getShared,
   moveMany,
+  search,
   updateMany,
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
-import { ItemChildrenParams, ItemSearchParams } from './types';
+import { PartialGeolocationBounds } from './plugins/geolocation/errors';
+import { AccessibleItemSearchParams, ItemChildrenParams, ItemSearchParams } from './types';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
@@ -140,7 +142,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   // returns items you have access to given the parameters
   fastify.get<{
-    Querystring: ItemSearchParams & PaginationParams;
+    Querystring: AccessibleItemSearchParams & PaginationParams;
   }>(
     '/accessible',
     { schema: getAccessible, preHandler: fastify.verifyAuthentication },
@@ -148,12 +150,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       if (!member) {
         throw new UnauthorizedMember();
       }
-      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types, keywords } =
-        query;
+      const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types } = query;
       return itemService.getAccessible(
         member,
         buildRepositories(),
-        { creatorId, name, sortBy, ordering, permissions, types, keywords },
+        { creatorId, name, sortBy, ordering, permissions, types },
         { page, pageSize },
       );
     },
@@ -199,6 +200,60 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getDescendants, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { id } }) => {
       return itemService.getPackedDescendants(member, buildRepositories(), id);
+    },
+  );
+
+  // search for items you have membership on
+  fastify.get<{
+    Querystring: ItemSearchParams &
+      PaginationParams &
+      Partial<{
+        lat1: ItemGeolocation['lat'];
+        lat2: ItemGeolocation['lat'];
+        lng1: ItemGeolocation['lng'];
+        lng2: ItemGeolocation['lng'];
+      }>;
+  }>(
+    '/search',
+    {
+      schema: search,
+      preHandler: fastify.verifyAuthentication,
+    },
+    async ({ member, query }) => {
+      const {
+        page,
+        pageSize,
+        creatorId,
+        lat1,
+        lat2,
+        lng1,
+        lng2,
+        sortBy,
+        ordering,
+        permissions,
+        types,
+        keywords,
+      } = query;
+
+      const searchParams: ItemSearchParams = {
+        creatorId,
+        sortBy,
+        ordering,
+        permissions,
+        types,
+        keywords,
+      };
+
+      // define all or no geoloc bounds
+      const geolocationBounds = { lng1, lng2, lat1, lat2 };
+      if (Object.values(geolocationBounds).some(Boolean)) {
+        if (!Object.values(geolocationBounds).every(Boolean)) {
+          throw new PartialGeolocationBounds(geolocationBounds);
+        }
+        searchParams.geolocationBounds = geolocationBounds;
+      }
+
+      return itemService.search(member, buildRepositories(), searchParams, { page, pageSize });
     },
   );
 

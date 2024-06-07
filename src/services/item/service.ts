@@ -41,7 +41,7 @@ import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { Item, isItemType } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialItemGeolocation } from './plugins/geolocation/errors';
-import { ItemChildrenParams, ItemSearchParams } from './types';
+import { AccessibleItemSearchParams, ItemChildrenParams, ItemSearchParams } from './types';
 
 export class ItemService {
   private log: FastifyBaseLogger;
@@ -301,7 +301,7 @@ export class ItemService {
   async getAccessible(
     actor: Member,
     repositories: Repositories,
-    params: ItemSearchParams,
+    params: AccessibleItemSearchParams,
     pagination: PaginationParams,
   ): Promise<Paginated<PackedItem>> {
     const { data: memberships, totalCount } =
@@ -421,6 +421,17 @@ export class ItemService {
     const parentsIds = Object.keys(itemMemberships.data);
     const items = parents.filter((p) => parentsIds.includes(p.id));
     return ItemWrapper.merge(items, itemMemberships, tags);
+  }
+
+  async search(
+    actor: Actor,
+    repositories: Repositories,
+    params: ItemSearchParams,
+    pagination: PaginationParams,
+  ) {
+    const { itemRepository } = repositories;
+    const items = await itemRepository.search(actor, params, pagination);
+    return items;
   }
 
   async patch(actor: Actor, repositories: Repositories, itemId: UUID, body: Partial<Item>) {

@@ -61,3 +61,16 @@ export class MissingGeolocationApiKey extends GraaspItemGeolocationError {
     );
   }
 }
+
+export class PartialGeolocationBounds extends GraaspItemGeolocationError {
+  constructor(data?: { lat1?: unknown; lat2?: unknown; lng1?: unknown; lng2?: unknown }) {
+    super(
+      {
+        code: 'GIGEOERR005',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message: 'Geolocation bounds should have defined lat1, lat2, lng1 and lng2',
+      },
+      data,
+    );
+  }
+}

@@ -800,7 +800,8 @@ describe('ItemRepository', () => {
 
       const items = [parent, childOfChild, child1];
 
-      const result = await itemRepository.searchItems(actor, { keywords: [name] });
+      const { data: result, totalCount } = await itemRepository.search(actor, { keywords: [name] });
+      expect(totalCount).toEqual(items.length);
       expectManyItems(result, items);
     });
 
@@ -841,10 +842,16 @@ describe('ItemRepository', () => {
 
       const items = [parent, childOfChild, child1];
 
-      const result = await itemRepository.searchItems(actor, {
+      const { data: result, totalCount } = await itemRepository.search(actor, {
         keywords: [name],
-        withGeolocation: true,
+        geolocationBounds: {
+          lat1: 1,
+          lat2: 2,
+          lng1: 1,
+          lng2: 2,
+        },
       });
+      expect(totalCount).toEqual(items.length);
       expectManyItems(result, items);
     });
   });

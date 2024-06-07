@@ -15,8 +15,8 @@ import {
 } from '@graasp/sdk';
 
 import { AppDataSource } from '../../plugins/datasource';
+import { PaginationParams } from '../../types';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
-import { printFilledSQL } from '../../utils/debug';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -30,8 +30,9 @@ import { Actor, Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
+import { ITEMS_PAGE_SIZE, ITEMS_PAGE_SIZE_MAX } from './constants';
 import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
-import { ItemChildrenParams, ItemSearchParams } from './types';
+import { ItemChildrenParams, ItemSearchParams, Ordering, SortBy } from './types';
 import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
@@ -229,67 +230,121 @@ export class ItemRepository {
   }
 
   // return item actor has access to, return child as well
-  async searchItems(
+  async search(
     actor: Actor,
-    params?: ItemSearchParams & { withGeolocation?: boolean },
-  ): // actor: Actor, parent: Item, params?: ItemChildrenParams
-
-  Promise<Item[]> {
-    // if (!isItemType(parent, ItemType.FOLDER)) {
-    //   throw new ItemNotFolder(parent);
-    // }
+    {
+      creatorId,
+      sortBy,
+      ordering = Ordering.DESC,
+      permissions,
+      keywords,
+      types,
+      geolocationBounds,
+    }: ItemSearchParams,
+    { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams = {},
+  ): Promise<{ data: Item[]; totalCount }> {
+    const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
+    const skip = (page - 1) * limit;
 
     if (!actor) {
-      return [];
+      return { data: [], totalCount: 0 };
     }
 
     const query = await this.repository
       .createQueryBuilder('item')
-      .leftJoin('item.creator', 'creator')
+      .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'item.path <@ im.item_path')
-      .andWhere('im.member_id = :memberId', { memberId: actor.id });
+      .where('im.member_id = :memberId', { memberId: actor.id });
 
-    if (params?.types) {
-      const types = params.types;
+    if (types) {
       query.andWhere('item.type IN (:...types)', { types });
     }
 
-    if (params?.withGeolocation) {
+    if (creatorId) {
+      query.andWhere('item.creator = :creatorId', { creatorId });
+    }
+
+    if (permissions) {
+      query.andWhere('im.permission IN (:...permissions)', { permissions });
+    }
+
+    if (geolocationBounds) {
       query
         .innerJoin('item_geolocation', 'ig', 'item.path <@ ig.item_path')
         .andWhere('ig IS NOT NULL');
     }
+    const memberLang = ALLOWED_SEARCH_LANGS[actor?.lang ?? 'en'];
 
-    const allKeywords = params?.keywords?.filter((s) => s && s.length);
+    // keywords
+    const allKeywords = keywords?.filter((s) => s && s.length);
     if (allKeywords?.length) {
       const keywordsString = allKeywords.join(' ');
-      const memberLang = actor?.lang;
-      query.andWhere((q) => {
-        // search in english by default
-        q.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // no dictionary
-        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-          keywords: keywordsString,
-        });
-
-        // search by member lang
-        if (memberLang && memberLang != 'en' && ALLOWED_SEARCH_LANGS[memberLang]) {
-          q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+      query.andWhere(
+        new Brackets((qb) => {
+          // search in english by default
+          qb.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
             keywords: keywordsString,
-            lang: ALLOWED_SEARCH_LANGS[memberLang],
           });
-        }
-      });
+          // no dictionary
+          qb.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+            keywords: keywordsString,
+          });
+          // search by member lang
+          if (memberLang != ALLOWED_SEARCH_LANGS['en']) {
+            qb.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
+              keywords: keywordsString,
+              lang: memberLang,
+            });
+          }
+        }),
+      );
     }
 
-    console.log(printFilledSQL(query));
+    // sorting
+    // use given sorting, or by rank for defined keywords, or by last update
+    const sorting = sortBy ?? (allKeywords?.length ? SortBy.Rank : SortBy.ItemUpdatedAt);
+    const orderBy = ordering?.toUpperCase() ?? Ordering.DESC;
+    // if no sortby is defined but keywords exist, order by ranking
+    if (sortBy === SortBy.Rank) {
+      const keywordsString = allKeywords?.join(' ');
+      const orderByKey = `
+      ts_rank(item.search_document, plainto_tsquery('english', :allKeywords))
+      + ts_rank(item.search_document, plainto_tsquery('simple', :allKeywords))
+      + ts_rank(item.search_document, plainto_tsquery(:lang, :allKeywords))
+      `;
+      query
+        .orderBy({
+          [orderByKey]: orderBy,
+        })
+        .setParameters({ allKeywords: keywordsString, lang: memberLang });
+    } else {
+      let mappedSortBy;
+      // map strings to correct sort by column
+      switch (sorting) {
+        case SortBy.ItemType:
+          mappedSortBy = 'item.type';
+          break;
+        case SortBy.ItemCreatedAt:
+          mappedSortBy = 'item.created_at';
+          break;
+        case SortBy.ItemCreatorName:
+          mappedSortBy = 'creator.name';
+          break;
+        case SortBy.ItemName:
+          mappedSortBy = 'item.name';
+          break;
+        case SortBy.ItemUpdatedAt:
+        default:
+          mappedSortBy = 'item.updated_at';
+          break;
+      }
+      query.orderBy(mappedSortBy, ordering.toUpperCase());
+    }
 
-    const res = await query.getMany();
+    query.offset(skip).limit(limit);
 
-    return res;
+    const [data, totalCount] = await query.getManyAndCount();
+    return { data, totalCount };
   }
 
   /**
