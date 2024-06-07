@@ -24,7 +24,7 @@ import { ItemWrapper, PackedItem } from '../../ItemWrapper';
 import { Item, ItemExtraMap } from '../../entities/Item';
 import { ItemTag } from '../../plugins/itemTag/ItemTag';
 import { ItemTagRepository } from '../../plugins/itemTag/repository';
-import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
+import { setItemHidden, setItemPublic } from '../../plugins/itemTag/test/fixtures';
 import { ItemPublished } from '../../plugins/published/entities/itemPublished';
 import { RecycledItemDataRepository } from '../../plugins/recycled/repository';
 import { ItemRepository } from '../../repository';
@@ -124,6 +124,25 @@ export class ItemTestUtils {
       item: newItem,
       packedItem: new ItemWrapper(newItem, undefined, [publicTag]).packed(),
       publicTag,
+    };
+  };
+
+  saveHiddenItem = async ({
+    item = {},
+    parentItem,
+    actor,
+  }: {
+    parentItem?: Item;
+    actor: Actor | null;
+    item?: Partial<Item>;
+  }) => {
+    const value = this.createItem({ ...item, creator: actor, parentItem });
+    const newItem = await this.rawItemRepository.save(value);
+    const hiddenTag = await setItemHidden(newItem, actor);
+    return {
+      item: newItem,
+      packedItem: new ItemWrapper(newItem, undefined, [hiddenTag]).packed(),
+      hiddenTag,
     };
   };
 

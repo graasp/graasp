@@ -12,8 +12,6 @@ export enum SortBy {
 }
 
 export enum Ordering {
-  asc = 'asc',
-  desc = 'desc',
   ASC = 'ASC',
   DESC = 'DESC',
 }
@@ -35,10 +33,10 @@ export type ItemSearchParams = {
   permissions?: PermissionLevel[];
   types?: UnionOfConst<typeof ItemType>[];
   geolocationBounds?: {
-    lat1?: ItemGeolocation['lat'];
-    lat2?: ItemGeolocation['lat'];
-    lng1?: ItemGeolocation['lng'];
-    lng2?: ItemGeolocation['lng'];
+    lat1: ItemGeolocation['lat'];
+    lat2: ItemGeolocation['lat'];
+    lng1: ItemGeolocation['lng'];
+    lng2: ItemGeolocation['lng'];
   };
 };
 

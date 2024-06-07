@@ -180,7 +180,7 @@ export const getAccessible = {
     .prop('keywords', S.array().items(S.string()))
     .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
     .prop('sortBy', S.enum(Object.values(SortBy)))
-    .prop('ordering', S.enum(Object.values(Ordering)))
+    .prop('ordering', S.enum([...Object.values(Ordering), 'asc', 'desc']))
     .prop('creatorId', S.string())
     .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
     .prop('types', S.array().items(S.enum(Object.values(ItemType)))),

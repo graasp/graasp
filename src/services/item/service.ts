@@ -430,8 +430,7 @@ export class ItemService {
     pagination: PaginationParams,
   ) {
     const { itemRepository } = repositories;
-    const items = await itemRepository.search(actor, params, pagination);
-    return items;
+    return itemRepository.search(actor, params, pagination);
   }
 
   async patch(actor: Actor, repositories: Repositories, itemId: UUID, body: Partial<Item>) {

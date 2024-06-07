@@ -154,7 +154,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       return itemService.getAccessible(
         member,
         buildRepositories(),
-        { creatorId, name, sortBy, ordering, permissions, types },
+        { creatorId, name, sortBy, ordering: ordering?.toUpperCase(), permissions, types },
         { page, pageSize },
       );
     },
@@ -245,12 +245,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       };
 
       // define all or no geoloc bounds
-      const geolocationBounds = { lng1, lng2, lat1, lat2 };
-      if (Object.values(geolocationBounds).some(Boolean)) {
-        if (!Object.values(geolocationBounds).every(Boolean)) {
-          throw new PartialGeolocationBounds(geolocationBounds);
+      if (lat1 !== undefined || lat2 !== undefined || lng1 !== undefined || lng2 !== undefined) {
+        if (
+          Number(lat1) !== lat1 ||
+          Number(lat2) !== lat2 ||
+          Number(lng1) !== lng1 ||
+          Number(lng2) !== lng2
+        ) {
+          throw new PartialGeolocationBounds({ lng1, lng2, lat1, lat2 });
         }
-        searchParams.geolocationBounds = geolocationBounds;
+        searchParams.geolocationBounds = { lng1, lng2, lat1, lat2 };
       }
 
       return itemService.search(member, buildRepositories(), searchParams, { page, pageSize });

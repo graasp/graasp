@@ -7,3 +7,7 @@ import { ItemTag } from '../ItemTag';
 export const setItemPublic = async (item: Item, creator?: Actor | null) => {
   return ItemTag.save({ item, creator, type: ItemTagType.Public });
 };
+
+export const setItemHidden = async (item: Item, creator?: Actor | null) => {
+  return ItemTag.save({ item, creator, type: ItemTagType.Hidden });
+};

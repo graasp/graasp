@@ -17,6 +17,7 @@ import {
 import { AppDataSource } from '../../plugins/datasource';
 import { PaginationParams } from '../../types';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
+import { printFilledSQL } from '../../utils/debug';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -254,7 +255,24 @@ export class ItemRepository {
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .innerJoin('item_membership', 'im', 'item.path <@ im.item_path')
-      .where('im.member_id = :memberId', { memberId: actor.id });
+      .where('im.member_id = :memberId', { memberId: actor.id })
+      .leftJoin('item_tag', 'it', 'item.path <@ it.item_path')
+      .andWhere(
+        new Brackets((qb) => {
+          // item has no tag
+          qb.where('it is null');
+          qb.orWhere(
+            new Brackets((sqb) => {
+              // should not have tag hidden for permission read
+              sqb.where("it.type != 'hidden'");
+              sqb.andWhere("im.permission = 'read'");
+            }),
+          );
+          // item is write or admin
+          qb.orWhere("im.permission = 'write'");
+          qb.orWhere("im.permission = 'admin'");
+        }),
+      );
 
     if (types) {
       query.andWhere('item.type IN (:...types)', { types });
@@ -269,9 +287,17 @@ export class ItemRepository {
     }
 
     if (geolocationBounds) {
+      const [minLat, maxLat] = [geolocationBounds.lat1, geolocationBounds.lat2].sort(
+        (a, b) => a - b,
+      );
+      const [minLng, maxLng] = [geolocationBounds.lng1, geolocationBounds.lng2].sort(
+        (a, b) => a - b,
+      );
+
       query
         .innerJoin('item_geolocation', 'ig', 'item.path <@ ig.item_path')
-        .andWhere('ig IS NOT NULL');
+        .andWhere('ig.lat BETWEEN :minLat AND :maxLat', { minLat, maxLat })
+        .andWhere('ig.lng BETWEEN :minLng AND :maxLng', { minLng, maxLng });
     }
     const memberLang = ALLOWED_SEARCH_LANGS[actor?.lang ?? 'en'];
 
@@ -296,6 +322,12 @@ export class ItemRepository {
               lang: memberLang,
             });
           }
+          // non-word searching, eg write 'xt' for 'text'
+          for (const k of allKeywords) {
+            qb.orWhere('item.name LIKE :k', {
+              k: `%${k}%`,
+            });
+          }
         }),
       );
     }
@@ -303,7 +335,7 @@ export class ItemRepository {
     // sorting
     // use given sorting, or by rank for defined keywords, or by last update
     const sorting = sortBy ?? (allKeywords?.length ? SortBy.Rank : SortBy.ItemUpdatedAt);
-    const orderBy = ordering?.toUpperCase() ?? Ordering.DESC;
+    const orderBy = ordering ?? Ordering.DESC;
     // if no sortby is defined but keywords exist, order by ranking
     if (sortBy === SortBy.Rank) {
       const keywordsString = allKeywords?.join(' ');
@@ -338,10 +370,12 @@ export class ItemRepository {
           mappedSortBy = 'item.updated_at';
           break;
       }
-      query.orderBy(mappedSortBy, ordering.toUpperCase());
+      query.orderBy(mappedSortBy, orderBy);
     }
 
     query.offset(skip).limit(limit);
+
+    console.log(printFilledSQL(query));
 
     const [data, totalCount] = await query.getManyAndCount();
     return { data, totalCount };

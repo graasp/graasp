@@ -27,6 +27,7 @@ import {
 import { saveMember } from '../member/test/fixtures/members';
 import { FolderItem, Item } from './entities/Item';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
+import { setItemHidden } from './plugins/itemTag/test/fixtures';
 import { ItemRepository } from './repository';
 import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
 
@@ -768,8 +769,8 @@ describe('ItemRepository', () => {
     });
   });
 
-  describe.only('searchItems', () => {
-    it('searchItems', async () => {
+  describe('search', () => {
+    it('successfully return data', async () => {
       const name = 'dog';
       const { item: parent } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -805,7 +806,45 @@ describe('ItemRepository', () => {
       expectManyItems(result, items);
     });
 
-    it.only('searchItems with geoloc', async () => {
+    it('page and page size', async () => {
+      const name = 'dog';
+      const { item: parent } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name },
+      });
+      const child = await testUtils.saveItem({
+        actor,
+        parentItem: parent,
+      });
+      const childOfChild = await testUtils.saveItem({
+        actor,
+        parentItem: child,
+        item: { name },
+      });
+      const { item: parent1 } = await testUtils.saveItemAndMembership({
+        member: actor,
+      });
+      await testUtils.saveItem({
+        actor,
+        item: { name },
+        parentItem: parent1,
+      });
+
+      // noise
+      await testUtils.saveItemAndMembership({
+        member: actor,
+      });
+
+      const { data: result, totalCount } = await itemRepository.search(
+        actor,
+        { keywords: [name] },
+        { page: 2, pageSize: 1 },
+      );
+      expect(totalCount).toEqual(3);
+      expectManyItems(result, [childOfChild]);
+    });
+
+    it('search with geoloc', async () => {
       const name = 'dog';
       const { item: parent, packedItem: parentPacked } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -851,6 +890,84 @@ describe('ItemRepository', () => {
           lng2: 2,
         },
       });
+      expect(totalCount).toEqual(items.length);
+      expectManyItems(result, items);
+    });
+
+    it('remove hidden and read permission items', async () => {
+      const creator = await saveMember();
+      const name = 'dog';
+
+      // return parent
+      const { item: parent } = await testUtils.saveItemAndMembership({
+        member: actor,
+        permission: PermissionLevel.Read,
+        creator,
+        item: { name },
+      });
+
+      // does not return child because name does not match
+      const child = await testUtils.saveItem({
+        actor,
+        parentItem: parent,
+      });
+
+      // should not return this child because it is hidden
+      await testUtils.saveHiddenItem({
+        actor,
+        parentItem: child,
+        item: { name },
+      });
+
+      // should not return this tree because it is hidden
+      const { item: parent1 } = await testUtils.saveItemAndMembership({
+        member: actor,
+        permission: PermissionLevel.Read,
+        creator,
+      });
+      await setItemHidden(parent1);
+      await testUtils.saveItem({
+        actor,
+        item: { name },
+        parentItem: parent1,
+      });
+
+      // do not return because name is wrong, hidden and admin do not matter
+      const { item: hiddenAndAdminItemWrongName } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name: 'no' },
+      });
+      await setItemHidden(hiddenAndAdminItemWrongName);
+
+      // return despite hidden and admin (inherit)
+      const { item: adminItem } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name: 'no' },
+      });
+      const { item: hiddenAndAdminInherited } = await testUtils.saveHiddenItem({
+        actor,
+        parentItem: adminItem,
+        item: { name },
+      });
+
+      // return child that is hidden (inherit) but admin
+      const { item: hiddenWithAdminParent } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name: 'no' },
+      });
+      await setItemHidden(hiddenWithAdminParent);
+      const adminWithHiddenInherited = await testUtils.saveItem({
+        actor,
+        parentItem: hiddenWithAdminParent,
+        item: { name },
+      });
+
+      const items = [parent, hiddenAndAdminInherited, adminWithHiddenInherited];
+
+      const { data: result, totalCount } = await itemRepository.search(actor, {
+        keywords: [name],
+      });
+
       expect(totalCount).toEqual(items.length);
       expectManyItems(result, items);
     });

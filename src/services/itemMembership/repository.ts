@@ -113,7 +113,7 @@ export const ItemMembershipRepository = AppDataSource.getRepository(ItemMembersh
       creatorId,
       name,
       sortBy = SortBy.ItemUpdatedAt,
-      ordering = Ordering.desc,
+      ordering = Ordering.DESC,
       permissions,
       types,
     }: AccessibleItemSearchParams,
