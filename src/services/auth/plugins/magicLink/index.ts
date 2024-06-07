@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { container } from 'tsyringe';
 
 import { FastifyPluginAsync } from 'fastify';
 
@@ -8,17 +9,15 @@ import { DEFAULT_LANG } from '@graasp/translations';
 import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { MemberService } from '../../../member/service';
 import { getRedirectionUrl } from '../../utils';
 import { auth, login, register } from './schemas';
 import { MagicLinkService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    log,
-    db,
-    members: { service: memberService },
-  } = fastify;
+  const { log, db } = fastify;
 
+  const memberService = container.resolve(MemberService);
   const magicLinkService = new MagicLinkService(fastify, log);
 
   // cookie based auth and api endpoints

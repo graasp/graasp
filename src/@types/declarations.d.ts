@@ -80,7 +80,6 @@ declare module 'fastify' {
     search: {
       service: SearchService;
     };
-    members: { service: MemberService };
     actions: { service: ActionService };
     chat: { service: ChatMessageService };
     storage: { service: StorageService };

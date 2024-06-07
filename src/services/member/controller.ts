@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { container } from 'tsyringe';
 
 import { FastifyPluginAsync } from 'fastify';
 
@@ -15,14 +16,15 @@ import {
   getStorage,
   updateOne,
 } from './schemas';
+import { MemberService } from './service';
 
 const controller: FastifyPluginAsync = async (fastify) => {
   const {
     db,
-    members: { service: memberService },
     storage: { service: storageService },
     files: { service: fileService },
   } = fastify;
+  const memberService = container.resolve(MemberService);
 
   // get current
   fastify.get(

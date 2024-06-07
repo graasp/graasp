@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { container } from 'tsyringe';
 
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
@@ -8,6 +9,7 @@ import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
+import { MemberService } from '../../../member/service';
 import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
 import { NoFileProvidedForInvitations } from './errors';
@@ -15,7 +17,8 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, db, log, members, items, memberships } = fastify;
+  const { mailer, db, log, items, memberships } = fastify;
+  const memberService = container.resolve(MemberService);
 
   if (!mailer) {
     throw new Error('Mailer plugin is not defined');
@@ -24,13 +27,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
 
-  const iS = new InvitationService(
-    log,
-    mailer,
-    items.service,
-    members.service,
-    memberships.service,
-  );
+  const iS = new InvitationService(log, mailer, items.service, memberService, memberships.service);
 
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
@@ -38,7 +35,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await iS.createToMemberships(actor, repositories, args.member);
     await repositories.invitationRepository.deleteForEmail(email);
   };
-  members.service.hooks.setPostHook('create', hook);
+  memberService.hooks.setPostHook('create', hook);
 
   // get an invitation by id
   // does not require authentication

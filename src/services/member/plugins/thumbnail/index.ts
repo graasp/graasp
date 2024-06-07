@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { container } from 'tsyringe';
 
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
@@ -10,6 +11,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
+import { MemberService } from '../../service';
 import { download, upload } from './schemas';
 import { MemberThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
@@ -23,9 +25,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
   const {
     files: { service: fileService },
-    members: { service: memberService },
     db,
   } = fastify;
+  const memberService = container.resolve(MemberService);
 
   fastify.register(fastifyMultipart, {
     limits: {
