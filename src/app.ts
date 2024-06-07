@@ -1,3 +1,7 @@
+// needed to use decorators for Dependency Injection
+// should not be reimported in any other files !
+import 'reflect-metadata';
+
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
