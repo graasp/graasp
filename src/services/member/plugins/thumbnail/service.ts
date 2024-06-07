@@ -1,17 +1,18 @@
 import { Readable } from 'stream';
+import { singleton } from 'tsyringe';
 
 import { Repositories } from '../../../../utils/repositories';
-import FileService from '../../../file/service';
-import { ThumbnailService } from '../../../thumbnail/service';
+import { AvatarThumbnailService, ThumbnailService } from '../../../thumbnail/service';
 import { Actor, Member } from '../../entities/member';
 import { MemberService } from '../../service';
 
+@singleton()
 export class MemberThumbnailService {
   thumbnailService: ThumbnailService;
   memberService: MemberService;
 
-  constructor(memberService: MemberService, fileService: FileService) {
-    this.thumbnailService = new ThumbnailService(fileService, 'avatars');
+  constructor(memberService: MemberService, thumbnailService: AvatarThumbnailService) {
+    this.thumbnailService = thumbnailService;
     this.memberService = memberService;
   }
 
