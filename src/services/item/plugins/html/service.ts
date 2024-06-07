@@ -17,7 +17,9 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
 import { Actor, Member } from '../../../member/entities/member';
+import { ThumbnailService } from '../../../thumbnail/service';
 import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import { GraaspHtmlError, HtmlImportError } from './errors';
 import { DEFAULT_MIME_TYPE } from './h5p/constants';
 import { HtmlValidator } from './validator';
@@ -25,7 +27,7 @@ import { HtmlValidator } from './validator';
 /**
  * Implementation for the Html service
  */
-export abstract class HtmlService {
+export abstract class HtmlService extends ItemService {
   public readonly fileService: FileService;
   protected readonly validator: HtmlValidator;
   protected readonly mimetype: string;
@@ -49,6 +51,10 @@ export abstract class HtmlService {
     validator: HtmlValidator,
     log: FastifyBaseLogger,
   ) {
+    // TODO: get thumbnailservice from injection
+    // TODO: get logger
+    super({} as unknown as ThumbnailService, (() => {}) as unknown as FastifyBaseLogger);
+
     if (pathPrefix && pathPrefix.startsWith('/')) {
       throw new Error('path prefix should not start with a "/"!');
     }

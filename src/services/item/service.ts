@@ -655,6 +655,7 @@ export class ItemService {
 
     const { itemRepository, itemMembershipRepository, itemGeolocationRepository } = repositories;
 
+    // todo: check of permission in controller
     const item = await this.get(actor, repositories, itemId);
 
     // check how "big the tree is" below the item
@@ -669,17 +670,6 @@ export class ItemService {
       // check how deep (number of levels) the resulting tree will be
       const levelsToFarthestChild = await itemRepository.getNumberOfLevelsToFarthestChild(item);
       await itemRepository.checkHierarchyDepth(parentItem, levelsToFarthestChild);
-    }
-
-    let items = [item];
-    if (isItemType(item, ItemType.FOLDER)) {
-      const descendants = await itemRepository.getDescendants(item, { ordered: false });
-      items = [...descendants, item];
-    }
-
-    // pre hook
-    for (const original of items) {
-      await this.hooks.runPreHooks('copy', actor, repositories, { original });
     }
 
     // TODO: args?
@@ -700,25 +690,6 @@ export class ItemService {
         }
         throw e;
       });
-
-    // post hook
-    for (const { original, copy } of treeCopyMap.values()) {
-      await this.hooks.runPostHooks('copy', actor, repositories, { original, copy });
-      // copy geolocation
-      await itemGeolocationRepository.copy(original, copy);
-      // copy thumbnails if original has setting to true
-      if (original.settings.hasThumbnail) {
-        try {
-          // try to copy thumbnails, this might fail, so we wrap in a try-catch
-          await this.thumbnailService.copyFolder(actor, {
-            originalId: original.id,
-            newId: copy.id,
-          });
-        } catch {
-          this.log.error(`On item copy, thumbnail for ${original.id} could not be found.`);
-        }
-      }
-    }
 
     return { item, copy: copyRoot };
   }

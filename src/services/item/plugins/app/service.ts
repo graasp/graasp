@@ -7,20 +7,21 @@ import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
+import { AppSettingService } from './appSetting/service';
 import { checkTargetItemAndTokenItemMatch } from './utils';
 
-export class AppService {
-  itemService: ItemService;
+export class AppService extends ItemService {
   jwtExpiration: number;
   promisifiedJwtSign: (
     arg1: { sub: AuthTokenSubject },
     arg2: { expiresIn: string },
   ) => Promise<string>;
+  private appSettingService: AppSettingService;
 
-  constructor(itemService, jwtExpiration, promisifiedJwtSign) {
-    this.itemService = itemService;
+  constructor(jwtExpiration, promisifiedJwtSign) {
+    // TODO
+    super(0 as any, 0 as any);
     this.jwtExpiration = jwtExpiration;
-    // this.promisifiedJwtVerify = promisifiedJwtVerify;
     this.promisifiedJwtSign = promisifiedJwtSign;
   }
 
@@ -104,5 +105,13 @@ export class AppService {
       memberships.data[item.id].map(({ member }) => member),
       ({ id }) => id,
     );
+  }
+
+  async copy(actor, repositories, id, args) {
+    const { item: original, copy } = await super.copy(actor, repositories, id, args);
+
+    await this.appSettingService.copyForItem(actor, repositories, original, copy);
+
+    return { item: original, copy };
   }
 }

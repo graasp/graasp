@@ -9,6 +9,7 @@ import { IdParam, IdsParams, PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
+import { ItemController } from './classcontroller';
 import { Item } from './entities/Item';
 import {
   copyMany,
@@ -379,12 +380,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body: { parentId },
         log,
       } = request;
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        return await itemService.copyMany(member, repositories, ids, {
-          parentId,
-        });
-      })
+      new ItemController()
+        .copy(request, reply)
+        // TODO: move websockets as observer?
         .then(({ items, copies }) => {
           if (member) {
             websockets.publish(

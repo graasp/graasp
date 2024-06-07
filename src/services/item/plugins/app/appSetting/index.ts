@@ -26,18 +26,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.register(appSettingsWsHooks, { appSettingService });
 
-  // copy app settings and related files on item copy
-  const hook = async (
-    actor: Actor,
-    repositories: Repositories,
-    { original, copy }: { original: Item; copy: Item },
-  ) => {
-    if (original.type !== ItemType.APP || copy.type !== ItemType.APP) return;
-
-    await appSettingService.copyForItem(actor, repositories, original, copy);
-  };
-  itemService.hooks.setPostHook('copy', hook);
-
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {
     fastify.addHook('preHandler', fastify.verifyBearerAuth as preHandlerHookHandler);
