@@ -16,7 +16,6 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../services/file/interfaces/configuration';
-import { readEnvOrThrow } from './env';
 
 enum Environment {
   production = 'production',
@@ -333,9 +332,6 @@ export const REDIS_HOST = process.env.REDIS_HOST;
 export const REDIS_PORT: number = +process.env.REDIS_PORT! || 6379;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 export const REDIS_USERNAME = process.env.REDIS_USERNAME;
-
-// validation
-export const IMAGE_CLASSIFIER_API = readEnvOrThrow('IMAGE_CLASSIFIER_API');
 
 export const FILE_ITEM_PLUGIN_OPTIONS: LocalFileConfiguration = {
   storageRootPath: FILE_STORAGE_ROOT_PATH ?? 'root',
