@@ -1,20 +1,20 @@
 import { injectable } from 'tsyringe';
 
-import { readEnvOrThrow } from '../../../../utils/env';
+import { readEnv } from '../../../../utils/env';
 
 export interface ImageClassifierApi {
-  getApi(): string;
+  getApi(): string | undefined;
 }
 
 @injectable()
 export class ImageClassifierApiEnv implements ImageClassifierApi {
-  private imageClassifierApi: string;
+  private imageClassifierApi?: string;
 
   constructor() {
-    this.imageClassifierApi = readEnvOrThrow('IMAGE_CLASSIFIER_API');
+    this.imageClassifierApi = readEnv('IMAGE_CLASSIFIER_API');
   }
 
-  getApi(): string {
+  getApi() {
     return this.imageClassifierApi;
   }
 }

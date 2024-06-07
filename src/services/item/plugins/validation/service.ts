@@ -33,7 +33,7 @@ import { stripHtml } from './utils';
 export class ItemValidationService {
   itemService: ItemService;
   fileService: FileService;
-  imageClassifierApi: string;
+  imageClassifierApi?: string;
 
   constructor(
     itemService: ItemService,
