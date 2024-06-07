@@ -1,17 +1,16 @@
 import { StatusCodes } from 'http-status-codes';
+import { container } from 'tsyringe';
 
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
+import FileService from '../../../file/service';
 import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    files: { service: fileService },
-    mailer,
-    db,
-  } = fastify;
+  const { mailer, db } = fastify;
+  const fileService = container.resolve(FileService);
   const exportMemberDataService = new ExportMemberDataService();
 
   // download all related data to the given user

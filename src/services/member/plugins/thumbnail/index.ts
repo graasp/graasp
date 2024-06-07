@@ -9,6 +9,7 @@ import { ThumbnailSizeType } from '@graasp/sdk';
 import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import FileService from '../../../file/service';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { MemberService } from '../../service';
@@ -23,10 +24,8 @@ type GraaspThumbnailsOptions = {
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
-  const {
-    files: { service: fileService },
-    db,
-  } = fastify;
+  const { db } = fastify;
+  const fileService = container.resolve(FileService);
   const memberService = container.resolve(MemberService);
 
   fastify.register(fastifyMultipart, {

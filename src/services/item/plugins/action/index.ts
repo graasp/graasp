@@ -22,6 +22,7 @@ import {
   LocalFileConfiguration,
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
+import FileService from '../../../file/service';
 import { MemberService } from '../../../member/service';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
@@ -37,7 +38,6 @@ export interface GraaspActionsOptions {
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const {
-    files: { service: fileService },
     actions: { service: actionService },
     items: { service: itemService },
     mailer,
@@ -45,6 +45,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     websockets,
   } = fastify;
 
+  const fileService = container.resolve(FileService);
   const memberService = container.resolve(MemberService);
   const actionItemService = new ActionItemService(actionService, itemService, memberService);
   fastify.items.actions = { service: actionItemService };

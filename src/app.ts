@@ -1,27 +1,20 @@
-import { container, instanceCachingFactory } from 'tsyringe';
-
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { registerDependencies, registerFileService } from './dependencies';
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
 import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
-import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
-import { ItemPublishedService } from './services/item/plugins/published/service';
-import { ImageClassifierApiEnv } from './services/item/plugins/validation/ImageClassifierApi';
-import { ItemValidationService } from './services/item/plugins/validation/service';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
 import websocketsPlugin from './services/websockets';
 import {
   COOKIE_DOMAIN,
   DATABASE_LOGS,
-  FILE_ITEM_PLUGIN_OPTIONS,
-  FILE_ITEM_TYPE,
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_SMTP_HOST,
@@ -32,46 +25,14 @@ import {
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
-  S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './utils/config';
-
-// temporary step by manually register dependencies.
-// this allow to test DI framework without having to annotate all the services (second step).
-const registerDependencies = (instance: FastifyInstance) => {
-  const {
-    items: { service: itemService },
-    files: { service: fileService },
-    mailer,
-    log,
-  } = instance;
-
-  container.register(ItemValidationService, {
-    useFactory: instanceCachingFactory(
-      () =>
-        new ItemValidationService(
-          itemService,
-          fileService,
-          container.resolve(ImageClassifierApiEnv),
-        ),
-    ),
-  });
-
-  container.register(ItemPublishedService, {
-    useFactory: instanceCachingFactory(() => new ItemPublishedService(itemService, mailer, log)),
-  });
-};
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
   instance.addSchema(shared);
-  // file
-  await instance.register(fp(filePlugin), {
-    fileItemType: FILE_ITEM_TYPE,
-    fileConfigurations: {
-      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
-      local: FILE_ITEM_PLUGIN_OPTIONS,
-    },
-  });
+  // TODO: register here because for no registerDependencies needs some decorator and decorator need file service.
+  // will be cleaned during the current migration.
+  registerFileService(instance);
 
   await instance
     .register(fp(metaPlugin))

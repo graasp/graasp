@@ -1,3 +1,5 @@
+import { container } from 'tsyringe';
+
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
@@ -5,6 +7,7 @@ import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { IdParam } from '../../../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
+import FileService from '../../../../../../file/service';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -32,12 +35,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     appDataService,
   } = options;
 
-  const {
-    db,
-    files: { service: fileService },
-    items,
-  } = fastify;
+  const { db, items } = fastify;
 
+  const fileService = container.resolve(FileService);
   const { service: itemService } = items;
 
   const appDataFileService = new AppDataFileService(appDataService, fileService, itemService);

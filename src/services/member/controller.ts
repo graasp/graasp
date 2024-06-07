@@ -6,6 +6,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { IdParam, IdsParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
+import FileService from '../file/service';
 import { Member } from './entities/member';
 import {
   deleteOne,
@@ -22,8 +23,8 @@ const controller: FastifyPluginAsync = async (fastify) => {
   const {
     db,
     storage: { service: storageService },
-    files: { service: fileService },
   } = fastify;
+  const fileService = container.resolve(FileService);
   const memberService = container.resolve(MemberService);
 
   // get current

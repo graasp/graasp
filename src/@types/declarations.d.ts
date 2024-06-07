@@ -10,7 +10,6 @@ import type { MailerDecoration } from '../plugins/mailer';
 import { ActionService } from '../services/action/services/action';
 import { MentionService } from '../services/chat/plugins/mentions/service';
 import { ChatMessageService } from '../services/chat/service';
-import FileService from '../services/file/service';
 import { create, updateOne } from '../services/item/fluent-schema';
 import { ActionItemService } from '../services/item/plugins/action/service';
 import { EtherpadItemService } from '../services/item/plugins/etherpad/service';
@@ -44,9 +43,6 @@ declare module 'fastify' {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     i18n: any;
     mailer: MailerDecoration;
-    files: {
-      service: FileService;
-    };
     // should this be notifications?
     mentions: {
       service: MentionService;

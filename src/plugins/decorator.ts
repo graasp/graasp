@@ -6,6 +6,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { JobService } from '../jobs';
 import { ActionService } from '../services/action/services/action';
+import FileService from '../services/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
@@ -45,7 +46,9 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
    */
   fastify.decorateRequest('member', null);
 
-  const thumbnailService = new ThumbnailService(fastify.files.service, true, 'thumbnails');
+  const fileService = container.resolve(FileService);
+
+  const thumbnailService = new ThumbnailService(fileService, true, 'thumbnails');
   fastify.decorate('thumbnails', { service: thumbnailService });
 
   const itemService = new ItemService(thumbnailService, fastify.log);
@@ -79,7 +82,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('search', {
     service: new SearchService(
       fastify.items.service,
-      fastify.files.service,
+      fileService,
       fastify.itemsPublished.service,
       fastify.itemsCategory.service,
       fastify.db,
