@@ -1,10 +1,9 @@
-import { container } from 'tsyringe';
-
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
 import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -34,7 +33,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     storage: { service: storageService },
   } = fastify;
 
-  const fileService = container.resolve(FileService);
+  const fileService = resolveDependency(FileService);
   const { service: itemService, extendExtrasUpdateSchema } = items;
 
   fastify.register(fastifyMultipart, {

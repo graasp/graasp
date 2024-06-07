@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import { container } from 'tsyringe';
 
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
@@ -15,6 +14,7 @@ import {
   HttpMethod,
 } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
 import { IdParam } from '../../../../types';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -45,8 +45,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     websockets,
   } = fastify;
 
-  const fileService = container.resolve(FileService);
-  const memberService = container.resolve(MemberService);
+  const fileService = resolveDependency(FileService);
+  const memberService = resolveDependency(MemberService);
   const actionItemService = new ActionItemService(actionService, itemService, memberService);
   fastify.items.actions = { service: actionItemService };
 

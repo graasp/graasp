@@ -1,10 +1,9 @@
-import { container } from 'tsyringe';
-
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../../../dependencies';
 import { IdParam } from '../../../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
@@ -37,7 +36,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   const { db, items } = fastify;
 
-  const fileService = container.resolve(FileService);
+  const fileService = resolveDependency(FileService);
   const { service: itemService } = items;
 
   const appDataFileService = new AppDataFileService(appDataService, fileService, itemService);

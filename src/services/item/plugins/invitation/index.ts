@@ -1,10 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
-import { container } from 'tsyringe';
 
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { resolveDependency } from '../../../../dependencies';
 import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
@@ -18,7 +18,7 @@ import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { mailer, db, log, items, memberships } = fastify;
-  const memberService = container.resolve(MemberService);
+  const memberService = resolveDependency(MemberService);
 
   if (!mailer) {
     throw new Error('Mailer plugin is not defined');

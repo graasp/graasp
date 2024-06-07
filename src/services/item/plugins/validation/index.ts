@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
-import { container } from 'tsyringe';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../dependencies';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
@@ -13,8 +13,8 @@ import { ItemValidationService } from './service';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, websockets } = fastify;
 
-  const validationService = container.resolve(ItemValidationService);
-  const publishService = container.resolve(ItemPublishedService);
+  const validationService = resolveDependency(ItemValidationService);
+  const publishService = resolveDependency(ItemPublishedService);
 
   // get validation status of given itemId
   fastify.get<{ Params: { itemId: string } }>(

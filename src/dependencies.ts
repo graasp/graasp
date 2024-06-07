@@ -1,4 +1,4 @@
-import { container, instanceCachingFactory } from 'tsyringe';
+import { InjectionToken, container, instanceCachingFactory } from 'tsyringe';
 
 import { FastifyInstance } from 'fastify';
 
@@ -7,6 +7,10 @@ import { fileServiceFactory } from './services/file/utils/factory';
 import { ItemPublishedService } from './services/item/plugins/published/service';
 import { ImageClassifierApiEnv } from './services/item/plugins/validation/ImageClassifierApi';
 import { ItemValidationService } from './services/item/plugins/validation/service';
+
+export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
+  return container.resolve(injectionToken);
+};
 
 export const registerFileService = (instance: FastifyInstance) => {
   container.register(FileService, {

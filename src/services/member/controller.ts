@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
-import { container } from 'tsyringe';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../dependencies';
 import { IdParam, IdsParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
@@ -24,8 +24,8 @@ const controller: FastifyPluginAsync = async (fastify) => {
     db,
     storage: { service: storageService },
   } = fastify;
-  const fileService = container.resolve(FileService);
-  const memberService = container.resolve(MemberService);
+  const fileService = resolveDependency(FileService);
+  const memberService = resolveDependency(MemberService);
 
   // get current
   fastify.get(

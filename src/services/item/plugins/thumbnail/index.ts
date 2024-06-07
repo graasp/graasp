@@ -1,11 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
-import { container } from 'tsyringe';
 
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
 import { ThumbnailSizeType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
 import { IdParam } from '../../../../types';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
@@ -30,7 +30,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     db,
   } = fastify;
 
-  const fileService = container.resolve(FileService);
+  const fileService = resolveDependency(FileService);
 
   fastify.register(fastifyMultipart, {
     limits: {

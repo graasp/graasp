@@ -1,9 +1,9 @@
 import Redis from 'ioredis';
 import { MeiliSearch } from 'meilisearch';
-import { container } from 'tsyringe';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../dependencies';
 import { JobService } from '../jobs';
 import { ActionService } from '../services/action/services/action';
 import FileService from '../services/file/service';
@@ -46,7 +46,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
    */
   fastify.decorateRequest('member', null);
 
-  const fileService = container.resolve(FileService);
+  const fileService = resolveDependency(FileService);
 
   const thumbnailService = new ThumbnailService(fileService, true, 'thumbnails');
   fastify.decorate('thumbnails', { service: thumbnailService });
@@ -64,7 +64,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   });
 
   fastify.decorate('actions', {
-    service: new ActionService(fastify.items.service, container.resolve(MemberService)),
+    service: new ActionService(fastify.items.service, resolveDependency(MemberService)),
   });
 
   fastify.decorate('itemsPublished', {
