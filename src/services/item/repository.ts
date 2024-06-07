@@ -311,10 +311,6 @@ export class ItemRepository {
           qb.where("item.search_document @@ plainto_tsquery('english', :keywords)", {
             keywords: keywordsString,
           });
-          // no dictionary
-          qb.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
-            keywords: keywordsString,
-          });
           // search by member lang
           if (memberLang != ALLOWED_SEARCH_LANGS['en']) {
             qb.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
@@ -322,6 +318,10 @@ export class ItemRepository {
               lang: memberLang,
             });
           }
+          // no dictionary, can find beginning of words, eg 'te' or 'inp' for 'text input'
+          qb.orWhere('item.search_document @@ to_tsquery(:keywordsWithPrefix)', {
+            keywordsWithPrefix: `${allKeywords.join('&')}:*`,
+          });
           // non-word searching, eg write 'xt' for 'text'
           for (const k of allKeywords) {
             qb.orWhere('item.name LIKE :k', {
@@ -339,10 +339,11 @@ export class ItemRepository {
     // if no sortby is defined but keywords exist, order by ranking
     if (sortBy === SortBy.Rank) {
       const keywordsString = allKeywords?.join(' ');
+      // value more native language
       const orderByKey = `
       ts_rank(item.search_document, plainto_tsquery('english', :allKeywords))
-      + ts_rank(item.search_document, plainto_tsquery('simple', :allKeywords))
-      + ts_rank(item.search_document, plainto_tsquery(:lang, :allKeywords))
+      + 2*ts_rank(item.search_document, plainto_tsquery(:lang, :allKeywords))
+      + ts_rank(item.search_document, to_tsquery(:allKeywords))
       `;
       query
         .orderBy({

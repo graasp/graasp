@@ -122,7 +122,7 @@ export class ItemGeolocationRepository {
         });
 
         // no dictionary
-        q.orWhere("item.search_document @@ plainto_tsquery('simple', :keywords)", {
+        q.orWhere('item.search_document @@ to_tsquery(:keywords)', {
           keywords: keywordsString,
         });
 
@@ -131,6 +131,13 @@ export class ItemGeolocationRepository {
           q.orWhere('item.search_document @@ plainto_tsquery(:lang, :keywords)', {
             keywords: keywordsString,
             lang: ALLOWED_SEARCH_LANGS[memberLang],
+          });
+        }
+
+        // non-word searching, eg write 'xt' for 'text'
+        for (const k of keywords) {
+          q.orWhere('item.name LIKE :k', {
+            k: `%${k}%`,
           });
         }
       });

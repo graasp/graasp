@@ -235,7 +235,7 @@ export const search = {
     .prop('keywords', S.array().items(S.string()))
     .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
     .prop('sortBy', S.enum(Object.values(SortBy)))
-    .prop('ordering', S.enum(Object.values(Ordering)))
+    .prop('ordering', S.enum([...Object.values(Ordering), 'asc', 'desc']))
     .prop('creatorId', S.string())
     .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
     .prop('types', S.array().items(S.enum(Object.values(ItemType))))
@@ -318,11 +318,6 @@ export const updateMany = ({ body }) => {
   };
 };
 
-// const deleteOne = {
-//   params: idParam,
-//   response: { 200: item, '4xx': error },
-// };
-
 export const deleteMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
@@ -333,22 +328,12 @@ export const deleteMany = {
   },
 };
 
-// const moveOne = {
-//   params: idParam,
-//   body: S.object().additionalProperties(false).prop('parentId', uuid),
-// };
-
 export const moveMany = {
   querystring: S.object()
     .prop('id', S.array().maxItems(MAX_TARGETS_FOR_MODIFY_REQUEST))
     .extend(idsQuery),
   body: S.object().additionalProperties(false).prop('parentId', uuid),
 };
-
-// const copyOne = {
-//   params: idParam,
-//   body: S.object().additionalProperties(false).prop('parentId', uuid),
-// };
 
 export const copyMany = {
   querystring: S.object()

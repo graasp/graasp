@@ -34,7 +34,7 @@ describe('Item routes tests', () => {
     expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
   });
 
-  describe.skip('Signed In', () => {
+  describe('Signed In', () => {
     beforeEach(async () => {
       ({ app, actor } = await build());
     });
