@@ -7639,6 +7639,7 @@ __metadata:
     pino-pretty: "npm:11.0.0"
     prettier: "npm:2.8.8"
     qs: "npm:6.12.1"
+    reflect-metadata: "npm:0.2.2"
     sanitize-html: "npm:2.13.0"
     secure-json-parse: "npm:2.7.0"
     sharp: "npm:0.33.4"
@@ -7647,6 +7648,7 @@ __metadata:
     tmp-promise: "npm:3.0.3"
     ts-jest: "npm:29.1.4"
     ts-node: "npm:10.9.2"
+    tsyringe: "npm:4.8.0"
     typeorm: "npm:0.3.19"
     typescript: "npm:5.3.3"
     uuid: "npm:9.0.1"
@@ -11327,6 +11329,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"reflect-metadata@npm:0.2.2":
+  version: 0.2.2
+  resolution: "reflect-metadata@npm:0.2.2"
+  checksum: 10/1c93f9ac790fea1c852fde80c91b2760420069f4862f28e6fae0c00c6937a56508716b0ed2419ab02869dd488d123c4ab92d062ae84e8739ea7417fae10c4745
+  languageName: node
+  linkType: hard
+
 "reflect-metadata@npm:^0.1.13":
   version: 0.1.14
   resolution: "reflect-metadata@npm:0.1.14"
@@ -12679,7 +12688,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^1.11.1":
+"tslib@npm:^1.11.1, tslib@npm:^1.9.3":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: 10/7dbf34e6f55c6492637adb81b555af5e3b4f9cc6b998fb440dac82d3b42bdc91560a35a5fb75e20e24a076c651438234da6743d139e4feabf0783f3cdfe1dddb
@@ -12704,6 +12713,15 @@ __metadata:
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 10/bd26c22d36736513980091a1e356378e8b662ded04204453d353a7f34a4c21ed0afc59b5f90719d4ba756e581a162ecbf93118dc9c6be5acf70aa309188166ca
+  languageName: node
+  linkType: hard
+
+"tsyringe@npm:4.8.0":
+  version: 4.8.0
+  resolution: "tsyringe@npm:4.8.0"
+  dependencies:
+    tslib: "npm:^1.9.3"
+  checksum: 10/3f0c5049c167cf32226894a0589ac3f25a7019c35d2cb06e65f4bd1618fd90c57d33ea600fdb41695c0d988628893e59d22e8cd4f89c7c97390d6cc58bf21985
   languageName: node
   linkType: hard
 

@@ -1,3 +1,5 @@
+import { container, instanceCachingFactory } from 'tsyringe';
+
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
@@ -9,6 +11,9 @@ import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
 import filePlugin from './services/file';
 import ItemServiceApi from './services/item';
+import { ItemPublishedService } from './services/item/plugins/published/service';
+import { ImageClassifierApiEnv } from './services/item/plugins/validation/ImageClassifierApi';
+import { ItemValidationService } from './services/item/plugins/validation/service';
 import ItemMembershipServiceApi from './services/itemMembership';
 import MemberServiceApi from './services/member';
 import websocketsPlugin from './services/websockets';
@@ -29,6 +34,32 @@ import {
   REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './utils/config';
+
+// temporary step by manually register dependencies.
+// this allow to test DI framework without having to annotate all the services (second step).
+const registerDependencies = (instance: FastifyInstance) => {
+  const {
+    items: { service: itemService },
+    files: { service: fileService },
+    mailer,
+    log,
+  } = instance;
+
+  container.register(ItemValidationService, {
+    useFactory: instanceCachingFactory(
+      () =>
+        new ItemValidationService(
+          itemService,
+          fileService,
+          container.resolve(ImageClassifierApiEnv),
+        ),
+    ),
+  });
+
+  container.register(ItemPublishedService, {
+    useFactory: instanceCachingFactory(() => new ItemPublishedService(itemService, mailer, log)),
+  });
+};
 
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
@@ -58,6 +89,8 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(decoratorPlugin))
     // need to be defined before member and item for auth check
     .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
+
+  registerDependencies(instance);
 
   instance.register(async (instance) => {
     // core API modules

@@ -18,6 +18,7 @@ import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
+import { ImageClassifierApiEnv } from './ImageClassifierApi';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
   InvalidFileItemError,
@@ -32,12 +33,16 @@ import { stripHtml } from './utils';
 export class ItemValidationService {
   itemService: ItemService;
   fileService: FileService;
-  imageClassifierApi?: string;
+  imageClassifierApi: string;
 
-  constructor(itemService: ItemService, fileService: FileService, imageClassifierApi?: string) {
+  constructor(
+    itemService: ItemService,
+    fileService: FileService,
+    imageClassifierApi: ImageClassifierApiEnv,
+  ) {
     this.itemService = itemService;
     this.fileService = fileService;
-    this.imageClassifierApi = imageClassifierApi;
+    this.imageClassifierApi = imageClassifierApi.getApi();
   }
 
   buildStoragePath(itemValidationId: UUID) {

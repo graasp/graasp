@@ -12,7 +12,6 @@ import {
   ETHERPAD_PUBLIC_URL,
   ETHERPAD_URL,
   FILE_ITEM_PLUGIN_OPTIONS,
-  IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../utils/config';
@@ -134,10 +133,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspRecycledItemData);
 
-        fastify.register(graaspValidationPlugin, {
-          // this api needs to be defined from .env
-          imageClassifierApi: IMAGE_CLASSIFIER_API,
-        });
+        fastify.register(graaspValidationPlugin);
 
         fastify.register(graaspItemLikes);
 

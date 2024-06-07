@@ -1,3 +1,6 @@
+// needed to use decorators for Dependency Injection
+import 'reflect-metadata';
+
 import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 

@@ -20,6 +20,7 @@ import { ItemTypeNotAllowedToPublish } from './errors';
 interface ActionCount {
   actionCount: number;
 }
+
 export class ItemPublishedService {
   private log: FastifyBaseLogger;
   private itemService: ItemService;
@@ -30,7 +31,7 @@ export class ItemPublishedService {
     delete: { pre: { item: Item }; post: { item: Item } };
   }>();
 
-  constructor(itemService: ItemService, mailer: MailerDecoration, log) {
+  constructor(itemService: ItemService, mailer: MailerDecoration, log: FastifyBaseLogger) {
     this.log = log;
     this.itemService = itemService;
     this.mailer = mailer;
