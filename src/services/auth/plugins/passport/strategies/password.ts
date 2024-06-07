@@ -15,7 +15,7 @@ export default (
   options?: CustomStrategyOptions,
 ) => {
   passport.use(
-    PassportStrategy.PASSWORD,
+    PassportStrategy.Password,
     new Strategy(
       {
         usernameField: 'email',

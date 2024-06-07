@@ -54,7 +54,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   magicLinkStrategy(
     fastifyPassport,
     memberRepository,
-    PassportStrategy.MOBILE_MAGIC_LINK,
+    PassportStrategy.MobileMagicLink,
     TOKEN_PARAM,
     AUTH_TOKEN_JWT_SECRET,
     { propagateError: true },
@@ -62,7 +62,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   magicLinkStrategy(
     fastifyPassport,
     memberRepository,
-    PassportStrategy.WEB_MAGIC_LINK,
+    PassportStrategy.WebMagicLink,
     SHORT_TOKEN_PARAM,
     JWT_SECRET,
     { propagateError: true },
@@ -73,13 +73,13 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   jwtChallengeVerifierStrategy(fastifyPassport, memberRepository, {
     propagateError: true,
   });
-  jwtStrategy(fastifyPassport, memberRepository, PassportStrategy.JWT, JWT_SECRET, {
+  jwtStrategy(fastifyPassport, memberRepository, PassportStrategy.Jwt, JWT_SECRET, {
     propagateError: true,
   });
   jwtStrategy(
     fastifyPassport,
     memberRepository,
-    PassportStrategy.REFRESH_TOKEN,
+    PassportStrategy.RefreshToken,
     REFRESH_TOKEN_JWT_SECRET,
     { propagateError: false },
   );
@@ -87,14 +87,14 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastifyPassport,
     memberRepository,
     itemRepository,
-    PassportStrategy.APPS_JWT,
+    PassportStrategy.AppsJwt,
     true,
   );
   jwtAppsStrategy(
     fastifyPassport,
     memberRepository,
     itemRepository,
-    PassportStrategy.OPTIONAL_APPS_JWT,
+    PassportStrategy.OptionalAppsJwt,
     false,
   );
 

@@ -16,8 +16,8 @@ import { PassportStrategy } from './strategies';
  * Will set the user to `request.user.member` if possible.
  */
 export const optionalIsAuthenticated = fastifyPassport.authenticate([
-  PassportStrategy.JWT,
-  PassportStrategy.SESSION,
+  PassportStrategy.Jwt,
+  PassportStrategy.Session,
 ]);
 
 /**
@@ -25,22 +25,22 @@ export const optionalIsAuthenticated = fastifyPassport.authenticate([
  * Will set the user to `request.user.member`.
  */
 export const isAuthenticated = fastifyPassport.authenticate([
-  PassportStrategy.JWT,
-  PassportStrategy.STRICT_SESSION,
+  PassportStrategy.Jwt,
+  PassportStrategy.StrictSession,
 ]);
 
 //-- Password Strategies --//
 /**
  * Classic password authentication to create a session.
  */
-export const authenticatePassword = fastifyPassport.authenticate(PassportStrategy.PASSWORD);
+export const authenticatePassword = fastifyPassport.authenticate(PassportStrategy.Password);
 
 //-- Magic Link Strategies --//
 /**
  * Classic magic link authentication to create a session.
  */
 export const authenticateMobileMagicLink = fastifyPassport.authenticate(
-  PassportStrategy.MOBILE_MAGIC_LINK,
+  PassportStrategy.MobileMagicLink,
 );
 
 //-- JWT Strategies --//
@@ -48,7 +48,7 @@ export const authenticateMobileMagicLink = fastifyPassport.authenticate(
  * JWT authentication for password reset operation.
  */
 export const authenticatePasswordReset = fastifyPassport.authenticate(
-  PassportStrategy.PASSWORD_RESET,
+  PassportStrategy.PasswordReset,
   { session: false },
 );
 
@@ -56,7 +56,7 @@ export const authenticatePasswordReset = fastifyPassport.authenticate(
  * Refresh Token for mobile authentication
  */
 export const authenticateRefreshToken = fastifyPassport.authenticate(
-  PassportStrategy.REFRESH_TOKEN,
+  PassportStrategy.RefreshToken,
   { session: false },
 );
 
@@ -64,14 +64,14 @@ export const authenticateRefreshToken = fastifyPassport.authenticate(
  * Mobile Authentication
  */
 export const authenticateJWTChallengeVerifier = fastifyPassport.authenticate(
-  PassportStrategy.JWT_CHALLENGE_VERIFIER,
+  PassportStrategy.JwtChallengeVerifier,
   { session: false },
 );
 
 /**
  * Items app authentication
  */
-export const authenticateAppsJWT = fastifyPassport.authenticate(PassportStrategy.APPS_JWT, {
+export const authenticateAppsJWT = fastifyPassport.authenticate(PassportStrategy.AppsJwt, {
   session: false,
 });
 
@@ -79,7 +79,7 @@ export const authenticateAppsJWT = fastifyPassport.authenticate(PassportStrategy
  *  Items app authentication. Allows authentication without member, can fail if item is not found.
  */
 export const guestAuthenticateAppsJWT = fastifyPassport.authenticate(
-  PassportStrategy.OPTIONAL_APPS_JWT,
+  PassportStrategy.OptionalAppsJwt,
   {
     session: false,
   },

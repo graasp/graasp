@@ -12,7 +12,7 @@ import { Actor } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
-const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.SESSION)!;
+const originalSessionStrategy = fastifyPassport.strategy(PassportStrategy.Session)!;
 let originalStrictSessionStrategy;
 
 /**
@@ -21,22 +21,22 @@ let originalStrictSessionStrategy;
  */
 export function mockAuthenticate(actor: Actor) {
   if (!originalStrictSessionStrategy) {
-    originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.STRICT_SESSION);
+    originalStrictSessionStrategy = fastifyPassport.strategy(PassportStrategy.StrictSession);
   }
   // If an actor is provided, use a custom strategy that always validate the request.
   // This will override the original session strategy to a custom one
   const strategy = new CustomStrategy((_req, done) => done(null, { member: actor }));
-  fastifyPassport.use(PassportStrategy.STRICT_SESSION, strategy);
-  fastifyPassport.use(PassportStrategy.SESSION, strategy);
+  fastifyPassport.use(PassportStrategy.StrictSession, strategy);
+  fastifyPassport.use(PassportStrategy.Session, strategy);
 }
 
 /**
  * Set the original session strategy back.
  */
 export function unmockAuthenticate() {
-  fastifyPassport.use(PassportStrategy.SESSION, originalSessionStrategy);
+  fastifyPassport.use(PassportStrategy.Session, originalSessionStrategy);
   if (originalStrictSessionStrategy) {
-    fastifyPassport.use(PassportStrategy.STRICT_SESSION, originalStrictSessionStrategy);
+    fastifyPassport.use(PassportStrategy.StrictSession, originalStrictSessionStrategy);
   }
 }
 

@@ -103,7 +103,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: auth,
       preHandler: fastifyPassport.authenticate(
-        PassportStrategy.WEB_MAGIC_LINK,
+        PassportStrategy.WebMagicLink,
         async (
           request: FastifyRequest,
           reply: FastifyReply,

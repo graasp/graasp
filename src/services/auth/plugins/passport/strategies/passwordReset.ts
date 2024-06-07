@@ -14,7 +14,7 @@ export default (
   options?: CustomStrategyOptions,
 ) => {
   passport.use(
-    PassportStrategy.PASSWORD_RESET,
+    PassportStrategy.PasswordReset,
     new Strategy(
       {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

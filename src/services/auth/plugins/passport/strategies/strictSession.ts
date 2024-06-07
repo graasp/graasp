@@ -10,7 +10,7 @@ import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
  */
 export default (passport: Authenticator, _options?: CustomStrategyOptions) => {
   passport.use(
-    PassportStrategy.STRICT_SESSION,
+    PassportStrategy.StrictSession,
     new Strategy((req, done: StrictVerifiedCallback) => {
       const user = req.isAuthenticated() ? req.user : false;
       return done(null, user);

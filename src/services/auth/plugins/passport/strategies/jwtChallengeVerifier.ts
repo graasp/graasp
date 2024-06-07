@@ -16,7 +16,7 @@ export default (
   options?: CustomStrategyOptions,
 ) => {
   passport.use(
-    PassportStrategy.JWT_CHALLENGE_VERIFIER,
+    PassportStrategy.JwtChallengeVerifier,
     new Strategy(
       {
         jwtFromRequest: ExtractJwt.fromBodyField(SHORT_TOKEN_PARAM),
