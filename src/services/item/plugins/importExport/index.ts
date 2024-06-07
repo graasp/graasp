@@ -5,8 +5,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemService } from '../../service';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
@@ -17,7 +19,6 @@ import { prepareZip } from './utils';
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     items: {
-      service: iS,
       files: { service: fS },
     },
     actions: { service: aS },
@@ -26,7 +27,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     db,
   } = fastify;
 
-  const importExportService = new ImportExportService(db, fS, iS, h5pService, fastifyLogger);
+  const itemService = resolveDependency(ItemService);
+  const importExportService = new ImportExportService(
+    db,
+    fS,
+    itemService,
+    h5pService,
+    fastifyLogger,
+  );
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -103,7 +111,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         log,
       } = request;
       const repositories = buildRepositories();
-      const item = await iS.get(member, repositories, itemId);
+      const item = await itemService.get(member, repositories, itemId);
 
       // generate archive stream
       const archiveStream = await importExportService.export(member, repositories, {

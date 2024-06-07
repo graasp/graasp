@@ -2,10 +2,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../dependencies';
 import { GEOLOCATION_API_KEY } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import { ItemGeolocation } from './ItemGeolocation';
 import {
   deleteGeolocation,
@@ -18,12 +20,10 @@ import {
 import { ItemGeolocationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    items: { service: iS },
-  } = fastify;
+  const { db } = fastify;
 
-  const itemGeolocationService = new ItemGeolocationService(iS, GEOLOCATION_API_KEY);
+  const itemService = resolveDependency(ItemService);
+  const itemGeolocationService = new ItemGeolocationService(itemService, GEOLOCATION_API_KEY);
 
   fastify.register(async function (fastify) {
     fastify.get<{ Params: { id: Item['id'] } }>(

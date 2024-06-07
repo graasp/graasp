@@ -1,15 +1,18 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../dependencies';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemService } from '../../service';
 import { ItemFlag } from './itemFlag';
 import common, { create, getFlags } from './schemas';
 import { ItemFlagService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
 
-  const iFS = new ItemFlagService(items.service);
+  const itemService = resolveDependency(ItemService);
+  const iFS = new ItemFlagService(itemService);
 
   // schemas
   fastify.addSchema(common);

@@ -2,9 +2,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
 import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import common, { create, deleteOne, getItemTags, getMany } from './schemas';
 import { ItemTagService } from './service';
 
@@ -19,9 +21,10 @@ import { ItemTagService } from './service';
  */
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
 
-  const iTS = new ItemTagService(items.service);
+  const itemService = resolveDependency(ItemService);
+  const iTS = new ItemTagService(itemService);
 
   // schemas
   fastify.addSchema(common);
@@ -33,7 +36,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const hook = async (actor, repositories, { original, copy }: { original: Item; copy: Item }) => {
     await repositories.itemTagRepository.copyAll(actor, original, copy, [ItemTagType.Public]);
   };
-  items.service.hooks.setPostHook('copy', hook);
+  itemService.hooks.setPostHook('copy', hook);
 
   // get item tags
   fastify.get<{ Params: { itemId: string } }>(

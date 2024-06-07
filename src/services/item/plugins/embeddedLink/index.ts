@@ -2,9 +2,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
+import { ItemService } from '../../service';
 import { LinkQueryParameterIsRequired } from './errors';
 import { createSchema, getLinkMetadata, updateExtraSchema } from './schemas';
 import { EmbeddedLinkService } from './service';
@@ -19,8 +21,9 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
   const { iframelyHrefOrigin } = options;
   const {
     log,
-    items: { extendCreateSchema, extendExtrasUpdateSchema, service: itemService },
+    items: { extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
+  const itemService = resolveDependency(ItemService);
   const embeddedLinkService = new EmbeddedLinkService();
 
   if (!iframelyHrefOrigin) {

@@ -9,8 +9,10 @@
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { resolveDependency } from '../../dependencies';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
+import { ItemService } from '../item/service';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
 import commonChat, {
@@ -39,10 +41,10 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
     db,
     actions: { service: actionService },
     mentions: { service: mentionService },
-    items: { service: itemService },
     websockets: websockets,
   } = fastify;
 
+  const itemService = resolveDependency(ItemService);
   const chatService = new ChatMessageService(itemService, mentionService);
   const actionChatService = new ActionChatService(actionService);
 

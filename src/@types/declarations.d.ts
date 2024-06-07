@@ -50,7 +50,6 @@ declare module 'fastify' {
     items: {
       extendCreateSchema: ReturnType<typeof create>;
       extendExtrasUpdateSchema: ReturnType<typeof updateOne>;
-      service: ItemService;
       files: {
         service: FileItemService;
       };

@@ -5,7 +5,9 @@ import fp from 'fastify-plugin';
 
 import Etherpad from '@graasp/etherpad-api';
 
+import { resolveDependency } from '../../../../dependencies';
 import { InvalidSession } from '../../../../utils/errors';
+import { ItemService } from '../../service';
 import { ETHERPAD_API_VERSION } from './constants';
 import { wrapErrors } from './etherpad';
 import { createEtherpad, getEtherpadFromItem } from './schemas';
@@ -15,11 +17,9 @@ import { validatePluginOptions } from './utils';
 
 const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, options) => {
   // get services from server instance
-  const {
-    items: { service: itemService },
-    log,
-    verifyAuthentication,
-  } = fastify;
+  const { log, verifyAuthentication } = fastify;
+
+  const itemService = resolveDependency(ItemService);
 
   const { url: etherpadUrl, publicUrl, apiKey, cookieDomain } = validatePluginOptions(options);
 

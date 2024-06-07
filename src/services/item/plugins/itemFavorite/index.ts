@@ -1,12 +1,15 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../dependencies';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemService } from '../../service';
 import common, { create, deleteOne, getFavorite } from './schemas';
 import { FavoriteService } from './services/favorite';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
-  const favoriteService = new FavoriteService(items.service);
+  const { db } = fastify;
+  const itemService = resolveDependency(ItemService);
+  const favoriteService = new FavoriteService(itemService);
 
   // schemas
   fastify.addSchema(common);

@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../dependencies';
 import { IdParam, IdsParams, PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
@@ -27,13 +28,14 @@ import {
   updateMany,
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
+import { ItemService } from './service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
-  const itemService = items.service;
+  const itemService = resolveDependency(ItemService);
   const actionItemService = items.actions.service;
 
   // create item

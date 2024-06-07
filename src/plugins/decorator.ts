@@ -48,29 +48,28 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   const fileService = resolveDependency(FileService);
   const thumbnailService = resolveDependency(DefaultThumbnailService);
+  const itemService = resolveDependency(ItemService);
 
-  const itemService = new ItemService(thumbnailService, fastify.log);
   fastify.decorate('items', {
-    service: itemService,
     thumbnails: { service: new ItemThumbnailService(itemService, thumbnailService) },
     // the casting is necessary as we are not instanciating the other keys of the object yet ..
     // we might need to rethink our depencency order to remove the need for this cast
   } as typeof fastify.items);
 
   fastify.decorate('memberships', {
-    service: new ItemMembershipService(fastify.items.service, fastify.mailer),
+    service: new ItemMembershipService(itemService, fastify.mailer),
   });
 
   fastify.decorate('actions', {
-    service: new ActionService(fastify.items.service, resolveDependency(MemberService)),
+    service: new ActionService(itemService, resolveDependency(MemberService)),
   });
 
   fastify.decorate('itemsPublished', {
-    service: new ItemPublishedService(fastify.items.service, fastify.mailer, fastify.log),
+    service: new ItemPublishedService(itemService, fastify.mailer, fastify.log),
   });
 
   fastify.decorate('itemsCategory', {
-    service: new ItemCategoryService(fastify.items.service),
+    service: new ItemCategoryService(itemService),
   });
 
   fastify.decorate('h5p', {
@@ -79,7 +78,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('search', {
     service: new SearchService(
-      fastify.items.service,
+      itemService,
       fileService,
       fastify.itemsPublished.service,
       fastify.itemsCategory.service,

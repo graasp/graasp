@@ -10,6 +10,7 @@ import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
+import { ItemService } from '../../service';
 import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
 import { NoFileProvidedForInvitations } from './errors';
@@ -17,7 +18,8 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, db, log, items, memberships } = fastify;
+  const { mailer, db, log, memberships } = fastify;
+  const itemService = resolveDependency(ItemService);
   const memberService = resolveDependency(MemberService);
 
   if (!mailer) {
@@ -27,7 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
 
-  const iS = new InvitationService(log, mailer, items.service, memberService, memberships.service);
+  const iS = new InvitationService(log, mailer, itemService, memberService, memberships.service);
 
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {

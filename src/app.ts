@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { registerDependencies, registerFileService } from './dependencies';
+import { registerDependencies } from './dependencies';
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
 import mailerPlugin from './plugins/mailer';
@@ -34,9 +34,10 @@ import {
 export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
   instance.addSchema(shared);
-  // TODO: register here because for no registerDependencies needs some decorator and decorator need file service.
-  // will be cleaned during the current migration.
-  registerFileService(instance);
+
+  // register some manuall dependencies
+  // TODO: used for now during the migration but have to check if it is possible to use annotations for all dependencies.
+  registerDependencies(instance);
 
   await instance
     .register(fp(metaPlugin))
@@ -54,8 +55,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(decoratorPlugin))
     // need to be defined before member and item for auth check
     .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
-
-  registerDependencies(instance);
 
   instance.register(async (instance) => {
     // core API modules

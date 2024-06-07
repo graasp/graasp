@@ -8,12 +8,14 @@ import fp from 'fastify-plugin';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../dependencies';
 import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { Item, isItemType } from '../../../entities/Item';
+import { ItemService } from '../../../service';
 import { FastifyStaticReply } from '../types';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
@@ -31,10 +33,11 @@ import { H5PPluginOptions } from './types';
 const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
   // get services from server instance
   const {
-    items: { service: itemService },
     h5p: { service: h5pService },
     db,
   } = fastify;
+
+  const itemService = resolveDependency(ItemService);
 
   // question: this is difficult to move this in the service because of the transaction
   /**

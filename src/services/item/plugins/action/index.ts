@@ -24,6 +24,7 @@ import {
 } from '../../../file/interfaces/configuration';
 import FileService from '../../../file/service';
 import { MemberService } from '../../../member/service';
+import { ItemService } from '../../service';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
 import { ActionRequestExportService } from './requestExport/service';
@@ -39,12 +40,12 @@ export interface GraaspActionsOptions {
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const {
     actions: { service: actionService },
-    items: { service: itemService },
     mailer,
     db,
     websockets,
   } = fastify;
 
+  const itemService = resolveDependency(ItemService);
   const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);
   const actionItemService = new ActionItemService(actionService, itemService, memberService);
