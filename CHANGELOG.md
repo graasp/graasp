@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.40.1](https://github.com/graasp/graasp/compare/v1.40.0...v1.40.1) (2024-06-05)
+
+
+### Bug Fixes
+
+* check that array is empty before getting many tags ([#1079](https://github.com/graasp/graasp/issues/1079)) ([5af01f2](https://github.com/graasp/graasp/commit/5af01f2a213df628b40818561309908e3a6ea40c))
+* **deps:** update aws-sdk-js-v3 monorepo to v3.590.0 ([#1051](https://github.com/graasp/graasp/issues/1051)) ([112fd61](https://github.com/graasp/graasp/commit/112fd613253bc4f0e6de3401875cc96856cdfe10))
+* **deps:** update dependency @graasp/sdk to v4.12.1 ([#1076](https://github.com/graasp/graasp/issues/1076)) ([8579207](https://github.com/graasp/graasp/commit/8579207ddaf9e5a507c6db25430075986b7412b0))
+* **deps:** update dependency fast-json-stringify to v5.16.0 ([#1086](https://github.com/graasp/graasp/issues/1086)) ([122d413](https://github.com/graasp/graasp/commit/122d413699d19484a54a4ed919e2f7717233d9eb))
+* **deps:** update dependency openai to v4.47.3 ([#1083](https://github.com/graasp/graasp/issues/1083)) ([7807188](https://github.com/graasp/graasp/commit/7807188f741c838960faca7a21930d2ead533a24))
+* **deps:** update dependency openai to v4.48.1 ([#1087](https://github.com/graasp/graasp/issues/1087)) ([16470e6](https://github.com/graasp/graasp/commit/16470e69fd12cc328a1a180f0a710060db957058))
+* **deps:** update dependency pg to v8.12.0 ([#1088](https://github.com/graasp/graasp/issues/1088)) ([9b0c10c](https://github.com/graasp/graasp/commit/9b0c10c6c3a36e7a140139a0d1fe5d8d2dff9c78))
+
 ## [1.40.0](https://github.com/graasp/graasp/compare/v1.39.0...v1.40.0) (2024-05-29)
 
 
