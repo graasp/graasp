@@ -20,11 +20,11 @@ export class AppService {
     this.jwtExpiration = jwtExpiration;
   }
 
-  async getAllValidAppOrigins(_actor: Actor, repositories: Repositories) {
+  async getAllValidAppOrigins(repositories: Repositories) {
     return repositories.publisherRepository.getAllValidAppOrigins();
   }
 
-  async getAllApps(_actor: Actor, repositories: Repositories, publisherId: string) {
+  async getAllApps(repositories: Repositories, publisherId: string) {
     return repositories.appRepository.getAll(publisherId);
   }
 

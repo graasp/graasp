@@ -2,8 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { itemValidation, itemValidationGroup } from './schemas';
 import { ItemValidationService } from './service';
@@ -31,11 +32,12 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     {
       schema: itemValidation,
 
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async ({ user, params: { itemId } }) => {
+      const member = notUndefined(user?.member);
       return validationService.getLastItemValidationGroupForItem(
-        user!.member!,
+        member,
         buildRepositories(),
         itemId,
       );
@@ -47,11 +49,12 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     '/:itemId/validations/:itemValidationGroupId',
     {
       schema: itemValidationGroup,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async ({ user, params: { itemValidationGroupId } }) => {
+      const member = notUndefined(user?.member);
       return validationService.getItemValidationGroup(
-        user!.member!,
+        member,
         buildRepositories(),
         itemValidationGroupId,
       );
@@ -63,7 +66,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
     '/:itemId/validate',
     {
       schema: itemValidation,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
       const {
@@ -71,7 +74,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
         params: { itemId },
         log,
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       // we do not wait
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);

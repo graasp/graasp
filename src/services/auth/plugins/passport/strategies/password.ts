@@ -4,7 +4,6 @@ import { Authenticator } from '@fastify/passport';
 
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
-import { Member } from '../../../../member/entities/member';
 import { MemberPasswordService } from '../../password/service';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
@@ -21,22 +20,20 @@ export default (
       {
         usernameField: 'email',
       },
-      (email, password, done: StrictVerifiedCallback) => {
-        memberPasswordService
-          .authenticate(repositories, email, password)
-          .then((member?: Member) => {
-            if (member) {
-              // Token has been validated
-              done(null, { member });
-            } else {
-              // Authentication refused
-              done(new UnauthorizedMember(), false);
-            }
-          })
-          .catch((err) => {
-            // Exception occurred while authenticating member
-            done(options?.spreadException ? err : new UnauthorizedMember(), false);
-          });
+      async (email, password, done: StrictVerifiedCallback) => {
+        try {
+          const member = await memberPasswordService.authenticate(repositories, email, password);
+          if (member) {
+            // Token has been validated
+            return done(null, { member });
+          } else {
+            // Authentication refused
+            return done(new UnauthorizedMember(), false);
+          }
+        } catch (err) {
+          // Exception occurred while authenticating member
+          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
+        }
       },
     ),
   );

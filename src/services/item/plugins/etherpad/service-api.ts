@@ -5,7 +5,8 @@ import fp from 'fastify-plugin';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { authenticated } from '../../../auth/plugins/passport';
+import { notUndefined } from '../../../../utils/assertions';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ETHERPAD_API_VERSION } from './constants';
 import { wrapErrors } from './etherpad';
 import { createEtherpad, getEtherpadFromItem } from './schemas';
@@ -49,14 +50,15 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
        */
       fastify.post<{ Querystring: { parentId?: string }; Body: { name: string } }>(
         '/create',
-        { schema: createEtherpad, preHandler: authenticated },
+        { schema: createEtherpad, preHandler: isAuthenticated },
         async (request) => {
           const {
             user,
             query: { parentId },
             body: { name },
           } = request;
-          return await etherpadItemService.createEtherpadItem(user!.member!, name, parentId);
+          const member = notUndefined(user?.member);
+          return await etherpadItemService.createEtherpadItem(member, name, parentId);
         },
       );
 
@@ -68,16 +70,17 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
        */
       fastify.get<{ Params: { itemId: string }; Querystring: { mode?: 'read' | 'write' } }>(
         '/view/:itemId',
-        { schema: getEtherpadFromItem, preHandler: authenticated },
+        { schema: getEtherpadFromItem, preHandler: isAuthenticated },
         async (request, reply) => {
           const {
             user,
             params: { itemId },
             query: { mode = 'read' },
           } = request;
+          const member = notUndefined(user?.member);
 
           const { cookie, padUrl } = await etherpadItemService.getEtherpadFromItem(
-            user!.member!,
+            member,
             itemId,
             mode,
           );

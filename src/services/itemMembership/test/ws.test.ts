@@ -1,14 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
-import { Strategy as CustomStrategy } from 'passport-custom';
 import waitForExpect from 'wait-for-expect';
-
-import fastifyPassport from '@fastify/passport';
 
 import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../test/app';
+import { clearDatabase, mockAuthenticate } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
-import { PassportStrategy } from '../../auth/plugins/passport';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
 import { TestWsClient } from '../../websockets/test/test-websocket-client';
@@ -95,13 +91,8 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
-      // This will override the original session strategy to a custom one that always validate the request.
-      fastifyPassport.use(
-        PassportStrategy.STRICT_SESSION,
-        new CustomStrategy((_req, done) => {
-          done(null, { member: anna });
-        }),
-      );
+      mockAuthenticate(anna);
+
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/item-memberships/${item.id}`,
@@ -135,13 +126,8 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
-      // This will override the original session strategy to a custom one that always validate the request.
-      fastifyPassport.use(
-        PassportStrategy.STRICT_SESSION,
-        new CustomStrategy((_req, done) => {
-          done(null, { member: anna });
-        }),
-      );
+      mockAuthenticate(anna);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/item-memberships/${membership.id}`,
@@ -175,13 +161,8 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
-      // This will override the original session strategy to a custom one that always validate the request.
-      fastifyPassport.use(
-        PassportStrategy.STRICT_SESSION,
-        new CustomStrategy((_req, done) => {
-          done(null, { member: anna });
-        }),
-      );
+      mockAuthenticate(anna);
+
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/item-memberships/${membership.id}`,

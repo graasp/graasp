@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import common, { create, deleteOne, getCategories, getItemCategories } from './schemas';
 import { CategoryService } from './services/category';
 
@@ -16,7 +16,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get categories
   fastify.get<{ Params: { categoryId: string } }>(
     '/categories',
-    { schema: getCategories, preHandler: optionalAuthenticated },
+    { schema: getCategories, preHandler: optionalIsAuthenticated },
     async ({ user }) => {
       return categoryService.getAll(user?.member, buildRepositories());
     },
@@ -28,7 +28,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: getItemCategories,
 
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { itemId } }) => {
       return itemCategoryService.getForItem(user?.member, buildRepositories(), itemId);
@@ -38,11 +38,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // insert item category
   fastify.post<{ Params: { itemId: string }; Body: { categoryId: string } }>(
     '/:itemId/categories',
-    { schema: create, preHandler: authenticated },
+    { schema: create, preHandler: isAuthenticated },
     async ({ user, params: { itemId }, body: { categoryId } }) => {
       return db.transaction(async (manager) => {
         return itemCategoryService.post(
-          user!.member,
+          user?.member,
           buildRepositories(manager),
           itemId,
           categoryId,
@@ -54,11 +54,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item category entry
   fastify.delete<{ Params: { itemCategoryId: string; itemId: string } }>(
     '/:itemId/categories/:itemCategoryId',
-    { schema: deleteOne, preHandler: authenticated },
+    { schema: deleteOne, preHandler: isAuthenticated },
     async ({ user, params: { itemCategoryId, itemId } }) => {
       return db.transaction(async (manager) => {
         return itemCategoryService.delete(
-          user!.member,
+          user?.member,
           buildRepositories(manager),
           itemId,
           itemCategoryId,

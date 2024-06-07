@@ -30,9 +30,9 @@ import {
   authenticatePassword,
   authenticatePasswordReset,
   authenticateRefreshToken,
-  authenticated,
   guestAuthenticateAppsJWT,
-  optionalAuthenticated,
+  isAuthenticated,
+  optionalIsAuthenticated,
 } from './preHandlers';
 
 // mock datasource
@@ -63,7 +63,7 @@ describe('Passport Plugin', () => {
   let member: Member;
   let handler: jest.Mock;
   let preHandler: jest.Mock;
-  beforeAll(async () => {
+  beforeEach(async () => {
     ({ app } = await build({ member: null }));
     handler = jest.fn();
     preHandler = jest.fn();
@@ -73,17 +73,15 @@ describe('Passport Plugin', () => {
     member = await saveMember();
   });
 
-  afterAll(async () => {
-    await clearDatabase(app.db);
-  });
-
-  afterEach(() => {
+  afterEach(async () => {
     handler.mockClear();
+    await clearDatabase(app.db);
+    app.close();
   });
 
   describe('Optional Authenticated', () => {
-    beforeAll(async () => {
-      preHandler.mockImplementation(optionalAuthenticated);
+    beforeEach(async () => {
+      preHandler.mockImplementation(optionalIsAuthenticated);
     });
     it('Unauthenticated', async () => {
       handler.mockImplementation(shouldBeNull);
@@ -144,8 +142,8 @@ describe('Passport Plugin', () => {
   });
 
   describe('Authenticated', () => {
-    beforeAll(async () => {
-      preHandler.mockImplementation(authenticated);
+    beforeEach(async () => {
+      preHandler.mockImplementation(isAuthenticated);
     });
     it('Unauthenticated', async () => {
       handler.mockImplementation(shouldNotBeCalled);
@@ -206,9 +204,9 @@ describe('Passport Plugin', () => {
   });
 
   describe('authenticatePassword', () => {
-    let password;
-    let newMember;
-    beforeAll(async () => {
+    let password: string;
+    let newMember: Member;
+    beforeEach(async () => {
       preHandler.mockImplementation(authenticatePassword);
       newMember = await saveMember();
       password = faker.internet.password({ prefix: '!1Aa' });
@@ -301,7 +299,7 @@ describe('Passport Plugin', () => {
     });
   });
   describe('authenticateMobileMagicLink', () => {
-    beforeAll(async () => {
+    beforeEach(async () => {
       preHandler.mockImplementation(authenticateMobileMagicLink);
     });
     it('Unauthenticated', async () => {
@@ -346,7 +344,7 @@ describe('Passport Plugin', () => {
     let uuid: string;
     let newMember: Member;
     let password: string;
-    beforeAll(async () => {
+    beforeEach(async () => {
       preHandler.mockImplementation(authenticatePasswordReset);
       newMember = await saveMember();
       password = faker.internet.password({ prefix: '!1Aa' });
@@ -386,7 +384,7 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('Valid JWT Member', async () => {
-      handler.mockImplementation(({ user }) => expect(user.uuid).toEqual(uuid));
+      handler.mockImplementation(({ user }) => expect(user.passwordResetRedisKey).toEqual(uuid));
       const response = await app.inject({
         path: MOCKED_ROUTE,
         headers: { authorization: `Bearer ${token}` },
@@ -396,7 +394,7 @@ describe('Passport Plugin', () => {
     });
   });
   describe('authenticateRefreshToken', () => {
-    beforeAll(async () => {
+    beforeEach(async () => {
       preHandler.mockImplementation(authenticateRefreshToken);
     });
     it('Unauthenticated', async () => {
@@ -439,7 +437,7 @@ describe('Passport Plugin', () => {
   describe('authenticateJWTChallengeVerifier', () => {
     let verifier: string;
     let challenge: string;
-    beforeAll(async () => {
+    beforeEach(async () => {
       preHandler.mockImplementation(authenticateJWTChallengeVerifier);
       verifier = 'verifier';
       challenge = crypto.createHash('sha256').update(verifier).digest('hex');
@@ -555,7 +553,7 @@ describe('Passport Plugin', () => {
     let item: Item;
     let key: string;
     let origin: string;
-    beforeAll(async () => {
+    beforeEach(async () => {
       preHandler.mockImplementation(authenticateAppsJWT);
       item = await testUtils.saveItem({ actor: member });
       key = 'key';
@@ -674,7 +672,7 @@ describe('Passport Plugin', () => {
     let item: Item;
     let key: string;
     let origin: string;
-    beforeAll(async () => {
+    beforeEach(async () => {
       preHandler.mockImplementation(guestAuthenticateAppsJWT);
       item = await testUtils.saveItem({ actor: member });
       key = 'key';

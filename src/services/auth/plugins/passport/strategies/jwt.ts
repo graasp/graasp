@@ -22,24 +22,22 @@ export default (
         secretOrKey,
       },
       async ({ sub }, done: StrictVerifiedCallback) => {
-        memberRepository
-          .get(sub)
-          .then((member) => {
-            if (member) {
-              // Token has been validated
-              done(null, { member });
-            } else {
-              // Authentication refused
-              done(
-                options?.spreadException ? new MemberNotFound(sub) : new UnauthorizedMember(),
-                false,
-              );
-            }
-          })
-          .catch((err) => {
-            // Exception occurred while fetching member
-            done(options?.spreadException ? err : new UnauthorizedMember(), false);
-          });
+        try {
+          const member = await memberRepository.get(sub);
+          if (member) {
+            // Token has been validated
+            return done(null, { member });
+          } else {
+            // Authentication refused
+            return done(
+              options?.propagateError ? new MemberNotFound(sub) : new UnauthorizedMember(),
+              false,
+            );
+          }
+        } catch (err) {
+          // Exception occurred while fetching member
+          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
+        }
       },
     ),
   );

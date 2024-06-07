@@ -5,8 +5,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { IdParam, IdsParams } from '../../../../types';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
@@ -40,9 +41,9 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // get own recycled items data
   fastify.get<{ Params: IdParam }>(
     '/recycled',
-    { schema: getRecycledItemDatas, preHandler: authenticated },
+    { schema: getRecycledItemDatas, preHandler: isAuthenticated },
     async ({ user }) => {
-      const result = await recycleBinService.getAll(user!.member, buildRepositories());
+      const result = await recycleBinService.getAll(user?.member, buildRepositories());
       return result;
     },
   );
@@ -50,14 +51,14 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // recycle multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
-    { schema: recycleMany(maxItemsInRequest), preHandler: authenticated },
+    { schema: recycleMany(maxItemsInRequest), preHandler: isAuthenticated },
     async (request, reply) => {
       const {
         query: { id: ids },
         log,
         user,
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const items = await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
         websockets.publish(
@@ -83,14 +84,14 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // restore multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/restore',
-    { schema: restoreMany(maxItemsInRequest), preHandler: authenticated },
+    { schema: restoreMany(maxItemsInRequest), preHandler: isAuthenticated },
     async (request, reply) => {
       const {
         query: { id: ids },
         log,
         user,
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       log.info(`Restoring items ${ids}`);
 
       db.transaction(async (manager) => {

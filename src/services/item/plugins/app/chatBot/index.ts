@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ChatBotMessage, GPTVersion } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../../utils/assertions';
 import { OPENAI_GPT_VERSION } from '../../../../../utils/config';
 import { InvalidJWTItem } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
@@ -31,8 +32,8 @@ const chatBotPlugin: FastifyPluginAsync = async (fastify) => {
         preHandler: authenticateAppsJWT,
       },
       async ({ user, params: { itemId }, body: prompt, query }, reply) => {
-        const member = user!.member!;
-        const jwtItemId = user!.app!.item.id;
+        const member = notUndefined(user?.member);
+        const jwtItemId = notUndefined(user?.app).item.id;
         const repositories = buildRepositories();
         if (jwtItemId !== itemId) {
           await itemService.get(member, repositories, itemId);

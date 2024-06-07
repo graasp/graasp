@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { ItemType } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
-import { authenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { Actor } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { LinkQueryParameterIsRequired } from './errors';
@@ -34,7 +34,7 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
 
   fastify.get<{ Querystring: { link: string } }>(
     '/metadata',
-    { preHandler: authenticated, schema: getLinkMetadata },
+    { preHandler: isAuthenticated, schema: getLinkMetadata },
     async ({ query: { link } }) => {
       if (!link) {
         throw new LinkQueryParameterIsRequired();

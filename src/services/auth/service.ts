@@ -15,6 +15,7 @@ import {
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../utils/constants';
 import { Repositories } from '../../utils/repositories';
 import { Member } from '../member/entities/member';
+import { SHORT_TOKEN_PARAM } from './plugins/passport';
 import { getRedirectionUrl } from './utils';
 
 const promisifiedJwtSign = promisify<
@@ -53,7 +54,7 @@ export class AuthService {
     const redirectionUrl = getRedirectionUrl(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
-    destination.searchParams.set('t', token);
+    destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set('url', encodeURIComponent(redirectionUrl));
     const link = destination.toString();
 
@@ -97,7 +98,7 @@ export class AuthService {
     const redirectionUrl = getRedirectionUrl(this.log, url);
     const domain = challenge ? MOBILE_AUTH_URL : PUBLIC_URL;
     const destination = new URL('/auth', domain);
-    destination.searchParams.set('t', token);
+    destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     destination.searchParams.set('url', encodeURIComponent(redirectionUrl));
     const link = destination.toString();
 

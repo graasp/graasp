@@ -9,7 +9,7 @@ export enum PassportStrategy {
   WEB_MAGIC_LINK = 'web-magic-link',
 
   //-- From JWT --//
-  PASSPORT_RESET = 'password-reset-jwt',
+  PASSWORD_RESET = 'password-reset-jwt',
   JWT_CHALLENGE_VERIFIER = 'jwt-challenge-verifier',
   JWT = 'jwt',
   REFRESH_TOKEN = 'refresh-token',

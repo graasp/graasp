@@ -15,9 +15,10 @@ import {
 } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
+import { notUndefined } from '../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -63,10 +64,10 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/:id/actions',
     {
       schema: getItemActions,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getBaseAnalyticsForItem(user!.member, buildRepositories(), {
+      return actionItemService.getBaseAnalyticsForItem(user?.member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -90,10 +91,10 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     '/:id/actions/aggregation',
     {
       schema: getAggregateActions,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async ({ user, params: { id }, query }) => {
-      return actionItemService.getAnalyticsAggregation(user!.member, buildRepositories(), {
+      return actionItemService.getAnalyticsAggregation(user?.member, buildRepositories(), {
         sampleSize: query.requestedSampleSize,
         itemId: id,
         view: query.view?.toLowerCase(),
@@ -112,7 +113,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     method: HttpMethod.Post,
     url: '/:id/actions',
     schema: postAction,
-    preHandler: optionalAuthenticated,
+    preHandler: optionalIsAuthenticated,
     handler: async (request) => {
       const {
         user,
@@ -148,7 +149,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
     method: 'POST',
     url: '/:id/actions/export',
     schema: exportAction,
-    preHandler: authenticated,
+    preHandler: isAuthenticated,
     handler: async (request, reply) => {
       const {
         user,
@@ -156,7 +157,7 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
         query: { format = ExportActionsFormatting.JSON },
         log,
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await requestExportService.request(member, repositories, itemId, format);

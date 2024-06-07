@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
@@ -25,8 +26,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-action',
       { schema: create, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, body }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          return appActionService.post(user!.member!, buildRepositories(manager), itemId, body);
+          return appActionService.post(member, buildRepositories(manager), itemId, body);
         });
       },
     );
@@ -36,7 +38,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-action',
       { schema: getForOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, query: filters }) => {
-        return appActionService.getForItem(user!.member!, buildRepositories(), itemId, filters);
+        const member = notUndefined(user?.member);
+        return appActionService.getForItem(member, buildRepositories(), itemId, filters);
       },
     );
 
@@ -45,8 +48,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/app-action',
       { schema: getForMany, preHandler: authenticateAppsJWT },
       async ({ user, query: filters }) => {
+        const member = notUndefined(user?.member);
         return appActionService.getForManyItems(
-          user!.member!,
+          member,
           buildRepositories(),
           filters.itemId,
           filters,

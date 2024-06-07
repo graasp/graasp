@@ -15,5 +15,5 @@ export type StrictVerifiedCallback = (
 export type CustomStrategyOptions = {
   // If true, the client will receive a more detailed error message, instead of a generic 401 Unauthorized.
   // We recommend setting this to true in development, and false in production.
-  spreadException: boolean;
+  propagateError: boolean;
 };

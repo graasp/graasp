@@ -13,6 +13,7 @@ import {
   STAGING,
 } from '../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from './constants';
 import { PassportStrategy } from './strategies';
 import jwtStrategy from './strategies/jwt';
 import jwtAppsStrategy from './strategies/jwtApps';
@@ -36,7 +37,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     .register(fastifySecureSession, {
       key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
       cookie: { domain: COOKIE_DOMAIN, path: '/', secure: PROD || STAGING, httpOnly: true },
-      expiry: SECURE_SESSION_EXPIRATION_IN_SECONDS, // 1 month
+      expiry: SECURE_SESSION_EXPIRATION_IN_SECONDS,
     })
     .register(fastifyPassport.initialize())
     .register(fastifyPassport.secureSession());
@@ -46,7 +47,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   //-- Password Strategies --//
   passwordStrategy(fastifyPassport, memberPasswordService, repositories, {
-    spreadException: true,
+    propagateError: true,
   });
 
   //-- Magic Link Strategies (JWT) --//
@@ -54,33 +55,33 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     fastifyPassport,
     memberRepository,
     PassportStrategy.MOBILE_MAGIC_LINK,
-    'token',
+    TOKEN_PARAM,
     AUTH_TOKEN_JWT_SECRET,
-    { spreadException: true },
+    { propagateError: true },
   );
   magicLinkStrategy(
     fastifyPassport,
     memberRepository,
     PassportStrategy.WEB_MAGIC_LINK,
-    't',
+    SHORT_TOKEN_PARAM,
     JWT_SECRET,
-    { spreadException: true },
+    { propagateError: true },
   );
 
   //-- JWT Strategies --//
   passwordResetStrategy(fastifyPassport, memberPasswordService);
   jwtChallengeVerifierStrategy(fastifyPassport, memberRepository, {
-    spreadException: true,
+    propagateError: true,
   });
   jwtStrategy(fastifyPassport, memberRepository, PassportStrategy.JWT, JWT_SECRET, {
-    spreadException: true,
+    propagateError: true,
   });
   jwtStrategy(
     fastifyPassport,
     memberRepository,
     PassportStrategy.REFRESH_TOKEN,
     REFRESH_TOKEN_JWT_SECRET,
-    { spreadException: false },
+    { propagateError: false },
   );
   jwtAppsStrategy(
     fastifyPassport,

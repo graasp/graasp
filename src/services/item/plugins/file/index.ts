@@ -4,8 +4,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../entities/Item';
 import { download, updateSchema, upload } from './schema';
@@ -113,14 +114,14 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
-    preHandler: authenticated,
+    preHandler: isAuthenticated,
     handler: async (request) => {
       const {
         user,
         query: { id: parentId },
         log,
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       // check rights
       if (parentId) {
         const repositories = buildRepositories();
@@ -173,7 +174,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     {
       schema: download,
 
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {
       const {

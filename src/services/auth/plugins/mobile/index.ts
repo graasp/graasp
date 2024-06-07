@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
+import { notUndefined } from '../../../../utils/assertions';
 import {
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   MOBILE_DEEP_LINK_PROTOCOL,
@@ -13,6 +14,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
+  SHORT_TOKEN_PARAM,
   authenticateJWTChallengeVerifier,
   authenticateMobileMagicLink,
   authenticatePassword,
@@ -94,18 +96,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const {
-        body: { challenge },
         user,
+        body: { challenge },
       } = request;
+      const member = notUndefined(user?.member);
 
-      const token = await memberPasswordService.generateToken(
-        { sub: user!.member!.id, challenge: challenge },
+      const token = memberPasswordService.generateToken(
+        { sub: member.id, challenge: challenge },
+        // Expiration duration is given in {XX}m format (e.g. 30m) to indicate the minutes.
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
 
       // redirect to the universal link domain
       const redirectionUrl = new URL(`${MOBILE_DEEP_LINK_PROTOCOL}//auth`);
-      redirectionUrl.searchParams.set('t', token);
+      redirectionUrl.searchParams.set(SHORT_TOKEN_PARAM, token);
       reply.status(StatusCodes.SEE_OTHER);
 
       return { resource: redirectionUrl.toString() };
@@ -119,7 +123,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateJWTChallengeVerifier,
     },
     async ({ user }) => {
-      return generateAuthTokensPair(user!.member!.id);
+      const member = notUndefined(user?.member);
+      return generateAuthTokensPair(member.id);
     },
   );
 
@@ -129,7 +134,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       preHandler: authenticateRefreshToken,
     },
     async ({ user }) => {
-      return generateAuthTokensPair(user!.member!.id);
+      const member = notUndefined(user?.member);
+      return generateAuthTokensPair(member.id);
     },
   );
 

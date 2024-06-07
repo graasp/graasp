@@ -7,7 +7,7 @@ import { ActionTriggers } from '@graasp/sdk';
 
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../utils/repositories';
-import { optionalAuthenticated } from '../../../../../auth/plugins/passport';
+import { optionalIsAuthenticated } from '../../../../../auth/plugins/passport';
 import { search } from './schemas';
 
 export type SearchFields = {
@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Body: MultiSearchParams }>(
     '/collections/search',
-    { preHandler: optionalAuthenticated, schema: search },
+    { preHandler: optionalIsAuthenticated, schema: search },
     async (request) => {
       const { user, body } = request;
       const repositories = buildRepositories();

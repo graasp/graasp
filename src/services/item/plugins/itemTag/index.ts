@@ -4,7 +4,7 @@ import { ItemTagType } from '@graasp/sdk';
 
 import { IdParam, IdsParams } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { Item } from '../../entities/Item';
 import common, { create, deleteOne, getItemTags, getMany } from './schemas';
 import { ItemTagService } from './service';
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get item tags
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/tags',
-    { schema: getItemTags, preHandler: optionalAuthenticated },
+    { schema: getItemTags, preHandler: optionalIsAuthenticated },
     async ({ user, params: { itemId } }) => {
       return iTS.getForItem(user?.member, buildRepositories(), itemId);
     },
@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get item tags for many items
   fastify.get<{ Querystring: IdsParams }>(
     '/tags',
-    { schema: getMany, preHandler: optionalAuthenticated },
+    { schema: getMany, preHandler: optionalIsAuthenticated },
     async ({ user, query: { id: ids } }) => {
       return iTS.getForManyItems(user?.member, buildRepositories(), ids);
     },
@@ -56,10 +56,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Params: { itemId: string; type: ItemTagType } }>(
     '/:itemId/tags/:type',
-    { schema: create, preHandler: authenticated },
+    { schema: create, preHandler: isAuthenticated },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
-        return iTS.post(user!.member, buildRepositories(manager), itemId, type);
+        return iTS.post(user?.member, buildRepositories(manager), itemId, type);
       });
     },
   );
@@ -67,10 +67,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item tag
   fastify.delete<{ Params: { itemId: string; type: ItemTagType } & IdParam }>(
     '/:itemId/tags/:type',
-    { schema: deleteOne, preHandler: authenticated },
+    { schema: deleteOne, preHandler: isAuthenticated },
     async ({ user, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
-        return iTS.deleteOne(user!.member, buildRepositories(manager), itemId, type);
+        return iTS.deleteOne(user?.member, buildRepositories(manager), itemId, type);
       });
     },
   );

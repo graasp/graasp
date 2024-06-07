@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { createProfile, getOwnProfile, getProfileForMember, updateMemberProfile } from './schemas';
 import { MemberProfileService } from './service';
 import { IMemberProfile } from './types';
@@ -17,13 +17,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: createProfile,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
       const { user, body: data } = request;
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const memberProfile = await memberProfileService.post(user!.member, repositories, data);
+        const memberProfile = await memberProfileService.post(user?.member, repositories, data);
         reply.status(StatusCodes.CREATED);
 
         return memberProfile;
@@ -33,7 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get<{ Params: { memberId: string } }>(
     '/:memberId',
-    { schema: getProfileForMember, preHandler: optionalAuthenticated },
+    { schema: getProfileForMember, preHandler: optionalIsAuthenticated },
     async ({ params: { memberId } }) => {
       return memberProfileService.get(memberId, buildRepositories());
     },
@@ -41,20 +41,20 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get<{ Params: { memberId: string } }>(
     '/own',
-    { schema: getOwnProfile, preHandler: authenticated },
+    { schema: getOwnProfile, preHandler: isAuthenticated },
     async ({ user }) => {
-      return memberProfileService.getOwn(user!.member, buildRepositories());
+      return memberProfileService.getOwn(user?.member, buildRepositories());
     },
   );
 
   fastify.patch<{ Body: Partial<IMemberProfile> }>(
     '/',
-    { schema: updateMemberProfile, preHandler: authenticated },
+    { schema: updateMemberProfile, preHandler: isAuthenticated },
     async ({ user, body }) => {
       return db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
 
-        return memberProfileService.patch(user!.member, repositories, body);
+        return memberProfileService.patch(user?.member, repositories, body);
       });
     },
   );

@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
@@ -20,7 +20,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: exportMemberData,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async ({ user }, reply) => {
       db.transaction(async (manager) => {

@@ -2,8 +2,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
 
@@ -19,9 +20,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // BUG: hide item you dont have membership (you liked then lose membership)
   fastify.get<{ Querystring: { memberId: string } }>(
     '/liked',
-    { schema: getLikesForMember, preHandler: authenticated },
+    { schema: getLikesForMember, preHandler: isAuthenticated },
     async ({ user }) => {
-      return itemLikeService.getForMember(user!.member, buildRepositories());
+      return itemLikeService.getForMember(user?.member, buildRepositories());
     },
   );
 
@@ -29,7 +30,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // TODO: anonymize private members
   fastify.get<{ Params: { itemId: string } }>(
     '/:itemId/likes',
-    { schema: getLikesForItem, preHandler: optionalAuthenticated },
+    { schema: getLikesForItem, preHandler: optionalIsAuthenticated },
     async ({ user, params: { itemId } }) => {
       return itemLikeService.getForItem(user?.member, buildRepositories(), itemId);
     },
@@ -38,13 +39,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // create item like entry
   fastify.post<{ Params: { itemId: string } }>(
     '/:itemId/like',
-    { schema: create, preHandler: authenticated },
+    { schema: create, preHandler: isAuthenticated },
     async (request) => {
       const {
         user,
         params: { itemId },
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
         const newItemLike = await itemLikeService.post(member, buildRepositories(manager), itemId);
         // action like item
@@ -65,13 +66,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete item like entry
   fastify.delete<{ Params: { itemId: string } }>(
     '/:itemId/like',
-    { schema: deleteOne, preHandler: authenticated },
+    { schema: deleteOne, preHandler: isAuthenticated },
     async (request) => {
       const {
         user,
         params: { itemId },
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
         const newItemLike = await itemLikeService.removeOne(
           member,

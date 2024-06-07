@@ -3,11 +3,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
 import {
-  authenticated,
   guestAuthenticateAppsJWT,
-  optionalAuthenticated,
+  isAuthenticated,
+  optionalIsAuthenticated,
 } from '../../../auth/plugins/passport';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
@@ -37,7 +38,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
   fastify.addSchema(common);
 
-  const aS = new AppService(itemService, jwtExpiration);
+  const appService = new AppService(itemService, jwtExpiration);
 
   // API endpoints
   fastify.register(async function (fastify) {
@@ -47,7 +48,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
     // proper authentication
     const { corsPluginOptions } = fastify;
     if (corsPluginOptions) {
-      const allowedOrigins = await aS.getAllValidAppOrigins(undefined, buildRepositories());
+      const allowedOrigins = await appService.getAllValidAppOrigins(buildRepositories());
 
       const graaspAndAppsOrigins = corsPluginOptions.origin.concat(allowedOrigins);
       fastify.register(
@@ -58,26 +59,23 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
     fastify.register(async function (fastify) {
       // get all apps
-      fastify.get(
-        '/list',
-        { schema: getMany, preHandler: optionalAuthenticated },
-        async ({ user }) => {
-          return aS.getAllApps(user?.member, buildRepositories(), publisherId);
-        },
-      );
+      fastify.get('/list', { schema: getMany }, async () => {
+        return appService.getAllApps(buildRepositories(), publisherId);
+      });
 
       fastify.get(
         '/most-used',
-        { schema: getMostUsed, preHandler: authenticated },
+        { schema: getMostUsed, preHandler: isAuthenticated },
         async ({ user }) => {
-          return aS.getMostUsedApps(user!.member!, buildRepositories());
+          const member = notUndefined(user?.member);
+          return appService.getMostUsedApps(member, buildRepositories());
         },
       );
 
       // generate api access token for member + (app-)item.
       fastify.post<{ Params: { itemId: string }; Body: { origin: string } & AppIdentification }>(
         '/:itemId/api-access-token',
-        { schema: generateToken, preHandler: optionalAuthenticated },
+        { schema: generateToken, preHandler: optionalIsAuthenticated },
         async (request) => {
           const {
             user,
@@ -85,7 +83,7 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
             body,
           } = request;
 
-          return aS.getApiAccessToken(user?.member, buildRepositories(), itemId, body);
+          return appService.getApiAccessToken(user?.member, buildRepositories(), itemId, body);
         },
       );
 
@@ -119,13 +117,14 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
         '/:itemId/context',
         { schema: getContext, preHandler: guestAuthenticateAppsJWT },
         async ({ user, params: { itemId } }) => {
+          const app = notUndefined(user?.app);
           const requestDetails: AuthTokenSubject = {
             memberId: user?.member?.id,
-            itemId: user!.app!.item.id,
-            origin: user!.app!.origin,
-            key: user!.app!.key,
+            itemId: app.item.id,
+            origin: app.origin,
+            key: app.key,
           };
-          return aS.getContext(
+          return appService.getContext(
             requestDetails.memberId,
             buildRepositories(),
             itemId,

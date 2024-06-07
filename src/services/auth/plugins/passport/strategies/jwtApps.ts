@@ -29,21 +29,26 @@ export default (
         const {
           sub: { memberId, itemId, key, origin },
         } = payload;
-        let member: Member | undefined;
+        // Check inputs
         if (!key || !origin || !itemId) {
           return done(null, false);
         }
+
+        // Fetch Member datas
+        let member: Member | undefined;
         try {
           member = await memberRepository.get(memberId);
         } catch (err) {
           // Member can be undefined if authorized.
           if (strict) {
-            done(options?.spreadException ? err : new UnauthorizedMember(), false);
+            return done(options?.propagateError ? err : new UnauthorizedMember(), false);
           }
         }
+
+        // Fetch Item datas
         try {
           const item = await itemRepository.get(itemId);
-          done(null, {
+          return done(null, {
             member,
             app: {
               item,
@@ -53,7 +58,9 @@ export default (
           });
         } catch (err) {
           // Exception occurred while fetching item
-          done(options?.spreadException ? err : new UnauthorizedMember(), false);
+          // itemRepository.get() can fail for many reasons like the item was not found, database error, etc.
+          // To avoid leaking information, we prefer to return UnauthorizedMember error.
+          return done(options?.propagateError ? err : new UnauthorizedMember(), false);
         }
       },
     ),

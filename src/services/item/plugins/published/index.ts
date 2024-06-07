@@ -4,7 +4,7 @@ import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import graaspSearchPlugin from './plugins/search';
 import {
   getCollectionsForMember,
@@ -29,7 +29,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/collections/members/:memberId',
     {
       schema: getCollectionsForMember,
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { memberId } }) => {
       return itemsPublished.service.getItemsForMember(user?.member, buildRepositories(), memberId);
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: { itemId: string } }>(
     '/collections/:itemId/informations',
     {
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
       schema: getInformations,
     },
     async ({ params, user }) => {
@@ -50,7 +50,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { itemId: string[] } }>(
     '/collections/informations',
     {
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
       schema: getManyInformations,
     },
     async ({ user, query: { itemId } }) => {
@@ -61,7 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { limit?: number } }>(
     '/collections/liked',
     {
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
       schema: getMostLikedItems,
     },
     async ({ user, query: { limit } }) => {
@@ -72,12 +72,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/publish',
     {
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
       schema: publishItem,
     },
     async ({ params, user }) => {
       return db.transaction(async (manager) => {
-        return itemsPublished.service.post(user!.member, buildRepositories(manager), params.itemId);
+        return itemsPublished.service.post(user?.member, buildRepositories(manager), params.itemId);
       });
     },
   );
@@ -85,13 +85,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
       schema: unpublishItem,
     },
     async ({ params, user }) => {
       return db.transaction(async (manager) => {
         return itemsPublished.service.delete(
-          user!.member,
+          user?.member,
           buildRepositories(manager),
           params.itemId,
         );
@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { limit?: number } }>(
     '/collections/recent',
     {
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
       schema: getRecentCollections,
     },
     async ({ user, query: { limit } }) => {

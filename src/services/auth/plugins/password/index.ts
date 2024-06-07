@@ -4,17 +4,26 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../utils/assertions';
 import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
-import { authenticatePassword, authenticatePasswordReset, authenticated } from '../passport';
+import {
+  SHORT_TOKEN_PARAM,
+  authenticatePassword,
+  authenticatePasswordReset,
+  isAuthenticated,
+} from '../passport';
 import {
   passwordLogin,
   patchResetPasswordRequest,
   postResetPasswordRequest,
   updatePassword,
 } from './schemas';
+
+const REDIRECTION_URL_PARAM = 'url';
+const AUTHENTICATION_FALLBACK_ROUTE = '/auth';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
@@ -38,15 +47,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { body, log, user } = request;
       const { url } = body;
+      const member = notUndefined(user?.member);
       const token = await memberPasswordService.generateToken(
-        { sub: user!.member!.id },
+        { sub: member.id },
         `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
       );
       const redirectionUrl = getRedirectionUrl(log, url);
 
-      const target = new URL('/auth', PUBLIC_URL);
-      target.searchParams.set('t', token);
-      target.searchParams.set('url', encodeURIComponent(redirectionUrl));
+      const target = new URL(AUTHENTICATION_FALLBACK_ROUTE, PUBLIC_URL);
+      target.searchParams.set(SHORT_TOKEN_PARAM, token);
+      target.searchParams.set(REDIRECTION_URL_PARAM, encodeURIComponent(redirectionUrl));
       const resource = target.toString();
 
       reply.status(StatusCodes.SEE_OTHER);
@@ -57,11 +67,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // update member password
   fastify.patch<{ Body: { currentPassword: string; password: string } }>(
     '/members/update-password',
-    { schema: updatePassword, preHandler: authenticated },
+    { schema: updatePassword, preHandler: isAuthenticated },
     async ({ user, body: { currentPassword, password } }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
         return memberPasswordService.patch(
-          user!.member!,
+          member,
           buildRepositories(manager),
           password,
           currentPassword,
@@ -135,7 +146,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         user,
         body: { password },
       } = request;
-      const uuid = user!.uuid!;
+      const uuid = notUndefined(user?.passwordResetRedisKey);
       await memberPasswordService.applyReset(repositories, password, uuid);
       const member = await memberPasswordService.getMemberByPasswordResetUuid(repositories, uuid);
       reply.status(StatusCodes.NO_CONTENT);

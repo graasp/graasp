@@ -119,7 +119,7 @@ declare module 'fastify' {
 
   interface PassportUser {
     member?: Member;
-    uuid?: string; // Used for Password Reset
+    passwordResetRedisKey?: string; // Used for Password Reset
     app?: {
       // Used for App Authentication
       item: Item;

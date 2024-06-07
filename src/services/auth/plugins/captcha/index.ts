@@ -12,11 +12,13 @@ import { AuthenticationError } from './errors';
 export const RECAPTCHA_VERIFY_LINK = 'https://www.google.com/recaptcha/api/siteverify';
 export const RECAPTCHA_SCORE_THRESHOLD = 0.5;
 
+type CaptchaResponse = { success?: boolean; action?: RecaptchaActionType; score?: number };
+
 /**
  * Prehandler builder to validate the captcha tokens.
  * Routes that use this prehandler should have a body with a `captcha` field.
  * @param action Recaptcha action type
- * @param options
+ * @param options Options object. `shouldFail` is a boolean that determines if the route should fail if the score is low.
  * @returns Prehandler route
  */
 export default function captchaPreHandler(
@@ -42,11 +44,11 @@ async function validateCaptcha(
   }
 
   if (!captcha) {
-    console.error('The captcha verification has thrown: token is undefined');
+    request.log.error('The captcha verification has thrown: token is undefined');
     throw new AuthenticationError();
   }
 
-  // warning: addresses might contained spoofed ips
+  // warning: addresses might contains spoofed ips
   const addresses = forwarded(request.raw);
   const ip = addresses.pop();
 
@@ -62,21 +64,28 @@ async function validateCaptcha(
   )}`;
 
   const response = await fetch(verificationURL);
-  const data: { success?: boolean; action?: RecaptchaActionType; score?: number } =
-    await response.json();
+  const data: CaptchaResponse = await response.json();
 
-  // success: comes from my website
-  // action: triggered from the correct endpoint
+  // success: true or false wether this request was a valid reCAPTCHA token for your site
+  // action: the user interaction that triggered reCAPTCHA verification.
   // score: how probable the user is legit
-  if (
-    !data ||
-    !data.success ||
-    data.action !== actionType ||
-    // data.score should be checked for definition not for boolean value
-    data.score == undefined ||
-    (shouldFailIfLowScore && data.score < RECAPTCHA_SCORE_THRESHOLD)
-  ) {
-    console.error(`The captcha verification has thrown with value: '${JSON.stringify(data)}'`);
+  if (!isCaptchaValid(data, actionType, shouldFailIfLowScore)) {
+    request.log.error(`The captcha verification has thrown with value: '${JSON.stringify(data)}'`);
     throw new AuthenticationError();
   }
+}
+
+function isCaptchaValid(
+  data: CaptchaResponse,
+  actionType: RecaptchaActionType,
+  shouldFailIfLowScore: boolean,
+) {
+  return (
+    data &&
+    data.success &&
+    data.action === actionType &&
+    // data.score should be checked for definition not for boolean value
+    data.score !== undefined &&
+    (!shouldFailIfLowScore || data.score > RECAPTCHA_SCORE_THRESHOLD)
+  );
 }

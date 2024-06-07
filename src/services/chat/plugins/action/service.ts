@@ -1,4 +1,4 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyRequest } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
@@ -22,7 +22,6 @@ export class ActionChatService {
 
   async postPostMessageAction(
     request: FastifyRequest,
-    _reply: FastifyReply,
     repositories: Repositories,
     message: ChatMessage,
   ) {
@@ -37,7 +36,6 @@ export class ActionChatService {
 
   async postPatchMessageAction(
     request: FastifyRequest,
-    _reply: FastifyReply,
     repositories: Repositories,
     message: ChatMessage,
   ) {
@@ -52,7 +50,6 @@ export class ActionChatService {
 
   async postDeleteMessageAction(
     request: FastifyRequest,
-    _reply: FastifyReply,
     repositories: Repositories,
     message: ChatMessage,
   ) {
@@ -65,12 +62,7 @@ export class ActionChatService {
     await this.actionService.postMany(user?.member, repositories, request, [action]);
   }
 
-  async postClearMessageAction(
-    request: FastifyRequest,
-    _reply: FastifyReply,
-    repositories: Repositories,
-    itemId: UUID,
-  ) {
+  async postClearMessageAction(request: FastifyRequest, repositories: Repositories, itemId: UUID) {
     const { user } = request;
     const action = {
       type: ChatActionType.Clear,

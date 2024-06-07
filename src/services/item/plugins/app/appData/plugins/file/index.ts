@@ -4,6 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { HttpMethod, UUID } from '@graasp/sdk';
 
 import { IdParam } from '../../../../../../../types';
+import { notUndefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import { guestAuthenticateAppsJWT } from '../../../../../../auth/plugins/passport';
 import {
@@ -85,6 +86,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
       const { user } = request;
+      const member = notUndefined(user?.member);
+      const app = notUndefined(user?.app);
 
       return db
         .transaction(async (manager) => {
@@ -97,7 +100,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return appDataFileService.upload(user!.member!, repositories, file, user!.app!.item);
+          return appDataFileService.upload(member, repositories, file, app.item);
         })
         .catch((e) => {
           console.error(e);
@@ -129,9 +132,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
         user,
         params: { id: appDataId },
       } = request;
+      const member = notUndefined(user?.member);
+      const app = notUndefined(user?.app);
 
       return appDataFileService
-        .download(user!.member!, buildRepositories(), { item: user!.app!.item, appDataId })
+        .download(member, buildRepositories(), { item: app.item, appDataId })
         .catch((e) => {
           if (e.code) {
             throw e;

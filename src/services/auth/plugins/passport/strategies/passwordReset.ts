@@ -14,7 +14,7 @@ export default (
   options?: CustomStrategyOptions,
 ) => {
   passport.use(
-    PassportStrategy.PASSPORT_RESET,
+    PassportStrategy.PASSWORD_RESET,
     new Strategy(
       {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -23,11 +23,11 @@ export default (
       async ({ uuid }, done: StrictVerifiedCallback) => {
         if (uuid && (await memberPasswordService.validatePasswordResetUuid(uuid))) {
           // Token has been validated
-          return done(null, { uuid });
+          return done(null, { passwordResetRedisKey: uuid });
         } else {
           // Authentication refused
-          done(
-            options?.spreadException ? new MemberNotFound(uuid) : new UnauthorizedMember(),
+          return done(
+            options?.propagateError ? new MemberNotFound(uuid) : new UnauthorizedMember(),
             false,
           );
         }

@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam } from '../../../../../types';
+import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { ManyItemsGetFilter } from '../interfaces/request';
@@ -36,7 +37,8 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       },
       async ({ user, params: { itemId }, body }) => {
         return db.transaction(async (manager) => {
-          return appDataService.post(user!.member!, buildRepositories(manager), itemId, body);
+          const member = notUndefined(user?.member);
+          return appDataService.post(member, buildRepositories(manager), itemId, body);
         });
       },
     );
@@ -46,14 +48,9 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-data/:id',
       { schema: updateOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId, id: appDataId }, body }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          return appDataService.patch(
-            user!.member!,
-            buildRepositories(manager),
-            itemId,
-            appDataId,
-            body,
-          );
+          return appDataService.patch(member, buildRepositories(manager), itemId, appDataId, body);
         });
       },
     );
@@ -63,13 +60,9 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-data/:id',
       { schema: deleteOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId, id: appDataId } }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          return appDataService.deleteOne(
-            user!.member!,
-            buildRepositories(manager),
-            itemId,
-            appDataId,
-          );
+          return appDataService.deleteOne(member, buildRepositories(manager), itemId, appDataId);
         });
       },
     );
@@ -79,7 +72,8 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-data',
       { schema: getForOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId }, query }) => {
-        return appDataService.getForItem(user!.member!, buildRepositories(), itemId, query.type);
+        const member = notUndefined(user?.member);
+        return appDataService.getForItem(member, buildRepositories(), itemId, query.type);
       },
     );
 
@@ -88,7 +82,8 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       '/app-data',
       { schema: getForMany, preHandler: authenticateAppsJWT },
       async ({ user, query }) => {
-        return appDataService.getForManyItems(user!.member!, buildRepositories(), query.itemId);
+        const member = notUndefined(user?.member);
+        return appDataService.getForManyItems(member, buildRepositories(), query.itemId);
       },
     );
   });

@@ -15,6 +15,7 @@ import {
 import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
+import { SHORT_TOKEN_PARAM } from '../passport';
 import { MemberPasswordRepository } from './repository';
 import { comparePasswords } from './utils';
 
@@ -124,7 +125,7 @@ export class MemberPasswordService {
     // auth.graasp.org/reset-password?t=<token>
     const domain = AUTH_CLIENT_HOST;
     const destination = new URL('/reset-password', domain);
-    destination.searchParams.set('t', token);
+    destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     const link = destination.toString();
 
     const html = `
@@ -194,6 +195,9 @@ export class MemberPasswordService {
       throw new MemberWithoutPassword({ email });
     }
     // Validate credentials to build token
-    return (await comparePasswords(password, memberPassword.password)) ? member : undefined;
+    if (await comparePasswords(password, memberPassword.password)) {
+      return member;
+    }
+    return undefined;
   }
 }

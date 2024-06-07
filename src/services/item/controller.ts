@@ -6,8 +6,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { IdParam, IdsParams, PaginationParams } from '../../types';
+import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
-import { authenticated, optionalAuthenticated } from '../auth/plugins/passport';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
 import {
@@ -47,7 +48,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: items.extendCreateSchema(),
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async (request) => {
       const {
@@ -58,7 +59,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.post(user!.member, repositories, {
+        const item = await itemService.post(user?.member, repositories, {
           item: data,
           parentId,
           geolocation: data.geolocation,
@@ -89,7 +90,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }>(
       '/with-thumbnail',
       {
-        preHandler: authenticated,
+        preHandler: isAuthenticated,
       },
       async (request) => {
         const {
@@ -107,7 +108,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         return await db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
-          const item = await itemService.post(user!.member, repositories, {
+          const item = await itemService.post(user?.member, repositories, {
             item: itemPayload,
             parentId,
             geolocation,
@@ -125,7 +126,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id',
     {
       schema: getOne,
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { id } }) => {
       return itemService.getPacked(user?.member, buildRepositories(), id);
@@ -134,7 +135,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get<{ Querystring: IdsParams }>(
     '/',
-    { schema: getMany, preHandler: optionalAuthenticated },
+    { schema: getMany, preHandler: optionalIsAuthenticated },
     async ({ user, query: { id: ids } }) => {
       return itemService.getManyPacked(user?.member, buildRepositories(), ids);
     },
@@ -145,11 +146,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Querystring: ItemSearchParams & PaginationParams;
   }>(
     '/accessible',
-    { schema: getAccessible, preHandler: authenticated },
+    { schema: getAccessible, preHandler: isAuthenticated },
     async ({ user, query }) => {
       const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types } = query;
+      const member = notUndefined(user?.member);
       return itemService.getAccessible(
-        user!.member!,
+        member,
         buildRepositories(),
         { creatorId, name, sortBy, ordering, permissions, types },
         { page, pageSize },
@@ -158,8 +160,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get own
-  fastify.get('/own', { schema: getOwn, preHandler: authenticated }, async ({ user }) => {
-    return itemService.getOwn(user!.member, buildRepositories());
+  fastify.get('/own', { schema: getOwn, preHandler: isAuthenticated }, async ({ user }) => {
+    return itemService.getOwn(user?.member, buildRepositories());
   });
 
   // get shared with
@@ -167,17 +169,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/shared-with',
     {
       schema: getShared,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async ({ user, query }) => {
-      return itemService.getShared(user!.member, buildRepositories(), query.permission);
+      return itemService.getShared(user?.member, buildRepositories(), query.permission);
     },
   );
 
   // get item's children
   fastify.get<{ Params: IdParam; Querystring: ItemChildrenParams }>(
     '/:id/children',
-    { schema: getChildren, preHandler: optionalAuthenticated },
+    { schema: getChildren, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query: { ordered, types } }) => {
       return itemService.getPackedChildren(user?.member, buildRepositories(), id, {
         ordered,
@@ -194,8 +196,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/descendants',
     { schema: getDescendants, preHandler: optionalAuthenticated },
     async ({ user, params: { id }, query }) => {
-      return itemService.getPackedDescendants(user!.member, buildRepositories(), id);
-    async ({ user, params: { id }, query }) => {
       return itemService.getPackedDescendants(user?.member, buildRepositories(), id, query);
     },
   );
@@ -205,7 +205,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/parents',
     {
       schema: getParents,
-      preHandler: optionalAuthenticated,
+      preHandler: optionalIsAuthenticated,
     },
     async ({ user, params: { id } }) => {
       return itemService.getParents(user?.member, buildRepositories(), id);
@@ -217,7 +217,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id',
     {
       schema: items.extendExtrasUpdateSchema(),
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async (request) => {
       const {
@@ -227,7 +227,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       } = request;
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.patch(user!.member, repositories, id, body);
+        const item = await itemService.patch(user?.member, repositories, id, body);
         await actionItemService.postPatchAction(request, repositories, item);
         return item;
       });
@@ -238,7 +238,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: updateMany(items.extendExtrasUpdateSchema()),
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
       const {
@@ -247,7 +247,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         body,
         log,
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.patchMany(member, repositories, ids, body);
@@ -283,7 +283,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: deleteMany,
-      preHandler: authenticated,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
       const {
@@ -291,7 +291,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         query: { id: ids },
         log,
       } = request;
-      const member = user!.member!;
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.deleteMany(member, repositories, ids);
@@ -323,14 +323,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Body: {
       parentId?: string;
     };
-  }>('/move', { schema: moveMany, preHandler: authenticated }, async (request, reply) => {
+  }>('/move', { schema: moveMany, preHandler: isAuthenticated }, async (request, reply) => {
     const {
       user,
       query: { id: ids },
       body: { parentId },
       log,
     } = request;
-    const member = user!.member!;
+    const member = notUndefined(user?.member);
     db.transaction(async (manager) => {
       const repositories = buildRepositories(manager);
       const results = await itemService.moveMany(member, repositories, ids, parentId);
@@ -355,14 +355,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{
     Querystring: IdsParams;
     Body: { parentId: string };
-  }>('/copy', { schema: copyMany, preHandler: authenticated }, async (request, reply) => {
+  }>('/copy', { schema: copyMany, preHandler: isAuthenticated }, async (request, reply) => {
     const {
       user,
       query: { id: ids },
       body: { parentId },
       log,
     } = request;
-    const member = user!.member!;
+    const member = notUndefined(user?.member);
     db.transaction(async (manager) => {
       const repositories = buildRepositories(manager);
       return await itemService.copyMany(member, repositories, ids, {

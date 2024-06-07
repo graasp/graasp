@@ -31,9 +31,9 @@ export async function verifyCurrentPassword(
 
 /**
  * Compares a plain password with a hash.
- * @param password Password to encrypt.
+ * @param password The plain password to compare
  * @param hash Hash to be compared against.
- * @returns A promise to be either resolved with the comparison result salt or rejected with an Error
+ * @returns A promise to be either resolved with the comparison result
  */
 export async function comparePasswords(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);

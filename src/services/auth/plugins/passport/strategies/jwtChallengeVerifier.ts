@@ -6,6 +6,7 @@ import { Authenticator } from '@fastify/passport';
 import { JWT_SECRET } from '../../../../../utils/config';
 import { ChallengeFailed, MemberNotFound, UnauthorizedMember } from '../../../../../utils/errors';
 import { MemberRepository } from '../../../../member/repository';
+import { SHORT_TOKEN_PARAM } from '../constants';
 import { PassportStrategy } from '../strategies';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types';
 
@@ -18,12 +19,12 @@ export default (
     PassportStrategy.JWT_CHALLENGE_VERIFIER,
     new Strategy(
       {
-        jwtFromRequest: ExtractJwt.fromBodyField('t'),
+        jwtFromRequest: ExtractJwt.fromBodyField(SHORT_TOKEN_PARAM),
         secretOrKey: JWT_SECRET,
         passReqToCallback: true,
       },
       async ({ body: { verifier } }, { sub, challenge }, done: StrictVerifiedCallback) => {
-        const spreadException: boolean = options?.spreadException ?? false;
+        const spreadException: boolean = options?.propagateError ?? false;
         //-- Verify Challenge --//
         try {
           const verifierChallenge = crypto.createHash('sha256').update(verifier).digest('hex');
@@ -42,14 +43,17 @@ export default (
           const member = await memberRepository.get(sub);
           if (member) {
             // Token has been validated
-            done(null, { member });
+            return done(null, { member });
           } else {
             // Authentication refused
-            done(spreadException ? new MemberNotFound(sub) : new UnauthorizedMember(), false);
+            return done(
+              spreadException ? new MemberNotFound(sub) : new UnauthorizedMember(),
+              false,
+            );
           }
         } catch (err) {
           // Exception occurred while fetching member
-          done(spreadException ? err : new UnauthorizedMember(), false);
+          return done(spreadException ? err : new UnauthorizedMember(), false);
         }
       },
     ),

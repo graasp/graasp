@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { ItemType } from '@graasp/sdk';
 
 import { IdParam } from '../../../../../types';
+import { notUndefined } from '../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { Actor } from '../../../../member/entities/member';
@@ -51,8 +52,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: authenticateAppsJWT,
       },
       async ({ user, params: { itemId }, body }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          return appSettingService.post(user!.member!, buildRepositories(manager), itemId, body);
+          return appSettingService.post(member, buildRepositories(manager), itemId, body);
         });
       },
     );
@@ -65,9 +67,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         preHandler: authenticateAppsJWT,
       },
       async ({ user, params: { itemId, id: appSettingId }, body }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
           return appSettingService.patch(
-            user!.member!,
+            member,
             buildRepositories(manager),
             itemId,
             appSettingId,
@@ -82,9 +85,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-settings/:id',
       { schema: deleteOne, preHandler: authenticateAppsJWT },
       async ({ user, params: { itemId, id: appSettingId } }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
           return appSettingService.deleteOne(
-            user!.member!,
+            member,
             buildRepositories(manager),
             itemId,
             appSettingId,

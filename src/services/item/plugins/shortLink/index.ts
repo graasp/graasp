@@ -4,8 +4,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
-import { authenticated } from '../../../auth/plugins/passport';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { create, restricted_get, update } from './schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
 
@@ -53,9 +54,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     await fastify.register(async (fastify) => {
       fastify.get<{ Params: { itemId: string } }>(
         `${SHORT_LINKS_LIST_ROUTE}/:itemId`,
-        { preHandler: authenticated },
+        { preHandler: isAuthenticated },
         async ({ user, params: { itemId } }) => {
-          return shortLinkService.getAllForItem(user!.member!, buildRepositories(), itemId);
+          const member = notUndefined(user?.member);
+          return shortLinkService.getAllForItem(member, buildRepositories(), itemId);
         },
       );
 
@@ -63,12 +65,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/',
         {
           schema: create,
-          preHandler: authenticated,
+          preHandler: isAuthenticated,
         },
         async ({ user, body: shortLink }) => {
+          const member = notUndefined(user?.member);
           return db.transaction(async (manager) => {
             const newLink = await shortLinkService.post(
-              user!.member!,
+              member,
               buildRepositories(manager),
               shortLink,
             );
@@ -79,11 +82,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
       fastify.delete<{ Params: { alias: string } }>(
         '/:alias',
-        { preHandler: authenticated },
+        { preHandler: isAuthenticated },
         async ({ user, params: { alias } }) => {
+          const member = notUndefined(user?.member);
           return db.transaction(async (manager) => {
             const oldLink = await shortLinkService.delete(
-              user!.member!,
+              member,
               buildRepositories(manager),
               alias,
             );
@@ -96,12 +100,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         '/:alias',
         {
           schema: update,
-          preHandler: authenticated,
+          preHandler: isAuthenticated,
         },
         async ({ user, body: shortLink, params: { alias } }) => {
+          const member = notUndefined(user?.member);
           return db.transaction(async (manager) => {
             const updatedLink = await shortLinkService.update(
-              user!.member!,
+              member,
               buildRepositories(manager),
               alias,
               shortLink,

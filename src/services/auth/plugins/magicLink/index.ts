@@ -15,6 +15,9 @@ import { PassportStrategy } from '../passport/strategies';
 import { auth, login, register } from './schemas';
 import { MagicLinkService } from './service';
 
+const ERROR_SEARCH_PARAM = 'error';
+const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
+
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
     log,
@@ -112,7 +115,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           if (!user || err) {
             // Authentication failed
             const target = new URL('/', AUTH_CLIENT_HOST);
-            target.searchParams.set('error', 'true');
+            target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
             reply.redirect(StatusCodes.SEE_OTHER, target.toString());
           } else {
             request.logIn(user, { session: true });
