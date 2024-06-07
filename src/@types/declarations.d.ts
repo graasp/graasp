@@ -47,9 +47,6 @@ declare module 'fastify' {
     mentions: {
       service: MentionService;
     };
-    thumbnails: {
-      service: ThumbnailService;
-    };
     items: {
       extendCreateSchema: ReturnType<typeof create>;
       extendExtrasUpdateSchema: ReturnType<typeof updateOne>;

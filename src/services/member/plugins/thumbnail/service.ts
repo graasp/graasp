@@ -11,7 +11,7 @@ export class MemberThumbnailService {
   memberService: MemberService;
 
   constructor(memberService: MemberService, fileService: FileService) {
-    this.thumbnailService = new ThumbnailService(fileService, true, 'avatars');
+    this.thumbnailService = new ThumbnailService(fileService, 'avatars');
     this.memberService = memberService;
   }
 

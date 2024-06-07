@@ -16,7 +16,7 @@ import { ItemService } from '../services/item/service';
 import { ItemMembershipService } from '../services/itemMembership/service';
 import { StorageService } from '../services/member/plugins/storage/service';
 import { MemberService } from '../services/member/service';
-import { ThumbnailService } from '../services/thumbnail/service';
+import { DefaultThumbnailService } from '../services/thumbnail/service';
 import {
   FILE_ITEM_TYPE,
   MEILISEARCH_MASTER_KEY,
@@ -47,9 +47,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('member', null);
 
   const fileService = resolveDependency(FileService);
-
-  const thumbnailService = new ThumbnailService(fileService, true, 'thumbnails');
-  fastify.decorate('thumbnails', { service: thumbnailService });
+  const thumbnailService = resolveDependency(DefaultThumbnailService);
 
   const itemService = new ItemService(thumbnailService, fastify.log);
   fastify.decorate('items', {

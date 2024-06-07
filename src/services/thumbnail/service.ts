@@ -1,20 +1,22 @@
 import path from 'path';
 import sharp from 'sharp';
 import { Readable } from 'stream';
+import { singleton } from 'tsyringe';
 
 import FileService from '../file/service';
 import { Actor, Member } from '../member/entities/member';
 import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 
-export class ThumbnailService {
-  fileService: FileService;
-  shouldRedirectOnDownload: boolean;
-  prefix: string;
+export const AVATAR_THUMBNAIL_PREFIX = 'avatars';
+export const DEFAULT_THUMBNAIL_PREFIX = 'thumbnails';
 
-  constructor(fileService: FileService, shouldRedirectOnDownload: boolean, prefix: string) {
-    this.shouldRedirectOnDownload = shouldRedirectOnDownload;
+export class ThumbnailService {
+  private fileService: FileService;
+  private prefix: string;
+
+  constructor(fileService: FileService, prefix: string) {
     this.fileService = fileService;
-    this.prefix = prefix ?? 'thumbnails';
+    this.prefix = prefix;
   }
 
   buildFilePath(itemId: string, name: string) {
@@ -77,5 +79,19 @@ export class ThumbnailService {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
     await this.fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
+  }
+}
+
+@singleton()
+export class DefaultThumbnailService extends ThumbnailService {
+  constructor(fileService: FileService) {
+    super(fileService, DEFAULT_THUMBNAIL_PREFIX);
+  }
+}
+
+@singleton()
+export class AvatarThumbnailService extends ThumbnailService {
+  constructor(fileService: FileService) {
+    super(fileService, AVATAR_THUMBNAIL_PREFIX);
   }
 }
