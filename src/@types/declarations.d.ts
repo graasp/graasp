@@ -58,9 +58,6 @@ declare module 'fastify' {
     memberships: {
       service: ItemMembershipService;
     };
-    itemsPublished: {
-      service: ItemPublishedService;
-    };
     search: {
       service: SearchService;
     };

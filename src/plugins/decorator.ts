@@ -36,20 +36,17 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   const itemService = resolveDependency(ItemService);
   const itemCategoryService = resolveDependency(ItemCategoryService);
   const mailerService = resolveDependency(MailerService);
+  const itemPublishedService = resolveDependency(ItemPublishedService);
 
   fastify.decorate('memberships', {
     service: new ItemMembershipService(itemService, mailerService),
-  });
-
-  fastify.decorate('itemsPublished', {
-    service: new ItemPublishedService(itemService, mailerService, fastify.log),
   });
 
   fastify.decorate('search', {
     service: new SearchService(
       itemService,
       fileService,
-      fastify.itemsPublished.service,
+      itemPublishedService,
       itemCategoryService,
       fastify.db,
       new MeiliSearch({

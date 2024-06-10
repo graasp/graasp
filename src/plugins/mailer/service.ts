@@ -40,7 +40,6 @@ export class MailerService {
     this.password = options.password;
     this.fromEmail = options.fromEmail;
 
-    // TODO: should await ?
     this.register(fastify);
   }
 

@@ -6,10 +6,6 @@ import { FastifyInstance } from 'fastify';
 import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
 import { fileServiceFactory } from './services/file/utils/factory';
-import { ItemPublishedService } from './services/item/plugins/published/service';
-import { ImageClassifierApiEnv } from './services/item/plugins/validation/ImageClassifierApi';
-import { ItemValidationService } from './services/item/plugins/validation/service';
-import { ItemService } from './services/item/service';
 import {
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
@@ -76,28 +72,5 @@ export const registerDependencies = (instance: FastifyInstance) => {
 
   container.register(FileService, {
     useFactory: instanceCachingFactory(() => fileServiceFactory(instance.log)),
-  });
-
-  container.register(ItemValidationService, {
-    useFactory: instanceCachingFactory(
-      () =>
-        new ItemValidationService(
-          resolveDependency(ItemService),
-          resolveDependency(FileService),
-          resolveDependency(ImageClassifierApiEnv),
-        ),
-    ),
-  });
-
-  // TODO: use annotations !
-  container.register(ItemPublishedService, {
-    useFactory: instanceCachingFactory(
-      () =>
-        new ItemPublishedService(
-          resolveDependency(ItemService),
-          resolveDependency(MailerService),
-          log,
-        ),
-    ),
   });
 };

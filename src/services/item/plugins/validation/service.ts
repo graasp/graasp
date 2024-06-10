@@ -1,5 +1,6 @@
 import { mkdirSync } from 'fs';
 import path from 'path';
+import { singleton } from 'tsyringe';
 
 import {
   ItemType,
@@ -30,10 +31,11 @@ import { detectFieldNameWithBadWords } from './processes/badWordsDetection';
 import { classifyImage } from './processes/imageClassification';
 import { stripHtml } from './utils';
 
+@singleton()
 export class ItemValidationService {
-  itemService: ItemService;
-  fileService: FileService;
-  imageClassifierApi?: string;
+  private itemService: ItemService;
+  private fileService: FileService;
+  private imageClassifierApi?: string;
 
   constructor(
     itemService: ItemService,
