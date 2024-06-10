@@ -69,13 +69,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // we move this from fluent schema because it was a global value
   // this did not fit well with tests
   const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
-
   const initializedUpdate = updateOne(folderExtra);
 
-  const { items } = fastify;
-  // decoration to extend create and update schemas from other plugins
-  items.extendCreateSchema = initializedCreate;
-  items.extendExtrasUpdateSchema = initializedUpdate;
+  // TODO: remove the as when the DI migration are done.
+  fastify.decorate('items', {
+    extendCreateSchema: initializedCreate,
+    extendExtrasUpdateSchema: initializedUpdate,
+  } as typeof fastify.items);
 
   await fastify.register(
     async function (fastify) {

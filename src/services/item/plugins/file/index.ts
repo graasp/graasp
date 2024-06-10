@@ -10,6 +10,7 @@ import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
+import { ItemThumbnailService } from '../thumbnail/service';
 import { download, updateSchema, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
@@ -36,6 +37,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
+  const itemThumbnailService = resolveDependency(ItemThumbnailService);
   const { extendExtrasUpdateSchema } = items;
 
   fastify.register(fastifyMultipart, {
@@ -57,7 +59,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     fileService,
     itemService,
     storageService,
-    items.thumbnails.service,
+    itemThumbnailService,
     shouldRedirectOnDownload,
   );
   items.files = { service: fileItemService };

@@ -56,9 +56,6 @@ declare module 'fastify' {
       actions: {
         service: ActionItemService;
       };
-      thumbnails: {
-        service: ItemThumbnailService;
-      };
     };
     memberships: {
       service: ItemMembershipService;

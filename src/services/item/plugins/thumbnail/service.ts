@@ -1,18 +1,20 @@
 import { Readable } from 'stream';
+import { singleton } from 'tsyringe';
 
 import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
-import { ThumbnailService } from '../../../thumbnail/service';
+import { DefaultThumbnailService } from '../../../thumbnail/service';
 import { ItemService } from '../../service';
 
+@singleton()
 export class ItemThumbnailService {
-  thumbnailService: ThumbnailService;
+  thumbnailService: DefaultThumbnailService;
   itemService: ItemService;
 
-  constructor(itemService: ItemService, thumbnailService: ThumbnailService) {
+  constructor(itemService: ItemService, thumbnailService: DefaultThumbnailService) {
     this.thumbnailService = thumbnailService;
     this.itemService = itemService;
   }

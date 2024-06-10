@@ -11,12 +11,10 @@ import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { ItemPublishedService } from '../services/item/plugins/published/service';
-import { ItemThumbnailService } from '../services/item/plugins/thumbnail/service';
 import { ItemService } from '../services/item/service';
 import { ItemMembershipService } from '../services/itemMembership/service';
 import { StorageService } from '../services/member/plugins/storage/service';
 import { MemberService } from '../services/member/service';
-import { DefaultThumbnailService } from '../services/thumbnail/service';
 import {
   FILE_ITEM_TYPE,
   MEILISEARCH_MASTER_KEY,
@@ -47,14 +45,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('member', null);
 
   const fileService = resolveDependency(FileService);
-  const thumbnailService = resolveDependency(DefaultThumbnailService);
   const itemService = resolveDependency(ItemService);
-
-  fastify.decorate('items', {
-    thumbnails: { service: new ItemThumbnailService(itemService, thumbnailService) },
-    // the casting is necessary as we are not instanciating the other keys of the object yet ..
-    // we might need to rethink our depencency order to remove the need for this cast
-  } as typeof fastify.items);
 
   fastify.decorate('memberships', {
     service: new ItemMembershipService(itemService, fastify.mailer),

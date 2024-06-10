@@ -14,6 +14,7 @@ import FileService from '../../../file/service';
 import { UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { deleteSchema, download, upload } from './schemas';
+import { ItemThumbnailService } from './service';
 import { UploadFileNotImageError } from './utils/errors';
 
 type GraaspThumbnailsOptions = {
@@ -23,14 +24,10 @@ type GraaspThumbnailsOptions = {
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
-  const {
-    items: {
-      thumbnails: { service: thumbnailService },
-    },
-    db,
-  } = fastify;
+  const { db } = fastify;
 
   const fileService = resolveDependency(FileService);
+  const itemThumbnailService = resolveDependency(ItemThumbnailService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -73,7 +70,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
             throw new UploadFileNotImageError();
           }
 
-          await thumbnailService.upload(member, buildRepositories(manager), itemId, file.file);
+          await itemThumbnailService.upload(member, buildRepositories(manager), itemId, file.file);
 
           reply.status(StatusCodes.NO_CONTENT);
         })
@@ -98,7 +95,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       preHandler: fastify.attemptVerifyAuthentication,
     },
     async ({ member, params: { size, id: itemId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService.getUrl(member, buildRepositories(), { itemId, size });
+      const url = await itemThumbnailService.getUrl(member, buildRepositories(), { itemId, size });
 
       fileService.setHeaders({ reply, replyUrl, url, id: itemId });
     },
@@ -115,7 +112,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       if (!member) {
         throw new UnauthorizedMember(member);
       }
-      await thumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), { itemId });
+      await itemThumbnailService.deleteAllThumbnailSizes(member, buildRepositories(), { itemId });
       reply.status(StatusCodes.NO_CONTENT);
     },
   );
