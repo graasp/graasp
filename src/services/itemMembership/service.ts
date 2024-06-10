@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
 import { MAIL } from '../../plugins/mailer/langs/constants';
@@ -16,6 +18,7 @@ import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ItemMembership } from './entities/ItemMembership';
 
+@singleton()
 export class ItemMembershipService {
   itemService: ItemService;
   mailer: MailerService;

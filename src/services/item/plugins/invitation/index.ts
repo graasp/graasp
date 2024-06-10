@@ -9,6 +9,7 @@ import { MailerService } from '../../../../plugins/mailer/service';
 import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { ItemMembershipService } from '../../../itemMembership/service';
 import { Actor, Member } from '../../../member/entities/member';
 import { MemberService } from '../../../member/service';
 import { ItemService } from '../../service';
@@ -19,10 +20,11 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, log, memberships } = fastify;
+  const { db, log } = fastify;
   const mailer = resolveDependency(MailerService);
   const itemService = resolveDependency(ItemService);
   const memberService = resolveDependency(MemberService);
+  const itemMembershipService = resolveDependency(ItemMembershipService);
 
   if (!mailer) {
     throw new Error('Mailer plugin is not defined');
@@ -31,7 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
 
-  const iS = new InvitationService(log, mailer, itemService, memberService, memberships.service);
+  const iS = new InvitationService(log, mailer, itemService, memberService, itemMembershipService);
 
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {

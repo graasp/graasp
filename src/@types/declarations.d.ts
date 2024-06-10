@@ -55,9 +55,6 @@ declare module 'fastify' {
         service: ActionItemService;
       };
     };
-    memberships: {
-      service: ItemMembershipService;
-    };
     search: {
       service: SearchService;
     };
