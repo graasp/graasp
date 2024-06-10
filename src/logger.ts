@@ -8,13 +8,15 @@ import { FASTIFY_LOGGER_DI_KEY } from './utils/dependencies.keys';
 
 @singleton()
 export class BaseLogger implements FastifyBaseLogger {
-  constructor(@inject(FASTIFY_LOGGER_DI_KEY) private logger: FastifyBaseLogger) {}
+  level: pino.LevelWithSilentOrString;
+
+  constructor(@inject(FASTIFY_LOGGER_DI_KEY) private logger: FastifyBaseLogger) {
+    this.level = logger.level;
+  }
 
   child(bindings: pino.Bindings, options?: ChildLoggerOptions | undefined): FastifyBaseLogger {
     return this.logger.child(bindings, options);
   }
-
-  level: pino.LevelWithSilentOrString;
 
   fatal(message: string, ...args: unknown[]) {
     this.logger.fatal(message, ...args);
