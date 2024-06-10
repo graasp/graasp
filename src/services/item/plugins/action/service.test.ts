@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import { FastifyInstance } from 'fastify';
 
 import {
   AggregateFunction,
@@ -11,6 +11,7 @@ import {
 } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { BaseLogger } from '../../../../logger';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -28,10 +29,7 @@ import { ItemActionType } from './utils';
 
 // mock datasource
 jest.mock('../../../../plugins/datasource');
-const itemService = new ItemService(
-  {} as unknown as ThumbnailService,
-  {} as unknown as FastifyBaseLogger,
-);
+const itemService = new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger);
 const memberService = new MemberService();
 const service = new ActionItemService(
   new ActionService(itemService, memberService),

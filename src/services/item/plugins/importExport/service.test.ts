@@ -5,7 +5,9 @@ import { FastifyInstance, FastifyReply } from 'fastify';
 import { ItemTagType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { resolveDependency } from '../../../../dependencies';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
 import FileItemService from '../file/service';
 import type { H5PService } from '../html/h5p/service';
@@ -46,7 +48,7 @@ describe('ZIP routes tests', () => {
       const importExportService = new ImportExportService(
         app.db,
         {} as unknown as FileItemService,
-        app.items.service,
+        resolveDependency(ItemService),
         {} as unknown as H5PService,
         app.log,
       );
