@@ -30,7 +30,6 @@ import { H5PService } from './services/item/plugins/h5p/service';
 declare module 'fastify' {
   interface FastifyInstance {
     db: DataSource;
-    redis: Redis;
 
     jobs: {
       service: JobService;

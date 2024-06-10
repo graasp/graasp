@@ -1,4 +1,3 @@
-import Redis from 'ioredis';
 import { MeiliSearch } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
@@ -11,14 +10,7 @@ import { SearchService } from '../services/item/plugins/published/plugins/search
 import { ItemPublishedService } from '../services/item/plugins/published/service';
 import { ItemService } from '../services/item/service';
 import { ItemMembershipService } from '../services/itemMembership/service';
-import {
-  MEILISEARCH_MASTER_KEY,
-  MEILISEARCH_URL,
-  REDIS_HOST,
-  REDIS_PASSWORD,
-  REDIS_PORT,
-  REDIS_USERNAME,
-} from '../utils/config';
+import { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } from '../utils/config';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   /**
@@ -68,15 +60,5 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   // Launch Job workers
   fastify.decorate('jobs', { service: new JobService(fastify.search.service, fastify.log) });
-
-  fastify.decorate(
-    'redis',
-    new Redis({
-      host: REDIS_HOST,
-      port: REDIS_PORT,
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-    }),
-  );
 };
 export default decoratorPlugin;

@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { Redis } from 'ioredis';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import fastifyPassport from '@fastify/passport';
@@ -23,7 +24,9 @@ import { MemberPasswordService } from './service';
 const PASSPORT_STATEGY_ID = 'jwt-reset-password';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db, redis } = fastify;
+  const { mailer, log, db } = fastify;
+
+  const redis = resolveDependency(Redis);
   const actionService = resolveDependency(ActionService);
 
   await fastify.register(fastifyPassport.initialize());
