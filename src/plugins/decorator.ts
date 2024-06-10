@@ -44,6 +44,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
+  const itemCategoryService = resolveDependency(ItemCategoryService);
 
   fastify.decorate('memberships', {
     service: new ItemMembershipService(itemService, fastify.mailer),
@@ -51,10 +52,6 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('itemsPublished', {
     service: new ItemPublishedService(itemService, fastify.mailer, fastify.log),
-  });
-
-  fastify.decorate('itemsCategory', {
-    service: new ItemCategoryService(itemService),
   });
 
   fastify.decorate('h5p', {
@@ -66,7 +63,7 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
       itemService,
       fileService,
       fastify.itemsPublished.service,
-      fastify.itemsCategory.service,
+      itemCategoryService,
       fastify.db,
       new MeiliSearch({
         host: MEILISEARCH_URL,

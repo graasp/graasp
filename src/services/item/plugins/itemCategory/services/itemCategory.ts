@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel } from '@graasp/sdk';
 
 import HookManager from '../../../../../utils/hook';
@@ -6,6 +8,7 @@ import { Actor } from '../../../../member/entities/member';
 import { ItemService } from '../../../service';
 import { ItemCategory } from '../entities/ItemCategory';
 
+@singleton()
 export class ItemCategoryService {
   private itemService: ItemService;
 

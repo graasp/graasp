@@ -63,9 +63,6 @@ declare module 'fastify' {
     itemsPublished: {
       service: ItemPublishedService;
     };
-    itemsCategory: {
-      service: ItemCategoryService;
-    };
     search: {
       service: SearchService;
     };
