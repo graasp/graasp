@@ -3,7 +3,6 @@ import { InjectionToken, container, instanceCachingFactory } from 'tsyringe';
 
 import { FastifyInstance } from 'fastify';
 
-import { BaseLogger } from './logger';
 import FileService from './services/file/service';
 import { fileServiceFactory } from './services/file/utils/factory';
 import { ItemPublishedService } from './services/item/plugins/published/service';
@@ -11,6 +10,7 @@ import { ImageClassifierApiEnv } from './services/item/plugins/validation/ImageC
 import { ItemValidationService } from './services/item/plugins/validation/service';
 import { ItemService } from './services/item/service';
 import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from './utils/config';
+import { FASTIFY_LOGGER_DI_KEY } from './utils/dependencies.keys';
 
 export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
   return container.resolve(injectionToken);
@@ -21,6 +21,9 @@ export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
 // this allow to test DI framework without having to annotate all the services (second step).
 export const registerDependencies = (instance: FastifyInstance) => {
   const { mailer, log } = instance;
+
+  // register FastifyBasLogger as a value to allow BaseLogger to be injected automatically.
+  container.register(FASTIFY_LOGGER_DI_KEY, { useValue: log });
 
   container.register(Redis, {
     useFactory: instanceCachingFactory(
@@ -36,10 +39,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
 
   container.register(FileService, {
     useFactory: instanceCachingFactory(() => fileServiceFactory(instance.log)),
-  });
-
-  container.register(BaseLogger, {
-    useFactory: instanceCachingFactory(() => new BaseLogger(log)),
   });
 
   container.register(ItemValidationService, {

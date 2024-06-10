@@ -1,14 +1,14 @@
 import type pino from 'pino';
+import { inject, singleton } from 'tsyringe';
 
 import { FastifyBaseLogger } from 'fastify';
 import type { ChildLoggerOptions } from 'fastify/types/logger';
 
-export class BaseLogger implements FastifyBaseLogger {
-  private logger: FastifyBaseLogger;
+import { FASTIFY_LOGGER_DI_KEY } from './utils/dependencies.keys';
 
-  constructor(logger: FastifyBaseLogger) {
-    this.logger = logger;
-  }
+@singleton()
+export class BaseLogger implements FastifyBaseLogger {
+  constructor(@inject(FASTIFY_LOGGER_DI_KEY) private logger: FastifyBaseLogger) {}
 
   child(bindings: pino.Bindings, options?: ChildLoggerOptions | undefined): FastifyBaseLogger {
     return this.logger.child(bindings, options);
