@@ -114,7 +114,12 @@ export class ItemPublishedService {
     };
   }
 
-  async post(actor: Actor, repositories: Repositories, itemId: string) {
+  async post(
+    actor: Actor,
+    repositories: Repositories,
+    itemId: string,
+    { canBePrivate }: { canBePrivate?: boolean } = {},
+  ) {
     if (!actor) {
       throw new UnauthorizedMember(actor);
     }
@@ -123,7 +128,16 @@ export class ItemPublishedService {
     const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
 
     // item should be public first
-    await itemTagRepository.getType(item, ItemTagType.Public, { shouldThrow: true });
+    const tag = await itemTagRepository.getType(item, ItemTagType.Public, {
+      shouldThrow: !canBePrivate,
+    });
+
+    // if the item can be private and be published, set it to public automatically.
+    // it's usefull to publish the item automatically after the validation.
+    // the user is asked to set the item to public in the frontend.
+    if (!tag && canBePrivate) {
+      await itemTagRepository.post(actor, item, ItemTagType.Public);
+    }
 
     // TODO: check validation is alright
 

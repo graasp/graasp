@@ -254,6 +254,14 @@ describe('Item Validation Tests', () => {
             res(true);
           }, VALIDATION_LOADING_TIME);
         });
+
+        // valid item should be published automatically
+        const publishedRes = await app.inject({
+          method: HttpMethod.Get,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/informations`,
+        });
+        expect(publishedRes.statusCode).toBe(StatusCodes.OK);
+        expect(publishedRes.json()?.item.id).toBe(item.id);
       });
 
       it('Throws if has read permission', async () => {
