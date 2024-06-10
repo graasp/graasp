@@ -6,7 +6,6 @@ import { FastifyPluginAsync } from 'fastify';
 import { resolveDependency } from '../dependencies';
 import { JobService } from '../jobs';
 import FileService from '../services/file/service';
-import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { ItemPublishedService } from '../services/item/plugins/published/service';
@@ -52,10 +51,6 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('itemsPublished', {
     service: new ItemPublishedService(itemService, fastify.mailer, fastify.log),
-  });
-
-  fastify.decorate('h5p', {
-    service: new H5PService(fastify.log),
   });
 
   fastify.decorate('search', {

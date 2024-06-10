@@ -1,10 +1,10 @@
 import path from 'path';
+import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
-
-import { FastifyBaseLogger } from 'fastify';
 
 import { H5PItemExtra, ItemType } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../../logger';
 import {
   H5P_FILE_STORAGE_CONFIG,
   H5P_FILE_STORAGE_TYPE,
@@ -21,8 +21,9 @@ import { H5PValidator } from './validation/h5p-validator';
 /**
  * Implementation for the H5P service
  */
+@singleton()
 export class H5PService extends HtmlService {
-  constructor(log: FastifyBaseLogger) {
+  constructor(log: BaseLogger) {
     const h5pValidator = new H5PValidator();
 
     super(

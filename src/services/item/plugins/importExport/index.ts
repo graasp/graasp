@@ -11,6 +11,7 @@ import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { ItemService } from '../../service';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
+import { H5PService } from '../html/h5p/service';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { zipExport, zipImport } from './schema';
@@ -22,13 +23,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     items: {
       files: { service: fS },
     },
-    h5p: { service: h5pService },
     log: fastifyLogger,
     db,
   } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const actionService = resolveDependency(ActionService);
+  const h5pService = resolveDependency(H5PService);
   const importExportService = new ImportExportService(
     db,
     fS,

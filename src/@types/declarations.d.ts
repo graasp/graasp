@@ -70,7 +70,6 @@ declare module 'fastify' {
     storage: { service: StorageService };
 
     websockets: WebsocketService;
-    h5p: { service: H5PService };
     etherpad: EtherpadItemService;
 
     corsPluginOptions: any;
