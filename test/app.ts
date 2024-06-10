@@ -3,11 +3,13 @@ import fastify from 'fastify';
 import { CompleteMember } from '@graasp/sdk';
 
 import registerAppPlugins from '../src/app';
+import { resetDependencies } from '../src/dependencies';
 import { Actor } from '../src/services/member/entities/member';
 import { saveMember } from '../src/services/member/test/fixtures/members';
 import { DB_TEST_SCHEMA } from './constants';
 
 const build = async ({ member }: { member?: CompleteMember | null } = {}) => {
+  resetDependencies();
   const app = fastify({
     disableRequestLogging: true,
     logger: {

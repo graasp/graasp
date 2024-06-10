@@ -16,6 +16,14 @@ export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
   return container.resolve(injectionToken);
 };
 
+/**
+ * Clear all previously created and registered instances.
+ * This is very usefull in the tests to ensure to have new Singleton instance in every test.
+ */
+export const resetDependencies = () => {
+  container.clearInstances();
+};
+
 // TODO: to be cleaned up.
 // temporary step by manually register dependencies.
 // this allow to test DI framework without having to annotate all the services (second step).
