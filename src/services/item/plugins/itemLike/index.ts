@@ -4,6 +4,7 @@ import { ActionTriggers } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../dependencies';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import { ItemService } from '../../service';
 import common, { create, deleteOne, getLikesForItem, getLikesForMember } from './schemas';
 import { ItemLikeService } from './service';
@@ -13,7 +14,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   const itemService = resolveDependency(ItemService);
   const itemLikeService = new ItemLikeService(itemService);
-  const actionService = fastify.actions.service;
+  const actionService = resolveDependency(ActionService);
 
   fastify.addSchema(common);
   //get liked entry for member

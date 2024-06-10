@@ -5,7 +5,6 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../dependencies';
 import { JobService } from '../jobs';
-import { ActionService } from '../services/action/services/action';
 import FileService from '../services/file/service';
 import { H5PService } from '../services/item/plugins/html/h5p/service';
 import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
@@ -14,7 +13,6 @@ import { ItemPublishedService } from '../services/item/plugins/published/service
 import { ItemService } from '../services/item/service';
 import { ItemMembershipService } from '../services/itemMembership/service';
 import { StorageService } from '../services/member/plugins/storage/service';
-import { MemberService } from '../services/member/service';
 import {
   FILE_ITEM_TYPE,
   MEILISEARCH_MASTER_KEY,
@@ -49,10 +47,6 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('memberships', {
     service: new ItemMembershipService(itemService, fastify.mailer),
-  });
-
-  fastify.decorate('actions', {
-    service: new ActionService(itemService, resolveDependency(MemberService)),
   });
 
   fastify.decorate('itemsPublished', {

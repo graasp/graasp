@@ -8,6 +8,7 @@ import { ActionTriggers } from '@graasp/sdk';
 import { resolveDependency } from '../../../../dependencies';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import { ItemService } from '../../service';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
@@ -21,13 +22,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     items: {
       files: { service: fS },
     },
-    actions: { service: aS },
     h5p: { service: h5pService },
     log: fastifyLogger,
     db,
   } = fastify;
 
   const itemService = resolveDependency(ItemService);
+  const actionService = resolveDependency(ActionService);
   const importExportService = new ImportExportService(
     db,
     fS,
@@ -125,7 +126,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         type: ActionTriggers.ItemDownload,
         extra: { itemId: item?.id },
       };
-      await aS.postMany(member, repositories, request, [action]);
+      await actionService.postMany(member, repositories, request, [action]);
 
       try {
         reply.raw.setHeader(

@@ -69,7 +69,6 @@ declare module 'fastify' {
     search: {
       service: SearchService;
     };
-    actions: { service: ActionService };
     chat: { service: ChatMessageService };
     storage: { service: StorageService };
 

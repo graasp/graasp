@@ -18,6 +18,7 @@ import { resolveDependency } from '../../../../dependencies';
 import { IdParam } from '../../../../types';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -38,16 +39,13 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
-  const {
-    actions: { service: actionService },
-    mailer,
-    db,
-    websockets,
-  } = fastify;
+  const { mailer, db, websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);
+  const actionService = resolveDependency(ActionService);
+
   const actionItemService = new ActionItemService(actionService, itemService, memberService);
   fastify.items.actions = { service: actionItemService };
 

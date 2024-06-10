@@ -2,8 +2,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
 import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -18,11 +20,9 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
-  const {
-    actions: { service: actionService },
-    db,
-  } = fastify;
+  const { db } = fastify;
 
+  const actionService = resolveDependency(ActionService);
   const actionMemberService = new ActionMemberService(actionService);
 
   fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(

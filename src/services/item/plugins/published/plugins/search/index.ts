@@ -5,8 +5,10 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../../dependencies';
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../utils/repositories';
+import { ActionService } from '../../../../../action/services/action';
 import { search } from './schemas';
 
 export type SearchFields = {
@@ -19,7 +21,7 @@ export type SearchFields = {
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const searchService = fastify.search.service;
-  const actionService = fastify.actions.service;
+  const actionService = resolveDependency(ActionService);
 
   fastify.post<{ Body: MultiSearchParams }>(
     '/collections/search',
