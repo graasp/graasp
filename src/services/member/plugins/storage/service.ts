@@ -1,12 +1,15 @@
+import { singleton } from 'tsyringe';
+
 import { FileItemType, MemberStorage } from '@graasp/sdk';
 
+import { FILE_ITEM_TYPE } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { DEFAULT_MAX_STORAGE } from '../../../item/plugins/file/utils/constants';
 import { StorageExceeded } from '../../../item/plugins/file/utils/errors';
 import { Member } from '../../entities/member';
 
 export class StorageService {
-  fileItemType: FileItemType;
+  private fileItemType: FileItemType;
 
   constructor(fileItemType: FileItemType) {
     this.fileItemType = fileItemType;
@@ -43,5 +46,12 @@ export class StorageService {
     if (currentStorage + size > maxStorage) {
       throw new StorageExceeded(currentStorage + size);
     }
+  }
+}
+
+@singleton()
+export class FileStorageService extends StorageService {
+  constructor() {
+    super(FILE_ITEM_TYPE);
   }
 }

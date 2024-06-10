@@ -67,11 +67,8 @@ declare module 'fastify' {
       service: SearchService;
     };
     chat: { service: ChatMessageService };
-    storage: { service: StorageService };
-
     websockets: WebsocketService;
     etherpad: EtherpadItemService;
-
     corsPluginOptions: any;
     verifyAuthentication:
       | preHandlerHookHandler<

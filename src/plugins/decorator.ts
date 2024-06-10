@@ -11,9 +11,7 @@ import { SearchService } from '../services/item/plugins/published/plugins/search
 import { ItemPublishedService } from '../services/item/plugins/published/service';
 import { ItemService } from '../services/item/service';
 import { ItemMembershipService } from '../services/itemMembership/service';
-import { StorageService } from '../services/member/plugins/storage/service';
 import {
-  FILE_ITEM_TYPE,
   MEILISEARCH_MASTER_KEY,
   MEILISEARCH_URL,
   REDIS_HOST,
@@ -70,8 +68,6 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
 
   // Launch Job workers
   fastify.decorate('jobs', { service: new JobService(fastify.search.service, fastify.log) });
-  // need to register this before files
-  fastify.decorate('storage', { service: new StorageService(FILE_ITEM_TYPE) });
 
   fastify.decorate(
     'redis',
