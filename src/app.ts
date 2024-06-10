@@ -8,7 +8,6 @@ import fp from 'fastify-plugin';
 import { registerDependencies } from './dependencies';
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
-import mailerPlugin from './plugins/mailer';
 import metaPlugin from './plugins/meta';
 import shared from './schemas/fluent-schema';
 import authPlugin from './services/auth';
@@ -19,12 +18,6 @@ import websocketsPlugin from './services/websockets';
 import {
   COOKIE_DOMAIN,
   DATABASE_LOGS,
-  MAILER_CONFIG_FROM_EMAIL,
-  MAILER_CONFIG_PASSWORD,
-  MAILER_CONFIG_SMTP_HOST,
-  MAILER_CONFIG_SMTP_PORT,
-  MAILER_CONFIG_SMTP_USE_SSL,
-  MAILER_CONFIG_USERNAME,
   REDIS_HOST,
   REDIS_PASSWORD,
   REDIS_PORT,
@@ -43,14 +36,6 @@ export default async function (instance: FastifyInstance): Promise<void> {
     .register(fp(metaPlugin))
     .register(fp(databasePlugin), {
       logs: DATABASE_LOGS,
-    })
-    .register(mailerPlugin, {
-      host: MAILER_CONFIG_SMTP_HOST,
-      port: MAILER_CONFIG_SMTP_PORT,
-      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-      username: MAILER_CONFIG_USERNAME,
-      password: MAILER_CONFIG_PASSWORD,
-      fromEmail: MAILER_CONFIG_FROM_EMAIL,
     })
     .register(fp(decoratorPlugin))
     // need to be defined before member and item for auth check

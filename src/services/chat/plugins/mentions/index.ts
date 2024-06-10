@@ -4,6 +4,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { MentionStatus } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../dependencies';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ChatMention } from './chatMention';
@@ -17,7 +19,8 @@ import { MentionService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   // isolate plugin content using fastify.register to ensure that the action hook from chat_message will not be called when using mention routes
-  const { db, mailer } = fastify;
+  const { db } = fastify;
+  const mailer = resolveDependency(MailerService);
   const mentionService = new MentionService(mailer);
 
   fastify.decorate('mentions', { service: mentionService });

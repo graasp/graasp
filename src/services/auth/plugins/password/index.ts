@@ -8,6 +8,7 @@ import { FastifyPluginAsync, PassportUser } from 'fastify';
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../dependencies';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { PASSWORD_RESET_JWT_SECRET, PUBLIC_URL } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -24,9 +25,10 @@ import { MemberPasswordService } from './service';
 const PASSPORT_STATEGY_ID = 'jwt-reset-password';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db } = fastify;
+  const { log, db } = fastify;
 
   const redis = resolveDependency(Redis);
+  const mailer = resolveDependency(MailerService);
   const actionService = resolveDependency(ActionService);
 
   await fastify.register(fastifyPassport.initialize());

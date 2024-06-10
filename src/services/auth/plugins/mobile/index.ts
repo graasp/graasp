@@ -7,6 +7,7 @@ import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import { resolveDependency } from '../../../../dependencies';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { MOBILE_DEEP_LINK_PROTOCOL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
@@ -16,9 +17,10 @@ import { MobileService } from './service';
 
 // token based auth and endpoints for mobile
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db, generateAuthTokensPair } = fastify;
+  const { log, db, generateAuthTokensPair } = fastify;
 
   const redis = resolveDependency(Redis);
+  const mailer = resolveDependency(MailerService);
 
   const mobileService = new MobileService(fastify, log);
   const memberPasswordService = new MemberPasswordService(mailer, log, redis);

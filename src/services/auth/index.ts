@@ -4,6 +4,8 @@ import fastifyCors from '@fastify/cors';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../dependencies';
+import { MailerService } from '../../plugins/mailer/service';
 import {
   PROD,
   RECAPTCHA_SECRET_ACCESS_KEY,
@@ -26,8 +28,9 @@ import {
 
 const plugin: FastifyPluginAsync<AuthPluginOptions> = async (fastify, options) => {
   const { sessionCookieDomain: domain } = options;
-  const { log, mailer } = fastify;
+  const { log } = fastify;
 
+  const mailer = resolveDependency(MailerService);
   const authService = new AuthService(mailer, log);
 
   // cookie based auth

@@ -15,6 +15,7 @@ import {
 } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../dependencies';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { IdParam } from '../../../../types';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
@@ -39,8 +40,9 @@ export interface GraaspActionsOptions {
 }
 
 const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
-  const { mailer, db, websockets } = fastify;
+  const { db, websockets } = fastify;
 
+  const mailer = resolveDependency(MailerService);
   const itemService = resolveDependency(ItemService);
   const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);

@@ -3,13 +3,25 @@ import { InjectionToken, container, instanceCachingFactory } from 'tsyringe';
 
 import { FastifyInstance } from 'fastify';
 
+import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
 import { fileServiceFactory } from './services/file/utils/factory';
 import { ItemPublishedService } from './services/item/plugins/published/service';
 import { ImageClassifierApiEnv } from './services/item/plugins/validation/ImageClassifierApi';
 import { ItemValidationService } from './services/item/plugins/validation/service';
 import { ItemService } from './services/item/service';
-import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_USERNAME } from './utils/config';
+import {
+  MAILER_CONFIG_FROM_EMAIL,
+  MAILER_CONFIG_PASSWORD,
+  MAILER_CONFIG_SMTP_HOST,
+  MAILER_CONFIG_SMTP_PORT,
+  MAILER_CONFIG_SMTP_USE_SSL,
+  MAILER_CONFIG_USERNAME,
+  REDIS_HOST,
+  REDIS_PASSWORD,
+  REDIS_PORT,
+  REDIS_USERNAME,
+} from './utils/config';
 import { FASTIFY_LOGGER_DI_KEY } from './utils/dependencies.keys';
 
 export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
@@ -28,7 +40,7 @@ export const resetDependencies = () => {
 // temporary step by manually register dependencies.
 // this allow to test DI framework without having to annotate all the services (second step).
 export const registerDependencies = (instance: FastifyInstance) => {
-  const { mailer, log } = instance;
+  const { log } = instance;
 
   // register FastifyBasLogger as a value to allow BaseLogger to be injected automatically.
   container.register(FASTIFY_LOGGER_DI_KEY, { useValue: log });
@@ -42,6 +54,23 @@ export const registerDependencies = (instance: FastifyInstance) => {
           username: REDIS_USERNAME,
           password: REDIS_PASSWORD,
         }),
+    ),
+  });
+
+  container.register(MailerService, {
+    useFactory: instanceCachingFactory(
+      () =>
+        new MailerService(
+          {
+            host: MAILER_CONFIG_SMTP_HOST,
+            port: MAILER_CONFIG_SMTP_PORT,
+            useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+            username: MAILER_CONFIG_USERNAME,
+            password: MAILER_CONFIG_PASSWORD,
+            fromEmail: MAILER_CONFIG_FROM_EMAIL,
+          },
+          instance,
+        ),
     ),
   });
 
@@ -60,9 +89,15 @@ export const registerDependencies = (instance: FastifyInstance) => {
     ),
   });
 
+  // TODO: use annotations !
   container.register(ItemPublishedService, {
     useFactory: instanceCachingFactory(
-      () => new ItemPublishedService(resolveDependency(ItemService), mailer, log),
+      () =>
+        new ItemPublishedService(
+          resolveDependency(ItemService),
+          resolveDependency(MailerService),
+          log,
+        ),
     ),
   });
 };

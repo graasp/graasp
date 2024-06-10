@@ -6,7 +6,7 @@ import { preHandlerHookHandler } from 'fastify';
 import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 
 import { JobService } from '../jobs';
-import type { MailerDecoration } from '../plugins/mailer';
+import type { MailerDecoration } from '../plugins/mailer/service';
 import { ActionService } from '../services/action/services/action';
 import { MentionService } from '../services/chat/plugins/mentions/service';
 import { ChatMessageService } from '../services/chat/service';
@@ -41,7 +41,6 @@ declare module 'fastify' {
     // remove once fastify-polyglot has types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     i18n: any;
-    mailer: MailerDecoration;
     // should this be notifications?
     mentions: {
       service: MentionService;

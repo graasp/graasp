@@ -9,7 +9,9 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, MemberFactory, RecaptchaAction, RecaptchaActionType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
+import { resolveDependency } from '../../../../dependencies';
 import { AppDataSource } from '../../../../plugins/datasource';
+import { MailerService } from '../../../../plugins/mailer/service';
 import {
   AUTH_TOKEN_JWT_SECRET,
   JWT_SECRET,
@@ -39,9 +41,11 @@ const mockCaptchaValidation = (action: RecaptchaActionType) => {
 const challenge = 'challenge';
 describe('Mobile Endpoints', () => {
   let app: FastifyInstance;
+  let mailer: MailerService;
 
   beforeEach(async () => {
     ({ app } = await build({ member: null }));
+    mailer = resolveDependency(MailerService);
   });
 
   afterEach(async () => {
@@ -60,7 +64,7 @@ describe('Mobile Endpoints', () => {
       const email = 'someemail@email.com';
       const name = 'anna';
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -84,7 +88,7 @@ describe('Mobile Endpoints', () => {
       const lang = 'fr';
       const member = { email, name, extra: { lang } };
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/m/register?lang=${lang}`,
@@ -112,7 +116,7 @@ describe('Mobile Endpoints', () => {
       const name = 'anna';
       const enableSaveActions = false;
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -131,7 +135,7 @@ describe('Mobile Endpoints', () => {
       const name = 'anna';
       const enableSaveActions = true;
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -148,7 +152,7 @@ describe('Mobile Endpoints', () => {
     it('Sign Up fallback to login for already register member', async () => {
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/register',
@@ -190,7 +194,7 @@ describe('Mobile Endpoints', () => {
     it('Sign In successfully', async () => {
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login',
@@ -211,7 +215,7 @@ describe('Mobile Endpoints', () => {
       const lang = 'de';
       const member = await saveMember();
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/m/login?lang=${lang}`,
@@ -230,7 +234,7 @@ describe('Mobile Endpoints', () => {
     it('Sign In does send not found error for non-existing email', async () => {
       const email = 'some@email.com';
 
-      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+      const mockSendEmail = jest.spyOn(mailer, 'sendEmail');
       const response = await app.inject({
         method: HttpMethod.Post,
         url: '/m/login',

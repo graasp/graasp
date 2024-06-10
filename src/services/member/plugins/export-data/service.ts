@@ -1,4 +1,4 @@
-import { MailerDecoration } from '../../../../plugins/mailer';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import FileService from '../../../file/service';
@@ -34,7 +34,7 @@ export class ExportMemberDataService {
     actor: Actor;
     repositories: Repositories;
     fileService: FileService;
-    mailer: MailerDecoration;
+    mailer: MailerService;
   }) {
     if (!actor) {
       throw new UnauthorizedMember(actor);

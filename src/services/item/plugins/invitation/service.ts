@@ -5,8 +5,8 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import type { MailerService } from '../../../../plugins/mailer/service';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
@@ -32,14 +32,14 @@ import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
 
 export class InvitationService {
   log: FastifyBaseLogger;
-  mailer: MailerDecoration;
+  mailer: MailerService;
   itemService: ItemService;
   memberService: MemberService;
   itemMembershipService: ItemMembershipService;
 
   constructor(
-    log,
-    mailer,
+    log: FastifyBaseLogger,
+    mailer: MailerService,
     itemService: ItemService,
     memberService: MemberService,
     itemMembershipService: ItemMembershipService,

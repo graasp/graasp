@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { resolveDependency } from '../../../../dependencies';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
@@ -18,7 +19,8 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, db, log, memberships } = fastify;
+  const { db, log, memberships } = fastify;
+  const mailer = resolveDependency(MailerService);
   const itemService = resolveDependency(ItemService);
   const memberService = resolveDependency(MemberService);
 

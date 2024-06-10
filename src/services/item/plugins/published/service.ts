@@ -3,8 +3,8 @@ import { FastifyBaseLogger } from 'fastify';
 import { ItemTagType, PermissionLevel, PublishableItemTypeChecker, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import type { MailerService } from '../../../../plugins/mailer/service';
 import { resultOfToList } from '../../../../services/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import HookManager from '../../../../utils/hook';
@@ -24,14 +24,14 @@ interface ActionCount {
 export class ItemPublishedService {
   private log: FastifyBaseLogger;
   private itemService: ItemService;
-  private mailer: MailerDecoration;
+  private mailer: MailerService;
 
   hooks = new HookManager<{
     create: { pre: { item: Item }; post: { item: Item } };
     delete: { pre: { item: Item }; post: { item: Item } };
   }>();
 
-  constructor(itemService: ItemService, mailer: MailerDecoration, log: FastifyBaseLogger) {
+  constructor(itemService: ItemService, mailer: MailerService, log: FastifyBaseLogger) {
     this.log = log;
     this.itemService = itemService;
     this.mailer = mailer;

@@ -11,6 +11,7 @@ import { ItemPublishedService } from '../services/item/plugins/published/service
 import { ItemService } from '../services/item/service';
 import { ItemMembershipService } from '../services/itemMembership/service';
 import { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } from '../utils/config';
+import { MailerService } from './mailer/service';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   /**
@@ -34,13 +35,14 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
   const itemCategoryService = resolveDependency(ItemCategoryService);
+  const mailerService = resolveDependency(MailerService);
 
   fastify.decorate('memberships', {
-    service: new ItemMembershipService(itemService, fastify.mailer),
+    service: new ItemMembershipService(itemService, mailerService),
   });
 
   fastify.decorate('itemsPublished', {
-    service: new ItemPublishedService(itemService, fastify.mailer, fastify.log),
+    service: new ItemPublishedService(itemService, mailerService, fastify.log),
   });
 
   fastify.decorate('search', {
