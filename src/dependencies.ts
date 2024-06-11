@@ -3,12 +3,14 @@ import { InjectionToken, container, instanceCachingFactory } from 'tsyringe';
 
 import { FastifyInstance } from 'fastify';
 
+import { JobService } from './jobs';
 import { BaseLogger } from './logger';
 import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
 import { fileServiceFactory } from './services/file/utils/factory';
 import { createMeiliSearchWrapper } from './services/item/plugins/published/plugins/search/factory';
 import { MeiliSearchWrapper } from './services/item/plugins/published/plugins/search/meilisearch';
+import { SearchService } from './services/item/plugins/published/plugins/search/service';
 import {
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
@@ -39,7 +41,7 @@ export const resetDependencies = () => {
 // temporary step by manually register dependencies.
 // this allow to test DI framework without having to annotate all the services (second step).
 export const registerDependencies = (instance: FastifyInstance) => {
-  const { log } = instance;
+  const { log, db } = instance;
 
   // register FastifyBasLogger as a value to allow BaseLogger to be injected automatically.
   container.register(FASTIFY_LOGGER_DI_KEY, { useValue: log });
@@ -74,16 +76,16 @@ export const registerDependencies = (instance: FastifyInstance) => {
   });
 
   container.register(FileService, {
-    useFactory: instanceCachingFactory(() => fileServiceFactory(instance.log)),
+    useFactory: instanceCachingFactory(() => fileServiceFactory(log)),
   });
 
   container.register(MeiliSearchWrapper, {
     useFactory: instanceCachingFactory(() =>
-      createMeiliSearchWrapper(
-        resolveDependency(FileService),
-        instance.db,
-        resolveDependency(BaseLogger),
-      ),
+      createMeiliSearchWrapper(resolveDependency(FileService), db, resolveDependency(BaseLogger)),
     ),
   });
+
+  // This service can't be injected because if it is never resolved, it is never created.
+  // Launch Job workers
+  new JobService(resolveDependency(SearchService), resolveDependency(BaseLogger));
 };

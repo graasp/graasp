@@ -1,7 +1,6 @@
 import { ConnectionOptions, Queue, Worker } from 'bullmq';
 
-import { FastifyBaseLogger } from 'fastify';
-
+import { BaseLogger } from './logger';
 import { SearchService } from './services/item/plugins/published/plugins/search/service';
 import {
   JOB_SCHEDULING,
@@ -53,10 +52,10 @@ export class JobService {
     },
   });
 
-  searchService: SearchService;
-  logger: FastifyBaseLogger;
+  private readonly searchService: SearchService;
+  private readonly logger: BaseLogger;
 
-  constructor(searchService: SearchService, logger: FastifyBaseLogger) {
+  constructor(searchService: SearchService, logger: BaseLogger) {
     this.searchService = searchService;
     this.logger = logger;
 

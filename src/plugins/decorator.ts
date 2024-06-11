@@ -1,9 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { resolveDependency } from '../dependencies';
-import { JobService } from '../jobs';
-import { SearchService } from '../services/item/plugins/published/plugins/search/service';
-
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   /**
    * This is done for performance reasons:
@@ -22,10 +18,5 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
    *  https://www.fastify.io/docs/latest/Reference/Decorators/
    */
   fastify.decorateRequest('member', null);
-
-  // Launch Job workers
-  fastify.decorate('jobs', {
-    service: new JobService(resolveDependency(SearchService), fastify.log),
-  });
 };
 export default decoratorPlugin;

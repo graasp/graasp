@@ -31,10 +31,6 @@ declare module 'fastify' {
   interface FastifyInstance {
     db: DataSource;
 
-    jobs: {
-      service: JobService;
-    };
-
     // remove once fastify-nodemailer has types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nodemailer: any;
