@@ -10,6 +10,10 @@ const itemServiceForTest = {
 
 describe('getForManyItems', () => {
   const actor: Actor = undefined;
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
   it('returns empty data when requesting no ids', async () => {
     const repositories = {
       itemTagRepository: {
