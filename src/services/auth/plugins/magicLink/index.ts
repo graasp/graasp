@@ -11,6 +11,7 @@ import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
+import { SHORT_TOKEN_PARAM } from '../passport';
 import { PassportStrategy } from '../passport/strategies';
 import { auth, login, register } from './schemas';
 import { MagicLinkService } from './service';
@@ -98,7 +99,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // authenticate
-  fastify.get<{ Querystring: { t: string; url?: string } }>(
+  fastify.get<{ Querystring: { [SHORT_TOKEN_PARAM]: string; url?: string } }>(
     '/auth',
     {
       schema: auth,

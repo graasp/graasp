@@ -15,6 +15,7 @@ import { generateAuthTokensPair, getRedirectionUrl } from '../../utils';
 import captchaPreHandler from '../captcha';
 import {
   SHORT_TOKEN_PARAM,
+  TOKEN_PARAM,
   authenticateJWTChallengeVerifier,
   authenticateMobileMagicLink,
   authenticatePassword,
@@ -116,7 +117,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post<{ Body: { t: string; verifier: string } }>(
+  fastify.post<{ Body: { [SHORT_TOKEN_PARAM]: string; verifier: string } }>(
     '/auth',
     {
       schema: mauth,
@@ -140,7 +141,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // from user token, set corresponding cookie
-  fastify.get<{ Querystring: { token: string; url: string } }>(
+  fastify.get<{ Querystring: { [TOKEN_PARAM]: string; url: string } }>(
     '/auth/web',
     {
       schema: authWeb,

@@ -61,7 +61,7 @@ export const mauth = {
     type: 'object',
     required: [SHORT_TOKEN_PARAM, 'verifier'],
     properties: {
-      t: { type: 'string' },
+      [SHORT_TOKEN_PARAM]: { type: 'string' },
       verifier: { type: 'string' },
     },
     additionalProperties: false,
@@ -73,7 +73,7 @@ export const authWeb = {
     type: 'object',
     required: [TOKEN_PARAM],
     properties: {
-      token: { type: 'string' },
+      [TOKEN_PARAM]: { type: 'string' },
       url: { type: 'string' },
     },
     additionalProperties: false,

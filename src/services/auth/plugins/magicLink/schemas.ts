@@ -59,7 +59,7 @@ export const auth = {
     type: 'object',
     required: [SHORT_TOKEN_PARAM],
     properties: {
-      t: {
+      [SHORT_TOKEN_PARAM]: {
         type: 'string',
         format: 'jwt',
       },
