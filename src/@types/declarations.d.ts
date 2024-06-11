@@ -55,9 +55,6 @@ declare module 'fastify' {
         service: ActionItemService;
       };
     };
-    search: {
-      service: SearchService;
-    };
     chat: { service: ChatMessageService };
     websockets: WebsocketService;
     etherpad: EtherpadItemService;

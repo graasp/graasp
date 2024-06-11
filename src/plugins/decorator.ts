@@ -1,15 +1,8 @@
-import { MeiliSearch } from 'meilisearch';
-
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../dependencies';
 import { JobService } from '../jobs';
-import FileService from '../services/file/service';
-import { ItemCategoryService } from '../services/item/plugins/itemCategory/services/itemCategory';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
-import { ItemPublishedService } from '../services/item/plugins/published/service';
-import { ItemService } from '../services/item/service';
-import { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } from '../utils/config';
 
 const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
   /**
@@ -30,27 +23,9 @@ const decoratorPlugin: FastifyPluginAsync = async (fastify) => {
    */
   fastify.decorateRequest('member', null);
 
-  const fileService = resolveDependency(FileService);
-  const itemService = resolveDependency(ItemService);
-  const itemCategoryService = resolveDependency(ItemCategoryService);
-  const itemPublishedService = resolveDependency(ItemPublishedService);
-
-  fastify.decorate('search', {
-    service: new SearchService(
-      itemService,
-      fileService,
-      itemPublishedService,
-      itemCategoryService,
-      fastify.db,
-      new MeiliSearch({
-        host: MEILISEARCH_URL,
-        apiKey: MEILISEARCH_MASTER_KEY,
-      }),
-      fastify.log,
-    ),
-  });
-
   // Launch Job workers
-  fastify.decorate('jobs', { service: new JobService(fastify.search.service, fastify.log) });
+  fastify.decorate('jobs', {
+    service: new JobService(resolveDependency(SearchService), fastify.log),
+  });
 };
 export default decoratorPlugin;

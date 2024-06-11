@@ -1,10 +1,9 @@
-import { MeiliSearch, MultiSearchParams } from 'meilisearch';
+import { MultiSearchParams } from 'meilisearch';
+import { singleton } from 'tsyringe';
 import { DataSource } from 'typeorm';
 
-import { FastifyBaseLogger } from 'fastify';
-
+import { BaseLogger } from '../../../../../../logger';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
-import FileService from '../../../../../file/service';
 import { Actor } from '../../../../../member/entities/member';
 import { ItemService } from '../../../../service';
 import { ItemCategoryService } from '../../../itemCategory/services/itemCategory';
@@ -16,24 +15,20 @@ import { MeiliSearchWrapper } from './meilisearch';
  * Handle search index business logic with Meilisearch
  * Ideally we try to keep the public method idempotent. You can "delete" unexisting items and indexing work for first indexation and for updates.
  */
+@singleton()
 export class SearchService {
-  itemService: ItemService;
-  fileService: FileService;
-  meilisearchClient: MeiliSearchWrapper;
-  db: DataSource;
-  logger: FastifyBaseLogger;
+  private readonly meilisearchClient: MeiliSearchWrapper;
+  private readonly db: DataSource;
+  private readonly logger: BaseLogger;
+
   constructor(
     itemService: ItemService,
-    fileService: FileService,
     itemPublishedService: ItemPublishedService,
     itemCategoryService: ItemCategoryService,
-    db: DataSource,
-    meilisearchConnection: MeiliSearch,
-    logger: FastifyBaseLogger,
+    meilisearchClient: MeiliSearchWrapper,
+    logger: BaseLogger,
   ) {
-    this.itemService = itemService;
-    this.fileService = fileService;
-    this.meilisearchClient = new MeiliSearchWrapper(db, meilisearchConnection, fileService, logger);
+    this.meilisearchClient = meilisearchClient;
     this.logger = logger;
     this.registerSearchHooks(
       buildRepositories(),

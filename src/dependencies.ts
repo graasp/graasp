@@ -3,9 +3,12 @@ import { InjectionToken, container, instanceCachingFactory } from 'tsyringe';
 
 import { FastifyInstance } from 'fastify';
 
+import { BaseLogger } from './logger';
 import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
 import { fileServiceFactory } from './services/file/utils/factory';
+import { createMeiliSearchWrapper } from './services/item/plugins/published/plugins/search/factory';
+import { MeiliSearchWrapper } from './services/item/plugins/published/plugins/search/meilisearch';
 import {
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
@@ -72,5 +75,15 @@ export const registerDependencies = (instance: FastifyInstance) => {
 
   container.register(FileService, {
     useFactory: instanceCachingFactory(() => fileServiceFactory(instance.log)),
+  });
+
+  container.register(MeiliSearchWrapper, {
+    useFactory: instanceCachingFactory(() =>
+      createMeiliSearchWrapper(
+        resolveDependency(FileService),
+        instance.db,
+        resolveDependency(BaseLogger),
+      ),
+    ),
   });
 };

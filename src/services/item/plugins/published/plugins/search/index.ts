@@ -10,6 +10,7 @@ import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../utils/repositories';
 import { ActionService } from '../../../../../action/services/action';
 import { search } from './schemas';
+import { SearchService } from './service';
 
 export type SearchFields = {
   keywords?: string;
@@ -20,7 +21,7 @@ export type SearchFields = {
 };
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const searchService = fastify.search.service;
+  const searchService = resolveDependency(SearchService);
   const actionService = resolveDependency(ActionService);
 
   fastify.post<{ Body: MultiSearchParams }>(
