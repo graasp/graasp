@@ -22,7 +22,7 @@ export class ItemTagService {
     const { data, errors } = await this.itemService.getMany(actor, repositories, itemIds);
     const items = Object.values(data);
     if (!items.length) {
-      return { data: {}, errors: [] };
+      return { data: {}, errors };
     }
     const itemTags = await itemTagRepository.getForManyItems(items);
     return { data: itemTags.data, errors: [...itemTags.errors, ...errors] };

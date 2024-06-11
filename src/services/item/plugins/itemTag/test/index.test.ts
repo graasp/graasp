@@ -133,8 +133,9 @@ describe('Tags', () => {
           method: HttpMethod.Get,
           url: `${ITEMS_ROUTE_PREFIX}/tags?id=${item.id}`,
         });
+        const res = await response.json();
 
-        expect(response.json().errors[0]).toMatchObject(new MemberCannotAccess(expect.anything()));
+        expect(res.errors[0]).toMatchObject(new MemberCannotAccess(expect.anything()));
       });
 
       it('Returns successfully if item is public', async () => {
