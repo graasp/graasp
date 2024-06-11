@@ -73,9 +73,15 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   jwtChallengeVerifierStrategy(fastifyPassport, memberRepository, {
     propagateError: true,
   });
-  jwtStrategy(fastifyPassport, memberRepository, PassportStrategy.Jwt, JWT_SECRET, {
-    propagateError: true,
-  });
+  jwtStrategy(
+    fastifyPassport,
+    memberRepository,
+    PassportStrategy.MobileJwt,
+    AUTH_TOKEN_JWT_SECRET,
+    {
+      propagateError: true,
+    },
+  );
   jwtStrategy(
     fastifyPassport,
     memberRepository,

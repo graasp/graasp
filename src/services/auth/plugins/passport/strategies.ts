@@ -11,7 +11,7 @@ export enum PassportStrategy {
   //-- From JWT --//
   PasswordReset = 'password-reset-jwt',
   JwtChallengeVerifier = 'jwt-challenge-verifier',
-  Jwt = 'jwt',
+  MobileJwt = 'mobile-jwt',
   RefreshToken = 'refresh-token',
   AppsJwt = 'apps-jwt',
   OptionalAppsJwt = 'optional-apps-jwt',

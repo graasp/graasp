@@ -16,7 +16,7 @@ import { PassportStrategy } from './strategies';
  * Will set the user to `request.user.member` if possible.
  */
 export const optionalIsAuthenticated = fastifyPassport.authenticate([
-  PassportStrategy.Jwt,
+  PassportStrategy.MobileJwt,
   PassportStrategy.Session,
 ]);
 
@@ -25,7 +25,7 @@ export const optionalIsAuthenticated = fastifyPassport.authenticate([
  * Will set the user to `request.user.member`.
  */
 export const isAuthenticated = fastifyPassport.authenticate([
-  PassportStrategy.Jwt,
+  PassportStrategy.MobileJwt,
   PassportStrategy.StrictSession,
 ]);
 
