@@ -208,15 +208,22 @@ export class ItemRepository {
    * @param {boolean} [options.ordered=false] whether the descendants should be ordered by path, guarantees to iterate on parent before children
    * @returns {Item[]}
    */
-  async getDescendants(item: FolderItem, options?: { ordered: boolean }): Promise<Item[]> {
+  async getDescendants(
+    item: FolderItem,
+    options?: { ordered?: boolean; types?: string[] },
+  ): Promise<Item[]> {
     // TODO: LEVEL depth
-    const { ordered = true } = options ?? {};
+    const { ordered = true, types } = options ?? {};
 
     const query = this.repository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('item.path <@ :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id });
+
+    if (types) {
+      query.andWhere('item.type IN (:...types)', { types });
+    }
 
     if (!ordered) {
       return query.getMany();
