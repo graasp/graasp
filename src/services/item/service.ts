@@ -386,7 +386,7 @@ export class ItemService {
     return filterOutPackedItems(actor, repositories, children);
   }
 
-  async _getDescendants(
+  private async _getDescendants(
     actor: Actor,
     repositories: Repositories,
     itemId: UUID,

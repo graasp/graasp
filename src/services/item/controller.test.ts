@@ -7,6 +7,7 @@ import {
   AppItemFactory,
   FolderItemFactory,
   ItemTagType,
+  ItemType,
   PermissionLevel,
   buildPathFromIds,
 } from '@graasp/sdk';
@@ -34,20 +35,22 @@ describe('Item controller', () => {
   });
 
   describe('GET /:id/descendants filters', () => {
-    let uuids;
+    let rootUUID;
+    let folderUUID;
+    let hiddenUUID;
+    let publicUUID;
     beforeEach(async () => {
-      // uuids[0] is the root
-      // uuids[1] is folder
-      // uuids[2] is hidden
-      // uuids[3] is public
-      uuids = [uuid(), uuid(), uuid(), uuid()];
+      rootUUID = uuid();
+      folderUUID = uuid();
+      hiddenUUID = uuid();
+      publicUUID = uuid();
       await seed({
         folders: {
           factory: FolderItemFactory,
           constructor: Item,
           entities: [
-            { id: uuids[0], creator: actor?.id },
-            { id: uuids[1], creator: actor?.id, path: buildPathFromIds(uuids[0], uuids[1]) },
+            { id: rootUUID, creator: actor?.id },
+            { id: folderUUID, creator: actor?.id, path: buildPathFromIds(rootUUID, folderUUID) },
           ],
         },
         subItems: {
@@ -55,13 +58,13 @@ describe('Item controller', () => {
           constructor: Item,
           entities: [
             {
-              id: uuids[2],
-              path: buildPathFromIds(uuids[0], uuids[2]),
+              id: hiddenUUID,
+              path: buildPathFromIds(rootUUID, hiddenUUID),
               creator: actor?.id,
             },
             {
-              id: uuids[3],
-              path: buildPathFromIds(uuids[0], uuids[3]),
+              id: publicUUID,
+              path: buildPathFromIds(rootUUID, publicUUID),
               creator: actor?.id,
             },
           ],
@@ -70,7 +73,7 @@ describe('Item controller', () => {
           constructor: ItemMembership,
           entities: [
             {
-              item: buildPathFromIds(uuids[0]),
+              item: buildPathFromIds(rootUUID),
               member: actor?.id,
               permission: PermissionLevel.Admin,
             },
@@ -81,11 +84,11 @@ describe('Item controller', () => {
           entities: [
             {
               type: ItemTagType.Hidden,
-              item: buildPathFromIds(uuids[0], uuids[2]),
+              item: buildPathFromIds(rootUUID, hiddenUUID),
             },
             {
               type: ItemTagType.Public,
-              item: buildPathFromIds(uuids[0], uuids[3]),
+              item: buildPathFromIds(rootUUID, publicUUID),
             },
           ],
         },
@@ -94,38 +97,50 @@ describe('Item controller', () => {
     it('no filter', async () => {
       const response = await app.inject({
         method: 'GET',
-        url: `/items/${uuids[0]}/descendants`,
+        url: `/items/${rootUUID}/descendants`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();
       expect(json).toHaveLength(3);
       const flat = json.flatMap((i) => i.id);
-      expect(flat).toContain(uuids[1]);
-      expect(flat).toContain(uuids[2]);
-      expect(flat).toContain(uuids[3]);
+      expect(flat).toContain(folderUUID);
+      expect(flat).toContain(hiddenUUID);
+      expect(flat).toContain(publicUUID);
     });
     it('filter folders', async () => {
       const response = await app.inject({
         method: 'GET',
-        url: `/items/${uuids[0]}/descendants?types=folder`,
+        url: `/items/${rootUUID}/descendants?types=${ItemType.FOLDER}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();
       expect(json).toHaveLength(1);
       const flat = json.flatMap((i) => i.id);
-      expect(flat).toContain(uuids[1]);
+      expect(flat).toContain(folderUUID);
     });
-    it('filter hidden', async () => {
+    it('filter apps', async () => {
       const response = await app.inject({
         method: 'GET',
-        url: `/items/${uuids[0]}/descendants?showHidden=false`,
+        url: `/items/${rootUUID}/descendants?types=${ItemType.APP}`,
       });
       expect(response.statusCode).toBe(StatusCodes.OK);
       const json = response.json();
       expect(json).toHaveLength(2);
       const flat = json.flatMap((i) => i.id);
-      expect(flat).toContain(uuids[1]);
-      expect(flat).toContain(uuids[3]);
+      expect(flat).toContain(hiddenUUID);
+      expect(flat).toContain(publicUUID);
+    });
+    it('filter hidden', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/items/${rootUUID}/descendants?showHidden=false`,
+      });
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      const json = response.json();
+      expect(json).toHaveLength(2);
+      const flat = json.flatMap((i) => i.id);
+      expect(flat).toContain(folderUUID);
+      expect(flat).toContain(publicUUID);
     });
   });
 });
