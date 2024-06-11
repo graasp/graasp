@@ -225,6 +225,11 @@ export class ItemTagRepository {
    * @param  {Item[]} items
    */
   async getForManyItems(items: Item[], { withDeleted = false }: { withDeleted?: boolean } = {}) {
+    // should not query when items array is empty
+    if (!items.length) {
+      throw new Error('empty items list joins on full table');
+    }
+
     const query = this.repository
       .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item');
