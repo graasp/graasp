@@ -1,6 +1,7 @@
 import { ItemGeolocation, ItemType, PermissionLevel, UnionOfConst } from '@graasp/sdk';
 
 import { Member } from '../member/entities/member';
+import { Item } from './entities/Item';
 
 export enum SortBy {
   ItemType = 'item.type',
@@ -38,6 +39,7 @@ export type ItemSearchParams = {
     lng1: ItemGeolocation['lng'];
     lng2: ItemGeolocation['lng'];
   };
+  parentId?: Item['id'];
 };
 
 export type ItemChildrenParams = {

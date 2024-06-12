@@ -23,7 +23,7 @@ describe('Item routes tests', () => {
     app.close();
   });
 
-  it.only('Throw on signed out', async () => {
+  it('Throw on signed out', async () => {
     ({ app, actor } = await build({ member: null }));
 
     const response = await app.inject({

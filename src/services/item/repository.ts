@@ -17,7 +17,6 @@ import {
 import { AppDataSource } from '../../plugins/datasource';
 import { PaginationParams } from '../../types';
 import { ALLOWED_SEARCH_LANGS } from '../../utils/config';
-import { printFilledSQL } from '../../utils/debug';
 import {
   HierarchyTooDeep,
   InvalidMoveTarget,
@@ -241,12 +240,14 @@ export class ItemRepository {
       keywords,
       types,
       geolocationBounds,
+      parentId,
     }: ItemSearchParams,
     { page = 1, pageSize = ITEMS_PAGE_SIZE }: PaginationParams = {},
   ): Promise<{ data: Item[]; totalCount }> {
     const limit = Math.min(pageSize, ITEMS_PAGE_SIZE_MAX);
     const skip = (page - 1) * limit;
 
+    // no actor returns empty
     if (!actor) {
       return { data: [], totalCount: 0 };
     }
@@ -254,8 +255,12 @@ export class ItemRepository {
     const query = await this.repository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
-      .innerJoin('item_membership', 'im', 'item.path <@ im.item_path')
-      .where('im.member_id = :memberId', { memberId: actor.id })
+      .innerJoin(
+        'item_membership',
+        'im',
+        'item.path <@ im.item_path AND im.member_id = :memberId',
+        { memberId: actor.id },
+      )
       .leftJoin('item_tag', 'it', 'item.path <@ it.item_path')
       .andWhere(
         new Brackets((qb) => {
@@ -273,6 +278,13 @@ export class ItemRepository {
           qb.orWhere("im.permission = 'admin'");
         }),
       );
+
+    // search within parent
+    if (parentId) {
+      const parentItem = await this.get(parentId);
+      query.andWhere('item.path <@ :path', { path: parentItem.path });
+      query.andWhere('item.path != :path', { path: parentItem.path });
+    }
 
     if (types) {
       query.andWhere('item.type IN (:...types)', { types });
@@ -336,8 +348,9 @@ export class ItemRepository {
     // use given sorting, or by rank for defined keywords, or by last update
     const sorting = sortBy ?? (allKeywords?.length ? SortBy.Rank : SortBy.ItemUpdatedAt);
     const orderBy = ordering ?? Ordering.DESC;
+
     // if no sortby is defined but keywords exist, order by ranking
-    if (sortBy === SortBy.Rank) {
+    if (sorting === SortBy.Rank) {
       const keywordsString = allKeywords?.join(' ');
       // value more native language
       const orderByKey = `
@@ -375,8 +388,6 @@ export class ItemRepository {
     }
 
     query.offset(skip).limit(limit);
-
-    console.log(printFilledSQL(query));
 
     const [data, totalCount] = await query.getManyAndCount();
     return { data, totalCount };

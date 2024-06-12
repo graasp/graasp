@@ -1158,7 +1158,7 @@ describe('Item routes tests', () => {
         expectManyPackedItems(data, items);
       });
 
-      it.skip('Returns successfully child for keywords', async () => {
+      it('Returns successfully child for keywords', async () => {
         const { itemMembership, item: parentItem } = await testUtils.saveItemAndMembership({
           item: { name: 'dog' },
           member: actor,
@@ -1702,7 +1702,7 @@ describe('Item routes tests', () => {
         expect(response.statusCode).toBe(StatusCodes.OK);
       });
 
-      it.only('Returns search successfully for child of child', async () => {
+      it('Returns search successfully for child of child', async () => {
         const { item: parentItem, itemMembership } = await testUtils.saveItemAndMembership({
           member: actor,
           item: { name: 'no' },

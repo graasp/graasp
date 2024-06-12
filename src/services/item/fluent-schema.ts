@@ -181,7 +181,7 @@ export const getAccessible = {
     .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
     .prop('sortBy', S.enum(Object.values(SortBy)))
     .prop('ordering', S.enum([...Object.values(Ordering), 'asc', 'desc']))
-    .prop('creatorId', S.string())
+    .prop('creatorId', S.string().format('uuid'))
     .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
     .prop('types', S.array().items(S.enum(Object.values(ItemType)))),
   response: {
@@ -236,7 +236,8 @@ export const search = {
     .prop('permissions', S.array().items(S.enum(Object.values(PermissionLevel))))
     .prop('sortBy', S.enum(Object.values(SortBy)))
     .prop('ordering', S.enum([...Object.values(Ordering), 'asc', 'desc']))
-    .prop('creatorId', S.string())
+    .prop('creatorId', S.string().format('uuid'))
+    .prop('parentId', S.string().format('uuid'))
     .prop('pageSize', S.number().default(ITEMS_PAGE_SIZE))
     .prop('types', S.array().items(S.enum(Object.values(ItemType))))
     // geolocation prop

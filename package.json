@@ -18,7 +18,6 @@
     "watch-node": "NODE_PATH=./dist nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
     "seed": "ts-node -e 'import seed from \"./test/mock/index\";seed();'",
-    "seed:big": "ts-node -e 'import seed from \"./test/mock/bigSeed\";seed();'",
     "test": "jest --forceExit --verbose --runInBand",
     "test:ci": "jest --forceExit --verbose --coverage --silent --maxWorkers=2",
     "test:watch": "yarn test --watchAll",

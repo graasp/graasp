@@ -30,6 +30,7 @@ import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { setItemHidden } from './plugins/itemTag/test/fixtures';
 import { ItemRepository } from './repository';
 import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
+import { Ordering, SortBy } from './types';
 
 // mock datasource
 jest.mock('../../plugins/datasource');
@@ -774,7 +775,7 @@ describe('ItemRepository', () => {
       const name = 'dog';
       const { item: parent } = await testUtils.saveItemAndMembership({
         member: actor,
-        item: { name },
+        item: { name: name + 's cat' },
       });
       const child = await testUtils.saveItem({
         actor,
@@ -783,7 +784,7 @@ describe('ItemRepository', () => {
       const childOfChild = await testUtils.saveItem({
         actor,
         parentItem: child,
-        item: { name },
+        item: { name: `${name} cat` },
       });
       const { item: parent1 } = await testUtils.saveItemAndMembership({
         member: actor,
@@ -799,11 +800,14 @@ describe('ItemRepository', () => {
         member: actor,
       });
 
-      const items = [parent, childOfChild, child1];
-
+      const items = [childOfChild, child1, parent];
       const { data: result, totalCount } = await itemRepository.search(actor, { keywords: [name] });
       expect(totalCount).toEqual(items.length);
-      expectManyItems(result, items);
+      expect(result).toHaveLength(items.length);
+      // sorted by rank by default if keywords
+      items.forEach((i, idx) => {
+        expectItem(result[idx], i);
+      });
     });
 
     it('page and page size', async () => {
@@ -841,10 +845,103 @@ describe('ItemRepository', () => {
         { page: 2, pageSize: 1 },
       );
       expect(totalCount).toEqual(3);
+      expect(result).toHaveLength(1);
       expectManyItems(result, [childOfChild]);
     });
 
-    it('search with geoloc', async () => {
+    it('no param: default sortby updated desc with no keywords', async () => {
+      const { item: parent } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { updatedAt: new Date('2011-10-05') },
+      });
+      const child = await testUtils.saveItem({
+        actor,
+        item: { updatedAt: new Date('2012-10-05') },
+        parentItem: parent,
+      });
+      const childOfChild = await testUtils.saveItem({
+        actor,
+        parentItem: child,
+        item: { updatedAt: new Date('2014-10-05') },
+      });
+      const { item: parent1 } = await testUtils.saveItemAndMembership({
+        item: { updatedAt: new Date('2013-10-05') },
+        member: actor,
+      });
+      const child1 = await testUtils.saveItem({
+        actor,
+        item: { updatedAt: new Date('2015-10-05') },
+        parentItem: parent1,
+      });
+
+      const { item } = await testUtils.saveItemAndMembership({
+        item: { updatedAt: new Date('2010-10-05') },
+        member: actor,
+      });
+
+      const items = [child1, childOfChild, parent1, child, parent, item];
+
+      const { data: resultAsc, totalCount: totalCountAsc } = await itemRepository.search(actor, {});
+      expect(totalCountAsc).toEqual(items.length);
+      items.forEach((i, idx) => {
+        expectItem(resultAsc[idx], i);
+      });
+    });
+
+    it('sortby item name with asc and desc ordering', async () => {
+      const { item: parent } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name: '1' },
+      });
+      const child = await testUtils.saveItem({
+        actor,
+        item: { name: '2' },
+        parentItem: parent,
+      });
+      const childOfChild = await testUtils.saveItem({
+        actor,
+        parentItem: child,
+        item: { name: '3' },
+      });
+      const { item: parent1 } = await testUtils.saveItemAndMembership({
+        item: { name: '4' },
+        member: actor,
+      });
+      const child1 = await testUtils.saveItem({
+        actor,
+        item: { name: '5' },
+        parentItem: parent1,
+      });
+
+      const { item } = await testUtils.saveItemAndMembership({
+        item: { name: '6' },
+        member: actor,
+      });
+
+      const items = [parent, child, childOfChild, parent1, child1, item];
+
+      // ASC
+      const { data: resultAsc, totalCount: totalCountAsc } = await itemRepository.search(actor, {
+        sortBy: SortBy.ItemName,
+        ordering: Ordering.ASC,
+      });
+      expect(totalCountAsc).toEqual(items.length);
+      items.forEach((i, idx) => {
+        expectItem(resultAsc[idx], i);
+      });
+
+      // DESC
+      const { data: resultDesc, totalCount: totalCountDesc } = await itemRepository.search(actor, {
+        sortBy: SortBy.ItemName,
+        ordering: Ordering.DESC,
+      });
+      expect(totalCountDesc).toEqual(items.length);
+      items.reverse().forEach((i, idx) => {
+        expectItem(resultDesc[idx], i);
+      });
+    });
+
+    it('search within geolocation', async () => {
       const name = 'dog';
       const { item: parent, packedItem: parentPacked } = await testUtils.saveItemAndMembership({
         member: actor,

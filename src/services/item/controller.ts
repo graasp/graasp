@@ -27,7 +27,12 @@ import {
 } from './fluent-schema';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { PartialGeolocationBounds } from './plugins/geolocation/errors';
-import { AccessibleItemSearchParams, ItemChildrenParams, ItemSearchParams } from './types';
+import {
+  AccessibleItemSearchParams,
+  ItemChildrenParams,
+  ItemSearchParams,
+  Ordering,
+} from './types';
 import { getPostItemPayloadFromFormData } from './utils';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from './ws/events';
 
@@ -233,15 +238,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         permissions,
         types,
         keywords,
+        parentId,
       } = query;
 
       const searchParams: ItemSearchParams = {
         creatorId,
         sortBy,
-        ordering,
+        ordering: (ordering?.toUpperCase() as Ordering) ?? Ordering.DESC,
         permissions,
         types,
         keywords,
+        parentId,
       };
 
       // define all or no geoloc bounds
@@ -256,7 +263,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         }
         searchParams.geolocationBounds = { lng1, lng2, lat1, lat2 };
       }
-
       return itemService.search(member, buildRepositories(), searchParams, { page, pageSize });
     },
   );
