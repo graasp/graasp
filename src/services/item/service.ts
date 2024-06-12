@@ -386,7 +386,7 @@ export class ItemService {
     return filterOutPackedItems(actor, repositories, children);
   }
 
-  private async _getDescendants(
+  private async getDescendants(
     actor: Actor,
     repositories: Repositories,
     itemId: UUID,
@@ -402,8 +402,8 @@ export class ItemService {
     return itemRepository.getDescendants(item, options);
   }
 
-  async getDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
-    const descendants = await this._getDescendants(actor, repositories, itemId);
+  async getFilteredDescendants(actor: Actor, repositories: Repositories, itemId: UUID) {
+    const descendants = await this.getDescendants(actor, repositories, itemId);
     if (!descendants.length) {
       return [];
     }
@@ -417,7 +417,7 @@ export class ItemService {
     itemId: UUID,
     options?: { showHidden?: boolean; types?: string[] },
   ) {
-    const descendants = await this._getDescendants(actor, repositories, itemId, options);
+    const descendants = await this.getDescendants(actor, repositories, itemId, options);
     if (!descendants.length) {
       return [];
     }

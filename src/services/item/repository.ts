@@ -206,6 +206,7 @@ export class ItemRepository {
    * Return tree below item
    * @param {Item} item item to get descendant tree from
    * @param {boolean} [options.ordered=false] whether the descendants should be ordered by path, guarantees to iterate on parent before children
+   * @param {string[]} [options.types] filter out the items by type. If undefined or empty, all types are returned.
    * @returns {Item[]}
    */
   async getDescendants(
@@ -221,7 +222,7 @@ export class ItemRepository {
       .where('item.path <@ :path', { path: item.path })
       .andWhere('item.id != :id', { id: item.id });
 
-    if (types) {
+    if (types && types.length > 0) {
       query.andWhere('item.type IN (:...types)', { types });
     }
 

@@ -164,7 +164,11 @@ export class ActionItemService {
       permission === PermissionLevel.Admin ? allMemberships.map(({ member }) => member) : [actor];
 
     // get descendants items
-    const descendants = await this.itemService.getDescendants(actor, repositories, payload.itemId);
+    const descendants = await this.itemService.getFilteredDescendants(
+      actor,
+      repositories,
+      payload.itemId,
+    );
 
     // chatbox for all items
     const chatMessages = Object.values(
