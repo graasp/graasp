@@ -36,24 +36,21 @@ const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
-  fileItemService: FileItemService;
-  h5pService: H5PService;
-  itemService: ItemService;
-  db: DataSource;
-  logger: BaseLogger;
+  private readonly fileItemService: FileItemService;
+  private readonly h5pService: H5PService;
+  private readonly itemService: ItemService;
+  private readonly db: DataSource;
 
   constructor(
     db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
-    log: BaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
-    this.logger = log;
   }
 
   private async _getDescriptionForFilepath(filepath: string): Promise<string> {

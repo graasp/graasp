@@ -89,7 +89,6 @@ export const registerDependencies = (instance: FastifyInstance) => {
       resolveDependency(FileItemService),
       resolveDependency(ItemService),
       resolveDependency(H5PService),
-      resolveDependency(BaseLogger),
     ),
   });
 

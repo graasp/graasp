@@ -28,15 +28,17 @@ export default async function (instance: FastifyInstance): Promise<void> {
   // load some shared schema definitions
   instance.addSchema(shared);
 
+  // db should be registered before the dependencies.
+  await instance.register(fp(databasePlugin), {
+    logs: DATABASE_LOGS,
+  });
+
   // register some manuall dependencies
   // TODO: used for now during the migration but have to check if it is possible to use annotations for all dependencies.
   registerDependencies(instance);
 
   await instance
     .register(fp(metaPlugin))
-    .register(fp(databasePlugin), {
-      logs: DATABASE_LOGS,
-    })
     .register(fp(decoratorPlugin))
     // need to be defined before member and item for auth check
     .register(fp(authPlugin), { sessionCookieDomain: COOKIE_DOMAIN });
