@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 import { PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
-import type { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
