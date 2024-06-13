@@ -293,9 +293,9 @@ export namespace H5P {
     /** Any additional information about the license */
     licenseExtras?: string;
     /** If a license is valid for a certain period of time, this represents the start year (as a string). */
-    yearFrom?: string;
+    yearFrom?: string | number;
     /** If a license is valid for a certain period of time, this represents the end year (as a string). */
-    yearTo?: string;
+    yearTo?: string | number;
     /** The changelog. */
     changes?: Array<{
       date: string;

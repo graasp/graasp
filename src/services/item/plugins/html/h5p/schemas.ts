@@ -284,11 +284,11 @@ export const h5pManifestSchema: JSONSchemaType<H5P.Manifest> = {
       nullable: true, // JSON schema treats undefined as nullable?
     },
     yearFrom: {
-      type: 'string',
+      type: ['string', 'integer'],
       nullable: true, // JSON schema treats undefined as nullable?
     },
     yearTo: {
-      type: 'string',
+      type: ['string', 'integer'],
       nullable: true, // JSON schema treats undefined as nullable?
     },
     changes: {
