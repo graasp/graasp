@@ -11,32 +11,27 @@ import FileService from '../../../file/service';
 import { FileStorageService } from '../../../member/plugins/storage/service';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { ItemThumbnailService } from '../thumbnail/service';
 import { download, updateSchema, upload } from './schema';
 import FileItemService from './service';
 import { DEFAULT_MAX_FILE_SIZE, MAX_NUMBER_OF_FILES_UPLOAD } from './utils/constants';
 
 export interface GraaspPluginFileOptions {
-  shouldRedirectOnDownload?: boolean; // redirect value on download
   uploadMaxFileNb?: number; // max number of files to upload at a time
   maxFileSize?: number; // max size for an uploaded file in bytes
   maxMemberStorage?: number; // max storage space for a user
 }
 
 const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, options) => {
-  const {
-    uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD,
-    maxFileSize = DEFAULT_MAX_FILE_SIZE,
-    shouldRedirectOnDownload = true,
-  } = options;
+  const { uploadMaxFileNb = MAX_NUMBER_OF_FILES_UPLOAD, maxFileSize = DEFAULT_MAX_FILE_SIZE } =
+    options;
 
   const { db, items } = fastify;
+  const { extendExtrasUpdateSchema } = items;
 
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
-  const itemThumbnailService = resolveDependency(ItemThumbnailService);
   const storageService = resolveDependency(FileStorageService);
-  const { extendExtrasUpdateSchema } = items;
+  const fileItemService = resolveDependency(FileItemService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -52,15 +47,6 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   // "install" custom schema for validating file items update
   extendExtrasUpdateSchema(updateSchema(fileService.type));
-
-  const fileItemService = new FileItemService(
-    fileService,
-    itemService,
-    storageService,
-    itemThumbnailService,
-    shouldRedirectOnDownload,
-  );
-  items.files = { service: fileItemService };
 
   // register post delete handler to remove the file object after item delete
   itemService.hooks.setPostHook(

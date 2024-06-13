@@ -3,6 +3,7 @@ import path from 'path';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { withFile as withTmpFile } from 'tmp-promise';
+import { singleton } from 'tsyringe';
 
 import {
   FileItemProperties,
@@ -24,12 +25,12 @@ import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
 
+@singleton()
 class FileItemService {
-  fileService: FileService;
-  itemService: ItemService;
-  storageService: StorageService;
-  itemThumbnailService: ItemThumbnailService;
-  shouldRedirectOnDownload: boolean;
+  private readonly fileService: FileService;
+  private readonly itemService: ItemService;
+  private readonly storageService: StorageService;
+  private readonly itemThumbnailService: ItemThumbnailService;
 
   buildFilePath(extension?: string) {
     // TODO: CHANGE ??
@@ -42,13 +43,11 @@ class FileItemService {
     itemService: ItemService,
     storageService: StorageService,
     itemThumbnailService: ItemThumbnailService,
-    shouldRedirectOnDownload: boolean,
   ) {
     this.fileService = fileService;
     this.itemService = itemService;
     this.storageService = storageService;
     this.itemThumbnailService = itemThumbnailService;
-    this.shouldRedirectOnDownload = shouldRedirectOnDownload;
   }
 
   async upload(

@@ -8,7 +8,6 @@ import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 import { create, updateOne } from '../services/item/fluent-schema';
 import { ActionItemService } from '../services/item/plugins/action/service';
 import { EtherpadItemService } from '../services/item/plugins/etherpad/service';
-import FileItemService from '../services/item/plugins/file/service';
 import { Actor, Member } from '../services/member/entities/member';
 import { WebsocketService } from '../services/websockets/ws-service';
 
@@ -21,9 +20,9 @@ declare module 'fastify' {
     items: {
       extendCreateSchema: ReturnType<typeof create>;
       extendExtrasUpdateSchema: ReturnType<typeof updateOne>;
-      files: {
-        service: FileItemService;
-      };
+      // files: {
+      //   service: FileItemService;
+      // };
       actions: {
         service: ActionItemService;
       };
