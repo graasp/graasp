@@ -12,11 +12,9 @@ import fp from 'fastify-plugin';
 import { resolveDependency } from '../../dependencies';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
-import { ActionService } from '../action/services/action';
 import { ItemService } from '../item/service';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
-import { MentionService } from './plugins/mentions/service';
 import commonChat, {
   clearChat,
   deleteMessage,
@@ -42,12 +40,8 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
   const { db, websockets: websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
-  const actionService = resolveDependency(ActionService);
-  const mentionService = resolveDependency(MentionService);
-  const chatService = new ChatMessageService(itemService, mentionService);
-  const actionChatService = new ActionChatService(actionService);
-
-  fastify.decorate('chat', { service: chatService });
+  const chatService = resolveDependency(ChatMessageService);
+  const actionChatService = resolveDependency(ActionChatService);
 
   // isolate plugin content using fastify.register to ensure that the hooks will not be called when other routes match
   // routes associated with mentions should not trigger the action hook

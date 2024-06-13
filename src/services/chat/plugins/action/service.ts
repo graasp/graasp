@@ -1,3 +1,5 @@
+import { injectable } from 'tsyringe';
+
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
@@ -13,6 +15,7 @@ enum ChatActionType {
   Clear = 'chat_clear',
 }
 
+@injectable()
 export class ActionChatService {
   actionService: ActionService;
 

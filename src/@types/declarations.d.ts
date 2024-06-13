@@ -5,8 +5,6 @@ import { preHandlerHookHandler } from 'fastify';
 
 import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
 
-import { MentionService } from '../services/chat/plugins/mentions/service';
-import { ChatMessageService } from '../services/chat/service';
 import { create, updateOne } from '../services/item/fluent-schema';
 import { ActionItemService } from '../services/item/plugins/action/service';
 import { EtherpadItemService } from '../services/item/plugins/etherpad/service';
@@ -34,7 +32,6 @@ declare module 'fastify' {
         service: ActionItemService;
       };
     };
-    chat: { service: ChatMessageService };
     websockets: WebsocketService;
     etherpad: EtherpadItemService;
     corsPluginOptions: any;
