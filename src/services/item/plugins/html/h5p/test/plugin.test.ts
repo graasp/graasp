@@ -198,6 +198,16 @@ describe('Service plugin', () => {
     });
   });
 
+  describe('Regression tests', () => {
+    it('accepts yearFrom as numbers', async () => {
+      const res = await injectH5PImport(app, {
+        filePath: H5P_PACKAGES.VALID_YEAR_AS_NUMBER.path,
+        parentId: parent.id,
+      });
+      expect(res.statusCode).toEqual(StatusCodes.OK);
+    });
+  });
+
   describe('Error handling', () => {
     it('returns error on invalid H5P package', async () => {
       const res = await injectH5PImport(app, {

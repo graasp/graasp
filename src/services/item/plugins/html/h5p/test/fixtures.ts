@@ -19,6 +19,9 @@ export const H5P_PACKAGES = {
   BOGUS_EMPTY: {
     path: path.resolve(__dirname, 'fixtures/empty.h5p'),
   },
+  VALID_YEAR_AS_NUMBER: {
+    path: path.resolve(__dirname, 'fixtures/yearFrom-lumi.h5p'),
+  },
   BOGUS_WRONG_EXTENSION: {
     path: path.resolve(__dirname, 'fixtures/illegal-extension.h5p'),
     manifest: {
