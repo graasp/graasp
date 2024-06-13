@@ -194,7 +194,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Querystring: { [SHOW_HIDDEN_PARRAM]?: boolean; [TYPES_FILTER_PARAM]?: ItemTagType[] };
   }>(
     '/:id/descendants',
-    { schema: getDescendants, preHandler: optionalAuthenticated },
+    { schema: getDescendants, preHandler: optionalIsAuthenticated },
     async ({ user, params: { id }, query }) => {
       return itemService.getPackedDescendants(user?.member, buildRepositories(), id, query);
     },

@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
@@ -20,6 +21,7 @@ import { MemberNotFound } from '../../../../utils/errors';
 import { Member } from '../../../member/entities/member';
 import { expectMember, saveMember } from '../../../member/test/fixtures/members';
 import { MOCK_CAPTCHA } from '../captcha/test/utils';
+import { SHORT_TOKEN_PARAM } from '../passport';
 import { MOCK_PASSWORD, saveMemberAndPassword } from '../password/test/fixtures/password';
 
 // mock database and decorator plugins
@@ -554,6 +556,111 @@ describe('Mobile Endpoints', () => {
       });
       expect(response.headers).not.toHaveProperty('set-cookie');
       expect(response.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+    });
+  });
+  describe('Complete Authentication Process', () => {
+    let verifier;
+    let challenge;
+    beforeEach(() => {
+      verifier = 'verifier';
+      challenge = crypto.createHash('sha256').update(verifier).digest('hex');
+    });
+    it('MagicLink', async () => {
+      mockCaptchaValidation(RecaptchaAction.SignUpMobile);
+      const mockSendEmail = jest.spyOn(app.mailer, 'sendEmail');
+
+      const username = faker.internet.userName().toLowerCase();
+      const email = faker.internet.email().toLowerCase();
+
+      const responseRegister = await app.inject({
+        method: HttpMethod.Post,
+        url: '/m/register',
+        payload: {
+          name: username,
+          email: email,
+          challenge,
+          captcha: MOCK_CAPTCHA,
+        },
+      });
+
+      expect(responseRegister.statusCode).toBe(StatusCodes.NO_CONTENT);
+      expect(mockSendEmail).toHaveBeenCalledTimes(1);
+      const authUrl = new URL(mockSendEmail.mock.calls[0][2]);
+
+      const responseAuth = await app.inject({
+        method: HttpMethod.Post,
+        url: `/m/auth`,
+        payload: {
+          [SHORT_TOKEN_PARAM]: authUrl.searchParams.get(SHORT_TOKEN_PARAM)!,
+          verifier,
+        },
+      });
+
+      expect(responseAuth.statusCode).toBe(StatusCodes.OK);
+      const responseAuthBody = responseAuth.json();
+      expect(responseAuthBody).toHaveProperty('refreshToken');
+      expect(responseAuthBody).toHaveProperty('authToken');
+
+      const responseCheck = await app.inject({
+        method: HttpMethod.Get,
+        url: '/members/current',
+        headers: {
+          authorization: `Bearer ${responseAuthBody.authToken}`,
+        },
+      });
+
+      expect(responseCheck.statusCode).toBe(StatusCodes.OK);
+      const responseCheckBody = responseCheck.json();
+      expect(responseCheckBody).toHaveProperty('id');
+      expect(responseCheckBody.email).toBe(email);
+      expect(responseCheckBody.name).toBe(username);
+    });
+    it('Password', async () => {
+      mockCaptchaValidation(RecaptchaAction.SignInWithPasswordMobile);
+
+      const member = await saveMemberAndPassword(undefined, MOCK_PASSWORD);
+
+      const responseLogin = await app.inject({
+        method: HttpMethod.Post,
+        url: '/m/login-password',
+        payload: {
+          email: member.email,
+          challenge,
+          password: MOCK_PASSWORD.password,
+          captcha: MOCK_CAPTCHA,
+        },
+      });
+      expect(responseLogin.statusCode).toBe(StatusCodes.SEE_OTHER);
+      const responseLoginBody = responseLogin.json();
+      const authUrl = new URL(responseLoginBody.resource);
+
+      const responseAuth = await app.inject({
+        method: HttpMethod.Post,
+        url: `/m/auth`,
+        payload: {
+          [SHORT_TOKEN_PARAM]: authUrl.searchParams.get(SHORT_TOKEN_PARAM)!,
+          verifier,
+        },
+      });
+
+      expect(responseAuth.statusCode).toBe(StatusCodes.OK);
+      const responseAuthBody = responseAuth.json();
+      expect(responseAuthBody).toHaveProperty('refreshToken');
+      expect(responseAuthBody).toHaveProperty('authToken');
+
+      const responseCheck = await app.inject({
+        method: HttpMethod.Get,
+        url: '/members/current',
+        headers: {
+          authorization: `Bearer ${responseAuthBody.authToken}`,
+        },
+      });
+
+      expect(responseCheck.statusCode).toBe(StatusCodes.OK);
+      const responseCheckBody = responseCheck.json();
+      expect(responseCheckBody).toHaveProperty('id');
+      expect(responseCheckBody.email).toBe(member.email);
+      expect(responseCheckBody.name).toBe(member.name);
     });
   });
 });

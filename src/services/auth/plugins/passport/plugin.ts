@@ -6,6 +6,7 @@ import {
   AUTH_TOKEN_JWT_SECRET,
   COOKIE_DOMAIN,
   JWT_SECRET,
+  MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS,
   PROD,
   REFRESH_TOKEN_JWT_SECRET,
   SECURE_SESSION_EXPIRATION_IN_SECONDS,
@@ -36,8 +37,18 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   await fastify
     .register(fastifySecureSession, {
       key: Buffer.from(SECURE_SESSION_SECRET_KEY, 'hex'),
-      cookie: { domain: COOKIE_DOMAIN, path: '/', secure: PROD || STAGING, httpOnly: true },
-      expiry: SECURE_SESSION_EXPIRATION_IN_SECONDS,
+      cookie: {
+        domain: COOKIE_DOMAIN,
+        path: '/',
+        secure: PROD || STAGING,
+        httpOnly: true,
+        // Timeout before the session is invalidated. The user can renew the session since the timeout is not reached.
+        // The session will be automatically renewed on each request.
+        maxAge: SECURE_SESSION_EXPIRATION_IN_SECONDS,
+      },
+      // Max timeout for the session. After this time, the session is invalidated and cannot be renewed.
+      // The user must re-authenticate.
+      expiry: MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS,
     })
     .register(fastifyPassport.initialize())
     .register(fastifyPassport.secureSession());

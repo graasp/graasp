@@ -159,8 +159,9 @@ if (!process.env.SECURE_SESSION_SECRET_KEY) {
 }
 export const SECURE_SESSION_SECRET_KEY: string = process.env.SECURE_SESSION_SECRET_KEY!;
 export const SECURE_SESSION_EXPIRATION_IN_SECONDS: number =
-  +process.env.SECURE_SESSION_EXPIRATION_IN_SECONDS! || 2592000; // 30 days
-
+  +process.env.SECURE_SESSION_EXPIRATION_IN_SECONDS! || 604800; // 7days
+export const MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS: number =
+  +process.env.MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS! || 15552000; // 6 * 30days
 /**
  * JWT
  */

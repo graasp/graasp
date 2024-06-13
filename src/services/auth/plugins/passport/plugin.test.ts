@@ -90,7 +90,7 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
     it('Unknown JWT Member', async () => {
-      const token = jwt.sign({ sub: v4() }, JWT_SECRET);
+      const token = jwt.sign({ sub: v4() }, AUTH_TOKEN_JWT_SECRET);
       handler.mockImplementation(shouldBeNull);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -110,7 +110,7 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.OK);
     });
     it('Valid JWT Member', async () => {
-      const token = jwt.sign({ sub: member.id }, JWT_SECRET);
+      const token = jwt.sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
       handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -152,7 +152,7 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('Unknown JWT Member', async () => {
-      const token = jwt.sign({ sub: v4() }, JWT_SECRET);
+      const token = jwt.sign({ sub: v4() }, AUTH_TOKEN_JWT_SECRET);
       handler.mockImplementation(shouldNotBeCalled);
       const response = await app.inject({
         path: MOCKED_ROUTE,
@@ -172,7 +172,7 @@ describe('Passport Plugin', () => {
       expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
     });
     it('Valid JWT Member', async () => {
-      const token = jwt.sign({ sub: member.id }, JWT_SECRET);
+      const token = jwt.sign({ sub: member.id }, AUTH_TOKEN_JWT_SECRET);
       handler.mockImplementation(({ user }) => expect(user.member).toEqual(member));
       const response = await app.inject({
         path: MOCKED_ROUTE,
