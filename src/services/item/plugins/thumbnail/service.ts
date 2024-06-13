@@ -6,15 +6,15 @@ import { PermissionLevel, ThumbnailSize } from '@graasp/sdk';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
-import { DefaultThumbnailService } from '../../../thumbnail/service';
+import { ThumbnailService } from '../../../thumbnail/service';
 import { ItemService } from '../../service';
 
 @singleton()
 export class ItemThumbnailService {
-  thumbnailService: DefaultThumbnailService;
+  thumbnailService: ThumbnailService;
   itemService: ItemService;
 
-  constructor(itemService: ItemService, thumbnailService: DefaultThumbnailService) {
+  constructor(itemService: ItemService, thumbnailService: ThumbnailService) {
     this.thumbnailService = thumbnailService;
     this.itemService = itemService;
   }

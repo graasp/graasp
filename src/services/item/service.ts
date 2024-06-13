@@ -35,7 +35,7 @@ import {
 } from '../authorization';
 import { ItemMembership } from '../itemMembership/entities/ItemMembership';
 import { Actor, Member } from '../member/entities/member';
-import { DefaultThumbnailService } from '../thumbnail/service';
+import { ThumbnailService } from '../thumbnail/service';
 import { mapById } from '../utils';
 import { ItemWrapper, PackedItem } from './ItemWrapper';
 import { Item, isItemType } from './entities/Item';
@@ -47,7 +47,7 @@ import { ItemChildrenParams, ItemSearchParams } from './types';
 @singleton()
 export class ItemService {
   private log: BaseLogger;
-  private thumbnailService: DefaultThumbnailService;
+  private thumbnailService: ThumbnailService;
 
   hooks = new HookManager<{
     create: { pre: { item: Partial<Item> }; post: { item: Item } };
@@ -72,7 +72,7 @@ export class ItemService {
     };
   }>();
 
-  constructor(thumbnailService: DefaultThumbnailService, log: BaseLogger) {
+  constructor(thumbnailService: ThumbnailService, log: BaseLogger) {
     this.thumbnailService = thumbnailService;
     this.log = log;
   }

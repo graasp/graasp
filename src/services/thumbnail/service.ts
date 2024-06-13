@@ -1,21 +1,25 @@
 import path from 'path';
 import sharp from 'sharp';
 import { Readable } from 'stream';
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 
 import FileService from '../file/service';
 import { Actor, Member } from '../member/entities/member';
 import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 
 export const AVATAR_THUMBNAIL_PREFIX = 'avatars';
-export const DEFAULT_THUMBNAIL_PREFIX = 'thumbnails';
+export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';
 
+@injectable()
 export class ThumbnailService {
-  private fileService: FileService;
-  private prefix: string;
+  private readonly fileService: FileService;
+  private prefix: string = ITEM_THUMBNAIL_PREFIX;
 
-  constructor(fileService: FileService, prefix: string) {
+  constructor(fileService: FileService) {
     this.fileService = fileService;
+  }
+
+  public setPrefix(prefix: string) {
     this.prefix = prefix;
   }
 
@@ -79,19 +83,5 @@ export class ThumbnailService {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
     await this.fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
-  }
-}
-
-@singleton()
-export class DefaultThumbnailService extends ThumbnailService {
-  constructor(fileService: FileService) {
-    super(fileService, DEFAULT_THUMBNAIL_PREFIX);
-  }
-}
-
-@singleton()
-export class AvatarThumbnailService extends ThumbnailService {
-  constructor(fileService: FileService) {
-    super(fileService, AVATAR_THUMBNAIL_PREFIX);
   }
 }

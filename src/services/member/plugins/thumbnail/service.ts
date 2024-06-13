@@ -2,7 +2,7 @@ import { Readable } from 'stream';
 import { singleton } from 'tsyringe';
 
 import { Repositories } from '../../../../utils/repositories';
-import { AvatarThumbnailService, ThumbnailService } from '../../../thumbnail/service';
+import { AVATAR_THUMBNAIL_PREFIX, ThumbnailService } from '../../../thumbnail/service';
 import { Actor, Member } from '../../entities/member';
 import { MemberService } from '../../service';
 
@@ -11,8 +11,9 @@ export class MemberThumbnailService {
   thumbnailService: ThumbnailService;
   memberService: MemberService;
 
-  constructor(memberService: MemberService, thumbnailService: AvatarThumbnailService) {
+  constructor(memberService: MemberService, thumbnailService: ThumbnailService) {
     this.thumbnailService = thumbnailService;
+    thumbnailService.setPrefix(AVATAR_THUMBNAIL_PREFIX);
     this.memberService = memberService;
   }
 
