@@ -53,3 +53,17 @@ export class ConflictingTagsInTheHierarchy extends GraaspItemTagsError {
     );
   }
 }
+
+export class InvalidUseOfItemTagsRepository extends GraaspItemTagsError {
+  constructor(data?: unknown) {
+    super(
+      {
+        code: 'GITERR008',
+        statusCode: StatusCodes.BAD_REQUEST,
+        message:
+          'ItemTagRepository was not used correctly, this should not happen. Consider this an internal error. Contact your local developer team.',
+      },
+      data,
+    );
+  }
+}
