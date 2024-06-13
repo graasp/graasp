@@ -61,17 +61,14 @@ export const registerDependencies = (instance: FastifyInstance) => {
   container.register(MailerService, {
     useFactory: instanceCachingFactory(
       () =>
-        new MailerService(
-          {
-            host: MAILER_CONFIG_SMTP_HOST,
-            port: MAILER_CONFIG_SMTP_PORT,
-            useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-            username: MAILER_CONFIG_USERNAME,
-            password: MAILER_CONFIG_PASSWORD,
-            fromEmail: MAILER_CONFIG_FROM_EMAIL,
-          },
-          instance,
-        ),
+        new MailerService({
+          host: MAILER_CONFIG_SMTP_HOST,
+          port: MAILER_CONFIG_SMTP_PORT,
+          useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+          username: MAILER_CONFIG_USERNAME,
+          password: MAILER_CONFIG_PASSWORD,
+          fromEmail: MAILER_CONFIG_FROM_EMAIL,
+        }),
     ),
   });
 

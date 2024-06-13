@@ -1,9 +1,4 @@
-import * as eta from 'eta';
-import { singleton } from 'tsyringe';
-import { promisify } from 'util';
-
-import pointOfView from '@fastify/view';
-import { FastifyInstance } from 'fastify';
+import { Transporter, createTransport } from 'nodemailer';
 
 import { DEFAULT_LANG } from '@graasp/translations';
 
@@ -21,44 +16,21 @@ export interface MailerOptions {
 
 type CssStyles = { [key: string]: string };
 
-@singleton()
 export class MailerService {
-  private host: string;
-  private port: number;
-  private useSsl: boolean;
-  private username: string;
-  private password: string;
-  private fromEmail: string;
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  private promisifiedNodemailerSendMail: Function;
+  private readonly fromEmail: string;
+  private readonly transporter: Transporter;
 
-  constructor(options: MailerOptions, fastify: FastifyInstance) {
-    this.host = options.host;
-    this.port = options.port ?? 465;
-    this.useSsl = options.useSsl ?? true;
-    this.username = options.username;
-    this.password = options.password;
-    this.fromEmail = options.fromEmail;
-
-    this.register(fastify);
-  }
-
-  private async register(fastify: FastifyInstance) {
-    fastify.register(pointOfView, { engine: { eta } });
-
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    await fastify.register(require('fastify-nodemailer'), {
-      host: this.host,
-      auth: { user: this.username, pass: this.password },
-      pool: true,
-      port: this.port,
-      secure: this.useSsl,
+  constructor({ host, port, useSsl, username, password, fromEmail }: MailerOptions) {
+    this.fromEmail = fromEmail;
+    this.transporter = createTransport({
+      host,
+      port: port ?? 465,
+      secure: useSsl ?? true,
+      auth: {
+        user: username,
+        pass: password,
+      },
     });
-
-    // sendMail() uses 'this' internally and 'promisify' breaks that, so it needs to be passed
-    this.promisifiedNodemailerSendMail = promisify(
-      fastify.nodemailer.sendMail.bind(fastify.nodemailer),
-    );
   }
 
   public async sendEmail(
@@ -69,7 +41,7 @@ export class MailerService {
     footer: string,
     from: string = this.fromEmail,
   ) {
-    await this.promisifiedNodemailerSendMail({
+    await this.transporter.sendMail({
       from,
       to,
       subject,
