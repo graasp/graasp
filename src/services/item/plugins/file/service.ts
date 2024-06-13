@@ -32,12 +32,6 @@ class FileItemService {
   private readonly storageService: StorageService;
   private readonly itemThumbnailService: ItemThumbnailService;
 
-  buildFilePath(extension?: string) {
-    // TODO: CHANGE ??
-    const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
-    return path.join('files', filepath);
-  }
-
   constructor(
     fileService: FileService,
     itemService: ItemService,
@@ -48,6 +42,12 @@ class FileItemService {
     this.itemService = itemService;
     this.storageService = storageService;
     this.itemThumbnailService = itemThumbnailService;
+  }
+
+  public buildFilePath(extension?: string) {
+    // TODO: CHANGE ??
+    const filepath = `${randomHexOf4()}/${randomHexOf4()}/${randomHexOf4()}-${Date.now()}${extension}`;
+    return path.join('files', filepath);
   }
 
   async upload(

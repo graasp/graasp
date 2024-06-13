@@ -6,13 +6,12 @@ import { FastifyPluginAsync } from 'fastify';
 import { ActionTriggers } from '@graasp/sdk';
 
 import { resolveDependency } from '../../../../dependencies';
+import { BaseLogger } from '../../../../logger';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { ItemService } from '../../service';
-import FileItemService from '../file/service';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
-import { H5PService } from '../html/h5p/service';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
 import { zipExport, zipImport } from './schema';
@@ -20,19 +19,10 @@ import { ImportExportService } from './service';
 import { prepareZip } from './utils';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { log: fastifyLogger, db } = fastify;
-
+  const log = resolveDependency(BaseLogger);
   const itemService = resolveDependency(ItemService);
   const actionService = resolveDependency(ActionService);
-  const h5pService = resolveDependency(H5PService);
-  const fileItemService = resolveDependency(FileItemService);
-  const importExportService = new ImportExportService(
-    db,
-    fileItemService,
-    itemService,
-    h5pService,
-    fastifyLogger,
-  );
+  const importExportService = resolveDependency(ImportExportService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -51,7 +41,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const {
         member,
-        log,
         query: { parentId },
       } = request;
 

@@ -9,10 +9,11 @@ import { DataSource } from 'typeorm';
 import util from 'util';
 import yazl, { ZipFile } from 'yazl';
 
-import { FastifyBaseLogger, FastifyReply } from 'fastify';
+import { FastifyReply } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../logger';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
@@ -39,14 +40,14 @@ export class ImportExportService {
   h5pService: H5PService;
   itemService: ItemService;
   db: DataSource;
-  logger: FastifyBaseLogger;
+  logger: BaseLogger;
 
   constructor(
     db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
@@ -83,7 +84,7 @@ export class ImportExportService {
       folderPath: string;
       parent?: Item;
     },
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ): Promise<Item | null> {
     const { filename, folderPath, parent } = options;
 
@@ -340,7 +341,7 @@ export class ImportExportService {
     actor: Member,
     repositories: Repositories,
     { parent, folderPath }: { parent?: Item; folderPath: string },
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ) {
     const filenames = fs.readdirSync(folderPath);
 
@@ -405,7 +406,7 @@ export class ImportExportService {
       targetFolder,
       parentId,
     }: { folderPath: string; targetFolder: string; parentId?: string },
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ): Promise<void> {
     let parent;
     if (parentId) {

@@ -8,10 +8,15 @@ import { BaseLogger } from './logger';
 import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
 import { createfileService } from './services/file/utils/factory';
+import FileItemService from './services/item/plugins/file/service';
+import { H5PService } from './services/item/plugins/html/h5p/service';
+import { ImportExportService } from './services/item/plugins/importExport/service';
 import { createMeiliSearchWrapper } from './services/item/plugins/published/plugins/search/factory';
 import { MeiliSearchWrapper } from './services/item/plugins/published/plugins/search/meilisearch';
 import { SearchService } from './services/item/plugins/published/plugins/search/service';
+import { ItemService } from './services/item/service';
 import {
+  FILE_ITEM_TYPE,
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_SMTP_HOST,
@@ -23,7 +28,7 @@ import {
   REDIS_PORT,
   REDIS_USERNAME,
 } from './utils/config';
-import { FASTIFY_LOGGER_DI_KEY } from './utils/dependencies.keys';
+import { FASTIFY_LOGGER_DI_KEY, FILE_ITEM_TYPE_DI_KEY } from './utils/dependencies.keys';
 
 export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
   return container.resolve(injectionToken);
@@ -37,14 +42,14 @@ export const resetDependencies = () => {
   container.clearInstances();
 };
 
-// TODO: to be cleaned up.
-// temporary step by manually register dependencies.
-// this allow to test DI framework without having to annotate all the services (second step).
 export const registerDependencies = (instance: FastifyInstance) => {
   const { log, db } = instance;
 
   // register FastifyBasLogger as a value to allow BaseLogger to be injected automatically.
   container.register(FASTIFY_LOGGER_DI_KEY, { useValue: log });
+
+  // register file type for the StorageService.
+  container.register(FILE_ITEM_TYPE_DI_KEY, { useValue: FILE_ITEM_TYPE });
 
   container.register(Redis, {
     useValue: new Redis({
@@ -74,6 +79,16 @@ export const registerDependencies = (instance: FastifyInstance) => {
     useValue: createMeiliSearchWrapper(
       resolveDependency(FileService),
       db,
+      resolveDependency(BaseLogger),
+    ),
+  });
+
+  container.register(ImportExportService, {
+    useValue: new ImportExportService(
+      db,
+      resolveDependency(FileItemService),
+      resolveDependency(ItemService),
+      resolveDependency(H5PService),
       resolveDependency(BaseLogger),
     ),
   });

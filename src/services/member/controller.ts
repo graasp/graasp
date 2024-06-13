@@ -8,7 +8,7 @@ import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import FileService from '../file/service';
 import { Member } from './entities/member';
-import { FileStorageService } from './plugins/storage/service';
+import { StorageService } from './plugins/storage/service';
 import {
   deleteOne,
   getCurrent,
@@ -24,7 +24,7 @@ const controller: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
   const fileService = resolveDependency(FileService);
   const memberService = resolveDependency(MemberService);
-  const storageService = resolveDependency(FileStorageService);
+  const storageService = resolveDependency(StorageService);
 
   // get current
   fastify.get(

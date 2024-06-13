@@ -6,6 +6,7 @@ import { ItemTagType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
 import { resolveDependency } from '../../../../dependencies';
+import { BaseLogger } from '../../../../logger';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';
@@ -50,7 +51,7 @@ describe('ZIP routes tests', () => {
         {} as unknown as FileItemService,
         resolveDependency(ItemService),
         {} as unknown as H5PService,
-        app.log,
+        resolveDependency(BaseLogger),
       );
       const repositories = buildRepositories();
       const reply = {} as unknown as FastifyReply;

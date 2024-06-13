@@ -8,7 +8,7 @@ import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
 import FileService from '../../../file/service';
-import { FileStorageService } from '../../../member/plugins/storage/service';
+import { StorageService } from '../../../member/plugins/storage/service';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { download, updateSchema, upload } from './schema';
@@ -30,7 +30,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   const fileService = resolveDependency(FileService);
   const itemService = resolveDependency(ItemService);
-  const storageService = resolveDependency(FileStorageService);
+  const storageService = resolveDependency(StorageService);
   const fileItemService = resolveDependency(FileItemService);
 
   fastify.register(fastifyMultipart, {
