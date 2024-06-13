@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.41.0](https://github.com/graasp/graasp/compare/v1.40.1...v1.41.0) (2024-06-13)
+
+
+### Features
+
+* filters item type and hidden item ([#1103](https://github.com/graasp/graasp/issues/1103)) ([c2a1ed6](https://github.com/graasp/graasp/commit/c2a1ed6825ba88d39bb5061e4f8a85b6487c3851))
+* publish automatically when item is validated ([#1077](https://github.com/graasp/graasp/issues/1077)) ([be338e2](https://github.com/graasp/graasp/commit/be338e2fed8993c51b5d79329414f72f1c705fa7))
+
 ## [1.40.1](https://github.com/graasp/graasp/compare/v1.40.0...v1.40.1) (2024-06-05)
 
 
