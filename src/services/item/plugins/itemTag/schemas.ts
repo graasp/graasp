@@ -83,7 +83,7 @@ const getMany = {
       { $ref: 'https://graasp.org/#/definitions/idsQuery' },
       {
         type: 'object',
-        properties: { id: { type: 'array', maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
+        properties: { id: { type: 'array', minItems: 1, maxItems: MAX_TARGETS_FOR_READ_REQUEST } },
       },
     ],
   },

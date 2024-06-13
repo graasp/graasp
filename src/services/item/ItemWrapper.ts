@@ -103,6 +103,11 @@ export class ItemWrapper {
     memberships?: ResultOf<ItemMembership[]>,
     { withDeleted = false }: { withDeleted?: boolean } = {},
   ): Promise<PackedItem[]> {
+    // no items, so nothing to fetch
+    if (!items.length) {
+      return [];
+    }
+
     const tags = await repositories.itemTagRepository.getForManyItems(items, { withDeleted });
 
     const m =

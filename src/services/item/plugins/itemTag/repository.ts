@@ -7,7 +7,12 @@ import { Member } from '../../../member/entities/member';
 import { mapById } from '../../../utils';
 import { Item } from '../../entities/Item';
 import { ItemTag } from './ItemTag';
-import { CannotModifyParentTag, ConflictingTagsInTheHierarchy, ItemTagNotFound } from './errors';
+import {
+  CannotModifyParentTag,
+  ConflictingTagsInTheHierarchy,
+  InvalidUseOfItemTagsRepository,
+  ItemTagNotFound,
+} from './errors';
 
 /**
  * Database's first layer of abstraction for Item Tags and (exceptionally) for Tags (at the bottom)
@@ -222,9 +227,15 @@ export class ItemTagRepository {
 
   /**
    * Get all tags for given items
+   * @throws when item array is empty, as this is considered an invalid use of the function
    * @param  {Item[]} items
    */
   async getForManyItems(items: Item[], { withDeleted = false }: { withDeleted?: boolean } = {}) {
+    // should not query when items array is empty
+    if (!items.length) {
+      throw new InvalidUseOfItemTagsRepository();
+    }
+
     const query = this.repository
       .createQueryBuilder('itemTag')
       .leftJoinAndSelect('itemTag.item', 'item');

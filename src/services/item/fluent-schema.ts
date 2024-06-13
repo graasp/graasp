@@ -200,7 +200,7 @@ export const getAccessible = {
 
 export const getMany = {
   querystring: S.object()
-    .prop('id', S.array().maxItems(MAX_TARGETS_FOR_READ_REQUEST))
+    .prop('id', S.array().minItems(1).maxItems(MAX_TARGETS_FOR_READ_REQUEST))
     .extend(idsQuery),
   response: {
     200: S.object()
