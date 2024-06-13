@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.42.0](https://github.com/graasp/graasp/compare/v1.41.0...v1.42.0) (2024-06-13)
+
+
+### Features
+
+* restrict publication to folders only ([#1106](https://github.com/graasp/graasp/issues/1106)) ([9f61157](https://github.com/graasp/graasp/commit/9f611573b8feae3fd6d834a5e277e9edb20e689f))
+
+
+### Bug Fixes
+
+* many tags items length ([#1108](https://github.com/graasp/graasp/issues/1108)) ([b74bd2c](https://github.com/graasp/graasp/commit/b74bd2c3d24c0eadc52a99d44d9800dbae974007))
+
 ## [1.41.0](https://github.com/graasp/graasp/compare/v1.40.1...v1.41.0) (2024-06-13)
 
 
