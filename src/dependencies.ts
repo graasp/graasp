@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { InjectionToken, container, instanceCachingFactory } from 'tsyringe';
+import { InjectionToken, container } from 'tsyringe';
 
 import { FastifyInstance } from 'fastify';
 
@@ -7,7 +7,7 @@ import { CRON_3AM_MONDAY, JobServiceBuilder } from './jobs';
 import { BaseLogger } from './logger';
 import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
-import { fileServiceFactory } from './services/file/utils/factory';
+import { createfileService } from './services/file/utils/factory';
 import { createMeiliSearchWrapper } from './services/item/plugins/published/plugins/search/factory';
 import { MeiliSearchWrapper } from './services/item/plugins/published/plugins/search/meilisearch';
 import { SearchService } from './services/item/plugins/published/plugins/search/service';
@@ -47,38 +47,34 @@ export const registerDependencies = (instance: FastifyInstance) => {
   container.register(FASTIFY_LOGGER_DI_KEY, { useValue: log });
 
   container.register(Redis, {
-    useFactory: instanceCachingFactory(
-      () =>
-        new Redis({
-          host: REDIS_HOST,
-          port: REDIS_PORT,
-          username: REDIS_USERNAME,
-          password: REDIS_PASSWORD,
-        }),
-    ),
+    useValue: new Redis({
+      host: REDIS_HOST,
+      port: REDIS_PORT,
+      username: REDIS_USERNAME,
+      password: REDIS_PASSWORD,
+    }),
   });
 
   container.register(MailerService, {
-    useFactory: instanceCachingFactory(
-      () =>
-        new MailerService({
-          host: MAILER_CONFIG_SMTP_HOST,
-          port: MAILER_CONFIG_SMTP_PORT,
-          useSsl: MAILER_CONFIG_SMTP_USE_SSL,
-          username: MAILER_CONFIG_USERNAME,
-          password: MAILER_CONFIG_PASSWORD,
-          fromEmail: MAILER_CONFIG_FROM_EMAIL,
-        }),
-    ),
+    useValue: new MailerService({
+      host: MAILER_CONFIG_SMTP_HOST,
+      port: MAILER_CONFIG_SMTP_PORT,
+      useSsl: MAILER_CONFIG_SMTP_USE_SSL,
+      username: MAILER_CONFIG_USERNAME,
+      password: MAILER_CONFIG_PASSWORD,
+      fromEmail: MAILER_CONFIG_FROM_EMAIL,
+    }),
   });
 
   container.register(FileService, {
-    useFactory: instanceCachingFactory(() => fileServiceFactory(log)),
+    useValue: createfileService(log),
   });
 
   container.register(MeiliSearchWrapper, {
-    useFactory: instanceCachingFactory(() =>
-      createMeiliSearchWrapper(resolveDependency(FileService), db, resolveDependency(BaseLogger)),
+    useValue: createMeiliSearchWrapper(
+      resolveDependency(FileService),
+      db,
+      resolveDependency(BaseLogger),
     ),
   });
 

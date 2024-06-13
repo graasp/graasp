@@ -34,7 +34,7 @@ const verifyS3Config = () => {
   }
 };
 
-export const fileServiceFactory = (logger: FastifyBaseLogger) => {
+export const createfileService = (logger: FastifyBaseLogger) => {
   verifyLocalConfig();
   verifyS3Config();
 
