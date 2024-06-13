@@ -40,7 +40,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     limits: {
       // fieldNameSize: 0,             // Max field name size in bytes (Default: 100 bytes).
       // fieldSize: 1000000,           // Max field value size in bytes (Default: 1MB).
-      fields: 0, // Max number of non-file fields (Default: Infinity).
+      fields: 5, // Max number of non-file fields (Default: Infinity).
       // allow some fields for app data and app setting
       fileSize: maxFileSize, // For multipart forms, the max file size (Default: Infinity).
       files: uploadMaxFileNb, // Max number of file fields (Default: Infinity).
@@ -110,7 +110,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     await fileItemService.copy(actor, repositories, { original, copy });
   });
 
-  fastify.route<{ Querystring: IdParam; Body: unknown }>({
+  fastify.route<{ Querystring: IdParam & { previousItemId?: string }; Body: unknown }>({
     method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
@@ -118,7 +118,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     handler: async (request) => {
       const {
         user,
-        query: { id: parentId },
+        query: { id: parentId, previousItemId },
         log,
       } = request;
       const member = notUndefined(user?.member);
@@ -134,6 +134,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       const files = request.files();
       const items: Item[] = [];
       const errors: Error[] = [];
+
       for await (const fileObject of files) {
         const { filename, mimetype, file: stream } = fileObject;
 
@@ -148,6 +149,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
               filename,
               mimetype,
               stream,
+              previousItemId,
             });
             items.push(i);
           } catch (e) {
@@ -160,6 +162,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
             stream.emit('end');
           }
         });
+      }
+
+      // rescale is necessary when uploading multiple files: they have the same order number
+      if (items.length) {
+        await itemService.rescaleOrder(member, buildRepositories(), items[0]);
       }
 
       return {

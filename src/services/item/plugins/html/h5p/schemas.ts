@@ -7,6 +7,7 @@ export const h5pImport = {
     type: 'object',
     properties: {
       parentId: { $ref: 'https://graasp.org/#/definitions/uuid' },
+      previousItemId: { $ref: 'https://graasp.org/#/definitions/uuid' },
     },
     additionalProperties: false,
   },

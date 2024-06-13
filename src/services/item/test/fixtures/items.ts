@@ -21,7 +21,7 @@ import { ItemMembership } from '../../../itemMembership/entities/ItemMembership'
 import { ItemMembershipRepository } from '../../../itemMembership/repository';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemWrapper, PackedItem } from '../../ItemWrapper';
-import { Item, ItemExtraMap } from '../../entities/Item';
+import { DEFAULT_ORDER, Item, ItemExtraMap } from '../../entities/Item';
 import { ItemTag } from '../../plugins/itemTag/ItemTag';
 import { ItemTagRepository } from '../../plugins/itemTag/repository';
 import { setItemPublic } from '../../plugins/itemTag/test/fixtures';
@@ -91,6 +91,7 @@ export class ItemTestUtils {
       createdAt: new Date(item.createdAt),
       updatedAt: new Date(item.updatedAt),
       deletedAt: null,
+      order: args?.order ?? DEFAULT_ORDER,
     };
   }
 
