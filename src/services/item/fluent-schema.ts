@@ -1,4 +1,7 @@
 import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
+import { StatusCodes } from 'http-status-codes';
+
+import { FastifySchema } from 'fastify';
 
 import {
   DescriptionPlacement,
@@ -15,6 +18,9 @@ import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema';
 import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global';
 import { ITEMS_PAGE_SIZE } from './constants';
 import { Ordering, SortBy } from './types';
+
+export const SHOW_HIDDEN_PARRAM = 'showHidden';
+export const TYPES_FILTER_PARAM = 'types';
 
 /**
  * for serialization
@@ -217,10 +223,21 @@ export const getChildren = {
   },
 };
 
-export const getDescendants = {
+export const getDescendants: FastifySchema = {
   params: idParam,
+  querystring: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      [SHOW_HIDDEN_PARRAM]: { type: 'boolean', default: true },
+      [TYPES_FILTER_PARAM]: {
+        type: 'array',
+        items: { type: 'string', enum: Object.values(ItemType) },
+      },
+    },
+  },
   response: {
-    200: S.array().items(packedItem),
+    [StatusCodes.OK]: S.array().items(packedItem),
     '4xx': error,
   },
 };

@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 
-import { PermissionLevel } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { IdParam, IdsParams, PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
@@ -11,6 +11,8 @@ import { buildRepositories } from '../../utils/repositories';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
 import {
+  SHOW_HIDDEN_PARRAM,
+  TYPES_FILTER_PARAM,
   copyMany,
   deleteMany,
   getAccessible,
@@ -189,11 +191,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get item's descendants
-  fastify.get<{ Params: IdParam }>(
+  fastify.get<{
+    Params: IdParam;
+    Querystring: { [SHOW_HIDDEN_PARRAM]?: boolean; [TYPES_FILTER_PARAM]?: ItemTagType[] };
+  }>(
     '/:id/descendants',
     { schema: getDescendants, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { id } }) => {
-      return itemService.getPackedDescendants(member, buildRepositories(), id);
+    async ({ member, params: { id }, query }) => {
+      return itemService.getPackedDescendants(member, buildRepositories(), id, query);
     },
   );
 

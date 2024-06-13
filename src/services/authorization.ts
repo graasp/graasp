@@ -190,9 +190,14 @@ export const validatePermission = async (
 /**
  * Internal filtering function that takes out limited items (eg. hidden children)
  *  */
-const _filterOutItems = async (actor: Actor, repositories: Repositories, items: Item[]) => {
+const _filterOutItems = async (
+  actor: Actor,
+  repositories: Repositories,
+  items: Item[],
+  options?: { showHidden?: boolean },
+) => {
   const { itemMembershipRepository } = repositories;
-
+  const showHidden = options?.showHidden ?? true;
   if (!items.length) {
     return { items: [], memberships: [] };
   }
@@ -210,6 +215,9 @@ const _filterOutItems = async (actor: Actor, repositories: Repositories, items: 
   ]);
   const filteredItems = items.filter((item) => {
     const isHidden = tags.data[item.id].find((t) => t.type === ItemTagType.Hidden);
+    if (isHidden && !showHidden) {
+      return false;
+    }
     const permission = PermissionLevelCompare.getHighest(
       memberships[item.id]?.map(({ permission }) => permission),
     );
@@ -240,12 +248,13 @@ export const filterOutPackedItems = async (
   actor: Actor,
   repositories,
   items: Item[],
+  options?: { showHidden?: boolean },
 ): Promise<PackedItem[]> => {
   const {
     items: filteredItems,
     memberships,
     tags,
-  } = await _filterOutItems(actor, repositories, items);
+  } = await _filterOutItems(actor, repositories, items, options);
   return filteredItems.map((item) => {
     const permission = PermissionLevelCompare.getHighest(
       memberships[item.id]?.map(({ permission }) => permission),
