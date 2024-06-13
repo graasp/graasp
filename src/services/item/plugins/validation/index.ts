@@ -92,7 +92,7 @@ const plugin: FastifyPluginAsync<GraaspPluginValidationOptions> = async (fastify
         if (hasValidationSucceeded) {
           // publish automatically the item if it is valid.
           // private item will be set to public automatically (should ask the user on the frontend).
-          await publishService.post(member, repositories, itemId, { canBePrivate: true });
+          await publishService.publishIfNotExist(member, repositories, itemId);
         }
 
         // the process could take long time, so let the process run in the background and return the itemId instead

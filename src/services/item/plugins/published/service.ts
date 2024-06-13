@@ -1,6 +1,6 @@
 import { FastifyBaseLogger } from 'fastify';
 
-import { ItemTagType, PermissionLevel, UUID } from '@graasp/sdk';
+import { ItemTagType, PermissionLevel, PublishableItemTypeChecker, UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
 import type { MailerDecoration } from '../../../../plugins/mailer';
@@ -15,7 +15,7 @@ import { ItemWrapper } from '../../ItemWrapper';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { buildPublishedItemLink } from './constants';
-import { ItemPublishedNotFound } from './errors';
+import { ItemTypeNotAllowedToPublish } from './errors';
 
 interface ActionCount {
   actionCount: number;
@@ -77,6 +77,10 @@ export class ItemPublishedService {
     try {
       // get item published entry
       const publishedItem = await itemPublishedRepository.getForItem(item);
+
+      if (!publishedItem) {
+        return null;
+      }
       // get views from the actions table
       const totalViews = await actionRepository.getAggregationForItem(item.path, {
         view: 'library',
@@ -84,10 +88,6 @@ export class ItemPublishedService {
       });
       return { totalViews: (totalViews?.[0] as ActionCount)?.actionCount, ...publishedItem };
     } catch (err) {
-      // when the item is found but it is not published we simply return `null`
-      if (err instanceof ItemPublishedNotFound) {
-        return null;
-      }
       // if the error was not expecte we throw it back
       throw err;
     }
@@ -114,18 +114,31 @@ export class ItemPublishedService {
     };
   }
 
+  async publishIfNotExist(member: Member, repositories: Repositories, itemId: string) {
+    const { itemPublishedRepository } = repositories;
+
+    const item = await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
+
+    const itemPublished = await itemPublishedRepository.getForItem(item);
+
+    if (itemPublished) {
+      return itemPublished;
+    }
+
+    return await this.post(member, repositories, item, { canBePrivate: true });
+  }
+
   async post(
-    actor: Actor,
+    member: Member,
     repositories: Repositories,
-    itemId: string,
+    item: Item,
     { canBePrivate }: { canBePrivate?: boolean } = {},
   ) {
-    if (!actor) {
-      throw new UnauthorizedMember(actor);
-    }
     const { itemPublishedRepository, itemTagRepository } = repositories;
 
-    const item = await this.itemService.get(actor, repositories, itemId, PermissionLevel.Admin);
+    if (!PublishableItemTypeChecker.isItemTypeAllowedToBePublished(item.type)) {
+      throw new ItemTypeNotAllowedToPublish(item.id, item.type);
+    }
 
     // item should be public first
     const tag = await itemTagRepository.getType(item, ItemTagType.Public, {
@@ -136,19 +149,19 @@ export class ItemPublishedService {
     // it's usefull to publish the item automatically after the validation.
     // the user is asked to set the item to public in the frontend.
     if (!tag && canBePrivate) {
-      await itemTagRepository.post(actor, item, ItemTagType.Public);
+      await itemTagRepository.post(member, item, ItemTagType.Public);
     }
 
     // TODO: check validation is alright
 
-    await this.hooks.runPreHooks('create', actor, repositories, { item });
+    await this.hooks.runPreHooks('create', member, repositories, { item });
 
-    const published = await itemPublishedRepository.post(actor, item);
+    const published = await itemPublishedRepository.post(member, item);
 
-    await this.hooks.runPostHooks('create', actor, repositories, { item });
+    await this.hooks.runPostHooks('create', member, repositories, { item });
     //TODO: should we sent a publish hooks for all descendants? If yes take inspiration from delete method in ItemService
 
-    this._notifyContributors(actor, repositories, item);
+    this._notifyContributors(member, repositories, item);
 
     return published;
   }

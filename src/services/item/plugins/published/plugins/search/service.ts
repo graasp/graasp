@@ -9,7 +9,6 @@ import { Actor } from '../../../../../member/entities/member';
 import { ItemService } from '../../../../service';
 import { ItemCategoryService } from '../../../itemCategory/services/itemCategory';
 import { stripHtml } from '../../../validation/utils';
-import { ItemPublishedNotFound } from '../../errors';
 import { ItemPublishedService } from '../../service';
 import { MeiliSearchWrapper } from './meilisearch';
 
@@ -107,16 +106,16 @@ export class SearchService {
     itemService.hooks.setPostHook('create', async (member, repositories, { item: item }) => {
       try {
         // Check if the item is published (or has published parent)
-        await repositories.itemPublishedRepository.getForItem(item);
+        const published = await repositories.itemPublishedRepository.getForItem(item);
+
+        if (!published) {
+          return;
+        }
 
         // update index
         await this.meilisearchClient.indexOne(item, repositories);
       } catch (e) {
-        if (e instanceof ItemPublishedNotFound) {
-          return;
-        } else {
-          this.logger.error('Error during indexation, Meilisearch may be down');
-        }
+        this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
 
@@ -131,31 +130,31 @@ export class SearchService {
     itemService.hooks.setPostHook('copy', async (member, repositories, { copy: item }) => {
       try {
         // Check if the item is published (or has published parent)
-        await repositories.itemPublishedRepository.getForItem(item);
+        const published = await repositories.itemPublishedRepository.getForItem(item);
+
+        if (!published) {
+          return;
+        }
 
         // update index
         await this.meilisearchClient.indexOne(item, repositories);
       } catch (e) {
-        if (e instanceof ItemPublishedNotFound) {
-          return;
-        } else {
-          this.logger.error('Error during indexation, Meilisearch may be down');
-        }
+        this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
 
     itemService.hooks.setPostHook('update', async (member, repositories, { item }) => {
       try {
         // Check if the item is published (or has published parent)
-        await repositories.itemPublishedRepository.getForItem(item);
+        const published = await repositories.itemPublishedRepository.getForItem(item);
+
+        if (!published) {
+          return;
+        }
         // update index
         await this.meilisearchClient.indexOne(item, repositories);
       } catch (e) {
-        if (e instanceof ItemPublishedNotFound) {
-          return;
-        } else {
-          this.logger.error('Error during indexation, Meilisearch may be down');
-        }
+        this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
 
@@ -163,16 +162,17 @@ export class SearchService {
       try {
         // Check if published from moved item up to tree root
         const published = await repositories.itemPublishedRepository.getForItem(destination);
-        // destination or moved item is published, we must update the index
-        // update index from published
-        await this.meilisearchClient.indexOne(published.item, repositories);
-      } catch (e) {
-        if (e instanceof ItemPublishedNotFound) {
+
+        if (published) {
+          // destination or moved item is published, we must update the index
+          // update index from published
+          await this.meilisearchClient.indexOne(published.item, repositories);
+        } else {
           // nothing published, we must delete if it exists in index
           await this.meilisearchClient.deleteOne(destination, repositories);
-        } else {
-          this.logger.error('Error during indexation, Meilisearch may be down');
         }
+      } catch (e) {
+        this.logger.error('Error during indexation, Meilisearch may be down');
       }
     });
 
@@ -187,14 +187,14 @@ export class SearchService {
             itemCategory.item,
           );
 
+          if (!published) {
+            return;
+          }
+
           // update item and its children
           await this.meilisearchClient.indexOne(published.item, repositories);
         } catch (e) {
-          if (e instanceof ItemPublishedNotFound) {
-            return;
-          } else {
-            this.logger.error('Error during indexation, Meilisearch may be down');
-          }
+          this.logger.error('Error during indexation, Meilisearch may be down');
         }
       },
     );
@@ -208,14 +208,14 @@ export class SearchService {
             itemCategory.item,
           );
 
+          if (!published) {
+            return;
+          }
+
           // update item and its children
           await this.meilisearchClient.indexOne(published.item, repositories);
         } catch (e) {
-          if (e instanceof ItemPublishedNotFound) {
-            return;
-          } else {
-            this.logger.error('Error during indexation, Meilisearch may be down');
-          }
+          this.logger.error('Error during indexation, Meilisearch may be down');
         }
       },
     );

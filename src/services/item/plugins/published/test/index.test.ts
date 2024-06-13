@@ -415,6 +415,25 @@ describe('Item Published', () => {
         expect(res.json()).toMatchObject(new MemberCannotAdminItem(expect.anything()));
       });
 
+      it('Cannot publish non-folder item', async () => {
+        const member = await saveMember();
+        const { item } = await testUtils.saveItemAndMembership({
+          item: {
+            type: ItemType.APP,
+          },
+          creator: member,
+          member: actor,
+          permission: PermissionLevel.Admin,
+        });
+        await rawRepository.save({ item, type: ItemTagType.Public, creator: member });
+
+        const res = await app.inject({
+          method: HttpMethod.Post,
+          url: `${ITEMS_ROUTE_PREFIX}/collections/${item.id}/publish`,
+        });
+        expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      });
+
       it('Throws if item id is invalid', async () => {
         const res = await app.inject({
           method: HttpMethod.Post,
