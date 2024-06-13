@@ -58,6 +58,9 @@ export type ItemSettingsMap = {
   [ItemType.SHORTCUT]: ItemSettings;
 };
 
+/** insert at beginning by default, so we need some margin */
+export const DEFAULT_ORDER = 20;
+
 // utility type to describe the union of the potential item extras before the `type` of an item is known or checked using a typeguard
 export type ItemExtraUnion = ItemExtraMap[keyof ItemExtraMap];
 
@@ -145,6 +148,14 @@ export class Item<T extends ItemTypeEnumKeys = ItemTypeEnumKeys> extends BaseEnt
   // plus this value should be at least the same set of member.extra.lang
   @Column({ nullable: false, default: 'en' })
   lang: string;
+
+  @Column({
+    type: 'numeric',
+    default: null,
+    select: false,
+    nullable: true,
+  })
+  order: number | null;
 
   @Column({
     type: 'tsvector',

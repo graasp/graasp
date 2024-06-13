@@ -86,6 +86,7 @@ export class ItemService {
       parentId?: string;
       geolocation?: Pick<ItemGeolocation, 'lat' | 'lng'>;
       thumbnail?: Readable;
+      previousItemId?: Item['id'];
     },
   ): Promise<Item> {
     if (!actor) {
@@ -131,6 +132,18 @@ export class ItemService {
       if (descendants.length + 1 > MAX_NUMBER_OF_CHILDREN) {
         throw new TooManyChildren();
       }
+
+      // no previous item adds at the beginning
+      if (!args.previousItemId) {
+        item.order = await repositories.itemRepository.getFirstOrderValue(parentItem.path);
+      }
+      // define order, from given previous item id if exists
+      else {
+        item.order = await repositories.itemRepository.getNextOrderCount(
+          parentItem.path,
+          args.previousItemId,
+        );
+      }
     }
 
     this.log.debug(`create item ${item.name}`);
@@ -148,16 +161,6 @@ export class ItemService {
         member: actor,
         creator: actor,
         permission: PermissionLevel.Admin,
-      });
-    }
-
-    if (parentId && parentItem) {
-      this.log.debug(`update parent ${parentId} children order with new child`);
-      // add new item id in parent extra.folder.childrenOrder
-      // the optional on "folder" is present to support legacy data where the extra might be an empty object
-      const newChildrenOrder = [...(parentItem.extra.folder?.childrenOrder ?? []), createdItem.id];
-      await itemRepository.patch(parentItem.id, {
-        extra: { folder: { ...parentItem.extra.folder, childrenOrder: newChildrenOrder } },
       });
     }
 
@@ -371,7 +374,6 @@ export class ItemService {
     params?: ItemChildrenParams,
   ) {
     const children = await this._getChildren(actor, repositories, itemId, params);
-
     // TODO optimize?
     return filterOutItems(actor, repositories, children);
   }
@@ -576,7 +578,7 @@ export class ItemService {
     }
 
     const { itemRepository } = repositories;
-    // TODO: check memberships
+
     let parentItem;
     if (toItemId) {
       parentItem = await itemRepository.get(toItemId);
@@ -746,5 +748,31 @@ export class ItemService {
       itemIds.map((id) => this.copy(actor, repositories, id, args)),
     );
     return { items: results.map(({ item }) => item), copies: results.map(({ copy }) => copy) };
+  }
+
+  async reorder(
+    actor: Member,
+    repositories: Repositories,
+    itemId: string,
+    body: { previousItemId?: string },
+  ) {
+    const item = await this.get(actor, repositories, itemId);
+
+    return repositories.itemRepository.reorder(item, body.previousItemId);
+  }
+
+  /**
+   * Rescale order of children (of itemId's parent) if necessary
+   * @param member
+   * @param repositories
+   * @param itemId item whose parent get its children order rescaled if necessary
+   */
+  async rescaleOrder(member: Member, repositories: Repositories, item: Item) {
+    const parentId = getParentFromPath(item.path);
+    if (parentId) {
+      // TODO: get siblings!!!!!!!
+      const parentItem = await this.get(member, repositories, parentId);
+      await repositories.itemRepository.rescaleOrder(parentItem);
+    }
   }
 }

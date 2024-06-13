@@ -21,6 +21,7 @@ import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
 import { StorageService } from '../../../member/plugins/storage/service';
 import { randomHexOf4 } from '../../../utils';
+import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { readPdfContent } from '../../utils';
 import { ItemThumbnailService } from '../thumbnail/service';
@@ -59,12 +60,14 @@ class FileItemService {
       filename,
       mimetype,
       stream,
+      previousItemId,
     }: {
       description?: string;
       parentId?: string;
       filename;
       mimetype: string;
       stream: Readable;
+      previousItemId?: Item['id'];
     },
   ) {
     const filepath = this.buildFilePath(getFileExtension(filename)); // parentId, filename
@@ -122,6 +125,7 @@ class FileItemService {
       const newItem = await this.itemService.post(actor, repositories, {
         item,
         parentId,
+        previousItemId,
       });
 
       // add thumbnails if image

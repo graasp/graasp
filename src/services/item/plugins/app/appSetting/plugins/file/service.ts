@@ -40,7 +40,6 @@ class AppSettingFileService {
     const appSettingId = v4();
     const filepath = this.buildFilePath(item.id, appSettingId); // parentId, filename
 
-    // TODO: CHECK that it is working
     // compute body data from file's fields
     let name = 'file';
     if (fields) {
@@ -52,12 +51,6 @@ class AppSettingFileService {
       );
       name = fileBody?.name?.substring(0, MAX_ITEM_NAME_LENGTH) ?? 'file';
     }
-    // TODO: REMOVE???
-    // remove undefined values
-    // const values = { ...fileBody };
-    // Object.keys(values).forEach((key) => values[key] === undefined && delete values[key]);
-
-    // const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
 
     const fileProperties = await this.fileService
       .upload(member, {

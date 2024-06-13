@@ -1,5 +1,5 @@
 import { Item } from '../entities/Item';
-import { sortChildrenWith } from '../utils';
+import { sortChildrenForTreeWith } from '../utils';
 
 const a = {
   id: 'a',
@@ -28,12 +28,12 @@ const f = {
 
 const items = [a, b, c, d, e, f];
 
-describe('sortChildrenWith', () => {
+describe('sortChildrenForTreeWith', () => {
   it('Order correctly with all items in order list', () => {
     const result = [a, e, f, b, c, d];
     const order = result.map(({ id }) => id);
     const copy = [...items];
-    copy.sort(sortChildrenWith(order));
+    copy.sort(sortChildrenForTreeWith(order));
 
     expect(copy).toEqual(result);
   });
@@ -41,13 +41,13 @@ describe('sortChildrenWith', () => {
     const result = [e, b, f, d];
     const order = result.map(({ id }) => id);
     const copy = [...items];
-    copy.sort(sortChildrenWith(order));
+    copy.sort(sortChildrenForTreeWith(order));
 
     expect(copy).toEqual([...result, a, c]);
   });
   it('Order correctly with empty order list', () => {
     const result = [...items];
-    items.sort(sortChildrenWith([]));
+    items.sort(sortChildrenForTreeWith([]));
 
     expect(items).toEqual(result);
   });
@@ -56,7 +56,7 @@ describe('sortChildrenWith', () => {
     const order = result.map(({ id }) => id);
     const orderWithRandomIds = ['x', ...order, 'y'];
     const copy = [...items];
-    copy.sort(sortChildrenWith(orderWithRandomIds));
+    copy.sort(sortChildrenForTreeWith(orderWithRandomIds));
 
     expect(copy).toEqual([...result, a, c]);
   });

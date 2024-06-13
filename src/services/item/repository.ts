@@ -11,6 +11,7 @@ import {
   PermissionLevel,
   buildPathFromIds,
   getChildFromPath,
+  getIdsFromPath,
   getParentFromPath,
 } from '@graasp/sdk';
 
@@ -28,12 +29,13 @@ import { Member } from '../member/entities/member';
 import { itemSchema } from '../member/plugins/export-data/schemas/schemas';
 import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
 import { mapById } from '../utils';
-import { FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
+import { DEFAULT_ORDER, FolderItem, Item, ItemExtraUnion, isItemType } from './entities/Item';
 import { ItemChildrenParams } from './types';
-import { _fixChildrenOrder, sortChildrenForTreeWith, sortChildrenWith } from './utils';
+import { sortChildrenForTreeWith } from './utils';
 
 const DEFAULT_COPY_SUFFIX = ' (2)';
 const IS_COPY_REGEX = /\s\(\d+\)$/;
+const RESCALE_ORDER_THRESHOLD = 0.1;
 
 const DEFAULT_THUMBNAIL_SETTING: ItemSettings = {
   hasThumbnail: false,
@@ -86,6 +88,7 @@ export class ItemRepository {
     creator: Item['creator'];
     lang?: Item['lang'];
     parent?: Item;
+    order?: Item['order'];
   }) {
     const {
       name,
@@ -97,6 +100,7 @@ export class ItemRepository {
       settings = {},
       lang,
       creator,
+      order,
     } = args;
 
     if (parent && !isItemType(parent, ItemType.FOLDER)) {
@@ -127,6 +131,7 @@ export class ItemRepository {
       // set lang from user lang
       lang: lang ?? creator?.lang ?? 'en',
       creator,
+      order,
     });
     item.path = parent ? `${parent.path}.${buildPathFromIds(id)}` : buildPathFromIds(id);
 
@@ -175,13 +180,16 @@ export class ItemRepository {
       .getMany();
   }
 
-  async getChildren(parent: Item, params?: ItemChildrenParams): Promise<Item[]> {
+  async getChildren(
+    parent: Item,
+    params?: ItemChildrenParams,
+    options: { withOrder?: boolean } = {},
+  ): Promise<Item[]> {
     if (!isItemType(parent, ItemType.FOLDER)) {
       throw new ItemNotFolder(parent);
     }
 
-    // CHECK SQL
-    const query = await this.repository
+    const query = this.repository
       .createQueryBuilder('item')
       .leftJoinAndSelect('item.creator', 'creator')
       .where('path ~ :path', { path: `${parent.path}.*{1}` });
@@ -191,15 +199,17 @@ export class ItemRepository {
       query.andWhere('item.type IN (:...types)', { types });
     }
 
-    const children = await query.orderBy('item.createdAt', 'ASC').getMany();
-
     if (params?.ordered) {
-      const { extra: { folder } = {} } = parent;
-      const childrenOrder = folder?.childrenOrder ?? [];
-      const compareFn = sortChildrenWith(childrenOrder);
-      children.sort(compareFn);
+      query.orderBy('item.order', 'ASC');
+    } else {
+      query.orderBy('item.createdAt', 'ASC');
     }
-    return children;
+
+    if (options.withOrder) {
+      query.addSelect('item.order');
+    }
+
+    return query.getMany();
   }
 
   /**
@@ -211,10 +221,10 @@ export class ItemRepository {
    */
   async getDescendants(
     item: FolderItem,
-    options?: { ordered?: boolean; types?: string[] },
+    options?: { ordered?: boolean; types?: string[]; selectOrder?: boolean },
   ): Promise<Item[]> {
     // TODO: LEVEL depth
-    const { ordered = true, types } = options ?? {};
+    const { ordered = true, types, selectOrder } = options ?? {};
 
     const query = this.repository
       .createQueryBuilder('item')
@@ -226,11 +236,15 @@ export class ItemRepository {
       query.andWhere('item.type IN (:...types)', { types });
     }
 
+    // need order column to further sort in this function or afterwards
+    if (ordered || selectOrder) {
+      query.addSelect('item.order');
+    }
+
     if (!ordered) {
       return query.getMany();
     }
 
-    query.orderBy('item.path', 'ASC');
     const descendants = await query.getMany();
     return sortChildrenForTreeWith(descendants, item);
   }
@@ -369,10 +383,13 @@ export class ItemRepository {
       ? `'${parentItem.path}' || subpath(path, nlevel('${item.path}') - 1)`
       : `subpath(path, nlevel('${item.path}') - 1)`;
 
+    // get new order value
+    const order = await this.getNextOrderCount(parentItem?.path);
+
     await this.repository
       .createQueryBuilder('item')
       .update()
-      .set({ path: () => pathSql })
+      .set({ path: () => pathSql, order })
       .where('item.path <@ :path', { path: item.path })
       .execute();
 
@@ -442,11 +459,9 @@ export class ItemRepository {
       throw new ItemNotFolder(parentItem.id);
     }
 
-    const descendants = await this.getDescendants(item as FolderItem, { ordered: true });
     // copy (memberships from origin are not copied/kept)
-    const treeItemsCopy = this._copy(item, descendants, creator, parentItem);
+    const treeItemsCopy = await this._copy(item, creator, parentItem);
 
-    _fixChildrenOrder(treeItemsCopy);
     // return copy item + all descendants
     const newItems = [...treeItemsCopy.values()].map(({ copy }) => copy);
     const createdOp = await this.repository.insert(newItems as QueryDeepPartialEntity<Item>);
@@ -464,53 +479,62 @@ export class ItemRepository {
 
   /**
    * Copy whole tree with new paths and same member as creator
-   * @param originalParent original item to be copied
-   * @param descendants all descendants from  originalParent. This array is supposed to be sorted beforehand!
-   * @param tree Item and all descendants to copy
+   * @param original original item to be copied
    * @param parentItem Parent item whose path will 'prefix' all paths
    */
-  private _copy(originalParent: Item, descendants: Item[], creator: Member, parentItem?: Item) {
+  private async _copy(original: Item, creator: Member, parentItem?: Item) {
     const old2New = new Map<string, { copy: Item; original: Item }>();
+
+    // get next order value
+    const order = await this.getNextOrderCount(parentItem?.path);
 
     // copy target parent
     const copiedItem = this.createOne({
-      ...originalParent,
+      ...original,
       creator,
       parent: parentItem,
-      name: this._addCopySuffix(originalParent.name),
+      name: this._addCopySuffix(original.name),
+      order,
     });
-    old2New.set(originalParent.id, { copy: copiedItem, original: originalParent });
+    old2New.set(original.id, { copy: copiedItem, original: original });
 
-    for (let i = 0; i < descendants.length; i++) {
-      const original = descendants[i];
-      const { id, path } = original;
-
-      // process to get copy of direct parent
-      const pathSplit = path.split('.');
-      const oldPath = pathSplit.pop();
-      // this shouldn't happen
-      if (!oldPath) {
-        throw new Error('Path is not defined');
-      }
-      const oldParentPath = pathSplit.pop();
-      // this shouldn't happen
-      if (!oldParentPath) {
-        throw new Error('Path is not defined');
-      }
-      const oldParentId_ = getChildFromPath(oldParentPath);
-      const oldParentObject = old2New.get(oldParentId_);
-      // this shouldn't happen
-      if (!oldParentObject) {
-        throw new Error('Old parent is not defined');
-      }
-
-      const copiedItem = this.createOne({
-        ...original,
-        creator,
-        parent: oldParentObject.copy,
+    // handle descendants - change path
+    if (isItemType(original, ItemType.FOLDER)) {
+      const descendants = await this.getDescendants(original, {
+        ordered: true,
+        selectOrder: true,
       });
+      for (let i = 0; i < descendants.length; i++) {
+        const original = descendants[i];
+        const { id, path } = original;
 
-      old2New.set(id, { copy: copiedItem, original });
+        // process to get copy of direct parent
+        const pathSplit = path.split('.');
+        const oldPath = pathSplit.pop();
+        // this shouldn't happen
+        if (!oldPath) {
+          throw new Error('Path is not defined');
+        }
+        const oldParentPath = pathSplit.pop();
+        // this shouldn't happen
+        if (!oldParentPath) {
+          throw new Error('Path is not defined');
+        }
+        const oldParentId_ = getChildFromPath(oldParentPath);
+        const oldParentObject = old2New.get(oldParentId_);
+        // this shouldn't happen
+        if (!oldParentObject) {
+          throw new Error('Old parent is not defined');
+        }
+
+        const copiedItem = this.createOne({
+          ...original,
+          creator,
+          parent: oldParentObject.copy,
+        });
+
+        old2New.set(id, { copy: copiedItem, original });
+      }
     }
 
     return old2New;
@@ -609,5 +633,136 @@ export class ItemRepository {
   }
   async recover(args: Item[]) {
     return this.repository.recover(args);
+  }
+
+  /**
+   * Return the next valid order value to use for inserting a new item.
+   * This value is bigger than the position of given `itemId` but smaller than the next row.
+   * Throw if used outside of a parent/folder.
+   * @param parentPath scope of the order
+   * @param previousItemId id of the item whose order will be smaller than the returned order
+   * @returns {number|null} next valid order value
+   */
+  async getNextOrderCount(
+    parentPath?: Item['path'],
+    previousItemId?: Item['id'],
+  ): Promise<number | null> {
+    // no order for root
+    if (!parentPath) {
+      return null;
+    }
+
+    const q = this.repository
+      .createQueryBuilder('item')
+      // default value: self order + defaultordervalue to increase of one the order
+      .select(
+        '(item.order + (lead(item.order, 1, item.order + (' +
+          DEFAULT_ORDER +
+          '*2)) OVER (ORDER BY item.order)))/2',
+        'next',
+      )
+      .where('path <@ :path', { path: parentPath })
+      .andWhere('path != :path', { path: parentPath });
+
+    // by default take the biggest value
+    let orderDirection: 'DESC' | 'ASC' = 'DESC';
+
+    if (previousItemId) {
+      const previousItem = await this.repository.findOne({
+        where: { id: previousItemId },
+        select: { order: true },
+      });
+      // if needs to add in between, remove previous elements and order by next value to get the first one
+      if (previousItem) {
+        q.andWhere('item.order >= :previousOrder', { previousOrder: previousItem.order });
+        // will take smallest value corresponding to given previous item id
+        orderDirection = 'ASC';
+      }
+    }
+
+    q.orderBy('next', orderDirection);
+
+    const result = await q.limit(1).getRawOne<{ next: number }>();
+    return result?.next ? +result.next : DEFAULT_ORDER;
+  }
+
+  /**
+   * Return the first valid order value to use for inserting a new item at the beginning of the list, or whether there's no list.
+   * This value is smaller than the smallest order that already exists.
+   * If the parent item does not have children, it will return `undefined`
+   * @param parentPath scope of the order
+   * @returns {number|null} first valid order value, can be `null` for root
+   */
+  async getFirstOrderValue(parentPath?: Item['path']) {
+    // no order for root
+    if (!parentPath) {
+      return null;
+    }
+
+    const q = this.repository
+      .createQueryBuilder('item')
+      .select('item.order')
+      .where('path <@ :path AND path != :path', { path: parentPath })
+      .orderBy('item.order')
+      .limit(1);
+
+    const result = await q.getOne();
+    if (result && result.order) {
+      return result.order - result.order / 2;
+    }
+    return DEFAULT_ORDER;
+  }
+
+  async reorder(item: Item, previousItemId?: string) {
+    const ids = getIdsFromPath(item.path);
+
+    // TODO !!!!!!!!!!!
+    if (ids.length <= 1) {
+      throw new Error('no parent');
+    }
+
+    const parentPath = buildPathFromIds(...ids.slice(0, -1));
+
+    // no defined previous item is set at beginning
+    let order;
+    if (!previousItemId) {
+      // warning: by design reordering among one item will decrease this item order
+      order = await this.getFirstOrderValue(parentPath);
+    } else {
+      order = await this.getNextOrderCount(parentPath, previousItemId);
+    }
+
+    await this.repository.update(item.id, { order });
+
+    // todo: optimize
+    return this.get(item.id);
+  }
+
+  async rescaleOrder(parentItem: Item) {
+    const children = await this.getChildren(parentItem, { ordered: true }, { withOrder: true });
+
+    if (!children.length) {
+      return;
+    }
+
+    // TODO: TO MOVE !!!!
+    const minInterval = (arr) =>
+      Math.min(...arr.slice(1).map((val, key) => Math.abs(val - arr[key])));
+    const min = minInterval(children.map(({ order }) => order));
+
+    if (min < RESCALE_ORDER_THRESHOLD) {
+      // rescale order from multiple of default order
+      const values: Pick<Item, 'id' | 'order'>[] = children.map(({ id }, idx) => ({
+        id,
+        order: DEFAULT_ORDER * (idx + 1),
+      }));
+
+      // can update in disorder
+      await Promise.all(
+        values.map((i) => {
+          this.repository.update(i.id, i);
+        }),
+      );
+    }
   }
 }

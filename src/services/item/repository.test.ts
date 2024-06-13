@@ -24,7 +24,7 @@ import {
   TooManyDescendants,
 } from '../../utils/errors';
 import { expectMember, saveMember } from '../member/test/fixtures/members';
-import { FolderItem, Item } from './entities/Item';
+import { DEFAULT_ORDER, FolderItem, Item } from './entities/Item';
 import { ItemRepository } from './repository';
 import { ItemTestUtils, expectItem, expectManyItems } from './test/fixtures/items';
 
@@ -262,12 +262,12 @@ describe('ItemRepository', () => {
     it('Returns ordered children', async () => {
       const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
       const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1' },
+        item: { name: 'child1', order: 2 },
         member: actor,
         parentItem: parent,
       });
       const { packedItem: child2 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child2' },
+        item: { name: 'child2', order: 1 },
         member: actor,
         parentItem: parent,
       });
@@ -275,45 +275,14 @@ describe('ItemRepository', () => {
       const childrenInOrder = [child2, child1];
       const children = [child1, child2];
 
-      const patchedParent = await itemRepository.patch(parent.id, {
-        extra: { [ItemType.FOLDER]: { childrenOrder: childrenInOrder.map(({ id }) => id) } },
-      });
-
       // create child of child
       await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-      const data = await itemRepository.getChildren(patchedParent, { ordered: true });
+      const data = await itemRepository.getChildren(parent, { ordered: true });
       expect(data).toHaveLength(children.length);
       // verify order and content
       childrenInOrder.forEach((child, idx) => {
         const resultChild = data[idx];
         expectItem(resultChild, child);
-      });
-    });
-    it('Returns ordered successfully even without order defined', async () => {
-      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
-      const { packedItem: child1, item: parentItem1 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child1' },
-        member: actor,
-        parentItem: parent,
-      });
-      const { packedItem: child2 } = await testUtils.saveItemAndMembership({
-        item: { name: 'child2' },
-        member: actor,
-        parentItem: parent,
-      });
-
-      const children = [child1, child2];
-
-      // create child of child
-      await testUtils.saveItemAndMembership({ member: actor, parentItem: parentItem1 });
-
-      const data = await itemRepository.getChildren(parent, { ordered: true });
-      expect(data).toHaveLength(children.length);
-      children.forEach(({ id }) => {
-        expectItem(
-          data.find(({ id: thisId }) => thisId === id),
-          children.find(({ id: thisId }) => thisId === id),
-        );
       });
     });
 
@@ -371,6 +340,40 @@ describe('ItemRepository', () => {
       const data = await itemRepository.getDescendants(parent as FolderItem);
       expect(data).toHaveLength(descendants.length);
       expectManyItems(data, descendants);
+    });
+
+    it('Returns successfully ordered', async () => {
+      const { item: parent } = await testUtils.saveItemAndMembership({ member: actor });
+      const { item: parentItem1 } = await testUtils.saveItemAndMembership({
+        item: { name: 'child1', order: 3 },
+        member: actor,
+        parentItem: parent,
+      });
+      const { item: child2 } = await testUtils.saveItemAndMembership({
+        item: { name: 'child2', order: 2 },
+        member: actor,
+        parentItem: parent,
+      });
+      const { item: childOfChild } = await testUtils.saveItemAndMembership({
+        member: actor,
+        parentItem: parentItem1,
+      });
+      const { item: childOfChild1 } = await testUtils.saveItemAndMembership({
+        item: { name: 'childOfChild1', order: 2 },
+        member: actor,
+        parentItem: childOfChild,
+      });
+      const { item: childOfChild2 } = await testUtils.saveItemAndMembership({
+        member: actor,
+        item: { name: 'childOfChild2', order: 1 },
+        parentItem: childOfChild,
+      });
+      const descendants = [child2, parentItem1, childOfChild, childOfChild2, childOfChild1];
+      const data = await itemRepository.getDescendants(parent as FolderItem, { ordered: true });
+      expectManyItems(data, descendants);
+      descendants.forEach((v, idx) => {
+        expectItem(data[idx], v);
+      });
     });
 
     it('Returns successfully empty descendants', async () => {
@@ -645,6 +648,57 @@ describe('ItemRepository', () => {
       expect(newItem!.path).toContain(parentItem.path);
       expect(newItem!.creator!.id).toEqual(actor.id);
     });
+
+    describe('getNextOrderCount', () => {
+      it('return default value for no children', async () => {
+        const parentItem = await testUtils.saveItem({ actor });
+        expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(DEFAULT_ORDER);
+      });
+      it('no parent throws', () => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        expect(() => itemRepository.getNextOrderCount()).rejects.toThrow();
+      });
+      it('return in between value for item id', async () => {
+        const parentItem = await testUtils.saveItem({ actor });
+        const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
+        expect(await itemRepository.getNextOrderCount(parentItem.path, item1.id)).toEqual(15);
+        const item2 = await testUtils.saveItem({ actor, parentItem, item: { order: 20 } });
+        expect(await itemRepository.getNextOrderCount(parentItem.path, item2.id)).toEqual(22.5);
+        const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 25 } });
+        expect(await itemRepository.getNextOrderCount(parentItem.path, item3.id)).toEqual(35);
+      });
+      it('return biggest value if no item id', async () => {
+        const parentItem = await testUtils.saveItem({ actor });
+        await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
+        await testUtils.saveItem({ actor, parentItem, item: { order: 20 } });
+        await testUtils.saveItem({ actor, parentItem, item: { order: 25 } });
+        expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(35);
+      });
+    });
+
+    describe('ordering', () => {
+      // move to decendants
+      it.skip('get descendants ordered', () => {});
+      it.skip('get descendants un-ordered', () => {});
+
+      it.skip('default add at beginning', () => {});
+      it.skip('add at end', () => {});
+      it.skip('add in between', () => {});
+      it.skip('add after invalid item add at beginning', () => {});
+
+      // reorder
+      it.skip('reorder at beginning', () => {});
+      it.skip('reorder at end', () => {});
+      it.skip('reorder in between', () => {});
+
+      // to move to move
+      it.skip('move in root', () => {});
+      it.skip('move in folder', () => {});
+
+      // move to copy
+      it.skip('copy folder keeps children order', () => {});
+      it.skip('copy item changes order to end', () => {});
+    });
   });
   describe('copy', () => {
     it('copy successfully', async () => {
@@ -778,6 +832,184 @@ describe('ItemRepository', () => {
 
       const result = await itemRepository.getPublishedItemsForMember(actor.id);
       expectManyItems(result, items);
+    });
+  });
+  describe('getNextOrderCount', () => {
+    it('get next order for empty path', async () => {
+      expect(await itemRepository.getNextOrderCount()).toBeNull();
+    });
+    it('get next order for no children', async () => {
+      const item = await testUtils.saveItem({ actor });
+      expect(await itemRepository.getNextOrderCount(item.path)).toEqual(DEFAULT_ORDER);
+    });
+    it('get next order for one child', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+
+      await testUtils.saveItem({ actor, parentItem, item: { order: 5 } });
+      expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(15);
+    });
+    it('get next order in between two children', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+
+      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 30 } });
+      await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
+      expect(await itemRepository.getNextOrderCount(parentItem.path, item.id)).toEqual(35);
+    });
+    it('get next order for last child', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
+      expect(await itemRepository.getNextOrderCount(parentItem.path, item.id)).toEqual(50);
+    });
+    it('no previous item id return latest order', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
+      expect(await itemRepository.getNextOrderCount(parentItem.path)).toEqual(50);
+    });
+  });
+  describe('getFirstOrderValue', () => {
+    it('get first order for empty path', async () => {
+      expect(await itemRepository.getFirstOrderValue()).toBeNull();
+    });
+    it('get first order for no child', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      expect(await itemRepository.getFirstOrderValue(parentItem.path)).toEqual(DEFAULT_ORDER);
+    });
+    it('get first order for children', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
+      await testUtils.saveItem({ actor, parentItem, item: { order: 50 } });
+      expect(await itemRepository.getFirstOrderValue(parentItem.path)).toEqual(20);
+    });
+  });
+  describe('reorder', () => {
+    it('no previous item reorder at first place', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
+      await itemRepository.reorder(item);
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual(5);
+    });
+    it('reorder in one child will return smaller order', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 10 } });
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item.id },
+          select: { order: true },
+        }))!.order,
+      ).toBeLessThan(10);
+    });
+    it('cannot reorder in root', async () => {
+      const item = await testUtils.saveItem({ actor });
+      expect(() => itemRepository.reorder(item)).rejects.toThrow();
+    });
+    it('reorder in between children after previous item', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
+      const previousItem = await testUtils.saveItem({ actor, parentItem, item: { order: 50 } });
+      await testUtils.saveItem({ actor, parentItem, item: { order: 70 } });
+      await itemRepository.reorder(item, previousItem.id);
+
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual(60);
+    });
+    it('reorder at the end after previous item', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      const item = await testUtils.saveItem({ actor, parentItem, item: { order: 40 } });
+      const previousItem = await testUtils.saveItem({ actor, parentItem, item: { order: 50 } });
+      await itemRepository.reorder(item, previousItem.id);
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual(60);
+    });
+  });
+  describe('rescaleOrder', () => {
+    it('rescale no children does no update', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+      const updateFn = jest.spyOn(testUtils.rawItemRepository, 'update');
+      await itemRepository.rescaleOrder(parentItem);
+      expect(updateFn).not.toHaveBeenCalled();
+    });
+    it('rescale children', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+
+      const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.1 } });
+      const item2 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.12 } });
+      const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.14 } });
+      const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 10.13 } });
+
+      await itemRepository.rescaleOrder(parentItem);
+
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item1.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('20');
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item2.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('40');
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item3.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('80');
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item4.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('60');
+    });
+    it('do not rescale if bigger than threshold', async () => {
+      const parentItem = await testUtils.saveItem({ actor });
+
+      const item1 = await testUtils.saveItem({ actor, parentItem, item: { order: 11 } });
+      const item2 = await testUtils.saveItem({ actor, parentItem, item: { order: 12 } });
+      const item3 = await testUtils.saveItem({ actor, parentItem, item: { order: 14 } });
+      const item4 = await testUtils.saveItem({ actor, parentItem, item: { order: 13 } });
+
+      await itemRepository.rescaleOrder(parentItem);
+
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item1.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('11');
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item2.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('12');
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item3.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('14');
+      expect(
+        (await testUtils.rawItemRepository.findOne({
+          where: { id: item4.id },
+          select: { order: true },
+        }))!.order,
+      ).toEqual('13');
     });
   });
 });

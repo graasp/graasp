@@ -26,6 +26,7 @@ import {
   getParents,
   getShared,
   moveMany,
+  reorder,
   updateMany,
 } from './fluent-schema';
 import { ActionItemService } from './plugins/action/service';
@@ -45,6 +46,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{
     Querystring: {
       parentId?: string;
+      previousItemId?: string;
     };
     Body: Partial<Item> & Pick<Item, 'name' | 'type'> & Pick<ItemGeolocation, 'lat' | 'lng'>;
   }>(
@@ -53,23 +55,30 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: items.extendCreateSchema(),
       preHandler: isAuthenticated,
     },
-    async (request) => {
+    async (request, reply) => {
       const {
         user,
-        query: { parentId },
+        query: { parentId, previousItemId },
         body: data,
       } = request;
 
-      return await db.transaction(async (manager) => {
+      const item = await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const item = await itemService.post(user?.member, repositories, {
           item: data,
+          previousItemId,
           parentId,
           geolocation: data.geolocation,
         });
-        await actionItemService.postPostAction(request, repositories, item);
         return item;
       });
+
+      reply.send(item);
+
+      const repositories = buildRepositories();
+      // background operations, no need to await
+      actionItemService.postPostAction(request, repositories, item);
+      itemService.rescaleOrder(user?.member, repositories, item);
     },
   );
 
@@ -280,6 +289,33 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
+    },
+  );
+
+  fastify.patch<{ Params: { id: string }; Body: { previousItemId?: string } }>(
+    '/:id/reorder',
+    {
+      schema: reorder,
+      preHandler: isAuthenticated,
+    },
+    async (request, reply) => {
+      const {
+        user,
+        params: { id },
+        body,
+      } = request;
+
+      const member = notUndefined(user?.member);
+
+      const item = await db.transaction(async (manager) => {
+        const repositories = buildRepositories(manager);
+        return itemService.reorder(member, repositories, id, body);
+      });
+
+      reply.send(item);
+
+      // background operation, no need to await
+      itemService.rescaleOrder(member, buildRepositories(), item);
     },
   );
 

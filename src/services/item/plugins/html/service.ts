@@ -166,8 +166,11 @@ export abstract class HtmlService {
       baseName: string,
       contentId: string,
       parentId?: Item['id'],
+      previousItemId?: Item['id'],
+      log?: FastifyBaseLogger,
     ) => Promise<Item>,
     parentId?: Item['id'],
+    previousItemId?: Item['id'],
     log?: FastifyBaseLogger,
   ): Promise<Item> {
     const contentId = v4();
@@ -194,7 +197,7 @@ export abstract class HtmlService {
       try {
         // upload whole folder to public storage
         await this.upload(actor, targetFolder, remoteRootPath, log);
-        const item = await onComplete(actor, baseName, contentId, parentId);
+        const item = await onComplete(actor, baseName, contentId, parentId, previousItemId, log);
         return item;
       } catch (error) {
         // delete storage folder of this html package if upload or creation fails
