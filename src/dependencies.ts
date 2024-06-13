@@ -3,7 +3,7 @@ import { InjectionToken, container, instanceCachingFactory } from 'tsyringe';
 
 import { FastifyInstance } from 'fastify';
 
-import { JobService } from './jobs';
+import { CRON_3AM_MONDAY, JobServiceBuilder } from './jobs';
 import { BaseLogger } from './logger';
 import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
@@ -82,7 +82,12 @@ export const registerDependencies = (instance: FastifyInstance) => {
     ),
   });
 
-  // This service can't be injected because if it is never resolved, it is never created.
   // Launch Job workers
-  new JobService(resolveDependency(SearchService), resolveDependency(BaseLogger));
+  const jobServiceBuilder = new JobServiceBuilder(resolveDependency(BaseLogger));
+  jobServiceBuilder
+    .registerTask('rebuild-index', {
+      handler: () => resolveDependency(SearchService).rebuildIndex(),
+      pattern: CRON_3AM_MONDAY,
+    })
+    .build();
 };

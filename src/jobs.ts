@@ -1,7 +1,6 @@
 import { ConnectionOptions, Queue, Worker } from 'bullmq';
 
 import { BaseLogger } from './logger';
-import { SearchService } from './services/item/plugins/published/plugins/search/service';
 import {
   JOB_SCHEDULING,
   REDIS_HOST,
@@ -17,47 +16,61 @@ const connection: ConnectionOptions = {
   password: REDIS_PASSWORD,
 };
 
-const CRON_3AM_MONDAY = '0 3 * * 1';
+export const CRON_3AM_MONDAY = '0 3 * * 1';
+
+type Task = { handler: () => void; pattern: string };
+
+export class JobServiceBuilder {
+  private readonly scheduledTasks: Record<string, Task> = {};
+  private readonly baseLogger: BaseLogger;
+
+  constructor(baseLogger: BaseLogger) {
+    this.baseLogger = baseLogger;
+  }
+
+  public registerTask(taskName: string, task: Task) {
+    this.scheduledTasks[taskName] = task;
+    return this;
+  }
+
+  public build() {
+    return new JobService(this.scheduledTasks, this.baseLogger);
+  }
+}
 
 // Currently a single worker will handle all of the scheduled job. If performance problem arises, consider having a queue/worker per job.
 export class JobService {
-  // Add every regularly scheduled job here
-  scheduledTasks: Record<string, { handler: () => void; pattern: string }> = {
-    'rebuild-index': {
-      handler: () => this.searchService.rebuildIndex(),
-      pattern: CRON_3AM_MONDAY,
-    },
-  };
-
-  scheduledJobsWorker = new Worker(
-    'scheduled-jobs',
-    async (job) => {
-      this.scheduledTasks[job.name].handler();
-    },
-    {
-      connection,
-      removeOnComplete: { count: 30 },
-      removeOnFail: { count: 100 },
-    },
-  );
-
-  scheduledJobsQueue = new Queue('scheduled-jobs', {
-    connection,
-    defaultJobOptions: {
-      attempts: 5,
-      backoff: {
-        type: 'exponential',
-        delay: 1000,
-      },
-    },
-  });
-
-  private readonly searchService: SearchService;
   private readonly logger: BaseLogger;
+  private readonly scheduledTasks: Record<string, Task> = {};
+  private readonly scheduledJobsWorker: Worker;
+  private readonly scheduledJobsQueue: Queue;
 
-  constructor(searchService: SearchService, logger: BaseLogger) {
-    this.searchService = searchService;
+  constructor(scheduledTasks: Record<string, Task>, logger: BaseLogger) {
+    this.scheduledTasks = scheduledTasks;
     this.logger = logger;
+
+    this.scheduledJobsWorker = new Worker(
+      'scheduled-jobs',
+      async (job) => {
+        this.scheduledTasks[job.name].handler();
+      },
+      {
+        connection,
+        removeOnComplete: { count: 30 },
+        removeOnFail: { count: 100 },
+      },
+    );
+
+    this.scheduledJobsQueue = new Queue('scheduled-jobs', {
+      connection,
+      defaultJobOptions: {
+        attempts: 5,
+        backoff: {
+          type: 'exponential',
+          delay: 1000,
+        },
+      },
+    });
 
     if (JOB_SCHEDULING) {
       this.setupWorker();
