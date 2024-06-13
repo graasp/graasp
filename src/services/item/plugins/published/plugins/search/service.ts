@@ -1,9 +1,8 @@
 import { MultiSearchParams } from 'meilisearch';
 import { singleton } from 'tsyringe';
-import { DataSource } from 'typeorm';
 
 import { BaseLogger } from '../../../../../../logger';
-import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
+import { Repositories } from '../../../../../../utils/repositories';
 import { Actor } from '../../../../../member/entities/member';
 import { ItemService } from '../../../../service';
 import { ItemCategoryService } from '../../../itemCategory/services/itemCategory';
@@ -18,7 +17,6 @@ import { MeiliSearchWrapper } from './meilisearch';
 @singleton()
 export class SearchService {
   private readonly meilisearchClient: MeiliSearchWrapper;
-  private readonly db: DataSource;
   private readonly logger: BaseLogger;
 
   constructor(
@@ -30,12 +28,7 @@ export class SearchService {
   ) {
     this.meilisearchClient = meilisearchClient;
     this.logger = logger;
-    this.registerSearchHooks(
-      buildRepositories(),
-      itemService,
-      itemPublishedService,
-      itemCategoryService,
-    );
+    this.registerSearchHooks(itemService, itemPublishedService, itemCategoryService);
   }
 
   private removeHTMLTags(s: string): string {
@@ -71,7 +64,6 @@ export class SearchService {
   // Registers all hooks related to sync between database and meilisearch index
   // Make sure to not throw if indexation fail, so that the app can continue to work if Meilisearch is down.
   private registerSearchHooks(
-    repositories: Repositories,
     itemService: ItemService,
     itemPublishedService: ItemPublishedService,
     ItemCategoryService: ItemCategoryService,
