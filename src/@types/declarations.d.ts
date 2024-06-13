@@ -17,17 +17,13 @@ import { WebsocketService } from '../services/websockets/ws-service';
 declare module 'fastify' {
   interface FastifyInstance {
     db: DataSource;
-
+    // TODO: nodemail needed ?
     // remove once fastify-nodemailer has types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nodemailer: any;
     // remove once fastify-polyglot has types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     i18n: any;
-    // should this be notifications?
-    mentions: {
-      service: MentionService;
-    };
     items: {
       extendCreateSchema: ReturnType<typeof create>;
       extendExtrasUpdateSchema: ReturnType<typeof updateOne>;

@@ -16,6 +16,7 @@ import { ActionService } from '../action/services/action';
 import { ItemService } from '../item/service';
 import { ActionChatService } from './plugins/action/service';
 import mentionPlugin from './plugins/mentions';
+import { MentionService } from './plugins/mentions/service';
 import commonChat, {
   clearChat,
   deleteMessage,
@@ -38,14 +39,11 @@ const plugin: FastifyPluginAsync<GraaspChatPluginOptions> = async (fastify) => {
 
   await fastify.register(fp(mentionPlugin));
 
-  const {
-    db,
-    mentions: { service: mentionService },
-    websockets: websockets,
-  } = fastify;
+  const { db, websockets: websockets } = fastify;
 
   const itemService = resolveDependency(ItemService);
   const actionService = resolveDependency(ActionService);
+  const mentionService = resolveDependency(MentionService);
   const chatService = new ChatMessageService(itemService, mentionService);
   const actionChatService = new ActionChatService(actionService);
 
