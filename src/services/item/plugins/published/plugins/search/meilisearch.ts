@@ -28,6 +28,7 @@ import FileService from '../../../../../file/service';
 import { Item, isItemType } from '../../../../entities/Item';
 import { readPdfContent } from '../../../../utils';
 import { stripHtml } from '../../../validation/utils';
+import { ItemPublishedNotFound } from '../../errors';
 
 const ACTIVE_INDEX = INDEX_NAME;
 const ROTATING_INDEX = `${INDEX_NAME}_tmp`; // Used when reindexing
@@ -228,6 +229,9 @@ export class MeiliSearchWrapper {
           // More efficient way to get this info? Do the db query for all item at once ?
           // This part might slow the app when we index many items or an item with many children.
           const publishedRoot = await repositories.itemPublishedRepository.getForItem(i);
+          if (!publishedRoot) {
+            throw new ItemPublishedNotFound(i.id);
+          }
           const categories = (await repositories.itemCategoryRepository.getForItemOrParent(i)).map(
             (ic) => ic.category.id,
           );

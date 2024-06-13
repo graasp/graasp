@@ -1,7 +1,8 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { UUID } from '@graasp/sdk';
+import { PermissionLevel, UUID } from '@graasp/sdk';
 
+import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import graaspSearchPlugin from './plugins/search';
 import {
@@ -15,7 +16,11 @@ import {
 } from './schemas';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, itemsPublished } = fastify;
+  const {
+    db,
+    itemsPublished,
+    items: { service: itemService },
+  } = fastify;
 
   fastify.register(graaspSearchPlugin);
 
@@ -71,7 +76,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ params, member }) => {
       return db.transaction(async (manager) => {
-        return itemsPublished.service.post(member, buildRepositories(manager), params.itemId);
+        if (!member) {
+          throw new UnauthorizedMember(member);
+        }
+
+        const repositories = buildRepositories(manager);
+
+        const item = await itemService.get(
+          member,
+          repositories,
+          params.itemId,
+          PermissionLevel.Admin,
+        );
+        return itemsPublished.service.post(member, repositories, item);
       });
     },
   );

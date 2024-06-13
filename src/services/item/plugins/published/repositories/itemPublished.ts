@@ -21,7 +21,7 @@ export class ItemPublishedRepository {
     }
   }
 
-  async getForItem(item: Item): Promise<ItemPublished> {
+  async getForItem(item: Item): Promise<ItemPublished | null> {
     // this returns the root published item when querying a child item
     const entry = await this.repository
       .createQueryBuilder('pi')
@@ -30,10 +30,6 @@ export class ItemPublishedRepository {
       // Order isn't guaranteed so we must force it to avoid flaky results
       .orderBy('nlevel(pi.item_path)', 'DESC')
       .getOne();
-
-    if (!entry) {
-      throw new ItemPublishedNotFound(item.id);
-    }
 
     return entry;
   }
@@ -113,6 +109,10 @@ export class ItemPublishedRepository {
 
   async deleteForItem(item: Item) {
     const entry = await this.getForItem(item);
+
+    if (!entry) {
+      throw new ItemPublishedNotFound(item.id);
+    }
 
     await this.repository.delete(entry.id);
     return entry;
