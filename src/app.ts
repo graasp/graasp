@@ -33,8 +33,7 @@ export default async function (instance: FastifyInstance): Promise<void> {
     logs: DATABASE_LOGS,
   });
 
-  // register some manuall dependencies
-  // TODO: used for now during the migration but have to check if it is possible to use annotations for all dependencies.
+  // register some dependencies manually
   registerDependencies(instance);
 
   await instance
