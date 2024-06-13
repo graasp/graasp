@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.42.1](https://github.com/graasp/graasp/compare/v1.42.0...v1.42.1) (2024-06-13)
+
+
+### Bug Fixes
+
+* allow yearFrom and yearTo to be numbers as some editors save them like this ([#1111](https://github.com/graasp/graasp/issues/1111)) ([d872e9a](https://github.com/graasp/graasp/commit/d872e9aa980a047522957e722f812c3432e3edda))
+
 ## [1.42.0](https://github.com/graasp/graasp/compare/v1.41.0...v1.42.0) (2024-06-13)
 
 
