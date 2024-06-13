@@ -27,6 +27,7 @@ import {
   moveMany,
   updateMany,
 } from './fluent-schema';
+import { ActionItemService } from './plugins/action/service';
 import { ItemGeolocation } from './plugins/geolocation/ItemGeolocation';
 import { ItemService } from './service';
 import { ItemChildrenParams, ItemSearchParams } from './types';
@@ -36,7 +37,7 @@ import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db, items, websockets } = fastify;
   const itemService = resolveDependency(ItemService);
-  const actionItemService = items.actions.service;
+  const actionItemService = resolveDependency(ActionItemService);
 
   // create item
   // question: add link hook here? or have another endpoint?

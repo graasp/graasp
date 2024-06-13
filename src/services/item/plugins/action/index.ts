@@ -25,7 +25,6 @@ import {
   S3FileConfiguration,
 } from '../../../file/interfaces/configuration';
 import FileService from '../../../file/service';
-import { MemberService } from '../../../member/service';
 import { ItemService } from '../../service';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import { CannotPostAction } from './errors';
@@ -45,11 +44,8 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
   const mailer = resolveDependency(MailerService);
   const itemService = resolveDependency(ItemService);
   const fileService = resolveDependency(FileService);
-  const memberService = resolveDependency(MemberService);
   const actionService = resolveDependency(ActionService);
-
-  const actionItemService = new ActionItemService(actionService, itemService, memberService);
-  fastify.items.actions = { service: actionItemService };
+  const actionItemService = resolveDependency(ActionItemService);
 
   const requestExportService = new ActionRequestExportService(
     actionService,

@@ -31,11 +31,7 @@ import { ItemActionType } from './utils';
 jest.mock('../../../../plugins/datasource');
 const itemService = new ItemService({} as unknown as ThumbnailService, {} as unknown as BaseLogger);
 const memberService = new MemberService();
-const service = new ActionItemService(
-  new ActionService(itemService, memberService),
-  itemService,
-  memberService,
-);
+const service = new ActionItemService(new ActionService(itemService, memberService), itemService);
 const rawRepository = AppDataSource.getRepository(Action);
 const testUtils = new ItemTestUtils();
 
