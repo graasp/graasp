@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
-import { resolveDependency } from '../../dependencies';
+import { resolveDependency } from '../../di/utils';
 import { buildRepositories } from '../../utils/repositories';
 import { ItemService } from '../item/service';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';

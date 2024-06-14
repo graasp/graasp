@@ -4,7 +4,7 @@ import fastifyCors from '@fastify/cors';
 import fastifySecureSession from '@fastify/secure-session';
 import { FastifyPluginAsync } from 'fastify';
 
-import { resolveDependency } from '../../dependencies';
+import { resolveDependency } from '../../di/utils';
 import { MailerService } from '../../plugins/mailer/service';
 import {
   PROD,

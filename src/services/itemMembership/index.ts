@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../dependencies';
+import { resolveDependency } from '../../di/utils';
 import { IdParam } from '../../types';
 import { buildRepositories } from '../../utils/repositories';
 import { PurgeBelowParam } from './interfaces/requests';

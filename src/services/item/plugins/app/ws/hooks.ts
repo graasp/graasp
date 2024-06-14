@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { AppDataVisibility, PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../dependencies';
+import { resolveDependency } from '../../../../../di/utils';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { WebsocketService } from '../../../../websockets/ws-service';

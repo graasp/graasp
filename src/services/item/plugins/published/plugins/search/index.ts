@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../../dependencies';
+import { resolveDependency } from '../../../../../../di/utils';
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../utils/repositories';
 import { ActionService } from '../../../../../action/services/action';

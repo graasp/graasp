@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
-import { resolveDependency } from '../dependencies';
+import { resolveDependency } from '../di/utils';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
 

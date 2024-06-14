@@ -8,7 +8,7 @@ import { FastifyInstance } from 'fastify';
 import { HttpMethod, PermissionLevel, RecaptchaAction } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { resolveDependency } from '../../../../../dependencies';
+import { resolveDependency } from '../../../../../di/utils';
 import { MailerService } from '../../../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../../../utils/config';
 import { MOCK_CAPTCHA } from '../../../../auth/plugins/captcha/test/utils';

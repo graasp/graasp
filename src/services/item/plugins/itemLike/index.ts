@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ActionService } from '../../../action/services/action';
 import { ItemService } from '../../service';

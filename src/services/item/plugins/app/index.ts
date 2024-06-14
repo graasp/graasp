@@ -7,7 +7,7 @@ import { FastifyPluginAsync, FastifyRequest, preHandlerHookHandler } from 'fasti
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemService } from '../../service';

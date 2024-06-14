@@ -6,8 +6,8 @@ import { inject, singleton } from 'tsyringe';
 
 import { FastifyReply } from 'fastify';
 
+import { FILE_REPOSITORY_DI_KEY } from '../../di/constants';
 import { BaseLogger } from '../../logger';
-import { FILE_REPOSITORY_DI_KEY } from '../../utils/dependencies.keys';
 import { UnauthorizedMember } from '../../utils/errors';
 import { Actor, Member } from '../member/entities/member';
 import { LocalFileConfiguration, S3FileConfiguration } from './interfaces/configuration';

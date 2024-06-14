@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { registerDependencies } from './dependencies';
+import { registerDependencies } from './di/container';
 import databasePlugin from './plugins/database';
 import decoratorPlugin from './plugins/decorator';
 import metaPlugin from './plugins/meta';

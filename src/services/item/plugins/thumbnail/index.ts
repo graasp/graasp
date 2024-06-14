@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ThumbnailSizeType } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
 import { THUMBNAILS_ROUTE_PREFIX } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';

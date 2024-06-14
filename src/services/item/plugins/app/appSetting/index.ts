@@ -2,7 +2,7 @@ import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../dependencies';
+import { resolveDependency } from '../../../../../di/utils';
 import { IdParam } from '../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { Actor } from '../../../../member/entities/member';

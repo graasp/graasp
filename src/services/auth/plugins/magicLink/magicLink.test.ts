@@ -15,7 +15,7 @@ import {
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { AppDataSource } from '../../../../plugins/datasource';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { AUTH_CLIENT_HOST, JWT_SECRET } from '../../../../utils/config';

@@ -10,7 +10,7 @@ import { FastifyInstance } from 'fastify';
 import { EtherpadItemType, HttpMethod, ItemType, PermissionLevel } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../test/app';
-import { resolveDependency } from '../../../../../dependencies';
+import { resolveDependency } from '../../../../../di/utils';
 import { ETHERPAD_PUBLIC_URL } from '../../../../../utils/config';
 import { ItemNotFound, MemberCannotAccess } from '../../../../../utils/errors';
 import { Actor, Member } from '../../../../member/entities/member';

@@ -14,7 +14,7 @@ import {
   HttpMethod,
 } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
 import { CLIENT_HOSTS } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';

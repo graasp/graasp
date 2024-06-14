@@ -4,7 +4,7 @@ import { inject, singleton } from 'tsyringe';
 import { FastifyBaseLogger } from 'fastify';
 import type { ChildLoggerOptions } from 'fastify/types/logger';
 
-import { FASTIFY_LOGGER_DI_KEY } from './utils/dependencies.keys';
+import { FASTIFY_LOGGER_DI_KEY } from './di/constants';
 
 @singleton()
 export class BaseLogger implements FastifyBaseLogger {

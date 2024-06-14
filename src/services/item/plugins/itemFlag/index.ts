@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemService } from '../../service';

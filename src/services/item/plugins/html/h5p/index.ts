@@ -8,7 +8,7 @@ import fp from 'fastify-plugin';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../dependencies';
+import { resolveDependency } from '../../../../../di/utils';
 import { CLIENT_HOSTS } from '../../../../../utils/config';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';

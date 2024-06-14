@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';

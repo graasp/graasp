@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
-import { resolveDependency } from '../../../dependencies';
+import { resolveDependency } from '../../../di/utils';
 import { Repositories, buildRepositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
 import { WebsocketService } from '../../websockets/ws-service';

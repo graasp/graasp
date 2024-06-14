@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';

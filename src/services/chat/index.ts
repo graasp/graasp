@@ -9,7 +9,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { resolveDependency } from '../../dependencies';
+import { resolveDependency } from '../../di/utils';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
 import { ItemService } from '../item/service';

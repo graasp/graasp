@@ -1,5 +1,5 @@
 import build, { clearDatabase } from '../../../../../../test/app';
-import { resolveDependency } from '../../../../../dependencies';
+import { resolveDependency } from '../../../../../di/utils';
 import { AppDataSource } from '../../../../../plugins/datasource';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';

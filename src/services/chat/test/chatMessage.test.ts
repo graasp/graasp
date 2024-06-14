@@ -6,7 +6,7 @@ import { FastifyInstance } from 'fastify';
 import { FolderItemFactory, HttpMethod } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { resolveDependency } from '../../../dependencies';
+import { resolveDependency } from '../../../di/utils';
 import { AppDataSource } from '../../../plugins/datasource';
 import { MailerService } from '../../../plugins/mailer/service';
 import { ITEMS_ROUTE_PREFIX } from '../../../utils/config';

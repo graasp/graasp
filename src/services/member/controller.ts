@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { resolveDependency } from '../../dependencies';
+import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';

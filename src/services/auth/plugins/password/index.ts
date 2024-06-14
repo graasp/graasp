@@ -7,7 +7,7 @@ import { FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { MailerService } from '../../../../plugins/mailer/service';
 import { PASSWORD_RESET_JWT_SECRET, PUBLIC_URL } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';

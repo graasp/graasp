@@ -5,7 +5,7 @@ import fp from 'fastify-plugin';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { InvalidSession } from '../../../../utils/errors';
 import { ItemService } from '../../service';
 import { ETHERPAD_API_VERSION } from './constants';

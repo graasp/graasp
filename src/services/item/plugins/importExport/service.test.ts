@@ -5,7 +5,7 @@ import { FastifyInstance, FastifyReply } from 'fastify';
 import { ItemTagType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../test/app';
-import { resolveDependency } from '../../../../dependencies';
+import { resolveDependency } from '../../../../di/utils';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemService } from '../../service';
 import { ItemTestUtils } from '../../test/fixtures/items';

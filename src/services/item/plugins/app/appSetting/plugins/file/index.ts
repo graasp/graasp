@@ -3,7 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
-import { resolveDependency } from '../../../../../../../dependencies';
+import { resolveDependency } from '../../../../../../../di/utils';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
 import {

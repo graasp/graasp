@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { SUCCESS_MESSAGES } from '@graasp/translations';
 
 import build, { clearDatabase } from '../../../../test/app';
-import { resolveDependency } from '../../../dependencies';
+import { resolveDependency } from '../../../di/utils';
 import { MailerService } from '../service';
 
 // mock datasource

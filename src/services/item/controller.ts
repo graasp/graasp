@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
-import { resolveDependency } from '../../dependencies';
+import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams, PaginationParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
