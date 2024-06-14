@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -15,9 +15,9 @@ enum ChatActionType {
   Clear = 'chat_clear',
 }
 
-@injectable()
+@singleton()
 export class ActionChatService {
-  actionService: ActionService;
+  private readonly actionService: ActionService;
 
   constructor(actionService: ActionService) {
     this.actionService = actionService;

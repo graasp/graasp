@@ -22,7 +22,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(common);
 
   const itemService = resolveDependency(ItemService);
-  const appSettingService = new AppSettingService(itemService);
+  const appSettingService = resolveDependency(AppSettingService);
 
   fastify.register(appSettingsWsHooks, { appSettingService });
 

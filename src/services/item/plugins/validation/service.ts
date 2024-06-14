@@ -35,12 +35,12 @@ import { stripHtml } from './utils';
 export class ItemValidationService {
   private itemService: ItemService;
   private fileService: FileService;
-  private imageClassifierApi?: string;
+  private imageClassifierApi: string;
 
   constructor(
     itemService: ItemService,
     fileService: FileService,
-    @inject(IMAGE_CLASSIFIER_API_DI_KEY) imageClassifierApi?: string,
+    @inject(IMAGE_CLASSIFIER_API_DI_KEY) imageClassifierApi: string,
   ) {
     this.itemService = itemService;
     this.fileService = fileService;

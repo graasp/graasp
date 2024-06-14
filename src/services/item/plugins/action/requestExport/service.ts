@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { injectable } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
 import {
   Context,
@@ -27,7 +27,7 @@ import { ItemService } from '../../../service';
 import { ActionItemService } from '../service';
 import { ActionRequestExport } from './requestExport';
 
-@injectable()
+@singleton()
 export class ActionRequestExportService {
   private readonly fileService: FileService;
   private readonly actionItemService: ActionItemService;

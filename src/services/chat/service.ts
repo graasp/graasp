@@ -1,4 +1,4 @@
-import { injectable } from 'tsyringe';
+import { singleton } from 'tsyringe';
 
 import { PermissionLevel } from '@graasp/sdk';
 
@@ -10,7 +10,7 @@ import { ChatMessage } from './chatMessage';
 import { MemberCannotDeleteMessage, MemberCannotEditMessage } from './errors';
 import { MentionService } from './plugins/mentions/service';
 
-@injectable()
+@singleton()
 export class ChatMessageService {
   hooks = new HookManager();
   private readonly mentionService: MentionService;
