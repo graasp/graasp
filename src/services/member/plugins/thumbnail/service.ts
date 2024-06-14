@@ -1,8 +1,12 @@
 import { Readable } from 'stream';
-import { singleton } from 'tsyringe';
+import { injectWithTransform, singleton } from 'tsyringe';
 
 import { Repositories } from '../../../../utils/repositories';
-import { AVATAR_THUMBNAIL_PREFIX, ThumbnailService } from '../../../thumbnail/service';
+import {
+  AVATAR_THUMBNAIL_PREFIX,
+  ThumbnailService,
+  ThumbnailServiceTransformer,
+} from '../../../thumbnail/service';
 import { Actor, Member } from '../../entities/member';
 import { MemberService } from '../../service';
 
@@ -11,9 +15,12 @@ export class MemberThumbnailService {
   thumbnailService: ThumbnailService;
   memberService: MemberService;
 
-  constructor(memberService: MemberService, thumbnailService: ThumbnailService) {
+  constructor(
+    memberService: MemberService,
+    @injectWithTransform(ThumbnailService, ThumbnailServiceTransformer, AVATAR_THUMBNAIL_PREFIX)
+    thumbnailService: ThumbnailService,
+  ) {
     this.thumbnailService = thumbnailService;
-    thumbnailService.setPrefix(AVATAR_THUMBNAIL_PREFIX);
     this.memberService = memberService;
   }
 

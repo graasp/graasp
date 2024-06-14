@@ -23,11 +23,11 @@ export class ThumbnailService {
     this.prefix = prefix;
   }
 
-  buildFilePath(itemId: string, name: string) {
+  private buildFilePath(itemId: string, name: string) {
     return path.join(this.prefix, itemId, name);
   }
 
-  buildFolderPath(itemId: string) {
+  private buildFolderPath(itemId: string) {
     return path.join(this.prefix, itemId);
   }
 
@@ -83,5 +83,15 @@ export class ThumbnailService {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
     await this.fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
+  }
+}
+
+/**
+ * Allow to inject the ThumbnailService with a specific prefix.
+ */
+export class ThumbnailServiceTransformer {
+  public transform(thumbnailService: ThumbnailService, prefix: string) {
+    thumbnailService.setPrefix(prefix);
+    return thumbnailService;
   }
 }
