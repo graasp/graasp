@@ -71,11 +71,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
   const initializedUpdate = updateOne(folderExtra);
 
-  // TODO: remove the as when the DI migration are done.
   fastify.decorate('items', {
     extendCreateSchema: initializedCreate,
     extendExtrasUpdateSchema: initializedUpdate,
-  } as typeof fastify.items);
+  });
 
   await fastify.register(
     async function (fastify) {

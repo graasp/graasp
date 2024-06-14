@@ -1,6 +1,6 @@
 import { mkdirSync } from 'fs';
 import path from 'path';
-import { singleton } from 'tsyringe';
+import { inject, singleton } from 'tsyringe';
 
 import {
   ItemType,
@@ -12,6 +12,7 @@ import {
   UUID,
 } from '@graasp/sdk';
 
+import { IMAGE_CLASSIFIER_API_DI_KEY } from '../../../../di/constants';
 import { TMP_FOLDER } from '../../../../utils/config';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermission } from '../../../authorization';
@@ -19,7 +20,6 @@ import FileService from '../../../file/service';
 import { Member } from '../../../member/entities/member';
 import { Item, isItemType } from '../../entities/Item';
 import { ItemService } from '../../service';
-import { ImageClassifierApiEnv } from './ImageClassifierApi';
 import { ItemValidationGroup } from './entities/ItemValidationGroup';
 import {
   InvalidFileItemError,
@@ -40,11 +40,11 @@ export class ItemValidationService {
   constructor(
     itemService: ItemService,
     fileService: FileService,
-    imageClassifierApi: ImageClassifierApiEnv,
+    @inject(IMAGE_CLASSIFIER_API_DI_KEY) imageClassifierApi?: string,
   ) {
     this.itemService = itemService;
     this.fileService = fileService;
-    this.imageClassifierApi = imageClassifierApi.getApi();
+    this.imageClassifierApi = imageClassifierApi;
   }
 
   buildStoragePath(itemValidationId: UUID) {

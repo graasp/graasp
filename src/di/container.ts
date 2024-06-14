@@ -17,6 +17,7 @@ import { ItemService } from '../services/item/service';
 import {
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
+  IMAGE_CLASSIFIER_API,
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
   MAILER_CONFIG_SMTP_HOST,
@@ -29,7 +30,12 @@ import {
   REDIS_USERNAME,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../utils/config';
-import { FASTIFY_LOGGER_DI_KEY, FILE_ITEM_TYPE_DI_KEY, FILE_REPOSITORY_DI_KEY } from './constants';
+import {
+  FASTIFY_LOGGER_DI_KEY,
+  FILE_ITEM_TYPE_DI_KEY,
+  FILE_REPOSITORY_DI_KEY,
+  IMAGE_CLASSIFIER_API_DI_KEY,
+} from './constants';
 import { registerValue, resolveDependency } from './utils';
 
 export const registerDependencies = (instance: FastifyInstance) => {
@@ -40,6 +46,9 @@ export const registerDependencies = (instance: FastifyInstance) => {
 
   // register file type for the StorageService.
   registerValue(FILE_ITEM_TYPE_DI_KEY, FILE_ITEM_TYPE);
+
+  // register classifier key for the ValidationService.
+  registerValue(IMAGE_CLASSIFIER_API_DI_KEY, IMAGE_CLASSIFIER_API);
 
   registerValue(
     Redis,
@@ -63,6 +72,7 @@ export const registerDependencies = (instance: FastifyInstance) => {
     }),
   );
 
+  // register the interface FileRepository with the concrete repo returned by the factory.
   registerValue(
     FILE_REPOSITORY_DI_KEY,
     fileRepositoryFactory(FILE_ITEM_TYPE, {
