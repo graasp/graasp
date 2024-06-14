@@ -9,8 +9,6 @@ import {
 } from 'meilisearch';
 import { DataSource } from 'typeorm';
 
-import { FastifyBaseLogger } from 'fastify';
-
 import {
   DocumentItemExtra,
   INDEX_NAME,
@@ -22,6 +20,7 @@ import {
   S3FileItemExtra,
 } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../../../logger';
 import { MEILISEARCH_STORE_LEGACY_PDF_CONTENT } from '../../../../../../utils/config';
 import { Repositories, buildRepositories } from '../../../../../../utils/repositories';
 import FileService from '../../../../../file/service';
@@ -66,15 +65,16 @@ const TYPO_TOLERANCE: TypoTolerance = {
  */
 export class MeiliSearchWrapper {
   private meilisearchClient: MeiliSearch;
-  indexDictionary: Record<string, Index<IndexItem>> = {};
-  fileService: FileService;
-  db: DataSource;
-  logger: FastifyBaseLogger;
+  private indexDictionary: Record<string, Index<IndexItem>> = {};
+  private fileService: FileService;
+  private db: DataSource;
+  private logger: BaseLogger;
+
   constructor(
     db: DataSource,
     meilisearchConnection: MeiliSearch,
     fileService: FileService,
-    logger: FastifyBaseLogger,
+    logger: BaseLogger,
   ) {
     this.meilisearchClient = meilisearchConnection;
     this.fileService = fileService;

@@ -1,7 +1,9 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../plugins/mailer';
 import { MAIL } from '../../plugins/mailer/langs/constants';
+import { MailerService } from '../../plugins/mailer/service';
 import { PLAYER_HOST } from '../../utils/config';
 import {
   CannotDeleteOnlyAdmin,
@@ -16,16 +18,17 @@ import { ItemService } from '../item/service';
 import { Actor, Member } from '../member/entities/member';
 import { ItemMembership } from './entities/ItemMembership';
 
+@singleton()
 export class ItemMembershipService {
   itemService: ItemService;
-  mailer: MailerDecoration;
+  mailer: MailerService;
   hooks = new HookManager<{
     create: { pre: Partial<ItemMembership>; post: ItemMembership };
     update: { pre: ItemMembership; post: ItemMembership };
     delete: { pre: ItemMembership; post: ItemMembership };
   }>();
 
-  constructor(itemService: ItemService, mailer: MailerDecoration) {
+  constructor(itemService: ItemService, mailer: MailerService) {
     this.itemService = itemService;
     this.mailer = mailer;
   }

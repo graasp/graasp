@@ -1,27 +1,33 @@
 import path from 'path';
 import sharp from 'sharp';
 import { Readable } from 'stream';
+import { injectable } from 'tsyringe';
 
 import FileService from '../file/service';
 import { Actor, Member } from '../member/entities/member';
 import { THUMBNAIL_FORMAT, THUMBNAIL_MIMETYPE, ThumbnailSizeFormat } from './constants';
 
-export class ThumbnailService {
-  fileService: FileService;
-  shouldRedirectOnDownload: boolean;
-  prefix: string;
+export const AVATAR_THUMBNAIL_PREFIX = 'avatars';
+export const ITEM_THUMBNAIL_PREFIX = 'thumbnails';
 
-  constructor(fileService: FileService, shouldRedirectOnDownload: boolean, prefix: string) {
-    this.shouldRedirectOnDownload = shouldRedirectOnDownload;
+@injectable()
+export class ThumbnailService {
+  private readonly fileService: FileService;
+  private prefix: string = ITEM_THUMBNAIL_PREFIX;
+
+  constructor(fileService: FileService) {
     this.fileService = fileService;
-    this.prefix = prefix ?? 'thumbnails';
   }
 
-  buildFilePath(itemId: string, name: string) {
+  public setPrefix(prefix: string) {
+    this.prefix = prefix;
+  }
+
+  private buildFilePath(itemId: string, name: string) {
     return path.join(this.prefix, itemId, name);
   }
 
-  buildFolderPath(itemId: string) {
+  private buildFolderPath(itemId: string) {
     return path.join(this.prefix, itemId);
   }
 
@@ -77,5 +83,15 @@ export class ThumbnailService {
     const originalFolderPath = this.buildFolderPath(originalId);
     const newFolderPath = this.buildFolderPath(newId);
     await this.fileService.copyFolder(actor, { originalFolderPath, newFolderPath });
+  }
+}
+
+/**
+ * Allow to inject the ThumbnailService with a specific prefix.
+ */
+export class ThumbnailServiceTransformer {
+  public transform(thumbnailService: ThumbnailService, prefix: string) {
+    thumbnailService.setPrefix(prefix);
+    return thumbnailService;
   }
 }

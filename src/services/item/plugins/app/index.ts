@@ -7,8 +7,10 @@ import { FastifyPluginAsync, FastifyRequest, preHandlerHookHandler } from 'fasti
 
 import { AppIdentification, AuthTokenSubject } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemService } from '../../service';
 import appActionPlugin from './appAction';
 import appDataPlugin from './appData';
 import appSettingPlugin from './appSetting';
@@ -28,8 +30,10 @@ const plugin: FastifyPluginAsync<AppsPluginOptions> = async (fastify, options) =
 
   const {
     verifyBearerAuth,
-    items: { service: itemService, extendCreateSchema, extendExtrasUpdateSchema },
+    items: { extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
+
+  const itemService = resolveDependency(ItemService);
 
   if (!verifyBearerAuth) {
     throw new Error('verifyBearerAuth is not defined!');

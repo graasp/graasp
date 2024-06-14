@@ -2,10 +2,13 @@ import { StatusCodes } from 'http-status-codes';
 
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../di/utils';
 import { IdParam, IdsParams } from '../../types';
 import { UnauthorizedMember } from '../../utils/errors';
 import { buildRepositories } from '../../utils/repositories';
+import FileService from '../file/service';
 import { Member } from './entities/member';
+import { StorageService } from './plugins/storage/service';
 import {
   deleteOne,
   getCurrent,
@@ -15,14 +18,13 @@ import {
   getStorage,
   updateOne,
 } from './schemas';
+import { MemberService } from './service';
 
 const controller: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    members: { service: memberService },
-    storage: { service: storageService },
-    files: { service: fileService },
-  } = fastify;
+  const { db } = fastify;
+  const fileService = resolveDependency(FileService);
+  const memberService = resolveDependency(MemberService);
+  const storageService = resolveDependency(StorageService);
 
   // get current
   fastify.get(
@@ -39,7 +41,11 @@ const controller: FastifyPluginAsync = async (fastify) => {
       if (!member) {
         throw new UnauthorizedMember(member);
       }
-      return storageService.getStorageLimits(member, fileService.type, buildRepositories());
+      return storageService.getStorageLimits(
+        member,
+        fileService.getFileType(),
+        buildRepositories(),
+      );
     },
   );
 

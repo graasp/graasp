@@ -10,9 +10,11 @@ import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 import { H5PItemExtra, H5PItemType, ItemType } from '@graasp/sdk';
 
 import build, { clearDatabase } from '../../../../../../../test/app';
+import { resolveDependency } from '../../../../../../di/utils';
 import { H5P_LOCAL_CONFIG, H5P_PATH_PREFIX, TMP_FOLDER } from '../../../../../../utils/config';
 import { Actor } from '../../../../../member/entities/member';
 import { Item, ItemTypeEnumKeys } from '../../../../entities/Item';
+import { ItemService } from '../../../../service';
 import { ItemTestUtils } from '../../../../test/fixtures/items';
 import { HtmlImportError } from '../../errors';
 import { H5P_FILE_DOT_EXTENSION } from '../constants';
@@ -219,7 +221,7 @@ describe('Service plugin', () => {
     });
 
     it('returns error and deletes extracted files on item creation failure', async () => {
-      const createItem = jest.spyOn(app.items.service, 'post');
+      const createItem = jest.spyOn(resolveDependency(ItemService), 'post');
       createItem.mockImplementationOnce(() => {
         throw new Error('mock error');
       });

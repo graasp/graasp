@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { FastifyRequest } from 'fastify';
 
 import {
@@ -21,7 +23,6 @@ import {
 import { Action } from '../../../action/entities/action';
 import { ActionService } from '../../../action/services/action';
 import { Actor } from '../../../member/entities/member';
-import { MemberService } from '../../../member/service';
 import { Item } from '../../entities/Item';
 import { ItemService } from '../../service';
 import { AppAction } from '../app/appAction/appAction';
@@ -30,19 +31,14 @@ import { AppSetting } from '../app/appSetting/appSettings';
 import { BaseAnalytics } from './base-analytics';
 import { ItemActionType } from './utils';
 
+@singleton()
 export class ActionItemService {
-  itemService: ItemService;
-  memberService: MemberService;
-  actionService: ActionService;
+  private readonly itemService: ItemService;
+  private readonly actionService: ActionService;
 
-  constructor(
-    actionService: ActionService,
-    itemService: ItemService,
-    memberService: MemberService,
-  ) {
+  constructor(actionService: ActionService, itemService: ItemService) {
     this.actionService = actionService;
     this.itemService = itemService;
-    this.memberService = memberService;
   }
 
   async getForItem(

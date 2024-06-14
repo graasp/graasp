@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../../di/utils';
 import { IdParam } from '../../../../../types';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { ManyItemsGetFilter } from '../interfaces/request';
@@ -16,7 +17,7 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
   // register app data schema
   fastify.addSchema(common);
 
-  const appDataService = new AppDataService();
+  const appDataService = resolveDependency(AppDataService);
 
   // endpoints accessible to third parties with Bearer token
   fastify.register(async function (fastify) {

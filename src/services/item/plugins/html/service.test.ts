@@ -1,9 +1,6 @@
-import { FastifyBaseLogger } from 'fastify';
-
 import { ItemType } from '@graasp/sdk';
 
-import { S3FileConfiguration } from '../../../file/interfaces/configuration';
-import FileService from '../../../file/service';
+import { BaseLogger } from '../../../../logger';
 import { HtmlService } from './service';
 import { HtmlValidator } from './validator';
 
@@ -24,21 +21,24 @@ class MockHtmlService extends HtmlService {}
 
 const validator = new MockValidator();
 
-// todo: improve typing when adding more tests
-const fileService = new FileService(
-  { s3: {} as unknown as S3FileConfiguration },
-  ItemType.S3_FILE,
-  console as unknown as FastifyBaseLogger,
-);
+const MOCK_S3_CONFIG = {
+  s3Region: 'string',
+  s3Bucket: 'string',
+  s3AccessKeyId: 'string',
+  s3SecretAccessKey: 'string',
+};
 
 describe('Html Service', () => {
   const htmlService = new MockHtmlService(
-    fileService,
+    {
+      config: { s3: MOCK_S3_CONFIG },
+      type: ItemType.S3_FILE,
+    },
     'prefix',
     'mimetype',
     'ext',
     validator,
-    console as unknown as FastifyBaseLogger,
+    console as unknown as BaseLogger,
   );
 
   it('builds root path', () => {

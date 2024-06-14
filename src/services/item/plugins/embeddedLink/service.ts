@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { singleton } from 'tsyringe';
 
 import { FastifyBaseLogger } from 'fastify';
 
@@ -38,6 +39,7 @@ const X_FRAME_KEY = 'X-Frame-Options';
 const CSP_FRAME_NONE = ["frame-ancestors 'none'", "frame-ancestors 'self'"];
 const X_FRAME_DISABLED = ['sameorigin', 'deny'];
 
+@singleton()
 export class EmbeddedLinkService {
   private assertUrlIsValid(url: string) {
     if (!isValidUrl(url)) {

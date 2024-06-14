@@ -1,10 +1,13 @@
+import { singleton } from 'tsyringe';
+
 import { Repositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
 import { ItemService } from '../../service';
 import { ItemFlag } from './itemFlag';
 
+@singleton()
 export class ItemFlagService {
-  itemService: ItemService;
+  private readonly itemService: ItemService;
 
   constructor(itemService: ItemService) {
     this.itemService = itemService;

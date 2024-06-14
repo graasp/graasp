@@ -2,7 +2,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../di/utils';
 import { buildRepositories } from '../../utils/repositories';
+import { ItemService } from '../item/service';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   deleteLoginSchema,
@@ -14,9 +16,10 @@ import {
 import { ItemLoginService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
 
-  const iLService = new ItemLoginService(fastify, items.service);
+  const itemService = resolveDependency(ItemService);
+  const iLService = new ItemLoginService(fastify, itemService);
 
   // get login schema type for item
   // used to trigger item login for student

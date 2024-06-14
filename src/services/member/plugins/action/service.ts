@@ -1,4 +1,5 @@
 import partition from 'lodash.partition';
+import { singleton } from 'tsyringe';
 
 import { ActionTriggers, PermissionLevel } from '@graasp/sdk';
 
@@ -25,8 +26,9 @@ export const actionTypesWithoutNeedOfPermission: string[] = [
   ActionTriggers.MemberLogin,
 ];
 
+@singleton()
 export class ActionMemberService {
-  actionService: ActionService;
+  private readonly actionService: ActionService;
 
   constructor(actionService: ActionService) {
     this.actionService = actionService;

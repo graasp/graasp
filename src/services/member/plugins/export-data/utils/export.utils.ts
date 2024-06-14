@@ -1,11 +1,12 @@
 import archiver from 'archiver';
 import fs, { mkdirSync } from 'fs';
 import path from 'path';
+import { singleton } from 'tsyringe';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../../../../plugins/mailer';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { TMP_FOLDER } from '../../../../../utils/config';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
 import { CannotWriteFileError } from '../../../../action/utils/errors';
@@ -181,13 +182,14 @@ export class ArchiveDataExporter {
   }
 }
 
+@singleton()
 export class RequestDataExportService {
-  private fileService: FileService;
-  private mailer: MailerDecoration;
+  private readonly fileService: FileService;
+  private readonly mailer: MailerService;
 
   private readonly ROOT_EXPORT_FOLDER = 'export';
 
-  constructor(fileService: FileService, mailer: MailerDecoration) {
+  constructor(fileService: FileService, mailer: MailerService) {
     this.fileService = fileService;
     this.mailer = mailer;
   }

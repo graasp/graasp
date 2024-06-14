@@ -5,8 +5,8 @@ import { v4 as uuid } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../plugins/mailer/service';
 import {
   AUTH_CLIENT_HOST,
   JWT_SECRET,
@@ -30,10 +30,10 @@ const promisifiedJwtSign = promisify<
 
 export class MemberPasswordService {
   log: FastifyBaseLogger;
-  mailer: MailerDecoration;
+  mailer: MailerService;
   redis: Redis;
 
-  constructor(mailer, log, redis) {
+  constructor(mailer: MailerService, log: FastifyBaseLogger, redis: Redis) {
     this.mailer = mailer;
     this.log = log;
     this.redis = redis;

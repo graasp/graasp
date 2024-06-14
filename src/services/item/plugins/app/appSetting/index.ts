@@ -2,10 +2,12 @@ import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../../di/utils';
 import { IdParam } from '../../../../../types';
 import { Repositories, buildRepositories } from '../../../../../utils/repositories';
 import { Actor } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
+import { ItemService } from '../../../service';
 import { appSettingsWsHooks } from '../ws/hooks';
 import { AppSetting } from './appSettings';
 import { InputAppSetting } from './interfaces/app-setting';
@@ -14,15 +16,13 @@ import common, { create, deleteOne, getForOne, updateOne } from './schemas';
 import { AppSettingService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    items: { service: itemService },
-    db,
-  } = fastify;
+  const { db } = fastify;
 
   // register app setting schema
   fastify.addSchema(common);
 
-  const appSettingService = new AppSettingService(itemService);
+  const itemService = resolveDependency(ItemService);
+  const appSettingService = resolveDependency(AppSettingService);
 
   fastify.register(appSettingsWsHooks, { appSettingService });
 

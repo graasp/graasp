@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { UUID } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
 
@@ -6,6 +8,7 @@ import HookManager from '../../utils/hook';
 import { Repositories } from '../../utils/repositories';
 import { Actor, Member } from './entities/member';
 
+@singleton()
 export class MemberService {
   hooks = new HookManager();
 

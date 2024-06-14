@@ -9,10 +9,11 @@ import { DataSource } from 'typeorm';
 import util from 'util';
 import yazl, { ZipFile } from 'yazl';
 
-import { FastifyBaseLogger, FastifyReply } from 'fastify';
+import { FastifyReply } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../logger';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { UploadEmptyFileError } from '../../../file/utils/errors';
 import { Actor, Member } from '../../../member/entities/member';
@@ -35,24 +36,21 @@ const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 const asyncDetectFile = util.promisify(magic.detectFile.bind(magic));
 
 export class ImportExportService {
-  fileItemService: FileItemService;
-  h5pService: H5PService;
-  itemService: ItemService;
-  db: DataSource;
-  logger: FastifyBaseLogger;
+  private readonly fileItemService: FileItemService;
+  private readonly h5pService: H5PService;
+  private readonly itemService: ItemService;
+  private readonly db: DataSource;
 
   constructor(
     db: DataSource,
     fileItemService: FileItemService,
     itemService: ItemService,
     h5pService: H5PService,
-    log: FastifyBaseLogger,
   ) {
     this.db = db;
     this.fileItemService = fileItemService;
     this.h5pService = h5pService;
     this.itemService = itemService;
-    this.logger = log;
   }
 
   private async _getDescriptionForFilepath(filepath: string): Promise<string> {
@@ -83,7 +81,7 @@ export class ImportExportService {
       folderPath: string;
       parent?: Item;
     },
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ): Promise<Item | null> {
     const { filename, folderPath, parent } = options;
 
@@ -340,7 +338,7 @@ export class ImportExportService {
     actor: Member,
     repositories: Repositories,
     { parent, folderPath }: { parent?: Item; folderPath: string },
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ) {
     const filenames = fs.readdirSync(folderPath);
 
@@ -405,7 +403,7 @@ export class ImportExportService {
       targetFolder,
       parentId,
     }: { folderPath: string; targetFolder: string; parentId?: string },
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ): Promise<void> {
     let parent;
     if (parentId) {

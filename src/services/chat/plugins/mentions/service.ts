@@ -1,7 +1,9 @@
+import { singleton } from 'tsyringe';
+
 import { PermissionLevel, buildItemLinkForBuilder } from '@graasp/sdk';
 
-import type { MailerDecoration } from '../../../../plugins/mailer';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { BUILDER_HOST } from '../../../../utils/config';
 import HookManager from '../../../../utils/hook';
 import { Repositories } from '../../../../utils/repositories';
@@ -11,11 +13,12 @@ import { Member } from '../../../member/entities/member';
 import { ChatMessage } from '../../chatMessage';
 import { MemberCannotAccessMention } from '../../errors';
 
+@singleton()
 export class MentionService {
   hooks = new HookManager();
-  mailer: MailerDecoration;
+  private readonly mailer: MailerService;
 
-  constructor(mailer: MailerDecoration) {
+  constructor(mailer: MailerService) {
     this.mailer = mailer;
   }
 

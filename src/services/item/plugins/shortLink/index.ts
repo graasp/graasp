@@ -4,18 +4,19 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ShortLinkAvailable, ShortLinkPatchPayload, ShortLinkPostPayload } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ItemService } from '../../service';
+import { ItemPublishedService } from '../published/service';
 import { create, restricted_get, update } from './schemas';
 import { SHORT_LINKS_LIST_ROUTE, ShortLinkService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const {
-    db,
-    items: { service: itemService },
-    itemsPublished: { service: itemPublishedService },
-  } = fastify;
+  const { db } = fastify;
 
+  const itemService = resolveDependency(ItemService);
+  const itemPublishedService = resolveDependency(ItemPublishedService);
   const shortLinkService = new ShortLinkService(itemService, itemPublishedService);
   fastify.register(async function (fastify) {
     // No need to be logged for the redirection

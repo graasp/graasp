@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../../di/utils';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { ItemFlag } from './itemFlag';
@@ -7,9 +8,9 @@ import common, { create, getFlags } from './schemas';
 import { ItemFlagService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { db, items } = fastify;
+  const { db } = fastify;
 
-  const iFS = new ItemFlagService(items.service);
+  const itemFlagService = resolveDependency(ItemFlagService);
 
   // schemas
   fastify.addSchema(common);
@@ -19,7 +20,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/flags',
     { schema: getFlags, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member }) => {
-      return iFS.getAllFlags(member, buildRepositories());
+      return itemFlagService.getAllFlags(member, buildRepositories());
     },
   );
 
@@ -32,7 +33,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         if (!member) {
           throw new UnauthorizedMember(member);
         }
-        return iFS.post(member, buildRepositories(manager), itemId, body);
+        return itemFlagService.post(member, buildRepositories(manager), itemId, body);
       });
     },
   );

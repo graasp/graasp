@@ -1,5 +1,8 @@
+import { inject, singleton } from 'tsyringe';
+
 import { PermissionLevel } from '@graasp/sdk';
 
+import { GEOLOCATION_API_KEY_DI_KEY } from '../../../../di/constants';
 import { Repositories } from '../../../../utils/repositories';
 import { validatePermissionMany } from '../../../authorization';
 import { Actor, Member } from '../../../member/entities/member';
@@ -9,11 +12,15 @@ import { ItemService } from '../../service';
 import { ItemGeolocation, PackedItemGeolocation } from './ItemGeolocation';
 import { MissingGeolocationApiKey } from './errors';
 
+@singleton()
 export class ItemGeolocationService {
   private itemService: ItemService;
-  private geolocationKey?: string;
+  private geolocationKey: string;
 
-  constructor(itemService: ItemService, geolocationKey?: string) {
+  constructor(
+    itemService: ItemService,
+    @inject(GEOLOCATION_API_KEY_DI_KEY) geolocationKey: string,
+  ) {
     this.itemService = itemService;
     this.geolocationKey = geolocationKey;
   }

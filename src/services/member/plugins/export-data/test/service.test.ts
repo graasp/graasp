@@ -22,6 +22,7 @@ import { ItemMembership } from '../../../../itemMembership/entities/ItemMembersh
 import { Member } from '../../../entities/member';
 import { saveMember } from '../../../test/fixtures/members';
 import { ExportMemberDataService } from '../service';
+import { RequestDataExportService } from '../utils/export.utils';
 import { expectNoLeakMemberId } from './fixtures';
 
 /**
@@ -32,7 +33,7 @@ const itemTestUtils = new ItemTestUtils();
 
 jest.mock('../../../../../plugins/datasource');
 
-const service = new ExportMemberDataService();
+const service = new ExportMemberDataService({} as RequestDataExportService);
 
 const checkNoMemberIdLeaks = <T>({
   results,

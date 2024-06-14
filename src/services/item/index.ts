@@ -12,7 +12,6 @@ import {
   ETHERPAD_PUBLIC_URL,
   ETHERPAD_URL,
   FILE_ITEM_PLUGIN_OPTIONS,
-  IMAGE_CLASSIFIER_API,
   ITEMS_ROUTE_PREFIX,
   S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from '../../utils/config';
@@ -70,13 +69,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // we move this from fluent schema because it was a global value
   // this did not fit well with tests
   const initializedCreate = create(baseItemCreate, folderItemCreate, shortcutItemCreate);
-
   const initializedUpdate = updateOne(folderExtra);
 
-  const { items } = fastify;
-  // decoration to extend create and update schemas from other plugins
-  items.extendCreateSchema = initializedCreate;
-  items.extendExtrasUpdateSchema = initializedUpdate;
+  fastify.decorate('items', {
+    extendCreateSchema: initializedCreate,
+    extendExtrasUpdateSchema: initializedUpdate,
+  });
 
   await fastify.register(
     async function (fastify) {
@@ -134,10 +132,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         fastify.register(graaspRecycledItemData);
 
-        fastify.register(graaspValidationPlugin, {
-          // this api needs to be defined from .env
-          imageClassifierApi: IMAGE_CLASSIFIER_API,
-        });
+        fastify.register(graaspValidationPlugin);
 
         fastify.register(graaspItemLikes);
 

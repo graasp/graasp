@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
+import { resolveDependency } from '../di/utils';
 import { SearchService } from '../services/item/plugins/published/plugins/search/service';
 import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
 
@@ -66,10 +67,8 @@ class UnHealthyStatus extends ServiceStatus {
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get('/status', async (_, reply) => {
-    const {
-      db,
-      search: { service: searchService },
-    } = fastify;
+    const { db } = fastify;
+    const searchService = resolveDependency(SearchService);
     const api = new HealthyStatus().format();
     const database = (await getDBStatusCheck(db.manager)).format();
     const etherpad = (await getEtherpadStatusCheck()).format();

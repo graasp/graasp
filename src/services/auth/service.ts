@@ -1,10 +1,10 @@
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import { singleton } from 'tsyringe';
 import { promisify } from 'util';
 
-import { FastifyBaseLogger } from 'fastify';
-
-import { MailerDecoration } from '../../plugins/mailer';
+import { BaseLogger } from '../../logger';
 import { MAIL } from '../../plugins/mailer/langs/constants';
+import { MailerService } from '../../plugins/mailer/service';
 import {
   JWT_SECRET,
   LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
@@ -23,11 +23,12 @@ const promisifiedJwtSign = promisify<
   string
 >(jwt.sign);
 
+@singleton()
 export class AuthService {
-  log: FastifyBaseLogger;
-  mailer: MailerDecoration;
+  log: BaseLogger;
+  mailer: MailerService;
 
-  constructor(mailer, log) {
+  constructor(mailer: MailerService, log: BaseLogger) {
     this.mailer = mailer;
     this.log = log;
   }

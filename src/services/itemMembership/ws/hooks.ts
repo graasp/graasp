@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 
+import { resolveDependency } from '../../../di/utils';
 import { Repositories, buildRepositories } from '../../../utils/repositories';
 import { ItemService } from '../../item/service';
 import { WebsocketService } from '../../websockets/ws-service';
@@ -69,11 +70,14 @@ export function registerItemMembershipWsHooks(
  * Registers real-time websocket events for the item service
  */
 export const membershipWsHooks: FastifyPluginAsync = async (fastify) => {
-  const { websockets, items, memberships } = fastify;
+  const { websockets } = fastify;
+  const itemService = resolveDependency(ItemService);
+  const itemMembershipService = resolveDependency(ItemMembershipService);
+
   registerItemMembershipWsHooks(
     buildRepositories(),
     websockets,
-    items.service,
-    memberships.service,
+    itemService,
+    itemMembershipService,
   );
 };

@@ -4,10 +4,13 @@ import fastifyMultipart from '@fastify/multipart';
 import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
+import { resolveDependency } from '../../../../di/utils';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
 import { Actor, Member } from '../../../member/entities/member';
+import { MemberService } from '../../../member/service';
 import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
 import { NoFileProvidedForInvitations } from './errors';
@@ -15,7 +18,10 @@ import definitions, { deleteOne, getById, getForItem, invite, sendOne, updateOne
 import { InvitationService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, db, log, members, items, memberships } = fastify;
+  const { db } = fastify;
+  const mailer = resolveDependency(MailerService);
+  const memberService = resolveDependency(MemberService);
+  const invitationService = resolveDependency(InvitationService);
 
   if (!mailer) {
     throw new Error('Mailer plugin is not defined');
@@ -24,21 +30,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
 
-  const iS = new InvitationService(
-    log,
-    mailer,
-    items.service,
-    members.service,
-    memberships.service,
-  );
-
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
     const { email } = args.member;
-    await iS.createToMemberships(actor, repositories, args.member);
+    await invitationService.createToMemberships(actor, repositories, args.member);
     await repositories.invitationRepository.deleteForEmail(email);
   };
-  members.service.hooks.setPostHook('create', hook);
+  memberService.hooks.setPostHook('create', hook);
 
   // get an invitation by id
   // does not require authentication
@@ -47,7 +45,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getById, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params }) => {
       const { id } = params;
-      const aa = await iS.get(member, buildRepositories(), id);
+      const aa = await invitationService.get(member, buildRepositories(), id);
       return aa;
     },
   );
@@ -60,7 +58,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     },
     async ({ member, body, params }) => {
       return db.transaction(async (manager) => {
-        const res = await iS.postManyForItem(
+        const res = await invitationService.postManyForItem(
           member,
           buildRepositories(manager),
           params.id,
@@ -104,7 +102,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         if (templateId) {
           return await db.transaction(async (manager) =>
-            iS.createStructureForCSVAndTemplate(
+            invitationService.createStructureForCSVAndTemplate(
               member,
               buildRepositories(manager),
               itemId,
@@ -114,7 +112,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
         return await db.transaction(async (manager) =>
-          iS.importUsersWithCSV(member, buildRepositories(manager), itemId, uploadedFile),
+          invitationService.importUsersWithCSV(
+            member,
+            buildRepositories(manager),
+            itemId,
+            uploadedFile,
+          ),
         );
       },
     );
@@ -126,7 +129,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: getForItem, preHandler: fastify.verifyAuthentication },
     async ({ member, params }) => {
       const { id: itemId } = params;
-      return iS.getForItem(member, buildRepositories(), itemId);
+      return invitationService.getForItem(member, buildRepositories(), itemId);
     },
   );
 
@@ -138,7 +141,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const { invitationId } = params;
 
       return db.transaction(async (manager) => {
-        return iS.patch(member, buildRepositories(manager), invitationId, body);
+        return invitationService.patch(member, buildRepositories(manager), invitationId, body);
       });
     },
   );
@@ -151,7 +154,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       const { invitationId } = params;
 
       return db.transaction(async (manager) => {
-        return iS.delete(member, buildRepositories(manager), invitationId);
+        return invitationService.delete(member, buildRepositories(manager), invitationId);
       });
     },
   );
@@ -163,7 +166,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     async ({ member, params }, reply) => {
       const { invitationId } = params;
 
-      await iS.resend(member, buildRepositories(), invitationId);
+      await invitationService.resend(member, buildRepositories(), invitationId);
       reply.status(StatusCodes.NO_CONTENT);
     },
   );

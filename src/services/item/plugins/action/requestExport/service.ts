@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { singleton } from 'tsyringe';
 
 import {
   Context,
@@ -8,12 +9,11 @@ import {
   UUID,
 } from '@graasp/sdk';
 
-import { MailerDecoration } from '../../../../../plugins/mailer';
 import { MAIL } from '../../../../../plugins/mailer/langs/constants';
+import { MailerService } from '../../../../../plugins/mailer/service';
 import { UnauthorizedMember } from '../../../../../utils/errors';
 import { Repositories } from '../../../../../utils/repositories';
 import { EXPORT_FILE_EXPIRATION, ZIP_MIMETYPE } from '../../../../action/constants/constants';
-import { ActionService } from '../../../../action/services/action';
 import {
   buildActionFilePath,
   buildItemTmpFolder,
@@ -27,21 +27,19 @@ import { ItemService } from '../../../service';
 import { ActionItemService } from '../service';
 import { ActionRequestExport } from './requestExport';
 
+@singleton()
 export class ActionRequestExportService {
-  fileService: FileService;
-  actionItemService: ActionItemService;
-  itemService: ItemService;
-  actionService: ActionService;
-  mailer: MailerDecoration;
+  private readonly fileService: FileService;
+  private readonly actionItemService: ActionItemService;
+  private readonly itemService: ItemService;
+  private readonly mailer: MailerService;
 
   constructor(
-    actionService: ActionService,
     actionItemService: ActionItemService,
     itemService: ItemService,
     fileService: FileService,
-    mailer,
+    mailer: MailerService,
   ) {
-    this.actionService = actionService;
     this.actionItemService = actionItemService;
     this.itemService = itemService;
     this.fileService = fileService;

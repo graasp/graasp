@@ -5,9 +5,11 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ThumbnailSizeType } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
 import { IdParam } from '../../../../types';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import FileService from '../../../file/service';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { download, upload } from './schemas';
@@ -21,11 +23,9 @@ type GraaspThumbnailsOptions = {
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, options) => {
   const { maxFileSize = DEFAULT_MAX_FILE_SIZE } = options;
-  const {
-    files: { service: fileService },
-    members: { service: memberService },
-    db,
-  } = fastify;
+  const { db } = fastify;
+  const fileService = resolveDependency(FileService);
+  const thumbnailService = resolveDependency(MemberThumbnailService);
 
   fastify.register(fastifyMultipart, {
     limits: {
@@ -38,8 +38,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
       // headerPairs: 2000             // Max number of header key=>value pairs (Default: 2000 - same as node's http).
     },
   });
-
-  const thumbnailService = new MemberThumbnailService(memberService, fileService);
 
   fastify.post<{ Params: IdParam }>(
     '/avatar',

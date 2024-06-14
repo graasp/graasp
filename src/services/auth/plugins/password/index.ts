@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { Redis } from 'ioredis';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import fastifyPassport from '@fastify/passport';
@@ -6,9 +7,12 @@ import { FastifyPluginAsync, PassportUser } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
+import { resolveDependency } from '../../../../di/utils';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { PASSWORD_RESET_JWT_SECRET, PUBLIC_URL } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
+import { ActionService } from '../../../action/services/action';
 import { getRedirectionUrl } from '../../utils';
 import {
   passwordLogin,
@@ -21,7 +25,11 @@ import { MemberPasswordService } from './service';
 const PASSPORT_STATEGY_ID = 'jwt-reset-password';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db, redis } = fastify;
+  const { log, db } = fastify;
+
+  const redis = resolveDependency(Redis);
+  const mailer = resolveDependency(MailerService);
+  const actionService = resolveDependency(ActionService);
 
   await fastify.register(fastifyPassport.initialize());
   await fastify.register(fastifyPassport.secureSession());
@@ -137,7 +145,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           extra: {},
         };
         // Do not await the action to be saved. It is not critical.
-        fastify.actions.service.postMany(member, repositories, request, [action]);
+        actionService.postMany(member, repositories, request, [action]);
       }
     },
   );
@@ -175,7 +183,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         extra: {},
       };
       // Do not await the action to be saved. It is not critical.
-      fastify.actions.service.postMany(member, repositories, request, [action]);
+      actionService.postMany(member, repositories, request, [action]);
     },
   );
 };
