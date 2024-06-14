@@ -22,6 +22,7 @@ registerValue(FASTIFY_LOGGER_DI_KEY, console);
 
 const MOCK_LOCAL_CONFIG = {
   storageRootPath: '/root-path',
+  localFilesHost: 'http://localhost',
 };
 
 const MOCK_S3_CONFIG = {
