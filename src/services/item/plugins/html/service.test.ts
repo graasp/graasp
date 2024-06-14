@@ -1,12 +1,8 @@
 import { ItemType } from '@graasp/sdk';
 
-import { registerValue } from '../../../../dependencies';
 import { BaseLogger } from '../../../../logger';
-import { FASTIFY_LOGGER_DI_KEY } from '../../../../utils/dependencies.keys';
 import { HtmlService } from './service';
 import { HtmlValidator } from './validator';
-
-registerValue(FASTIFY_LOGGER_DI_KEY, console);
 
 class MockValidator implements HtmlValidator {
   isExtensionAllowed() {

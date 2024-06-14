@@ -2,9 +2,7 @@ import { ReadStream } from 'fs';
 
 import { ItemType } from '@graasp/sdk';
 
-import { registerValue } from '../../dependencies';
 import { BaseLogger } from '../../logger';
-import { FASTIFY_LOGGER_DI_KEY } from '../../utils/dependencies.keys';
 import { Member } from '../member/entities/member';
 import { LocalFileRepository } from './repositories/local';
 import { S3FileRepository } from './repositories/s3';
@@ -17,8 +15,6 @@ import {
   UploadFileUnexpectedError,
 } from './utils/errors';
 import { fileRepositoryFactory } from './utils/factory';
-
-registerValue(FASTIFY_LOGGER_DI_KEY, console);
 
 const MOCK_LOCAL_CONFIG = {
   storageRootPath: '/root-path',
