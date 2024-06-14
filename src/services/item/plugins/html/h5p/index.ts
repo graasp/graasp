@@ -13,7 +13,7 @@ import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
-import { Item, isItemType } from '../../../entities/Item';
+import { Item } from '../../../entities/Item';
 import { FastifyStaticReply } from '../types';
 import {
   DEFAULT_H5P_ASSETS_ROUTE,
@@ -157,38 +157,6 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
         });
       },
     );
-  });
-
-  /**
-   * Delete H5P assets on item delete
-   */
-  itemService.hooks.setPostHook('delete', async (actor, repositories, { item }) => {
-    if (!isItemType(item, ItemType.H5P)) {
-      return;
-    }
-    if (!actor) {
-      return;
-    }
-    const { extra } = item;
-    await h5pService.deletePackage(actor, extra.h5p.contentId);
-  });
-
-  /**
-   * Copy H5P assets on item copy
-   */
-  itemService.hooks.setPostHook('copy', async (actor, repositories, { original: item, copy }) => {
-    // only execute this handler for H5P item types
-    if (!isItemType(item, ItemType.H5P) || !isItemType(copy, ItemType.H5P)) {
-      return;
-    }
-    if (!actor) {
-      return;
-    }
-
-    await h5pService.copy(actor, repositories, {
-      original: item,
-      copy: copy,
-    });
   });
 };
 

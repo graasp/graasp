@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { H5PItemExtra, ItemType } from '@graasp/sdk';
+import { H5PItemExtra, ItemType, UUID } from '@graasp/sdk';
 
 import {
   H5P_FILE_STORAGE_CONFIG,
@@ -12,7 +12,7 @@ import {
 } from '../../../../../utils/config';
 import { Repositories } from '../../../../../utils/repositories';
 import { Actor, Member } from '../../../../member/entities/member';
-import { Item } from '../../../entities/Item';
+import { H5PItem, Item } from '../../../entities/Item';
 import { HtmlService } from '../service';
 import { H5P_FILE_DOT_EXTENSION, H5P_FILE_MIME_TYPE } from './constants';
 import { H5P } from './validation/h5p';
@@ -62,15 +62,12 @@ export class H5PService extends HtmlService {
     return super._getUrl(member, item.id, h5pPath);
   }
 
-  async copy(
-    actor: Member,
-    repositories: Repositories,
-    {
-      original: item,
-      copy,
-    }: { original: Item<typeof ItemType.H5P>; copy: Item<typeof ItemType.H5P> },
-  ): Promise<void> {
-    const { extra } = item;
+  async copy(actor: Member, repositories: Repositories, id: string, args: { parentId?: UUID }) {
+    // copy item
+    const { item, copy } = await super.copy(actor, repositories, id, args);
+
+    // not good, we should infer from super copy, but not so easy
+    const { extra } = item as H5PItem;
 
     const baseName = path.basename(item.name, H5P_FILE_DOT_EXTENSION);
     const copySuffix = '-1';
@@ -90,9 +87,19 @@ export class H5PService extends HtmlService {
       newFolderPath: this.buildContentPath(remoteRootPath),
     });
 
-    await repositories.itemRepository.patch(copy.id, {
+    const changedCopy = await repositories.itemRepository.patch(copy.id, {
       name: this.buildH5PPath('', newName),
       extra: { h5p: this.buildH5PExtra(newContentId, newName).h5p },
     });
+
+    return { item, copy: changedCopy };
+  }
+
+  async delete(actor: Member, repositories: Repositories, itemId: UUID) {
+    const item = await super.delete(actor, repositories, itemId);
+    const { extra } = item as H5PItem;
+    await this.deletePackage(actor, extra.h5p.contentId);
+
+    return item;
   }
 }
