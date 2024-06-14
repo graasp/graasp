@@ -1,3 +1,5 @@
+import { singleton } from 'tsyringe';
+
 import { AppDataVisibility, PermissionLevel, UUID } from '@graasp/sdk';
 
 import { MemberCannotWriteItem, UnauthorizedMember } from '../../../../../utils/errors';
@@ -46,6 +48,7 @@ const permissionMapping = {
   [PermissionLevel.Admin]: [PermissionLevel.Read, PermissionLevel.Write, PermissionLevel.Admin],
 };
 
+@singleton()
 export class AppDataService {
   hooks = new HookManager<{
     post: {

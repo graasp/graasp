@@ -17,6 +17,7 @@ import { ItemService } from '../services/item/service';
 import {
   FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
+  GEOLOCATION_API_KEY,
   IMAGE_CLASSIFIER_API,
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
@@ -34,6 +35,7 @@ import {
   FASTIFY_LOGGER_DI_KEY,
   FILE_ITEM_TYPE_DI_KEY,
   FILE_REPOSITORY_DI_KEY,
+  GEOLOCATION_API_KEY_DI_KEY,
   IMAGE_CLASSIFIER_API_DI_KEY,
 } from './constants';
 import { registerValue, resolveDependency } from './utils';
@@ -49,6 +51,9 @@ export const registerDependencies = (instance: FastifyInstance) => {
 
   // register classifier key for the ValidationService.
   registerValue(IMAGE_CLASSIFIER_API_DI_KEY, IMAGE_CLASSIFIER_API);
+
+  // register geolocation key for the ItemGeolocationService.
+  registerValue(GEOLOCATION_API_KEY_DI_KEY, GEOLOCATION_API_KEY);
 
   registerValue(
     Redis,

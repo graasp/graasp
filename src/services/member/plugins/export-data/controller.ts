@@ -3,17 +3,13 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { resolveDependency } from '../../../../di/utils';
-import { MailerService } from '../../../../plugins/mailer/service';
 import { buildRepositories } from '../../../../utils/repositories';
-import FileService from '../../../file/service';
 import { exportMemberData } from './schemas/schemas';
 import { ExportMemberDataService } from './service';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
-  const mailer = resolveDependency(MailerService);
-  const fileService = resolveDependency(FileService);
-  const exportMemberDataService = new ExportMemberDataService();
+  const exportMemberDataService = resolveDependency(ExportMemberDataService);
 
   // download all related data to the given user
   fastify.post(
@@ -29,8 +25,6 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         await exportMemberDataService.requestDataExport({
           actor: member,
           repositories,
-          fileService,
-          mailer,
         });
       });
 

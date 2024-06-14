@@ -1,4 +1,5 @@
 import path from 'path';
+import { singleton } from 'tsyringe';
 import { v4 } from 'uuid';
 
 import { MultipartFile } from '@fastify/multipart';
@@ -14,10 +15,11 @@ import { AppSetting } from '../../appSettings';
 import { NotAppSettingFile } from '../../errors';
 import { AppSettingService } from '../../service';
 
+@singleton()
 class AppSettingFileService {
-  appSettingService: AppSettingService;
-  fileService: FileService;
-  itemService: ItemService;
+  private readonly appSettingService: AppSettingService;
+  private readonly fileService: FileService;
+  private readonly itemService: ItemService;
 
   buildFilePath(itemId: UUID, appSettingId: UUID) {
     return path.join('apps', 'app-setting', itemId, appSettingId);

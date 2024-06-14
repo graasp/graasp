@@ -1,6 +1,7 @@
 import archiver from 'archiver';
 import fs, { mkdirSync } from 'fs';
 import path from 'path';
+import { singleton } from 'tsyringe';
 
 import { DEFAULT_EXPORT_ACTIONS_VALIDITY_IN_DAYS } from '@graasp/sdk';
 
@@ -181,9 +182,10 @@ export class ArchiveDataExporter {
   }
 }
 
+@singleton()
 export class RequestDataExportService {
-  private fileService: FileService;
-  private mailer: MailerService;
+  private readonly fileService: FileService;
+  private readonly mailer: MailerService;
 
   private readonly ROOT_EXPORT_FOLDER = 'export';
 

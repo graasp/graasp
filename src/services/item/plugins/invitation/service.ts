@@ -1,12 +1,13 @@
 import groupby from 'lodash.groupby';
+import { singleton } from 'tsyringe';
 
 import { MultipartFile } from '@fastify/multipart';
-import { FastifyBaseLogger } from 'fastify';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../logger';
 import { MAIL } from '../../../../plugins/mailer/langs/constants';
-import type { MailerService } from '../../../../plugins/mailer/service';
+import { MailerService } from '../../../../plugins/mailer/service';
 import { GRAASP_LANDING_PAGE_ORIGIN } from '../../../../utils/constants';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
@@ -30,15 +31,16 @@ import {
 } from './errors';
 import { CSVInvite, parseCSV, verifyCSVFileFormat } from './utils';
 
+@singleton()
 export class InvitationService {
-  log: FastifyBaseLogger;
-  mailer: MailerService;
-  itemService: ItemService;
-  memberService: MemberService;
-  itemMembershipService: ItemMembershipService;
+  private readonly log: BaseLogger;
+  private readonly mailer: MailerService;
+  private readonly itemService: ItemService;
+  private readonly memberService: MemberService;
+  private readonly itemMembershipService: ItemMembershipService;
 
   constructor(
-    log: FastifyBaseLogger,
+    log: BaseLogger,
     mailer: MailerService,
     itemService: ItemService,
     memberService: MemberService,
@@ -211,7 +213,7 @@ export class InvitationService {
         rows.find((r) => r.email === account.email)?.permission || PermissionLevel.Read;
       return { permission, memberId: account.id };
     });
-    this.log.debug(membershipsToCreate, 'memberships to create');
+    this.log.debug(`${JSON.stringify(membershipsToCreate)} memberships to create`);
 
     // create memberships for accounts that already exist
     const memberships = await this.itemMembershipService.postMany(
@@ -227,7 +229,7 @@ export class InvitationService {
       const permission = rows.find((r) => r.email === email)?.permission || PermissionLevel.Read;
       return { email, permission };
     });
-    this.log.debug(invitationsToCreate, 'invitations to create');
+    this.log.debug(`${JSON.stringify(invitationsToCreate)} invitations to create`);
 
     // create invitations for accounts that do not exist yet
     const invitations = await this.postManyForItem(

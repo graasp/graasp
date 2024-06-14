@@ -2,3 +2,4 @@ export const FASTIFY_LOGGER_DI_KEY = 'FastifyBaseLogger';
 export const FILE_ITEM_TYPE_DI_KEY = 'FILE_ITEM_TYPE';
 export const IMAGE_CLASSIFIER_API_DI_KEY = 'IMAGE_CLASSIFIER_API';
 export const FILE_REPOSITORY_DI_KEY = 'FileRepository';
+export const GEOLOCATION_API_KEY_DI_KEY = 'GEOLOCATION_API_KEY';

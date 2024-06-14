@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   const { db } = fastify;
 
   const itemService = resolveDependency(ItemService);
-  const iTS = new ItemTagService(itemService);
+  const itemTagService = resolveDependency(ItemTagService);
 
   // schemas
   fastify.addSchema(common);
@@ -43,7 +43,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:itemId/tags',
     { schema: getItemTags, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, params: { itemId } }) => {
-      return iTS.getForItem(member, buildRepositories(), itemId);
+      return itemTagService.getForItem(member, buildRepositories(), itemId);
     },
   );
 
@@ -52,7 +52,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/tags',
     { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
     async ({ member, query: { id: ids } }) => {
-      return iTS.getForManyItems(member, buildRepositories(), ids);
+      return itemTagService.getForManyItems(member, buildRepositories(), ids);
     },
   );
 
@@ -61,7 +61,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: create, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
-        return iTS.post(member, buildRepositories(manager), itemId, type);
+        return itemTagService.post(member, buildRepositories(manager), itemId, type);
       });
     },
   );
@@ -72,7 +72,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     { schema: deleteOne, preHandler: fastify.verifyAuthentication },
     async ({ member, params: { itemId, type } }) => {
       return db.transaction(async (manager) => {
-        return iTS.deleteOne(member, buildRepositories(manager), itemId, type);
+        return itemTagService.deleteOne(member, buildRepositories(manager), itemId, type);
       });
     },
   );

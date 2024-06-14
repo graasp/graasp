@@ -15,7 +15,7 @@ import { saveActionsWithItems } from './utils';
 jest.mock('../../../../../plugins/datasource');
 
 const rawRepository = AppDataSource.getRepository(Action);
-// TODO: use resolve when the ActionMemberService is migrated to DI
+
 const getActionMemberService = () => {
   const itemService = resolveDependency(ItemService);
   const memberService = resolveDependency(MemberService);

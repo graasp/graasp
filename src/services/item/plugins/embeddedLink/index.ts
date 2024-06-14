@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsync<GraaspEmbeddedLinkItemOptions> = async (fastify
     items: { extendCreateSchema, extendExtrasUpdateSchema },
   } = fastify;
   const itemService = resolveDependency(ItemService);
-  const embeddedLinkService = new EmbeddedLinkService();
+  const embeddedLinkService = resolveDependency(EmbeddedLinkService);
 
   if (!iframelyHrefOrigin) {
     throw new Error('graasp-embedded-link-item: mandatory options missing');

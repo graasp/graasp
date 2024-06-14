@@ -13,10 +13,9 @@ import {
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
 import { Actor, Member } from '../../../../../../member/entities/member';
-import { ItemService } from '../../../../../service';
 import { AppData } from '../../appData';
 import { PreventUpdateAppDataFile } from '../../errors';
-import type { AppDataService } from '../../service';
+import { AppDataService } from '../../service';
 import { download, upload } from './schema';
 import AppDataFileService from './service';
 
@@ -38,9 +37,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   const { db } = fastify;
 
   const fileService = resolveDependency(FileService);
-  const itemService = resolveDependency(ItemService);
 
-  const appDataFileService = new AppDataFileService(appDataService, fileService, itemService);
+  const appDataFileService = resolveDependency(AppDataFileService);
 
   fastify.register(fastifyMultipart, {
     limits: {

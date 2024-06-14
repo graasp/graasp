@@ -12,7 +12,6 @@ import {
   UploadFileUnexpectedError,
 } from '../../../../../../file/utils/errors';
 import { Actor, Member } from '../../../../../../member/entities/member';
-import { ItemService } from '../../../../../service';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../../file/utils/constants';
 import { AppSetting } from '../../appSettings';
 import { PreventUpdateAppSettingFile } from '../../errors';
@@ -22,7 +21,6 @@ import AppSettingFileService from './service';
 
 export interface GraaspPluginFileOptions {
   maxFileSize?: number; // max size for an uploaded file in bytes
-
   appSettingService: AppSettingService;
 }
 
@@ -31,13 +29,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   const { db } = fastify;
 
-  const itemService = resolveDependency(ItemService);
   const fileService = resolveDependency(FileService);
-  const appSettingFileService = new AppSettingFileService(
-    appSettingService,
-    fileService,
-    itemService,
-  );
+  const appSettingFileService = resolveDependency(AppSettingFileService);
 
   fastify.register(fastifyMultipart, {
     limits: {

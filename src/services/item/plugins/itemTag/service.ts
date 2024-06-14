@@ -1,11 +1,14 @@
+import { singleton } from 'tsyringe';
+
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { Repositories } from '../../../../utils/repositories';
 import { Actor } from '../../../member/entities/member';
 import { ItemService } from '../../service';
 
+@singleton()
 export class ItemTagService {
-  private itemService: ItemService;
+  private readonly itemService: ItemService;
 
   constructor(itemService: ItemService) {
     this.itemService = itemService;

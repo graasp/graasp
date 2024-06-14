@@ -406,7 +406,7 @@ export const ALLOWED_SEARCH_LANGS = {
 };
 
 // Geolocation API Key
-export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY;
+export const GEOLOCATION_API_KEY = process.env.GEOLOCATION_API_KEY ?? '';
 export const GEOLOCATION_API_HOST = process.env.GEOLOCATION_API_HOST;
 
 ////////////
