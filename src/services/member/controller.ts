@@ -41,7 +41,11 @@ const controller: FastifyPluginAsync = async (fastify) => {
       if (!member) {
         throw new UnauthorizedMember(member);
       }
-      return storageService.getStorageLimits(member, fileService.type, buildRepositories());
+      return storageService.getStorageLimits(
+        member,
+        fileService.getFileType(),
+        buildRepositories(),
+      );
     },
   );
 

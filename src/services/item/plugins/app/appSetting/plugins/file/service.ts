@@ -92,7 +92,7 @@ class AppSettingFileService {
       id: appSettingId,
       name,
       data: {
-        [this.fileService.type]: fileProperties,
+        [this.fileService.getFileType()]: fileProperties,
       },
     });
 
@@ -124,7 +124,7 @@ class AppSettingFileService {
       itemId,
       appSettingId,
     );
-    const fileProp = appSetting.data[this.fileService.type];
+    const fileProp = appSetting.data[this.fileService.getFileType()];
     if (!fileProp) {
       throw new NotAppSettingFile(appSetting);
     }
@@ -140,7 +140,7 @@ class AppSettingFileService {
   }
 
   async copyMany(actor: Member, repositories: Repositories, toCopy: AppSetting[]) {
-    const fileItemType = this.fileService.type;
+    const fileItemType = this.fileService.getFileType();
     for (const appS of toCopy) {
       if (!appS.data) {
         throw new Error('App setting file is not correctly defined');
@@ -176,7 +176,7 @@ class AppSettingFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appSetting?.data?.[this.fileService.type] as FileItemProperties;
+      const fileProp = appSetting?.data?.[this.fileService.getFileType()] as FileItemProperties;
       if (!fileProp) {
         return;
       }

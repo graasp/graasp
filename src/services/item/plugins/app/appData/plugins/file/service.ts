@@ -88,7 +88,7 @@ class AppDataFileService {
       type: APP_DATA_TYPE_FILE,
       visibility: AppDataVisibility.Member,
       data: {
-        [this.fileService.type]: fileProperties,
+        [this.fileService.getFileType()]: fileProperties,
       },
     });
 
@@ -113,7 +113,7 @@ class AppDataFileService {
 
     // get app data and check it is a file
     const appData = await this.appDataService.get(actorId, repositories, itemId, appDataId);
-    const fileProp = appData.data[this.fileService.type] as FileItemProperties;
+    const fileProp = appData.data[this.fileService.getFileType()] as FileItemProperties;
     if (!fileProp) {
       throw new NotAppDataFile(appData);
     }
@@ -132,7 +132,7 @@ class AppDataFileService {
     // TODO: check rights? but only use in posthook
     try {
       // delete file only if type is the current file type
-      const fileProp = appData?.data?.[this.fileService.type] as FileItemProperties;
+      const fileProp = appData?.data?.[this.fileService.getFileType()] as FileItemProperties;
       if (!fileProp) {
         return;
       }

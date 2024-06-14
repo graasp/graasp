@@ -46,7 +46,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
   });
 
   // "install" custom schema for validating file items update
-  extendExtrasUpdateSchema(updateSchema(fileService.type));
+  extendExtrasUpdateSchema(updateSchema(fileService.getFileType()));
 
   // register post delete handler to remove the file object after item delete
   itemService.hooks.setPostHook(
@@ -57,8 +57,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
       }
       try {
         // delete file only if type is the current file type
-        if (!id || type !== fileService.type) return;
-        const filepath = (extra[fileService.type] as FileItemProperties).path;
+        if (!id || type !== fileService.getFileType()) return;
+        const filepath = (extra[fileService.getFileType()] as FileItemProperties).path;
         await fileService.delete(actor, filepath);
       } catch (err) {
         // we catch the error, it ensures the item is deleted even if the file is not
@@ -77,8 +77,9 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     const { id, type } = item; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== fileService.type) return;
-    const size = (item.extra[fileService.type] as FileItemProperties & { size?: number })?.size;
+    if (!id || type !== fileService.getFileType()) return;
+    const size = (item.extra[fileService.getFileType()] as FileItemProperties & { size?: number })
+      ?.size;
 
     await storageService.checkRemainingStorage(actor, repositories, size);
   });
@@ -92,7 +93,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     const { id, type } = copy; // full copy with new `id`
 
     // copy file only if type is the current file type
-    if (!id || type !== fileService.type) {
+    if (!id || type !== fileService.getFileType()) {
       return;
     }
     await fileItemService.copy(actor, repositories, { original, copy });

@@ -119,7 +119,7 @@ export class ItemValidationService {
               // if item is not of type 'file', skip the image checking
               if (
                 process === ItemValidationProcess.ImageChecking &&
-                item?.type !== this.fileService.type
+                item?.type !== this.fileService.getFileType()
               ) {
                 return undefined;
               }

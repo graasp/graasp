@@ -301,6 +301,7 @@ if (H5P_FILE_STORAGE_TYPE === ItemType.LOCAL_FILE) {
 export const H5P_LOCAL_CONFIG = {
   local: {
     storageRootPath: process.env.H5P_STORAGE_ROOT_PATH,
+    localFilesHost: process.env.H5P_FILE_STORAGE_HOST,
   } as LocalFileConfiguration,
 };
 

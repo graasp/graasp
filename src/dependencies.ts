@@ -7,7 +7,7 @@ import { CRON_3AM_MONDAY, JobServiceBuilder } from './jobs';
 import { BaseLogger } from './logger';
 import { MailerService } from './plugins/mailer/service';
 import FileService from './services/file/service';
-import { createfileService } from './services/file/utils/factory';
+import { fileRepositoryFactory } from './services/file/utils/factory';
 import FileItemService from './services/item/plugins/file/service';
 import { H5PService } from './services/item/plugins/html/h5p/service';
 import { ImportExportService } from './services/item/plugins/importExport/service';
@@ -16,6 +16,7 @@ import { MeiliSearchWrapper } from './services/item/plugins/published/plugins/se
 import { SearchService } from './services/item/plugins/published/plugins/search/service';
 import { ItemService } from './services/item/service';
 import {
+  FILE_ITEM_PLUGIN_OPTIONS,
   FILE_ITEM_TYPE,
   MAILER_CONFIG_FROM_EMAIL,
   MAILER_CONFIG_PASSWORD,
@@ -27,11 +28,16 @@ import {
   REDIS_PASSWORD,
   REDIS_PORT,
   REDIS_USERNAME,
+  S3_FILE_ITEM_PLUGIN_OPTIONS,
 } from './utils/config';
-import { FASTIFY_LOGGER_DI_KEY, FILE_ITEM_TYPE_DI_KEY } from './utils/dependencies.keys';
+import {
+  FASTIFY_LOGGER_DI_KEY,
+  FILE_ITEM_TYPE_DI_KEY,
+  FILE_REPOSITORY_DI_KEY,
+} from './utils/dependencies.keys';
 
-export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
-  return container.resolve(injectionToken);
+export const resolveDependency = <T>(injectionToken: InjectionToken<T> | string) => {
+  return container.resolve<T>(injectionToken);
 };
 
 /**
@@ -40,6 +46,10 @@ export const resolveDependency = <T>(injectionToken: InjectionToken<T>) => {
  */
 export const resetDependencies = () => {
   container.clearInstances();
+};
+
+export const registerValue = <T>(injectionToken: InjectionToken<T> | string, value: T) => {
+  container.register(injectionToken, { useValue: value });
 };
 
 export const registerDependencies = (instance: FastifyInstance) => {
@@ -71,8 +81,11 @@ export const registerDependencies = (instance: FastifyInstance) => {
     }),
   });
 
-  container.register(FileService, {
-    useValue: createfileService(log),
+  container.register(FILE_REPOSITORY_DI_KEY, {
+    useValue: fileRepositoryFactory(FILE_ITEM_TYPE, {
+      s3: S3_FILE_ITEM_PLUGIN_OPTIONS,
+      local: FILE_ITEM_PLUGIN_OPTIONS,
+    }),
   });
 
   container.register(MeiliSearchWrapper, {

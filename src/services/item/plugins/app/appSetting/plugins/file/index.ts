@@ -68,7 +68,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     { appSettings }: { appSettings: AppSetting[]; originalItemId: string; copyItemId: string },
   ) => {
     // copy file only if content is a file
-    const isFileSetting = (a: AppSetting) => a.data[fileService.type];
+    const isFileSetting = (a: AppSetting) => a.data[fileService.getFileType()];
     const toCopy = appSettings.filter(isFileSetting);
     if (toCopy.length) {
       await appSettingFileService.copyMany(actor, repositories, toCopy);
@@ -83,7 +83,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     { appSetting }: { appSetting: Partial<AppSetting> },
   ) => {
     if (appSetting?.data) {
-      if (appSetting.data[fileService.type]) {
+      if (appSetting.data[fileService.getFileType()]) {
         throw new PreventUpdateAppSettingFile(appSetting);
       }
     }

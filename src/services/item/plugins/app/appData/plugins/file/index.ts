@@ -71,7 +71,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     args: { appData: Partial<AppData> },
   ) => {
     const { appData } = args;
-    if (appData?.data && appData.data[fileService.type]) {
+    if (appData?.data && appData.data[fileService.getFileType()]) {
       throw new PreventUpdateAppDataFile(appData.id);
     }
   };

@@ -12,10 +12,12 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { FileItemType } from '@graasp/sdk';
 
+import { BaseLogger } from '../../../../logger';
 import { TMP_FOLDER } from '../../../../utils/config';
 import { UnauthorizedMember } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import FileService, { FileServiceConfig } from '../../../file/service';
+import { fileRepositoryFactory } from '../../../file/utils/factory';
 import { Actor, Member } from '../../../member/entities/member';
 import { Item } from '../../entities/Item';
 import { GraaspHtmlError, HtmlImportError } from './errors';
@@ -31,9 +33,9 @@ export abstract class HtmlService {
   protected readonly mimetype: string;
   protected readonly extension: string;
   protected readonly pathPrefix: string;
-  protected readonly logger: FastifyBaseLogger;
-
+  protected readonly logger: BaseLogger;
   protected readonly tempDir: string;
+  private readonly config: FileServiceConfig;
 
   constructor(
     {
@@ -47,29 +49,30 @@ export abstract class HtmlService {
     mimetype: string,
     extension: string,
     validator: HtmlValidator,
-    log: FastifyBaseLogger,
+    log: BaseLogger,
   ) {
     if (pathPrefix && pathPrefix.startsWith('/')) {
       throw new Error('path prefix should not start with a "/"!');
     }
     this.logger = log;
     this.extension = extension;
-    this.fileService = new FileService(config, type, this.logger);
+    this.fileService = new FileService(fileRepositoryFactory(type, config), this.logger);
     this.mimetype = mimetype;
     this.pathPrefix = pathPrefix;
     this.validator = validator;
 
     this.tempDir = path.resolve(TMP_FOLDER, 'html-packages', this.pathPrefix);
+    this.config = config;
 
     // create temp extraction dir if it does not exist
     fs.mkdirSync(this.tempDir, { recursive: true });
   }
 
   buildLocalStorageRoot() {
-    if (!this.fileService.config.local) {
+    if (!this.config.local) {
       throw new Error('file service local config is not defined');
     }
-    return path.join(this.fileService.config.local?.storageRootPath, this.pathPrefix);
+    return path.join(this.config.local?.storageRootPath, this.pathPrefix);
   }
 
   /**

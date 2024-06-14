@@ -71,7 +71,7 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
    * In the future, consider refactoring the fileService so that it can be grabbed from the
    * core instance and can serve the files directly (with an option to use or not auth)
    */
-  if (h5pService.fileService.type === ItemType.LOCAL_FILE) {
+  if (h5pService.fileService.getFileType() === ItemType.LOCAL_FILE) {
     /** Helper to set CORS headers policy */
     const setHeaders = (response: FastifyStaticReply) => {
       response.setHeader('Cross-Origin-Resource-Policy', 'same-site');
