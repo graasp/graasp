@@ -4,7 +4,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { FileItemProperties, HttpMethod, PermissionLevel } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { validatePermission } from '../../../authorization';
 import { Item } from '../../entities/Item';
 import { download, updateSchema, upload } from './schema';
@@ -112,19 +114,14 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/upload',
     schema: upload,
-    preHandler: fastify.verifyAuthentication,
+    preHandler: isAuthenticated,
     handler: async (request) => {
       const {
-        member,
+        user,
         query: { id: parentId },
         log,
       } = request;
-
-      // todo: check that it is ok to throw if member is not present
-      if (!member) {
-        throw new Error('member is undefined');
-      }
-
+      const member = notUndefined(user?.member);
       // check rights
       if (parentId) {
         const repositories = buildRepositories();
@@ -177,16 +174,16 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     {
       schema: download,
 
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
     },
     async (request, reply) => {
       const {
-        member,
+        user,
         params: { id: itemId },
         query: { replyUrl },
       } = request;
 
-      const url = await fileItemService.getUrl(member, buildRepositories(), {
+      const url = await fileItemService.getUrl(user?.member, buildRepositories(), {
         itemId,
       });
       fileService.setHeaders({ url, reply, replyUrl, id: itemId });

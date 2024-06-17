@@ -6,8 +6,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { ItemTagType, PermissionLevel } from '@graasp/sdk';
 
 import { IdParam, IdsParams, PaginationParams } from '../../types';
-import { UnauthorizedMember } from '../../utils/errors';
+import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { resultOfToList } from '../utils';
 import { Item } from './entities/Item';
 import {
@@ -47,18 +48,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: items.extendCreateSchema(),
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
     async (request) => {
       const {
-        member,
+        user,
         query: { parentId },
         body: data,
       } = request;
 
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.post(member, repositories, {
+        const item = await itemService.post(user?.member, repositories, {
           item: data,
           parentId,
           geolocation: data.geolocation,
@@ -89,11 +90,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     }>(
       '/with-thumbnail',
       {
-        preHandler: fastify.verifyAuthentication,
+        preHandler: isAuthenticated,
       },
       async (request) => {
         const {
-          member,
+          user,
           query: { parentId },
         } = request;
 
@@ -107,7 +108,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         return await db.transaction(async (manager) => {
           const repositories = buildRepositories(manager);
-          const item = await itemService.post(member, repositories, {
+          const item = await itemService.post(user?.member, repositories, {
             item: itemPayload,
             parentId,
             geolocation,
@@ -125,18 +126,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id',
     {
       schema: getOne,
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
     },
-    async ({ member, params: { id } }) => {
-      return itemService.getPacked(member, buildRepositories(), id);
+    async ({ user, params: { id } }) => {
+      return itemService.getPacked(user?.member, buildRepositories(), id);
     },
   );
 
   fastify.get<{ Querystring: IdsParams }>(
     '/',
-    { schema: getMany, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, query: { id: ids } }) => {
-      return itemService.getManyPacked(member, buildRepositories(), ids);
+    { schema: getMany, preHandler: optionalIsAuthenticated },
+    async ({ user, query: { id: ids } }) => {
+      return itemService.getManyPacked(user?.member, buildRepositories(), ids);
     },
   );
 
@@ -145,12 +146,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Querystring: ItemSearchParams & PaginationParams;
   }>(
     '/accessible',
-    { schema: getAccessible, preHandler: fastify.verifyAuthentication },
-    async ({ member, query }) => {
-      if (!member) {
-        throw new UnauthorizedMember();
-      }
+    { schema: getAccessible, preHandler: isAuthenticated },
+    async ({ user, query }) => {
       const { page, pageSize, creatorId, name, sortBy, ordering, permissions, types } = query;
+      const member = notUndefined(user?.member);
       return itemService.getAccessible(
         member,
         buildRepositories(),
@@ -161,32 +160,31 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   );
 
   // get own
-  fastify.get(
-    '/own',
-    { schema: getOwn, preHandler: fastify.verifyAuthentication },
-    async ({ member }) => {
-      return itemService.getOwn(member, buildRepositories());
-    },
-  );
+  fastify.get('/own', { schema: getOwn, preHandler: isAuthenticated }, async ({ user }) => {
+    return itemService.getOwn(user?.member, buildRepositories());
+  });
 
   // get shared with
   fastify.get<{ Querystring: { permission?: PermissionLevel } }>(
     '/shared-with',
     {
       schema: getShared,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
-    async ({ member, query }) => {
-      return itemService.getShared(member, buildRepositories(), query.permission);
+    async ({ user, query }) => {
+      return itemService.getShared(user?.member, buildRepositories(), query.permission);
     },
   );
 
   // get item's children
   fastify.get<{ Params: IdParam; Querystring: ItemChildrenParams }>(
     '/:id/children',
-    { schema: getChildren, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { id }, query: { ordered, types } }) => {
-      return itemService.getPackedChildren(member, buildRepositories(), id, { ordered, types });
+    { schema: getChildren, preHandler: optionalIsAuthenticated },
+    async ({ user, params: { id }, query: { ordered, types } }) => {
+      return itemService.getPackedChildren(user?.member, buildRepositories(), id, {
+        ordered,
+        types,
+      });
     },
   );
 
@@ -196,9 +194,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Querystring: { [SHOW_HIDDEN_PARRAM]?: boolean; [TYPES_FILTER_PARAM]?: ItemTagType[] };
   }>(
     '/:id/descendants',
-    { schema: getDescendants, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { id }, query }) => {
-      return itemService.getPackedDescendants(member, buildRepositories(), id, query);
+    { schema: getDescendants, preHandler: optionalIsAuthenticated },
+    async ({ user, params: { id }, query }) => {
+      return itemService.getPackedDescendants(user?.member, buildRepositories(), id, query);
     },
   );
 
@@ -207,10 +205,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/parents',
     {
       schema: getParents,
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
     },
-    async ({ member, params: { id } }) => {
-      return itemService.getParents(member, buildRepositories(), id);
+    async ({ user, params: { id } }) => {
+      return itemService.getParents(user?.member, buildRepositories(), id);
     },
   );
 
@@ -219,17 +217,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id',
     {
       schema: items.extendExtrasUpdateSchema(),
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
     async (request) => {
       const {
-        member,
+        user,
         params: { id },
         body,
       } = request;
       return await db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
-        const item = await itemService.patch(member, repositories, id, body);
+        const item = await itemService.patch(user?.member, repositories, id, body);
         await actionItemService.postPatchAction(request, repositories, item);
         return item;
       });
@@ -240,15 +238,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: updateMany(items.extendExtrasUpdateSchema()),
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
       const {
-        member,
+        user,
         query: { id: ids },
         body,
         log,
       } = request;
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.patchMany(member, repositories, ids, body);
@@ -261,23 +260,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         return items;
       })
         .then((items) => {
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackEvent('update', ids, items.data, items.errors),
-            );
-          }
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('update', ids, items.data, items.errors),
+          );
         })
         .catch((e: Error) => {
           log.error(e);
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackErrorEvent('update', ids, e),
-            );
-          }
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackErrorEvent('update', ids, e),
+          );
         });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
@@ -288,14 +283,15 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: deleteMany,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
       const {
-        member,
+        user,
         query: { id: ids },
         log,
       } = request;
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const repositories = buildRepositories(manager);
         const items = await itemService.deleteMany(member, repositories, ids);
@@ -303,23 +299,19 @@ const plugin: FastifyPluginAsync = async (fastify) => {
         return items;
       })
         .then((items) => {
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackEvent('delete', ids, Object.fromEntries(items.map((i) => [i.id, i]))),
-            );
-          }
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackEvent('delete', ids, Object.fromEntries(items.map((i) => [i.id, i]))),
+          );
         })
         .catch((e) => {
           log.error(e);
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackErrorEvent('delete', ids, e),
-            );
-          }
+          websockets.publish(
+            memberItemsTopic,
+            member.id,
+            ItemOpFeedbackErrorEvent('delete', ids, e),
+          );
         });
       reply.status(StatusCodes.ACCEPTED);
       return ids;
@@ -331,88 +323,66 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Body: {
       parentId?: string;
     };
-  }>(
-    '/move',
-    { schema: moveMany, preHandler: fastify.verifyAuthentication },
-    async (request, reply) => {
-      const {
-        member,
-        query: { id: ids },
-        body: { parentId },
-        log,
-      } = request;
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        const results = await itemService.moveMany(member, repositories, ids, parentId);
-        await actionItemService.postManyMoveAction(request, repositories, results.items);
-        return results;
+  }>('/move', { schema: moveMany, preHandler: isAuthenticated }, async (request, reply) => {
+    const {
+      user,
+      query: { id: ids },
+      body: { parentId },
+      log,
+    } = request;
+    const member = notUndefined(user?.member);
+    db.transaction(async (manager) => {
+      const repositories = buildRepositories(manager);
+      const results = await itemService.moveMany(member, repositories, ids, parentId);
+      await actionItemService.postManyMoveAction(request, repositories, results.items);
+      return results;
+    })
+      .then(({ items, moved }) => {
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackEvent('move', ids, { items, moved }),
+        );
       })
-        .then(({ items, moved }) => {
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackEvent('move', ids, { items, moved }),
-            );
-          }
-        })
-        .catch((e) => {
-          log.error(e);
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackErrorEvent('move', ids, e),
-            );
-          }
-        });
-      reply.status(StatusCodes.ACCEPTED);
-      return ids;
-    },
-  );
+      .catch((e) => {
+        log.error(e);
+        websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('move', ids, e));
+      });
+    reply.status(StatusCodes.ACCEPTED);
+    return ids;
+  });
 
   fastify.post<{
     Querystring: IdsParams;
     Body: { parentId: string };
-  }>(
-    '/copy',
-    { schema: copyMany, preHandler: fastify.verifyAuthentication },
-    async (request, reply) => {
-      const {
-        member,
-        query: { id: ids },
-        body: { parentId },
-        log,
-      } = request;
-      db.transaction(async (manager) => {
-        const repositories = buildRepositories(manager);
-        return await itemService.copyMany(member, repositories, ids, {
-          parentId,
-        });
+  }>('/copy', { schema: copyMany, preHandler: isAuthenticated }, async (request, reply) => {
+    const {
+      user,
+      query: { id: ids },
+      body: { parentId },
+      log,
+    } = request;
+    const member = notUndefined(user?.member);
+    db.transaction(async (manager) => {
+      const repositories = buildRepositories(manager);
+      return await itemService.copyMany(member, repositories, ids, {
+        parentId,
+      });
+    })
+      .then(({ items, copies }) => {
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackEvent('copy', ids, { items, copies }),
+        );
       })
-        .then(({ items, copies }) => {
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackEvent('copy', ids, { items, copies }),
-            );
-          }
-        })
-        .catch((e) => {
-          log.error(e);
-          if (member) {
-            websockets.publish(
-              memberItemsTopic,
-              member.id,
-              ItemOpFeedbackErrorEvent('copy', ids, e),
-            );
-          }
-        });
-      reply.status(StatusCodes.ACCEPTED);
-      return ids;
-    },
-  );
+      .catch((e) => {
+        log.error(e);
+        websockets.publish(memberItemsTopic, member.id, ItemOpFeedbackErrorEvent('copy', ids, e));
+      });
+    reply.status(StatusCodes.ACCEPTED);
+    return ids;
+  });
 };
 
 export default plugin;

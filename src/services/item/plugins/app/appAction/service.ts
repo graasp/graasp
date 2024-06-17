@@ -3,6 +3,7 @@ import { PermissionLevel } from '@graasp/sdk';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
 import { validatePermission } from '../../../../authorization';
+import { Member } from '../../../../member/entities/member';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request';
 import { AppAction } from './appAction';
 import { AppActionNotAccessible } from './errors';
@@ -15,10 +16,13 @@ export class AppActionService {
       post: { appAction: AppAction; itemId: string };
     };
   }>();
-  async post(actorId, repositories: Repositories, itemId: string, body: Partial<InputAppAction>) {
-    const { appActionRepository, memberRepository, itemRepository } = repositories;
-    // TODO: check member exists
-    const member = await memberRepository.get(actorId);
+  async post(
+    member: Member,
+    repositories: Repositories,
+    itemId: string,
+    body: Partial<InputAppAction>,
+  ) {
+    const { appActionRepository, itemRepository } = repositories;
 
     // check item exists? let post fail?
     const item = await itemRepository.get(itemId);
@@ -28,7 +32,7 @@ export class AppActionService {
 
     await this.hooks.runPreHooks('post', member, repositories, { appAction: body, itemId });
 
-    const appAction = await appActionRepository.post(itemId, actorId, body);
+    const appAction = await appActionRepository.post(itemId, member.id, body);
     await this.hooks.runPostHooks('post', member, repositories, {
       appAction,
       itemId,
@@ -37,15 +41,12 @@ export class AppActionService {
   }
 
   async getForItem(
-    actorId,
+    member: Member,
     repositories: Repositories,
     itemId: string,
     filters: SingleItemGetFilter,
   ) {
-    const { appActionRepository, memberRepository, itemRepository } = repositories;
-
-    // check member exists
-    const member = await memberRepository.get(actorId);
+    const { appActionRepository, itemRepository } = repositories;
 
     // check item exists
     const item = await itemRepository.get(itemId);
@@ -63,8 +64,8 @@ export class AppActionService {
     // can read only own app action if not admin
     if (permission !== PermissionLevel.Admin) {
       if (!fMemberId) {
-        fMemberId = actorId;
-      } else if (fMemberId !== actorId) {
+        fMemberId = member.id;
+      } else if (fMemberId !== member.id) {
         throw new AppActionNotAccessible();
       }
     }
@@ -73,15 +74,12 @@ export class AppActionService {
   }
 
   async getForManyItems(
-    actorId,
+    member: Member,
     repositories: Repositories,
     itemIds: string[],
     filters: ManyItemsGetFilter,
   ) {
-    const { appActionRepository, memberRepository, itemRepository } = repositories;
-
-    // check member exists
-    const member = await memberRepository.get(actorId);
+    const { appActionRepository, itemRepository } = repositories;
 
     // check item exists
     const item = await itemRepository.get(itemIds[0]);
@@ -94,13 +92,11 @@ export class AppActionService {
       item,
     );
     const permission = itemMembership?.permission;
-    let { memberId: fMemberId } = filters;
+    const { memberId: fMemberId } = filters;
 
     // can read only own app action if not admin
     if (permission !== PermissionLevel.Admin) {
-      if (!fMemberId) {
-        fMemberId = actorId;
-      } else if (fMemberId !== actorId) {
+      if (fMemberId && fMemberId !== member.id) {
         throw new AppActionNotAccessible();
       }
     }

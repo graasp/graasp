@@ -4,8 +4,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { MentionStatus } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ChatMention } from './chatMention';
 import commonMentions, {
   clearAllMentions,
@@ -61,11 +62,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // mentions
   fastify.get(
     '/mentions',
-    { schema: getMentions, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member }) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    { schema: getMentions, preHandler: isAuthenticated },
+    async ({ user }) => {
+      const member = notUndefined(user?.member);
       return mentionService.getForMember(member, buildRepositories());
     },
   );
@@ -75,12 +74,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     Body: { status: MentionStatus };
   }>(
     '/mentions/:mentionId',
-    { schema: patchMention, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { mentionId }, body: { status } }) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    { schema: patchMention, preHandler: isAuthenticated },
+    async ({ user, params: { mentionId }, body: { status } }) => {
       return db.transaction(async (manager) => {
+        const member = notUndefined(user?.member);
         return mentionService.patch(member, buildRepositories(manager), mentionId, status);
       });
     },
@@ -89,12 +86,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete one mention by id
   fastify.delete<{ Params: { mentionId: string } }>(
     '/mentions/:mentionId',
-    { schema: deleteMention, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { mentionId } }) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    { schema: deleteMention, preHandler: isAuthenticated },
+    async ({ user, params: { mentionId } }) => {
       return db.transaction(async (manager) => {
+        const member = notUndefined(user?.member);
         return mentionService.deleteOne(member, buildRepositories(manager), mentionId);
       });
     },
@@ -103,12 +98,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete all mentions for a user
   fastify.delete(
     '/mentions',
-    { schema: clearAllMentions, preHandler: fastify.verifyAuthentication },
-    async ({ member }, reply) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    { schema: clearAllMentions, preHandler: isAuthenticated },
+    async ({ user }, reply) => {
       await db.transaction(async (manager) => {
+        const member = notUndefined(user?.member);
         await mentionService.deleteAll(member, buildRepositories(manager));
       });
       reply.status(StatusCodes.NO_CONTENT);

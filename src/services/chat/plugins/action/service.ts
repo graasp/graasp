@@ -1,4 +1,4 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyRequest } from 'fastify';
 
 import { UUID } from '@graasp/sdk';
 
@@ -22,60 +22,52 @@ export class ActionChatService {
 
   async postPostMessageAction(
     request: FastifyRequest,
-    reply: FastifyReply,
     repositories: Repositories,
     message: ChatMessage,
   ) {
-    const { member } = request;
+    const { user } = request;
     const action = {
       item: message.item,
       type: ChatActionType.Create,
       extra: { ...(request.body as { body: string; mentions: string[] }) },
     };
-    await this.actionService.postMany(member, repositories, request, [action]);
+    await this.actionService.postMany(user?.member, repositories, request, [action]);
   }
 
   async postPatchMessageAction(
     request: FastifyRequest,
-    reply: FastifyReply,
     repositories: Repositories,
     message: ChatMessage,
   ) {
-    const { member } = request;
+    const { user } = request;
     const action = {
       item: message.item,
       type: ChatActionType.Update,
       extra: { ...(request.body as { body: string }), messageId: message.id },
     };
-    await this.actionService.postMany(member, repositories, request, [action]);
+    await this.actionService.postMany(user?.member, repositories, request, [action]);
   }
 
   async postDeleteMessageAction(
     request: FastifyRequest,
-    reply: FastifyReply,
     repositories: Repositories,
     message: ChatMessage,
   ) {
-    const { member } = request;
+    const { user } = request;
     const action = {
       item: message.item,
       type: ChatActionType.Delete,
       extra: { messageId: message.id },
     };
-    await this.actionService.postMany(member, repositories, request, [action]);
+    await this.actionService.postMany(user?.member, repositories, request, [action]);
   }
 
-  async postClearMessageAction(
-    request: FastifyRequest,
-    reply: FastifyReply,
-    repositories: Repositories,
-    itemId: UUID,
-  ) {
-    const { member } = request;
+  async postClearMessageAction(request: FastifyRequest, repositories: Repositories, itemId: UUID) {
+    const { user } = request;
     const action = {
       type: ChatActionType.Clear,
       extra: { itemId },
     };
-    await this.actionService.postMany(member, repositories, request, [action]);
+    await this.actionService.postMany(user?.member, repositories, request, [action]);
   }
 }

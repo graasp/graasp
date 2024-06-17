@@ -6,8 +6,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { ThumbnailSizeType } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
-import { UnauthorizedMember } from '../../../../utils/errors';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { DEFAULT_MAX_FILE_SIZE } from '../../../file/utils/constants';
 import { UploadEmptyFileError, UploadFileUnexpectedError } from '../../../file/utils/errors';
 import { download, upload } from './schemas';
@@ -45,15 +46,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     '/avatar',
     {
       schema: upload,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
     async (request, reply) => {
-      const { member } = request;
-
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
-
+      const member = notUndefined(request.user?.member);
       return db
         .transaction(async (manager) => {
           // const files = request.files();
@@ -90,10 +86,13 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (fastify, opti
     '/:id/avatar/:size',
     {
       schema: download,
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
     },
-    async ({ member, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
-      const url = await thumbnailService.getUrl(member, buildRepositories(), { memberId, size });
+    async ({ user, params: { size, id: memberId }, query: { replyUrl } }, reply) => {
+      const url = await thumbnailService.getUrl(user?.member, buildRepositories(), {
+        memberId,
+        size,
+      });
 
       fileService.setHeaders({ reply, replyUrl, url, id: memberId });
     },

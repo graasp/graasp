@@ -1,6 +1,5 @@
 import Redis from 'ioredis';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
-import { promisify } from 'util';
+import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 
 import { FastifyBaseLogger } from 'fastify';
@@ -10,37 +9,37 @@ import { MAIL } from '../../../../plugins/mailer/langs/constants';
 import {
   AUTH_CLIENT_HOST,
   JWT_SECRET,
-  LOGIN_TOKEN_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_EXPIRATION_IN_MINUTES,
   PASSWORD_RESET_JWT_SECRET,
 } from '../../../../utils/config';
 import { MemberNotSignedUp, MemberWithoutPassword } from '../../../../utils/errors';
 import { Repositories } from '../../../../utils/repositories';
 import { Member } from '../../../member/entities/member';
+import { SHORT_TOKEN_PARAM } from '../passport';
 import { MemberPasswordRepository } from './repository';
+import { comparePasswords } from './utils';
 
 const REDIS_PREFIX = 'reset-password:';
-
-const promisifiedJwtSign = promisify<
-  { sub: string; challenge?: string },
-  Secret,
-  SignOptions,
-  string
->(jwt.sign);
 
 export class MemberPasswordService {
   log: FastifyBaseLogger;
   mailer: MailerDecoration;
   redis: Redis;
 
-  constructor(mailer, log, redis) {
+  constructor(mailer: MailerDecoration, log: FastifyBaseLogger, redis: Redis) {
     this.mailer = mailer;
     this.log = log;
     this.redis = redis;
   }
 
-  generateToken(data, expiration) {
-    return promisifiedJwtSign(data, JWT_SECRET, {
+  /**
+   * Generate a Token with the member id and an optional challenge.
+   * @param data The data to be included in the token.
+   * @param expiration The expiration time of the token.
+   * @returns A promise to be resolved with the generated token.
+   */
+  generateToken(data: { sub: string; challenge?: string }, expiration: string) {
+    return jwt.sign(data, JWT_SECRET, {
       expiresIn: expiration,
     });
   }
@@ -126,7 +125,7 @@ export class MemberPasswordService {
     // auth.graasp.org/reset-password?t=<token>
     const domain = AUTH_CLIENT_HOST;
     const destination = new URL('/reset-password', domain);
-    destination.searchParams.set('t', token);
+    destination.searchParams.set(SHORT_TOKEN_PARAM, token);
     const link = destination.toString();
 
     const html = `
@@ -170,42 +169,35 @@ export class MemberPasswordService {
     return memberRepository.get(id);
   }
 
-  /**
-   *
-   * @param actor
-   * @param repositories
-   * @param body
-   * @param challenge  used for mobile
-   * @returns
+  /** Authenticate a member with email and password.
+   * @param repositories Repositories needed to interact with the database. Must contain a memberRepository and a memberPasswordRepository.
+   * @param email The email of the member that wants to authenticate.
+   * @param password The password of the member that wants to authenticate.
+   * @returns The member if the credentials are correct. Otherwise, undefined.
+   * @throws MemberNotSignedUp if the email is not registered.
+   * @throws MemberWithoutPassword if the member doesn't have a password.
    */
-  async login(
-    actor: undefined,
+  async authenticate(
     repositories: Repositories,
-    body: { email: string; password: string },
-    challenge?: string,
-  ) {
+    email: string,
+    password: string,
+  ): Promise<Member | undefined> {
     const { memberRepository, memberPasswordRepository } = repositories;
-    const { email } = body;
-
+    // Check if the member is registered
     const member = await memberRepository.getByEmail(email);
     if (!member) {
       this.log.warn(`Login attempt with non-existent email '${email}'`);
       throw new MemberNotSignedUp({ email });
     }
-
+    // Fetch the member's password
     const memberPassword = await memberPasswordRepository.getForMemberId(member.id);
     if (!memberPassword) {
       throw new MemberWithoutPassword({ email });
     }
-
-    // validate credentials to build token
-    await memberPasswordRepository.validateCredentials(memberPassword, body);
-
-    const token = await this.generateToken(
-      { sub: member.id, challenge },
-      `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
-    );
-
-    return token;
+    // Validate credentials to build token
+    if (await comparePasswords(password, memberPassword.password)) {
+      return member;
+    }
+    return undefined;
   }
 }

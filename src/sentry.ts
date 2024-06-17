@@ -130,8 +130,8 @@ export function initSentry(instance: FastifyInstance): {
     Sentry.withScope((scope) => {
       scope.setSpan(request.metrics?.sentry?.transaction);
       scope.setTransactionName(request.metrics?.sentry?.transaction?.name);
-      if (request.member) {
-        scope.setUser({ ...request.member, password: undefined });
+      if (request.user?.member) {
+        scope.setUser({ ...request.user.member, password: undefined });
       }
       Sentry.captureException(error);
     });

@@ -7,6 +7,7 @@ import { ActionTriggers } from '@graasp/sdk';
 
 import { MEILISEARCH_REBUILD_SECRET } from '../../../../../../utils/config';
 import { buildRepositories } from '../../../../../../utils/repositories';
+import { optionalIsAuthenticated } from '../../../../../auth/plugins/passport';
 import { search } from './schemas';
 
 export type SearchFields = {
@@ -23,11 +24,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Body: MultiSearchParams }>(
     '/collections/search',
-    { preHandler: fastify.attemptVerifyAuthentication, schema: search },
+    { preHandler: optionalIsAuthenticated, schema: search },
     async (request) => {
-      const { member, body } = request;
+      const { user, body } = request;
       const repositories = buildRepositories();
-
+      const member = user?.member;
       const searchResults = await searchService.search(member, repositories, body);
       const action = {
         type: ActionTriggers.ItemSearch,

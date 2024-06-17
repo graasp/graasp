@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam, IdsParams } from '../../types';
-import { UnauthorizedMember } from '../../utils/errors';
+import { notUndefined } from '../../utils/assertions';
 import { buildRepositories } from '../../utils/repositories';
+import { isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { Member } from './entities/member';
 import {
   deleteOne,
@@ -25,20 +26,16 @@ const controller: FastifyPluginAsync = async (fastify) => {
   } = fastify;
 
   // get current
-  fastify.get(
-    '/current',
-    { schema: getCurrent, preHandler: fastify.verifyAuthentication },
-    async ({ member }) => member,
-  );
+  fastify.get('/current', { schema: getCurrent, preHandler: isAuthenticated }, async ({ user }) => {
+    return user?.member;
+  });
 
   // get current member storage and its limits
   fastify.get(
     '/current/storage',
-    { schema: getStorage, preHandler: fastify.verifyAuthentication },
-    async ({ member }) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    { schema: getStorage, preHandler: isAuthenticated },
+    async ({ user }) => {
+      const member = notUndefined(user?.member);
       return storageService.getStorageLimits(member, fileService.type, buildRepositories());
     },
   );
@@ -47,9 +44,9 @@ const controller: FastifyPluginAsync = async (fastify) => {
   // PUBLIC ENDPOINT
   fastify.get<{ Params: IdParam }>(
     '/:id',
-    { schema: getOne },
-    async ({ member, params: { id } }) => {
-      return memberService.get(member, buildRepositories(), id);
+    { schema: getOne, preHandler: optionalIsAuthenticated },
+    async ({ user, params: { id } }) => {
+      return memberService.get(user?.member, buildRepositories(), id);
     },
   );
 
@@ -59,9 +56,10 @@ const controller: FastifyPluginAsync = async (fastify) => {
     '/',
     {
       schema: getMany,
+      preHandler: optionalIsAuthenticated,
     },
-    async ({ member, query: { id: ids } }) => {
-      return memberService.getMany(member, buildRepositories(), ids);
+    async ({ user, query: { id: ids } }) => {
+      return memberService.getMany(user?.member, buildRepositories(), ids);
     },
   );
 
@@ -71,22 +69,23 @@ const controller: FastifyPluginAsync = async (fastify) => {
     '/search',
     {
       schema: getManyBy,
+      preHandler: optionalIsAuthenticated,
     },
-    async ({ member, query: { email: emails } }) => {
-      return memberService.getManyByEmail(member, buildRepositories(), emails);
+    async ({ user, query: { email: emails } }) => {
+      return memberService.getManyByEmail(user?.member, buildRepositories(), emails);
     },
   );
 
   // update member
   fastify.patch<{ Params: IdParam; Body: Partial<Member> }>(
     '/:id',
-    { schema: updateOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { id }, body }) => {
+    { schema: updateOne, preHandler: isAuthenticated },
+    async ({ user, params: { id }, body }) => {
       // handle partial change
       // question: you can never remove a key?
 
       return db.transaction(async (manager) => {
-        return memberService.patch(member, buildRepositories(manager), id, body);
+        return memberService.patch(user?.member, buildRepositories(manager), id, body);
       });
     },
   );
@@ -94,10 +93,10 @@ const controller: FastifyPluginAsync = async (fastify) => {
   // delete member
   fastify.delete<{ Params: IdParam }>(
     '/:id',
-    { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { id } }, reply) => {
+    { schema: deleteOne, preHandler: isAuthenticated },
+    async ({ user, params: { id } }, reply) => {
       return db.transaction(async (manager) => {
-        await memberService.deleteOne(member, buildRepositories(manager), id);
+        await memberService.deleteOne(user?.member, buildRepositories(manager), id);
         reply.status(StatusCodes.NO_CONTENT);
       });
     },

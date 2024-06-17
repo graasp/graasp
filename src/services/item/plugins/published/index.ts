@@ -2,8 +2,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import graaspSearchPlugin from './plugins/search';
 import {
   getCollectionsForMember,
@@ -28,60 +29,56 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/collections/members/:memberId',
     {
       schema: getCollectionsForMember,
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
     },
-    async ({ member, params: { memberId } }) => {
-      return itemsPublished.service.getItemsForMember(member, buildRepositories(), memberId);
+    async ({ user, params: { memberId } }) => {
+      return itemsPublished.service.getItemsForMember(user?.member, buildRepositories(), memberId);
     },
   );
 
   fastify.get<{ Params: { itemId: string } }>(
     '/collections/:itemId/informations',
     {
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
       schema: getInformations,
     },
-    async ({ params, member }) => {
-      return itemsPublished.service.get(member, buildRepositories(), params.itemId);
+    async ({ params, user }) => {
+      return itemsPublished.service.get(user?.member, buildRepositories(), params.itemId);
     },
   );
 
   fastify.get<{ Querystring: { itemId: string[] } }>(
     '/collections/informations',
     {
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
       schema: getManyInformations,
     },
-    async ({ member, query: { itemId } }) => {
-      return itemsPublished.service.getMany(member, buildRepositories(), itemId);
+    async ({ user, query: { itemId } }) => {
+      return itemsPublished.service.getMany(user?.member, buildRepositories(), itemId);
     },
   );
 
   fastify.get<{ Querystring: { limit?: number } }>(
     '/collections/liked',
     {
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
       schema: getMostLikedItems,
     },
-    async ({ member, query: { limit } }) => {
-      return itemsPublished.service.getLikedItems(member, buildRepositories(), limit);
+    async ({ user, query: { limit } }) => {
+      return itemsPublished.service.getLikedItems(user?.member, buildRepositories(), limit);
     },
   );
 
   fastify.post<{ Params: { itemId: string } }>(
     '/collections/:itemId/publish',
     {
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
       schema: publishItem,
     },
-    async ({ params, member }) => {
+    async ({ params, user }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
-        if (!member) {
-          throw new UnauthorizedMember(member);
-        }
-
         const repositories = buildRepositories(manager);
-
         const item = await itemService.get(
           member,
           repositories,
@@ -96,12 +93,16 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{ Params: { itemId: string } }>(
     '/collections/:itemId/unpublish',
     {
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
       schema: unpublishItem,
     },
-    async ({ params, member }) => {
+    async ({ params, user }) => {
       return db.transaction(async (manager) => {
-        return itemsPublished.service.delete(member, buildRepositories(manager), params.itemId);
+        return itemsPublished.service.delete(
+          user?.member,
+          buildRepositories(manager),
+          params.itemId,
+        );
       });
     },
   );
@@ -109,11 +110,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Querystring: { limit?: number } }>(
     '/collections/recent',
     {
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
       schema: getRecentCollections,
     },
-    async ({ member, query: { limit } }) => {
-      return itemsPublished.service.getRecentItems(member, buildRepositories(), limit);
+    async ({ user, query: { limit } }) => {
+      return itemsPublished.service.getRecentItems(user?.member, buildRepositories(), limit);
     },
   );
 };

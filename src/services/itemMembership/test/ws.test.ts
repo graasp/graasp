@@ -3,7 +3,7 @@ import waitForExpect from 'wait-for-expect';
 
 import { HttpMethod, PermissionLevel, Websocket, parseStringToDate } from '@graasp/sdk';
 
-import { clearDatabase } from '../../../../test/app';
+import { clearDatabase, mockAuthenticate } from '../../../../test/app';
 import { MemberCannotAccess } from '../../../utils/errors';
 import { ItemTestUtils } from '../../item/test/fixtures/items';
 import { saveMember } from '../../member/test/fixtures/members';
@@ -91,10 +91,8 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-        request.member = anna;
-      });
+      mockAuthenticate(anna);
+
       const response = await app.inject({
         method: HttpMethod.Post,
         url: `/item-memberships/${item.id}`,
@@ -128,10 +126,8 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-        request.member = anna;
-      });
+      mockAuthenticate(anna);
+
       const response = await app.inject({
         method: HttpMethod.Patch,
         url: `/item-memberships/${membership.id}`,
@@ -165,12 +161,8 @@ describe('Item websocket hooks', () => {
       });
 
       // perform request as anna
+      mockAuthenticate(anna);
 
-      // perform request as anna
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      jest.spyOn(app, 'verifyAuthentication').mockImplementation(async (request: any) => {
-        request.member = anna;
-      });
       const response = await app.inject({
         method: HttpMethod.Delete,
         url: `/item-memberships/${membership.id}`,

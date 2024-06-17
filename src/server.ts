@@ -2,6 +2,7 @@ import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 import registerAppPlugins from './app';
+import ajvFormats from './schemas/ajvFormats';
 import { initSentry } from './sentry';
 import {
   APP_VERSION,
@@ -35,6 +36,7 @@ const start = async () => {
         // https://github.com/fastify/fastify/blob/main/docs/Validation-and-Serialization.md
         coerceTypes: 'array',
       },
+      plugins: [ajvFormats],
     },
   });
 

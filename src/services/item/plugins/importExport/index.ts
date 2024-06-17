@@ -5,8 +5,9 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers } from '@graasp/sdk';
 
-import { UnauthorizedMember } from '../../../../utils/errors';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { DEFAULT_MAX_FILE_SIZE } from '../file/utils/constants';
 import { ZIP_FILE_MIME_TYPES } from './constants';
 import { FileIsInvalidArchiveError } from './errors';
@@ -41,17 +42,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Querystring: { parentId?: string } }>(
     '/zip-import',
-    { schema: zipImport, preHandler: fastify.verifyAuthentication },
+    { schema: zipImport, preHandler: isAuthenticated },
     async (request, reply) => {
       const {
-        member,
+        user,
         log,
         query: { parentId },
       } = request;
-
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+      const member = notUndefined(user?.member);
 
       log.debug('Import zip content');
 
@@ -95,13 +93,14 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     method: 'GET',
     url: '/zip-export/:itemId',
     schema: zipExport,
-    preHandler: fastify.attemptVerifyAuthentication,
+    preHandler: optionalIsAuthenticated,
     handler: async (request, reply) => {
       const {
-        member,
+        user,
         params: { itemId },
         log,
       } = request;
+      const member = user?.member;
       const repositories = buildRepositories();
       const item = await iS.get(member, repositories, itemId);
 

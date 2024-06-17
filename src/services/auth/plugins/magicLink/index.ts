@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { FastifyPluginAsync } from 'fastify';
+import fastifyPassport from '@fastify/passport';
+import { FastifyPluginAsync, FastifyReply, FastifyRequest, PassportUser } from 'fastify';
 
 import { RecaptchaAction } from '@graasp/sdk';
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -9,8 +10,14 @@ import { AUTH_CLIENT_HOST } from '../../../../utils/config';
 import { MemberAlreadySignedUp } from '../../../../utils/errors';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
+import captchaPreHandler from '../captcha';
+import { SHORT_TOKEN_PARAM } from '../passport';
+import { PassportStrategy } from '../passport/strategies';
 import { auth, login, register } from './schemas';
 import { MagicLinkService } from './service';
+
+const ERROR_SEARCH_PARAM = 'error';
+const ERROR_SEARCH_PARAM_HAS_ERROR = 'true';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
   const {
@@ -20,28 +27,25 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   } = fastify;
 
   const magicLinkService = new MagicLinkService(fastify, log);
-
-  // cookie based auth and api endpoints
-  await fastify.register(async function (fastify) {
-    // register
-    fastify.post<{
-      Body: {
-        name: string;
-        email: string;
-        captcha: string;
-        url?: string;
-        enableSaveActions?: boolean;
-      };
-      Querystring: { lang?: string };
-    }>('/register', { schema: register }, async (request, reply) => {
+  // register
+  fastify.post<{
+    Body: {
+      name: string;
+      email: string;
+      captcha: string;
+      url?: string;
+      enableSaveActions?: boolean;
+    };
+    Querystring: { lang?: string };
+  }>(
+    '/register',
+    { schema: register, preHandler: captchaPreHandler(RecaptchaAction.SignUp) },
+    async (request, reply) => {
       const {
         body,
         query: { lang = DEFAULT_LANG },
       } = request;
       const { url } = body;
-
-      // validate captcha
-      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignUp);
 
       return db.transaction(async (manager) => {
         try {
@@ -69,64 +73,71 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           reply.status(StatusCodes.NO_CONTENT);
         }
       });
-    });
+    },
+  );
 
-    // login
-    fastify.post<{
-      Body: { email: string; captcha: string; url?: string };
-      Querystring: { lang?: string };
-    }>('/login', { schema: login }, async (request, reply) => {
+  // login
+  fastify.post<{
+    Body: { email: string; captcha: string; url?: string };
+    Querystring: { lang?: string };
+  }>(
+    '/login',
+    {
+      schema: login,
+      preHandler: captchaPreHandler(RecaptchaAction.SignIn),
+    },
+    async (request, reply) => {
       const {
         body,
         query: { lang },
       } = request;
       const { url } = body;
 
-      // validate captcha
-      await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignIn);
-
       await magicLinkService.login(undefined, buildRepositories(), body, lang, url);
       reply.status(StatusCodes.NO_CONTENT);
-    });
+    },
+  );
 
-    // authenticate
-    fastify.get<{ Querystring: { t: string; url?: string } }>(
-      '/auth',
-      { schema: auth },
-      async (request, reply) => {
-        const {
-          query: { t: token, url },
-          session,
-          log,
-        } = request;
+  // authenticate
+  fastify.get<{ Querystring: { [SHORT_TOKEN_PARAM]: string; url?: string } }>(
+    '/auth',
+    {
+      schema: auth,
+      preHandler: fastifyPassport.authenticate(
+        PassportStrategy.WebMagicLink,
+        async (
+          request: FastifyRequest,
+          reply: FastifyReply,
+          err: null | Error,
+          user?: PassportUser,
+        ) => {
+          // This function is called after the strategy has been executed.
+          // It is necessary, so we match the behavior of the original implementation.
+          if (!user || err) {
+            // Authentication failed
+            const target = new URL('/', AUTH_CLIENT_HOST);
+            target.searchParams.set(ERROR_SEARCH_PARAM, ERROR_SEARCH_PARAM_HAS_ERROR);
+            reply.redirect(StatusCodes.SEE_OTHER, target.toString());
+          } else {
+            request.logIn(user, { session: true });
+          }
+        },
+      ),
+    },
+    async (request, reply) => {
+      const {
+        query: { url },
+        log,
+      } = request;
+      const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
+      reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
+    },
+  );
 
-        try {
-          const { sub: memberId } = await magicLinkService.auth(
-            undefined,
-            buildRepositories(),
-            token,
-          );
-
-          // add member id to session
-          session.set('member', memberId);
-
-          const redirectionUrl = getRedirectionUrl(log, url ? decodeURIComponent(url) : undefined);
-          reply.redirect(StatusCodes.SEE_OTHER, redirectionUrl);
-        } catch (error) {
-          session.delete();
-          const target = new URL('/', AUTH_CLIENT_HOST);
-          target.searchParams.set('error', 'true');
-          reply.redirect(StatusCodes.SEE_OTHER, target.toString());
-        }
-      },
-    );
-
-    // logout
-    fastify.get('/logout', async ({ session }, reply) => {
-      // remove session
-      session.delete();
-      reply.status(204);
-    });
+  // logout
+  fastify.get('/logout', async (request, reply) => {
+    request.logOut();
+    reply.status(StatusCodes.NO_CONTENT);
   });
 };
 

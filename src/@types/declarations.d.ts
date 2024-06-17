@@ -3,14 +3,19 @@ import { DataSource } from 'typeorm';
 import 'fastify';
 import { preHandlerHookHandler } from 'fastify';
 
-import { AuthTokenSubject, RecaptchaActionType } from '@graasp/sdk';
+import { RecaptchaActionType } from '@graasp/sdk';
 
 import { JobService } from '../jobs';
 import type { MailerDecoration } from '../plugins/mailer';
 import { ActionService } from '../services/action/services/action';
+import { MagicLinkService } from '../services/auth/plugins/magicLink/service';
+import { MobileService } from '../services/auth/plugins/mobile/service';
+import { MemberPasswordService } from '../services/auth/plugins/password/service';
+import { AuthService } from '../services/auth/service';
 import { MentionService } from '../services/chat/plugins/mentions/service';
 import { ChatMessageService } from '../services/chat/service';
 import FileService from '../services/file/service';
+import { Item } from '../services/item/entities/Item';
 import { create, updateOne } from '../services/item/fluent-schema';
 import { ActionItemService } from '../services/item/plugins/action/service';
 import { EtherpadItemService } from '../services/item/plugins/etherpad/service';
@@ -80,6 +85,11 @@ declare module 'fastify' {
     search: {
       service: SearchService;
     };
+
+    authentication: { service: AuthService };
+    memberPassword: { service: MemberPasswordService };
+    mobile: { service: MobileService };
+
     members: { service: MemberService };
     actions: { service: ActionService };
     chat: { service: ChatMessageService };
@@ -90,41 +100,6 @@ declare module 'fastify' {
     etherpad: EtherpadItemService;
 
     corsPluginOptions: any;
-    verifyAuthentication:
-      | preHandlerHookHandler<
-          RawServer,
-          RawRequest,
-          RawReply,
-          RouteGenericInterface,
-          ContextConfigDefault,
-          FastifySchema,
-          TypeProvider,
-          Logger
-        >
-      | ((request: FastifyRequest) => Promise<void>);
-    validateCaptcha: (
-      request: FastifyRequest,
-      captcha: string,
-      actionType: RecaptchaActionType,
-      options?: { shouldFail?: boolean },
-    ) => Promise<void>;
-    attemptVerifyAuthentication:
-      | preHandlerHookHandler<
-          RawServer,
-          RawRequest,
-          RawReply,
-          RouteGenericInterface,
-          ContextConfigDefault,
-          FastifySchema,
-          TypeProvider,
-          Logger
-        >
-      | ((request: FastifyRequest) => Promise<void>);
-    fetchMemberInSession: (request: FastifyRequest) => Promise<void>;
-    generateAuthTokensPair: (memberId: string) => Promise<{
-      authToken: string;
-      refreshToken: string;
-    }>;
     generateRegisterLinkAndEmailIt: (
       member: Partial<Member>, // todo: force some content
       options: {
@@ -142,20 +117,20 @@ declare module 'fastify' {
     ) => Promise<void>;
   }
 
-  interface FastifyRequest {
-    member: Actor;
-    memberId: string;
-    authTokenSubject?: AuthTokenSubject;
-    user?: { uuid: string };
-  }
-
   interface PassportUser {
-    uuid: string;
+    member?: Member;
+    passwordResetRedisKey?: string; // Used for Password Reset
+    app?: {
+      // Used for App Authentication
+      item: Item;
+      key: string;
+      origin: string;
+    };
   }
 }
 
 declare module '@fastify/secure-session' {
   interface SessionData {
-    member: string;
+    passport: string;
   }
 }

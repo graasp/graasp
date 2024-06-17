@@ -1,7 +1,9 @@
 import { FastifyPluginAsync } from 'fastify';
 
 import { IdParam } from '../../../../../types';
+import { notUndefined } from '../../../../../utils/assertions';
 import { buildRepositories } from '../../../../../utils/repositories';
+import { authenticateAppsJWT } from '../../../../auth/plugins/passport';
 import { ManyItemsGetFilter } from '../interfaces/request';
 import { appDataWsHooks } from '../ws/hooks';
 import { AppData } from './appData';
@@ -31,12 +33,12 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
       '/:itemId/app-data',
       {
         schema: create,
+        preHandler: authenticateAppsJWT,
       },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, body }) => {
-        const memberId = requestDetails?.memberId;
-
+      async ({ user, params: { itemId }, body }) => {
         return db.transaction(async (manager) => {
-          return appDataService.post(memberId, buildRepositories(manager), itemId, body);
+          const member = notUndefined(user?.member);
+          return appDataService.post(member, buildRepositories(manager), itemId, body);
         });
       },
     );
@@ -44,18 +46,11 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     // update app data
     fastify.patch<{ Params: { itemId: string } & IdParam; Body: Partial<AppData> }>(
       '/:itemId/app-data/:id',
-      { schema: updateOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId, id: appDataId }, body }) => {
-        const memberId = requestDetails?.memberId;
-
+      { schema: updateOne, preHandler: authenticateAppsJWT },
+      async ({ user, params: { itemId, id: appDataId }, body }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          return appDataService.patch(
-            memberId,
-            buildRepositories(manager),
-            itemId,
-            appDataId,
-            body,
-          );
+          return appDataService.patch(member, buildRepositories(manager), itemId, appDataId, body);
         });
       },
     );
@@ -63,12 +58,11 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     // delete app data
     fastify.delete<{ Params: { itemId: string } & IdParam }>(
       '/:itemId/app-data/:id',
-      { schema: deleteOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId, id: appDataId } }) => {
-        const memberId = requestDetails?.memberId;
-
+      { schema: deleteOne, preHandler: authenticateAppsJWT },
+      async ({ user, params: { itemId, id: appDataId } }) => {
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          return appDataService.deleteOne(memberId, buildRepositories(manager), itemId, appDataId);
+          return appDataService.deleteOne(member, buildRepositories(manager), itemId, appDataId);
         });
       },
     );
@@ -76,21 +70,20 @@ const appDataPlugin: FastifyPluginAsync = async (fastify) => {
     // get app data
     fastify.get<{ Params: { itemId: string }; Querystring: { type?: string } }>(
       '/:itemId/app-data',
-      { schema: getForOne },
-      async ({ authTokenSubject: requestDetails, params: { itemId }, query }) => {
-        const memberId = requestDetails?.memberId;
-        return appDataService.getForItem(memberId, buildRepositories(), itemId, query.type);
+      { schema: getForOne, preHandler: authenticateAppsJWT },
+      async ({ user, params: { itemId }, query }) => {
+        const member = notUndefined(user?.member);
+        return appDataService.getForItem(member, buildRepositories(), itemId, query.type);
       },
     );
 
     // get app data from multiple items
     fastify.get<{ Querystring: ManyItemsGetFilter }>(
       '/app-data',
-      { schema: getForMany },
-      async ({ authTokenSubject: requestDetails, query }) => {
-        const memberId = requestDetails?.memberId;
-
-        return appDataService.getForManyItems(memberId, buildRepositories(), query.itemId);
+      { schema: getForMany, preHandler: authenticateAppsJWT },
+      async ({ user, query }) => {
+        const member = notUndefined(user?.member);
+        return appDataService.getForManyItems(member, buildRepositories(), query.itemId);
       },
     );
   });

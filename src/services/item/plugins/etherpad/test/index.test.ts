@@ -234,7 +234,8 @@ describe('Etherpad service API', () => {
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${item.extra.etherpad.padID}`,
       });
 
-      expect(res.cookies.length).toEqual(1);
+      expect(res.cookies.length).toEqual(2);
+      expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
         name: string;
         value: string;
@@ -335,7 +336,8 @@ describe('Etherpad service API', () => {
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
-      expect(res.cookies.length).toEqual(1);
+      expect(res.cookies.length).toEqual(2);
+      expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
         name: string;
         value: string;
@@ -396,7 +398,8 @@ describe('Etherpad service API', () => {
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
-      expect(res.cookies.length).toEqual(1);
+      expect(res.cookies.length).toEqual(2);
+      expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
         name: string;
         value: string;
@@ -467,7 +470,8 @@ describe('Etherpad service API', () => {
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
-      expect(res.cookies.length).toEqual(1);
+      expect(res.cookies.length).toEqual(2);
+      expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
         name: string;
         value: string;
@@ -535,7 +539,8 @@ describe('Etherpad service API', () => {
         padUrl: `${ETHERPAD_PUBLIC_URL}/p/${MOCK_PAD_READ_ONLY_ID}`,
       });
 
-      expect(res.cookies.length).toEqual(1);
+      expect(res.cookies.length).toEqual(2);
+      expect(res.cookies[1].name).toEqual('session');
       const { name, value, domain, path, expires } = res.cookies[0] as {
         name: string;
         value: string;

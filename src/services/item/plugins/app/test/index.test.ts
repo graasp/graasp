@@ -95,7 +95,7 @@ describe('Apps Plugin Tests', () => {
           url: `${APP_ITEMS_PREFIX}/${item.id}/api-access-token`,
           payload: { origin: chosenApp.url, key: chosenApp.key },
         });
-        // the call should fail: suppose verifyAuthentication works correctly and throws
+        // the call should fail: suppose authentication works correctly and throws
 
         expect(response.statusCode).toEqual(StatusCodes.FORBIDDEN);
       });

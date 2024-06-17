@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
 import { buildRepositories } from '../../utils/repositories';
+import { SESSION_KEY, isAuthenticated, optionalIsAuthenticated } from '../auth/plugins/passport';
 import { ItemLoginMemberCredentials } from './interfaces/item-login';
 import {
   deleteLoginSchema,
@@ -23,9 +24,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // public endpoint
   fastify.get<{ Params: { id: string } }>(
     '/:id/login-schema-type',
-    { schema: getLoginSchemaType, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params: { id: itemId } }) => {
-      const value = (await iLService.getSchemaType(member, buildRepositories(), itemId)) ?? null;
+    { schema: getLoginSchemaType, preHandler: optionalIsAuthenticated },
+    async ({ user, params: { id: itemId } }) => {
+      const value =
+        (await iLService.getSchemaType(user?.member, buildRepositories(), itemId)) ?? null;
       return value;
     },
   );
@@ -35,10 +37,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/login-schema',
     {
       schema: getLoginSchema,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
-    async ({ member, params: { id: itemId } }) => {
-      const value = (await iLService.get(member, buildRepositories(), itemId)) ?? {};
+    async ({ user, params: { id: itemId } }) => {
+      const value = (await iLService.get(user?.member, buildRepositories(), itemId)) ?? {};
       return value;
     },
   );
@@ -54,18 +56,18 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     {
       schema: login,
       // set member in request if exists without throwing
-      preHandler: fastify.attemptVerifyAuthentication,
+      preHandler: optionalIsAuthenticated,
     },
-    async ({ body, member, session, params }) => {
+    async ({ body, user, session, params }) => {
       return db.transaction(async (manager) => {
         const bondMember = await iLService.login(
-          member,
+          user?.member,
           buildRepositories(manager),
           params.id,
           body,
         );
         // set session
-        session.set('member', bondMember.id);
+        session.set(SESSION_KEY, bondMember.id);
         return bondMember;
       });
     },
@@ -77,11 +79,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: updateLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
-    async ({ member, params: { id: itemId }, body: { type } }) => {
+    async ({ user, params: { id: itemId }, body: { type } }) => {
       return db.transaction(async (manager) => {
-        return iLService.put(member, buildRepositories(manager), itemId, type);
+        return iLService.put(user?.member, buildRepositories(manager), itemId, type);
       });
     },
   );
@@ -92,11 +94,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
       schema: deleteLoginSchema,
 
       // set member in request - throws if does not exist
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
-    async ({ member, params: { id: itemId } }) => {
+    async ({ user, params: { id: itemId } }) => {
       return db.transaction(async (manager) => {
-        return iLService.delete(member, buildRepositories(manager), itemId);
+        return iLService.delete(user?.member, buildRepositories(manager), itemId);
       });
     },
   );

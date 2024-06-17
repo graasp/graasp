@@ -4,6 +4,7 @@ import { FileItemType } from '@graasp/sdk';
 
 import { IdParam } from '../../../../types';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import {
   LocalFileConfiguration,
   S3FileConfiguration,
@@ -27,19 +28,19 @@ const plugin: FastifyPluginAsync<GraaspActionsOptions> = async (fastify) => {
 
   fastify.get<{ Querystring: { startDate?: string; endDate?: string } }>(
     '/actions',
-    { schema: getMemberFilteredActions, preHandler: fastify.verifyAuthentication },
-    async ({ member, query }) => {
-      return actionMemberService.getFilteredActions(member, buildRepositories(), query);
+    { schema: getMemberFilteredActions, preHandler: isAuthenticated },
+    async ({ user, query }) => {
+      return actionMemberService.getFilteredActions(user?.member, buildRepositories(), query);
     },
   );
   // todo: delete self data
   // delete all the actions matching the given `memberId`
   fastify.delete<{ Params: IdParam }>(
     '/members/:id/delete',
-    { schema: deleteAllById, preHandler: fastify.verifyAuthentication },
-    async ({ member, params: { id } }) => {
+    { schema: deleteAllById, preHandler: isAuthenticated },
+    async ({ user, params: { id } }) => {
       return db.transaction(async (manager) => {
-        return actionMemberService.deleteAllForMember(member, buildRepositories(manager), id);
+        return actionMemberService.deleteAllForMember(user?.member, buildRepositories(manager), id);
       });
     },
   );

@@ -5,10 +5,10 @@ import { MultipartFile } from '@fastify/multipart';
 
 import { AppDataVisibility, FileItemProperties, UUID } from '@graasp/sdk';
 
-import { ItemNotFound, UnauthorizedMember } from '../../../../../../../utils/errors';
 import { Repositories } from '../../../../../../../utils/repositories';
 import FileService from '../../../../../../file/service';
-import { Actor, Member } from '../../../../../../member/entities/member';
+import { Member } from '../../../../../../member/entities/member';
+import { Item } from '../../../../../entities/Item';
 import { ItemService } from '../../../../../service';
 import { APP_DATA_TYPE_FILE } from '../../../constants';
 import { AppData } from '../../appData';
@@ -30,29 +30,10 @@ class AppDataFileService {
     this.itemService = itemService;
   }
 
-  async upload(
-    actorId: string | undefined,
-    repositories: Repositories,
-    file: MultipartFile,
-    itemId?: string,
-  ) {
-    const { memberRepository } = repositories;
-
-    if (!actorId) {
-      throw new UnauthorizedMember(actorId);
-    }
-    const member = await memberRepository.get(actorId);
-
-    // check rights
-    if (!itemId) {
-      throw new ItemNotFound(itemId);
-    }
-    // posting an app data is allowed to readers
-    await this.itemService.get(member, repositories, itemId);
-
+  async upload(member: Member, repositories: Repositories, file: MultipartFile, item: Item) {
     const { filename, mimetype, file: stream } = file;
     const appDataId = v4();
-    const filepath = this.buildFilePath(itemId, appDataId); // parentId, filename
+    const filepath = this.buildFilePath(item.id, appDataId); // parentId, filename
 
     // compute body data from file's fields
     // if (fields) {
@@ -83,7 +64,7 @@ class AppDataFileService {
 
     // const name = filename.substring(0, ORIGINAL_FILENAME_TRUNCATE_LIMIT);
 
-    const appData = await repositories.appDataRepository.post(itemId, member.id, {
+    const appData = await repositories.appDataRepository.post(item.id, member.id, {
       id: appDataId,
       type: APP_DATA_TYPE_FILE,
       visibility: AppDataVisibility.Member,
@@ -96,23 +77,12 @@ class AppDataFileService {
   }
 
   async download(
-    actorId: string | undefined,
+    member: Member,
     repositories: Repositories,
-    { itemId, appDataId }: { itemId?: UUID; appDataId: UUID },
+    { item, appDataId }: { item: Item; appDataId: UUID },
   ) {
-    const { memberRepository } = repositories;
-    let member: Actor;
-    if (actorId) {
-      member = await memberRepository.get(actorId);
-    }
-    // check rights
-    if (!itemId) {
-      throw new ItemNotFound(itemId);
-    }
-    await this.itemService.get(member, repositories, itemId);
-
     // get app data and check it is a file
-    const appData = await this.appDataService.get(actorId, repositories, itemId, appDataId);
+    const appData = await this.appDataService.get(member, repositories, item, appDataId);
     const fileProp = appData.data[this.fileService.type] as FileItemProperties;
     if (!fileProp) {
       throw new NotAppDataFile(appData);

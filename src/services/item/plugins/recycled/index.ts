@@ -5,7 +5,9 @@ import { FastifyPluginAsync } from 'fastify';
 import { MAX_TARGETS_FOR_READ_REQUEST } from '@graasp/sdk';
 
 import { IdParam, IdsParams } from '../../../../types';
+import { notUndefined } from '../../../../utils/assertions';
 import { buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ItemOpFeedbackErrorEvent, ItemOpFeedbackEvent, memberItemsTopic } from '../../ws/events';
 import schemas, { getRecycledItemDatas, recycleMany, restoreMany } from './schemas';
 import { RecycledBinService } from './service';
@@ -39,9 +41,9 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // get own recycled items data
   fastify.get<{ Params: IdParam }>(
     '/recycled',
-    { schema: getRecycledItemDatas, preHandler: fastify.verifyAuthentication },
-    async ({ member }) => {
-      const result = await recycleBinService.getAll(member, buildRepositories());
+    { schema: getRecycledItemDatas, preHandler: isAuthenticated },
+    async ({ user }) => {
+      const result = await recycleBinService.getAll(user?.member, buildRepositories());
       return result;
     },
   );
@@ -49,32 +51,29 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // recycle multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/recycle',
-    { schema: recycleMany(maxItemsInRequest), preHandler: fastify.verifyAuthentication },
+    { schema: recycleMany(maxItemsInRequest), preHandler: isAuthenticated },
     async (request, reply) => {
       const {
-        member,
         query: { id: ids },
         log,
+        user,
       } = request;
+      const member = notUndefined(user?.member);
       db.transaction(async (manager) => {
         const items = await recycleBinService.recycleMany(member, buildRepositories(manager), ids);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('recycle', ids, items.data, items.errors),
-          );
-        }
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackEvent('recycle', ids, items.data, items.errors),
+        );
         return items;
       }).catch((e: Error) => {
         log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackErrorEvent('recycle', ids, e),
-          );
-        }
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackErrorEvent('recycle', ids, e),
+        );
       });
 
       reply.status(StatusCodes.ACCEPTED);
@@ -85,33 +84,30 @@ const plugin: FastifyPluginAsync<RecycledItemDataOptions> = async (fastify, opti
   // restore multiple items
   fastify.post<{ Querystring: IdsParams }>(
     '/restore',
-    { schema: restoreMany(maxItemsInRequest), preHandler: fastify.verifyAuthentication },
+    { schema: restoreMany(maxItemsInRequest), preHandler: isAuthenticated },
     async (request, reply) => {
       const {
-        member,
         query: { id: ids },
         log,
+        user,
       } = request;
+      const member = notUndefined(user?.member);
       log.info(`Restoring items ${ids}`);
 
       db.transaction(async (manager) => {
         const items = await recycleBinService.restoreMany(member, buildRepositories(manager), ids);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackEvent('restore', ids, items.data, items.errors),
-          );
-        }
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackEvent('restore', ids, items.data, items.errors),
+        );
       }).catch((e: Error) => {
         log.error(e);
-        if (member) {
-          websockets.publish(
-            memberItemsTopic,
-            member.id,
-            ItemOpFeedbackErrorEvent('restore', ids, e),
-          );
-        }
+        websockets.publish(
+          memberItemsTopic,
+          member.id,
+          ItemOpFeedbackErrorEvent('restore', ids, e),
+        );
       });
       reply.status(StatusCodes.ACCEPTED);
       return ids;

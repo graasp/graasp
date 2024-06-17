@@ -3,6 +3,9 @@
  *
  * Mock instances for testing in graasp-plugin-websockets
  */
+import { FastifyReply, FastifyRequest } from 'fastify';
+
+import { Member } from '../../member/entities/member';
 
 export const createMockMember = (extra?) => ({
   name: 'mockMemberName',
@@ -15,8 +18,8 @@ export const createMockMember = (extra?) => ({
 });
 
 // mock preHandler to be injected in test fastify instance to simulate authentication
-export const mockSessionPreHandler = async (request, _reply) => {
-  request.member = createMockMember();
+export const mockSessionPreHandler = async (request: FastifyRequest, _reply: FastifyReply) => {
+  request.user = { member: createMockMember() as unknown as Member };
 };
 
 // Signature of @types/graasp/plugins/auth/interfaces/auth.d.ts is wrong! Force return of Promise

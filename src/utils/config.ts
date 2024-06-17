@@ -157,8 +157,11 @@ export const DATABASE_LOGS = process.env.DATABASE_LOGS === 'true';
 if (!process.env.SECURE_SESSION_SECRET_KEY) {
   throw new Error('SECURE_SESSION_SECRET_KEY is not defined');
 }
-export const SECURE_SESSION_SECRET_KEY = process.env.SECURE_SESSION_SECRET_KEY;
-
+export const SECURE_SESSION_SECRET_KEY: string = process.env.SECURE_SESSION_SECRET_KEY!;
+export const SECURE_SESSION_EXPIRATION_IN_SECONDS: number =
+  +process.env.SECURE_SESSION_EXPIRATION_IN_SECONDS! || 604800; // 7days
+export const MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS: number =
+  +process.env.MAX_SECURE_SESSION_EXPIRATION_IN_SECONDS! || 15552000; // 6 * 30days
 /**
  * JWT
  */

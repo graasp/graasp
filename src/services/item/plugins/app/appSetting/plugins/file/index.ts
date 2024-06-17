@@ -3,7 +3,12 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { HttpMethod, UUID } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../../../../utils/repositories';
+import {
+  authenticateAppsJWT,
+  guestAuthenticateAppsJWT,
+} from '../../../../../../auth/plugins/passport';
 import {
   DownloadFileUnexpectedError,
   UploadEmptyFileError,
@@ -79,8 +84,8 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
 
   // prevent patch on app setting file
   const patchPreHook = async (
-    actor: Actor,
-    repositories: Repositories,
+    _actor: Actor,
+    _repositories: Repositories,
     { appSetting }: { appSetting: Partial<AppSetting> },
   ) => {
     if (appSetting?.data) {
@@ -95,10 +100,11 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     method: HttpMethod.Post,
     url: '/app-settings/upload',
     schema: upload,
+    preHandler: guestAuthenticateAppsJWT,
     handler: async (request) => {
-      const { authTokenSubject: requestDetails } = request;
-      const memberId = requestDetails?.memberId;
-      const itemId = requestDetails?.itemId;
+      const { user } = request;
+      const member = notUndefined(user?.member);
+      const app = notUndefined(user?.app);
       // TODO: if one file fails, keep other files??? APPLY ROLLBACK
       // THEN WE SHOULD MOVE THE TRANSACTION
       return db
@@ -112,7 +118,7 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
           if (!file) {
             throw new UploadEmptyFileError();
           }
-          return appSettingFileService.upload(memberId, repositories, file, itemId);
+          return appSettingFileService.upload(member, repositories, file, app.item);
         })
         .catch((e) => {
           console.error(e);
@@ -137,18 +143,18 @@ const basePlugin: FastifyPluginAsync<GraaspPluginFileOptions> = async (fastify, 
     '/app-settings/:id/download',
     {
       schema: download,
+      preHandler: authenticateAppsJWT,
     },
     async (request) => {
       const {
-        authTokenSubject: requestDetails,
+        user,
         params: { id: appSettingId },
       } = request;
-
-      const memberId = requestDetails?.memberId;
-      const itemId = requestDetails?.itemId;
+      const member = notUndefined(user?.member);
+      const app = notUndefined(user?.app);
 
       return appSettingFileService
-        .download(memberId, buildRepositories(), { itemId, appSettingId })
+        .download(member, buildRepositories(), { item: app.item, appSettingId })
         .catch((e) => {
           if (e.code) {
             throw e;

@@ -1,90 +1,75 @@
 import { StatusCodes } from 'http-status-codes';
-import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import fastifyPassport from '@fastify/passport';
-import { FastifyPluginAsync, PassportUser } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
 
 import { ActionTriggers, Context, RecaptchaAction } from '@graasp/sdk';
 
-import { PASSWORD_RESET_JWT_SECRET, PUBLIC_URL } from '../../../../utils/config';
-import { UnauthorizedMember } from '../../../../utils/errors';
+import { notUndefined } from '../../../../utils/assertions';
+import { LOGIN_TOKEN_EXPIRATION_IN_MINUTES, PUBLIC_URL } from '../../../../utils/config';
 import { buildRepositories } from '../../../../utils/repositories';
 import { getRedirectionUrl } from '../../utils';
+import captchaPreHandler from '../captcha';
+import {
+  SHORT_TOKEN_PARAM,
+  authenticatePassword,
+  authenticatePasswordReset,
+  isAuthenticated,
+} from '../passport';
 import {
   passwordLogin,
   patchResetPasswordRequest,
   postResetPasswordRequest,
   updatePassword,
 } from './schemas';
-import { MemberPasswordService } from './service';
 
-const PASSPORT_STATEGY_ID = 'jwt-reset-password';
+const REDIRECTION_URL_PARAM = 'url';
+const AUTHENTICATION_FALLBACK_ROUTE = '/auth';
 
 const plugin: FastifyPluginAsync = async (fastify) => {
-  const { mailer, log, db, redis } = fastify;
-
-  await fastify.register(fastifyPassport.initialize());
-  await fastify.register(fastifyPassport.secureSession());
-
-  fastifyPassport.use(
-    PASSPORT_STATEGY_ID,
-    new Strategy(
-      {
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: PASSWORD_RESET_JWT_SECRET,
-        passReqToCallback: true,
-      },
-      async (req, payload, verifiedCallback) => {
-        if (payload.uuid && (await memberPasswordService.validatePasswordResetUuid(payload.uuid))) {
-          // Token has been validated
-          // Error is null, req.user is the Password Reset Request UUID.
-          const user: PassportUser = { uuid: payload.uuid };
-          return verifiedCallback(null, user);
-        } else {
-          // Authentication refused
-          // Error is null, user is false to trigger a 401 Unauthorized.
-          return verifiedCallback(null, false);
-        }
-      },
-    ),
-  );
-  // Register user object to session
-  fastifyPassport.registerUserSerializer(async (user: PassportUser, _req) => user.uuid);
-
-  const memberPasswordService = new MemberPasswordService(mailer, log, redis);
-
+  const {
+    db,
+    memberPassword: { service: memberPasswordService },
+  } = fastify;
   // login with password
   fastify.post<{
     Body: { email: string; password: string; captcha: string; url?: string };
-  }>('/login-password', { schema: passwordLogin }, async (request, reply) => {
-    const { body, log } = request;
-    const { url } = body;
+  }>(
+    '/login-password',
+    {
+      schema: passwordLogin,
+      preHandler: [
+        captchaPreHandler(RecaptchaAction.SignInWithPassword, {
+          shouldFail: false,
+        }),
+        authenticatePassword,
+      ],
+    },
+    async (request, reply) => {
+      const { body, log, user } = request;
+      const { url } = body;
+      const member = notUndefined(user?.member);
+      const token = await memberPasswordService.generateToken(
+        { sub: member.id },
+        `${LOGIN_TOKEN_EXPIRATION_IN_MINUTES}m`,
+      );
+      const redirectionUrl = getRedirectionUrl(log, url);
 
-    // validate captcha
-    await fastify.validateCaptcha(request, body.captcha, RecaptchaAction.SignInWithPassword, {
-      shouldFail: false,
-    });
+      const target = new URL(AUTHENTICATION_FALLBACK_ROUTE, PUBLIC_URL);
+      target.searchParams.set(SHORT_TOKEN_PARAM, token);
+      target.searchParams.set(REDIRECTION_URL_PARAM, encodeURIComponent(redirectionUrl));
+      const resource = target.toString();
 
-    const token = await memberPasswordService.login(undefined, buildRepositories(), body);
-    const redirectionUrl = getRedirectionUrl(log, url);
-
-    const target = new URL('/auth', PUBLIC_URL);
-    target.searchParams.set('t', token);
-    target.searchParams.set('url', encodeURIComponent(redirectionUrl));
-    const resource = target.toString();
-
-    reply.status(StatusCodes.SEE_OTHER);
-    return { resource };
-  });
+      reply.status(StatusCodes.SEE_OTHER);
+      return { resource };
+    },
+  );
 
   // update member password
   fastify.patch<{ Body: { currentPassword: string; password: string } }>(
     '/members/update-password',
-    { schema: updatePassword, preHandler: fastify.verifyAuthentication },
-    async ({ member, body: { currentPassword, password } }) => {
-      if (!member) {
-        throw new UnauthorizedMember(member);
-      }
+    { schema: updatePassword, preHandler: isAuthenticated },
+    async ({ user, body: { currentPassword, password } }) => {
+      const member = notUndefined(user?.member);
       return db.transaction(async (manager) => {
         return memberPasswordService.patch(
           member,
@@ -109,13 +94,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post<{ Body: { email: string; captcha: string } }>(
     '/password/reset',
-    { schema: postResetPasswordRequest },
+    {
+      schema: postResetPasswordRequest,
+      preHandler: captchaPreHandler(RecaptchaAction.ResetPassword),
+    },
     async (request, reply) => {
-      const { email, captcha } = request.body;
-
-      await fastify.validateCaptcha(request, captcha, RecaptchaAction.ResetPassword, {
-        shouldFail: false,
-      });
+      const { email } = request.body;
 
       // We can already return to avoid leaking timing information.
       reply.status(StatusCodes.NO_CONTENT);
@@ -154,17 +138,17 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/password/reset',
     {
       schema: patchResetPasswordRequest,
-      preValidation: fastifyPassport.authenticate(PASSPORT_STATEGY_ID, { session: false }), // Session is not required.
+      preHandler: authenticatePasswordReset,
     },
     async (request, reply) => {
-      const user: PassportUser = request.user!;
-      const { password } = request.body;
       const repositories = buildRepositories();
-      await memberPasswordService.applyReset(repositories, password, user.uuid);
-      const member = await memberPasswordService.getMemberByPasswordResetUuid(
-        repositories,
-        user.uuid,
-      );
+      const {
+        user,
+        body: { password },
+      } = request;
+      const uuid = notUndefined(user?.passwordResetRedisKey);
+      await memberPasswordService.applyReset(repositories, password, uuid);
+      const member = await memberPasswordService.getMemberByPasswordResetUuid(repositories, uuid);
       reply.status(StatusCodes.NO_CONTENT);
 
       // Log the action

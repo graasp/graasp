@@ -8,7 +8,7 @@ export const passwordLogin = {
     required: ['email', 'password', 'captcha'],
     properties: {
       email: { type: 'string', format: 'email' },
-      password: { type: 'string' },
+      password: { type: 'string', format: 'strongPassword' },
       captcha: { type: 'string' },
       url: {
         type: 'string',
@@ -30,13 +30,13 @@ export const updatePassword = {
   body: {
     type: 'object',
     properties: {
-      password: { type: 'string' },
-      currentPassword: { type: 'string' },
+      password: { type: 'string', format: 'strongPassword' },
+      currentPassword: { type: 'string', format: 'strongPassword' },
     },
     additionalProperties: false,
   },
   response: {
-    200: {
+    [StatusCodes.OK]: {
       type: 'object',
       properties: {
         id: { type: 'string' },
@@ -66,14 +66,14 @@ export const patchResetPasswordRequest: FastifySchema = {
   body: {
     type: 'object',
     properties: {
-      password: { type: 'string' },
+      password: { type: 'string', format: 'strongPassword' },
     },
     additionalProperties: false,
   },
   headers: {
     type: 'object',
     properties: {
-      authorization: { type: 'string' },
+      authorization: { type: 'string', format: 'bearer' },
     },
   },
   response: {

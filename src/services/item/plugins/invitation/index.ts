@@ -5,8 +5,9 @@ import { FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 
 import { IdParam } from '../../../../types';
-import { UnauthorizedMember } from '../../../../utils/errors';
+import { notUndefined } from '../../../../utils/assertions';
 import { Repositories, buildRepositories } from '../../../../utils/repositories';
+import { isAuthenticated, optionalIsAuthenticated } from '../../../auth/plugins/passport';
 import { Actor, Member } from '../../../member/entities/member';
 import { MAX_FILE_SIZE } from './constants';
 import { Invitation } from './entity';
@@ -24,7 +25,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   fastify.addSchema(definitions);
   // register multipart plugin for use in the invitations API
 
-  const iS = new InvitationService(
+  const invitationService = new InvitationService(
     log,
     mailer,
     items.service,
@@ -35,7 +36,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // post hook: remove invitations on member creation
   const hook = async (actor: Actor, repositories: Repositories, args: { member: Member }) => {
     const { email } = args.member;
-    await iS.createToMemberships(actor, repositories, args.member);
+    await invitationService.createToMemberships(actor, repositories, args.member);
     await repositories.invitationRepository.deleteForEmail(email);
   };
   members.service.hooks.setPostHook('create', hook);
@@ -44,11 +45,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // does not require authentication
   fastify.get<{ Params: IdParam }>(
     '/invitations/:id',
-    { schema: getById, preHandler: fastify.attemptVerifyAuthentication },
-    async ({ member, params }) => {
+    { schema: getById, preHandler: optionalIsAuthenticated },
+    async ({ user, params }) => {
       const { id } = params;
-      const aa = await iS.get(member, buildRepositories(), id);
-      return aa;
+      return await invitationService.get(user?.member, buildRepositories(), id);
     },
   );
 
@@ -56,12 +56,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     '/:id/invite',
     {
       schema: invite,
-      preHandler: fastify.verifyAuthentication,
+      preHandler: isAuthenticated,
     },
-    async ({ member, body, params }) => {
+    async ({ user, body, params }) => {
       return db.transaction(async (manager) => {
-        const res = await iS.postManyForItem(
-          member,
+        const res = await invitationService.postManyForItem(
+          user?.member,
           buildRepositories(manager),
           params.id,
           body.invitations,
@@ -76,15 +76,10 @@ const plugin: FastifyPluginAsync = async (fastify) => {
     // post invitations from a csv file
     fastify.post<{ Params: IdParam; Querystring: { templateId: string } }>(
       '/:id/invitations/upload-csv',
-      { preHandler: fastify.verifyAuthentication },
+      { preHandler: isAuthenticated },
       async (request) => {
-        const { member, query, params } = request;
-        // this is needed to assert the type of the member to be a Member and not an Actor.
-        // verifyAuthentication preHandler should throw if there is no member, but the type can not be narrowed automatically
-        if (!member) {
-          throw new UnauthorizedMember(member);
-        }
-
+        const { query, params, user } = request;
+        const member = notUndefined(user?.member);
         // get uploaded file
         const uploadedFile = await request.file({
           limits: {
@@ -104,7 +99,7 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
         if (templateId) {
           return await db.transaction(async (manager) =>
-            iS.createStructureForCSVAndTemplate(
+            invitationService.createStructureForCSVAndTemplate(
               member,
               buildRepositories(manager),
               itemId,
@@ -114,7 +109,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
           );
         }
         return await db.transaction(async (manager) =>
-          iS.importUsersWithCSV(member, buildRepositories(manager), itemId, uploadedFile),
+          invitationService.importUsersWithCSV(
+            member,
+            buildRepositories(manager),
+            itemId,
+            uploadedFile,
+          ),
         );
       },
     );
@@ -123,22 +123,27 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // get all invitations for an item
   fastify.get<{ Params: IdParam }>(
     '/:id/invitations',
-    { schema: getForItem, preHandler: fastify.verifyAuthentication },
-    async ({ member, params }) => {
+    { schema: getForItem, preHandler: isAuthenticated },
+    async ({ user, params }) => {
       const { id: itemId } = params;
-      return iS.getForItem(member, buildRepositories(), itemId);
+      return invitationService.getForItem(user?.member, buildRepositories(), itemId);
     },
   );
 
   // update invitation
   fastify.patch<{ Params: { id: string; invitationId: string }; Body: Partial<Invitation> }>(
     '/:id/invitations/:invitationId',
-    { schema: updateOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params, body }) => {
+    { schema: updateOne, preHandler: isAuthenticated },
+    async ({ user, params, body }) => {
       const { invitationId } = params;
 
       return db.transaction(async (manager) => {
-        return iS.patch(member, buildRepositories(manager), invitationId, body);
+        return invitationService.patch(
+          user?.member,
+          buildRepositories(manager),
+          invitationId,
+          body,
+        );
       });
     },
   );
@@ -146,12 +151,12 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // delete invitation
   fastify.delete<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId',
-    { schema: deleteOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params }) => {
+    { schema: deleteOne, preHandler: isAuthenticated },
+    async ({ user, params }) => {
       const { invitationId } = params;
 
       return db.transaction(async (manager) => {
-        return iS.delete(member, buildRepositories(manager), invitationId);
+        return invitationService.delete(user?.member, buildRepositories(manager), invitationId);
       });
     },
   );
@@ -159,11 +164,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
   // resend invitation mail
   fastify.post<{ Params: { id: string; invitationId: string } }>(
     '/:id/invitations/:invitationId/send',
-    { schema: sendOne, preHandler: fastify.verifyAuthentication },
-    async ({ member, params }, reply) => {
+    { schema: sendOne, preHandler: isAuthenticated },
+    async ({ user, params }, reply) => {
       const { invitationId } = params;
 
-      await iS.resend(member, buildRepositories(), invitationId);
+      await invitationService.resend(user?.member, buildRepositories(), invitationId);
       reply.status(StatusCodes.NO_CONTENT);
     },
   );

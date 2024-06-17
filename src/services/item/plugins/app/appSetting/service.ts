@@ -1,9 +1,9 @@
 import { PermissionLevel, UUID } from '@graasp/sdk';
 
-import { MemberCannotAccess, UnauthorizedMember } from '../../../../../utils/errors';
+import { UnauthorizedMember } from '../../../../../utils/errors';
 import HookManager from '../../../../../utils/hook';
 import { Repositories } from '../../../../../utils/repositories';
-import { Actor } from '../../../../member/entities/member';
+import { Actor, Member } from '../../../../member/entities/member';
 import { Item } from '../../../entities/Item';
 import { ItemService } from '../../../service';
 import { AppSetting } from './appSettings';
@@ -35,24 +35,19 @@ export class AppSettingService {
   }
 
   async post(
-    memberId: string | undefined,
+    member: Member,
     repositories: Repositories,
     itemId: string,
     body: Partial<InputAppSetting>,
   ) {
-    const { appSettingRepository, memberRepository } = repositories;
-    // check member exists
-    if (!memberId) {
-      throw new MemberCannotAccess();
-    }
-    const member = await memberRepository.get(memberId);
+    const { appSettingRepository } = repositories;
 
     // posting an app setting is allowed to admin only
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
 
     await this.hooks.runPreHooks('post', member, repositories, { appSetting: body, itemId });
 
-    const appSetting = await appSettingRepository.post(itemId, memberId, body);
+    const appSetting = await appSettingRepository.post(itemId, member.id, body);
     await this.hooks.runPostHooks('post', member, repositories, {
       appSetting,
       itemId,
@@ -61,18 +56,13 @@ export class AppSettingService {
   }
 
   async patch(
-    memberId: string | undefined,
+    member: Member,
     repositories: Repositories,
     itemId: string,
     appSettingId: string,
     body: Partial<AppSetting>,
   ) {
-    const { appSettingRepository, memberRepository } = repositories;
-    // check member exists
-    if (!memberId) {
-      throw new MemberCannotAccess();
-    }
-    const member = await memberRepository.get(memberId);
+    const { appSettingRepository } = repositories;
 
     // patching requires admin rights
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
@@ -91,17 +81,12 @@ export class AppSettingService {
   }
 
   async deleteOne(
-    memberId: string | undefined,
+    member: Member,
     repositories: Repositories,
     itemId: string,
     appSettingId: string,
   ) {
-    const { appSettingRepository, memberRepository } = repositories;
-    // check member exists
-    if (!memberId) {
-      throw new MemberCannotAccess();
-    }
-    const member = await memberRepository.get(memberId);
+    const { appSettingRepository } = repositories;
 
     // delete an app data is allowed to admins
     await this.itemService.get(member, repositories, itemId, PermissionLevel.Admin);
@@ -118,16 +103,12 @@ export class AppSettingService {
   }
 
   async get(
-    memberId: string | undefined,
+    member: Member | undefined,
     repositories: Repositories,
     itemId: string,
     appSettingId: UUID,
   ) {
-    const { appSettingRepository, memberRepository } = repositories;
-
-    // get member if exists
-    // item can be public
-    const member = memberId ? await memberRepository.get(memberId) : undefined;
+    const { appSettingRepository } = repositories;
 
     // get app setting is allowed to readers
     await this.itemService.get(member, repositories, itemId);
@@ -136,17 +117,14 @@ export class AppSettingService {
   }
 
   async getForItem(
-    memberId: string | undefined,
+    member: Member | undefined,
     repositories: Repositories,
     itemId: string,
     name?: string,
   ) {
-    const { appSettingRepository, memberRepository } = repositories;
+    const { appSettingRepository } = repositories;
 
-    // get member if exists
     // item can be public
-    const member = memberId ? await memberRepository.get(memberId) : undefined;
-
     // get app setting is allowed to readers
     await this.itemService.get(member, repositories, itemId);
 
@@ -158,7 +136,7 @@ export class AppSettingService {
       throw new UnauthorizedMember(actor);
     }
     try {
-      const appSettings = await this.getForItem(actor.id, repositories, original.id);
+      const appSettings = await this.getForItem(actor, repositories, original.id);
       const newAppSettings: AppSetting[] = [];
       for (const appS of appSettings) {
         const copyData = {

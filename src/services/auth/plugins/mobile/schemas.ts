@@ -1,3 +1,5 @@
+import { SHORT_TOKEN_PARAM, TOKEN_PARAM } from '../passport';
+
 export const mregister = {
   body: {
     type: 'object',
@@ -57,9 +59,9 @@ export const mPasswordLogin = {
 export const mauth = {
   body: {
     type: 'object',
-    required: ['t', 'verifier'],
+    required: [SHORT_TOKEN_PARAM, 'verifier'],
     properties: {
-      t: { type: 'string' },
+      [SHORT_TOKEN_PARAM]: { type: 'string' },
       verifier: { type: 'string' },
     },
     additionalProperties: false,
@@ -69,9 +71,9 @@ export const mauth = {
 export const authWeb = {
   querystring: {
     type: 'object',
-    required: ['token'],
+    required: [TOKEN_PARAM],
     properties: {
-      token: { type: 'string' },
+      [TOKEN_PARAM]: { type: 'string' },
       url: { type: 'string' },
     },
     additionalProperties: false,

@@ -8,9 +8,10 @@ import fp from 'fastify-plugin';
 
 import { ItemType, PermissionLevel } from '@graasp/sdk';
 
+import { notUndefined } from '../../../../../utils/assertions';
 import { CLIENT_HOSTS } from '../../../../../utils/config';
-import { UnauthorizedMember } from '../../../../../utils/errors';
 import { buildRepositories } from '../../../../../utils/repositories';
+import { isAuthenticated } from '../../../../auth/plugins/passport';
 import { validatePermission } from '../../../../authorization';
 import { Member } from '../../../../member/entities/member';
 import { Item, isItemType } from '../../../entities/Item';
@@ -119,23 +120,18 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     });
 
     /* routes in this scope are authenticated */
-    fastify.addHook('preHandler', fastify.verifyAuthentication);
 
     fastify.post<{ Querystring: { parentId?: string } }>(
       '/h5p-import',
-      { schema: h5pImport },
+      { schema: h5pImport, preHandler: isAuthenticated },
       async (request) => {
         const {
-          member,
+          user,
           log,
           query: { parentId },
         } = request;
-
+        const member = notUndefined(user?.member);
         return db.transaction(async (manager) => {
-          if (!member) {
-            throw new UnauthorizedMember(member);
-          }
-
           const repositories = buildRepositories(manager);
 
           // validate write permission in parent if it exists

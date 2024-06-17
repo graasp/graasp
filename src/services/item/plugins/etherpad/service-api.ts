@@ -5,7 +5,8 @@ import fp from 'fastify-plugin';
 
 import Etherpad from '@graasp/etherpad-api';
 
-import { InvalidSession } from '../../../../utils/errors';
+import { notUndefined } from '../../../../utils/assertions';
+import { isAuthenticated } from '../../../auth/plugins/passport';
 import { ETHERPAD_API_VERSION } from './constants';
 import { wrapErrors } from './etherpad';
 import { createEtherpad, getEtherpadFromItem } from './schemas';
@@ -18,7 +19,6 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
   const {
     items: { service: itemService },
     log,
-    verifyAuthentication,
   } = fastify;
 
   const { url: etherpadUrl, publicUrl, apiKey, cookieDomain } = validatePluginOptions(options);
@@ -45,23 +45,19 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
   // create a route prefix for etherpad
   await fastify.register(
     async (fastify: FastifyInstance) => {
-      fastify.addHook('preHandler', verifyAuthentication);
-
       /**
        * Etherpad creation
        */
       fastify.post<{ Querystring: { parentId?: string }; Body: { name: string } }>(
         '/create',
-        { schema: createEtherpad },
+        { schema: createEtherpad, preHandler: isAuthenticated },
         async (request) => {
           const {
-            member,
+            user,
             query: { parentId },
             body: { name },
           } = request;
-          if (!member) {
-            throw new InvalidSession();
-          }
+          const member = notUndefined(user?.member);
           return await etherpadItemService.createEtherpadItem(member, name, parentId);
         },
       );
@@ -74,16 +70,14 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
        */
       fastify.get<{ Params: { itemId: string }; Querystring: { mode?: 'read' | 'write' } }>(
         '/view/:itemId',
-        { schema: getEtherpadFromItem },
+        { schema: getEtherpadFromItem, preHandler: isAuthenticated },
         async (request, reply) => {
           const {
-            member,
+            user,
             params: { itemId },
             query: { mode = 'read' },
           } = request;
-          if (!member) {
-            throw new InvalidSession();
-          }
+          const member = notUndefined(user?.member);
 
           const { cookie, padUrl } = await etherpadItemService.getEtherpadFromItem(
             member,
