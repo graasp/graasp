@@ -10,6 +10,7 @@
   ],
   "importOrderSeparation": true,
   "importOrderParserPlugins": [
+    "importAssertions",
     "typescript",
     "decorators-legacy"
   ],

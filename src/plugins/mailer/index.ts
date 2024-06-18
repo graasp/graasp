@@ -4,6 +4,7 @@ import { promisify } from 'util';
 
 import pointOfView from '@fastify/view';
 import { FastifyPluginAsync } from 'fastify';
+import fastifyMailer from 'fastify-nodemailer';
 import fp from 'fastify-plugin';
 
 import { DEFAULT_LANG } from '@graasp/translations';
@@ -42,8 +43,7 @@ const plugin: FastifyPluginAsync<MailerOptions> = async (fastify, options) => {
 
   fastify.register(pointOfView, { engine: { eta } });
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  await fastify.register(require('fastify-nodemailer'), {
+  await fastify.register(fastifyMailer, {
     host,
     auth: { user, pass },
     pool: true,

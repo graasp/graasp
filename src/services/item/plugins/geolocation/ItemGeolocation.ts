@@ -6,6 +6,7 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
   Unique,
 } from 'typeorm';
 import { v4 } from 'uuid';
@@ -26,7 +27,7 @@ export class ItemGeolocation extends BaseEntity {
     nullable: false,
   })
   @JoinColumn({ referencedColumnName: 'path', name: 'item_path' })
-  item: Item;
+  item: Relation<Item>;
 
   @Column({ type: 'float' })
   lat: number;

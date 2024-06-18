@@ -88,7 +88,11 @@ const plugin: FastifyPluginAsync<H5PPluginOptions> = async (fastify) => {
     });
 
     // hack to serve the "dist" folder of package "h5p-standalone"
-    const h5pAssetsRoot = path.dirname(require.resolve('h5p-standalone'));
+    const h5pStandalonePath = await import.meta.resolve?.('h5p-standalone');
+    if (!h5pStandalonePath) {
+      throw new Error('Could not get standlaone library path');
+    }
+    const h5pAssetsRoot = new URL(path.dirname(h5pStandalonePath));
     fastify.register(fastifyStatic, {
       root: h5pAssetsRoot,
       prefix: DEFAULT_H5P_ASSETS_ROUTE,

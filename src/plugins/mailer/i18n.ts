@@ -1,10 +1,10 @@
 import i18next, { init } from 'i18next';
 
-import arTranslations from './langs/ar.json';
-import enTranslations from './langs/en.json';
-import esTranslations from './langs/es.json';
-import frTranslations from './langs/fr.json';
-import itTranslations from './langs/it.json';
+import arTranslations from './langs/ar.json' assert { type: 'json' };
+import enTranslations from './langs/en.json' assert { type: 'json' };
+import esTranslations from './langs/es.json' assert { type: 'json' };
+import frTranslations from './langs/fr.json' assert { type: 'json' };
+import itTranslations from './langs/it.json' assert { type: 'json' };
 
 init({
   fallbackLng: 'en',
