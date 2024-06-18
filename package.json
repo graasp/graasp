@@ -11,6 +11,7 @@
   },
   "license": "AGPL-3.0-only",
   "author": "Graasp",
+  "type": "module",
   "scripts": {
     "start": "yarn serve",
     "build": "yarn lint && yarn build-ts",
