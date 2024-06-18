@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
 
-import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
-import build from '../../app';
-import { buildInsertIntoQuery, checkDatabaseIsEmpty, getNumberOfTables } from '../utils';
-import { expected, values as migrationData } from './migrations1679669193720.fixtures';
+import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations.js';
+import build from '../../app.js';
+import { buildInsertIntoQuery, checkDatabaseIsEmpty, getNumberOfTables } from '../utils.js';
+import { expected, values as migrationData } from './migrations1679669193720.fixtures.js';
 
 // mock datasource
 jest.mock('../../../src/plugins/datasource');

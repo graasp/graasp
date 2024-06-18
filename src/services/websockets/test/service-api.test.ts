@@ -5,7 +5,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 import WebSocket from 'ws';
 
 import { FastifyInstance } from 'fastify';
@@ -25,6 +25,8 @@ import {
   createWsClients,
   createWsFastifyInstance,
 } from './test-utils.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 const portGen = new PortGenerator(7000);
 jest.mock('../../auth/plugins/passport/preHandlers', () => ({
@@ -80,9 +82,13 @@ describe('internal state', () => {
   });
 
   test('client connection registered', async () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     expect(t.server!._debug_websocketsChannels.subscriptions.size).toEqual(1);
     t.client!.close();
     await waitForExpect(() => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       expect(t.server!._debug_websocketsChannels.subscriptions.size).toEqual(0);
     });
   });
@@ -110,6 +116,8 @@ describe('internal state', () => {
         status: Websocket.ResponseStatuses.Success,
         request,
       });
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       expect(t.server!._debug_websocketsChannels.channels.get('foo/a')?.subscribers.size).toEqual(
         1,
       );
@@ -131,6 +139,8 @@ describe('internal state', () => {
         status: Websocket.ResponseStatuses.Success,
         request: request2,
       });
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       expect(t.server!._debug_websocketsChannels.channels.get('foo/a')).toBeUndefined();
     });
 
@@ -138,6 +148,8 @@ describe('internal state', () => {
       t.client!.close();
       await waitForExpect(() => {
         // after client closed, channels should not see it as subscriber anymore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         expect(t.server!._debug_websocketsChannels.channels.get('foo/a')?.subscribers.size).toEqual(
           0,
         );
@@ -145,12 +157,16 @@ describe('internal state', () => {
     });
 
     test('deleted channel with subscribers removes subscription from them', async () => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       t.server!._debug_websocketsChannels.subscriptions.forEach((client) => {
         expect(client.subscriptions.size).toEqual(1);
       });
-
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       t.server!._debug_websocketsChannels.channelDelete('foo/a');
-
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       t.server!._debug_websocketsChannels.subscriptions.forEach((client) => {
         expect(client.subscriptions.size).toEqual(0);
       });
@@ -222,6 +238,8 @@ describe('client requests', () => {
     // wait for a single message: should only received from channel "4"
     const msg = clientWait(t.client!, 1);
     channels.forEach((c) =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       t.server!._debug_websocketsChannels.channelSend('foo/' + c, createServerInfo('hello' + c)),
     );
     expect(await msg).toStrictEqual({
@@ -270,6 +288,8 @@ describe('client requests', () => {
     // expect next message to be ack for subscribing again
     // but NOT "you should not receive me"
     ack = clientWait(t.client!, 1);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     t.server!._debug_websocketsChannels.channelSend(
       'foo/1',
       createServerInfo('you should not receive me'),
@@ -297,6 +317,8 @@ describe('client requests', () => {
 
     // now next message should be "hello again"
     const waitMsg = clientWait(t.client!, 1);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     t.server!._debug_websocketsChannels.channelSend('foo/1', createServerInfo('hello again'));
     const data = await waitMsg;
 
@@ -311,12 +333,16 @@ describe('client requests', () => {
   });
 
   test('disconnect', async () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     expect(t.server!._debug_websocketsChannels.subscriptions.size).toEqual(1);
     clientSend(t.client!, {
       realm: Websocket.Realms.Notif,
       action: Websocket.ClientActions.Disconnect,
     });
     await waitForExpect(() => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       expect(t.server!._debug_websocketsChannels.subscriptions.size).toEqual(0);
     });
   });
@@ -384,6 +410,8 @@ describe('channel send', () => {
     const msg = createServerInfo('msg1');
     const test = clientsWait(t.subs1!, 1);
     delete msg.extra;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     t.server!._debug_websocketsChannels.channelSend('foo/1', msg);
     const data = await test;
     data.forEach((value) => expect(value).toStrictEqual(msg));
@@ -393,6 +421,8 @@ describe('channel send', () => {
     const msg = createServerInfo('msg2');
     const test = clientsWait(t.subs2!, 1);
     delete msg.extra;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     t.server!._debug_websocketsChannels.channelSend('foo/2', msg);
     const data = await test;
     data.forEach((value) => expect(value).toStrictEqual(msg));
@@ -405,7 +435,11 @@ describe('channel send', () => {
     delete hello1.extra;
     const test1 = clientsWait(t.subs1!, 1);
     const test2 = clientsWait(t.subs2!, 1);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     t.server!._debug_websocketsChannels.channelSend('foo/1', hello1);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     t.server!._debug_websocketsChannels.channelSend('foo/2', hello2);
     const data1 = await test1;
     const data2 = await test2;
@@ -418,6 +452,8 @@ describe('channel send', () => {
     delete broadcastMsg.extra;
     const clientsShouldReceive = new Array<WebSocket>().concat(t.subs1!, t.subs2!, t.unsubs!);
     const test = clientsWait(clientsShouldReceive, 1);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     t.server!._debug_websocketsChannels!.broadcast(broadcastMsg);
 
     const data = await test;

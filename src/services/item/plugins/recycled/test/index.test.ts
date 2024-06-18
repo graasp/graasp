@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import qs from 'qs';
 import { In } from 'typeorm';
 import { v4 } from 'uuid';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -21,6 +21,8 @@ import { saveMember } from '../../../../member/test/fixtures/members.js';
 import { ItemTestUtils, expectManyItems } from '../../../test/fixtures/items.js';
 import { RecycledItemDataRepository } from '../repository.js';
 import { expectManyPackedRecycledItems, expectManyRecycledItems } from './fixtures.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

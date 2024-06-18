@@ -11,7 +11,7 @@ import {
 } from '../../../../../utils/errors.js';
 import { MemberRepository } from '../../../../member/repository.js';
 import { SHORT_TOKEN_PARAM } from '../constants.js';
-import { PassportStrategy } from '../strategies/index.js';
+import { PassportStrategy } from '../strategies.js';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (

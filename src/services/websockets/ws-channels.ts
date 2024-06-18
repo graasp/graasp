@@ -10,7 +10,7 @@ import WebSocket from 'ws';
 
 import { FastifyBaseLogger } from 'fastify';
 
-import { Websocket } from '@graasp/sdk';
+import { Websocket as GraaspWebsocket } from '@graasp/sdk';
 
 /**
  * Represents a WebSocket channel which clients can subscribe to
@@ -30,8 +30,8 @@ class Channel {
   }
 
   send(
-    message: Websocket.ServerMessage,
-    sendFn: (client: WebSocket, msg: Websocket.ServerMessage) => boolean,
+    message: GraaspWebsocket.ServerMessage,
+    sendFn: (client: WebSocket, msg: GraaspWebsocket.ServerMessage) => boolean,
   ) {
     let ret = true;
     this.subscribers.forEach((sub) => {
@@ -102,7 +102,7 @@ class WebSocketChannels {
   // Collection of all client subscriptions, identified by socket for lookup
   subscriptions: Map<WebSocket, Client>;
   // Serializer function
-  serialize: (data: Websocket.ServerMessage) => WebSocket.Data;
+  serialize: (data: GraaspWebsocket.ServerMessage) => WebSocket.Data;
   // Heartbeat interval instance
   heartbeat: NodeJS.Timeout;
   // Logging interface
@@ -118,7 +118,7 @@ class WebSocketChannels {
    */
   constructor(
     wsServer: WebSocket.Server,
-    serialize: (data: Websocket.ServerMessage) => WebSocket.Data,
+    serialize: (data: GraaspWebsocket.ServerMessage) => WebSocket.Data,
     log?: FastifyBaseLogger | Console,
     heartbeatInterval = 30000,
   ) {
@@ -185,7 +185,7 @@ class WebSocketChannels {
    * @param client WebSocket client to send to
    * @param message Data to transmit
    */
-  clientSend(client: WebSocket, message: Websocket.ServerMessage): boolean {
+  clientSend(client: WebSocket, message: GraaspWebsocket.ServerMessage): boolean {
     if (client.readyState !== WebSocket.OPEN) {
       this.logger.info(
         'graasp-plugin-websockets: attempted to send message to client that was not ready,',
@@ -313,7 +313,7 @@ class WebSocketChannels {
    * @param channelName name of the channel to send a message on
    * @param message data to transmit
    */
-  channelSend(channelName: string, message: Websocket.ServerMessage): boolean {
+  channelSend(channelName: string, message: GraaspWebsocket.ServerMessage): boolean {
     const channel = this.channels.get(channelName);
     if (channel !== undefined) {
       return channel.send(message, (client, message) => this.clientSend(client, message));
@@ -325,7 +325,7 @@ class WebSocketChannels {
    * Sends an object message to all connected clients
    * @param message Object to broadcast to everyone
    */
-  broadcast(message: Websocket.ServerMessage): boolean {
+  broadcast(message: GraaspWebsocket.ServerMessage): boolean {
     let ret = true;
     this.wsServer.clients.forEach((client) => {
       ret = ret && this.clientSend(client, message);

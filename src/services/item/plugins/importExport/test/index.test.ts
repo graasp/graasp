@@ -3,7 +3,7 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import fetch from 'node-fetch';
 import path from 'path';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { HttpMethod, ItemType } from '@graasp/sdk';
 
@@ -11,6 +11,8 @@ import build, { clearDatabase } from '../../../../../../test/app.js';
 import { LocalFileRepository } from '../../../../file/repositories/local.js';
 import { ItemTestUtils } from '../../../test/fixtures/items.js';
 import * as ARCHIVE_CONTENT from './fixtures/archive.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 // we need a different form data for each test
 const createFormData = (filename) => {

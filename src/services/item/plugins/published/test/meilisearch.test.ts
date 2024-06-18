@@ -14,16 +14,16 @@ import { FastifyBaseLogger } from 'fastify';
 
 import { IndexItem, ItemType, MimeTypes, S3FileItemExtra } from '@graasp/sdk';
 
-import * as repositoriesModule from '../../../../../utils/repositories';
-import FileService from '../../../../file/service';
-import { ItemMembershipRepository } from '../../../../itemMembership/repository';
-import { Item } from '../../../entities/Item';
-import { ItemTestUtils } from '../../../test/fixtures/items';
-import { ItemCategory } from '../../itemCategory/entities/ItemCategory';
-import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory';
-import { ItemPublished } from '../entities/itemPublished';
-import { MeiliSearchWrapper } from '../plugins/search/meilisearch';
-import { ItemPublishedRepository } from '../repositories/itemPublished';
+import * as repositoriesModule from '../../../../../utils/repositories.js';
+import FileService from '../../../../file/service.js';
+import { ItemMembershipRepository } from '../../../../itemMembership/repository.js';
+import { Item } from '../../../entities/Item.js';
+import { ItemTestUtils } from '../../../test/fixtures/items.js';
+import { ItemCategory } from '../../itemCategory/entities/ItemCategory.js';
+import { ItemCategoryRepository } from '../../itemCategory/repositories/itemCategory.js';
+import { ItemPublished } from '../entities/itemPublished.js';
+import { MeiliSearchWrapper } from '../plugins/search/meilisearch.js';
+import { ItemPublishedRepository } from '../repositories/itemPublished.js';
 
 jest.unmock('../plugins/search/meilisearch');
 

@@ -1,7 +1,7 @@
 import { BaseEntity, DataSource } from 'typeorm';
 
-import { AppDataSource } from '../../src/plugins/datasource';
-import defaultDatas from './sampledatas';
+import { AppDataSource } from '../../src/plugins/datasource.js';
+import defaultDatas from './sampledatas.js';
 
 export type TableType<C extends BaseEntity, E> = {
   constructor: new () => C;

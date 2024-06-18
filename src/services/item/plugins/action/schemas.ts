@@ -1,4 +1,4 @@
-import S from 'fluent-json-schema';
+import Ss from 'fluent-json-schema';
 import { StatusCodes } from 'http-status-codes';
 
 import {
@@ -15,6 +15,8 @@ import {
   MIN_ACTIONS_SAMPLE_SIZE,
 } from '../../../action/constants/constants.js';
 import { item } from '../../fluent-schema.js';
+
+const S = Ss.default;
 
 // todo: complete schema
 export const baseAnalytics = S.object()

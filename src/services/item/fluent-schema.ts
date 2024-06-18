@@ -1,4 +1,4 @@
-import S, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
+import Ss, { JSONSchema, ObjectSchema } from 'fluent-json-schema';
 import { StatusCodes } from 'http-status-codes';
 
 import { FastifySchema } from 'fastify';
@@ -18,6 +18,8 @@ import { error, idParam, idsQuery, uuid } from '../../schemas/fluent-schema.js';
 import { EMPTY_OR_SPACED_WORDS_REGEX, NAME_REGEX } from '../../schemas/global.js';
 import { ITEMS_PAGE_SIZE } from './constants.js';
 import { Ordering, SortBy } from './types.js';
+
+const S = Ss.default;
 
 export const SHOW_HIDDEN_PARRAM = 'showHidden';
 export const TYPES_FILTER_PARAM = 'types';

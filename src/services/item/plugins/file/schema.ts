@@ -1,6 +1,8 @@
-import S from 'fluent-json-schema';
+import Ss from 'fluent-json-schema';
 
 import { FileItemType } from '@graasp/sdk';
+
+const S = Ss.default;
 
 export const upload = {
   querystring: {

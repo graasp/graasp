@@ -7,7 +7,7 @@ import { UnauthorizedMember } from '../../../../../utils/errors.js';
 import { ItemRepository } from '../../../../item/repository.js';
 import { Member } from '../../../../member/entities/member.js';
 import { MemberRepository } from '../../../../member/repository.js';
-import { PassportStrategy } from '../strategies/index.js';
+import { PassportStrategy } from '../strategies.js';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (

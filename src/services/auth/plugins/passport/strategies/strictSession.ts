@@ -2,7 +2,7 @@ import { Strategy } from 'passport-custom';
 
 import { Authenticator } from '@fastify/passport';
 
-import { PassportStrategy } from '../strategies/index.js';
+import { PassportStrategy } from '../strategies.js';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 /**

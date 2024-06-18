@@ -5,7 +5,7 @@ import { Authenticator } from '@fastify/passport';
 import { UnauthorizedMember } from '../../../../../utils/errors.js';
 import { Repositories } from '../../../../../utils/repositories.js';
 import { MemberPasswordService } from '../../password/service.js';
-import { PassportStrategy } from '../strategies/index.js';
+import { PassportStrategy } from '../strategies.js';
 import { CustomStrategyOptions, StrictVerifiedCallback } from '../types.js';
 
 export default (

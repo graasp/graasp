@@ -1,11 +1,11 @@
 import { FastifyInstance } from 'fastify';
 
-import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
-import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations';
-import { Migrations1683637099103 } from '../../../src/migrations/1683637099103-add-favorites';
-import build from '../../app';
-import { buildInsertIntoQuery, buildSelectQuery, checkDatabaseIsEmpty } from '../utils';
-import { up } from './fixture';
+import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations.js';
+import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations.js';
+import { Migrations1683637099103 } from '../../../src/migrations/1683637099103-add-favorites.js';
+import build from '../../app.js';
+import { buildInsertIntoQuery, buildSelectQuery, checkDatabaseIsEmpty } from '../utils.js';
+import { up } from './fixture.js';
 
 // mock datasource
 jest.mock('../../../src/plugins/datasource');

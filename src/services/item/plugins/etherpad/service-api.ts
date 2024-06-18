@@ -25,6 +25,8 @@ const plugin: FastifyPluginAsync<EtherpadPluginOptions> = async (fastify, option
 
   // connect to etherpad server
   const etherpad = wrapErrors(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     new Etherpad({
       url: etherpadUrl,
       apiKey,

@@ -4,7 +4,7 @@
  *  https://ajv.js.org/guide/getting-started.html#parsing-and-serializing-json
  *  https://ajv.js.org/guide/typescript.html
  */
-import Ajv from 'ajv/dist/jtd';
+import { Ajv } from 'ajv/dist/jtd.js';
 
 import { Websocket } from '@graasp/sdk';
 

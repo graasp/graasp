@@ -3,7 +3,7 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance, LightMyRequestResponse } from 'fastify';
 
@@ -17,8 +17,10 @@ import { ItemTestUtils } from '../../../../test/fixtures/items.js';
 import { HtmlImportError } from '../../errors.js';
 import { H5P_FILE_DOT_EXTENSION } from '../constants.js';
 import { H5PInvalidManifestError } from '../errors.js';
-import { H5P_PACKAGES } from './fixtures/index.js';
+import { H5P_PACKAGES } from './fixtures.js';
 import { expectH5PFiles, injectH5PImport } from './helpers.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 const H5P_ACCORDION_FILENAME = path.basename(H5P_PACKAGES.ACCORDION.path);
 

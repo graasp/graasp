@@ -1,9 +1,11 @@
-import S from 'fluent-json-schema';
+import Ss from 'fluent-json-schema';
 
 import { ItemLoginSchemaType } from '@graasp/sdk';
 
 import { error, idParam, uuid } from '../../schemas/fluent-schema.js';
 import { item } from '../item/fluent-schema.js';
+
+const S = Ss.default;
 
 export const credentials = S.object()
   .additionalProperties(false)

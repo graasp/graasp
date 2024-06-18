@@ -5,7 +5,7 @@ import { MentionStatus } from '@graasp/sdk';
 import { AppDataSource } from '../../../../plugins/datasource.js';
 import { Member } from '../../../member/entities/member.js';
 import { messageMentionSchema } from '../../../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils.js';
 import { ChatMessage } from '../../chatMessage.js';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors.js';
 import { ChatMention } from './chatMention.js';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
 
@@ -16,7 +17,7 @@ import {
 
 // todo: use graasp-sdk?
 declare module 'fastify' {
-  type FastifyRequest = {
+  interface FastifyRequest {
     /**
      * Collects metrics for logs, monitoring, traces
      */
@@ -31,7 +32,7 @@ declare module 'fastify' {
         transaction: Sentry.Transaction;
       };
     };
-  };
+  }
 }
 
 const IGNORED_TRANSACTIONS = {

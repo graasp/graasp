@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { MultiSearchParams } from 'meilisearch';
 import qs from 'qs';
 import { v4 } from 'uuid';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -30,6 +30,8 @@ import { ItemPublished } from '../entities/itemPublished.js';
 import { ItemPublishedNotFound } from '../errors.js';
 import { MeiliSearchWrapper } from '../plugins/search/meilisearch.js';
 import { ItemPublishedRepository } from '../repositories/itemPublished.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 const testUtils = new ItemTestUtils();
 

@@ -13,17 +13,17 @@ import {
   buildPathFromIds,
 } from '@graasp/sdk';
 
-import { TableType } from '.';
-import { Item } from '../../src/services/item/entities/Item';
-import { App } from '../../src/services/item/plugins/app/entities/app';
-import { Publisher } from '../../src/services/item/plugins/app/entities/publisher';
-import { ItemGeolocation } from '../../src/services/item/plugins/geolocation/ItemGeolocation';
-import { ItemTag } from '../../src/services/item/plugins/itemTag/ItemTag';
-import { ItemPublished } from '../../src/services/item/plugins/published/entities/itemPublished';
-import { ItemValidation } from '../../src/services/item/plugins/validation/entities/ItemValidation';
-import { ItemValidationGroup } from '../../src/services/item/plugins/validation/entities/ItemValidationGroup';
-import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership';
-import { Member } from '../../src/services/member/entities/member';
+import { Item } from '../../src/services/item/entities/Item.js';
+import { App } from '../../src/services/item/plugins/app/entities/app.js';
+import { Publisher } from '../../src/services/item/plugins/app/entities/publisher.js';
+import { ItemGeolocation } from '../../src/services/item/plugins/geolocation/ItemGeolocation.js';
+import { ItemTag } from '../../src/services/item/plugins/itemTag/ItemTag.js';
+import { ItemPublished } from '../../src/services/item/plugins/published/entities/itemPublished.js';
+import { ItemValidation } from '../../src/services/item/plugins/validation/entities/ItemValidation.js';
+import { ItemValidationGroup } from '../../src/services/item/plugins/validation/entities/ItemValidationGroup.js';
+import { ItemMembership } from '../../src/services/itemMembership/entities/ItemMembership.js';
+import { Member } from '../../src/services/member/entities/member.js';
+import { TableType } from './index.js';
 
 type defaultOmitedKeys = keyof BaseEntity | 'createdAt' | 'updatedAt';
 

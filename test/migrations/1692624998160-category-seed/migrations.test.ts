@@ -1,13 +1,13 @@
 import { FastifyInstance } from 'fastify';
 
-import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations';
-import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations';
-import { Migrations1683637099103 } from '../../../src/migrations/1683637099103-add-favorites';
-import { Migrations1689666251815 } from '../../../src/migrations/1689666251815-clean-tags';
-import { Migrations1689777747530 } from '../../../src/migrations/1689777747530-default-item-settings';
-import { Migrations1692624998160 } from '../../../src/migrations/1692624998160-category-seed';
-import build from '../../app';
-import { checkDatabaseIsEmpty } from '../utils';
+import { migrations1679669193720 } from '../../../src/migrations/1679669193720-migrations.js';
+import { Migrations1679669193721 } from '../../../src/migrations/1679669193721-migrations.js';
+import { Migrations1683637099103 } from '../../../src/migrations/1683637099103-add-favorites.js';
+import { Migrations1689666251815 } from '../../../src/migrations/1689666251815-clean-tags.js';
+import { Migrations1689777747530 } from '../../../src/migrations/1689777747530-default-item-settings.js';
+import { Migrations1692624998160 } from '../../../src/migrations/1692624998160-category-seed.js';
+import build from '../../app.js';
+import { checkDatabaseIsEmpty } from '../utils.js';
 
 // mock datasource
 jest.mock('../../../src/plugins/datasource');

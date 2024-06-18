@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { HttpMethod } from '@graasp/sdk';
 
@@ -16,6 +16,8 @@ import {
 } from '../../../ws/events.js';
 import { ItemValidationGroupRepository } from '../repositories/ItemValidationGroup.js';
 import { saveItemValidation } from './utils.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

@@ -4,7 +4,7 @@ import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 import path from 'node:path';
 import qs from 'qs';
 import { v4 as uuidv4 } from 'uuid';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -48,6 +48,8 @@ import {
   expectManyPackedItems,
   expectPackedItem,
 } from './fixtures/items.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

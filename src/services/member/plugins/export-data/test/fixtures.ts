@@ -1,4 +1,4 @@
-import Ajv, { JSONSchemaType, Schema } from 'ajv';
+import { Ajv, JSONSchemaType, Schema } from 'ajv';
 import fastJson from 'fast-json-stringify';
 
 export const expectNoLeaksAndEquality = <T extends object & { id: string }>(

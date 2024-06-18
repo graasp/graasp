@@ -3,7 +3,7 @@ import { Item } from '../../../item/entities/Item.js';
 import { MemberIdentifierNotFound } from '../../../itemLogin/errors.js';
 import { Member } from '../../../member/entities/member.js';
 import { itemLikeSchema } from '../../../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../../../member/plugins/export-data/utils/selection.utils.js';
 import { ItemLikeNotFound } from './errors.js';
 import { ItemLike } from './itemLike.js';
 

@@ -1,7 +1,9 @@
-import S from 'fluent-json-schema';
+import Ss from 'fluent-json-schema';
 
 import { error, uuid } from '../../../../schemas/fluent-schema.js';
 import { partialMember } from '../../../item/fluent-schema.js';
+
+const S = Ss.default;
 
 const sharedProporities = {
   bio: { type: 'string' },

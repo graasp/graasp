@@ -1,4 +1,4 @@
-import { MeiliSearch, MultiSearchParams } from 'meilisearch.js';
+import { MeiliSearch, MultiSearchParams } from 'meilisearch';
 import { DataSource } from 'typeorm';
 
 import { FastifyBaseLogger } from 'fastify';

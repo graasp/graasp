@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -15,6 +15,8 @@ import {
   memberItemsTopic,
 } from '../../../ws/events.js';
 import { ActionRequestExportRepository } from '../requestExport/repository.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

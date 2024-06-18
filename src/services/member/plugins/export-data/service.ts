@@ -21,8 +21,8 @@ import {
   anonymizeMentionsMessage,
   anonymizeMessages,
   getFilteredData,
-} from './utils/anonymize.utils';
-import { RequestDataExportService } from './utils/export.utils';
+} from './utils/anonymize.utils.js';
+import { RequestDataExportService } from './utils/export.utils.js';
 
 export class ExportMemberDataService {
   async requestDataExport({

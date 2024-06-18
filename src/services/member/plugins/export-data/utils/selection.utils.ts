@@ -1,6 +1,6 @@
 import { FindOptionsSelect } from 'typeorm';
 
-import { OBJECT_TYPE, OneOfType, PropertyType, STRING_TYPE, SchemaType } from './schema.utils';
+import { OBJECT_TYPE, OneOfType, PropertyType, STRING_TYPE, SchemaType } from './schema.utils.js';
 
 // convert string schema type to column selection.
 const stringSchemaToSelectMapper = (columnName: string) => ({ [columnName]: true });

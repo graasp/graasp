@@ -22,7 +22,7 @@ import { ItemSearchParams, Ordering, SortBy } from '../item/types.js';
 import { MemberIdentifierNotFound } from '../itemLogin/errors.js';
 import { Member } from '../member/entities/member.js';
 import { itemMembershipSchema } from '../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../member/plugins/export-data/utils/selection.utils.js';
 import { mapById } from '../utils.js';
 import { ItemMembership } from './entities/ItemMembership.js';
 import { getPermissionsAtItemSql } from './utils.js';

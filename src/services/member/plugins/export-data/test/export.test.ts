@@ -10,7 +10,7 @@ import { saveItemFavorites } from '../../../../item/plugins/itemFavorite/test/fi
 import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
 import { saveMember } from '../../../test/fixtures/members.js';
 import { ExportMemberDataService } from '../service.js';
-import { DataArchiver } from '../utils/export.utils';
+import { DataArchiver } from '../utils/export.utils.js';
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

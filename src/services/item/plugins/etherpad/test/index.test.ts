@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import nock from 'nock';
 import { And, Not } from 'typeorm';
 import { v4 } from 'uuid';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -20,6 +20,8 @@ import { MAX_SESSIONS_IN_COOKIE } from '../constants.js';
 import { ItemMissingExtraError } from '../errors.js';
 import { EtherpadItemService } from '../service.js';
 import { setUpApi } from './api.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

@@ -1,4 +1,4 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 
 export default function plugin(ajv: Ajv) {
   // JSON Web Token format

@@ -4,7 +4,7 @@ import { AppDataSource } from '../../../../../plugins/datasource.js';
 import { ItemNotFound } from '../../../../../utils/errors.js';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors.js';
 import { appSettingSchema } from '../../../../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils.js';
 import { AppSetting } from './appSettings.js';
 import { AppSettingNotFound, PreventUpdateAppSettingFile } from './errors.js';
 import { InputAppSetting } from './interfaces/app-setting.js';

@@ -5,8 +5,8 @@ import {
   OBJECT_TYPE,
   STRING_TYPE,
   buildObjectSchema,
-} from '../utils/schema.utils';
-import { schemaToSelectMapper } from '../utils/selection.utils';
+} from '../utils/schema.utils.js';
+import { schemaToSelectMapper } from '../utils/selection.utils.js';
 
 const simpleSchema = (options?: BuildSchemaOptions) =>
   buildObjectSchema(

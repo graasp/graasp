@@ -4,7 +4,7 @@ import { AppDataSource } from '../../../../../plugins/datasource.js';
 import { DUPLICATE_ENTRY_ERROR_CODE } from '../../../../../utils/typeormError.js';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors.js';
 import { itemFavoriteSchema } from '../../../../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils.js';
 import { Item } from '../../../entities/Item.js';
 import { ItemFavorite } from '../entities/ItemFavorite.js';
 import { DuplicateFavoriteError, ItemFavoriteNotFound } from '../errors.js';

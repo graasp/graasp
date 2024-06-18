@@ -1,6 +1,8 @@
-import S from 'fluent-json-schema';
+import Ss from 'fluent-json-schema';
 
 import { DocumentItemExtraFlavor, ItemType } from '@graasp/sdk';
+
+const S = Ss.default;
 
 export const updateSchema = S.object()
   // TODO: .additionalProperties(false) in schemas don't seem to work properly and

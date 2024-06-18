@@ -8,8 +8,8 @@ import build, { clearDatabase } from '../../../../../test/app.js';
 import { AppDataSource } from '../../../../plugins/datasource.js';
 import { Actor } from '../../../member/entities/member.js';
 import { ChatMentionNotFound, NoChatMentionForMember } from '../../errors.js';
-import { expectChatMentions } from '../../test/chatMention.test';
-import { saveItemWithChatMessages } from '../../test/chatMessage.test';
+import { expectChatMentions } from '../../test/chatMention.test.js';
+import { saveItemWithChatMessages } from '../../test/chatMessage.test.js';
 import { ChatMention } from './chatMention.js';
 import { ChatMentionRepository } from './repository.js';
 

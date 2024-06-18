@@ -16,7 +16,7 @@ import { MemberCannotAccess, UnauthorizedMember } from '../../../../utils/errors
 import { buildRepositories } from '../../../../utils/repositories.js';
 import { Action } from '../../../action/entities/action.js';
 import { ActionService } from '../../../action/services/action.js';
-import { MOCK_REQUEST } from '../../../action/services/action.test';
+import { MOCK_REQUEST } from '../../../action/services/action.test.js';
 import { saveActions } from '../../../action/test/fixtures/actions.js';
 import { MemberService } from '../../../member/service.js';
 import { saveMember } from '../../../member/test/fixtures/members.js';

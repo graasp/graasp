@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import { MultiSearchParams } from 'meilisearch.js';
+import { MultiSearchParams } from 'meilisearch';
 
 import { FastifyPluginAsync } from 'fastify';
 

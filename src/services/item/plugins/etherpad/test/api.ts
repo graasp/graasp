@@ -15,7 +15,11 @@ type EtherpadApiResponse<T> = [
 ];
 
 type Api = {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
   [MethodName in keyof ExtractMethods<Etherpad>]+?: EtherpadApiResponse<
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     Awaited<ReturnType<Etherpad[MethodName]>>
   >;
 };

@@ -11,7 +11,7 @@ import { ITEMS_ROUTE_PREFIX } from '../../../utils/config.js';
 import { saveMember } from '../../member/test/fixtures/members.js';
 import { ChatMentionNotFound, MemberCannotAccessMention } from '../errors.js';
 import { ChatMention } from '../plugins/mentions/chatMention.js';
-import { saveItemWithChatMessages } from './chatMessage.test';
+import { saveItemWithChatMessages } from './chatMessage.test.js';
 
 // mock datasource
 jest.mock('../../../plugins/datasource');

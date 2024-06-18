@@ -7,7 +7,7 @@ import util from 'util';
 
 import { FastifyInstance } from 'fastify';
 
-import { H5P_PACKAGES } from './fixtures/index.js';
+import { H5P_PACKAGES } from './fixtures.js';
 
 const checksum = {
   file: util.promisify(cs.file),

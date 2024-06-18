@@ -1,4 +1,6 @@
-import S from 'fluent-json-schema';
+import Ss from 'fluent-json-schema';
+
+const S = Ss.default;
 
 // we don't want to return the id since it's the key!
 export const appSchema = S.object()

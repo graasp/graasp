@@ -1,6 +1,6 @@
-import { UUID } from 'typeorm/driver/mongodb/bson.typings';
-
 import { ShortLinkPlatform } from '@graasp/sdk';
+
+import { UUID_REGEX } from '../../../../schemas/global.js';
 
 const shortLinkPayload = {
   type: 'object',
@@ -9,7 +9,7 @@ const shortLinkPayload = {
     platform: { type: 'string', enum: Object.keys(ShortLinkPlatform) },
     itemId: {
       type: 'string',
-      pattern: UUID,
+      pattern: UUID_REGEX,
     },
   },
   additionalProperties: false,

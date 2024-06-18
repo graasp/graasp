@@ -5,7 +5,7 @@ import { ResultOf } from '@graasp/sdk';
 import { AppDataSource } from '../../../../../plugins/datasource.js';
 import { MemberIdentifierNotFound } from '../../../../itemLogin/errors.js';
 import { appActionSchema } from '../../../../member/plugins/export-data/schemas/schemas.js';
-import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils';
+import { schemaToSelectMapper } from '../../../../member/plugins/export-data/utils/selection.utils.js';
 import { mapById } from '../../../../utils.js';
 import { ManyItemsGetFilter, SingleItemGetFilter } from '../interfaces/request.js';
 import { AppAction } from './appAction.js';

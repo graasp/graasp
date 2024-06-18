@@ -5,8 +5,8 @@ import { FastifyPluginAsync } from 'fastify';
 
 import { UnionOfConst } from '@graasp/sdk';
 
-import { SearchService } from '../services/item/plugins/published/plugins/search/service';
-import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config';
+import { SearchService } from '../services/item/plugins/published/plugins/search/service.js';
+import { EMBEDDED_LINK_ITEM_IFRAMELY_HREF_ORIGIN, ETHERPAD_URL } from '../utils/config.js';
 
 const Status = {
   Healthy: 'healthy',

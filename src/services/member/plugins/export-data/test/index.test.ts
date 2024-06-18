@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import waitForExpect from 'wait-for-expect';
+import waitForExpectDefault from 'wait-for-expect';
 
 import { FastifyInstance } from 'fastify';
 
@@ -8,6 +8,8 @@ import { HttpMethod } from '@graasp/sdk';
 import build, { clearDatabase } from '../../../../../../test/app.js';
 import { MEMBER_EXPORT_DATA_ROUTE_PREFIX } from '../../../../../utils/config.js';
 import { ItemTestUtils } from '../../../../item/test/fixtures/items.js';
+
+const waitForExpect = waitForExpectDefault.default;
 
 // mock datasource
 jest.mock('../../../../../plugins/datasource');

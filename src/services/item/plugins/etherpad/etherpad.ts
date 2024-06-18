@@ -1,14 +1,19 @@
-import { default as EtherpadApi } from '@graasp/etherpad-api';
+// todo fix in the etherpad api package
+import Etherpad from '@graasp/etherpad-api';
 
 import { EtherpadServerError } from './errors.js';
 
 /**
  * A wrapper for Etherpad which converts errors into graasp error
  */
-export const wrapErrors = (etherpad: EtherpadApi) =>
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+export const wrapErrors = (etherpad: Etherpad) =>
   // we use runtime reflection to dynamically wrap the methods of the Etherpad API class
   new Proxy(etherpad, {
-    get(target: EtherpadApi, property: string | symbol) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    get(target: Etherpad, property: string | symbol) {
       if (typeof target[property] === 'function') {
         return new Proxy(target[property], {
           apply: async (method, thisArg, args) => {

@@ -1,4 +1,4 @@
-import { DB_TEST_SCHEMA } from '../constants';
+import { DB_TEST_SCHEMA } from '../constants.js';
 
 export const getNumberOfTables = async (app) => {
   const result = await app.db.query(`select count(*)
@@ -15,10 +15,10 @@ export const getTableNames = async (db) => {
 };
 
 export const getCustomTypes = async (app) => {
-  const result = await app.db.query(`SELECT pg_type.typname AS enumtype, 
+  const result = await app.db.query(`SELECT pg_type.typname AS enumtype,
   pg_enum.enumlabel AS enumlabel
-FROM pg_type 
-JOIN pg_enum 
+FROM pg_type
+JOIN pg_enum
   ON pg_enum.enumtypid = pg_type.oid`);
   return result;
 };
